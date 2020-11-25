@@ -40,6 +40,8 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
@@ -70,22 +72,36 @@ public class CreateFunctionHandler {
         this.ctx = ctx;
     }
 
-    public FunctionApp execute() throws IOException, AzureExecutionException {
+    public FunctionApp execute() {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
             return createFunctionApp();
         } else {
-            throw new AzureExecutionException(String.format(message("function.create.error.targetExists"), ctx.getAppName()));
+            final String error = String.format(message("function.create.error.targetExists"), ctx.getAppName());
+            final String action = "change the name of the web app and try later";
+            throw new AzureToolkitRuntimeException(error, action);
         }
     }
     // endregion
 
     // region Create or update Azure Functions
 
-    private FunctionApp createFunctionApp() throws IOException, AzureExecutionException {
+    @AzureOperation(
+        value = "create function app[%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()", "@ctx.getAppServicePlanName()", "@ctx.getSubscription()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private FunctionApp createFunctionApp() {
         Log.prompt(message("function.create.hint.startCreateFunction"));
-        final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
-        final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
+        final WithCreate withCreate;
+        try {
+            final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
+            withCreate = runtimeHandler.defineAppWithRuntime();
+        } catch (final AzureExecutionException e) {
+            final String error = String.format("failed to initialize configuration to create web app[%s]", this.ctx.getAppName());
+            final String action = "confirm if the web app is properly configured";
+            throw new AzureToolkitRuntimeException(error, e, action);
+        }
         bindingApplicationInsights();
         configureApplicationLog(withCreate);
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
@@ -104,6 +120,11 @@ public class CreateFunctionHandler {
         return withCreate;
     }
 
+    @AzureOperation(
+        value = "create application insights for function[%s]",
+        params = {"@ctx.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private void bindingApplicationInsights() {
         if (StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey())) {
             return;
@@ -113,12 +134,9 @@ public class CreateFunctionHandler {
             final String region = ctx.getRegion();
             final ApplicationInsightsComponent insights;
             try {
-                insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(),
-                                                                          ctx.getResourceGroup(),
-                                                                          ctx.getInsightsName(),
-                                                                          region);
+                insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(), ctx.getResourceGroup(), ctx.getInsightsName(), region);
                 instrumentationKey = insights.instrumentationKey();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 Log.prompt(String.format(message("function.create.error.createApplicationInsightsFailed"), ctx.getAppName()));
             }
         }
@@ -133,7 +151,7 @@ public class CreateFunctionHandler {
 
     // endregion
 
-    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws IOException, AzureExecutionException {
+    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws AzureExecutionException {
         final FunctionRuntimeHandler.Builder<?> builder;
         final OperatingSystemEnum os = getOsEnum();
         switch (os) {
@@ -198,13 +216,13 @@ public class CreateFunctionHandler {
                 : AppServiceUtils.getPricingTierFromString(pricingTier);
     }
 
+    @AzureOperation(
+        value = "get function app[%s] in resource group[%s]",
+        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()"},
+        type = AzureOperation.Type.TASK
+    )
     private FunctionApp getFunctionApp() {
-        try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
-                    ctx.getAppName());
-        } catch (Exception ex) {
-        }
-        return null;
+        return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(), ctx.getAppName());
     }
 
     private FunctionExtensionVersion getFunctionExtensionVersion() throws AzureExecutionException {

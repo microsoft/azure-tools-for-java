@@ -67,10 +67,23 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>compile-with-aspectj</id>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-with-aspectj</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
+                            </weaveDirectories>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

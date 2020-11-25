@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -50,13 +50,15 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
+    @AzureOperation(value = "remove deployment slot", type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
         presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
         removeDirectChildNode(node);
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    @AzureOperation(value = "refresh deployment slots", type = AzureOperation.Type.ACTION)
+    protected void refreshItems() {
         presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
     }
 

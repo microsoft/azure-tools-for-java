@@ -39,6 +39,7 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -74,6 +75,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
 
     @Override
+    @AzureOperation(value = "initialize azure explorer", type = AzureOperation.Type.SERVICE)
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         AzureModule azureModule = new AzureModuleImpl(project);

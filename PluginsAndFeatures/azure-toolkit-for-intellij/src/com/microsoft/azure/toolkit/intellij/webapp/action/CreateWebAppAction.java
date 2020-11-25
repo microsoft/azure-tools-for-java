@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -37,7 +38,6 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -63,59 +63,48 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     @Override
+    @AzureOperation(value = "start to create a new web app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
-        try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
+            !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+            return;
         }
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
         dialog.show();
     }
 
+    @AzureOperation(value = "create new web app", type = AzureOperation.Type.ACTION)
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            try {
-                final WebApp webapp = webappService.createWebApp(config);
-                callback.run();
-                refreshAzureExplorer();
-                final Path application = config.getApplication();
-                if (Objects.nonNull(application) && application.toFile().exists()) {
-                    DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
-                }
-            } catch (final Exception ex) {
-                // TODO: @wangmi show error with balloon notification instead of dialog
-                DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
+            final WebApp webapp = webappService.createWebApp(config);
+            callback.run();
+            refreshAzureExplorer();
+            final Path application = config.getApplication();
+            if (Objects.nonNull(application) && application.toFile().exists()) {
+                DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
             }
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            try {
-                final RunProcessHandler processHandler = new RunProcessHandler();
-                processHandler.addDefaultListener();
-                final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-                processHandler.startNotify();
-                consoleView.attachToProcess(processHandler);
-                WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
-            } catch (final Exception ex) {
-                // TODO: @wangmi show error with balloon notification instead of dialog
-                DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
-            }
+            final RunProcessHandler processHandler = new RunProcessHandler();
+            processHandler.addDefaultListener();
+            final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+            processHandler.startNotify();
+            consoleView.attachToProcess(processHandler);
+            WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer() {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

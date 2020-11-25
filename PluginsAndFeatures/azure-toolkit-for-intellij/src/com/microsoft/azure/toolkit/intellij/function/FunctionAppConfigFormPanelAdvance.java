@@ -101,12 +101,8 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         // TODO: place custom component creation code here
         appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, () -> FunctionAppConfig.builder().build());
         appServiceConfigPanelAdvanced.setValidPlatform(Arrays.asList(Platform.AzureFunction.values()));
-        try {
-            final List<PricingTier> validPricing = AzureFunctionMvpModel.getInstance().listFunctionPricingTier();
-            appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER);
-        } catch (IllegalAccessException e) {
-            // swallow exceptions while load pricing tier
-        }
+        final List<PricingTier> validPricing = AzureFunctionMvpModel.getInstance().listFunctionPricingTier();
+        appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER);
         // Function does not support file deployment
         appServiceConfigPanelAdvanced.setDeploymentVisible(false);
         insightsConfig = ApplicationInsightsConfig.builder().newCreate(true)

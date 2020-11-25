@@ -39,8 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -239,16 +237,9 @@ public class AzureMvpModel {
      *
      * @return List of PricingTier instances.
      */
-    public List<PricingTier> listPricingTier() throws IllegalAccessException {
-        List<PricingTier> ret = new ArrayList<>();
-        for (Field field : PricingTier.class.getDeclaredFields()) {
-            int modifier = field.getModifiers();
-            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
-                PricingTier pt = (PricingTier) field.get(null);
-                ret.add(pt);
-            }
-        }
-        Collections.sort(ret, getComparator(PricingTier::toString));
+    public List<PricingTier> listPricingTier() {
+        final List<PricingTier> ret = new ArrayList<>(PricingTier.getAll());
+        ret.sort(getComparator(PricingTier::toString));
         return correctPricingTiers(ret);
     }
 

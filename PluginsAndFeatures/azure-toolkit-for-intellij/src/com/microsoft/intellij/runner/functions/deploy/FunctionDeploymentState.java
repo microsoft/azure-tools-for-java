@@ -31,6 +31,7 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -46,7 +47,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -69,6 +69,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
+    @AzureOperation(value = "deploy function app", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         updateTelemetryMap(telemetryMap);
@@ -99,7 +100,12 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return deployFunctionHandler.execute();
     }
 
-    private FunctionApp createFunctionApp(RunProcessHandler processHandler) throws IOException, AzureExecutionException {
+    @AzureOperation(
+        value = "get or create function[%s] details from Azure server",
+        params = {"@deployModel.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private FunctionApp createFunctionApp(RunProcessHandler processHandler) {
         FunctionApp functionApp =
                 AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
                                                                       functionDeployConfiguration.getResourceGroup(),
@@ -115,16 +121,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return functionApp;
     }
 
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler)
-            throws AzureExecutionException {
+    @AzureOperation(
+        value = "prepare staging folder[%s] for function[%s]",
+        params = {"$stagingFolder.getName()", "@deployModel.getAppName()"},
+        type = AzureOperation.Type.TASK
+    )
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
-            try {
-                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
-            } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException(message("function.create.error.prepareStagingFailed"));
-            }
+            FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
         });
     }
 
@@ -134,6 +140,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
+    @AzureOperation(
+        value = "complete the deployment of function[%s] and refresh Azure Explorer",
+        params = {"@deployModel.getAppName()"},
+        type = AzureOperation.Type.TASK
+    )
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();

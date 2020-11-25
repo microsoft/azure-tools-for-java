@@ -26,6 +26,8 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -65,25 +67,27 @@ public class SubFunctionNode extends Node {
 
     @Override
     protected void loadActions() {
-        addAction("Trigger Function",
-                new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) {
-                        try {
-                            AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
-                        } catch (Exception exception) {
-                            DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
-                        }
-                    }
-                }));
+        addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
+            @Override
+            @AzureOperation(value = "trigger function app", type = AzureOperation.Type.ACTION)
+            protected void actionPerformed(NodeActionEvent e) {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
+            }
+        }));
         // todo: find whether there is sdk to enable/disable trigger
     }
 
+    @AzureOperation(
+        value = "trigger function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private void trigger() {
         final Map triggerBinding = getTriggerBinding();
         if (triggerBinding == null || !triggerBinding.containsKey("type")) {
-            DefaultLoader.getUIHelper().showError(this, String.format("Failed to get trigger of function %s", name));
-            return;
+            final String error = String.format("failed to get trigger type of function[%s].", functionApp.name());
+            final String action = "confirm trigger type is configured.";
+            throw new AzureToolkitRuntimeException(error, action);
         }
         final String triggerType = (String) triggerBinding.get("type");
         switch (triggerType.toLowerCase()) {
@@ -97,14 +101,19 @@ public class SubFunctionNode extends Node {
                 triggerEventHubTrigger();
                 break;
             default:
-                DefaultLoader.getUIHelper().showInfo(this, String.format("%s is not supported for now.",
-                        StringUtils.capitalize(triggerType)));
-                break;
+                final String error = String.format("unknown trigger type[%s]", triggerType);
+                final String action = "only HttpTrigger, TimerTrigger, EventHubTrigger is supported for now.";
+                throw new AzureToolkitRuntimeException(error, action);
         }
 
     }
 
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
+    @AzureOperation(
+        value = "start timer trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerTimerTrigger() {
         try {
             final HttpPost request = getFunctionTriggerRequest();
@@ -112,11 +121,16 @@ public class SubFunctionNode extends Node {
             request.setEntity(entity);
             HttpClients.createDefault().execute(request);
         } catch (IOException e) {
-            DefaultLoader.getUIHelper().showError(this,
-                    String.format("Failed to trigger function %s, %s", this.name, e.getMessage()));
+            final String error = String.format("failed to trigger function[%s] with TimerTrigger", functionApp.name());
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
+    @AzureOperation(
+        value = "start event hub trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerEventHubTrigger() {
         try {
             final HttpPost request = getFunctionTriggerRequest();
@@ -125,40 +139,41 @@ public class SubFunctionNode extends Node {
             request.setEntity(entity);
             HttpClients.createDefault().execute(request);
         } catch (IOException e) {
-            DefaultLoader.getUIHelper().showError(this,
-                    String.format("Failed to trigger function %s, %s", this.name, e.getMessage()));
+            final String error = String.format("failed to trigger function[%s] with EventHubTrigger", functionApp.name());
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
+    @AzureOperation(
+        value = "start http trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerHttpTrigger(Map binding) {
-        try {
-            final AuthorizationLevel authLevel = AuthorizationLevel.valueOf((String) binding.get("authLevel"));
-            String targetUrl;
-            switch (authLevel) {
-                case ANONYMOUS:
-                    targetUrl = getAnonymousHttpTriggerUrl();
-                    break;
-                case FUNCTION:
-                    targetUrl = getFunctionHttpTriggerUrl();
-                    break;
-                case ADMIN:
-                    targetUrl = getAdminHttpTriggerUrl();
-                    break;
-                default:
-                    throw new IOException(String.format("Unsupported authorization level %s", authLevel));
-            }
-            DefaultLoader.getUIHelper().openInBrowser(targetUrl);
-        } catch (IOException e) {
-            DefaultLoader.getUIHelper().showError(this,
-                    String.format("Failed to get function key, %s", e.getMessage()));
+        final AuthorizationLevel authLevel = AuthorizationLevel.valueOf((String) binding.get("authLevel"));
+        String targetUrl;
+        switch (authLevel) {
+            case ANONYMOUS:
+                targetUrl = getAnonymousHttpTriggerUrl();
+                break;
+            case FUNCTION:
+                targetUrl = getFunctionHttpTriggerUrl();
+                break;
+            case ADMIN:
+                targetUrl = getAdminHttpTriggerUrl();
+                break;
+            default:
+                final String format = String.format("Unsupported authorization level %s", authLevel);
+                throw new AzureToolkitRuntimeException(format);
         }
+        DefaultLoader.getUIHelper().openInBrowser(targetUrl);
     }
 
     private String getAnonymousHttpTriggerUrl() {
         return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
     }
 
-    private String getFunctionHttpTriggerUrl() throws IOException {
+    private String getFunctionHttpTriggerUrl() {
         // Linux function app doesn't support list function keys, use master key as workaround.
         if (functionApp.operatingSystem() == OperatingSystem.LINUX) {
             return getAdminHttpTriggerUrl();
@@ -169,12 +184,12 @@ public class SubFunctionNode extends Node {
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
     }
 
-    private String getAdminHttpTriggerUrl() throws IOException {
+    private String getAdminHttpTriggerUrl() {
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name,
                 functionNode.getFunctionMasterKey());
     }
 
-    private HttpPost getFunctionTriggerRequest() throws IOException {
+    private HttpPost getFunctionTriggerRequest() {
         final String masterKey = functionNode.getFunctionMasterKey();
         final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
         final HttpPost request = new HttpPost(targetUrl);

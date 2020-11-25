@@ -28,6 +28,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -55,6 +56,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     @Override
+    @AzureOperation(value = "select one/more subscriptions to work on", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onShowSubscriptions(project);

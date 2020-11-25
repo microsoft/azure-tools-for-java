@@ -25,6 +25,7 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 
@@ -33,6 +34,11 @@ import java.nio.file.Paths;
 
 @Log
 public class AppServiceUtils {
+    @AzureOperation(
+        value = "get publishing profile of function app[%s] with secret",
+        params = {"$webAppBase.name()"},
+        type = AzureOperation.Type.TASK
+    )
     public static boolean getPublishingProfileXmlWithSecrets(WebAppBase webAppBase, String filePath) {
         final File file = new File(Paths.get(filePath, String.format("%s_%s.PublishSettings",
                                                                      webAppBase.name(), System.currentTimeMillis()))

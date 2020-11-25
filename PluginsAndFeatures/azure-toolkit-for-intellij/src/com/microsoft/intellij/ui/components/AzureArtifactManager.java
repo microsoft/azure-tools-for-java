@@ -25,6 +25,7 @@ import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
@@ -63,6 +64,11 @@ public class AzureArtifactManager {
         return prepareAzureArtifacts(packaging -> StringUtils.equals(packaging, MavenConstants.TYPE_JAR));
     }
 
+    @AzureOperation(
+        value = "get identifier of artifact[%s]",
+        params = {"$artifact.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public String getArtifactIdentifier(AzureArtifact artifact) {
         switch (artifact.getType()) {
             case Gradle:
@@ -78,6 +84,11 @@ public class AzureArtifactManager {
         }
     }
 
+    @AzureOperation(
+        value = "get file of artifact[%s]",
+        params = {"$artifact.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public String getFileForDeployment(AzureArtifact artifact) {
         switch (artifact.getType()) {
             case Gradle:

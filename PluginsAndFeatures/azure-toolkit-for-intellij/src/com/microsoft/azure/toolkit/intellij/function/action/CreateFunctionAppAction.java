@@ -27,6 +27,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
@@ -35,7 +36,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -57,39 +57,41 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
+    @AzureOperation(value = "create new function app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
-        try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
+            !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+            return;
         }
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createFunctionApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
         dialog.show();
     }
 
+    @AzureOperation(
+        value = "create function app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {
+            "$config.getName()",
+            "$config.getPlatform().getOs()",
+            "$config.getResourceGroup().name()",
+            "$config.getServicePlan().name()",
+            "$config.getSubscription().displayName()"
+        },
+        type = AzureOperation.Type.SERVICE
+    )
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("function.create.task.title"), true, () -> {
-                final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-                indicator.setIndeterminate(true);
-                try {
-                    final FunctionApp functionApp = functionAppService.createFunctionApp(config);
-                    callback.run();
-                    refreshAzureExplorer(functionApp);
-                } catch (final Exception ex) {
-                    // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError(message("function.create.error.title") + ex.getMessage(),
-                                                          message("function.create.error.createFailed"));
-                }
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            indicator.setIndeterminate(true);
+            final FunctionApp functionApp = functionAppService.createFunctionApp(config);
+            callback.run();
+            refreshAzureExplorer(functionApp);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(FunctionApp functionApp) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

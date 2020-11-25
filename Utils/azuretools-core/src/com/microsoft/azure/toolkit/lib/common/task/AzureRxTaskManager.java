@@ -35,7 +35,7 @@ public class AzureRxTaskManager {
     private static boolean registered = false;
 
     @SuppressWarnings("rawtypes")
-    public synchronized static void register() {
+    public static synchronized void register() {
         if (registered) {
             throw new IllegalStateException("rx task manager has already been registered.");
         }
