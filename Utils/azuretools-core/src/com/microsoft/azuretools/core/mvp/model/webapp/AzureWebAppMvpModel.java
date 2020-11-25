@@ -80,7 +80,7 @@ public class AzureWebAppMvpModel {
     @NotNull
     @AzureOperation(
         value = "get detail info of web app[%s] in subscription[%s]",
-        params = {"$id", "$sid"},
+        params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp getWebAppById(String sid, String id) throws AzureToolkitRuntimeException {
@@ -116,8 +116,8 @@ public class AzureWebAppMvpModel {
      * API to create new Web App by setting model.
      */
     @AzureOperation(
-        value = "create web app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
-        params = {"$model.getWebAppName()", "$model.getOS()", "$model.getResourceGroup()", "$model.getAppServicePlanName()", "$model.getSubscriptionId()"},
+        value = "create web app[%s, rg=%s] in subscription[%s]",
+        params = {"$model.getWebAppName()", "$model.getResourceGroup()", "$model.getSubscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp createWebApp(@NotNull WebAppSettingModel model) {
@@ -322,11 +322,10 @@ public class AzureWebAppMvpModel {
      * @throws IOException IOExceptions
      */
     @AzureOperation(
-        value = "create web app[%s, rg=%s, sp=%s] with private registry image[%s] in subscription[%s]",
+        value = "create web app[%s, rg=%s] with private registry image[%s] in subscription[%s]",
         params = {
             "$model.getWebAppName()",
             "$model.getResourceGroup()",
-            "$model.getAppServicePlanName()",
             "$model.getPrivateRegistryImageSetting().getImageNameWithTag()",
             "$model.getSubscriptionId()"
         },
@@ -408,7 +407,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "update docker image of web app[%s] to [%s]",
-        params = {"$webAppId", "$imageSetting.getImageNameWithTag()"},
+        params = {"$webAppId|uri_to_name", "$imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) {
@@ -438,7 +437,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "update settings of web app[%s]",
-        params = {"$webAppId"},
+        params = {"$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateWebAppSettings(String sid, String webAppId, Map<String, String> toUpdate, Set<String> toRemove) {
@@ -457,7 +456,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "update settings of deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$webAppId"},
+        params = {"$slotName", "$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final String subsciptionId, final String webAppId,
@@ -490,7 +489,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "start deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$appId"},
+        params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void startDeploymentSlot(final String subscriptionId, final String appId,
@@ -501,7 +500,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "stop deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$appId"},
+        params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void stopDeploymentSlot(final String subscriptionId, final String appId,
@@ -512,7 +511,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "restart deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$appId"},
+        params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void restartDeploymentSlot(final String subscriptionId, final String appId,
@@ -523,7 +522,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "swap deployment slot[%s] of web app[%s] for production",
-        params = {"$slotName", "$appId"},
+        params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void swapSlotWithProduction(final String subscriptionId, final String appId,
@@ -535,7 +534,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "delete deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$appId"},
+        params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
@@ -549,7 +548,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "get deployment slots of web app[%s]",
-        params = {"$appId"},
+        params = {"$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public @Nullable List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) {
@@ -789,7 +788,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "get publishing profile of web app[%s] with secret",
-        params = {"$webAppId"},
+        params = {"$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) {
@@ -802,7 +801,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "get publishing profile of deployment slot[%s] of web app[%s] with secret",
-        params = {"$slotName", "$webAppId"},
+        params = {"$slotName", "$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getSlotPublishingProfileXmlWithSecrets(final String sid,

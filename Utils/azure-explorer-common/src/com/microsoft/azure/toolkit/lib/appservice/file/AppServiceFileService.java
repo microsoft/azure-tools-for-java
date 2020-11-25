@@ -54,7 +54,7 @@ public class AppServiceFileService {
 
     @AzureOperation(
         value = "list files in directory[%s] of webapp[%s]",
-        params = {"$dir", "@app.name()"},
+        params = {"$dir|uri_to_name", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public List<? extends AppServiceFile> getFilesInDirectory(String dir) {
@@ -70,7 +70,7 @@ public class AppServiceFileService {
 
     @AzureOperation(
         value = "load content of file[%s] of webapp[%s]",
-        params = {"$path", "@app.name()"},
+        params = {"$path|uri_to_name", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
     public Observable<byte[]> getFileContent(final String path) {
