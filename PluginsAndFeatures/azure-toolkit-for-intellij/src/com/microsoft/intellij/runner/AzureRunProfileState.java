@@ -31,11 +31,14 @@ import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
@@ -99,7 +102,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
         onFail(error.getMessage(), processHandler);
-        AzureExceptionHandler.getInstance().handleException(new AzureToolkitRuntimeException("Failed to execute run configuration", error), true);
+        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
     }
 
     protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {

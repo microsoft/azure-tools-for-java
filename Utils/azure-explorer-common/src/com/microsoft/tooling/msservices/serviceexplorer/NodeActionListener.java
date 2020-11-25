@@ -80,9 +80,9 @@ public abstract class NodeActionListener implements EventListener {
             EventUtil.logEvent(EventType.info, operation, buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
-        } catch (AzureCmdException ex) {
+        } catch (AzureCmdException | RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
-            AzureExceptionHandler.getInstance().handleException(ex, true);
+            AzureExceptionHandler.getInstance().handleException(ex, false);
             return Futures.immediateFailedFuture(ex);
         } finally {
             operation.complete();
