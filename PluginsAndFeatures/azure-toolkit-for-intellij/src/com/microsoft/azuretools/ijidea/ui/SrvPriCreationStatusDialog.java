@@ -35,7 +35,6 @@ import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,13 +106,9 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         statusTable.setModel(statusTableModel);
         statusTable.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
         TableColumn column = statusTable.getColumnModel().getColumn(0);
-//        column.setMinWidth(150);
-//        //column.setMaxWidth(400);
         column = statusTable.getColumnModel().getColumn(1);
         column.setMinWidth(110);
         column.setMaxWidth(110);
-//        column = statusTable.getColumnModel().getColumn(2);
-//        column.setMinWidth(50);
 
         filesList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         filesList.setLayoutOrientation(JList.VERTICAL);
@@ -161,8 +156,8 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
             for (String tid : tidSidsMap.keySet()) {
                 if (progressIndicator.isCanceled()) {
                     AzureTaskManager.getInstance().runLater(() -> {
-                        DefaultTableModel statusTableModel = (DefaultTableModel)statusTable.getModel();
-                        statusTableModel.addRow(new Object[] {"=== Canceled by user", null, null});
+                        DefaultTableModel statusTableModel = (DefaultTableModel) statusTable.getModel();
+                        statusTableModel.addRow(new Object[]{"=== Canceled by user", null, null});
                         statusTableModel.fireTableDataChanged();
                     });
                     return;
@@ -171,21 +166,14 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                 if (!sidList.isEmpty()) {
                     try {
                         AzureTaskManager.getInstance().runLater(() -> {
-                            DefaultTableModel statusTableModel = (DefaultTableModel)statusTable.getModel();
-                            statusTableModel.addRow(new Object[] {"tenant ID: " + tid + " ===", null, null});
+                            DefaultTableModel statusTableModel = (DefaultTableModel) statusTable.getModel();
+                            statusTableModel.addRow(new Object[]{"tenant ID: " + tid + " ===", null, null});
                             statusTableModel.fireTableDataChanged();
                         });
                         Date now = new Date();
                         String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(now);;
                         final String authFilepath = SrvPriManager.createSp(
                                 preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
-//                        final String authFilepath = suffix + new Date().toString();
-//                        int steps = 15;
-//                        for (int i = 0; i < steps; ++i) {
-//                            System.out.println("sleep #" + i);
-//                            if (progressIndicator.isCanceled()) break;
-//                            Thread.sleep(1000);
-//                        }
                         if (authFilepath != null) {
                             AzureTaskManager.getInstance().runLater(() -> {
                                 filesListModel.addElement(authFilepath);
@@ -209,8 +197,8 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
                 // if only action was set in the status - the info for progress indicator only - igonre for table
                 if (status.getResult() != null) {
-                    DefaultTableModel statusTableModel = (DefaultTableModel)statusTable.getModel();
-                    statusTableModel.addRow(new Object[] {status.getAction(), status.getResult(), status.getDetails()});
+                    DefaultTableModel statusTableModel = (DefaultTableModel) statusTable.getModel();
+                    statusTableModel.addRow(new Object[]{status.getAction(), status.getResult(), status.getDetails()});
                     statusTableModel.fireTableDataChanged();
                 }
             });
@@ -237,11 +225,6 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
         super.doOKAction();
     }
-
-//    @Override
-//    public void doCancelAction() {
-//        super.doCancelAction();
-//    }
 
     @Nullable
     @Override

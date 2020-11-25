@@ -85,7 +85,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     protected JLabel masterCoresLabel;
     protected JLabel clusterNameLabel;
     protected JLabel adlAccountLabel;
-    protected JLabel SparkEventsLabel;
+    protected JLabel sparkEventsLabel;
     protected JLabel availableAULabel;
     protected JLabel calculatedAULabel;
     protected JLabel workerCoresLabel;

@@ -108,7 +108,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                     application.invokeLater(command, state);
                 }
             } catch (final ProcessCanceledException ignored) {
-                // FIXME!!! Not support process canceling currently, just ignore it
+                // TODO!!! Not support process canceling currently, just ignore it
             }
         });
     }
@@ -125,7 +125,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                     application.executeOnPooledThread(command);
                 }
             } catch (final ProcessCanceledException ignored) {
-                // FIXME!!! Not support process canceling currently, just ignore it
+                // TODO!!! Not support process canceling currently, just ignore it
             }
         });
     }
