@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 public class AzureOperationUtils {
 
@@ -46,7 +47,15 @@ public class AzureOperationUtils {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(ref);
         final String messageTemplate = annotation.value();
         final String[] parameters = annotation.params();
-        final String[] params = Arrays.stream(parameters).map(expression -> interpretExpression(expression, ref)).toArray(String[]::new);
+        final String[] params = Arrays.stream(parameters).map(expression -> {
+            final String str = interpretExpression(expression, ref);
+            //TODO: @wangmi improve this part to get name from uri
+            if (Objects.nonNull(str) && str.contains("/")) {
+                final String[] parts = str.split("/");
+                return str.endsWith("/") ? parts[parts.length - 2] : parts[parts.length - 1];
+            }
+            return str;
+        }).toArray(String[]::new);
         return String.format(messageTemplate, (Object[]) params);
     }
 
