@@ -86,11 +86,6 @@ public class AzureMvpModel {
         return ret;
     }
 
-    @AzureOperation(value = "Test exception with input `%s`", params = {"$input"}, type = AzureOperation.Type.SERVICE)
-    public void testException(String input) {
-        throw new AzureToolkitRuntimeException("Test exception", null , "Please retry", "001");
-    }
-
     /**
      * Get list of selected Subscriptions.
      *

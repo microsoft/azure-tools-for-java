@@ -28,7 +28,6 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -62,7 +61,6 @@ public class WebAppService {
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);
         final Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_WEBAPP);
-        AzureMvpModel.getInstance().testException("exception input");
         try {
             operation.start();
             EventUtil.logEvent(EventType.info, operation, properties);

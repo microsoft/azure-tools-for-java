@@ -30,7 +30,6 @@ import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -78,7 +77,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @AzureOperation(value = "deploy web app with configuration", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
-        AzureMvpModel.getInstance().testException("wrong input");
         File file = new File(getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(message("webapp.deploy.error.noTargetFile"), file.getAbsolutePath()));
