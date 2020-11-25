@@ -95,7 +95,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
                 }));
-            });
+            }, AzureTask.Modality.ANY);
         }));
         logger.info(String.format(message("webapp.ssh.hint.SSHDone"), webAppName));
     }

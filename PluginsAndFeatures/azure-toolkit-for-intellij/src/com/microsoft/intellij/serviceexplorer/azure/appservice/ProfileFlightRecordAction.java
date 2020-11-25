@@ -87,7 +87,8 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
                                  "start-flight-recorder", op -> {
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, PROFILE_FLIGHT_RECORDER, true, this::doProfileFlightRecorderAll));
+                final AzureTask task = new AzureTask(project, PROFILE_FLIGHT_RECORDER, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
+                AzureTaskManager.getInstance().runInBackground(task);
             });
     }
 
@@ -115,7 +116,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                                                 config, finishLatch);
                     }).start();
                 }
-            });
+            }, AzureTask.Modality.NONE);
             finishLatch.await();
         } catch (Exception ex) {
             notifyUserWithErrorMessage(

@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -74,7 +75,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
             };
             final ProgressIndicator progressIndicator = new BackgroundableProcessIndicator(task);
             ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, progressIndicator);
-        }));
+        }, AzureTask.Modality.ANY));
     }
 
     public Scheduler processBarVisibleSync(@NotNull final String title) {

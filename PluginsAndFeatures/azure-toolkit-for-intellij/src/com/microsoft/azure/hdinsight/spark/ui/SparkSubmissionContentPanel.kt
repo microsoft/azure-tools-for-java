@@ -55,6 +55,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
@@ -412,7 +413,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     @Synchronized
     private fun checkInputsWithErrorLabels() {
-        AzureTaskManager.getInstance().runLater {
+        AzureTaskManager.getInstance().runLater({
             // Clean all error messages firstly
             hideAllErrors()
 
@@ -445,7 +446,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             if (result != null) {
                 setVisibleForFixedErrorMessage(ErrorMessage.JobConfiguration, true, result.messaqge, Warning)
             }
-        }
+        }, AzureTask.Modality.ANY)
     }
 
     @Throws(ConfigurationException::class)
@@ -607,7 +608,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             if (!data.artifactName.isNullOrBlank()) {
                 selectedArtifactComboBox.model.apply { selectedItem = findFirst { it.name == data.artifactName } }
             }
-        })
+        }, AzureTask.Modality.ANY)
 
         // set Job Upload Storage panel data
         storageWithUploadPathPanel.setData(data.jobUploadStorageModel)

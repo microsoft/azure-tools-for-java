@@ -236,7 +236,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                 AzureTaskManager.getInstance().runAndWait(() -> {
                     vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
                     selectDefaultSize();
-                });
+                }, AzureTask.Modality.ANY);
             }));
         } else {
             selectDefaultSize();

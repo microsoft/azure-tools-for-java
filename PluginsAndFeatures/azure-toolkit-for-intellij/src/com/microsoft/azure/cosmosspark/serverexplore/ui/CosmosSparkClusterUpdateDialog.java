@@ -28,6 +28,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -95,7 +96,7 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(
-                        toUpdate -> AzureTaskManager.getInstance().runAndWait(()->close(OK_EXIT_CODE)),
+                        toUpdate -> AzureTaskManager.getInstance().runAndWait(()->close(OK_EXIT_CODE), AzureTask.Modality.ANY),
                         err -> log().warn("Error update a cluster. " + err.toString())
                 );
     }

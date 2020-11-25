@@ -32,6 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -221,7 +222,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     @Override
@@ -254,7 +255,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     @Override
@@ -284,6 +285,6 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        });
+        }, AzureTask.Modality.ANY);
     }
 }

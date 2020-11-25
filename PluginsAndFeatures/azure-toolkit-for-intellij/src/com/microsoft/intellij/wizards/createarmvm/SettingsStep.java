@@ -281,7 +281,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                 subnetComboBox.setSelectedItem(null);
                             }
                             subnetComboBox.setEnabled(true);
-                        });
+                        }, AzureTask.Modality.ANY);
                     } else if (o instanceof String) {
                         // new virtual network
                         if (model.getNewNetwork() != null) {
@@ -298,7 +298,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         AzureTaskManager.getInstance().runAndWait(() -> {
                             subnetComboBox.removeAllItems();
                             subnetComboBox.setEnabled(false);
-                        });
+                        }, AzureTask.Modality.ANY);
                     }
                 }
             }
@@ -355,7 +355,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
             loadingSAModel.setSelectedItem(null);
 
-            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel));
+            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel), AzureTask.Modality.ANY);
         }
     }
 
@@ -375,7 +375,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private void refreshStorageAccounts(final StorageAccount selectedSA) {
         final DefaultComboBoxModel refreshedSAModel = getStorageAccountModel(selectedSA);
 
-        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel));
+        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel), AzureTask.Modality.ANY);
     }
 
     private DefaultComboBoxModel getStorageAccountModel(StorageAccount selectedSA) {
@@ -455,7 +455,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
@@ -531,7 +531,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingNsgModel.setSelectedItem(null);
                     nsgCombo.setModel(loadingNsgModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
@@ -604,7 +604,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 

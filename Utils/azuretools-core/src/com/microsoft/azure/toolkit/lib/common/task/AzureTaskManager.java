@@ -40,19 +40,31 @@ public abstract class AzureTaskManager {
     }
 
     public final void runLater(Runnable task) {
-        final Runnable runnable = this.initClosure(task);
-        this.doRunLater(runnable);
+        this.runLater(new AzureTask(task));
     }
 
     public final void runAndWait(Runnable task) {
-        final Runnable runnable = this.initClosure(task);
-        this.doRunAndWait(runnable);
+        this.runAndWait(new AzureTask(task));
+    }
+
+    public final void runLater(Runnable task, AzureTask.Modality modality) {
+        this.runLater(new AzureTask(task, modality));
+    }
+
+    public final void runAndWait(Runnable task, AzureTask.Modality modality) {
+        this.runAndWait(new AzureTask(task, modality));
     }
 
     public final void runLater(AzureTask task) {
         final Runnable runnable = this.initClosure(task.getRunnable());
         task.setRunnable(runnable);
         this.doRunLater(task);
+    }
+
+    public final void runAndWait(AzureTask task) {
+        final Runnable runnable = this.initClosure(task.getRunnable());
+        task.setRunnable(runnable);
+        this.doRunAndWait(task);
     }
 
     public final void runInBackground(AzureTask task) {
@@ -69,9 +81,7 @@ public abstract class AzureTaskManager {
 
     protected abstract void doRunLater(AzureTask task);
 
-    protected abstract void doRunLater(final Runnable runnable);
-
-    protected abstract void doRunAndWait(Runnable runnable);
+    protected abstract void doRunAndWait(AzureTask task);
 
     protected abstract void doRunInBackground(AzureTask task);
 

@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.srvpri.SrvPriManager;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
@@ -142,7 +143,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         AzureTaskManager.getInstance().runLater(() -> {
             ActionRunner task = new ActionRunner(project);
             task.queue();
-        }); // ModalityState.stateForComponent(contentPane));
+        }, AzureTask.Modality.ANY); // ModalityState.stateForComponent(contentPane));
     }
 
     private class ActionRunner extends Task.Modal implements IListener<Status> {
