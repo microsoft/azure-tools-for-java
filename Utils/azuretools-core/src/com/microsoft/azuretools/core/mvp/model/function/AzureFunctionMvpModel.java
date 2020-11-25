@@ -57,7 +57,7 @@ public class AzureFunctionMvpModel {
     @NotNull
     @AzureOperation(
         value = "get detail info of function app[%s] in subscription[%s]",
-        params = {"$id", "$sid"},
+        params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
@@ -81,7 +81,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "delete function app[%s] in subscription[%s]",
-        params = {"$appId", "$sid"},
+        params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void deleteFunction(String sid, String appId) {
@@ -91,7 +91,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "restart function app[%s] in subscription[%s]",
-        params = {"$appId", "$sid"},
+        params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void restartFunction(String sid, String appId) {
@@ -100,7 +100,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "start function app[%s] in subscription[%s]",
-        params = {"$appId", "$sid"},
+        params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void startFunction(String sid, String appId) {
@@ -109,7 +109,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "stop function app[%s] in subscription[%s]",
-        params = {"$appId", "$sid"},
+        params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public void stopFunction(String sid, String appId) {
@@ -174,7 +174,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "get all envelops of function app[%s] in subscription[$s]",
-        params = {"$id", "$sid"},
+        params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
     public List<FunctionEnvelope> listFunctionEnvelopeInFunctionApp(String sid, String id) {
@@ -186,7 +186,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "get publishing profile of function app[%s] with secret",
-        params = {"$functionAppId"},
+        params = {"$functionAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public boolean getPublishingProfileXmlWithSecrets(String sid, String functionAppId, String filePath) {
@@ -196,7 +196,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "update settings of function app[%s]",
-        params = {"$functionAppId"},
+        params = {"$functionAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
     public void updateWebAppSettings(String sid, String functionAppId, Map<String, String> toUpdate, Set<String> toRemove) {
