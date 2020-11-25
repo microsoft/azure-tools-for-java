@@ -44,13 +44,13 @@ compileTestKotlin {
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-apply plugin: 'checkstyle'
-
-checkstyle {
-    toolVersion = '8.30'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
+//apply plugin: 'checkstyle'
+//
+//checkstyle {
+//    toolVersion = '8.30'
+//    configFile = new File('config/checkstyle/checkstyle.xml')
+//    showViolations = false
+//}
 
 intellij {
     pluginName = 'azure-toolkit-for-intellij'
@@ -198,7 +198,7 @@ wrapper() {
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
-installIdea.dependsOn checkstyleMain
+//installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
