@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -25,8 +25,8 @@ package com.microsoft.intellij.ui.component.appservice
 import com.intellij.icons.AllIcons
 import com.intellij.ui.border.IdeaTitledBorder
 import com.intellij.util.ui.JBUI
-import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.WebAppBase
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.intellij.ui.component.AzureComponent
 import net.miginfocom.swing.MigLayout
@@ -36,24 +36,45 @@ import javax.swing.RowFilter.regexFilter
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableRowSorter
 
-class AppExistingComponent<T : WebAppBase> :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
-        AzureComponent {
+class WebAppExistingComponent(lifetime: Lifetime) : AppExistingComponent<WebApp, DeploymentSlot>(lifetime) {
+    override fun initDeploymentSlotsPanel(lifetime: Lifetime): DeploymentSlotPublishSettingsPanelBase<DeploymentSlot> =
+            DeploymentSlotPublishSettingsPanel(lifetime)
+}
+
+class FunctionAppExistingComponent(lifetime: Lifetime) : AppExistingComponent<FunctionApp, FunctionDeploymentSlot>(lifetime) {
+    override fun initDeploymentSlotsPanel(lifetime: Lifetime): DeploymentSlotPublishSettingsPanelBase<FunctionDeploymentSlot> =
+            FunctionDeploymentSlotPublishSettingsPanel(lifetime)
+}
+
+abstract class AppExistingComponent<TApp : WebAppBase, TSlot: DeploymentSlotBase<TSlot>>(lifetime: Lifetime) :
+        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")), AzureComponent {
 
     companion object {
         private val warningIcon = AllIcons.General.BalloonWarning
     }
 
-    val pnlExistingAppTable = ExistingAppsTableComponent<T>()
+    val pnlExistingAppTable = ExistingAppsTableComponent<TApp>()
+
+    val pnlDeploymentSlotSettings: DeploymentSlotPublishSettingsPanelBase<TSlot>
+
+    abstract fun initDeploymentSlotsPanel(lifetime: Lifetime): DeploymentSlotPublishSettingsPanelBase<TSlot>
+
     private val lblRuntimeMismatchWarning = JLabel()
 
     init {
+        pnlDeploymentSlotSettings = initDeploymentSlotsPanel(lifetime)
+
+        initExistingTableComponent()
         initRuntimeMismatchWarningLabel()
         initRefreshButton()
 
-        border = IdeaTitledBorder("Choose App", 0, JBUI.emptyInsets())
-        add(pnlExistingAppTable, "growx")
-        add(lblRuntimeMismatchWarning, "growx")
+        apply {
+            border = IdeaTitledBorder("Choose App", 0, JBUI.emptyInsets())
+
+            add(pnlExistingAppTable, "growx")
+            add(lblRuntimeMismatchWarning, "growx")
+            add(pnlDeploymentSlotSettings, "growx")
+        }
 
         initComponentValidation()
     }
@@ -63,7 +84,7 @@ class AppExistingComponent<T : WebAppBase> :
         lblRuntimeMismatchWarning.isVisible = show
     }
 
-    fun fillAppsTable(apps: List<ResourceEx<T>>, defaultAppId: String? = null) {
+    fun fillAppsTable(apps: List<ResourceEx<TApp>>, defaultAppId: String? = null) {
         pnlExistingAppTable.fillAppsTable(apps) {
             app -> app.id() == defaultAppId
         }
@@ -94,6 +115,14 @@ class AppExistingComponent<T : WebAppBase> :
         pnlExistingAppTable.tableRefreshAction = {
             setRuntimeMismatchWarning(false)
             action()
+        }
+    }
+
+    private fun initExistingTableComponent() {
+        pnlExistingAppTable.table.selectionModel.addListSelectionListener {
+            val app = pnlExistingAppTable.getTableSelectedApp() ?: return@addListSelectionListener
+            pnlDeploymentSlotSettings.appProperty.set(app)
+
         }
     }
 

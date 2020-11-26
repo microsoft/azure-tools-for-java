@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -30,6 +30,7 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
@@ -54,14 +55,17 @@ import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
+data class WebAppDeployResult(val app: WebAppBase, val sqlDatabase: SqlDatabase?)
+
 class RiderWebAppRunState(project: Project,
-                          private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
+                          private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<WebAppDeployResult>(project) {
 
     private var isWebAppCreated = false
     private var isDatabaseCreated = false
 
     companion object {
-        private const val TARGET_NAME = "WebApp"
+        private const val TARGET_WEBAPP_NAME = "WebApp"
+        private const val TARGET_DEPLOYMENT_SLOT_NAME = "DeploymentSlot"
         private const val URL_WEB_APP_WWWROOT = "/home/site/wwwroot"
     }
 
@@ -77,7 +81,7 @@ class RiderWebAppRunState(project: Project,
      */
     @Throws(RuntimeException::class)
     public override fun executeSteps(processHandler: RunProcessHandler,
-                                     telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
+                                     telemetryMap: MutableMap<String, String>): WebAppDeployResult? {
 
         val publishableProject = myModel.webAppModel.publishableProject
                 ?: throw RuntimeException(message("process_event.publish.project.not_defined"))
@@ -85,13 +89,23 @@ class RiderWebAppRunState(project: Project,
         val subscriptionId = myModel.webAppModel.subscription?.subscriptionId()
                 ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
-        val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
-        deployToAzureWebApp(project, publishableProject, webApp, processHandler)
+        val appTarget = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
+        deployToAzureWebApp(project, publishableProject, appTarget, processHandler)
 
-        if (myModel.webAppModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {
+        if (myModel.webAppModel.isCreatingNewApp && myModel.webAppModel.operatingSystem == OperatingSystem.LINUX &&
+                publishableProject.isDotNetCore) {
+
             val assemblyPath = "$URL_WEB_APP_WWWROOT/$projectAssemblyRelativePath"
             val startupCommand = String.format(UiConstants.WEB_APP_STARTUP_COMMAND_TEMPLATE, assemblyPath)
-            setStartupCommand(webApp, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
+            if (appTarget !is WebApp) {
+                val message = message(
+                        "process_event.publish.web_apps.deployment_slot.unable_to_set_startup_command",
+                        appTarget.name(), appTarget.type())
+                processHandler.setText(message)
+                throw RuntimeException(message)
+            }
+
+            setStartupCommand(appTarget, startupCommand, myModel.webAppModel.netCoreRuntime, processHandler)
         }
 
         isWebAppCreated = true
@@ -116,7 +130,7 @@ class RiderWebAppRunState(project: Project,
 
             addConnectionString(
                     subscriptionId,
-                    webApp,
+                    appTarget,
                     database,
                     myModel.databaseModel.connectionStringName,
                     myModel.databaseModel.sqlServerAdminLogin,
@@ -126,24 +140,25 @@ class RiderWebAppRunState(project: Project,
 
         isDatabaseCreated = true
 
-        webAppStart(webApp, processHandler)
+        webAppStart(appTarget, processHandler)
 
-        val url = getAppUrl(webApp)
+        val url = getAppUrl(appTarget)
         processHandler.setText(message("process_event.publish.url", url))
         processHandler.setText(message("process_event.publish.done"))
 
-        return Pair(webApp, database)
+        return WebAppDeployResult(appTarget, database)
     }
 
-    override fun onSuccess(result: Pair<WebApp, SqlDatabase?>, processHandler: RunProcessHandler) {
+    override fun onSuccess(result: WebAppDeployResult, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
 
         if (myModel.webAppModel.isCreatingNewApp) {
             refreshAzureExplorer(listenerId = "WebAppModule")
         }
 
-        val (webApp, sqlDatabase) = result
-        refreshWebAppAfterPublish(webApp, myModel.webAppModel)
+        val app = result.app
+        val sqlDatabase = result.sqlDatabase
+        refreshWebAppAfterPublish(app, myModel.webAppModel)
 
         if (sqlDatabase != null) {
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
@@ -156,7 +171,7 @@ class RiderWebAppRunState(project: Project,
                 AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
         if (isOpenBrowser) {
-            openAppInBrowser(webApp, processHandler)
+            openAppInBrowser(app, processHandler)
         }
     }
 
@@ -175,10 +190,12 @@ class RiderWebAppRunState(project: Project,
         processHandler.notifyComplete()
     }
 
-    override fun getDeployTarget() = TARGET_NAME
+    override fun getDeployTarget(): String =
+            if (myModel.webAppModel.isDeployToSlot) TARGET_DEPLOYMENT_SLOT_NAME
+            else TARGET_WEBAPP_NAME
 
-    private fun refreshWebAppAfterPublish(webApp: WebApp, model: WebAppPublishModel) {
-        model.resetOnPublish(webApp)
+    private fun refreshWebAppAfterPublish(app: WebAppBase, model: WebAppPublishModel) {
+        model.resetOnPublish(app)
         AzureDotNetWebAppMvpModel.refreshSubscriptionToWebAppMap()
     }
 

@@ -62,6 +62,9 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
         } else {
             checkStatus(FunctionAppValidator.checkAppIdIsSet(model.appId))
             checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
+
+            if (model.isDeployToSlot)
+                checkStatus(FunctionAppValidator.checkDeploymentSlotNameIsSet(model.slotName))
         }
     }
 

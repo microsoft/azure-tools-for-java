@@ -66,7 +66,6 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
     val table = initExistingAppsTable()
     val btnRefresh = initRefreshButton()
     var tableRefreshAction = {}
-    var tableSelectAction: (T) -> Unit = {}
     private val pnlAppTable: JPanel
     private val txtSelectedApp = JTextField()
 
@@ -76,7 +75,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
     init {
         pnlAppTable = ToolbarDecorator
                 .createDecorator(table)
-                .addExtraActions(btnRefresh)
+                .addExtraAction(btnRefresh)
                 .setToolbarPosition(ActionToolbarPosition.BOTTOM)
                 .createPanel()
 
@@ -173,42 +172,42 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         table.selectionModel.addListSelectionListener { event ->
             if (event.valueIsAdjusting) return@addListSelectionListener
 
-            val selectedRow = table.selectedRow
-
-            if (cachedAppList.isEmpty() || selectedRow < 0 || selectedRow >= cachedAppList.size) {
-                lastSelectedResource = null
-                txtSelectedApp.text = ""
-                return@addListSelectionListener
-            }
-
-            val columns = table.columnModel.columns.toList().map { column -> column.identifier as String }
-            val resourceGroupIndex = columns.indexOf(appTableColumnResourceGroup)
-            val appNameIndex = columns.indexOf(appTableColumnName)
-
-            val appResourceGroup = table.getValueAt(selectedRow, resourceGroupIndex)
-            val appName = table.getValueAt(selectedRow, appNameIndex)
-
-            val resource = cachedAppList.find { appResource ->
-                appResource.resource.name() == appName &&
-                        appResource.resource.resourceGroupName() == appResourceGroup
-            }
-
-            lastSelectedResource = resource
-
             // This is not visible on the UI, but is used to preform a re-validation over selected web app from the table
-            val app = resource?.resource
+            val app = getTableSelectedApp()
             txtSelectedApp.text = app?.name() ?: ""
-
-            if (app != null)
-                tableSelectAction(app)
         }
 
         return table
     }
 
+    fun getTableSelectedApp(): T? {
+        val selectedRow = table.selectedRow
+
+        if (cachedAppList.isEmpty() || selectedRow < 0 || selectedRow >= cachedAppList.size) {
+            lastSelectedResource = null
+            txtSelectedApp.text = ""
+            return null
+        }
+
+        val columns = table.columnModel.columns.toList().map { column -> column.identifier as String }
+        val resourceGroupIndex = columns.indexOf(appTableColumnResourceGroup)
+        val appNameIndex = columns.indexOf(appTableColumnName)
+
+        val appResourceGroup = table.getValueAt(selectedRow, resourceGroupIndex)
+        val appName = table.getValueAt(selectedRow, appNameIndex)
+
+        val resource = cachedAppList.find { appResource ->
+            appResource.resource.name() == appName && appResource.resource.resourceGroupName() == appResourceGroup
+        }
+
+        lastSelectedResource = resource
+
+        return resource?.resource
+    }
+
     private fun initRefreshButton() =
             object : AnActionButton(message("run_config.publish.form.existing_app.table.refresh"), AllIcons.Actions.Refresh) {
-                override fun actionPerformed(anActionEvent: AnActionEvent) {
+                override fun actionPerformed(event: AnActionEvent) {
                     resetWidget()
                     tableRefreshAction()
                 }

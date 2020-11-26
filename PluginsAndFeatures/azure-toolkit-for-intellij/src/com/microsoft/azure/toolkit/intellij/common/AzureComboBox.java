@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -190,6 +191,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             if (loading) {
                 this.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
+                // Reset item to show "Refreshing..." while new items are being fetched
+                this.editor.setItem(null);
             } else {
                 this.setEnabled(true);
                 this.setEditor(this.inputEditor);

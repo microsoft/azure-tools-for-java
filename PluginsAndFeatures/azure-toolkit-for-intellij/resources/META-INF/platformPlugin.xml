@@ -7,6 +7,7 @@
       <h4>Features:</h4>
       <ul>
         <li>Compatibility with Rider 2020.3 EAP8</li>
+        <li>Add ability to deploy to Web/Function App Deployment Slots (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/72">#72</a>)</li>
         <li>Add ability to create Web App Deployment Slots from Azure Explorer node (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/397">#397</a>)</li>
         <li>Add support for Azure Table Storage Settings (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/387">#387</a>)</li>
         <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a>)</li>

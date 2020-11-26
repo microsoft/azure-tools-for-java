@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -24,10 +24,11 @@ package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.notification.*
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindowId
-import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
@@ -50,21 +51,26 @@ import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.AzureFunctionAppModule
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
-class FunctionAppRunState(project: Project,
-                          private val myModel: FunctionAppSettingModel) : AzureRunProfileState<Pair<FunctionApp, SqlDatabase?>>(project) {
+data class FunctionAppDeployResult(val app: WebAppBase, val sqlDatabase: SqlDatabase?)
+
+class FunctionAppRunState(project: Project, private val myModel: FunctionAppSettingModel) :
+        AzureRunProfileState<FunctionAppDeployResult>(project) {
 
     private var isFunctionAppCreated = false
     private var isDatabaseCreated = false
 
     companion object {
-        private const val TARGET_NAME = "FunctionApp"
+        private const val TARGET_FUNCTION_NAME = "FunctionApp"
+        private const val TARGET_FUNCTION_DEPLOYMENT_SLOT_NAME = "FunctionDeploymentSlot"
         private const val URL_FUNCTION_APP_WWWROOT = "/home/site/wwwroot"
     }
 
-    override fun getDeployTarget() = TARGET_NAME
+    override fun getDeployTarget(): String =
+            if (myModel.functionAppModel.isDeployToSlot) TARGET_FUNCTION_DEPLOYMENT_SLOT_NAME
+            else TARGET_FUNCTION_NAME
 
     override fun executeSteps(processHandler: RunProcessHandler,
-                              telemetryMap: MutableMap<String, String>): Pair<FunctionApp, SqlDatabase?> {
+                              telemetryMap: MutableMap<String, String>): FunctionAppDeployResult {
 
         val publishableProject = myModel.functionAppModel.publishableProject
                 ?: throw RuntimeException(message("process_event.publish.project.not_defined"))
@@ -113,17 +119,18 @@ class FunctionAppRunState(project: Project,
         processHandler.setText(message("process_event.publish.url", url))
         processHandler.setText(message("process_event.publish.done"))
 
-        return Pair(app, database)
+        return FunctionAppDeployResult(app, database)
     }
 
-    override fun onSuccess(result: Pair<FunctionApp, SqlDatabase?>, processHandler: RunProcessHandler) {
+    override fun onSuccess(result: FunctionAppDeployResult, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
 
         // Refresh for both cases (when create new function app and publish into existing one)
         // to make sure separate functions are updated as well
         refreshAzureExplorer(listenerId = AzureFunctionAppModule.LISTENER_ID)
 
-        val (app, sqlDatabase) = result
+        val app = result.app
+        val sqlDatabase = result.sqlDatabase
         refreshAppsAfterPublish(app, myModel.functionAppModel)
 
         if (sqlDatabase != null) {
@@ -158,7 +165,7 @@ class FunctionAppRunState(project: Project,
         processHandler.notifyComplete()
     }
 
-    private fun refreshAppsAfterPublish(app: FunctionApp, model: FunctionAppPublishModel) {
+    private fun refreshAppsAfterPublish(app: WebAppBase, model: FunctionAppPublishModel) {
         model.resetOnPublish(app)
         AzureFunctionAppMvpModel.refreshSubscriptionToFunctionAppMap()
         AzureStorageAccountMvpModel.refreshStorageAccountsMap()

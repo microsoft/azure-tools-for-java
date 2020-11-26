@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -32,6 +32,7 @@ import com.jetbrains.rider.projectView.solution
 import com.microsoft.azure.management.appservice.FunctionApp
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.SkuDescription
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.storage.SkuName
@@ -65,6 +66,8 @@ class FunctionAppPublishModel {
         private const val AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID         = "AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID"
         private const val AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME       = "AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME"
         private const val AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE       = "AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE"
+        private const val AZURE_FUNCTION_APP_IS_DEPLOY_TO_SLOT          = "AZURE_FUNCTION_APP_IS_DEPLOY_TO_SLOT"
+        private const val AZURE_FUNCTION_APP_SLOT_NAME                  = "AZURE_FUNCTION_APP_SLOT_NAME"
     }
 
     var publishableProject: PublishableProjectModel? = null
@@ -89,10 +92,13 @@ class FunctionAppPublishModel {
     var storageAccountName = ""
     var storageAccountType: StorageAccountSkuType = defaultStorageAccountType
 
+    var isDeployToSlot = false
+    var slotName = ""
+
     /**
      * Reset the model with values after creating a new instance
      */
-    fun resetOnPublish(functionApp: FunctionApp) {
+    fun resetOnPublish(functionApp: WebAppBase) {
         isCreatingNewApp = false
         appId = functionApp.id()
         appName = ""
@@ -146,6 +152,9 @@ class FunctionAppPublishModel {
         val storageAccountTypeString = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE) ?: storageAccountType.name().toString()
         val skuName = SkuName.fromString(storageAccountTypeString)
         storageAccountType = StorageAccountSkuType.fromSkuName(skuName)
+
+        isDeployToSlot = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_IS_DEPLOY_TO_SLOT) == "1"
+        slotName = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_SLOT_NAME) ?: ""
     }
 
     fun writeExternal(element: Element) {
@@ -171,5 +180,8 @@ class FunctionAppPublishModel {
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID, storageAccountId)
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME, storageAccountName)
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE, storageAccountType.name().toString())
+
+        JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_IS_DEPLOY_TO_SLOT, if (isDeployToSlot) "1" else "0")
+        JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_SLOT_NAME, slotName)
     }
 }

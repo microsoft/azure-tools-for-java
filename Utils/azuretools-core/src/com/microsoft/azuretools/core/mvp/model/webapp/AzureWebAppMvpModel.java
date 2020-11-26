@@ -23,18 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.PublishingProfileFormat;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.SkuName;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
-import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
@@ -43,6 +32,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.SneakyThrows;
@@ -760,5 +750,20 @@ public class AzureWebAppMvpModel {
 
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
+    }
+
+    /**
+     * Check if a WebApp supports Deployment Slots.
+     * Deployment Slots are available for Standard, Premium, or Isolated Pricing Tiers
+     * (https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots).
+     */
+    public boolean isDeploymentSlotSupported(final String subscriptionId, final WebApp app) {
+        AppServicePlan plan = AzureAppServicePlanMvpModel.INSTANCE.getAppServicePlanById(subscriptionId, app.appServicePlanId());
+        SkuDescription skuDescription = plan.pricingTier().toSkuDescription();
+
+        SkuName skuName = SkuName.fromString(skuDescription.tier());
+
+        return skuName == SkuName.STANDARD || skuName == SkuName.PREMIUM || skuName == SkuName.PREMIUM_V2 ||
+                skuName == SkuName.ELASTIC_PREMIUM || skuName == SkuName.ISOLATED || skuName == SkuName.ELASTIC_ISOLATED;
     }
 }

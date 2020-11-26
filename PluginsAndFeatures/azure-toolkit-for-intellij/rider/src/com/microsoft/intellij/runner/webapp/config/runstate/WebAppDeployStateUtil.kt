@@ -26,9 +26,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.microsoft.azure.management.appservice.ConnectionStringType
-import com.microsoft.azure.management.appservice.RuntimeStack
-import com.microsoft.azure.management.appservice.WebApp
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
@@ -46,7 +44,7 @@ import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import java.util.Date
+import java.util.*
 
 object WebAppDeployStateUtil {
 
@@ -54,19 +52,19 @@ object WebAppDeployStateUtil {
 
     private val activityNotifier = AzureDeploymentProgressNotification()
 
-    fun webAppStart(app: WebApp, processHandler: RunProcessHandler) =
+    fun webAppStart(app: WebAppBase, processHandler: RunProcessHandler) =
             appStart(app = app,
                     processHandler = processHandler,
                     progressMessage = message("progress.publish.web_app.start", app.name()),
                     notificationTitle = message("tool_window.azure_activity_log.publish.web_app.start"))
 
-    fun webAppStop(app: WebApp, processHandler: RunProcessHandler) =
+    fun webAppStop(app: WebAppBase, processHandler: RunProcessHandler) =
             appStop(app = app,
                     processHandler = processHandler,
                     progressMessage = message("progress.publish.web_app.stop", app.name()),
                     notificationTitle = message("tool_window.azure_activity_log.publish.web_app.stop"))
 
-    fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel, processHandler: RunProcessHandler): WebApp {
+    fun getOrCreateWebAppFromConfiguration(model: WebAppPublishModel, processHandler: RunProcessHandler): WebAppBase {
         val subscriptionId = model.subscription?.subscriptionId()
                 ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
@@ -74,18 +72,18 @@ object WebAppDeployStateUtil {
             processHandler.setText(message("process_event.publish.web_apps.creating", model.appName))
 
             val webApp = AzureDotNetWebAppMvpModel.createWebApp(
-                    subscriptionId           = subscriptionId,
-                    appName                  = model.appName,
-                    isCreatingResourceGroup  = model.isCreatingResourceGroup,
-                    resourceGroupName        = model.resourceGroupName,
-                    operatingSystem          = model.operatingSystem,
+                    subscriptionId = subscriptionId,
+                    appName = model.appName,
+                    isCreatingResourceGroup = model.isCreatingResourceGroup,
+                    resourceGroupName = model.resourceGroupName,
+                    operatingSystem = model.operatingSystem,
                     isCreatingAppServicePlan = model.isCreatingAppServicePlan,
-                    appServicePlanId         = model.appServicePlanId,
-                    appServicePlanName       = model.appServicePlanName,
-                    pricingTier              = model.pricingTier,
-                    location                 = model.location,
-                    netFrameworkVersion      = model.netFrameworkVersion,
-                    netCoreRuntime           = model.netCoreRuntime
+                    appServicePlanId = model.appServicePlanId,
+                    appServicePlanName = model.appServicePlanName,
+                    pricingTier = model.pricingTier,
+                    location = model.location,
+                    netFrameworkVersion = model.netFrameworkVersion,
+                    netCoreRuntime = model.netCoreRuntime
             )
 
             val stateMessage = message("process_event.publish.web_apps.create_success", webApp.name())
@@ -106,15 +104,25 @@ object WebAppDeployStateUtil {
         if (model.appId.isEmpty())
             throw RuntimeException(message("process_event.publish.web_apps.id_not_defined"))
 
-        return AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, model.appId)
+        val webApp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, model.appId)
+
+        // Web App target
+        if (!model.isDeployToSlot)
+            return webApp
+
+        // Deployment Slot target
+        if (model.slotName.isEmpty())
+            throw RuntimeException(message("process_event.publish.web_apps.deployment_slot.not_defined"))
+
+        return webApp.deploymentSlots().getByName(model.slotName)
     }
 
     fun deployToAzureWebApp(project: Project,
                             publishableProject: PublishableProjectModel,
-                            webApp: WebApp,
+                            appTarget: WebAppBase,
                             processHandler: RunProcessHandler) {
 
-        packAndDeploy(project, publishableProject, webApp, processHandler)
+        packAndDeploy(project, publishableProject, appTarget, processHandler)
         processHandler.setText(message("process_event.publish.deploy_succeeded"))
     }
 
@@ -149,7 +157,7 @@ object WebAppDeployStateUtil {
     }
 
     fun addConnectionString(subscriptionId: String,
-                            webApp: WebApp,
+                            app: WebAppBase,
                             database: SqlDatabase,
                             connectionStringName: String,
                             adminLogin: String,
@@ -168,12 +176,12 @@ object WebAppDeployStateUtil {
         val fullyQualifiedDomainName = sqlServer.fullyQualifiedDomainName()
         val connectionStringValue = generateConnectionString(fullyQualifiedDomainName, database, adminLogin, adminPassword)
 
-        updateWithConnectionString(webApp, connectionStringName, connectionStringValue, processHandler)
+        updateWithConnectionString(app, connectionStringName, connectionStringValue, processHandler)
     }
 
     private fun packAndDeploy(project: Project,
                               publishableProject: PublishableProjectModel,
-                              webApp: WebApp,
+                              appTarget: WebAppBase,
                               processHandler: RunProcessHandler) {
         try {
             processHandler.setText(message("process_event.publish.project.artifacts.collecting", publishableProject.projectName))
@@ -184,9 +192,9 @@ object WebAppDeployStateUtil {
             processHandler.setText(message("process_event.publish.zip_deploy.file_creating", publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
-            webAppStop(webApp, processHandler)
+            webAppStop(appTarget, processHandler)
 
-            KuduClient.kuduZipDeploy(zipFile, webApp, processHandler)
+            KuduClient.kuduZipDeploy(zipFile, appTarget, processHandler)
 
             if (zipFile.exists()) {
                 processHandler.setText(message("process_event.publish.zip_deploy.file_deleting", zipFile.path))
@@ -200,12 +208,20 @@ object WebAppDeployStateUtil {
         }
     }
 
-    private fun updateWithConnectionString(webApp: WebApp, name: String, value: String, processHandler: RunProcessHandler) {
+    private fun updateWithConnectionString(app: WebAppBase,
+                                           name: String,
+                                           value: String,
+                                           processHandler: RunProcessHandler) {
+
         val processMessage = message("process_event.publish.connection_string.creating", name)
-
         processHandler.setText(processMessage)
-        webApp.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
 
-        activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.web_app.update"), Date(), webApp.defaultHostName(), 100, processMessage)
+        when (app) {
+            is WebApp -> app.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
+            is DeploymentSlot -> app.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
+        }
+
+        activityNotifier.notifyProgress(
+                message("tool_window.azure_activity_log.publish.web_app.update"), Date(), app.defaultHostName(), 100, processMessage)
     }
 }

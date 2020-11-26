@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -115,7 +116,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        boolean isDeploymentSlotSupported = isDeploymentSlotSupported(this.subscriptionId, this.webapp);
+        boolean isDeploymentSlotSupported = AzureWebAppMvpModel.getInstance().isDeploymentSlotSupported(this.subscriptionId, this.webapp);
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp, isDeploymentSlotSupported));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
@@ -193,21 +194,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public WebApp getWebapp() {
         return webapp;
-    }
-
-    /**
-     * Check if a WebApp supports Deployment Slots.
-     * Deployment Slots are available for Standard, Premium, or Isolated Pricing Tiers
-     * (https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots).
-     */
-    private boolean isDeploymentSlotSupported(final String subscriptionId, final WebApp app) {
-        AppServicePlan plan = AzureAppServicePlanMvpModel.INSTANCE.getAppServicePlanById(subscriptionId, app.appServicePlanId());
-        SkuDescription skuDescription = plan.pricingTier().toSkuDescription();
-
-        SkuName skuName = SkuName.fromString(skuDescription.tier());
-
-        return skuName == SkuName.STANDARD || skuName == SkuName.PREMIUM || skuName == SkuName.PREMIUM_V2 ||
-                skuName == SkuName.ELASTIC_PREMIUM || skuName == SkuName.ISOLATED || skuName == SkuName.ELASTIC_ISOLATED;
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {

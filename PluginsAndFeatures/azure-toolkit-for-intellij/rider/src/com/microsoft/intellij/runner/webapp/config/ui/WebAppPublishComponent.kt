@@ -41,7 +41,7 @@ import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.component.ExistingOrNewSelector
 import com.microsoft.intellij.ui.component.PublishableProjectComponent
 import com.microsoft.intellij.ui.component.appservice.AppAfterPublishSettingPanel
-import com.microsoft.intellij.ui.component.appservice.AppExistingComponent
+import com.microsoft.intellij.ui.component.appservice.WebAppExistingComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
@@ -64,7 +64,7 @@ class WebAppPublishComponent(lifetime: Lifetime,
     }
 
     private val pnlWebAppSelector = ExistingOrNewSelector(message("run_config.publish.form.web_app.existing_new_selector"))
-    val pnlExistingWebApp = AppExistingComponent<WebApp>()
+    val pnlExistingWebApp = WebAppExistingComponent(lifetime = lifetime.createNested())
     val pnlCreateWebApp = WebAppCreateNewComponent(lifetime.createNested())
     private val pnlProject = PublishableProjectComponent(project)
     private val pnlWebAppPublishSettings = AppAfterPublishSettingPanel()
@@ -98,18 +98,36 @@ class WebAppPublishComponent(lifetime: Lifetime,
 
         pnlCreateWebApp.pnlResourceGroup.txtResourceGroupName.text = "$DEFAULT_RESOURCE_GROUP_NAME$dateString"
 
+        // Web App
         if (config.isCreatingNewApp) pnlWebAppSelector.rdoCreateNew.doClick()
         else pnlWebAppSelector.rdoUseExisting.doClick()
 
+        // Resource Group
         if (config.isCreatingResourceGroup) pnlCreateWebApp.pnlResourceGroup.rdoCreateNew.doClick()
         else pnlCreateWebApp.pnlResourceGroup.rdoUseExisting.doClick()
 
+        // App Service Plan
         if (config.isCreatingAppServicePlan) pnlCreateWebApp.pnlAppServicePlan.rdoCreateNew.doClick()
         else pnlCreateWebApp.pnlAppServicePlan.rdoUseExisting.doClick()
 
+        // Operating System
         if (config.operatingSystem == OperatingSystem.WINDOWS) pnlCreateWebApp.pnlOperatingSystem.rdoOperatingSystemWindows.doClick()
         else pnlCreateWebApp.pnlOperatingSystem.rdoOperatingSystemLinux.doClick()
 
+        // Deployment Slot
+        val slotCheckBox = pnlExistingWebApp.pnlDeploymentSlotSettings.checkBoxIsEnabled
+        if (config.isDeployToSlot.xor(slotCheckBox.isSelected)) {
+            slotCheckBox.doClick()
+
+            val cbDeploymentSlots = pnlExistingWebApp.pnlDeploymentSlotSettings.cbDeploymentSlots
+            if (config.appId.isNotEmpty() && config.slotName.isNotEmpty() && cbDeploymentSlots.items.isNotEmpty()) {
+                val slotToSelect = cbDeploymentSlots.items.find { it.name() == config.slotName }
+                if (slotToSelect != null)
+                    cbDeploymentSlots.selectedItem = slotToSelect
+            }
+        }
+
+        // Settings
         val isOpenInBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                 AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
@@ -141,7 +159,8 @@ class WebAppPublishComponent(lifetime: Lifetime,
             val publishableProject = model.publishableProject
             if (publishableProject != null && !publishableProject.isDotNetCore) {
                 model.netFrameworkVersion =
-                        if (getProjectNetFrameworkVersion(publishableProject).startsWith("4")) NetFrameworkVersion.fromString("4.7")
+                        if (getProjectNetFrameworkVersion(publishableProject).startsWith("4"))
+                            NetFrameworkVersion.fromString("4.7")
                         else NetFrameworkVersion.fromString("3.5")
             }
         } else {
@@ -159,7 +178,8 @@ class WebAppPublishComponent(lifetime: Lifetime,
         model.location = pnlCreateWebApp.pnlAppServicePlan.cbLocation.getSelectedValue()?.region() ?: model.location
         model.pricingTier = pnlCreateWebApp.pnlAppServicePlan.cbPricingTier.getSelectedValue() ?: model.pricingTier
         if (!model.isCreatingAppServicePlan)
-            model.appServicePlanId = pnlCreateWebApp.pnlAppServicePlan.cbAppServicePlan.getSelectedValue()?.id() ?: model.appServicePlanId
+            model.appServicePlanId = pnlCreateWebApp.pnlAppServicePlan.cbAppServicePlan.getSelectedValue()?.id()
+                    ?: model.appServicePlanId
 
         val selectedResource = pnlExistingWebApp.pnlExistingAppTable.lastSelectedResource
         val selectedWebApp = selectedResource?.resource
@@ -175,10 +195,15 @@ class WebAppPublishComponent(lifetime: Lifetime,
         if (operatingSystem == OperatingSystem.LINUX) {
             val dotNetCoreVersionArray = selectedWebApp?.linuxFxVersion()?.split('|')
             val netCoreRuntime =
-                    if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2) RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
+                    if (dotNetCoreVersionArray != null && dotNetCoreVersionArray.size == 2)
+                        RuntimeStack(dotNetCoreVersionArray[0], dotNetCoreVersionArray[1])
                     else WebAppPublishModel.defaultRuntime
             model.netCoreRuntime = netCoreRuntime
         }
+
+        val slotSettings = pnlExistingWebApp.pnlDeploymentSlotSettings
+        model.isDeployToSlot = slotSettings.checkBoxIsEnabled.isSelected
+        model.slotName = slotSettings.cbDeploymentSlots.getSelectedValue()?.name() ?: model.slotName
     }
 
     //region Fill Values
@@ -219,9 +244,10 @@ class WebAppPublishComponent(lifetime: Lifetime,
     }
 
     private fun initWebAppTable()  {
-        pnlExistingWebApp.pnlExistingAppTable.tableSelectAction = selectionAction@{ webApp ->
-            val publishableProject = pnlProject.cbProject.getSelectedValue() ?: return@selectionAction
-            checkSelectedProjectAgainstWebAppRuntime(webApp, publishableProject)
+        pnlExistingWebApp.pnlExistingAppTable.table.selectionModel.addListSelectionListener {
+            val publishableProject = pnlProject.cbProject.getSelectedValue() ?: return@addListSelectionListener
+            val app = pnlExistingWebApp.pnlExistingAppTable.getTableSelectedApp() ?: return@addListSelectionListener
+            checkSelectedProjectAgainstWebAppRuntime(app, publishableProject)
         }
     }
 

@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -37,15 +37,15 @@ import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.intellij.configuration.AzureRiderSettings
+import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.component.ExistingOrNewSelector
 import com.microsoft.intellij.ui.component.PublishableProjectComponent
 import com.microsoft.intellij.ui.component.appservice.AppAfterPublishSettingPanel
-import com.microsoft.intellij.ui.component.appservice.AppExistingComponent
+import com.microsoft.intellij.ui.component.appservice.FunctionAppExistingComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setComponentsVisible
-import com.microsoft.intellij.configuration.AzureRiderSettings
-import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
@@ -63,7 +63,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
     }
 
     private val pnlFunctionAppSelector = ExistingOrNewSelector(message("run_config.publish.form.function_app.existing_new_selector"))
-    val pnlExistingFunctionApp = AppExistingComponent<FunctionApp>()
+    val pnlExistingFunctionApp = FunctionAppExistingComponent(lifetime.createNested())
     val pnlCreateFunctionApp = FunctionAppCreateNewComponent(lifetime.createNested())
     private val pnlProject = PublishableProjectComponent(project)
     private val pnlFunctionAppPublishSettings = AppAfterPublishSettingPanel()
@@ -118,6 +118,19 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         if (config.isCreatingStorageAccount) pnlCreateFunctionApp.pnlStorageAccount.rdoCreateNew.doClick()
         else pnlCreateFunctionApp.pnlStorageAccount.rdoUseExisting.doClick()
 
+        // Deployment Slots
+        val slotCheckBox = pnlExistingFunctionApp.pnlDeploymentSlotSettings.checkBoxIsEnabled
+        if (config.isDeployToSlot.xor(slotCheckBox.isSelected)) {
+            slotCheckBox.doClick()
+
+            val cbDeploymentSlots = pnlExistingFunctionApp.pnlDeploymentSlotSettings.cbDeploymentSlots
+            if (config.appId.isNotEmpty() && config.slotName.isNotEmpty() && cbDeploymentSlots.items.isNotEmpty()) {
+                val slotToSelect = cbDeploymentSlots.items.find { it.name() == config.slotName }
+                if (slotToSelect != null)
+                    cbDeploymentSlots.selectedItem = slotToSelect
+            }
+        }
+
         // Settings
         val isOpenInBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
@@ -165,6 +178,10 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         model.storageAccountName       = storageAccount.storageAccountName
         model.storageAccountId         = storageAccount.cbStorageAccount.getSelectedValue()?.id() ?: ""
         model.storageAccountType       = storageAccount.cbStorageAccountType.getSelectedValue() ?: model.storageAccountType
+
+        val slotSettings = pnlExistingFunctionApp.pnlDeploymentSlotSettings
+        model.isDeployToSlot = slotSettings.checkBoxIsEnabled.isSelected
+        model.slotName = slotSettings.cbDeploymentSlots.getSelectedValue()?.name() ?: model.slotName
     }
 
     //region Fill Values
