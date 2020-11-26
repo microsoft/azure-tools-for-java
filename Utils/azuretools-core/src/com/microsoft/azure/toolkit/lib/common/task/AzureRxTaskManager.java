@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 import rx.Completable;
 import rx.Observable;
@@ -41,8 +42,7 @@ public class AzureRxTaskManager {
         }
         registered = true;
         RxJavaHooks.setOnError(throwable -> {
-            //TODO: @wangmi exceptions may have been handled when come here.
-            //TODO: @wangmi handle exceptions here;
+            AzureExceptionHandler.getInstance().handleException(throwable);
         });
         final Func1<Observable.OnSubscribe, Observable.OnSubscribe> oldObservableCreateHooks = RxJavaHooks.getOnObservableCreate();
         final Func1<Single.OnSubscribe, Single.OnSubscribe> oldSingleCreateHooks = RxJavaHooks.getOnSingleCreate();

@@ -39,7 +39,7 @@ import java.util.Arrays;
 
 import static com.intellij.openapi.ui.Messages.wrapToScrollPaneIfNeeded;
 
-public class ToolkitErrorDialog extends AzureDialogWrapper {
+public class AzureToolkitExceptionDialog extends AzureDialogWrapper {
     private JPanel pnlMain;
     private JPanel pnlHolder;
     private JPanel pnlDetails;
@@ -56,8 +56,8 @@ public class ToolkitErrorDialog extends AzureDialogWrapper {
     private Action[] actions;
     private Project project;
 
-    public ToolkitErrorDialog(final Project project, String title, String message, String details,
-                              AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
+    public AzureToolkitExceptionDialog(final Project project, String title, String message, String details,
+                                       AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
         super(project);
         this.project = project;
         this.title = title;
@@ -66,12 +66,12 @@ public class ToolkitErrorDialog extends AzureDialogWrapper {
         this.actions = getExceptionAction(actions);
         this.throwable = throwable;
         setTitle(title);
-        slotDecorator = new HideableDecorator(pnlHolder, "Details", true);
-        slotDecorator.setContentComponent(pnlDetails);
-        slotDecorator.setOn(false);
-        if (StringUtils.isEmpty(details)) {
-            slotDecorator.setEnabled(false);
-            pnlHolder.setVisible(false);
+        if (StringUtils.isNotEmpty(details)) {
+            slotDecorator = new HideableDecorator(pnlHolder, "Details", true);
+            slotDecorator.setContentComponent(pnlDetails);
+            slotDecorator.setOn(false);
+        } else {
+            pnlDetails.setVisible(false);
         }
         init();
     }
@@ -88,6 +88,7 @@ public class ToolkitErrorDialog extends AzureDialogWrapper {
         final JTextPane detailsPane = Messages.configureMessagePaneUi(new JTextPane(), details);
         detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
         pnlDetails.add( wrapToScrollPaneIfNeeded(detailsPane, 60, 10), BorderLayout.CENTER);
+
     }
 
     @Nullable

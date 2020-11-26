@@ -30,7 +30,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.ToolkitErrorDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureToolkitExceptionDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
@@ -105,16 +105,30 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
     }
 
     private void showForegroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
-        final ModalityState state = ModalityState.defaultModalityState();
-        final String details = String.format("<html>%s</html>", convertListToHtml(operationStack));
+        final String details = CollectionUtils.isEmpty(operationStack) ?
+                               StringUtils.EMPTY : getErrorDialogDetails(operationStack);
         ApplicationManager.getApplication().invokeLater(() -> {
-            final ToolkitErrorDialog errorDialog = new ToolkitErrorDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
+            final AzureToolkitExceptionDialog errorDialog = new AzureToolkitExceptionDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
             errorDialog.show();
-        }, state);
+        }, ModalityState.any());
     }
 
-    private void showBackgroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
-        final String body = String.format("<html>%s %s</html>", message, convertListToHtml(operationStack));
+    private String getErrorDialogDetails(List<String> operationStack) {
+        final String template = "<html><style>li {list-style-type:none;}</style><ul>%s</ul></html>";
+        return String.format(template, convertOperationToHTML(operationStack));
+    }
+
+    private String convertOperationToHTML(List<String> operation) {
+        if (CollectionUtils.isEmpty(operation)) {
+            return StringUtils.EMPTY;
+        }
+        return operation.size() == 1 ? String.format("<li>- %s</li>", StringUtils.capitalize(operation.get(0))) :
+               String.format("<li>- %s<ul>%s</ul></li>", StringUtils.capitalize(operation.get(0)), convertOperationToHTML(operation.subList(1,
+                                                                                                                                           operation.size())));
+    }
+
+    private void showBackgroundException(Project project, String message, List<String> operations, AzureExceptionAction[] actions, Throwable throwable) {
+        final String body = getNotificationBody(message, operations);
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, AZURE_TOOLKIT_ERROR, body, NotificationType.ERROR);
         for (AzureExceptionAction exceptionAction : actions) {
             notification.addAction(new AnAction(exceptionAction.name()) {
@@ -127,15 +141,14 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         Notifications.Bus.notify(notification, project);
     }
 
-    private String convertListToHtml(List<String> stringList) {
-        if (CollectionUtils.isEmpty(stringList)) {
-            return StringUtils.EMPTY;
+    private String getNotificationBody(String message, List<String> operations) {
+        if (CollectionUtils.isEmpty(operations)) {
+            return String.format("<html>%s</html>", message);
         }
-        final String template = "<ol>%s</ol>";
-        final String liList = stringList.stream()
+        final String liList = operations.stream()
                                         .map(string -> String.format("<li>%s</li>", StringUtils.capitalize(string)))
                                         .collect(Collectors.joining(System.lineSeparator()));
-        return String.format(template, liList);
+        return String.format("<html>%s <div><p>CallStacks: </p><ol>%s</ol></div></html>", message, liList);
     }
 
     private List<String> getAzureOperationStack(List<AzureOperationRef> callStacks, List<Throwable> throwableList) {
