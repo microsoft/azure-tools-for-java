@@ -59,8 +59,8 @@ import java.util.Date
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
-                              private val project: Project,
+class CreateFunctionAppDialog(lifetimeDef: LifetimeDefinition,
+                              project: Project,
                               private val onCreate: Runnable = Runnable { }) :
         AzureCreateDialogBase(lifetimeDef, project),
         CreateFunctionAppMvpView {

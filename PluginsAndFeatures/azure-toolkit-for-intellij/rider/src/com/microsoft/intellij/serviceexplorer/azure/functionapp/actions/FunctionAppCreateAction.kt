@@ -55,7 +55,7 @@ class FunctionAppCreateAction(private val functionAppModule: AzureFunctionAppMod
         val createWebAppForm = CreateFunctionAppDialog(
                 lifetimeDef = project.defineNestedLifetime(),
                 project = project,
-                onCreate = Runnable { functionAppModule.load(true) })
+                onCreate = { functionAppModule.load(true) })
 
         createWebAppForm.show()
     }

@@ -39,6 +39,8 @@ class SqlDatabaseCreateAction(private val sqlServerNode: SqlServerNode) : NodeAc
 
         val project = sqlServerNode.project as? Project ?: return
 
+        // TODO: This need to be fixed! We must not block UI thread when making a curl request
+        //  Need to be executed on a background thread or any other way (move inside dialog for example)
         val sqlServer = AzureSqlServerMvpModel.getSqlServerById(sqlServerNode.subscriptionId, sqlServerNode.sqlServerId)
         val createSqlDatabaseForm =
                 CreateSqlDatabaseOnServerDialog(project.defineNestedLifetime(), project, sqlServer, Runnable { sqlServerNode.load(true) })

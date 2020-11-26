@@ -28,6 +28,7 @@ import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLog
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction
 import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
 import com.microsoft.intellij.serviceexplorer.azure.functionapp.actions.FunctionAppCreateAction
+import com.microsoft.intellij.serviceexplorer.azure.webapp.actions.WebAppCreateDeploymentSlotAction
 import com.microsoft.intellij.serviceexplorer.azure.webapp.actions.WebAppCreateAction
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -38,6 +39,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldataba
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode
 import java.util.*
 
 
@@ -72,15 +75,19 @@ class RiderNodeActionsMap : NodeActionsMap() {
                     .add(WebAppCreateAction::class.java)
                     .build()
 
-            // TODO: Check for com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction
-            node2Actions[AzureFunctionAppModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
-                    .add(FunctionAppCreateAction::class.java)
-                    .build()
-
             node2Actions[WebAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                     .add(StartStreamingLogsAction::class.java)
                     .add(StopStreamingLogsAction::class.java)
                     .add(SSHIntoWebAppAction::class.java)
+                    .build()
+
+            node2Actions[DeploymentSlotModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(WebAppCreateDeploymentSlotAction::class.java)
+                    .build()
+
+            // TODO: Check for com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction
+            node2Actions[AzureFunctionAppModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(FunctionAppCreateAction::class.java)
                     .build()
 
             node2Actions[FunctionAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()

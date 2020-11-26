@@ -22,13 +22,14 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 
 import java.util.List;
@@ -41,11 +42,13 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     private final DeploymentSlotModulePresenter presenter;
     protected final String subscriptionId;
     protected final WebApp webapp;
+    protected final boolean isDeploymentSlotSupported;
 
-    public DeploymentSlotModule(final Node parent, final String subscriptionId, final WebApp webapp) {
+    public DeploymentSlotModule(final Node parent, final String subscriptionId, final WebApp webapp, final boolean isDeploymentSlotsSupported) {
         super(MODULE_ID, MODULE_NAME, parent, ICON_PATH);
         this.subscriptionId = subscriptionId;
         this.webapp = webapp;
+        this.isDeploymentSlotSupported = isDeploymentSlotsSupported;
         presenter = new DeploymentSlotModulePresenter<>();
         presenter.onAttachView(this);
     }
@@ -76,5 +79,16 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
             new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
                                    this, slot.name(), slot.state(), slot.operatingSystem().toString(),
                                    this.subscriptionId, slot.defaultHostName())));
+    }
+
+    @Override
+    public List<NodeAction> getNodeActions() {
+        List<NodeAction> nodeActions = super.getNodeActions();
+        NodeAction action = getNodeActionByName("New Deployment Slot");
+
+        if (!isDeploymentSlotSupported)
+            action.setEnabled(false);
+
+        return nodeActions;
     }
 }

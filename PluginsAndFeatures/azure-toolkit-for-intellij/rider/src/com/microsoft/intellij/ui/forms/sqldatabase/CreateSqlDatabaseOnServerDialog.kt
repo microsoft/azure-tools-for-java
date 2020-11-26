@@ -45,7 +45,6 @@ import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
 import com.microsoft.intellij.helpers.validator.SubscriptionValidator
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.forms.base.AzureCreateDialogBase
-import com.microsoft.intellij.ui.forms.sqlserver.CreateSqlServerDialog
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.time.Duration
@@ -53,8 +52,8 @@ import java.util.Date
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinition,
-                                      private val project: Project,
+class CreateSqlDatabaseOnServerDialog(lifetimeDef: LifetimeDefinition,
+                                      project: Project,
                                       private val sqlServer: SqlServer,
                                       private val onCreate: Runnable = Runnable {  }) :
         AzureCreateDialogBase(lifetimeDef, project),
@@ -106,8 +105,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     override fun fillDatabaseComputeSize(objectives: List<ServiceObjectiveName>) =
             pnlCreate.fillDatabaseComputeSize(objectives)
 
-    override fun doValidateAll(): List<ValidationInfo> {
-
+    override fun validateComponent(): List<ValidationInfo> {
         val subscription = pnlCreate.pnlSubscription.cbSubscription.getSelectedValue()
         val subscriptionId = subscription?.subscriptionId() ?: ""
         val resourceGroup = pnlCreate.cbResourceGroup.getSelectedValue()

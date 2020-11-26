@@ -54,8 +54,8 @@ import java.time.Duration
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
-                         private val project: Project,
+class CreateWebAppDialog(lifetimeDef: LifetimeDefinition,
+                         project: Project,
                          private val onCreate: Runnable = Runnable { }) :
         AzureCreateDialogBase(lifetimeDef, project),
         CreateWebAppMvpView {

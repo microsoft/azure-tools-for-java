@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -23,11 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model.functionapp
 
 import com.microsoft.azure.AzureEnvironment
-import com.microsoft.azure.management.appservice.ConnectionString
-import com.microsoft.azure.management.appservice.FunctionApp
-import com.microsoft.azure.management.appservice.OperatingSystem
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.appservice.WebAppBase
+import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
@@ -41,16 +37,19 @@ import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.Functi
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import org.jetbrains.annotations.TestOnly
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import java.util.logging.Logger
 
 object AzureFunctionAppMvpModel {
 
-    private val logger = Logger.getLogger(AzureFunctionAppMvpModel::class.java.name)
+    private val logger = LoggerFactory.getLogger(AzureFunctionAppMvpModel::class.java)
 
     private val subscriptionIdToFunctionAppsMap = ConcurrentHashMap<String, List<FunctionApp>>()
     private val appToConnectionStringsMap = ConcurrentHashMap<FunctionApp, List<ConnectionString>>()
+    private val appToFunctionDeploymentSlotsMap = ConcurrentHashMap<FunctionApp, List<FunctionDeploymentSlot>>()
+
+    //region Function App
 
     fun listAllFunctionApps(force: Boolean = false): List<ResourceEx<FunctionApp>> {
         if (!force && subscriptionIdToFunctionAppsMap.isNotEmpty())
@@ -74,8 +73,7 @@ object AzureFunctionAppMvpModel {
 
     fun listFunctionAppsBySubscriptionId(subscriptionId: String, force: Boolean = false): List<FunctionApp> {
         if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
-            val functionApps = subscriptionIdToFunctionAppsMap[subscriptionId]
-            if (functionApps != null) return functionApps
+            return subscriptionIdToFunctionAppsMap.getValue(subscriptionId)
         }
 
         try {
@@ -83,7 +81,7 @@ object AzureFunctionAppMvpModel {
             subscriptionIdToFunctionAppsMap[subscriptionId] = functionApps
             return functionApps
         } catch (e: IOException) {
-            logger.warning("Error getting Azure Function Apps by Subscription Id: $e")
+            logger.error("Error getting Azure Function Apps by Subscription Id: $e")
         }
 
         return listOf()
@@ -117,7 +115,7 @@ object AzureFunctionAppMvpModel {
             val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
             azure.appServices().functionApps().deleteById(functionAppId)
         } catch (t: Throwable) {
-            logger.warning("Error deleting Azure Function App: $t")
+            logger.error("Error deleting Function App with id '$functionAppId': $t")
             throw t
         }
     }
@@ -185,49 +183,38 @@ object AzureFunctionAppMvpModel {
 
     fun checkFunctionAppNameExists(subscriptionId: String, nameToCheck: String, force: Boolean = false): Boolean {
         if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
-            return subscriptionIdToFunctionAppsMap[subscriptionId]!!.any { app -> app.name() == nameToCheck }
+            return subscriptionIdToFunctionAppsMap.getValue(subscriptionId).any { app -> app.name() == nameToCheck }
         }
 
         val functionApps = listAllFunctionApps(force = true)
         return functionApps.any { app -> app.resource.name() == nameToCheck }
     }
 
-    fun getConnectionStrings(app: FunctionApp, force: Boolean): List<ConnectionString> {
-        if (!force && appToConnectionStringsMap.containsKey(app)) {
-            val connectionStrings = appToConnectionStringsMap[app]
-            if (connectionStrings != null)
-                return connectionStrings
-        }
-
-        val connectionStrings = app.connectionStrings.values.toList()
-        appToConnectionStringsMap[app] = connectionStrings
-
-        return connectionStrings
-    }
-
-    fun checkConnectionStringNameExists(subscriptionId: String, appId: String, connectionStringName: String, force: Boolean = false): Boolean {
-        if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
-            val app = subscriptionIdToFunctionAppsMap[subscriptionId]!!.find { it.id() == appId } ?: return false
-            return checkConnectionStringNameExists(app, connectionStringName, force)
-        }
+    fun updateFunctionAppSettings(subscriptionId: String,
+                                  appId: String,
+                                  toUpdate: Map<String, String>,
+                                  toRemove: Set<String>) {
 
         val app = getFunctionAppById(subscriptionId, appId)
-        return checkConnectionStringNameExists(app, connectionStringName, force)
-    }
-
-    fun checkConnectionStringNameExists(app: FunctionApp, connectionStringName: String, force: Boolean = false): Boolean {
-        if (!force) {
-            if (!appToConnectionStringsMap.containsKey(app)) return false
-            return appToConnectionStringsMap[app]?.any { it.name() == connectionStringName } ?: false
+        clearTags(app)
+        var update = app.update().withAppSettings(toUpdate)
+        for (key in toRemove) {
+            update = update.withoutAppSetting(key)
         }
-
-        val connectionStrings = getConnectionStrings(app, true)
-        return connectionStrings.any { it.name() == connectionStringName }
+        update.apply()
     }
 
     fun refreshSubscriptionToFunctionAppMap() {
         listAllFunctionApps(true)
     }
+
+    fun clearSubscriptionIdToFunctionAppMap() {
+        subscriptionIdToFunctionAppsMap.clear()
+    }
+
+    //endregion Function App
+
+    //region Functions
 
     fun listFunctionsForAppWithId(subscriptionId: String, functionAppId: String): List<Function> {
         val functionApp = getFunctionAppById(subscriptionId, functionAppId)
@@ -265,38 +252,118 @@ object AzureFunctionAppMvpModel {
 
         rawFunctions.value.forEach { function ->
             functions.add(FunctionImpl(
-                    parent            = functionApp,
-                    name              = function.properties?.name ?: throw Exception("Cannot get Function name for App '${functionApp.name()}'"),
-                    id                = function.id ?: throw Exception("Cannot get Function ID for App '${functionApp.name()}'"),
+                    parent = functionApp,
+                    name = function.properties?.name
+                            ?: throw Exception("Cannot get Function name for App '${functionApp.name()}'"),
+                    id = function.id ?: throw Exception("Cannot get Function ID for App '${functionApp.name()}'"),
                     resourceGroupName = resourceGroupName,
-                    regionName        = functionApp.regionName(),
-                    isEnabled         = true))
+                    regionName = functionApp.regionName(),
+                    isEnabled = true))
         }
 
         return functions
     }
 
-    fun updateFunctionAppSettings(subscriptionId: String,
-                                  appId: String,
-                                  toUpdate: Map<String, String>,
-                                  toRemove: Set<String>) {
+    //endregion Functions
 
-        val app = getFunctionAppById(subscriptionId, appId)
-        clearTags(app)
-        var update = app.update().withAppSettings(toUpdate)
-        for (key in toRemove) {
-            update = update.withoutAppSetting(key)
+    //region Connection String
+
+    fun getConnectionStrings(app: FunctionApp, force: Boolean): List<ConnectionString> {
+        if (!force && appToConnectionStringsMap.containsKey(app)) {
+            val connectionStrings = appToConnectionStringsMap[app]
+            if (connectionStrings != null)
+                return connectionStrings
         }
-        update.apply()
+
+        val connectionStrings = app.connectionStrings.values.toList()
+        appToConnectionStringsMap[app] = connectionStrings
+
+        return connectionStrings
     }
 
-    fun clearSubscriptionIdToFunctionAppMap() {
-        subscriptionIdToFunctionAppsMap.clear()
+    fun checkConnectionStringNameExists(subscriptionId: String, appId: String, connectionStringName: String, force: Boolean = false): Boolean {
+        if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
+            val app = subscriptionIdToFunctionAppsMap.getValue(subscriptionId).find { it.id() == appId } ?: return false
+            return checkConnectionStringNameExists(app, connectionStringName, force)
+        }
+
+        val app = getFunctionAppById(subscriptionId, appId)
+        return checkConnectionStringNameExists(app, connectionStringName, force)
+    }
+
+    fun checkConnectionStringNameExists(app: FunctionApp, connectionStringName: String, force: Boolean = false): Boolean {
+        if (!force) {
+            if (!appToConnectionStringsMap.containsKey(app)) return false
+            return appToConnectionStringsMap[app]?.any { it.name() == connectionStringName } ?: false
+        }
+
+        val connectionStrings = getConnectionStrings(app, true)
+        return connectionStrings.any { it.name() == connectionStringName }
     }
 
     fun clearAppToConnectionStringsMap() {
         appToConnectionStringsMap.clear()
     }
+
+    //endregion Connection String
+
+    //region Deployment Slots
+
+    fun listDeploymentSlots(subscriptionId: String, appId: String, force: Boolean = false): List<FunctionDeploymentSlot> {
+        val functionApp = getFunctionAppById(subscriptionId, appId)
+        return listDeploymentSlots(functionApp, force)
+    }
+
+    fun listDeploymentSlots(app: FunctionApp, force: Boolean = false): List<FunctionDeploymentSlot> {
+        if (!force && appToFunctionDeploymentSlotsMap.containsKey(app)) {
+            return appToFunctionDeploymentSlotsMap.getValue(app)
+        }
+
+        try {
+            val slots = app.deploymentSlots().list()
+
+            if (logger.isTraceEnabled)
+                logger.trace("Found ${slots.size} slot(s) for app '${app.name()}'.")
+
+            appToFunctionDeploymentSlotsMap[app] = slots
+            return slots
+        } catch (t: Throwable) {
+            logger.error("Error on getting Deployment Slots for function app '${app.name()}': $t")
+        }
+
+        return emptyList()
+    }
+
+    fun createDeploymentSlot(subscriptionId: String, appId: String, name: String): FunctionDeploymentSlot {
+        val app = getFunctionAppById(subscriptionId, appId)
+        return createDeploymentSlot(app, name)
+    }
+
+    fun createDeploymentSlot(app: FunctionApp, name: String, source: String? = null): FunctionDeploymentSlot {
+        val definedSlot = app.deploymentSlots().define(name)
+
+        if (source == null)
+            return definedSlot.withBrandNewConfiguration().create()
+
+        if (source == app.name())
+            return definedSlot.withConfigurationFromParent().create()
+
+        val configurationSourceSlot = app.deploymentSlots().list().find { slot -> source == slot.name() }
+                ?: throw IllegalStateException("Unable to find source configuration '$source' for function deployment slot.")
+
+        return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create()
+    }
+
+    // TODO: Make Async
+    fun checkDeploymentSlotExists(app: FunctionApp, name: String, force: Boolean = false): Boolean {
+        if (!force) {
+            return appToFunctionDeploymentSlotsMap[app]?.any { it.name() == name } == true
+        }
+
+        return app.deploymentSlots().list().any { it.name() == name }
+    }
+
+    //endregion Deployment Slots
 
     @TestOnly
     fun setSubscriptionIdToFunctionAppsMap(map: Map<String, List<FunctionApp>>) {
@@ -314,6 +381,13 @@ object AzureFunctionAppMvpModel {
         }
     }
 
+    @TestOnly
+    fun setAppToFunctionDeploymentSlotsMap(map: Map<FunctionApp, List<FunctionDeploymentSlot>>) {
+        appToFunctionDeploymentSlotsMap.clear()
+        map.forEach { (functionApp, deploymentSlotList) ->
+            appToFunctionDeploymentSlotsMap[functionApp] = deploymentSlotList
+        }
+    }
 
     private fun createFunctionAppDefinition(subscriptionId: String, name: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().define(name)

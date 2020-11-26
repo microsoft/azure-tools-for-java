@@ -27,37 +27,45 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.ui.forms.appservice.webapp.CreateWebAppDialog
+import com.microsoft.intellij.ui.forms.appservice.webapp.slot.WebAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule
 
-@Name("New Web App")
-class WebAppCreateAction(private val webAppModule: WebAppModule) : NodeActionListener() {
+@Name("New Deployment Slot")
+class WebAppCreateDeploymentSlotAction(private val node: DeploymentSlotModule) : NodeActionListener() {
 
     companion object {
-        private val logger = Logger.getInstance(WebAppCreateAction::class.java)
+        private val logger = Logger.getInstance(WebAppCreateDeploymentSlotAction::class.java)
     }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        val project = webAppModule.project as? Project
+        val project = node.project as? Project
         if (project == null) {
-            logger.error("Project instance is not defined for module '${webAppModule.name}'")
+            logger.error("Project instance is not defined for module '${node.name}'")
             return
         }
 
         if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Web App. User is not signed in.")
+            logger.error("Failed to create Deployment Slot. User is not signed in.")
             return
         }
 
-        val createWebAppForm = CreateWebAppDialog(
+        val webAppNode = node.parent as? WebAppNode
+        if (webAppNode == null) {
+            logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
+            return
+        }
+
+        val createSlotForm = WebAppCreateDeploymentSlotDialog(
                 lifetimeDef = project.defineNestedLifetime(),
                 project = project,
-                onCreate = { webAppModule.load(true) })
+                app = webAppNode.webapp,
+                onCreate = { node.load(true) })
 
-        createWebAppForm.show()
+        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

@@ -30,7 +30,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.functions.FunctionNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
-import java.util.logging.Logger
+import org.slf4j.LoggerFactory
 
 class FunctionAppNode(parent: AzureFunctionAppModule,
                       subscriptionId: String,
@@ -42,6 +42,8 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     : WebAppBaseNode(functionAppId, functionAppName, FUNCTION_LABEL, parent, subscriptionId, hostName, os, state) {
 
     companion object {
+        private val logger = LoggerFactory.getLogger(FunctionAppNode::class.java)
+
         private const val FUNCTION_LABEL = "Function"
 
         private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'..."
@@ -54,8 +56,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
                 .append("Are you sure you want to continue?")
                 .toString()
     }
-
-    private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
 
     private val presenter = FunctionAppNodePresenter<FunctionAppNode>()
 
@@ -117,15 +117,15 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
     private fun stopFunctionApp() =
             try { presenter.onStopFunctionApp(subscriptionId, functionAppId) }
-            catch (t: Throwable) { logger.warning("Error while stopping Function App with Id: $functionAppId: $t") }
+            catch (t: Throwable) { logger.error("Error while stopping Function App with Id: $functionAppId: $t") }
 
     private fun startFunctionApp() =
             try { presenter.onStartFunctionApp(subscriptionId, functionAppId) }
-            catch(t: Throwable) { logger.warning("Error while starting Function App with Id: $functionAppId: $t") }
+            catch(t: Throwable) { logger.error("Error while starting Function App with Id: $functionAppId: $t") }
 
     private fun restartFunctionApp() =
             try { presenter.onRestartFunctionApp(subscriptionId, functionAppId) }
-            catch(t: Throwable) { logger.warning("Error while restarting Function App with Id: $functionAppId: $t") }
+            catch(t: Throwable) { logger.error("Error while restarting Function App with Id: $functionAppId: $t") }
 
     private inner class DeleteFunctionAppAction : AzureNodeActionPromptListener(
             this@FunctionAppNode,

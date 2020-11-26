@@ -28,6 +28,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import org.jetbrains.annotations.TestOnly
+import org.slf4j.LoggerFactory
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -35,7 +36,7 @@ import java.util.logging.Logger
 
 object AzureStorageAccountMvpModel {
 
-    private val logger = Logger.getLogger(AzureStorageAccountMvpModel::class.java.name)
+    private val logger = LoggerFactory.getLogger(AzureStorageAccountMvpModel::class.java)
 
     private val subscriptionIdToStorageAccountMap = ConcurrentHashMap<String, List<StorageAccount>>()
 

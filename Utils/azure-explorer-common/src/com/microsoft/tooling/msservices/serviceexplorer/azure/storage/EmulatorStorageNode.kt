@@ -26,11 +26,11 @@ import com.microsoft.azuretools.utils.WebAppUtils
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import java.util.logging.Logger
+import org.slf4j.LoggerFactory
 
 class EmulatorStorageNode(parent: StorageModule) : ExternalStorageNode(parent, emulatorStorageAccount) {
     companion object {
-        private val logger = Logger.getLogger(EmulatorStorageNode::class.java.name)
+        private val logger = LoggerFactory.getLogger(EmulatorStorageNode::class.java)
 
         // https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator
         private const val connectionName = "devstoreaccount1"

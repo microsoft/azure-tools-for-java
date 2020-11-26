@@ -36,8 +36,6 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 
 object AzureDotNetWebAppMvpModel {
 
-    private val logger = Logger.getInstance(AzureDotNetWebAppMvpModel::class.java)
-
     class WebAppDefinition(val name: String,
                            val isCreatingResourceGroup: Boolean,
                            val resourceGroupName: String)
@@ -46,10 +44,13 @@ object AzureDotNetWebAppMvpModel {
                                    val pricingTier: PricingTier,
                                    val region: Region)
 
-    //region Web App
+    private val logger = Logger.getInstance(AzureDotNetWebAppMvpModel::class.java)
 
     private val subscriptionIdToWebAppsMap = concurrentMapOf<String, List<ResourceEx<WebApp>>>()
     private val webAppToConnectionStringsMap = concurrentMapOf<WebApp, List<ConnectionString>>()
+    private val webAppToDeploymentSlotMap = concurrentMapOf<WebApp, List<DeploymentSlot>>()
+
+    //region Web App
 
     fun listWebApps(force: Boolean): List<ResourceEx<WebApp>> {
         val webAppList = arrayListOf<ResourceEx<WebApp>>()
@@ -282,11 +283,71 @@ object AzureDotNetWebAppMvpModel {
 
     //endregion Check Existence
 
+    //region Deployment Slot
+
+    fun listDeploymentSlots(app: WebApp, force: Boolean = false): List<DeploymentSlot> {
+        if (!force && webAppToDeploymentSlotMap.containsKey(app)) {
+            return webAppToDeploymentSlotMap.getValue(app)
+        }
+
+        try {
+            val slots = app.deploymentSlots().list()
+
+            if (logger.isTraceEnabled)
+                logger.trace("Found ${slots.size} slot(s) for app '${app.name()}'.")
+
+            webAppToDeploymentSlotMap[app] = slots
+            return slots
+        } catch (t: Throwable) {
+            logger.error("Error on getting Deployment Slots for function app '${app.name()}': $t")
+        }
+
+        return emptyList()
+    }
+
+    fun checkDeploymentSlotExists(app: WebApp, name: String, force: Boolean = false): Boolean {
+        if (!force) {
+            return webAppToDeploymentSlotMap[app]?.any { it.name() == name } == true
+        }
+
+        return app.deploymentSlots().list().any { it.name() == name }
+    }
+
+    fun createDeploymentSlot(subscriptionId: String, appId: String, name: String): DeploymentSlot {
+        val app = getWebAppById(subscriptionId, appId)
+        return createDeploymentSlot(app, name)
+    }
+
+    fun createDeploymentSlot(app: WebApp, name: String, source: String? = null): DeploymentSlot {
+        val definedSlot = app.deploymentSlots().define(name)
+
+        if (source == null)
+            return definedSlot.withBrandNewConfiguration().create()
+
+        if (source == app.name())
+            return definedSlot.withConfigurationFromParent().create()
+
+        val configurationSourceSlot = app.deploymentSlots().list().find { slot -> source == slot.name() }
+                ?: throw IllegalStateException("Unable to find source configuration '$source' for deployment slot.")
+
+        return definedSlot.withConfigurationFromDeploymentSlot(configurationSourceSlot).create()
+    }
+
+    //endregion Deployment Slot
+
     @TestOnly
     fun setWebAppToConnectionStringsMap(map: Map<WebApp, List<ConnectionString>>) {
         webAppToConnectionStringsMap.clear()
         map.forEach { (webApp, connectionStringList) ->
             webAppToConnectionStringsMap[webApp] = connectionStringList
+        }
+    }
+
+    @TestOnly
+    fun setWebAppToDeploymentSlotsMap(map: Map<WebApp, List<DeploymentSlot>>) {
+        webAppToDeploymentSlotMap.clear()
+        map.forEach { (webApp, deploymentSlotList) ->
+            webAppToDeploymentSlotMap[webApp] = deploymentSlotList
         }
     }
 

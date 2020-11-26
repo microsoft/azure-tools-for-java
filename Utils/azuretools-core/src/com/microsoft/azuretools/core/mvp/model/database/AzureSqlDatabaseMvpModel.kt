@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -32,15 +32,15 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.listSqlServers
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.refreshSubscriptionToSqlServerMap
 import org.jetbrains.annotations.TestOnly
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.logging.Logger
 
 object AzureSqlDatabaseMvpModel {
 
-    private val logger = Logger.getLogger(this::class.java.name)
+    private val logger = LoggerFactory.getLogger(AzureSqlDatabaseMvpModel::class.java)
 
     private val sqlServerToSqlDatabasesMap = ConcurrentHashMap<SqlServer, List<SqlDatabase>>()
 
@@ -60,8 +60,8 @@ object AzureSqlDatabaseMvpModel {
             val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
             val sqlServer = azure.sqlServers().getById(sqlServerId)
             return sqlServer.databases().list()
-        } catch (e: Throwable) {
-            logger.warning(e.toString())
+        } catch (t: Throwable) {
+            logger.error(t.toString())
         }
 
         return ArrayList()
@@ -81,7 +81,7 @@ object AzureSqlDatabaseMvpModel {
                 }
             }
         } catch (e: IOException) {
-            logger.warning(e.toString())
+            logger.error(e.toString())
         }
 
         return sqlDatabaseList

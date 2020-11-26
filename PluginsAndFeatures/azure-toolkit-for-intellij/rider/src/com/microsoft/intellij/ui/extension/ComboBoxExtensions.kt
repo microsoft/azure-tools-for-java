@@ -61,15 +61,21 @@ fun <T>JComboBox<T>.setDefaultRenderer(errorMessage: String,
                                        icon: Icon? = null,
                                        getValueString: (T) -> String) {
 
-    this.renderer = object : SimpleListCellRenderer<T>() {
-        override fun customize(list: JList<out T>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
-            if (value == null) {
-                setText(errorMessage)
-                return
-            }
-            setText(getValueString(value))
+    this.renderer = DefaultComboBoxRenderer<T>(errorMessage, icon, getValueString)
+}
 
-            if (icon != null) setIcon(icon)
+class DefaultComboBoxRenderer<T>(private val errorMessage: String,
+                                 private val itemIcon: Icon? = null,
+                                 private val getValueString: (T) -> String) : SimpleListCellRenderer<T>() {
+
+    override fun customize(list: JList<out T>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+        if (value == null) {
+            text = errorMessage
+            return
         }
+        text = getValueString(value)
+
+        if (icon != null)
+            icon = itemIcon
     }
 }

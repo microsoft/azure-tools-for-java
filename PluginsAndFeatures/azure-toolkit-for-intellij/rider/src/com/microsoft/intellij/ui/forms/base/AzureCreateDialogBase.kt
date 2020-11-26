@@ -25,14 +25,15 @@ package com.microsoft.intellij.ui.forms.base
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
+import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.components.AzureDialogWrapper
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.Dimension
 
-abstract class AzureCreateDialogBase(private val lifetimeDef: LifetimeDefinition,
-                                     private val project: Project) :
+abstract class AzureCreateDialogBase(val lifetimeDef: LifetimeDefinition,
+                                     val project: Project) :
         AzureDialogWrapper(project),
         AzureComponent {
 
@@ -40,7 +41,7 @@ abstract class AzureCreateDialogBase(private val lifetimeDef: LifetimeDefinition
 
     open val dialogMinWidth: Int = 300
 
-    protected val lifetime = project.defineNestedLifetime()
+    protected val lifetime = lifetimeDef.lifetime
 
     init {
         setOKButtonText(message("dialog.create.ok_button.label"))
@@ -50,7 +51,7 @@ abstract class AzureCreateDialogBase(private val lifetimeDef: LifetimeDefinition
 
     override fun doHelpAction() = BrowserUtil.open(azureHelpUrl)
 
-    override fun doValidateAll() = validateComponent()
+    override fun doValidateAll(): List<ValidationInfo> = validateComponent()
 
     override fun dispose() {
         lifetimeDef.terminate()

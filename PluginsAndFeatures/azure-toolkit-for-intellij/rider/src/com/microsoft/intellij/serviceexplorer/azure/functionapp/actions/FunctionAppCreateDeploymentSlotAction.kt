@@ -20,44 +20,46 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.webapp.actions
+package com.microsoft.intellij.serviceexplorer.azure.functionapp.actions
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.ui.forms.appservice.webapp.CreateWebAppDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode
 
-@Name("New Web App")
-class WebAppCreateAction(private val webAppModule: WebAppModule) : NodeActionListener() {
+// TODO: Fix node parameter passed to the constructor. It should pass the DeploymentSlotModule node for Function App
+@Name("New Deployment Slot")
+class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode) : NodeActionListener() {
 
     companion object {
-        private val logger = Logger.getInstance(WebAppCreateAction::class.java)
+        private val logger = Logger.getInstance(FunctionAppCreateDeploymentSlotAction::class.java)
     }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        val project = webAppModule.project as? Project
+        val project = appNode.project as? Project
         if (project == null) {
-            logger.error("Project instance is not defined for module '${webAppModule.name}'")
+            logger.error("Project instance is not defined for module '${appNode.name}'")
             return
         }
 
         if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Web App. User is not signed in.")
+            logger.error("Failed to create Deployment Slot. User is not signed in.")
             return
         }
 
-        val createWebAppForm = CreateWebAppDialog(
-                lifetimeDef = project.defineNestedLifetime(),
-                project = project,
-                onCreate = { webAppModule.load(true) })
-
-        createWebAppForm.show()
+        // TODO: Fix when we store FunctionApp object in FunctionApp Node.
+//        val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
+//                lifetimeDef = project.defineNestedLifetime(),
+//                project = project,
+//                app = appNode.,
+//                onCreate = { node.load(true) },
+//        )
+//
+//        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"
