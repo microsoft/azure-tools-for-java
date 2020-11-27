@@ -119,12 +119,14 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         return String.format(template, convertOperationToHTML(operationStack));
     }
 
-    private String convertOperationToHTML(List<String> operation) {
-        if (CollectionUtils.isEmpty(operation)) {
+    private String convertOperationToHTML(List<String> operationStack) {
+        if (CollectionUtils.isEmpty(operationStack)) {
             return StringUtils.EMPTY;
         }
-        return operation.size() == 1 ? String.format("<li>- %s</li>", StringUtils.capitalize(operation.get(0))) :
-               String.format("<li>- %s<ul>%s</ul></li>", StringUtils.capitalize(operation.get(0)), convertOperationToHTML(operation.subList(1, operation.size())));
+        final String operation = StringUtils.capitalize(operationStack.get(0));
+        final List<String> leftStack = operationStack.size() > 1 ? operationStack.subList(1, operationStack.size()) : null;
+        return leftStack == null ? String.format("<li>- %s</li>", operation) :
+               String.format("<li>- %s<ul>%s</ul></li>", operation, convertOperationToHTML(leftStack));
     }
 
     private void showBackgroundException(Project project, String message, List<String> operations, AzureExceptionAction[] actions, Throwable throwable) {
@@ -166,7 +168,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
                              azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
                              AzureOperationUtils.getOperationTitle(callStacks.get(callStacks.size() - 1));
         if (StringUtils.isNotEmpty(action)) {
-            return String.format("Failed to %s, please %s", operation, action)
+            return String.format("Failed to %s, please %s", operation, action);
         } else {
             return StringUtils.equals(operation, cause) ?
                    String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
