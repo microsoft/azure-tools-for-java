@@ -165,9 +165,12 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         final String cause = CollectionUtils.isNotEmpty(azureToolkitExceptions) ?
                              azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
                              AzureOperationUtils.getOperationTitle(callStacks.get(callStacks.size() - 1));
-        return StringUtils.isNotEmpty(action) ?
-               String.format("Failed to %s, please %s", operation, action) :
-               StringUtils.equals(operation, cause) ? String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
+        if (StringUtils.isNotEmpty(action)) {
+            return String.format("Failed to %s, please %s", operation, action)
+        } else {
+            return StringUtils.equals(operation, cause) ?
+                   String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
+        }
     }
 
     private String getActionText(final List<Throwable> throwableList) {
