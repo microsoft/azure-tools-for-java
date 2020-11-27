@@ -36,17 +36,14 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunLater(final AzureTask task) {
-        ApplicationManager.getApplication().invokeLater(task.getRunnable(), ModalityState.any());
+        final ModalityState state = toIntellijModality(task);
+        ApplicationManager.getApplication().invokeLater(task.getRunnable(), state);
     }
 
     @Override
-    protected void doRunLater(final Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
-    }
-
-    @Override
-    protected void doRunAndWait(final Runnable runnable) {
-        ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.any());
+    protected void doRunAndWait(final AzureTask task) {
+        final ModalityState state = toIntellijModality(task);
+        ApplicationManager.getApplication().invokeAndWait(task.getRunnable(), state);
     }
 
     @Override
@@ -68,6 +65,18 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
                 task.getRunnable().run();
             }
         };
-        ApplicationManager.getApplication().invokeLater(() -> ProgressManager.getInstance().run(modalTask), ModalityState.any());
+        ProgressManager.getInstance().run(modalTask);
+    }
+
+    private ModalityState toIntellijModality(final AzureTask task) {
+        final AzureTask.Modality modality = task.getModality();
+        switch (modality) {
+            case NONE:
+                return ModalityState.NON_MODAL;
+            case DEFAULT:
+                return ModalityState.defaultModalityState();
+            default:
+                return ModalityState.any();
+        }
     }
 }

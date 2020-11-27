@@ -27,6 +27,7 @@ import com.intellij.openapi.fileChooser.FileChooserDialog;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.PluginUtil;
@@ -56,11 +57,10 @@ public class StorageChooser implements ILogger {
                         PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
                                 "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
                                         "cluster. Please\n manually specify the reference file paths for other type of " +
-                                        "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry."));
+                                        "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry."), AzureTask.Modality.ANY);
     }
 
     public static void handleListChildrenFailureInfo(String errorMessage) {
-        AzureTaskManager.getInstance().runAndWait(() ->
-                        PluginUtil.displayErrorDialog("List files failure", errorMessage));
+        AzureTaskManager.getInstance().runAndWait(() -> PluginUtil.displayErrorDialog("List files failure", errorMessage), AzureTask.Modality.ANY);
     }
 }

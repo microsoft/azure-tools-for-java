@@ -130,12 +130,12 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void invokeLater(@NotNull Runnable runnable) {
-        AzureTaskManager.getInstance().runLater(runnable);
+        AzureTaskManager.getInstance().runLater(runnable, AzureTask.Modality.ANY);
     }
 
     @Override
     public void invokeAndWait(@NotNull Runnable runnable) {
-        AzureTaskManager.getInstance().runAndWait(runnable);
+        AzureTaskManager.getInstance().runAndWait(runnable, AzureTask.Modality.ANY);
     }
 
     @Override

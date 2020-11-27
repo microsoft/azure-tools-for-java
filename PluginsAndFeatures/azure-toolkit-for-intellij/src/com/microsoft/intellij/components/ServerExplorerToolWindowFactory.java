@@ -40,6 +40,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -286,7 +287,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // if we are not running on the dispatch thread then switch
         // to dispatch thread
         if (!ApplicationManager.getApplication().isDispatchThread()) {
-            AzureTaskManager.getInstance().runAndWait(() -> propertyChange(evt));
+            AzureTaskManager.getInstance().runAndWait(() -> propertyChange(evt), AzureTask.Modality.ANY);
             return;
         }
 
@@ -318,7 +319,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // if we are not running on the dispatch thread then switch
             // to dispatch thread
             if (!ApplicationManager.getApplication().isDispatchThread()) {
-                AzureTaskManager.getInstance().runAndWait(() -> listChanged(e));
+                AzureTaskManager.getInstance().runAndWait(() -> listChanged(e), AzureTask.Modality.ANY);
                 return;
             }
 

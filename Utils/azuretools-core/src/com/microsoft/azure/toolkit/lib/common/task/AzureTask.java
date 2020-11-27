@@ -26,6 +26,7 @@ import lombok.Data;
 
 @Data
 public class AzureTask {
+    private Modality modality;
     private Runnable runnable;
     private Object project;
     private boolean cancellable;
@@ -33,6 +34,12 @@ public class AzureTask {
 
     public AzureTask(Runnable runnable) {
         this.runnable = runnable;
+        this.modality = Modality.DEFAULT;
+    }
+
+    public AzureTask(Runnable runnable, Modality modality) {
+        this.runnable = runnable;
+        this.modality = modality;
     }
 
     public AzureTask(Object project, String title, boolean cancellable, Runnable runnable) {
@@ -40,5 +47,18 @@ public class AzureTask {
         this.title = title;
         this.cancellable = cancellable;
         this.runnable = runnable;
+        this.modality = Modality.DEFAULT;
+    }
+
+    public AzureTask(Object project, String title, boolean cancellable, Runnable runnable, Modality modality) {
+        this.project = project;
+        this.title = title;
+        this.cancellable = cancellable;
+        this.runnable = runnable;
+        this.modality = modality;
+    }
+
+    public enum Modality {
+        DEFAULT, ANY, NONE
     }
 }

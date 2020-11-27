@@ -46,6 +46,7 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -128,7 +129,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             manager.setTemporaryConfiguration(configuration);
             ExecutionUtil.runConfiguration(configuration, ExecutorRegistry.getInstance().getExecutorById(ToolWindowId.DEBUG));
         };
-        AzureTaskManager.getInstance().runAndWait(runnable);
+        AzureTaskManager.getInstance().runAndWait(runnable, AzureTask.Modality.ANY);
     }
 
     @Override

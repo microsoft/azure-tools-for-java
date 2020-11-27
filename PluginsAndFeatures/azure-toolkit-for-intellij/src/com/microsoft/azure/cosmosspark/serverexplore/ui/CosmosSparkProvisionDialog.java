@@ -41,6 +41,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -84,7 +85,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     protected JLabel masterCoresLabel;
     protected JLabel clusterNameLabel;
     protected JLabel adlAccountLabel;
-    protected JLabel SparkEventsLabel;
+    protected JLabel sparkEventsLabel;
     protected JLabel availableAULabel;
     protected JLabel calculatedAULabel;
     protected JLabel workerCoresLabel;
@@ -253,7 +254,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
                 printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
                 printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
             }
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     // Components -> Data
