@@ -73,7 +73,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class SettingsStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
     private static final String CREATE_NEW = "<< Create new >>";
-    private final String NONE = "(None)";
+    private static final String NONE = "(None)";
 
     private final Node parent;
     private Project project;
@@ -125,7 +125,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
         storageComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof StorageAccount) {
                     StorageAccount sa = (StorageAccount) o;
                     setText(String.format("%s (%s)", sa.name(), sa.resourceGroupName()));
@@ -142,7 +142,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
         networkComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof Network) {
                     setText(String.format("%s (%s)", ((Network) o).name(), ((Network) o).resourceGroupName()));
                 }
@@ -159,7 +159,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
         pipCombo.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof PublicIPAddress) {
                     PublicIPAddress pip = (PublicIPAddress) o;
                     setText(String.format("%s (%s)", pip.name(), pip.resourceGroupName()));
@@ -168,7 +168,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         });
         nsgCombo.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof NetworkSecurityGroup) {
                     setText(((NetworkSecurityGroup) o).name());
                 }
@@ -176,7 +176,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         });
         availabilityComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof AvailabilitySet) {
                     setText(((AvailabilitySet) o).name());
                 }
@@ -251,11 +251,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 super.setSelectedItem(o);
                 if (CREATE_NEW.equals(o)) {
                     showNewVirtualNetworkForm();
-//                    model.setWithNewNetwork(true);
-//                    model.setVirtualNetwork(null);
-//                    model.setSubnet(null);
                 } else {
-//                    super.setSelectedItem(o);
                     if (o instanceof Network) {
                         if (((DefaultComboBoxModel) networkComboBox.getModel()).getIndexOf(CREATE_NEW) > 0) {
                             // new virtual network name at 0 position
@@ -281,7 +277,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                 subnetComboBox.setSelectedItem(null);
                             }
                             subnetComboBox.setEnabled(true);
-                        });
+                        }, AzureTask.Modality.ANY);
                     } else if (o instanceof String) {
                         // new virtual network
                         if (model.getNewNetwork() != null) {
@@ -298,7 +294,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         AzureTaskManager.getInstance().runAndWait(() -> {
                             subnetComboBox.removeAllItems();
                             subnetComboBox.setEnabled(false);
-                        });
+                        }, AzureTask.Modality.ANY);
                     }
                 }
             }
@@ -355,7 +351,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
             loadingSAModel.setSelectedItem(null);
 
-            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel));
+            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel), AzureTask.Modality.ANY);
         }
     }
 
@@ -375,7 +371,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private void refreshStorageAccounts(final StorageAccount selectedSA) {
         final DefaultComboBoxModel refreshedSAModel = getStorageAccountModel(selectedSA);
 
-        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel));
+        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel), AzureTask.Modality.ANY);
     }
 
     private DefaultComboBoxModel getStorageAccountModel(StorageAccount selectedSA) {
@@ -443,19 +439,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                             super.setSelectedItem(o);
                             if (CREATE_NEW.equals(o)) {
                                 model.setWithNewPip(true);
-//                    showNewPipForm();
                             } else if (NONE.equals(o)) {
                                 model.setPublicIpAddress(null);
                                 model.setWithNewPip(false);
                             } else {
-//                                model.setVirtualNetwork((Network) o);
                             }
                         }
                     };
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
@@ -470,7 +464,6 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 } else if (CREATE_NEW.equals(o)) {
                     model.setWithNewPip(true);
                     model.setPublicIpAddress(null);
-//                    showNewPipForm();
                 } else if (o instanceof PublicIPAddress) {
                     model.setPublicIpAddress((PublicIPAddress) o);
                     model.setWithNewPip(false);
@@ -524,14 +517,13 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                             if (NONE.equals(o)) {
                                 model.setNetworkSecurityGroup(null);
                             } else {
-//                                model.setVirtualNetwork((Network) o);
                             }
                         }
                     };
                     loadingNsgModel.setSelectedItem(null);
                     nsgCombo.setModel(loadingNsgModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
@@ -597,14 +589,13 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                 model.setAvailabilitySet(null);
                                 model.setWithNewAvailabilitySet(false);
                             } else {
-//                                model.setVirtualNetwork((Network) o);
                             }
                         }
                     };
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
@@ -651,7 +642,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 if (newVirtualNetwork != null) {
                     model.setNewNetwork(newVirtualNetwork);
                     model.setWithNewNetwork(true);
-                    ((DefaultComboBoxModel)networkComboBox.getModel()).insertElementAt(newVirtualNetwork.name + " (New)", 0);
+                    ((DefaultComboBoxModel) networkComboBox.getModel()).insertElementAt(newVirtualNetwork.name + " (New)", 0);
                     networkComboBox.setSelectedIndex(0);
                 } else {
                     networkComboBox.setSelectedItem(null);
@@ -671,7 +662,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
             if (newStorageAccount != null) {
                 model.setNewStorageAccount(newStorageAccount);
                 model.setWithNewStorageAccount(true);
-                ((DefaultComboBoxModel)storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
+                ((DefaultComboBoxModel) storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
                 storageComboBox.setSelectedIndex(0);
             } else {
                 storageComboBox.setSelectedItem(null);
@@ -682,8 +673,9 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void validateFinish() {
-        model.getCurrentNavigationState().FINISH.setEnabled(((storageComboBox.getSelectedItem() instanceof StorageAccount) || model.isWithNewStorageAccount()) &&
-                (!subnetComboBox.isEnabled() || subnetComboBox.getSelectedItem() instanceof String));
+        final boolean enabled = ((storageComboBox.getSelectedItem() instanceof StorageAccount) || model.isWithNewStorageAccount()) &&
+            (!subnetComboBox.isEnabled() || subnetComboBox.getSelectedItem() instanceof String);
+        model.getCurrentNavigationState().FINISH.setEnabled(enabled);
     }
 
     @Override
@@ -712,13 +704,6 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     }
                 }
 
-//                    for (StorageAccount account : AzureManagerImpl.getManager(project).getStorageAccounts(
-//                            model.getSubscription().getId(), true)) {
-//                        if (account.getName().equals(storageAccount.getName())) {
-//                            storageAccount = account;
-//                            break;
-//                        }
-//                    }
                 final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
                     .createVirtualMachine(model.getSubscription().getSubscriptionId(),
                                           model.getName(),
