@@ -26,6 +26,7 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -63,8 +64,8 @@ public class AzureFunctionMvpModel {
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
         final FunctionApp app = getFunctionAppsClient(sid).getById(id);
         if (Objects.isNull(app)) {
-            final String error = String.format("Cannot find FunctionApp[%s] in subscription[%s]", id, sid);
-            final String action = String.format("Confirm if the FunctionApp[id=%s] still exists", id);
+            final String error = String.format("Cannot find FunctionApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
+            final String action = String.format("Confirm if the FunctionApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
             throw new AzureToolkitRuntimeException(error, action);
         }
         return app;

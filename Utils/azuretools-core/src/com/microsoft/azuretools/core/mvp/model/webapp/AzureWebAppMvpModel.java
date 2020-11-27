@@ -28,6 +28,7 @@ import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -86,8 +87,8 @@ public class AzureWebAppMvpModel {
     public WebApp getWebAppById(String sid, String id) throws AzureToolkitRuntimeException {
         final WebApp webapp = this.getNullableWebAppById(sid, id);
         if (Objects.isNull(webapp)) {
-            final String error = String.format("Cannot find WebApp[%s] in subscription[%s]", id, sid);
-            final String action = String.format("Confirm if the WebApp[id=%s] still exists", id);
+            final String error = String.format("Cannot find WebApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
+            final String action = String.format("Confirm if the WebApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
             throw new AzureToolkitRuntimeException(error, action);
         }
         return webapp;

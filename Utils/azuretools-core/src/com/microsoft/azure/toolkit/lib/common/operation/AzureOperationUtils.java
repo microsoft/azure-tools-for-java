@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +39,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 public class AzureOperationUtils {
     private static final Uri2NameFunction toName = new Uri2NameFunction();
@@ -105,11 +105,7 @@ public class AzureOperationUtils {
         @Override
         public Object execute(FunctionRequest request) {
             final String input = getInput(request);
-            if (Objects.nonNull(input) && input.contains("/")) {
-                final String[] parts = input.split("/");
-                return input.endsWith("/") ? parts[parts.length - 2] : parts[parts.length - 1];
-            }
-            return input;
+            return ResourceUtils.nameFromResourceId(input);
         }
 
         private String getInput(FunctionRequest request) {
