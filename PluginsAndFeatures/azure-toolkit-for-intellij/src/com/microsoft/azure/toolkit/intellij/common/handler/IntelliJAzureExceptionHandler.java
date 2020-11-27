@@ -30,6 +30,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -107,10 +108,10 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
     private void showForegroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
         final String details = CollectionUtils.isEmpty(operationStack) ?
                                StringUtils.EMPTY : getErrorDialogDetails(operationStack);
-        ApplicationManager.getApplication().invokeLater(() -> {
+        UIUtil.invokeLaterIfNeeded(() -> {
             final AzureToolkitErrorDialog errorDialog = new AzureToolkitErrorDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
-            errorDialog.show();
-        }, ModalityState.any());
+            ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(errorDialog.getContentPanel()));
+        });
     }
 
     private String getErrorDialogDetails(List<String> operationStack) {
