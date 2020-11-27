@@ -39,7 +39,7 @@ import java.util.Arrays;
 
 import static com.intellij.openapi.ui.Messages.wrapToScrollPaneIfNeeded;
 
-public class AzureToolkitExceptionDialog extends AzureDialogWrapper {
+public class AzureToolkitErrorDialog extends AzureDialogWrapper {
     private JPanel pnlMain;
     private JPanel pnlHolder;
     private JPanel pnlDetails;
@@ -56,8 +56,8 @@ public class AzureToolkitExceptionDialog extends AzureDialogWrapper {
     private Action[] actions;
     private Project project;
 
-    public AzureToolkitExceptionDialog(final Project project, String title, String message, String details,
-                                       AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
+    public AzureToolkitErrorDialog(final Project project, String title, String message, String details,
+                                   AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
         super(project);
         this.project = project;
         this.title = title;
@@ -87,8 +87,7 @@ public class AzureToolkitExceptionDialog extends AzureDialogWrapper {
 
         final JTextPane detailsPane = Messages.configureMessagePaneUi(new JTextPane(), details);
         detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
-        pnlDetails.add( wrapToScrollPaneIfNeeded(detailsPane, 60, 10), BorderLayout.CENTER);
-
+        pnlDetails.add(wrapToScrollPaneIfNeeded(detailsPane, 60, 10), BorderLayout.CENTER);
     }
 
     @Nullable
