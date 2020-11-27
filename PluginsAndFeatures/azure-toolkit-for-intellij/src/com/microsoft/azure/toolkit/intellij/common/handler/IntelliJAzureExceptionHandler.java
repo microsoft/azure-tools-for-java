@@ -124,8 +124,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             return StringUtils.EMPTY;
         }
         return operation.size() == 1 ? String.format("<li>- %s</li>", StringUtils.capitalize(operation.get(0))) :
-               String.format("<li>- %s<ul>%s</ul></li>", StringUtils.capitalize(operation.get(0)), convertOperationToHTML(operation.subList(1,
-                                                                                                                                           operation.size())));
+               String.format("<li>- %s<ul>%s</ul></li>", StringUtils.capitalize(operation.get(0)), convertOperationToHTML(operation.subList(1, operation.size())));
     }
 
     private void showBackgroundException(Project project, String message, List<String> operations, AzureExceptionAction[] actions, Throwable throwable) {
@@ -166,9 +165,9 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         final String cause = CollectionUtils.isNotEmpty(azureToolkitExceptions) ?
                              azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
                              AzureOperationUtils.getOperationTitle(callStacks.get(callStacks.size() - 1));
-        return StringUtils.isEmpty(action) ?
-               String.format("Failed to %s, as %s failed", operation, cause) :
-               String.format("Failed to %s, please %s", operation, action);
+        return StringUtils.isNotEmpty(action) ?
+               String.format("Failed to %s, please %s", operation, action) :
+               StringUtils.equals(operation, cause) ? String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
     }
 
     private String getActionText(final List<Throwable> throwableList) {
