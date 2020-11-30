@@ -1,5 +1,5 @@
-/*
- * Copyright (c) Microsoft Corporation
+/**
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,10 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
+import com.microsoft.azure.management.appservice.DeploymentSlotBase
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
-public interface DeploymentSlotNodeView extends WebAppBaseNodeView {
-    // todo
+interface DeploymentSlotModuleView<TSlot : DeploymentSlotBase<TSlot>> : MvpView {
+
+    fun renderDeploymentSlots(slots: List<TSlot>)
 }

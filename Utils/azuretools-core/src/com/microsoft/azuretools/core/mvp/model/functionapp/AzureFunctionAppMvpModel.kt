@@ -309,6 +309,11 @@ object AzureFunctionAppMvpModel {
 
     //region Deployment Slots
 
+    fun getDeploymentSlotByName(subscriptionId: String, appId: String, slotName: String): FunctionDeploymentSlot {
+        val app = getFunctionAppById(subscriptionId, appId)
+        return app.deploymentSlots().getByName(slotName)
+    }
+
     fun listDeploymentSlots(subscriptionId: String, appId: String, force: Boolean = false): List<FunctionDeploymentSlot> {
         val functionApp = getFunctionAppById(subscriptionId, appId)
         return listDeploymentSlots(functionApp, force)
@@ -361,6 +366,31 @@ object AzureFunctionAppMvpModel {
         }
 
         return app.deploymentSlots().list().any { it.name() == name }
+    }
+
+    fun deleteDeploymentSlot(subscriptionId: String, appId: String, slotName: String) {
+        val app = getFunctionAppById(subscriptionId, appId)
+        app.deploymentSlots().deleteByName(slotName)
+    }
+
+    fun startDeploymentSlot(subscriptionId: String, appId: String, slotName: String) {
+        val slot = getDeploymentSlotByName(subscriptionId, appId, slotName)
+        slot.start()
+    }
+
+    fun stopDeploymentSlot(subscriptionId: String, appId: String, slotName: String) {
+        val slot = getDeploymentSlotByName(subscriptionId, appId, slotName)
+        slot.stop()
+    }
+
+    fun restartDeploymentSlot(subscriptionId: String, appId: String, slotName: String) {
+        val slot = getDeploymentSlotByName(subscriptionId, appId, slotName)
+        slot.restart()
+    }
+
+    fun swapSlotWithProduction(subscriptionId: String, appId: String, slotName: String) {
+        val slot = getDeploymentSlotByName(subscriptionId, appId, slotName)
+        slot.swap("production")
     }
 
     //endregion Deployment Slots

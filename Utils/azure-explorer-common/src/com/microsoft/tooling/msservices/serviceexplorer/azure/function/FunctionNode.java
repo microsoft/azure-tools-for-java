@@ -39,6 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActi
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import org.apache.commons.lang3.ArrayUtils;
@@ -68,6 +69,9 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     private static final String FAILED_TO_STOP_FUNCTION_APP = "Failed to stop function app %s";
     private static final String FAILED_TO_LOAD_TRIGGERS = "Failed to load triggers of function %s";
 
+    private static final String ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg";
+    private static final String ICON_FUNCTION_APP_STOPPED = "FunctionAppStopped.svg";
+
     private final FunctionNodePresenter<FunctionNode> functionNodePresenter;
     private String functionAppName;
     private String functionAppId;
@@ -92,7 +96,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     public String getIconPath() {
-        return this.state == WebAppBaseState.STOPPED ? "azure-functions-stop.png" : "azure-functions-small.png";
+        return this.state == WebAppBaseState.STOPPED ? ICON_FUNCTION_APP_STOPPED : ICON_FUNCTION_APP_RUNNING;
     }
 
     @Override
@@ -106,14 +110,15 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     public void renderSubModules(List<FunctionEnvelope> functionEnvelopes) {
-        if (functionEnvelopes.isEmpty()) {
-            this.setName(this.functionAppName + " *(Empty)");
-        } else {
-            this.setName(this.functionAppName);
-        }
+        // Remove check for empty to skip appending *(Empty) to a function app name
+        this.setName(this.functionAppName);
+
         for (FunctionEnvelope functionEnvelope : functionEnvelopes) {
             addChildNode(new SubFunctionNode(functionEnvelope, this));
         }
+
+        boolean isDeploymentSlotSupported = isDeploymentSlotSupported(this.subscriptionId, this.functionApp);
+        addChildNode(new FunctionDeploymentSlotModule(this, this.subscriptionId, this.functionApp, isDeploymentSlotSupported));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.functionApp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.functionApp));
     }

@@ -1,5 +1,5 @@
-/*
- * Copyright (c) Microsoft Corporation
+/**
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,12 +20,22 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
-import java.util.List;
+import com.microsoft.azure.management.appservice.FunctionDeploymentSlot
+import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModulePresenterBase
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleView
 
-public interface DeploymentSlotModuleView extends MvpView {
-    void renderDeploymentSlots(final List<DeploymentSlot>slots);
+class FunctionDeploymentSlotModulePresenter<TView : DeploymentSlotModuleView<FunctionDeploymentSlot>>
+    : DeploymentSlotModulePresenterBase<FunctionDeploymentSlot, TView>() {
+
+    override fun onRefreshDeploymentSlotModule(subscriptionId: String, appId: String) {
+        val view = mvpView ?: return
+        view.renderDeploymentSlots(AzureFunctionAppMvpModel.listDeploymentSlots(subscriptionId, appId, true))
+    }
+
+    override fun onDeleteDeploymentSlot(subscriptionId: String, appId: String, slotName: String) {
+        AzureFunctionAppMvpModel.deleteDeploymentSlot(subscriptionId, appId, slotName)
+    }
 }

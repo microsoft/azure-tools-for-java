@@ -70,9 +70,9 @@ import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -410,7 +410,19 @@ public class UIHelperImpl implements UIHelper {
         }
         IWorkbench workbench = PlatformUI.getWorkbench();
         DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
-            node.getSubscriptionId(), node.getWebAppId(), node.getName());
+            node.getSubscriptionId(), node.getAppId(), node.getName());
+        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
+        openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
+    }
+
+    @Override
+    public void openDeploymentSlotPropertyView(final FunctionDeploymentSlotNode node) {
+        if (Utils.isEmptyString(node.getId())) {
+            return;
+        }
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
+                node.getSubscriptionId(), node.getAppId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
@@ -424,11 +436,5 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void showError(Node node, String s) {
         // TODO Auto-generated method stub
-    }
-
-
-    @Override
-    public void openFunctionAppProperties(FunctionAppNode node) {
-        // Placeholder for Exlipse plugin
     }
 }

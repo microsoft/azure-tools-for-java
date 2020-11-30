@@ -35,8 +35,8 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.jetbrains.annotations.NotNull;
@@ -75,10 +75,10 @@ public class StartStreamingLogsAction extends NodeActionListener {
         this.operation = START_STREAMING_LOG_FUNCTION_APP;
     }
 
-    public StartStreamingLogsAction(FunctionAppNode functionNode) {
+    public StartStreamingLogsAction(FunctionDeploymentSlotNode deploymentSlotNode) {
         super();
-        this.project = (Project) functionNode.getProject();
-        this.resourceId = functionNode.getId();
+        this.project = (Project) deploymentSlotNode.getProject();
+        this.resourceId = deploymentSlotNode.getId();
         this.service = FUNCTION;
         this.operation = START_STREAMING_LOG_FUNCTION_APP;
     }

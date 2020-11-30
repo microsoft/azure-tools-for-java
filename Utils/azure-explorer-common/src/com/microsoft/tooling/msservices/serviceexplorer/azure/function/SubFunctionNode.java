@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
@@ -45,10 +47,15 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNC
 
 public class SubFunctionNode extends Node {
 
-    private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
+    private static final String SUB_FUNCTION_ICON_PATH = "Function.svg";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
     private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
+
+    // TODO: [com.microsoft.azure.management.appservice.FunctionEnvelope] still miss "isDisabled" object.
+    //  Waiting for an update.
+    private static final String ICON_FUNCTION = "Function.svg";
+    private static final String ICON_FUNCTION_STOPPED = "FunctionDisabled.svg";
 
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
@@ -64,6 +71,7 @@ public class SubFunctionNode extends Node {
     @Override
     protected void loadActions() {
         addAction("Trigger Function",
+                CommonIcons.ACTION_START,
                 new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {

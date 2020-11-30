@@ -24,7 +24,9 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.microsoft.azure.CommonIcons;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -190,5 +192,20 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
 
     public String getOs() {
         return this.os;
+    }
+
+    /**
+     * Check if an app supports Deployment Slots.
+     * Deployment Slots are available for Standard, Premium, or Isolated Pricing Tiers
+     * (https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots).
+     */
+    protected boolean isDeploymentSlotSupported(String subscriptionId, WebAppBase app) {
+        AppServicePlan plan = AzureAppServicePlanMvpModel.INSTANCE.getAppServicePlanById(subscriptionId, app.appServicePlanId());
+        SkuDescription skuDescription = plan.pricingTier().toSkuDescription();
+
+        SkuName skuName = SkuName.fromString(skuDescription.tier());
+
+        return skuName == SkuName.STANDARD || skuName == SkuName.PREMIUM || skuName == SkuName.PREMIUM_V2 ||
+                skuName == SkuName.ELASTIC_PREMIUM || skuName == SkuName.ISOLATED || skuName == SkuName.ELASTIC_ISOLATED;
     }
 }

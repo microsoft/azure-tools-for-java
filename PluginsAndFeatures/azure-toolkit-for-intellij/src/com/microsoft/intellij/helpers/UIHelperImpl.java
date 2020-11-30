@@ -74,9 +74,9 @@ import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -108,6 +108,7 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
+    public static final Key<String> FUNCTIONAPP_ID = new Key<>("functionAppId");
     public static final Key<String> APP_ID = new Key<>("appId");
     public static final Key<String> CLUSTER_ID = new Key<>("clusterId");
     public static final Key<AppResourceInner> SPRING_CLOUD_APP = new Key<>("springCloudApp");
@@ -577,12 +578,43 @@ public class UIHelperImpl implements UIHelper {
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
-            userData.put(WEBAPP_ID, node.getWebAppId());
+            userData.put(WEBAPP_ID, node.getAppId());
             userData.put(SLOT_NAME, node.getName());
-            itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
+            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(),
                                                 type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    /**
+     * Add FunctionDeploymentSlotNode action to show deployment slot property.
+     * Left the original code for [DeploymentSlotNode] unchanged to simplify merging upstream into the repo.
+     *
+     * @param node - node represents function deployment slot
+     */
+    @Override
+    public void openDeploymentSlotPropertyView(@NotNull final FunctionDeploymentSlotNode node) {
+        final String sid = node.getSubscriptionId();
+        final String resourceId = node.getId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(sid, resourceId, (Project) node.getProject());
+        if (fileEditorManager == null) {
+            return;
+        }
+        final String type = DeploymentSlotPropertyViewProvider.TYPE;
+
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, resourceId);
+        if (itemVirtualFile == null) {
+            final String iconPath = node.getParent() == null ? node.getIconPath()
+                                                             : node.getParent().getIconPath();
+            final Map<Key, String> userData = new HashMap<>();
+            userData.put(SUBSCRIPTION_ID, sid);
+            userData.put(RESOURCE_ID, resourceId);
+            userData.put(FUNCTIONAPP_ID, node.getAppId());
+            userData.put(SLOT_NAME, node.getName());
+            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(),
+                                                type, iconPath, userData);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Override
@@ -601,24 +633,6 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-    }
-
-    @Override
-    public void openFunctionAppProperties(FunctionAppNode node) {
-        final String subscriptionId = node.getSubscriptionId();
-        final String functionAppId = node.getFunctionAppId();
-        final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, functionAppId, (Project) node.getProject());
-        if (fileEditorManager == null) {
-            return;
-        }
-        final String type = FunctionAppPropertyViewProvider.TYPE;
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionAppId);
-        if (itemVirtualFile == null) {
-            final String iconPath = node.getParent() == null ? node.getIconPath()
-                    : node.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(node.getFunctionAppName(), type, iconPath, subscriptionId, functionAppId);
-        }
-        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Nullable

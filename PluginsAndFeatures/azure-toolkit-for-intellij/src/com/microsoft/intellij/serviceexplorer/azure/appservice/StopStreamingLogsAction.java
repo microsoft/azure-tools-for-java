@@ -32,8 +32,8 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -71,10 +71,10 @@ public class StopStreamingLogsAction extends NodeActionListener {
         this.operation = STOP_STREAMING_LOG_FUNCTION_APP;
     }
 
-    public StopStreamingLogsAction(FunctionAppNode functionNode) {
+    public StopStreamingLogsAction(FunctionDeploymentSlotNode deploymentSlotNode) {
         super();
-        this.project = (Project) functionNode.getProject();
-        this.resourceId = functionNode.getId();
+        this.project = (Project) deploymentSlotNode.getProject();
+        this.resourceId = deploymentSlotNode.getId();
         this.service = FUNCTION;
         this.operation = STOP_STREAMING_LOG_FUNCTION_APP;
     }

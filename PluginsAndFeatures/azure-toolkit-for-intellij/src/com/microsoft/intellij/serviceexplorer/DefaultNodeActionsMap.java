@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
@@ -100,6 +101,11 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
                         .add(CreateDeploymentAction.class).build());
 
         node2Actions.put(DeploymentSlotNode.class,
+               new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                       .add(StartStreamingLogsAction.class)
+                       .add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(FunctionDeploymentSlotNode.class,
                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                        .add(StartStreamingLogsAction.class)
                        .add(StopStreamingLogsAction.class).build());

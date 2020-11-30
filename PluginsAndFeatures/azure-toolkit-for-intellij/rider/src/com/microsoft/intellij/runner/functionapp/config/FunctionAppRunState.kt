@@ -48,7 +48,6 @@ import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDepl
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.getOrCreateFunctionAppFromConfiguration
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.AzureFunctionAppModule
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 data class FunctionAppDeployResult(val app: WebAppBase, val sqlDatabase: SqlDatabase?)
@@ -127,7 +126,7 @@ class FunctionAppRunState(project: Project, private val myModel: FunctionAppSett
 
         // Refresh for both cases (when create new function app and publish into existing one)
         // to make sure separate functions are updated as well
-        refreshAzureExplorer(listenerId = AzureFunctionAppModule.LISTENER_ID)
+        refreshAzureExplorer(listenerId = "FunctionModule")
 
         val app = result.app
         val sqlDatabase = result.sqlDatabase

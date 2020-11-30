@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -32,7 +33,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.SneakyThrows;
@@ -41,18 +41,9 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -750,20 +741,5 @@ public class AzureWebAppMvpModel {
 
     private static final class SingletonHolder {
         private static final AzureWebAppMvpModel INSTANCE = new AzureWebAppMvpModel();
-    }
-
-    /**
-     * Check if a WebApp supports Deployment Slots.
-     * Deployment Slots are available for Standard, Premium, or Isolated Pricing Tiers
-     * (https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots).
-     */
-    public boolean isDeploymentSlotSupported(final String subscriptionId, final WebApp app) {
-        AppServicePlan plan = AzureAppServicePlanMvpModel.INSTANCE.getAppServicePlanById(subscriptionId, app.appServicePlanId());
-        SkuDescription skuDescription = plan.pricingTier().toSkuDescription();
-
-        SkuName skuName = SkuName.fromString(skuDescription.tier());
-
-        return skuName == SkuName.STANDARD || skuName == SkuName.PREMIUM || skuName == SkuName.PREMIUM_V2 ||
-                skuName == SkuName.ELASTIC_PREMIUM || skuName == SkuName.ISOLATED || skuName == SkuName.ELASTIC_ISOLATED;
     }
 }

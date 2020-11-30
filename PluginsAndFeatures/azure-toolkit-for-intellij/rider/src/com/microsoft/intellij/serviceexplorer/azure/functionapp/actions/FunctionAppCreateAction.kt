@@ -31,19 +31,19 @@ import com.microsoft.intellij.ui.forms.appservice.functionapp.CreateFunctionAppD
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.AzureFunctionAppModule
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule
 
 @Name("New Function App")
-class FunctionAppCreateAction(private val functionAppModule: AzureFunctionAppModule) : NodeActionListener() {
+class FunctionAppCreateAction(private val functionModule: FunctionModule) : NodeActionListener() {
 
     companion object {
         private val logger = Logger.getInstance(FunctionAppCreateAction::class.java)
     }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        val project = functionAppModule.project as? Project
+        val project = functionModule.project as? Project
         if (project == null) {
-            logger.error("Project instance is not defined for module '${functionAppModule.name}'")
+            logger.error("Project instance is not defined for module '${functionModule.name}'")
             return
         }
 
@@ -55,7 +55,7 @@ class FunctionAppCreateAction(private val functionAppModule: AzureFunctionAppMod
         val createWebAppForm = CreateFunctionAppDialog(
                 lifetimeDef = project.defineNestedLifetime(),
                 project = project,
-                onCreate = { functionAppModule.load(true) })
+                onCreate = { functionModule.load(true) })
 
         createWebAppForm.show()
     }

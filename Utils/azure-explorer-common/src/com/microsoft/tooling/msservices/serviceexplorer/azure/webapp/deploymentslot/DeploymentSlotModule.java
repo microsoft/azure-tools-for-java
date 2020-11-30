@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,73 +23,45 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleBase;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModulePresenterBase;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class DeploymentSlotModule extends AzureRefreshableNode implements DeploymentSlotModuleView {
-    private static final String MODULE_ID = WebAppModule.class.getName();
-    private static final String ICON_PATH = "Slot.svg";
-    private static final String MODULE_NAME = "Deployment Slots";
+public class DeploymentSlotModule extends DeploymentSlotModuleBase<DeploymentSlot> implements
+        DeploymentSlotModuleView<DeploymentSlot> {
 
-    private final DeploymentSlotModulePresenter presenter;
-    protected final String subscriptionId;
-    protected final WebApp webapp;
-    protected final boolean isDeploymentSlotSupported;
+    private static final Logger myLogger = LoggerFactory.getLogger(DeploymentSlotModule.class);
+
+    private static final String MODULE_ID = WebAppModule.class.getName();
+
+    private final DeploymentSlotModulePresenterBase<DeploymentSlot, DeploymentSlotModuleView<DeploymentSlot>> myPresenter;
 
     public DeploymentSlotModule(final Node parent, final String subscriptionId, final WebApp webapp, final boolean isDeploymentSlotsSupported) {
-        super(MODULE_ID, MODULE_NAME, parent, ICON_PATH);
-        this.subscriptionId = subscriptionId;
-        this.webapp = webapp;
-        this.isDeploymentSlotSupported = isDeploymentSlotsSupported;
-        presenter = new DeploymentSlotModulePresenter<>();
-        presenter.onAttachView(this);
+        super(MODULE_ID, parent, subscriptionId, webapp, isDeploymentSlotsSupported, myLogger);
+        myPresenter = new DeploymentSlotModulePresenter<>();
+        myPresenter.onAttachView(this);
+    }
+
+    @NotNull
+    @Override
+    public DeploymentSlotModulePresenterBase<DeploymentSlot, DeploymentSlotModuleView<DeploymentSlot>> getPresenter() {
+        return myPresenter;
     }
 
     @Override
-    public void removeNode(final String sid, final String name, Node node) {
-        try {
-            presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
-            removeDirectChildNode(node);
-        } catch (Exception e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Deployment Slot",
-                                                      e, "Azure Services Explorer - Error Deleting Deployment Slot", false, true);
-        }
-    }
-
-    @Override
-    protected void refreshItems() throws AzureCmdException {
-        try {
-            presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    @Override
-    public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
+    public void renderDeploymentSlots(@NotNull List<? extends DeploymentSlot> slots) {
         slots.forEach(slot -> addChildNode(
-            new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
-                                   this, slot.name(), slot.state(), slot.operatingSystem().toString(),
-                                   this.subscriptionId, slot.defaultHostName())));
-    }
-
-    @Override
-    public List<NodeAction> getNodeActions() {
-        List<NodeAction> nodeActions = super.getNodeActions();
-        NodeAction action = getNodeActionByName("New Deployment Slot");
-
-        if (!isDeploymentSlotSupported)
-            action.setEnabled(false);
-
-        return nodeActions;
+                new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
+                        this, slot.name(), slot.state(), slot.operatingSystem().toString(),
+                        this.getSubscriptionId(), slot.defaultHostName())));
     }
 }

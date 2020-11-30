@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -38,8 +39,8 @@ import java.util.List;
 
 public class FunctionModule extends AzureRefreshableNode implements FunctionModuleView {
     private static final String FUNCTION_SERVICE_MODULE_ID = FunctionModule.class.getName();
-    private static final String ICON_PATH = "azure-functions-small.png";
-    private static final String BASE_MODULE_NAME = "Function App(Preview)";
+    private static final String ICON_PATH = "FunctionApp.svg";
+    private static final String BASE_MODULE_NAME = "Function Apps";
     private static final String FUNCTION_MODULE = "FunctionModule";
     private static final String FAILED_TO_DELETE_FUNCTION_APP = "Failed to delete Function App %s";
     private static final String ERROR_DELETING_FUNCTION_APP = "Azure Services Explorer - Error Deleting Function App";

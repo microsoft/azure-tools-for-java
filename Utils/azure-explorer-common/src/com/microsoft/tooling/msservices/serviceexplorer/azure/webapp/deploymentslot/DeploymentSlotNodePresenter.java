@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,54 +23,52 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import java.io.IOException;
-
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotNodePresenterBase;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotNodeView;
+import org.jetbrains.annotations.NotNull;
 
-public class DeploymentSlotNodePresenter<V extends DeploymentSlotNodeView> extends MvpPresenter<V> {
-    public void onStartDeploymentSlot(final String subscriptionId, final String webAppId,
-                                      final String slotName) throws IOException {
-        AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, webAppId, slotName);
-        final DeploymentSlotNodeView view = getMvpView();
-        if (!isViewDetached()) {
-            view.renderNode(WebAppBaseState.RUNNING);
-        }
+import java.io.IOException;
+
+public class DeploymentSlotNodePresenter<TView extends DeploymentSlotNodeView> extends
+        DeploymentSlotNodePresenterBase<DeploymentSlot, TView> {
+
+    @Override
+    public void getStartDeploymentSlotAction(@NotNull String subscriptionId,
+                                             @NotNull String appId,
+                                             @NotNull String slotName) throws IOException {
+        AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, appId, slotName);
     }
 
-    public void onStopDeploymentSlot(final String subscriptionId, final String webAppId,
-                                     final String slotName) throws IOException {
-        AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, webAppId, slotName);
-        final DeploymentSlotNodeView view = getMvpView();
-        if (!isViewDetached()) {
-            view.renderNode(WebAppBaseState.STOPPED);
-        }
+    @Override
+    public void getStopDeploymentSlotAction(@NotNull String subscriptionId,
+                                            @NotNull String appId,
+                                            @NotNull String slotName) throws IOException {
+        AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, appId, slotName);
     }
 
-    public void onRestartDeploymentSlot(final String subscriptionId, final String webAppId,
-                                        final String slotName) throws IOException {
-        AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, webAppId, slotName);
-        final DeploymentSlotNodeView view = getMvpView();
-        if (!isViewDetached()) {
-            view.renderNode(WebAppBaseState.RUNNING);
-        }
+    @Override
+    public void getRestartDeploymentSlotAction(@NotNull String subscriptionId,
+                                               @NotNull String appId,
+                                               @NotNull String slotName) throws IOException {
+        AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, appId, slotName);
     }
 
-    public void onRefreshNode(final String subscriptionId, final String webAppId,
-                              final String slotName) throws Exception {
-        final WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
-        final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
-        final DeploymentSlotNodeView view = getMvpView();
-        if (!isViewDetached()) {
-            view.renderNode(WebAppBaseState.fromString(slot.state()));
-        }
+    @NotNull
+    @Override
+    public DeploymentSlot getDeploymentSlotAction(@NotNull String subscriptionId,
+                                                  @NotNull String appId,
+                                                  @NotNull String slotName) throws IOException {
+        final WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, appId);
+        return app.deploymentSlots().getByName(slotName);
     }
 
-    public void onSwapWithProduction(final String subscriptionId, final String webAppId,
-                                     final String slotName) throws IOException {
-        AzureWebAppMvpModel.getInstance().swapSlotWithProduction(subscriptionId, webAppId, slotName);
+    @Override
+    public void onSwapWithProduction(@NotNull String subscriptionId,
+                                     @NotNull String appId,
+                                     @NotNull String slotName) throws IOException {
+        AzureWebAppMvpModel.getInstance().swapSlotWithProduction(subscriptionId, appId, slotName);
     }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,20 +23,29 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModulePresenterBase;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleView;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 
-public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> extends MvpPresenter<V> {
-    public void onRefreshDeploymentSlotModule(final String subscriptionId, final String webAppId) throws IOException {
-        final DeploymentSlotModuleView view = getMvpView();
+public class DeploymentSlotModulePresenter<TView extends DeploymentSlotModuleView<DeploymentSlot>> extends
+        DeploymentSlotModulePresenterBase<DeploymentSlot, TView> {
+
+    @Override
+    public void onRefreshDeploymentSlotModule(@NotNull String subscriptionId,
+                                              @NotNull String appId) throws IOException {
+        final DeploymentSlotModuleView<DeploymentSlot> view = getMvpView();
         if (view != null) {
-            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId));
+            view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, appId));
         }
     }
 
-    public void onDeleteDeploymentSlot(final String subscriptionId, final String webAppId,
-                                       final String slotName) throws IOException {
+    public void onDeleteDeploymentSlot(@NotNull final String subscriptionId,
+                                       @NotNull final String webAppId,
+                                       @NotNull final String slotName) throws IOException {
         AzureWebAppMvpModel.getInstance().deleteDeploymentSlotNode(subscriptionId, webAppId, slotName);
     }
 }

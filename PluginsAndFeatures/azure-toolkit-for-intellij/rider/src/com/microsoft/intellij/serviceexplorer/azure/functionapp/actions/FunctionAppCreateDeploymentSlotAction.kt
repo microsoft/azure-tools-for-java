@@ -24,25 +24,28 @@ package com.microsoft.intellij.serviceexplorer.azure.functionapp.actions
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.ui.forms.appservice.functionapp.slot.FunctionAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule
 
-// TODO: Fix node parameter passed to the constructor. It should pass the DeploymentSlotModule node for Function App
 @Name("New Deployment Slot")
-class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode) : NodeActionListener() {
+class FunctionAppCreateDeploymentSlotAction(private val node: FunctionDeploymentSlotModule) : NodeActionListener() {
 
     companion object {
         private val logger = Logger.getInstance(FunctionAppCreateDeploymentSlotAction::class.java)
     }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        val project = appNode.project as? Project
+
+        val project = node.project as? Project
         if (project == null) {
-            logger.error("Project instance is not defined for module '${appNode.name}'")
+            logger.error("Project instance is not defined for module '${node.name}'")
             return
         }
 
@@ -51,15 +54,19 @@ class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode
             return
         }
 
-        // TODO: Fix when we store FunctionApp object in FunctionApp Node.
-//        val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
-//                lifetimeDef = project.defineNestedLifetime(),
-//                project = project,
-//                app = appNode.,
-//                onCreate = { node.load(true) },
-//        )
-//
-//        createSlotForm.show()
+        val functionAppNode = node.parent as? FunctionNode
+        if (functionAppNode == null) {
+            logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
+            return
+        }
+
+        val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
+            lifetimeDef = project.defineNestedLifetime(),
+            project = project,
+            app = functionAppNode.functionApp,
+            onCreate = { node.load(true) })
+
+        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

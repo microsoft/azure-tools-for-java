@@ -27,63 +27,27 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.Signal
 import com.microsoft.azure.management.appservice.FunctionApp
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.intellij.helpers.validator.FunctionAppValidator
-import com.microsoft.intellij.ui.component.AzureComponent
-import com.microsoft.intellij.ui.component.AzureResourceNameComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.initValidationWithResult
-import net.miginfocom.swing.MigLayout
-import org.jetbrains.plugins.azure.RiderAzureBundle
-import javax.swing.JLabel
-import javax.swing.JPanel
+import com.microsoft.intellij.ui.forms.appservice.slot.CreateDeploymentSlotComponent
 
 class FunctionAppCreateDeploymentSlotComponent(private val app: FunctionApp,
                                                private val lifetime: Lifetime,
                                                private val isLoadFinishedSignal: Signal<Boolean>) :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
-        AzureComponent {
+        CreateDeploymentSlotComponent(app, isLoadFinishedSignal) {
 
     companion object {
         private val logger = Logger.getInstance(FunctionAppCreateDeploymentSlotComponent::class.java)
-        private val doNotCloneSettingsName = RiderAzureBundle.message("dialog.create_deployment_slot.existing_settings.do_not_clone_settings")
     }
-
-    val pnlName = AzureResourceNameComponent()
-
-    private val pnlDeploymentSlotSettings =
-            JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]"))
-
-    private val lblCloneSettings =
-            JLabel(RiderAzureBundle.message("dialog.create_deployment_slot.settings_clone.label"))
-
-    val cbExistingSettings = object : AzureComboBox<String>() {
-        override fun loadItems(): List<String> {
-            val slots = AzureFunctionAppMvpModel.listDeploymentSlots(app, true).map { it.name() }
-            isLoadFinishedSignal.fire(true)
-
-            return listOf(doNotCloneSettingsName, app.name()) + slots
-        }
-    }
-
-    val slotName: String
-        get() = pnlName.txtNameValue.text
-
-    val isCloneSettings: Boolean
-        get() = cbExistingSettings.getSelectedValue() != doNotCloneSettingsName
 
     init {
-        pnlDeploymentSlotSettings.apply {
-            add(lblCloneSettings)
-            add(cbExistingSettings, "growx")
-        }
-
-        add(pnlName, "growx")
-        add(pnlDeploymentSlotSettings, "growx")
-
         initComponentValidation()
     }
+
+    override fun loadSlotNamesAction(): List<String> =
+            AzureFunctionAppMvpModel.listDeploymentSlots(app, true).map { it.name() }
 
     override fun validateComponent(): List<ValidationInfo> =
             listOfNotNull(
