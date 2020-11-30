@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 public class AzureFunctionMvpModel {
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
 
-    private static final String CANNOT_GET_FUNCTION_APP_WITH_ID = "Cannot get Function App with ID: ";
     private final Map<String, List<ResourceEx<FunctionApp>>> subscriptionIdToFunctionApps;
 
     private AzureFunctionMvpModel() {
@@ -64,8 +63,8 @@ public class AzureFunctionMvpModel {
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
         final FunctionApp app = getFunctionAppsClient(sid).getById(id);
         if (Objects.isNull(app)) {
-            final String error = String.format("Cannot find FunctionApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
-            final String action = String.format("Confirm if the FunctionApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
+            final String error = String.format("cannot find FunctionApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
+            final String action = String.format("confirm if the FunctionApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
             throw new AzureToolkitRuntimeException(error, action);
         }
         return app;
@@ -229,12 +228,9 @@ public class AzureFunctionMvpModel {
             return false;
         }
         final ApplicationLogsConfig applicationLogsConfig = config.inner().applicationLogs();
-        return (applicationLogsConfig.fileSystem() != null
-                && applicationLogsConfig.fileSystem().level() != LogLevel.OFF) ||
-                (applicationLogsConfig.azureBlobStorage() != null
-                        && applicationLogsConfig.azureBlobStorage().level() != LogLevel.OFF) ||
-                (applicationLogsConfig.azureTableStorage() != null
-                        && applicationLogsConfig.azureTableStorage().level() != LogLevel.OFF);
+        return (applicationLogsConfig.fileSystem() != null && applicationLogsConfig.fileSystem().level() != LogLevel.OFF) ||
+                (applicationLogsConfig.azureBlobStorage() != null && applicationLogsConfig.azureBlobStorage().level() != LogLevel.OFF) ||
+                (applicationLogsConfig.azureTableStorage() != null && applicationLogsConfig.azureTableStorage().level() != LogLevel.OFF);
     }
 
     @AzureOperation(

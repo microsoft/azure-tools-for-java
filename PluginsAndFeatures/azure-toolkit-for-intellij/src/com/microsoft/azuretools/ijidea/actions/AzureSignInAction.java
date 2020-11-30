@@ -31,7 +31,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -122,25 +121,20 @@ public class AzureSignInAction extends AzureAnAction {
 
     public static void onAzureSignIn(Project project) {
         JFrame frame = WindowManager.getInstance().getFrame(project);
-        try {
-            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            boolean isSignIn = authMethodManager.isSignedIn();
-            if (isSignIn) {
-                boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
-                                                                          getSignOutWarningMessage(authMethodManager),
-                                                                          "Azure Sign Out",
-                                                                          new ImageIcon("icons/azure.png"));
-                if (res) {
-                    EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                        authMethodManager.signOut();
-                    });
-                }
-            } else {
-                doSignIn(authMethodManager, project);
+        AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+        boolean isSignIn = authMethodManager.isSignedIn();
+        if (isSignIn) {
+            boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
+                                                                      getSignOutWarningMessage(authMethodManager),
+                                                                      "Azure Sign Out",
+                                                                      new ImageIcon("icons/azure.png"));
+            if (res) {
+                EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
+                    authMethodManager.signOut();
+                });
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), "AzureSignIn Action Error");
+        } else {
+            doSignIn(authMethodManager, project);
         }
     }
 

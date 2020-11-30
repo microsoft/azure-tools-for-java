@@ -87,8 +87,8 @@ public class AzureWebAppMvpModel {
     public WebApp getWebAppById(String sid, String id) throws AzureToolkitRuntimeException {
         final WebApp webapp = this.getNullableWebAppById(sid, id);
         if (Objects.isNull(webapp)) {
-            final String error = String.format("Cannot find WebApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
-            final String action = String.format("Confirm if the WebApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
+            final String error = String.format("cannot find WebApp[%s] in subscription[%s]", ResourceUtils.nameFromResourceId(id), sid);
+            final String action = String.format("confirm if the WebApp[id=%s] still exists", ResourceUtils.nameFromResourceId(id));
             throw new AzureToolkitRuntimeException(error, action);
         }
         return webapp;

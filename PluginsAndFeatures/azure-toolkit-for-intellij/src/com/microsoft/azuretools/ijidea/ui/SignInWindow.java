@@ -98,7 +98,7 @@ public class SignInWindow extends AzureDialogWrapper {
         setOKButtonText("Sign in");
 
         this.authMethodDetails = authMethodDetails;
-        authFileTextField.setText(authMethodDetails.getCredFilePath());
+        authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
         automatedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -223,7 +223,7 @@ public class SignInWindow extends AzureDialogWrapper {
         AzureTokenWrapper tokenWrapper = null;
         try {
             tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             // swallow exception while getting azure cli credential
         }
         if (tokenWrapper != null) {
