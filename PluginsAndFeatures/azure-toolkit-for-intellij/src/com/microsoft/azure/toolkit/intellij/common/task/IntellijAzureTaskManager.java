@@ -35,22 +35,29 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
-    public void runLater(final AzureTask task) {
-        ApplicationManager.getApplication().invokeLater(task.getRunnable(), ModalityState.any());
+    protected void doRead(final AzureTask task) {
+        ApplicationManager.getApplication().runReadAction(task.getRunnable());
     }
 
     @Override
-    public void runLater(final Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
+    protected void doWrite(final AzureTask task) {
+        ApplicationManager.getApplication().runWriteAction(task.getRunnable());
     }
 
     @Override
-    public void runAndWait(final Runnable runnable) {
-        ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.any());
+    protected void doRunLater(final AzureTask task) {
+        final ModalityState state = toIntellijModality(task);
+        ApplicationManager.getApplication().invokeLater(task.getRunnable(), state);
     }
 
     @Override
-    public void runInBackground(final AzureTask task) {
+    protected void doRunAndWait(final AzureTask task) {
+        final ModalityState state = toIntellijModality(task);
+        ApplicationManager.getApplication().invokeAndWait(task.getRunnable(), state);
+    }
+
+    @Override
+    protected void doRunInBackground(final AzureTask task) {
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
@@ -61,13 +68,25 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     @Override
-    public void runInModal(final AzureTask task) {
+    protected void doRunInModal(final AzureTask task) {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getRunnable().run();
             }
         };
-        ApplicationManager.getApplication().invokeLater(() -> ProgressManager.getInstance().run(modalTask), ModalityState.any());
+        ProgressManager.getInstance().run(modalTask);
+    }
+
+    private ModalityState toIntellijModality(final AzureTask task) {
+        final AzureTask.Modality modality = task.getModality();
+        switch (modality) {
+            case NONE:
+                return ModalityState.NON_MODAL;
+            case DEFAULT:
+                return ModalityState.defaultModalityState();
+            default:
+                return ModalityState.any();
+        }
     }
 }

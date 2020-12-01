@@ -43,6 +43,8 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -81,6 +83,7 @@ public class DeployFunctionHandler {
         this.prompter = prompter;
     }
 
+    @AzureOperation(value = "deploy artifacts to function", type = AzureOperation.Type.SERVICE)
     public FunctionApp execute() throws Exception {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
@@ -110,34 +113,29 @@ public class DeployFunctionHandler {
     /**
      * List anonymous HTTP Triggers url after deployment
      */
+    @AzureOperation(value = "list http trigger urls", type = AzureOperation.Type.SERVICE)
     private void listHTTPTriggerUrls() {
-        try {
-            final List<FunctionResource> triggers = listFunctions();
-            final List<FunctionResource> httpFunction =
-                    triggers.stream()
-                            .filter(function -> function.getTrigger() != null &&
-                                    StringUtils.equalsIgnoreCase(function.getTrigger().getType(), HTTP_TRIGGER))
+        final List<FunctionResource> triggers = listFunctions();
+        final List<FunctionResource> httpFunction =
+                triggers.stream()
+                        .filter(function -> function.getTrigger() != null &&
+                                StringUtils.equalsIgnoreCase(function.getTrigger().getType(), HTTP_TRIGGER))
+                        .collect(Collectors.toList());
+        final List<FunctionResource> anonymousTriggers =
+                httpFunction.stream()
+                            .filter(bindingResource -> bindingResource.getTrigger() != null &&
+                                    StringUtils.equalsIgnoreCase(
+                                            (CharSequence) bindingResource.getTrigger().getProperty(AUTH_LEVEL),
+                                            AuthorizationLevel.ANONYMOUS.toString()))
                             .collect(Collectors.toList());
-            final List<FunctionResource> anonymousTriggers =
-                    httpFunction.stream()
-                                .filter(bindingResource -> bindingResource.getTrigger() != null &&
-                                        StringUtils.equalsIgnoreCase(
-                                                (CharSequence) bindingResource.getTrigger().getProperty(AUTH_LEVEL),
-                                                AuthorizationLevel.ANONYMOUS.toString()))
-                                .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
-                prompt(message("function.deploy.hint.noAnonymousHttpTrigger"));
-                return;
-            }
-            prompt(message("function.deploy.hint.httpTriggerUrls"));
-            anonymousTriggers.forEach(trigger -> prompt(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
-            if (anonymousTriggers.size() < httpFunction.size()) {
-                prompt(message("function.deploy.error.listHttpTriggerFailed"));
-            }
-        } catch (InterruptedException | IOException e) {
-            prompt(message("function.deploy.error.listTriggerFailed"));
-        } catch (AzureExecutionException e) {
-            prompt(e.getMessage());
+        if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
+            prompt(message("function.deploy.hint.noAnonymousHttpTrigger"));
+            return;
+        }
+        prompt(message("function.deploy.hint.httpTriggerUrls"));
+        anonymousTriggers.forEach(trigger -> prompt(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
+        if (anonymousTriggers.size() < httpFunction.size()) {
+            prompt(message("function.deploy.error.listHttpTriggerFailed"));
         }
     }
 
@@ -149,27 +147,33 @@ public class DeployFunctionHandler {
      * @throws IOException Throw if meet IOException while getting Azure client
      * @throws InterruptedException Throw when thread was interrupted while sleeping between retry
      */
-    private List<FunctionResource> listFunctions() throws AzureExecutionException, InterruptedException, IOException {
+    @AzureOperation(
+        value = "sync triggers and list triggers of function[%s]",
+        params = {"@model.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private List<FunctionResource> listFunctions() {
         final FunctionApp functionApp = getFunctionApp();
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
-            Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
-            prompt(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
             try {
+                Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
+                prompt(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
                 functionApp.syncTriggers();
                 final List<FunctionResource> triggers =
                         model.getAzureClient().appServices().functionApps()
                              .listFunctions(model.getResourceGroup(), model.getAppName()).stream()
-                             .map(envelope -> FunctionResource.parseFunction(envelope))
-                             .filter(function -> function != null)
+                             .map(FunctionResource::parseFunction)
                              .collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(triggers)) {
                     return triggers;
                 }
-            } catch (RuntimeException exception) {
+            } catch (final Exception exception) {
                 // swallow sdk request runtime exception
             }
         }
-        throw new AzureExecutionException(message("function.deploy.error.noTriggers"));
+        final String error = String.format("No triggers found in function app[%s]", model.getAppName());
+        final String action = "try recompile the project by and deploy again.";
+        throw new AzureToolkitRuntimeException(error, action);
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
@@ -201,12 +205,8 @@ public class DeployFunctionHandler {
         return AppServiceUtils.getPricingTierFromString(model.getPricingTier()) != null;
     }
 
-    private FunctionApp getFunctionApp() throws AzureExecutionException {
-        try {
-            return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
-        } catch (IOException e) {
-            throw new AzureExecutionException(message("azure.error.failedToGetAzureClient"));
-        }
+    private FunctionApp getFunctionApp() {
+        return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
     }
 
     // region get App Settings

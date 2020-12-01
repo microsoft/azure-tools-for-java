@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -42,7 +43,6 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
-//        e.getAction().getNode().setLoading(true);
         sendTelemetry(e);
     }
 
@@ -79,8 +79,9 @@ public abstract class NodeActionListener implements EventListener {
             EventUtil.logEvent(EventType.info, operation, buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
-        } catch (AzureCmdException ex) {
+        } catch (AzureCmdException | RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            AzureExceptionHandler.getInstance().handleException(ex, false);
             return Futures.immediateFailedFuture(ex);
         } finally {
             operation.complete();
@@ -131,6 +132,5 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
-//        e.getAction().getNode().setLoading(false);
     }
 }

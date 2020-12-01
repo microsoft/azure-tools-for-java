@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.container.webapponlinux;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
@@ -64,6 +65,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     }
 
     @Override
+    @AzureOperation(value = "deploy docker image to web app", type = AzureOperation.Type.ACTION)
     public WebApp executeSteps(@NotNull RunProcessHandler processHandler,
                                @NotNull Map<String, String> telemetryMap) throws Exception {
         processHandler.setText("Starting job ...  ");
@@ -139,6 +141,11 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     }
 
     @Override
+    @AzureOperation(
+        value = "complete the deployment of web app[%s] and refresh Azure Explorer",
+        params = {"@deployModel.getWebAppName()"},
+        type = AzureOperation.Type.TASK
+    )
     protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("Updating cache ... ");
         AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
@@ -147,12 +154,6 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
-    }
-
-    @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
     }
 
     @Override

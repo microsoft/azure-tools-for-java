@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -87,18 +88,28 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+                openInBrowser();
             }
         }));
         addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
         addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(
-                    DeploymentSlotNode.this);
+                showProperties();
             }
         }));
         super.loadActions();
+    }
+
+    @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(
+            DeploymentSlotNode.this);
+    }
+
+    @AzureOperation(value = "open deployment slot in local browser", type = AzureOperation.Type.ACTION)
+    private void openInBrowser() {
+        DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
     }
 
     @Override
@@ -108,23 +119,28 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         // Override the function to do noting to disable the auto refresh functionality.
     }
 
+    @AzureOperation(value = "start deployment slot", type = AzureOperation.Type.ACTION)
     private void start() {
         presenter.onStartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
+    @AzureOperation(value = "stop deployment slot", type = AzureOperation.Type.ACTION)
     private void stop() {
         presenter.onStopDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
+    @AzureOperation(value = "restart deployment slot", type = AzureOperation.Type.ACTION)
     private void restart() {
         presenter.onRestartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
+    @AzureOperation(value = "swap deployment slot for production", type = AzureOperation.Type.ACTION)
     private void swapWithProduction() {
         presenter.onSwapWithProduction(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     @Override
+    @AzureOperation(value = "refresh deployment slot", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         presenter.onRefreshNode(this.subscriptionId, this.webAppId, this.slotName);
     }

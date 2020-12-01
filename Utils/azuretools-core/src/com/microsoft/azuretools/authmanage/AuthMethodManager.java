@@ -82,9 +82,10 @@ public class AuthMethodManager {
                 return azure;
             }
         }
-        final String error = "Failed to initialize request";
+        final String error = "Failed to connect Azure service with current account";
         final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
+        final String errorCode = "001";
+        throw new AzureToolkitRuntimeException(error, null, action, errorCode);
     }
 
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
@@ -92,7 +93,7 @@ public class AuthMethodManager {
         if (manager != null) {
             return getAzureManager().getAzureSpringCloudClient(sid);
         }
-        final String error = "Failed to initialize request";
+        final String error = "Failed to connect Azure service with current account";
         final String action = "Confirm you have already signed in with subscription: " + sid;
         throw new AzureToolkitRuntimeException(error, action);
     }

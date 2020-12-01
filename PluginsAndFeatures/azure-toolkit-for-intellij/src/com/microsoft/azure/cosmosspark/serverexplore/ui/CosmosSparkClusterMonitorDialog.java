@@ -30,6 +30,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesMod
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -126,7 +127,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
             clusterStateLabel.setText(data.getClusterState());
             clusterIDField.setText(data.getClusterID());
             clusterIDField.setBorder(null);
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     // Components -> Data

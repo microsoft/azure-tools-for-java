@@ -165,15 +165,11 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
      * Load pricing tier from model.
      */
     private void onLoadPricingTier() {
-        try {
-            cbPricing.removeAllItems();
-            cbPricing.addItem(CONSUMPTION_PRICING_TIER);
-            cbPricing.setSelectedItem(CONSUMPTION_PRICING_TIER);
-            AzureFunctionMvpModel.getInstance().listFunctionPricingTier().stream()
-                    .forEach(pricingTier -> cbPricing.addItem(pricingTier));
-        } catch (IllegalAccessException e) {
-            DefaultLoader.getUIHelper().logError("Failed to load pricing tier", e);
-        }
+        cbPricing.removeAllItems();
+        cbPricing.addItem(CONSUMPTION_PRICING_TIER);
+        cbPricing.setSelectedItem(CONSUMPTION_PRICING_TIER);
+        AzureFunctionMvpModel.getInstance().listFunctionPricingTier().stream()
+                .forEach(pricingTier -> cbPricing.addItem(pricingTier));
     }
 
     // We will mark function only pricing tier as recommend

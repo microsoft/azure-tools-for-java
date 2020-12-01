@@ -239,7 +239,9 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
-        AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
+        AzureTaskManager
+            .getInstance()
+            .runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
     @org.jetbrains.annotations.NotNull
@@ -289,7 +291,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshQueue(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Queue queue) {
-        ApplicationManager.getApplication().runReadAction(() -> {
+        AzureTaskManager.getInstance().read(() -> {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), queue);
             if (file != null) {
                 final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
@@ -300,7 +302,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void refreshBlobs(@NotNull final Object projectObject, @NotNull final String accountName, @NotNull final BlobContainer container) {
-        ApplicationManager.getApplication().runReadAction(() -> {
+        AzureTaskManager.getInstance().read(() -> {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
             if (file != null) {
                 final BlobExplorerFileEditor containerFileEditor =
@@ -314,11 +316,11 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshTable(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Table table) {
-        ApplicationManager.getApplication().runReadAction(() -> {
-            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
+        AzureTaskManager.getInstance().read(() -> {
+            final VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
             if (file != null) {
                 final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                AzureTaskManager.getInstance().runLater(() -> tableFileEditor.fillGrid());
+                AzureTaskManager.getInstance().runLater(tableFileEditor::fillGrid);
             }
         });
     }

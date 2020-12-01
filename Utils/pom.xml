@@ -32,6 +32,7 @@
     <name>${project.artifactId}-${project.version}</name>
     <properties>
         <azuretool.version>3.46.0</azuretool.version>
+        <aspectj.version>1.8.13</aspectj.version>
         <applicationinsights.version>2.6.2</applicationinsights.version>
         <kotlin.version>1.3.72</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
@@ -50,6 +51,7 @@
         <azure.storage.blob.batch.version>12.6.0</azure.storage.blob.batch.version>
         <azure.storage.file.share.version>12.7.0</azure.storage.file.share.version>
         <azure.storage.file.datalake.version>12.3.0</azure.storage.file.datalake.version>
+        <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
     </properties>
     <modules>
         <module>./check-tools</module>
@@ -95,6 +97,58 @@
         </profile>
     </profiles>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.11</version>
+                    <configuration>
+                        <showWeaveInfo>false</showWeaveInfo>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <Xlint>ignore</Xlint>
+                        <complianceLevel>1.8</complianceLevel>
+                        <encoding>UTF-8</encoding>
+                        <verbose>false</verbose>
+                        <outxml>true</outxml>
+                        <forceAjcCompile>true</forceAjcCompile>
+                        <sources/><!-- this is important!-->
+                        <weaveDirectories>
+                            <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                        </weaveDirectories>
+                        <aspectLibraries>
+                            <aspectLibrary>
+                                <groupId>org.aspectj</groupId>
+                                <artifactId>aspectjweaver</artifactId>
+                            </aspectLibrary>
+                        </aspectLibraries>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>compile-with-aspectj</id>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>test-compile-with-aspectj</id>
+                            <phase>process-classes</phase>
+                            <goals>
+                                <goal>test-compile</goal>
+                            </goals>
+                            <configuration>
+                                <weaveDirectories>
+                                    <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
+                                </weaveDirectories>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -131,6 +185,22 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jtwig</groupId>
+                <artifactId>jtwig-core</artifactId>
+                <version>${jtwig.core.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-storage-queue</artifactId>
@@ -436,6 +506,16 @@
                 <version>2.3.9</version>
             </dependency>
             <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-tools-common</artifactId>
+                <version>0.10.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
+                <artifactId>azure-mgmt-appplatform</artifactId>
+                <version>1.0.0-beta-2</version>
+            </dependency>
+            <dependency>
                 <groupId>com.microsoft.rest</groupId>
                 <artifactId>client-runtime</artifactId>
                 <version>${azure.client.version}</version>
@@ -461,6 +541,18 @@
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-junit4</artifactId>
+                <version>1.7.0RC4</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito2</artifactId>
+                <version>1.7.0RC4</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -41,7 +41,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                         return;
                     }
                     getMvpView().fillFunctionApps(functionApps);
-                }), this::errorHandler);
+                }));
     }
 
     public void onLoadFunctionAppSettings(String subscriptionId, String functionId) {
@@ -55,9 +55,9 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                         return;
                     }
                     final Map<String, String> result = new HashMap<>();
-                    appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
+                    appSettings.forEach((key, value) -> result.put(key, value.value()));
                     getMvpView().fillFunctionAppSettings(result);
-                }), this::errorHandler);
+                }));
     }
 
     public void onLoadLocalSettings(Path localSettingsJsonPath) {
@@ -70,7 +70,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                         return;
                     }
                     getMvpView().fillFunctionAppSettings(appSettings);
-                }), this::errorHandler);
+                }));
     }
 
     private void errorHandler(Throwable e) {

@@ -25,10 +25,12 @@ package com.microsoft.intellij.runner.functions.component;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -90,6 +92,11 @@ public class ResourceGroupPanel extends JPanel {
         return selectedObject instanceof ResourceGroupWrapper ? ((ResourceGroupWrapper) selectedObject).isCreateNewResourceGroup() : false;
     }
 
+    @AzureOperation(
+        value = "load resource groups of subscription[%s]",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadResourceGroup(String subscriptionId) {
         if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;
@@ -97,15 +104,11 @@ public class ResourceGroupPanel extends JPanel {
             if (rxDisposable != null && !rxDisposable.isDisposed()) {
                 rxDisposable.dispose();
             }
-            rxDisposable =
-                    ComponentUtils.loadResourcesAsync(
-                        () -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId),
-                        resourceGroups -> fillResourceGroup(resourceGroups),
-                        exception -> {
-                            DefaultLoader.getUIHelper().showError(
-                                    "Failed to load resource groups", exception.getMessage());
-                            fillResourceGroup(Collections.emptyList());
-                        });
+            rxDisposable = Observable
+                .fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
+                .subscribeOn(Schedulers.io())
+                .doOnError((e) -> fillResourceGroup(Collections.emptyList()))
+                .subscribe(this::fillResourceGroup);
         }
     }
 

@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -129,11 +131,15 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper()
-                             .openFunctionAppPropertyView(FunctionNode.this);
+                showProperties();
             }
         }));
         super.loadActions();
+    }
+
+    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
     }
 
     @Override
@@ -156,35 +162,51 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         return this.functionAppName;
     }
 
+    @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
     public void startFunctionApp() {
         functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
+    @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
     public void restartFunctionApp() {
         functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
+    @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
     public void stopFunctionApp() {
         functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
     // work around for API getMasterKey failed
-    public synchronized String getFunctionMasterKey() throws IOException {
+    public synchronized String getFunctionMasterKey() {
         if (StringUtils.isEmpty(cachedMasterKey)) {
             final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             final String subscriptionId = getSegment(functionApp.id(), "subscriptions");
             final String resourceGroup = getSegment(functionApp.id(), "resourceGroups");
             final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
-            final String authToken = azureManager.getAccessToken(tenant);
+            final String authToken;
+            try {
+                authToken = azureManager.getAccessToken(tenant);
+            } catch (final IOException e) {
+                final String error = String.format("failed to get access token for tenant[%s]", tenant);
+                final String action = String.format("Confirm you have already signed in with subscription[%s]", subscriptionId);
+                throw new AzureToolkitRuntimeException(error, e, action);
+            }
             final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
                             "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
                     subscriptionId, resourceGroup, functionApp.name());
 
             final HttpPost request = new HttpPost(targetUrl);
-            request.setHeader("Authorization", "Bearer " + authToken);
-            CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-            JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
-                    JsonObject.class);
+            JsonObject jsonObject = null;
+            try {
+                request.setHeader("Authorization", "Bearer " + authToken);
+                CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+                jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()), JsonObject.class);
+            } catch (final IOException e) {
+                final String error = "failed to fetch master key from Azure";
+                final String action = "confirm you have sufficient authorization";
+                throw new AzureToolkitRuntimeException(error, e, action);
+            }
             cachedMasterKey = jsonObject.get("masterKey").getAsString();
         }
         return cachedMasterKey;

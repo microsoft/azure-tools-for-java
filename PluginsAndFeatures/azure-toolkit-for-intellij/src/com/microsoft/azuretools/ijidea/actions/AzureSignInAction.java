@@ -27,10 +27,10 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -53,7 +53,7 @@ public class AzureSignInAction extends AzureAnAction {
     private static final String SIGN_IN = "Azure Sign In...";
     private static final String SIGN_OUT = "Azure Sign Out...";
 
-    public AzureSignInAction() throws Exception {
+    public AzureSignInAction() {
         super(AuthMethodManager.getInstance().isSignedIn() ? SIGN_OUT : SIGN_IN);
     }
 
@@ -121,29 +121,25 @@ public class AzureSignInAction extends AzureAnAction {
 
     public static void onAzureSignIn(Project project) {
         JFrame frame = WindowManager.getInstance().getFrame(project);
-        try {
-            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            boolean isSignIn = authMethodManager.isSignedIn();
-            if (isSignIn) {
-                boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
-                                                                          getSignOutWarningMessage(authMethodManager),
-                                                                          "Azure Sign Out",
-                                                                          new ImageIcon("icons/azure.png"));
-                if (res) {
-                    EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                        authMethodManager.signOut();
-                    });
-                }
-            } else {
-                doSignIn(authMethodManager, project);
+        AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+        boolean isSignIn = authMethodManager.isSignedIn();
+        if (isSignIn) {
+            boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
+                                                                      getSignOutWarningMessage(authMethodManager),
+                                                                      "Azure Sign Out",
+                                                                      new ImageIcon("icons/azure.png"));
+            if (res) {
+                EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
+                    authMethodManager.signOut();
+                });
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), "AzureSignIn Action Error");
+        } else {
+            doSignIn(authMethodManager, project);
         }
     }
 
-    public static boolean doSignIn(AuthMethodManager authMethodManager, Project project) throws Exception {
+    @AzureOperation(value = "sign in to Azure", type = AzureOperation.Type.SERVICE)
+    public static boolean doSignIn(AuthMethodManager authMethodManager, Project project) {
         boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {
             return true;

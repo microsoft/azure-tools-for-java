@@ -60,7 +60,7 @@ public class NodeAction {
                 listener.beforeActionPerformed(event);
                 Futures.addCallback(listener.actionPerformedAsync(event), new FutureCallback<Void>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
+                    public void onSuccess(Void voidParameter) {
                         listener.afterActionPerformed(event);
                     }
 

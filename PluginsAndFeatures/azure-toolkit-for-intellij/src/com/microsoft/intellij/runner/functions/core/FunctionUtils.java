@@ -46,6 +46,9 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.sun.tools.sjavac.Log;
@@ -98,11 +101,15 @@ public class FunctionUtils {
                functionApp.linuxFxVersion().split("|")[1];
     }
 
-    public static File getTempStagingFolder() throws IOException {
-        final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
-        final File file = path.toFile();
-        FileUtils.forceDeleteOnExit(file);
-        return file;
+    public static File getTempStagingFolder() {
+        try {
+            final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
+            final File file = path.toFile();
+            FileUtils.forceDeleteOnExit(file);
+            return file;
+        } catch (IOException e) {
+            throw new AzureToolkitRuntimeException("failed to get temp staging folder", e);
+        }
     }
 
     public static void cleanUpStagingFolder(File stagingFolder) {
@@ -135,6 +142,11 @@ public class FunctionUtils {
                      .findFirst().orElse(null);
     }
 
+    @AzureOperation(
+        value = "check if project[%s] is a valid function project",
+        params = {"$project.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public static boolean isFunctionProject(Project project) {
         if (project == null) {
             return false;
@@ -149,6 +161,11 @@ public class FunctionUtils {
         return libraries.size() > 0;
     }
 
+    @AzureOperation(
+        value = "find function methods from module[%s] by annotation",
+        params = {"$model.getName"},
+        type = AzureOperation.Type.TASK
+    )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
                                                         .findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
@@ -169,7 +186,7 @@ public class FunctionUtils {
                                                   ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
     }
 
-    public static final Path createTempleHostJson() {
+    public static @Nullable Path createTempleHostJson() {
         try {
             final File result = File.createTempFile("host", ".json");
             FileUtils.write(result, DEFAULT_HOST_JSON, Charset.defaultCharset());
@@ -179,6 +196,11 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        value = "copy local settings[%s] to staging folder[%s]",
+        params = {"$model.getName"},
+        type = AzureOperation.Type.TASK
+    )
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
                                                         Path localSettingJson,
                                                         Map<String, String> appSettings) throws IOException {
@@ -189,6 +211,10 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        value = "prepare staging folder for function method",
+        type = AzureOperation.Type.TASK
+    )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);

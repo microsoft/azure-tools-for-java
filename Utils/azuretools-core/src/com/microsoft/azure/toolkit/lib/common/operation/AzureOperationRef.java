@@ -20,29 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.task;
+package com.microsoft.azure.toolkit.lib.common.operation;
 
-public abstract class AzureTaskManager {
+import lombok.Builder;
+import lombok.Data;
 
-    private static AzureTaskManager instance;
+import java.lang.reflect.Method;
 
-    public static synchronized void register(AzureTaskManager manager) {
-        if (AzureTaskManager.instance == null) {
-            AzureTaskManager.instance = manager;
-        }
-    }
-
-    public static AzureTaskManager getInstance() {
-        return AzureTaskManager.instance;
-    }
-
-    public abstract void runLater(AzureTask task);
-
-    public abstract void runLater(Runnable runnable);
-
-    public abstract void runAndWait(Runnable runnable);
-
-    public abstract void runInBackground(AzureTask task);
-
-    public abstract void runInModal(AzureTask task);
+@Data
+@Builder
+public class AzureOperationRef {
+    private Method method;
+    private String[] paramNames;
+    private Object[] paramValues;
+    private Object instance;
 }

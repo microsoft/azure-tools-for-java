@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -53,7 +54,7 @@ public abstract class AzureNodeActionPromptListener extends AzureNodeActionListe
                 optionDialog = component == null ?
                         DefaultLoader.getUIHelper().showConfirmation(promptMessage, PROMPT_TITLE, PROMPT_OPTIONS, null) :
                         DefaultLoader.getUIHelper().showConfirmation(component, promptMessage, PROMPT_TITLE, PROMPT_OPTIONS, null);
-            });
+            }, AzureTask.Modality.ANY);
             return optionDialog;
         };
     }

@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.functions.component;
 
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -67,6 +68,10 @@ public class SubscriptionPanel extends JPanel {
         return selectedObject instanceof Subscription ? ((Subscription) selectedObject).subscriptionId() : null;
     }
 
+    @AzureOperation(
+        value = "load selected subscriptions",
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadSubscription() {
         beforeLoadSubscription();
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())

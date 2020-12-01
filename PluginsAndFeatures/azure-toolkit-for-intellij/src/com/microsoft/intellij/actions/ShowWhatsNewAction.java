@@ -24,6 +24,7 @@ package com.microsoft.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -41,6 +42,7 @@ public class ShowWhatsNewAction extends AzureAnAction {
     private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
 
     @Override
+    @AzureOperation(value = "load what's new document", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull final AnActionEvent anActionEvent, @Nullable final Operation operation) {
         final Project project = anActionEvent.getProject();
         try {

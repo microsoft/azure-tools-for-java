@@ -34,13 +34,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.springcloud.SpringCloudConfigurationType;
-import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,6 +58,7 @@ public class DeploySpringCloudAction extends AzureAnAction {
     }
 
     @Override
+    @AzureOperation(value = "deploy spring cloud application", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = anActionEvent.getData(LangDataKeys.MODULE);
         try {
@@ -64,7 +66,7 @@ public class DeploySpringCloudAction extends AzureAnAction {
                 AzureTaskManager.getInstance().runLater(() -> deployConfiguration(module));
             }
         } catch (Exception e) {
-            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to deploy spring cloud", e.getMessage()));
+            AzureExceptionHandler.onUncaughtException(e);
         }
         return true;
     }

@@ -26,7 +26,6 @@ import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
 
-import java.io.IOException;
 import java.util.Map;
 
 public interface IAppServiceContext {
@@ -52,7 +51,7 @@ public interface IAppServiceContext {
 
     String getDeploymentType();
 
-    Azure getAzureClient() throws IOException;
+    Azure getAzureClient();
 
     IProject getProject();
 }

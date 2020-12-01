@@ -40,7 +40,7 @@ public class FunctionAppService {
         return FunctionAppService.instance;
     }
 
-    public FunctionApp createFunctionApp(final FunctionAppConfig config) throws Exception {
+    public FunctionApp createFunctionApp(final FunctionAppConfig config) {
         final Operation operation = TelemetryManager.createOperation(FUNCTION, CREATE_FUNCTION_APP);
         try {
             operation.start();
@@ -48,8 +48,6 @@ public class FunctionAppService {
             functionDeployModel.saveModel(new FunctionAppComboBoxModel(config));
             final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployModel);
             return createFunctionHandler.execute();
-        } catch (final Exception e) {
-            throw e;
         } finally {
             operation.complete();
         }

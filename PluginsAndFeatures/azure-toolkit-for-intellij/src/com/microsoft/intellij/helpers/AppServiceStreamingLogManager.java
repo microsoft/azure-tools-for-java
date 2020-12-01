@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -121,8 +122,7 @@ public enum AppServiceStreamingLogManager {
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
                         project, resourceId, logStreaming.getTitle(), consoleView);
             } catch (Throwable e) {
-                DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
-                        FAILED_TO_START_STREAMING_LOG, e.getMessage()));
+                throw new AzureToolkitRuntimeException("failed to open streaming log", e);
             }
         }));
     }

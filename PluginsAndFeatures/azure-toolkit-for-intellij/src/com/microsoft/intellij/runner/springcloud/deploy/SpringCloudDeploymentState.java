@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.springcloud.deploy;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
@@ -41,8 +40,7 @@ import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -167,21 +165,6 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     @Override
     protected void onSuccess(AppResourceInner result, @NotNull RunProcessHandler processHandler) {
         setText(processHandler, "Deploy succeed");
-        processHandler.notifyComplete();
-    }
-
-    @Override
-    protected void onFail(Throwable throwable, @NotNull RunProcessHandler processHandler) {
-        try {
-            processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
-        } catch (Exception ex) {
-            // should not propagate error infinitely
-        }
-        // todo: create new user error base exception
-        if (!(throwable instanceof SpringCloudValidationException)) {
-            DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed",
-                                                      false, true);
-        }
         processHandler.notifyComplete();
     }
 

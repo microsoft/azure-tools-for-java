@@ -30,11 +30,11 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -152,6 +152,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refresher.debounce();
     }
 
+    @AzureOperation(value = "load/refresh items of combo box", type = AzureOperation.Type.ACTION)
     private void doRefreshItems() {
         try {
             this.setLoading(true);
@@ -161,7 +162,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-                throw (RuntimeException) e;
+                return;
             }
             this.setLoading(false);
             this.handleLoadingError(e);
@@ -232,10 +233,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void handleLoadingError(Throwable e) {
-        final MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
-        if (uiHelper != null) {
-            uiHelper.showException(message("common.comboBox.error.loadingItemsFailed"), (Exception) e);
-        }
+        AzureExceptionHandler.onRxException(e);
     }
 
     protected boolean isFilterable() {

@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -63,6 +64,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     @Override
+    @AzureOperation(value = "refresh content of web app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();
     }
@@ -87,18 +89,27 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         final NodeActionListener openBrowserListener = new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+                openInBrowser();
             }
         };
         addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER, openBrowserListener));
         final NodeActionListener showPropListener = new NodeActionListener() {
-            @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
+                showProperties();
             }
         };
         addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP, showPropListener));
         super.loadActions();
+    }
+
+    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
+    }
+
+    @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
+    private void openInBrowser() {
+        DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
     }
 
     @Override
@@ -121,14 +132,17 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webapp.linuxFxVersion();
     }
 
+    @AzureOperation(value = "start web app", type = AzureOperation.Type.ACTION)
     public void startWebApp() {
         webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
     }
 
+    @AzureOperation(value = "restart web app", type = AzureOperation.Type.ACTION)
     public void restartWebApp() {
         webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
     }
 
+    @AzureOperation(value = "stop web app", type = AzureOperation.Type.ACTION)
     public void stopWebApp() {
         webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
     }

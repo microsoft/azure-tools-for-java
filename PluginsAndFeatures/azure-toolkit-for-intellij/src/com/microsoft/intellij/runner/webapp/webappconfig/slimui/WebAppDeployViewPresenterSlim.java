@@ -27,13 +27,9 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Subscription;
 
-import java.io.InterruptedIOException;
-
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> extends MvpPresenter<V> {
@@ -53,20 +49,6 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
                           return;
                       }
                       getMvpView().fillDeploymentSlots(slots, selectedWebApp);
-                  }), e -> errorHandler(message("webapp.deploy.error.getDeploymentSlotsFailed"), (Exception) e));
-    }
-
-    private void errorHandler(String msg, Exception e) {
-        final Throwable rootCause = ExceptionUtils.getRootCause(e);
-        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-            // Swallow interrupted exception caused by unsubscribe
-            return;
-        }
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(msg, e);
-        });
+                  }));
     }
 }

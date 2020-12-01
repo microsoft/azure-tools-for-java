@@ -100,7 +100,7 @@ public class WebAppSettingModel {
             result.put(TelemetryConstants.CREATE_NEWASP, String.valueOf(isCreatingAppServicePlan()));
             result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
             result.put(TelemetryConstants.FILETYPE, WebAppUtils.getFileType(getTargetName()));
-        } catch (Exception ignore) {
+        } catch (final Exception ignore) {
         }
         return result;
     }

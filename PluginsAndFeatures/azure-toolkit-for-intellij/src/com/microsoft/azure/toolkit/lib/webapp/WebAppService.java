@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -44,7 +45,16 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
-    public WebApp createWebApp(final WebAppConfig config) throws Exception {
+    @AzureOperation(
+        value = "create web app[%s, rg=%s] in subscription[%s]",
+        params = {
+            "$config.getName()",
+            "$config.getResourceGroup().name()",
+            "$config.getSubscription().displayName()"
+        },
+        type = AzureOperation.Type.SERVICE
+    )
+    public WebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);
@@ -53,7 +63,7 @@ public class WebAppService {
             operation.start();
             EventUtil.logEvent(EventType.info, operation, properties);
             return AzureWebAppMvpModel.getInstance().createWebApp(settings);
-        } catch (final Exception e) {
+        } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw e;
         } finally {
@@ -61,6 +71,10 @@ public class WebAppService {
         }
     }
 
+    @AzureOperation(
+        value = "init web app configuration",
+        type = AzureOperation.Type.TASK
+    )
     public static WebAppSettingModel convertConfig2Settings(final WebAppConfig config) {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().subscriptionId());

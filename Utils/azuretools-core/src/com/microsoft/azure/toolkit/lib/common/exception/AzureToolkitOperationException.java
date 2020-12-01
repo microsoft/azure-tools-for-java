@@ -20,26 +20,30 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.task;
+package com.microsoft.azure.toolkit.lib.common.exception;
 
-import lombok.Data;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
+import lombok.Getter;
 
-@Data
-public class AzureTask {
-    private final Runnable runnable;
+@Getter
+public class AzureToolkitOperationException extends AzureToolkitRuntimeException {
+    private final AzureOperationRef operation;
 
-    private Object project;
-    private boolean cancellable;
-    private String title;
-
-    public AzureTask(Runnable runnable) {
-        this.runnable = runnable;
+    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause) {
+        this(operation, cause, null);
     }
 
-    public AzureTask(Object project, String title, boolean cancellable, Runnable runnable) {
-        this.project = project;
-        this.title = title;
-        this.cancellable = cancellable;
-        this.runnable = runnable;
+    public AzureToolkitOperationException(final AzureOperationRef operation, final String action) {
+        this(operation, null, action);
+    }
+
+    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause, final String action) {
+        this(operation, cause, action, null);
+    }
+
+    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause, final String action, final String actionId) {
+        super(AzureOperationUtils.getOperationTitle(operation), cause, action, actionId);
+        this.operation = operation;
     }
 }

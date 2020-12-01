@@ -55,7 +55,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
-import java.util.Collections;
 import java.util.Map;
 
 
@@ -236,7 +235,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                 AzureTaskManager.getInstance().runAndWait(() -> {
                     vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
                     selectDefaultSize();
-                });
+                }, AzureTask.Modality.ANY);
             }));
         } else {
             selectDefaultSize();

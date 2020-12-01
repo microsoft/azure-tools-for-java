@@ -35,16 +35,19 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -95,7 +98,7 @@ public class SignInWindow extends AzureDialogWrapper {
         setOKButtonText("Sign in");
 
         this.authMethodDetails = authMethodDetails;
-        authFileTextField.setText(authMethodDetails.getCredFilePath());
+        authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
         automatedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -220,7 +223,7 @@ public class SignInWindow extends AzureDialogWrapper {
         AzureTokenWrapper tokenWrapper = null;
         try {
             tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             // swallow exception while getting azure cli credential
         }
         if (tokenWrapper != null) {
@@ -301,12 +304,8 @@ public class SignInWindow extends AzureDialogWrapper {
                 EventUtil.logEvent(EventType.info, operation, properties);
                 operation.start();
                 loginCallable.call();
-            } catch (AuthCanceledException ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                System.out.println(ex.getMessage());
-            } catch (Exception ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+            } catch (Exception e) {
+                throw new AzureToolkitRuntimeException(e.getMessage(), e);
             } finally {
                 EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
                     AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));

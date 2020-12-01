@@ -29,7 +29,6 @@ import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -47,13 +46,15 @@ import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.forms.function.CreateFunctionForm;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
-import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
@@ -111,18 +112,17 @@ public class CreateFunctionAction extends CreateElementActionBase {
 
                     final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
                     if (StringUtils.isNotEmpty(functionClassContent)) {
-                        Application application = ApplicationManager.getApplication();
-                        application.runWriteAction(() -> {
-
+                        AzureTaskManager.getInstance().write(() -> {
                             CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
                                     (Computable<CreateFileAction.MkDirs>) () ->
                                             new CreateFileAction.MkDirs(newName + '/' + className, directory));
                             PsiFileFactory factory = PsiFileFactory.getInstance(project);
                             try {
                                 mkDirs.directory.checkCreateFile(className + ".java");
-                            } catch (IncorrectOperationException e) {
-                                PluginUtil.displayErrorDialog(message("function.createFunction.error.title"), e.getMessage());
-                                return;
+                            } catch (final IncorrectOperationException e) {
+                                final String dir = mkDirs.directory.getName();
+                                final String error = String.format("failed to create function class[%s] in directory[%s]", className, dir);
+                                throw new AzureToolkitRuntimeException(error, e);
                             }
                             CommandProcessor.getInstance().executeCommand(project, () -> {
                                 PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
@@ -137,14 +137,15 @@ public class CreateFunctionAction extends CreateElementActionBase {
                                     AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
                                             parameters.get("connection"), connectionString);
                                 } catch (IOException e) {
-                                    PluginUtil.displayErrorDialogAndLog(message("function.createFunction.error.title"), e.getMessage(), e);
                                     EventUtil.logError(operation, ErrorType.systemError, e, null, null);
+                                    final String error = "failed to get connection string and save to local settings";
+                                    throw new AzureToolkitRuntimeException(error, e);
                                 }
                             }
                         });
                     }
                 } catch (AzureExecutionException e) {
-                    PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                    AzureExceptionHandler.onUncaughtException(e);
                     EventUtil.logError(operation, ErrorType.systemError, e, null, null);
                 }
             }

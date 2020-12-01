@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -56,12 +57,18 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         this.addAction("Download", new NodeActionListener() {
             @Override
             protected void actionPerformed(final NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
+                download();
             }
         });
     }
 
+    @AzureOperation(value = "download file", type = AzureOperation.Type.ACTION)
+    private void download() {
+        DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
+    }
+
     @Override
+    @AzureOperation(value = "refresh file", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
@@ -69,6 +76,11 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         this.fileService.getFilesInDirectory(this.file.getPath()).stream()
                         .map(file -> new AppServiceFileNode(file, this, fileService))
                         .forEach(this::addChildNode);
+    }
+
+    @AzureOperation(value = "open file in editor", type = AzureOperation.Type.ACTION)
+    private void open(final Object context) {
+        DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }
 
     @Override
@@ -79,7 +91,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             DefaultLoader.getUIHelper().showError("File is too large, please download it first", "File is Too Large");
             return;
         }
-        final Runnable runnable = () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
+        final Runnable runnable = () -> open(context);
         final String message = String.format("fetching file %s...", this.file.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), message, false, runnable));
     }

@@ -85,12 +85,8 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
     private void createUIComponents() {
         // TODO: place custom component creation code here
         appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, WebAppConfig::getWebAppDefaultConfig);
-        try {
-            final List<PricingTier> validPricing = AzureMvpModel.getInstance().listPricingTier();
-            appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, WebAppConfig.DEFAULT_PRICING_TIER);
-        } catch (IllegalAccessException e) {
-            // swallow exceptions while load pricing tier
-        }
+        final List<PricingTier> validPricing = AzureMvpModel.getInstance().listPricingTier();
+        appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, WebAppConfig.DEFAULT_PRICING_TIER);
 
         appServiceMonitorPanel = new AppServiceMonitorPanel(project);
         // Application Insights is not supported in Web App

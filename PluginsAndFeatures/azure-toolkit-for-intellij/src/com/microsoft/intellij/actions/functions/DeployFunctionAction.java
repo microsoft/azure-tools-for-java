@@ -33,6 +33,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -42,7 +43,6 @@ import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
-import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,14 +55,11 @@ public class DeployFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
+    @AzureOperation(value = "deploy function app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-            }
-        } catch (Exception e) {
-            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(message("function.deploy.error.title"), e.getMessage()));
+        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
+            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
         }
         return true;
     }

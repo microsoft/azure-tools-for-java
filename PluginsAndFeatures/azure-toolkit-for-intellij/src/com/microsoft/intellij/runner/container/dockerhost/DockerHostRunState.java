@@ -174,12 +174,6 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
     }
 
     @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
-    }
-
-    @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         String fileName = dataModel.getTargetName();
         if (null != fileName) {
