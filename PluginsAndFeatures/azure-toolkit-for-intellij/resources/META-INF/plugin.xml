@@ -24,10 +24,23 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.45.1</h3>
+    <h3>3.46.0</h3>
+    <h4>Added</h4>
+    <ul>
+        <li>Support IntelliJ 2020.3 RC</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Refactor error handling, unify the error notifications</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4765">#4765</a> Fixes no before run tasks when deploy Spring Cloud app in project menu</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4764">#4764</a> Fixes HDInsights clusters of all
+            subscriptions(instead of the selected subscription) is listed </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4766">#4766</a> Fixes duplicate before run task
+            for Spring Cloud deployment run configuration</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4784">#4784</a> Fixes failed to auth with Azure
+            CLI with multi Azure environment enabled</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

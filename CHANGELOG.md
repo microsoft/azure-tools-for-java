@@ -3,6 +3,8 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.46.0](#3460)
+  - [3.45.1](#3451)
   - [3.45.0](#3450)
   - [3.44.0](#3440)
   - [3.43.0](#3430)
@@ -58,6 +60,20 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.46.0
+
+### Added
+- Support IntelliJ 2020.3 RC
+
+### Changed
+- Refactor error handling, unify the error notifications
+
+### Fixed
+- [#4764](https://github.com/microsoft/azure-tools-for-java/pull/4764) Fixes HDInsights clusters of all subscriptions(instead of the selected subscription) is listed 
+- [#4766](https://github.com/microsoft/azure-tools-for-java/pull/4766) Fixes duplicate before run task for Spring Cloud deployment run configuration
+- [#4784](https://github.com/microsoft/azure-tools-for-java/pull/4784) Fixes failed to auth with Azure CLI with multi Azure environment enabled
+
 
 ## 3.45.1
 ### Fixed

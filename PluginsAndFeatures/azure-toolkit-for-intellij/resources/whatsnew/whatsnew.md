@@ -1,6 +1,25 @@
 <!-- Version: 3.45.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.46.0
+
+### Added
+- Support IntelliJ 2020.3 RC
+
+### Changed
+- Refactor error handling, unify the error notifications
+
+### Fixed
+- [#4764](https://github.com/microsoft/azure-tools-for-java/pull/4764) Fixes HDInsights clusters of all subscriptions(instead of the selected subscription) is listed 
+- [#4766](https://github.com/microsoft/azure-tools-for-java/pull/4766) Fixes duplicate before run task for Spring Cloud deployment run configuration
+- [#4784](https://github.com/microsoft/azure-tools-for-java/pull/4784) Fixes failed to auth with Azure CLI with multi Azure environment enabled
+
+
+## 3.45.1
+### Fixed
+- [#4765](https://github.com/microsoft/azure-tools-for-java/pull/4765) Fixes no before run tasks when deploy Spring Cloud app in project menu
+
+
 ## 3.45.0
 Flight recorder support was added in the latest Azure Toolkit for IntelliJ v3.45.0! You may monitor your online app
  service in Azure explorer with single click and analyze the report with [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/) or IntelliJ (requires 2020.2 above Ultimate).
