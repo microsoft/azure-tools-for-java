@@ -37,7 +37,10 @@ import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
 import com.intellij.openapi.compiler.CompilerManager;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.progress.ProgressManager;
@@ -52,6 +55,8 @@ import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -75,11 +80,19 @@ import org.apache.commons.lang.StringUtils;
 import javax.swing.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @Log
 public class IDEHelperImpl implements IDEHelper {
+
+    private static final String APP_SERVICE_FILE_EDITING = "App Service File Editing";
+    private static final String FILE_HAS_BEEN_DELETED = "Target file has been deleted from Azure, do you still want to save your changes?";
+    private static final String FILE_HAS_BEEN_MODIFIED = "Target file has been modified since you view it, do you still want to save your "
+        + "changes?";
+    public static final String SAVE_CHANGES = "Do you want to save your changes?";
+
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
         ApplicationSettings.getInstance().setProperty(name, value);
@@ -359,11 +372,17 @@ public class IDEHelperImpl implements IDEHelper {
 
     @AzureOperation(
         value = "open file[%s] in editor",
-        params = {"$file.getName()"},
+        params = {"target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     @SneakyThrows
-    public void openAppServiceFile(final AppServiceFile file, Object context) {
+    public void openAppServiceFile(final AppServiceFile target, Object context) {
+        final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
+        final AppServiceFile file = fileService.getFileByPath(target.getPath());
+        if (file == null) {
+            UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(String.format("Target file %s has been deleted", target.getName()), "Open File"));
+            return;
+        }
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
@@ -371,11 +390,10 @@ public class IDEHelperImpl implements IDEHelper {
         final String title = String.format("Opening file %s...", virtualFile.getName());
         final AzureTask task = new AzureTask(null, title, true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            AppServiceFileService
-                .forApp(file.getApp())
+            fileService
                 .getFileContent(file.getPath())
                 .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
-                    if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
+                    if (!openFileInEditor(file, virtualFile, fileEditorManager)) {
                         Messages.showWarningDialog(failure, "Open File");
                     }
                 }, AzureTask.Modality.NONE))
@@ -391,6 +409,68 @@ public class IDEHelperImpl implements IDEHelper {
                 }, AzureExceptionHandler::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
+    }
+
+    private boolean openFileInEditor(final AppServiceFile appServiceFile, VirtualFile virtualFile, FileEditorManager fileEditorManager) {
+        final FileEditor[] editors = fileEditorManager.openFile(virtualFile, true, true);
+        if (editors.length == 0) {
+            return false;
+        }
+        for (FileEditor fileEditor : editors) {
+            if (fileEditor instanceof TextEditor) {
+                final String originContent = getTextEditorContent((TextEditor) fileEditor);
+                final MessageBusConnection messageBusConnection = fileEditorManager.getProject().getMessageBus().connect(fileEditor);
+                messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
+                    @Override
+                    public void beforeFileClosed(FileEditorManager source, VirtualFile file) {
+                        try {
+                            final String content = getTextEditorContent((TextEditor) fileEditor);
+                            if (file == virtualFile && !StringUtils.equals(content, originContent)) {
+                                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
+                                    fileEditor.getComponent(), SAVE_CHANGES, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                                if (result) {
+                                    saveFileToAzure(appServiceFile, content, fileEditorManager.getProject());
+                                }
+                            }
+                        } catch (RuntimeException e) {
+                            AzureExceptionHandler.getInstance().handleException(e);
+                        } finally {
+                            messageBusConnection.disconnect();
+                        }
+                    }
+                });
+            }
+        }
+        return true;
+    }
+
+    private static String getTextEditorContent(TextEditor textEditor) {
+        return textEditor.getEditor().getDocument().getText();
+    }
+
+    @AzureOperation(
+        value = "save file[%s] to azure",
+        params = {"appServiceFile.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format("Saving %s", appServiceFile.getName()), false, () -> {
+            final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
+            final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
+            if (target == null) {
+                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(null, FILE_HAS_BEEN_DELETED, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                if (!result) {
+                    return;
+                }
+            } else if (ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()))) {
+                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
+                    null, FILE_HAS_BEEN_MODIFIED, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                if (!result) {
+                    return;
+                }
+            }
+            fileService.uploadFileToPath(content, appServiceFile.getPath());
+        }));
     }
 
     /**

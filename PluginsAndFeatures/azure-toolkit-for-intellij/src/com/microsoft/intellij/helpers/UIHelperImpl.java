@@ -714,8 +714,10 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
-        return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
-            == Messages.YES);
+        return runFromDispatchThread(() -> {
+            return component == null ? Messages.showYesNoDialog(message, title, icon) == Messages.YES :
+                   Messages.showYesNoDialog(component, message, title, icon) == Messages.YES;
+        });
     }
 
     @Override
