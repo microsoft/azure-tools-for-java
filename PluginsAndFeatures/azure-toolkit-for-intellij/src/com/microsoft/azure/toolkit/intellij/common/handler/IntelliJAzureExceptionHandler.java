@@ -95,6 +95,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             final List<String> operationStack = getAzureOperationStack(operationRefList, azureToolkitExceptions);
             showException(project, isBackGround, description, operationStack, actionArray, throwable);
         }
+        throw new RuntimeException(throwable);
     }
 
     private void showException(Project project, boolean isBackGround, String message, List<String> operationStack, AzureExceptionAction[] actions,
