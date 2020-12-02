@@ -55,7 +55,11 @@ final class ParserXMLUtility {
      * @throws WindowsAzureInvalidProjectOperationException
      */
     protected static Document parseXMLFile(final String fileName, String errorMessage) throws Exception {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(ParserXMLUtility.class.getClassLoader());
+            // fixes https://dev.azure.com/mseng/VSJava/_workitems/edit/1796447
+            // refers https://jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_class_loaders.html
             DocumentBuilder docBuilder;
             Document doc = null;
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -67,6 +71,8 @@ final class ParserXMLUtility {
         } catch (Exception e) {
             AzurePlugin.log(String.format("%s%s", errorMessage, e.getMessage()), e);
             throw new Exception(String.format("%s%s", errorMessage, e.getMessage()));
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
     }
 
