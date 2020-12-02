@@ -91,7 +91,7 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String FILE_HAS_BEEN_DELETED = "Target file has been deleted from Azure, do you still want to save your changes?";
     private static final String FILE_HAS_BEEN_MODIFIED = "Target file has been modified since you view it, do you still want to save your "
         + "changes?";
-    public static final String SAVE_CHANGES = "Do you want to save your changes?";
+    private static final String SAVE_CHANGES = "Do you want to save your changes?";
 
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
