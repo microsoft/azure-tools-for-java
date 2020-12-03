@@ -91,7 +91,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         } else {
             // get action from the latest exception
             final AzureExceptionAction[] actionArray = getActions(azureToolkitExceptions, actions);
-            final String description = getAzureErrorMessage(operationRefList, azureToolkitExceptions);
+            final String description = getAzureErrorMessage(operationRefList, azureToolkitExceptions) + ExceptionUtils.getFullStackTrace(throwable);
             final List<String> operationStack = getAzureOperationStack(operationRefList, azureToolkitExceptions);
             showException(project, isBackGround, description, operationStack, actionArray, throwable);
         }

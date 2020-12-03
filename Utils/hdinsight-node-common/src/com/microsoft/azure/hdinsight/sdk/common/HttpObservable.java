@@ -29,6 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.common.errorresponse.*;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.codec.binary.Base64;
@@ -108,7 +109,7 @@ public class HttpObservable implements ILogger {
         this.userAgent = userAgentPrefix;
 
         // set default headers
-        this.defaultHeaders.setHeaders(new Header[] {
+        this.defaultHeaders.setHeaders(new Header[]{
                 new BasicHeader("Content-Type", "application/json"),
                 new BasicHeader("User-Agent", userAgent),
                 new BasicHeader("X-Requested-By", "ambari")
@@ -210,7 +211,7 @@ public class HttpObservable implements ILogger {
     }
 
     @Nullable
-    public HeaderGroup getDefaultHeaderGroup()  {
+    public HeaderGroup getDefaultHeaderGroup() {
         return defaultHeaders;
     }
 
@@ -347,19 +348,23 @@ public class HttpObservable implements ILogger {
     /**
      * Helper to convert the http response to a specified type
      *
-     * @param resp HTTP response, consumed as String content
+     * @param resp  HTTP response, consumed as String content
      * @param clazz the target type to convert
-     * @param <T> the target type
+     * @param <T>   the target type
      * @return the specified type class instance
      */
     @NotNull
     public <T> T convertJsonResponseToObject(@NotNull final HttpResponse resp, @NotNull final Class<T> clazz) {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
             return ObjectConvertUtils.convertJsonToObject(resp.getMessage(), clazz)
                     .orElseThrow(() -> propagate(
                             new HDIException("Unknown HTTP server response: " + resp.getMessage())));
         } catch (IOException e) {
             throw propagate(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
     }
 
@@ -389,7 +394,7 @@ public class HttpObservable implements ILogger {
 
             // Set entity for non-entity
             if (httpRequest instanceof HttpEntityEnclosingRequestBase && entity != null) {
-                ((HttpEntityEnclosingRequestBase)httpRequest).setEntity(entity);
+                ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(entity);
 
                 // Update the content type by entity
                 httpRequest.setHeader(entity.getContentType());
