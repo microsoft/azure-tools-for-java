@@ -41,7 +41,7 @@ class AzureFunctionsRunnableProjectUtilTest {
         val patched = AzureFunctionsRunnableProjectUtil.patchProjectOutput(projectOutput)
         patched.tfm.shouldBe(".NetFramework 4.7.1")
         patched.exePath.shouldBe("/path/to/executable")
-        patched.defaultArguments.shouldBe(listOf("host", "start", "--port", "7071", "--pause-on-error"))
+        patched.defaultArguments.shouldBe(listOf("host", "start", "--pause-on-error"))
         patched.workingDirectory.shouldBe("/path/to/working/dir")
         patched.dotNetCorePlatformRoot.shouldBe("/root")
     }
@@ -56,7 +56,7 @@ class AzureFunctionsRunnableProjectUtilTest {
                 dotNetCorePlatformRoot = "")
 
         val patched = AzureFunctionsRunnableProjectUtil.patchProjectOutput(projectOutput)
-        patched.defaultArguments.shouldBe(listOf("host", "start", "--port", "7071", "--pause-on-error"))
+        patched.defaultArguments.shouldBe(listOf("host", "start", "--pause-on-error"))
     }
 
     @Test

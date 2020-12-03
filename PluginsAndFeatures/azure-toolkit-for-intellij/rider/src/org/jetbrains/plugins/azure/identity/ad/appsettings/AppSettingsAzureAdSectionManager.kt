@@ -26,15 +26,14 @@ import com.intellij.json.JsonUtil
 import com.intellij.json.psi.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.EditorNotifications
-import com.intellij.util.containers.ContainerUtil
+import org.jetbrains.plugins.azure.util.JsonParser.findStringProperty
+import org.jetbrains.plugins.azure.util.JsonParser.jsonFileFromVirtualFile
+import org.jetbrains.plugins.azure.util.JsonParser.writeProperty
 
 class AppSettingsAzureAdSectionManager {
 
@@ -87,47 +86,5 @@ class AppSettingsAzureAdSectionManager {
                 }
             }
         }))
-    }
-
-    private fun jsonFileFromVirtualFile(virtualFile: VirtualFile, project: Project): JsonFile? {
-        val document = FileDocumentManager.getInstance().getDocument(virtualFile) ?: return null
-        val file = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return null
-        if (file is JsonFile) {
-            return file
-        }
-        return null
-    }
-
-    private fun findStringProperty(jsonObject: JsonObject, propertyName: String): String? {
-        val property = jsonObject.findProperty(propertyName) ?: return null
-        return (property.value as JsonStringLiteral?)?.value
-    }
-
-    private fun writeProperty(project: Project,
-                              jsonObject: JsonObject,
-                              propertyName: String,
-                              propertyValue: String,
-                              escapeValue: Boolean = true): JsonProperty? {
-        val generator = JsonElementGenerator(project)
-        val property = if (escapeValue) {
-            generator.createProperty(propertyName, "\"" + StringUtil.escapeStringCharacters(propertyValue) + "\"")
-        } else {
-            generator.createProperty(propertyName, propertyValue)
-        }
-
-        val existingProperty = jsonObject.findProperty(propertyName)
-        if (existingProperty != null) {
-            existingProperty.replace(property)
-            return property
-        }
-
-        val list = jsonObject.propertyList
-        if (list.isEmpty()) {
-            jsonObject.addAfter(property, jsonObject.firstChild)
-            return property
-        } else {
-            val comma = jsonObject.addAfter(generator.createComma(), ContainerUtil.getLastItem(list))
-            return jsonObject.addAfter(property, comma) as JsonProperty
-        }
     }
 }

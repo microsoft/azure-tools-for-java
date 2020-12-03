@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -34,11 +34,13 @@ import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSetti
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationViewModel
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
 import org.apache.http.client.utils.URIBuilder
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionLocalSettings
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionLocalSettingsUtil
 import java.io.File
 
 class AzureFunctionsHostConfigurationViewModel(
         private val lifetime: Lifetime,
-        project: Project,
+        private val project: Project,
         private val runnableProjectsModel: RunnableProjectsModel,
         val projectSelector: ProjectSelector,
         val tfmSelector: StringSelector,
@@ -83,6 +85,7 @@ class AzureFunctionsHostConfigurationViewModel(
     var trackProjectWorkingDirectory = true
 
     private val portRegex = Regex("(--port|-p) (\\d+)", RegexOption.IGNORE_CASE)
+    private var functionLocalSettings: FunctionLocalSettings? = null
 
     init {
         disable()
@@ -90,7 +93,7 @@ class AzureFunctionsHostConfigurationViewModel(
         projectSelector.bindTo(
                 runnableProjectsModel = runnableProjectsModel,
                 lifetime = lifetime,
-                projectFilter = { p: RunnableProject -> type.isApplicable(p.kind) },
+                projectFilter = { runnableProject: RunnableProject -> type.isApplicable(runnableProject.kind) },
                 onLoad = ::enable,
                 onSelect = ::handleProjectSelection
         )
@@ -155,12 +158,11 @@ class AzureFunctionsHostConfigurationViewModel(
             trackProjectWorkingDirectory = workingDirectorySelector.path.value == projectOutput.workingDirectory
         }
 
-        val parametersPortMatch = portRegex.find(programParameters)
-        val parametersPortValue = parametersPortMatch?.groupValues?.getOrNull(2)?.toIntOrNull() ?: -1
-        composeUrlString(parametersPortValue)
+        composeUrlString(getPortValue())
     }
 
-    private fun composeUrlString(port: Int) {
+    private fun composeUrlString(port: Int?) {
+        port ?: return
         val currentUrl = urlEditor.text.value
         val originalUrl = if (currentUrl.isNotEmpty()) currentUrl else "http://localhost"
 
@@ -173,6 +175,8 @@ class AzureFunctionsHostConfigurationViewModel(
     private fun handleProjectSelection(runnableProject: RunnableProject) {
         if (!isLoaded) return
         reloadTfmSelector(runnableProject)
+        readLocalSettingsForProject(runnableProject)
+        composeUrlString(getPortValue())
 
         val startBrowserUrl = runnableProject.customAttributes.singleOrNull { it.key == Key.StartBrowserUrl }?.value ?: ""
         val launchBrowser = runnableProject.customAttributes.singleOrNull { it.key == Key.LaunchBrowser }?.value?.toBoolean() ?: false
@@ -199,6 +203,21 @@ class AzureFunctionsHostConfigurationViewModel(
         }
         handleChangeTfmSelection()
     }
+
+    private fun readLocalSettingsForProject(runnableProject: RunnableProject) {
+        functionLocalSettings = FunctionLocalSettingsUtil.readFunctionLocalSettings(project, runnableProject)
+    }
+
+    private fun getPortValue(): Int? =
+            getPortFromCommandArguments() ?: getPortFromLocalSettingsFile() ?: 7071
+
+    private fun getPortFromCommandArguments(): Int? {
+        val programParameters = programParametersEditor.parametersString.value
+        val parametersPortMatch = portRegex.find(programParameters)
+        return parametersPortMatch?.groupValues?.getOrNull(2)?.toIntOrNull()
+    }
+
+    private fun getPortFromLocalSettingsFile(): Int? = functionLocalSettings?.host?.localHttpPort
 
     fun reset(projectFilePath: String,
               trackProjectExePath: Boolean,
@@ -274,17 +293,20 @@ class AzureFunctionsHostConfigurationViewModel(
             } else {
                 projectList.singleOrNull {
                     it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
-                }?.let { project ->
-                    projectSelector.project.set(project)
+                }?.let { runnableProject ->
+                    projectSelector.project.set(runnableProject)
+
+                    // Load Function Local Settings
+                    functionLocalSettings = FunctionLocalSettingsUtil.readFunctionLocalSettings(project, runnableProject)
 
                     // Set TFM
-                    reloadTfmSelector(project)
-                    val projectTfmExists = project.projectOutputs.any { it.tfm == projectTfm }
-                    val selectedTfm = if (projectTfmExists) projectTfm else project.projectOutputs.firstOrNull()?.tfm ?: ""
+                    reloadTfmSelector(runnableProject)
+                    val projectTfmExists = runnableProject.projectOutputs.any { it.tfm == projectTfm }
+                    val selectedTfm = if (projectTfmExists) projectTfm else runnableProject.projectOutputs.firstOrNull()?.tfm ?: ""
                     tfmSelector.string.set(selectedTfm)
 
                     // Set Project Output
-                    val projectOutput = project.projectOutputs.singleOrNull { it.tfm == selectedTfm }
+                    val projectOutput = runnableProject.projectOutputs.singleOrNull { it.tfm == selectedTfm }
                     val effectiveExePath = if (trackProjectExePath && projectOutput != null) projectOutput.exePath else exePath
                     val effectiveProgramParameters =
                             if (trackProjectArguments && projectOutput != null && projectOutput.defaultArguments.isNotEmpty())
@@ -301,6 +323,9 @@ class AzureFunctionsHostConfigurationViewModel(
                         projectOutput.workingDirectory else workingDirectory
 
                     resetProperties(effectiveExePath, effectiveProgramParameters, effectiveWorkingDirectory)
+
+                    // Set Browser info
+                    composeUrlString(getPortValue())
                 }
             }
             isLoaded = true

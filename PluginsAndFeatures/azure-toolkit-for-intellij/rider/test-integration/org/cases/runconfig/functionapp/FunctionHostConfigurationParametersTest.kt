@@ -341,7 +341,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
     private fun createParameters(
             project: Project = this.project,
             exePath: String = "",
-            programParameters: String = "host start --port 7071 --pause-on-error",
+            programParameters: String = "host start --pause-on-error",
             workingDirectory: String = File("/working/path").absolutePath,
             envs: Map<String, String> = emptyMap(),
             isPassParentEnvs: Boolean = true,

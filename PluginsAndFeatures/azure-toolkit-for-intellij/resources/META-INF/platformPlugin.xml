@@ -17,6 +17,7 @@
       </ul>
       <h4>Bug fix:</h4>
       <ul>
+        <li>Remove port argument from run/debug function app configuration (<a href="https://youtrack.jetbrains.com/issue/RIDER-48182">RIDER-48182</a>)</li>
         <li>Enhance error handling for azure cli token expires (<a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>)</li>
       </ul>
     </html>
