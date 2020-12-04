@@ -477,6 +477,11 @@
                 <version>1.10.0</version>
             </dependency>
             <dependency>
+                <groupId>stax</groupId>
+                <artifactId>stax</artifactId>
+                <version>1.2.0</version>
+            </dependency>
+            <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-storage</artifactId>
                 <version>${azure.storage.version}</version>
