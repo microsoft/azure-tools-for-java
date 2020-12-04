@@ -29,13 +29,11 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
@@ -50,6 +48,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,6 +173,23 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         properties.put(AppInsightsConstants.Region, region);
         return properties;
+    }
+
+    @Override
+    @Nullable
+    public Comparator<Node> getNodeComparator() {
+        return (node1, node2) -> {
+            if (node1 instanceof FunctionDeploymentSlotModule) return -1;
+            if (node2 instanceof FunctionDeploymentSlotModule) return 1;
+
+            if (node1 instanceof AppServiceLogFilesRootNode && node2 instanceof SubFunctionNode) return -1;
+            if (node2 instanceof AppServiceLogFilesRootNode && node1 instanceof SubFunctionNode) return 1;
+
+            if (node1 instanceof AppServiceUserFilesRootNode && node2 instanceof SubFunctionNode) return -1;
+            if (node2 instanceof AppServiceUserFilesRootNode && node1 instanceof SubFunctionNode) return -1;
+
+            return node1.getName().compareTo(node2.getName());
+        };
     }
 
     public FunctionApp getFunctionApp() {

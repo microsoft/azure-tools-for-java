@@ -23,11 +23,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.management.appservice.*;
-import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -39,6 +40,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +130,17 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         properties.put(AppInsightsConstants.Region, this.webapp.regionName());
         return properties;
+    }
+
+    @Override
+    @Nullable
+    public Comparator<Node> getNodeComparator() {
+        return (node1, node2) -> {
+            if (node1 instanceof DeploymentSlotModule) return -1;
+            if (node2 instanceof DeploymentSlotModule) return 1;
+
+            return node1.getName().compareTo(node2.getName());
+        };
     }
 
     public String getWebAppId() {
