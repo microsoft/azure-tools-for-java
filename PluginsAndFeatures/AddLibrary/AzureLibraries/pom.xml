@@ -71,6 +71,27 @@
 
     <build>
     <plugins>
+        <plugin>
+            <groupId>org.commonjava.maven.plugins</groupId>
+            <artifactId>directory-maven-plugin</artifactId>
+            <version>0.3.1</version>
+            <executions>
+                <execution>
+                    <id>directories</id>
+                    <goals>
+                        <goal>directory-of</goal>
+                    </goals>
+                    <phase>initialize</phase>
+                    <configuration>
+                        <property>azureLibProject.baseDir</property>
+                        <project>
+                            <groupId>com.microsoft.azuretools</groupId>
+                            <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
+                        </project>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
