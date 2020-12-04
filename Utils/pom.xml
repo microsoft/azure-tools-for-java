@@ -46,7 +46,7 @@
         <azure.security.keyvault.secrets.version>4.2.0</azure.security.keyvault.secrets.version>
         <azure.security.keyvault.keys.version>4.2.0</azure.security.keyvault.keys.version>
         <azure.security.keyvault.certificates.version>4.1.0</azure.security.keyvault.certificates.version>
-        <azure.storage.queue.version>12.7.0</azure.storage.queue.version>
+        <azure.storage.queue.version>12.6.0</azure.storage.queue.version>
         <azure.storage.blob.version>12.9.0</azure.storage.blob.version>
         <azure.storage.blob.batch.version>12.6.0</azure.storage.blob.batch.version>
         <azure.storage.file.share.version>12.7.0</azure.storage.file.share.version>
@@ -205,6 +205,12 @@
                 <groupId>com.azure</groupId>
                 <artifactId>azure-storage-queue</artifactId>
                 <version>${azure.storage.queue.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.dataformat</groupId>
+                        <artifactId>jackson-dataformat-xml</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
