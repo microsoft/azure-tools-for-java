@@ -18,13 +18,6 @@
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <testSourceDirectory>test/java</testSourceDirectory>
-        <testResources>
-            <testResource>
-                <directory>test/resources</directory>
-            </testResource>
-        </testResources>
         <defaultGoal>install</defaultGoal>
         <plugins>
             <plugin>
@@ -100,7 +93,7 @@
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>test/resources/data</directory>
+                                    <directory>src/test/resources/data</directory>
                                     <targetPath>data</targetPath>
                                 </resource>
                             </resources>

@@ -24,5 +24,5 @@ Feature: Mock File System Unit Test
     Then convert mocked file system path 'wasb://account@blob1/' to File should be '/data/account@blob1/'
 
   Scenario: Resources file exists
-    Given set mocked file system local working directory to 'test/resources/data/__default__/user/current'
+    Given set mocked file system local working directory to 'src/test/resources/data/__default__/user/current'
     Then mocked file 'my_words.txt' should exists
