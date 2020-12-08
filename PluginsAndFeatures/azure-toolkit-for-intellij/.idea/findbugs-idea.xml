@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FindBugs-IDEA">
+    <analysisEffort>max</analysisEffort>
+    <minPriority>High</minPriority>
+    <plugins>
+      <plugin id="com.h3xstream.findsecbugs" enabled="true" bundled="true" />
+    </plugins>
+    <includeFilterFiles>
+      <filter file="$PROJECT_DIR$/../../tools/spotbugs-security-include.xml" enabled="true" />
+    </includeFilterFiles>
+    <excludeFilterFiles>
+      <filter file="$PROJECT_DIR$/../../tools/spotbugs-security-exclude.xml" enabled="true" />
+    </excludeFilterFiles>
+  </component>
+</project>
