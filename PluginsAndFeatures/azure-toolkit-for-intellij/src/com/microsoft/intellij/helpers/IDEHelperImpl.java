@@ -88,9 +88,8 @@ import java.util.concurrent.ExecutionException;
 public class IDEHelperImpl implements IDEHelper {
 
     private static final String APP_SERVICE_FILE_EDITING = "App Service File Editing";
-    private static final String FILE_HAS_BEEN_DELETED = "Target file has been deleted from Azure, do you still want to save your changes?";
-    private static final String FILE_HAS_BEEN_MODIFIED = "Target file has been modified since you view it, do you still want to save your "
-        + "changes?";
+    private static final String FILE_HAS_BEEN_DELETED = "File %s has been deleted from Azure, do you still want to save your changes?";
+    private static final String FILE_HAS_BEEN_MODIFIED = "File %s has been modified since you view it, do you still want to save your changes?";
     private static final String SAVE_CHANGES = "Do you want to save your changes?";
 
     @Override
@@ -310,8 +309,7 @@ public class IDEHelperImpl implements IDEHelper {
         Project project = null;
 
         for (Project openProject : ProjectManager.getInstance().getOpenProjects()) {
-            if (projectDescriptor.getName().equals(openProject.getName())
-                && projectDescriptor.getPath().equals(openProject.getBasePath())) {
+            if (projectDescriptor.getName().equals(openProject.getName()) && projectDescriptor.getPath().equals(openProject.getBasePath())) {
                 project = openProject;
                 break;
             }
@@ -330,8 +328,8 @@ public class IDEHelperImpl implements IDEHelper {
         Artifact artifact = null;
 
         for (Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            if (artifactDescriptor.getName().equals(projectArtifact.getName())
-                && artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
+            if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
+                artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
                 artifact = projectArtifact;
                 break;
             }
@@ -458,13 +456,14 @@ public class IDEHelperImpl implements IDEHelper {
             final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
             final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
             if (target == null) {
-                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(null, FILE_HAS_BEEN_DELETED, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                boolean result = DefaultLoader.getUIHelper().showYesNoDialog(null, String.format(FILE_HAS_BEEN_DELETED, appServiceFile.getName()),
+                                                                             APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
                 if (!result) {
                     return;
                 }
             } else if (ZonedDateTime.parse(target.getMtime()).isAfter(ZonedDateTime.parse(appServiceFile.getMtime()))) {
                 boolean result = DefaultLoader.getUIHelper().showYesNoDialog(
-                    null, FILE_HAS_BEEN_MODIFIED, APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
+                    null, String.format(FILE_HAS_BEEN_MODIFIED, appServiceFile.getName()), APP_SERVICE_FILE_EDITING, Messages.getQuestionIcon());
                 if (!result) {
                     return;
                 }
