@@ -52,6 +52,7 @@
         <azure.storage.file.share.version>12.7.0</azure.storage.file.share.version>
         <azure.storage.file.datalake.version>12.3.0</azure.storage.file.datalake.version>
         <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
+        <findsecbugs.version>1.11.0</findsecbugs.version>
     </properties>
     <modules>
         <module>./check-tools</module>
@@ -151,6 +152,27 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.commonjava.maven.plugins</groupId>
+                <artifactId>directory-maven-plugin</artifactId>
+                <version>0.3.1</version>
+                <executions>
+                    <execution>
+                        <id>directories</id>
+                        <goals>
+                            <goal>directory-of</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <property>utilsProject.baseDir</property>
+                            <project>
+                                <groupId>com.microsoft.azuretools</groupId>
+                                <artifactId>utils</artifactId>
+                            </project>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.1.0</version>
@@ -179,6 +201,38 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.7</version>
+            </plugin>
+            <!-- SpotBugs Static Analysis -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.1.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>test</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>High</threshold>
+                    <failOnError>false</failOnError>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <!--utilsProject.baseDir will be set in initialize phase by directory-of goal -->
+                    <includeFilterFile>${utilsProject.baseDir}/../tools/spotbugs-security-include.xml</includeFilterFile>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <!--utilsProject.baseDir will be set in initialize phase by directory-of goal -->
+                    <excludeFilterFile>${utilsProject.baseDir}/../tools/spotbugs-security-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>${findsecbugs.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
             </plugin>
         </plugins>
     </build>
