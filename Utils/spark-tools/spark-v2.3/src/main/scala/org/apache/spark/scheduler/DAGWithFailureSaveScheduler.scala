@@ -23,6 +23,7 @@
 package org.apache.spark.scheduler
 
 import java.io._
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 
@@ -69,7 +70,12 @@ class DAGWithFailureSaveScheduler(
 //  private val mapOutputTracker = sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
   val failedEvents: mutable.HashMap[Int, CompletionEvent] = new mutable.HashMap()
   private val wd = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration).getWorkingDirectory
-  private val failureEventsDir = sc.eventLogDir.getOrElse(wd.toUri)
+  private val failureContextPathKey = "spark.failure.path"
+  private val failureEventsDir = if (sc.conf.contains(failureContextPathKey)) {
+    URI.create(sc.conf.get(failureContextPathKey))
+  } else {
+    sc.eventLogDir.getOrElse(wd.toUri)
+  }
   private val fs = Utils.getHadoopFileSystem(failureEventsDir, sc.hadoopConfiguration)
   private val minSizeForBroadcast =
     sc.conf.getSizeAsBytes("spark.shuffle.mapOutput.minSizeForBroadcast", "512k").toInt
