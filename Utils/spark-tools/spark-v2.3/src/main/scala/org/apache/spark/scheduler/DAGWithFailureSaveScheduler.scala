@@ -121,7 +121,7 @@ class DAGWithFailureSaveScheduler(
     }
   }
 
-  def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Unit = {
+  def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Path = {
     def getFailureSavingPath(fileName: String = null): Path = {
       val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"_attempt_${attemptId}_").getOrElse("_") + timestamp
       
@@ -267,6 +267,8 @@ class DAGWithFailureSaveScheduler(
           case NonFatal(err) => logWarning(s"Got an error when saving runtime $runtimeFile", err)
         }
       }))
+
+    failureContextFile.getParent
   }
 
   override private[scheduler] def handleTaskCompletion(event: CompletionEvent): Unit = {
@@ -289,22 +291,34 @@ class DAGWithFailureSaveScheduler(
 
   override private[scheduler] def handleTaskSetFailed(taskSet: TaskSet, reason: String, exception: Option[Throwable]): Unit = {
     val FailureMessageRegEx = """(?s)^Task (\d+) in stage (.+) failed (\d+) times.*""".r
-    reason match {
+    val reasonWithFailureDebug: String = reason match {
       case FailureMessageRegEx(taskIndex, stage, retries) => {
         failedEvents.get(taskIndex.toInt)
-          .foreach(event => {
+          .map(event => {
             val task = event.task
             val taskId = event.taskInfo.id
             val stageId = task.stageId
             val taskFailureTimestamp = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'").format(new Date(event.taskInfo.finishTime))
 
             logInfo("Save failure task " + taskIndex)
-            saveFailureTask(task, stageId, taskId, event.taskInfo.attemptNumber, taskFailureTimestamp)
+            val savedFolder = saveFailureTask(task, stageId, taskId, event.taskInfo.attemptNumber, taskFailureTimestamp)
+
+            val driverStacktraceStart = reason.indexOf("Driver stacktrace:")
+            val insertPlace = if (driverStacktraceStart < 0)
+              reason.size
+            else
+              driverStacktraceStart
+
+            s"""
+              |${reason.substring(0, insertPlace)}Failure debugging:
+              |    Failure context saved into $savedFolder
+              |${reason.substring(insertPlace)}""".stripMargin
           })
+          .getOrElse(reason)
       }
-      case _ =>
+      case _ => reason
     }
 
-    super.handleTaskSetFailed(taskSet, reason, exception)
+    super.handleTaskSetFailed(taskSet, reasonWithFailureDebug, exception)
   }
 }
