@@ -63,7 +63,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(value = "start to create a new web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "create web app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
         if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
@@ -75,7 +75,6 @@ public class CreateWebAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(value = "create new web app", type = AzureOperation.Type.ACTION)
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -84,13 +83,13 @@ public class CreateWebAppAction extends NodeActionListener {
             refreshAzureExplorer();
             final Path application = config.getApplication();
             if (Objects.nonNull(application) && application.toFile().exists()) {
-                DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
+                AzureTaskManager.getInstance().runLater(() -> deploy(webapp, application, project));
             }
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.SERVICE)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);

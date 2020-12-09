@@ -35,6 +35,8 @@ import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderStarterBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
@@ -60,7 +62,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
     private static final int ONE_SECOND = 1000;
     private static final int TWO_SECONDS = 2000;
     private final Project project;
-    private final WebAppBase appService;
+    private WebAppBase appService;
 
     public ProfileFlightRecordAction(WebAppNode webAppNode) {
         super();
@@ -77,11 +79,6 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                                        String.format(message("webapp.flightRecord.error.notSupport.message"), appService.name()));
             return;
         }
-        if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
-            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"),
-                                       String.format(message("webapp.flightRecord.error.notRunning.message"), appService.name()));
-            return;
-        }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
                                  "start-flight-recorder", op -> {
                 final AzureTask task = new AzureTask(project, PROFILE_FLIGHT_RECORDER, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
@@ -91,6 +88,14 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private void doProfileFlightRecorderAll() {
         try {
+            final String subscriptionId = AzureMvpModel.getSegment(appService.id(), "subscriptions");
+            // Always get latest app service status, workaround for https://dev.azure.com/mseng/VSJava/_workitems/edit/1797916
+            appService = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, appService.id());
+            if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
+                notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"),
+                                           String.format(message("webapp.flightRecord.error.notRunning.message"), appService.name()));
+                return;
+            }
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProfileWebApp.title"), appService.name()));
             CountDownLatch finishLatch = new CountDownLatch(1);

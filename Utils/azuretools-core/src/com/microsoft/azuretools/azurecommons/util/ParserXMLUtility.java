@@ -53,29 +53,35 @@ public final class ParserXMLUtility {
     /**
      * Parses XML file and returns XML document.
      *
-     * @param fileName
-     *            .
+     * @param fileName .
      * @return XML document or <B>null</B> if error occurred
      * @throws Exception
      */
     public static Document parseXMLFile(final String fileName)
             throws Exception {
-        DocumentBuilder docBuilder;
-        Document doc = null;
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-                .newInstance();
-        docBuilderFactory.setIgnoringElementContentWhitespace(true);
-        docBuilder = docBuilderFactory.newDocumentBuilder();
-        File xmlFile = new File(fileName);
-        doc = docBuilder.parse(xmlFile);
-        return doc;
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(ParserXMLUtility.class.getClassLoader());
+            // fixes https://dev.azure.com/mseng/VSJava/_workitems/edit/1796447
+            // refers https://jetbrains.org/intellij/sdk/docs/basics/plugin_structure/plugin_class_loaders.html
+            DocumentBuilder docBuilder;
+            Document doc = null;
+            DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
+                    .newInstance();
+            docBuilderFactory.setIgnoringElementContentWhitespace(true);
+            docBuilder = docBuilderFactory.newDocumentBuilder();
+            File xmlFile = new File(fileName);
+            doc = docBuilder.parse(xmlFile);
+            return doc;
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
     }
 
     /**
      * Parses Input Stream and returns XML document.
      *
-     * @param inputStream
-     *            .
+     * @param inputStream .
      * @return XML document or <B>null</B> if error occurred
      * @throws Exception
      */
@@ -182,14 +188,16 @@ public final class ParserXMLUtility {
 
     }
 
-    /** Generic API to delete elements from DOM */
+    /**
+     * Generic API to delete elements from DOM
+     */
     public static void deleteElement(Document doc, String expr)
             throws XPathExpressionException {
         if (doc == null) {
             throw new IllegalArgumentException(INVALID_ARG);
         } else {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            Element element = (Element) xPath.evaluate(expr, doc,
+            XPath path = XPathFactory.newInstance().newXPath();
+            Element element = (Element) path.evaluate(expr, doc,
                     XPathConstants.NODE);
 
             if (element != null) {
@@ -200,33 +208,42 @@ public final class ParserXMLUtility {
         }
     }
 
-    /** This API evaluates XPath expression and return the result as a String. */
+    /**
+     * This API evaluates XPath expression and return the result as a String.
+     */
     public static String getExpressionValue(Document doc, String expr)
             throws XPathExpressionException {
-        if (doc == null || expr == null || expr.isEmpty())
+        if (doc == null || expr == null || expr.isEmpty()) {
             throw new IllegalArgumentException(INVALID_ARG);
+        }
 
-        XPath xPath = XPathFactory.newInstance().newXPath();
-        return xPath.evaluate(expr, doc);
+        XPath path = XPathFactory.newInstance().newXPath();
+        return path.evaluate(expr, doc);
     }
 
-    /** This API evaluates XPath expression and sets the value. */
+    /**
+     * This API evaluates XPath expression and sets the value.
+     */
     public static void setExpressionValue(Document doc, String expr,
-            String value) throws XPathExpressionException {
-        if (doc == null || expr == null || expr.isEmpty())
+                                          String value) throws XPathExpressionException {
+        if (doc == null || expr == null || expr.isEmpty()) {
             throw new IllegalArgumentException(INVALID_ARG);
+        }
 
-        XPath xPath = XPathFactory.newInstance().newXPath();
-        Node node = (Node) xPath.evaluate(expr, doc, XPathConstants.NODE);
+        XPath path = XPathFactory.newInstance().newXPath();
+        Node node = (Node) path.evaluate(expr, doc, XPathConstants.NODE);
         node.setNodeValue(value);
     }
 
     protected static boolean isEpPortEqualOrInRange(String oldPort,
-            String newPort) {
+                                                    String newPort) {
         boolean isEqual = false;
         try {
 
-            int oldMin, oldMax, newMin, newMax;
+            int oldMin = 0;
+            int oldMax = 0;
+            int newMin = 0;
+            int newMax = 0;
             if (oldPort.contains("-")) {
                 String[] rang = oldPort.split("-");
                 oldMin = Integer.valueOf(rang[0]);
@@ -282,25 +299,28 @@ public final class ParserXMLUtility {
         return isValid;
     }
 
-    /** Generic API to update or create DOM elements */
+    /**
+     * Generic API to update or create DOM elements
+     */
     public static Element updateOrCreateElement(Document doc, String expr,
-            String parentNodeExpr, String elementName, boolean firstChild,
-            Map<String, String> attributes)
+                                                String parentNodeExpr, String elementName, boolean firstChild,
+                                                Map<String, String> attributes)
             throws Exception {
 
         if (doc == null) {
             throw new IllegalArgumentException(INVALID_ARG);
         } else {
-            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPath path = XPathFactory.newInstance().newXPath();
             Element element = null;
-            if (expr != null)
-                element = (Element) xPath.evaluate(expr, doc,
+            if (expr != null) {
+                element = (Element) path.evaluate(expr, doc,
                         XPathConstants.NODE);
+            }
 
             // If element doesn't exist create one
             if (element == null) {
                 element = doc.createElement(elementName);
-                Element parentElement = (Element) xPath.evaluate(
+                Element parentElement = (Element) path.evaluate(
                         parentNodeExpr, doc, XPathConstants.NODE);
                 if (firstChild) {
                     parentElement.insertBefore(
@@ -323,20 +343,23 @@ public final class ParserXMLUtility {
         }
     }
 
-    /** Generic API to update or create DOM elements */
+    /**
+     * Generic API to update or create DOM elements
+     */
     public static Element createElement(Document doc, String expr,
-            Element parentElement, String elementName, boolean firstChild,
-            Map<String, String> attributes)
+                                        Element parentElement, String elementName, boolean firstChild,
+                                        Map<String, String> attributes)
             throws Exception {
 
         if (doc == null) {
             throw new IllegalArgumentException(INVALID_ARG);
         } else {
-            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPath path = XPathFactory.newInstance().newXPath();
             Element element = null;
-            if (expr != null)
-                element = (Element) xPath.evaluate(expr, doc,
+            if (expr != null) {
+                element = (Element) path.evaluate(expr, doc,
                         XPathConstants.NODE);
+            }
 
             // If element doesn't exist create one
             if (element == null) {
@@ -364,22 +387,18 @@ public final class ParserXMLUtility {
 
     /**
      * API checks if a node is already present in the XML document
+     *
      * @param doc
      * @param nodeExpression
-     * @return
      * @throws Exception
      */
     public static boolean doesNodeExists(Document doc, String nodeExpression) throws Exception {
-        if (nodeExpression == null ) {
+        if (nodeExpression == null) {
             throw new IllegalArgumentException(INVALID_ARG);
         } else {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            Element element = (Element) xPath.evaluate(nodeExpression, doc, XPathConstants.NODE);
-            if (element == null) {
-                return false;
-            } else {
-                return true;
-            }
+            XPath path = XPathFactory.newInstance().newXPath();
+            Element element = (Element) path.evaluate(nodeExpression, doc, XPathConstants.NODE);
+            return element != null;
         }
     }
 }
