@@ -59,9 +59,12 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         this.addItem(defaultValue);
         subscription = this.loadItemsAsync()
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               items.forEach(this::addItem);
-                               this.resetDefaultValue(defaultValue);
-                               this.setLoading(false);
+                               synchronized (AppServiceComboBox.this) {
+                                   AppServiceComboBox.this.removeAllItems();
+                                   items.forEach(this::addItem);
+                                   this.resetDefaultValue(defaultValue);
+                                   this.setLoading(false);
+                               }
                            }), (e) -> {
                                    this.handleLoadingError(e);
                                });
