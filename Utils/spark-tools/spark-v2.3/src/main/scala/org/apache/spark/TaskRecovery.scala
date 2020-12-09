@@ -23,35 +23,38 @@
 package org.apache.spark
 
 import java.io._
+import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths, StandardCopyOption}
 import java.util.Base64
 
 import com.google.common.io.ByteStreams
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.executor.TaskMetrics
 import org.apache.spark.internal.Logging
 import org.apache.spark.network.buffer.FileSegmentManagedBuffer
 import org.apache.spark.scheduler._
+import org.apache.spark.serializer.SerializerInstance
 import org.apache.spark.storage.{BlockId, ShuffleIndexBlockId}
+
+import scala.reflect.ClassTag
 
 class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
   import TaskRecovery._
 
+  private val serializer = SparkEnv.get.closureSerializer.newInstance()
   private val fs = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration)
   private val bcMap: Map[Long, Broadcast[Any]] = failureTask.bcs
     .sortBy(_.id)
     .map(bc => {
-      val newBc = sc.broadcast(decodeObj(bc.value))
+      val newBc = sc.broadcast(decodeObj[Any](serializer, bc.value))
 
       bc.id -> newBc
     }) toMap
 
   private val taskBinary = bcMap(failureTask.binaryTaskBcId).asInstanceOf[Broadcast[Array[Byte]]]
-  private val serializer = SparkEnv.get.closureSerializer.newInstance()
 
-  private val part = decodeObj(failureTask.partitionEnc).asInstanceOf[Partition]
+  private val part = decodeObj[Partition](serializer, failureTask.partitionEnc)
   private val locs = failureTask.hosts.map(HostTaskLocation).toSeq
   private val metrics = TaskMetrics.registered
 
@@ -159,12 +162,10 @@ class TaskRecovery(sc: SparkContext, failureTask: FailureTask) extends Logging {
 }
 
 object TaskRecovery {
-  def decodeObj(code: String): Any = {
+  def decodeObj[T : ClassTag](serializer: SerializerInstance, code: String): T = {
     val objBytes = Base64.getDecoder.decode(code)
 
-    val objBytesIn = new ByteArrayInputStream(objBytes)
-    val in = new ObjectInputStream(objBytesIn)
-    in.readObject
+    serializer.deserialize[T](ByteBuffer.wrap(objBytes))
   }
 
   def importShuffleToLocal(offset: Long,

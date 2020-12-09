@@ -40,6 +40,7 @@ import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
 import scala.language.postfixOps
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 private[spark]
@@ -79,19 +80,17 @@ class DAGWithFailureSaveScheduler(
   private val fs = Utils.getHadoopFileSystem(failureEventsDir, sc.hadoopConfiguration)
   private val minSizeForBroadcast =
     sc.conf.getSizeAsBytes("spark.shuffle.mapOutput.minSizeForBroadcast", "512k").toInt
+  private val serializer = SparkEnv.get.closureSerializer.newInstance()
 
   def getEncodedByteArray(buffer: Array[Byte]): String =
     Base64.getEncoder.encode(buffer)
       .map(_.toChar)
       .mkString
 
-  def encodeObject(obj: Any): String = {
-    val bytesOutputStream = new ByteArrayOutputStream()
-    val objOutputStream = new ObjectOutputStream(bytesOutputStream)
-    objOutputStream.writeObject(obj)
-    objOutputStream.close()
+  def encodeObject[T: ClassTag](obj: T): String = {
+    val objBytes = serializer.serialize[T](obj).array()
 
-    getEncodedByteArray(bytesOutputStream.toByteArray)
+    getEncodedByteArray(objBytes)
   }
 
   def writeIndexFile(outputStream: OutputStream, lengths: Array[Long]): Unit = {
