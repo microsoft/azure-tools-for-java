@@ -204,14 +204,7 @@ public class SubFunctionNode extends Node {
             final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
             return (Map) bindings.stream()
                     .filter(object -> object instanceof Map &&
-                            // Get trigger bindings...
-                            StringUtils.containsIgnoreCase((CharSequence) ((Map) object).get("type"), "trigger") &&
-
-                                // ...that have "direction": "in"...
-                                (StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in") ||
-
-                                // ...or are an http trigger (no direction specified there - http://json.schemastore.org/function)
-                                StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger")))
+                            StringUtils.containsIgnoreCase((CharSequence) ((Map) object).get("type"), "trigger"))
                     .findFirst().orElse(null);
         } catch (ClassCastException | NullPointerException e) {
             // In case function.json lacks some parameters
