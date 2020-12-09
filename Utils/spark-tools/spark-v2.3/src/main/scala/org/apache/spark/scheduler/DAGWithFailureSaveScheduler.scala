@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.{FileUtil, Path}
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.failure.{BroadcastValue, FailureTask, ShuffleData, ShuffleDeps}
 import org.apache.spark.network.buffer.ManagedBuffer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage._

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.apache.spark
+package org.apache.spark.failure
 
 import java.io._
 import java.nio.ByteBuffer
@@ -36,6 +36,7 @@ import org.apache.spark.network.buffer.FileSegmentManagedBuffer
 import org.apache.spark.scheduler._
 import org.apache.spark.serializer.SerializerInstance
 import org.apache.spark.storage.{BlockId, ShuffleIndexBlockId}
+import org.apache.spark._
 
 import scala.reflect.ClassTag
 
