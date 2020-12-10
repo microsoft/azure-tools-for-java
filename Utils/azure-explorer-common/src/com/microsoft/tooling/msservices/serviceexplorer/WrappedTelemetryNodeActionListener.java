@@ -31,9 +31,14 @@ public class WrappedTelemetryNodeActionListener extends NodeActionListener {
     private final String operationName;
 
     public WrappedTelemetryNodeActionListener(String serviceName, String operationName, NodeActionListener listener) {
+        this(serviceName, operationName, listener, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public WrappedTelemetryNodeActionListener(String serviceName, String operationName, NodeActionListener listener, int priority) {
         this.serviceName = serviceName;
         this.operationName = operationName;
         this.listener = listener;
+        this.setPriority(priority);
     }
 
     @Override

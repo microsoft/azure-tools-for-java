@@ -55,6 +55,7 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import org.jetbrains.annotations.NotNull;
 
@@ -223,24 +224,24 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private JPopupMenu createPopupMenuForNode(Node node) {
-        JPopupMenu menu = new JPopupMenu();
-
-        for (final NodeAction nodeAction : node.getNodeActions()) {
-            if (!nodeAction.isEnabled()) {
-                continue;
-            }
-            JMenuItem menuItem = new JMenuItem(nodeAction.getName());
-            menuItem.setEnabled(nodeAction.isEnabled());
-            if (nodeAction.getIconPath() != null) {
-                menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
-            }
-            // delegate the menu item click to the node action's listeners
-            menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
-
-            menu.add(menuItem);
-        }
-
+        final JPopupMenu menu = new JPopupMenu();
+        node.getNodeActions().stream()
+            .filter(NodeAction::isEnabled)
+            .sorted(Sortable::compare)
+            .map(this::createMenuItemFromNodeAction)
+            .forEach(menu::add);
         return menu;
+    }
+
+    private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
+        final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
+        menuItem.setEnabled(nodeAction.isEnabled());
+        if (nodeAction.getIconPath() != null) {
+            menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        }
+        // delegate the menu item click to the node action's listeners
+        menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
+        return menuItem;
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
@@ -259,11 +260,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode, project));
 
         // create child tree nodes for each child node
-        if (node.hasChildNodes()) {
-            for (Node childNode : node.getChildNodes()) {
-                treeNode.add(createTreeNode(childNode, project));
-            }
-        }
+        node.getChildNodes().stream()
+            .sorted(Sortable::compare)
+            .map(childNode -> createTreeNode(childNode, project))
+            .forEach(treeNode::add);
 
         return treeNode;
     }

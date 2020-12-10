@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
 import com.microsoft.azure.common.Utils;
@@ -57,5 +56,10 @@ public class FunctionsNode extends RefreshableNode {
                 .stream()
                 .map(envelope -> new FunctionNode(envelope, this))
                 .forEach(this::addChildNode);
+    }
+
+    @Override
+    public int getPriority() {
+        return HIGH_PRIORITY;
     }
 }

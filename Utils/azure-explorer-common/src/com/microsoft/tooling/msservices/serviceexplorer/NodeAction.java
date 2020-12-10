@@ -28,8 +28,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
-public class NodeAction {
+public class NodeAction implements Sortable {
+    private int priority = Sortable.DEFAULT_PRIORITY;
     private String name;
     private boolean enabled = true;
     private List<NodeActionListener> listeners = new ArrayList<NodeActionListener>();
@@ -94,5 +96,14 @@ public class NodeAction {
 
     public void setIconPath(String iconPath) {
         this.iconPath = iconPath;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 }

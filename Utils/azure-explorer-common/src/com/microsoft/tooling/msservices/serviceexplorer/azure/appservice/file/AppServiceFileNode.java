@@ -32,6 +32,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import lombok.extern.java.Log;
 
@@ -94,6 +95,11 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         final Runnable runnable = () -> open(context);
         final String message = String.format("fetching file %s...", this.file.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), message, false, runnable));
+    }
+
+    @Override
+    public int getPriority() {
+        return this.file.getType() == AppServiceFile.Type.DIRECTORY ? Sortable.HIGH_PRIORITY : Sortable.DEFAULT_PRIORITY;
     }
 
     @Override

@@ -36,10 +36,21 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NodeActionListener implements EventListener {
+public abstract class NodeActionListener implements EventListener, Sortable {
+    protected int priority = Sortable.DEFAULT_PRIORITY;
+
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     protected void beforeActionPerformed(NodeActionEvent e) {
