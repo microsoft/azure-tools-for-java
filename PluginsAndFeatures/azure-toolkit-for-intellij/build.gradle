@@ -54,11 +54,10 @@ tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 //}
 
 intellij {
-    type = 'IU'
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal', 'DatabaseTools']
+    plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
 	downloadSources = Boolean.valueOf(sources)
 }
 
