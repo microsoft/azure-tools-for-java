@@ -60,7 +60,7 @@ public class AppServiceFileService {
     @Nullable
     @AzureOperation(
             value = "get files with path[%s] of webapp[%s]",
-            params = {"path", "@app.name()"},
+            params = {"$path", "@app.name()"},
             type = AzureOperation.Type.SERVICE
     )
     public AppServiceFile getFileByPath(String path) {
