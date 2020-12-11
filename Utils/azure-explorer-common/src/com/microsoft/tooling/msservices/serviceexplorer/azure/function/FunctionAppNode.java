@@ -140,17 +140,17 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
     public void startFunctionApp() {
-        functionAppNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
+        functionAppNodePresenter.onStartFunctionApp(this.subscriptionId, this.getFunctionAppId());
     }
 
     @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
     public void restartFunctionApp() {
-        functionAppNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
+        functionAppNodePresenter.onRestartFunctionApp(this.subscriptionId, this.getFunctionAppId());
     }
 
     @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
     public void stopFunctionApp() {
-        functionAppNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
+        functionAppNodePresenter.onStopFunctionApp(this.subscriptionId, this.getFunctionAppId());
     }
 
     private class DeleteFunctionAppAction extends AzureNodeActionPromptListener {

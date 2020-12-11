@@ -35,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -150,7 +151,7 @@ public class FunctionNode extends Node {
         type = AzureOperation.Type.TASK
     )
     private void triggerHttpTrigger(Map binding) {
-        final AuthorizationLevel authLevel = AuthorizationLevel.valueOf((String) binding.get("authLevel"));
+        final AuthorizationLevel authLevel = EnumUtils.getEnumIgnoreCase(AuthorizationLevel.class, (String) binding.get("authLevel"));
         String targetUrl;
         switch (authLevel) {
             case ANONYMOUS:
@@ -202,8 +203,6 @@ public class FunctionNode extends Node {
         try {
             final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
             return (Map) bindings.stream()
-                    .filter(object -> object instanceof Map &&
-                            StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in"))
                     .filter(object ->
                             StringUtils.containsIgnoreCase((CharSequence) ((Map) object).get("type"), "trigger"))
                     .findFirst().orElse(null);
