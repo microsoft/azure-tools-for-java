@@ -38,6 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_FUNCTION_APP;
@@ -56,21 +57,12 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     private static final String FUNCTION_LABEL = "Function";
 
     private final FunctionAppNodePresenter<FunctionAppNode> functionAppNodePresenter;
-    private String functionAppName;
-    private String functionAppId;
-    private String region;
     private FunctionApp functionApp;
 
-    /**
-     * Constructor.
-     */
     public FunctionAppNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
         super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
                 functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
         this.functionApp = functionApp;
-        this.functionAppId = functionApp.id();
-        this.functionAppName = functionApp.name();
-        this.region = functionApp.regionName();
         functionAppNodePresenter = new FunctionAppNodePresenter<>();
         functionAppNodePresenter.onAttachView(FunctionAppNode.this);
         loadActions();
@@ -78,7 +70,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @Override
     public String getIconPath() {
-        return this.state == WebAppBaseState.STOPPED ? "azure-functions-stop.png" : "azure-functions-small.png";
+        return Objects.equals(this.state, WebAppBaseState.STOPPED) ? "azure-functions-stop.png" : "azure-functions-small.png";
     }
 
     @Override
@@ -102,10 +94,10 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
                 createBackgroundActionListener("Restarting", () -> restartFunctionApp())));
         addAction(ACTION_DELETE, new DeleteFunctionAppAction());
-        addAction("Open in portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
+        addAction("Open in Portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                openResourcesInPortal(subscriptionId, functionAppId);
+                openResourcesInPortal(subscriptionId, getFunctionAppId());
             }
         }));
         addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP, new NodeActionListener() {
@@ -117,7 +109,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         super.loadActions();
     }
 
-    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
     }
@@ -126,7 +118,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, region);
+        properties.put(AppInsightsConstants.Region, getRegion());
         return properties;
     }
 
@@ -135,11 +127,15 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     public String getFunctionAppId() {
-        return this.functionAppId;
+        return this.functionApp.id();
     }
 
     public String getFunctionAppName() {
-        return this.functionAppName;
+        return this.functionApp.name();
+    }
+
+    public String getRegion() {
+        return this.functionApp.regionName();
     }
 
     @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
