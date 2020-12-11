@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.apache.spark
+package org.apache.spark.failure
 
 import java.util.Properties
 
