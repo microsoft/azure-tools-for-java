@@ -32,7 +32,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -62,7 +62,7 @@ public class StartStreamingLogsAction extends NodeActionListener {
         this.operation = START_STREAMING_LOG_WEBAPP_SLOT;
     }
 
-    public StartStreamingLogsAction(FunctionNode functionNode) {
+    public StartStreamingLogsAction(FunctionAppNode functionNode) {
         super();
         this.project = (Project) functionNode.getProject();
         this.resourceId = functionNode.getId();

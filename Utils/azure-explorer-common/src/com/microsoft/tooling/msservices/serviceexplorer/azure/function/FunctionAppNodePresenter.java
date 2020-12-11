@@ -27,7 +27,7 @@ import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
-public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresenter<V> {
+public class FunctionAppNodePresenter<V extends FunctionAppNodeView> extends MvpPresenter<V> {
     public void onStartFunctionApp(String subscriptionId, String appId) {
         AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, appId);
         renderFunctionStatus(subscriptionId, appId);
@@ -43,18 +43,18 @@ public class FunctionNodePresenter<V extends FunctionNodeView> extends MvpPresen
         renderFunctionStatus(subscriptionId, appId);
     }
 
-    public void onRefreshFunctionNode(String subscriptionId, String appId) {
-        final FunctionNodeView view = getMvpView();
-        if (view != null) {
-            view.renderSubModules(AzureFunctionMvpModel.getInstance().listFunctionEnvelopeInFunctionApp(subscriptionId, appId));
-        }
-    }
-
     private void renderFunctionStatus(String subscriptionId, String appId) {
-        final FunctionNodeView view = getMvpView();
+        final FunctionAppNodeView view = getMvpView();
         if (view != null) {
             final FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, appId);
             view.renderNode(WebAppBaseState.fromString(target.state()));
+        }
+    }
+
+    public void onNodeRefresh() {
+        final FunctionAppNodeView view = getMvpView();
+        if (view != null) {
+            view.renderSubModules();
         }
     }
 }

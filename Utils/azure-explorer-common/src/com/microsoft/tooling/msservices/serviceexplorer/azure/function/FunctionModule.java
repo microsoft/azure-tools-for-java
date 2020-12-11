@@ -63,7 +63,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     @Override
     public void renderChildren(@NotNull final List<ResourceEx<FunctionApp>> resourceExes) {
         for (final ResourceEx<FunctionApp> resourceEx : resourceExes) {
-            final FunctionNode node = new FunctionNode(this, resourceEx.getSubscriptionId(), resourceEx.getResource());
+            final FunctionAppNode node = new FunctionAppNode(this, resourceEx.getSubscriptionId(), resourceEx.getResource());
             addChildNode(node);
         }
     }

@@ -38,7 +38,7 @@ import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigur
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +52,9 @@ public class DeployFunctionAppAction extends NodeActionListener {
     private final AzureFunctionSupportConfigurationType functionType = AzureFunctionSupportConfigurationType.getInstance();
 
     private Project project;
-    private FunctionNode functionNode;
+    private FunctionAppNode functionNode;
 
-    public DeployFunctionAppAction(FunctionNode functionNode) {
+    public DeployFunctionAppAction(FunctionAppNode functionNode) {
         this.functionNode = functionNode;
         this.project = (Project) functionNode.getProject();
     }

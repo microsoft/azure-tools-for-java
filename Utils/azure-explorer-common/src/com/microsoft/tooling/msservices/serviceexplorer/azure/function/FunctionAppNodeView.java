@@ -22,11 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
-import java.util.List;
-
-public interface FunctionNodeView extends WebAppBaseNodeView {
-    void renderSubModules(List<FunctionEnvelope> functionEnvelopes);
+public interface FunctionAppNodeView extends WebAppBaseNodeView {
+    void renderSubModules();
 }

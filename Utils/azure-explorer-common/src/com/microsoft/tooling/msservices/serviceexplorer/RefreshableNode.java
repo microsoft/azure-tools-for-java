@@ -22,13 +22,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
-import com.microsoft.azuretools.enums.ErrorEnum;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.ArrayList;
@@ -95,8 +98,6 @@ public abstract class RefreshableNode extends Node {
                 }
                 refreshItems();
                 future.set(getChildNodes());
-            } catch (AzureRuntimeException e) {
-                DefaultLoader.getUIHelper().showErrorNotification("Error occurred while refreshing node", ErrorEnum.getDisplayMessageByCode(e.getCode()));
             } catch (Exception e) {
                 future.setException(e);
             } finally {
@@ -159,12 +160,7 @@ public abstract class RefreshableNode extends Node {
                 node.setName(name);
 
                 if (throwable != null) {
-                    DefaultLoader.getUIHelper().showException("An error occurred while attempting " +
-                                                                  "to load " + node.getName() + ".",
-                                                              throwable,
-                                                              "MS Azure Explorer - Error Loading " + node.getName(),
-                                                              false,
-                                                              true);
+                    AzureExceptionHandler.getInstance().handleException(throwable, true);
                 }
             }
         }));
