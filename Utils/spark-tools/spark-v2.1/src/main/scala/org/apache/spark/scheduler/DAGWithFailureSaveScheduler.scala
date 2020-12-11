@@ -41,6 +41,7 @@ import scala.collection.mutable
 import scala.concurrent.Promise
 import scala.concurrent.duration.Duration
 import scala.language.postfixOps
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 private[spark]
@@ -71,19 +72,17 @@ class DAGWithFailureSaveScheduler(
 //  private val mapOutputTracker = sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
   val failedEvents: mutable.HashMap[Int, CompletionEvent] = new mutable.HashMap()
   val fs = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration)
+  private val serializer = SparkEnv.get.closureSerializer.newInstance()
 
   def getEncodedByteArray(buffer: Array[Byte]): String =
     Base64.getEncoder.encode(buffer)
       .map(_.toChar)
       .mkString
 
-  def encodeObject(obj: Any): String = {
-    val bytesOutputStream = new ByteArrayOutputStream()
-    val objOutputStream = new ObjectOutputStream(bytesOutputStream)
-    objOutputStream.writeObject(obj)
-    objOutputStream.close()
+  def encodeObject[T: ClassTag](obj: T): String = {
+    val objBytes = serializer.serialize[T](obj).array()
 
-    getEncodedByteArray(bytesOutputStream.toByteArray)
+    getEncodedByteArray(objBytes)
   }
 
   def writeIndexFile(outputStream: OutputStream, lengths: Array[Long]): Unit = {
