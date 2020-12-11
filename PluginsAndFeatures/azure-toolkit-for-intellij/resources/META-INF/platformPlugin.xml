@@ -47,11 +47,6 @@
           canCloseContents="true"
           icon="CommonIcons.ToolWindow.AzureLog" />
 
-    <projectConfigurable groupId="root"
-                         id="com.microsoft.intellij.AzureConfigurable"
-                         provider="com.microsoft.intellij.AzureConfigurableProvider"
-                         dynamic="true"/>
-
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
 
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>

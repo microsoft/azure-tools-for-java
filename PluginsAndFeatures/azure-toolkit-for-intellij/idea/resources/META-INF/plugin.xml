@@ -87,6 +87,11 @@
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
 
+    <projectConfigurable groupId="root"
+                         id="com.microsoft.intellij.AzureConfigurable"
+                         provider="com.microsoft.intellij.AzureConfigurableProvider"
+                         dynamic="true"/>
+
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
