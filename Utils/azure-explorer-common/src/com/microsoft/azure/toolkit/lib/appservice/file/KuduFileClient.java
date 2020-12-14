@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.file;
 
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.http.*;
 import rx.Observable;
@@ -45,11 +46,12 @@ public interface KuduFileClient extends AppServiceFileClient {
     Observable<List<AppServiceFile>> getFilesInDirectory(@Path("path") String path);
 
     @Headers({
-                 "Content-Type: application/json; charset=utf-8",
-                 "x-ms-logging-context: com.microsoft.azure.management.appservice.WebApps saveFile"
-             })
+            "Content-Type: application/json; charset=utf-8",
+            "x-ms-logging-context: com.microsoft.azure.management.appservice.WebApps saveFile",
+            "If-Match: *"
+    })
     @PUT("api/vfs/{path}")
-    Observable<ResponseBody> saveFile(@Path("path") String path);
+    Observable<Void> saveFile(@Path("path") String path, @Body RequestBody requestBody);
 
     @Headers({
                  "Content-Type: application/json; charset=utf-8",

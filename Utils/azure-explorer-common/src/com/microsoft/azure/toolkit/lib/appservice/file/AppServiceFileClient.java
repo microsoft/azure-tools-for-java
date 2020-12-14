@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.file;
 
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import rx.Observable;
 
@@ -32,7 +33,7 @@ public interface AppServiceFileClient {
 
     Observable<? extends List<? extends AppServiceFile>> getFilesInDirectory(String path);
 
-    Observable<ResponseBody> saveFile(String path);
+    Observable<Void> saveFile(String path, RequestBody requestBody);
 
     Observable<ResponseBody> createDirectory(String path);
 
