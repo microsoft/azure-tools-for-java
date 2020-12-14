@@ -114,6 +114,7 @@ abstract class AppExistingComponent<TApp : WebAppBase, TSlot: DeploymentSlotBase
 
         pnlExistingAppTable.tableRefreshAction = {
             setRuntimeMismatchWarning(false)
+            pnlDeploymentSlotSettings.resetAppToSlotsCache()
             action()
         }
     }

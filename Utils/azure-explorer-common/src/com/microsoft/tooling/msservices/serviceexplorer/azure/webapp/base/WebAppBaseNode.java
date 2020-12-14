@@ -148,7 +148,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         return new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
+                DefaultLoader.getIdeHelper().runInBackground(getProject(), actionName, false,
                     true, String.format("%s...", actionName), runnable);
             }
         };

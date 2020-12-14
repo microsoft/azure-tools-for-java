@@ -66,10 +66,9 @@ abstract class DeploymentSlotModuleBase<TSlot : DeploymentSlotBase<TSlot>>(
         }
     }
 
-
     override fun removeNode(sid: String, id: String, node: Node) {
         try {
-            presenter.onDeleteDeploymentSlot(sid, app.id(), name)
+            presenter.onDeleteDeploymentSlot(sid, app.id(), id)
             removeDirectChildNode(node)
         } catch (t: Throwable) {
             DefaultLoader.getUIHelper()

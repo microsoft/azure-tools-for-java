@@ -83,7 +83,7 @@ abstract class DeploymentSlotPublishSettingsPanelBase<T: DeploymentSlotBase<T>>(
     val checkBoxIsEnabled: JCheckBox = JCheckBox("Deploy to slot:", false)
 
     abstract fun getSlotsAction(subscriptionId: String, appId: String): List<T>
-    
+
     val isDeployEnabled: Boolean
         get() = checkBoxIsEnabled.isSelected
 
@@ -130,6 +130,10 @@ abstract class DeploymentSlotPublishSettingsPanelBase<T: DeploymentSlotBase<T>>(
             add(checkBoxIsEnabled)
             add(cbDeploymentSlots, "growx")
         }
+    }
+
+    fun resetAppToSlotsCache() {
+        appToSlotsMap.clear()
     }
 
     private fun initAppProperty() {
