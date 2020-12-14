@@ -23,7 +23,6 @@
 package com.microsoft.azure.toolkit.lib.common.operation;
 
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
-import org.apache.commons.collections4.CollectionUtils;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -48,21 +47,6 @@ public class AzureOperationsContext {
 
     static void pop() {
         operations.get().pop();
-    }
-
-    public static Object execute(final AzureOperationRef operation, final OperationProceedable proceedable) throws Throwable {
-        final AzureOperation.Type type = AzureOperationUtils.getAnnotation(operation).type();
-        if (type == AzureOperation.Type.ACTION) {
-            operations.get().clear();
-        }
-        AzureOperationsContext.push(operation);
-        try {
-            return proceedable.proceed();
-        } finally {
-            if (CollectionUtils.isNotEmpty(operations.get())) {
-                AzureOperationsContext.pop();
-            }
-        }
     }
 
     public static Runnable deriveClosure(final Runnable runnable) {

@@ -23,12 +23,9 @@
 package com.microsoft.azure.toolkit.lib.common.operation;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitOperationException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
@@ -38,14 +35,26 @@ public final class AzureOperationEnhancer {
     public void operation() {
     }
 
-    @Around("operation()")
-    public Object aroundOperation(ProceedingJoinPoint point) throws Throwable {
+    @Before("operation()")
+    public void enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        return AzureOperationsContext.execute(operation, point::proceed);
+        final AzureOperation.Type type = AzureOperationUtils.getAnnotation(operation).type();
+        if (type == AzureOperation.Type.ACTION) {
+            AzureOperationsContext.operations.get().clear();
+        }
+        AzureOperationsContext.push(operation);
+    }
+
+    @AfterReturning("operation()")
+    public void exitOperation(JoinPoint point) {
+        if (CollectionUtils.isNotEmpty(AzureOperationsContext.operations.get())) {
+            AzureOperationsContext.pop();
+        }
     }
 
     @AfterThrowing(pointcut = "operation()", throwing = "e")
     public void onOperationException(JoinPoint point, Throwable e) throws Throwable {
+        this.exitOperation(point);
         if (!(e instanceof RuntimeException)) {
             throw e; // Do not handle checked exception
         }
