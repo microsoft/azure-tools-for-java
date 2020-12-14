@@ -39,6 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
@@ -81,6 +82,8 @@ public class AzureModule extends AzureRefreshableNode {
     private FunctionModule functionModule;
     @NotNull
     private SpringCloudModule springCloudModule;
+    @NotNull
+    private MySQLModule mysqlModule;
 
     /**
      * Constructor.
@@ -99,6 +102,7 @@ public class AzureModule extends AzureRefreshableNode {
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
         springCloudModule = new SpringCloudModule(this);
+        mysqlModule = new MySQLModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -171,6 +175,9 @@ public class AzureModule extends AzureRefreshableNode {
         }
         if (!isDirectChild(springCloudModule)) {
             addChildNode(springCloudModule);
+        }
+        if (!isDirectChild(mysqlModule)) {
+            addChildNode(mysqlModule);
         }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);

@@ -25,6 +25,7 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -94,6 +95,16 @@ public class AuthMethodManager {
             return getAzureManager().getAzureSpringCloudClient(sid);
         }
         final String error = "Failed to connect Azure service with current account";
+        final String action = "Confirm you have already signed in with subscription: " + sid;
+        throw new AzureToolkitRuntimeException(error, action);
+    }
+
+    public MySQLManager getMySQLManager(String sid) {
+        final AzureManager manager = getAzureManager();
+        if (manager != null) {
+            return manager.getMySQLManager(sid);
+        }
+        final String error = "Failed to get manager of Azure Database for MySQL with current account";
         final String action = "Confirm you have already signed in with subscription: " + sid;
         throw new AzureToolkitRuntimeException(error, action);
     }
