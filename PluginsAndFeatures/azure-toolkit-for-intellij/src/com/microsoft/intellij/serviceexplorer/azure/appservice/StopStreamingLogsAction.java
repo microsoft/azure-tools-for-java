@@ -28,6 +28,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -75,5 +76,10 @@ public class StopStreamingLogsAction extends NodeActionListener {
                 AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
             },
             (err) -> UIUtils.showNotification(project, err.getMessage(), MessageType.ERROR));
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }

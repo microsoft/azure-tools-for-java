@@ -30,6 +30,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -98,5 +99,10 @@ public class SSHIntoWebAppAction extends NodeActionListener {
             }, AzureTask.Modality.ANY);
         }));
         logger.info(String.format(message("webapp.ssh.hint.SSHDone"), webAppName));
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }

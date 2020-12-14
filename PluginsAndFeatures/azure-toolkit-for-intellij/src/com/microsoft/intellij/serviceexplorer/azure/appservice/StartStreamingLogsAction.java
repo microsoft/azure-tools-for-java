@@ -30,6 +30,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
@@ -91,5 +92,10 @@ public class StartStreamingLogsAction extends NodeActionListener {
                 }
             }));
         });
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }

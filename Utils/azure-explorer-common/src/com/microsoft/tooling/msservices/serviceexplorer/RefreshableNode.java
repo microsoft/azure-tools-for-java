@@ -59,7 +59,7 @@ public abstract class RefreshableNode extends Node {
             public void actionPerformed(NodeActionEvent e) {
                 load(true);
             }
-        });
+        }, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY);
 
         super.loadActions();
     }

@@ -231,12 +231,23 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         }
         nodeAction.addListener(actionListener);
         nodeAction.setPriority(actionListener.getPriority());
+        nodeAction.setGroup(actionListener.getGroup());
         return nodeAction;
     }
 
     public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
+        return addAction(name, iconPath, actionListener, Groupable.DEFAULT_GROUP, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group) {
+        return addAction(name, iconPath, actionListener, group, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group, int priority) {
         NodeAction nodeAction = addAction(name, actionListener);
         nodeAction.setIconPath(iconPath);
+        nodeAction.setGroup(group);
+        nodeAction.setPriority(priority);
         return nodeAction;
     }
 

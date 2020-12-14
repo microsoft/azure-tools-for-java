@@ -41,6 +41,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -189,5 +190,10 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         } else {
             return String.format(message("webapp.flightRecord.hint.openJfrZuluMissionControl"), filePath);
         }
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }

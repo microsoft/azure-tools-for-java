@@ -28,10 +28,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 
-public class NodeAction implements Sortable {
+public class NodeAction implements Sortable, Groupable {
     private int priority = Sortable.DEFAULT_PRIORITY;
+    private int group = Groupable.DEFAULT_GROUP;
     private String name;
     private boolean enabled = true;
     private List<NodeActionListener> listeners = new ArrayList<NodeActionListener>();
@@ -105,5 +105,14 @@ public class NodeAction implements Sortable {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
     }
 }

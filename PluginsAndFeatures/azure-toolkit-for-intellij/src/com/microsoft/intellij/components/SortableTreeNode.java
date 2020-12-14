@@ -64,6 +64,7 @@ public class SortableTreeNode extends DefaultMutableTreeNode implements Sortable
 
     private static final Comparator nodeComparator =
         (Object first, Object second) -> (first instanceof Sortable && second instanceof Sortable) ?
-                                         Sortable.compare((Sortable) first, (Sortable) second) :
+                                         Comparator.comparing(Sortable::getPriority).thenComparing(Object::toString)
+                                                   .compare((Sortable) first, (Sortable) second) :
                                          StringUtils.compare(first.toString(), second.toString());
 }

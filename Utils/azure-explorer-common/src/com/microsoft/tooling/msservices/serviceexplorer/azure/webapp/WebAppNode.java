@@ -26,9 +26,11 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
@@ -41,7 +43,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
@@ -80,11 +88,12 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     protected void loadActions() {
         final NodeActionListener stopping_web_app = createBackgroundActionListener("Stopping Web App", this::stopWebApp);
         final WrappedTelemetryNodeActionListener actionListener = new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP, stopping_web_app);
-        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED), actionListener);
+        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED), actionListener, Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY);
         final NodeActionListener starting_web_app = createBackgroundActionListener("Starting Web App", this::startWebApp);
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP, starting_web_app));
+        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(
+                WEBAPP, START_WEBAPP, starting_web_app, Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
         final NodeActionListener restarting_web_app = createBackgroundActionListener("Restarting Web App", this::restartWebApp);
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app));
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app, Groupable.MAINTENANCEGROUP));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
         final NodeActionListener openBrowserListener = new NodeActionListener() {
             @Override
@@ -182,6 +191,16 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_WEBAPP;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCEGROUP;
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
         }
     }
 }

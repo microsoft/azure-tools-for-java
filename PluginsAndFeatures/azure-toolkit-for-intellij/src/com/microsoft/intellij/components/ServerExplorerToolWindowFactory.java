@@ -55,7 +55,6 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import org.jetbrains.annotations.NotNull;
 
@@ -70,6 +69,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -225,11 +225,16 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     private JPopupMenu createPopupMenuForNode(Node node) {
         final JPopupMenu menu = new JPopupMenu();
-        node.getNodeActions().stream()
-            .filter(NodeAction::isEnabled)
-            .sorted(Sortable::compare)
-            .map(this::createMenuItemFromNodeAction)
-            .forEach(menu::add);
+        final Map<Integer, List<NodeAction>> actionsMap = node.getNodeActions().stream().collect(Collectors.groupingBy(NodeAction::getGroup));
+        final List<Integer> groupList = actionsMap.keySet().stream().sorted().collect(Collectors.toList());
+        for (Integer groupNumber : groupList) {
+            if (menu.getComponentCount() > 0) {
+                menu.addSeparator();
+            }
+            actionsMap.get(groupNumber).stream()
+                      .sorted(Comparator.comparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                      .map(this::createMenuItemFromNodeAction).forEach(menu::add);
+        }
         return menu;
     }
 
@@ -261,7 +266,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // create child tree nodes for each child node
         node.getChildNodes().stream()
-            .sorted(Sortable::compare)
+            .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
             .map(childNode -> createTreeNode(childNode, project))
             .forEach(treeNode::add);
 

@@ -27,8 +27,10 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
@@ -88,11 +90,11 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     @Override
     protected void loadActions() {
         addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
-                createBackgroundActionListener("Stopping", () -> stopFunctionApp())));
+                createBackgroundActionListener("Stopping", () -> stopFunctionApp()), Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
         addAction(ACTION_START, new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
-                createBackgroundActionListener("Starting", () -> startFunctionApp())));
+                createBackgroundActionListener("Starting", () -> startFunctionApp()), Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
-                createBackgroundActionListener("Restarting", () -> restartFunctionApp())));
+                createBackgroundActionListener("Restarting", () -> restartFunctionApp()), Groupable.MAINTENANCEGROUP));
         addAction(ACTION_DELETE, new DeleteFunctionAppAction());
         addAction("Open in Portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
             @Override
@@ -176,6 +178,16 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_FUNCTION_APP;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCEGROUP;
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
         }
     }
 }
