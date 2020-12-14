@@ -31,6 +31,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.*;
 
+import javax.swing.*;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +69,10 @@ public abstract class NodeActionListener implements EventListener {
 
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
+
+    protected Icon getIcon() {
+        return null;
+    }
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
@@ -132,5 +137,13 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
+    }
+
+    public static class WrappedActionSeparator extends NodeActionListener {
+
+        @Override
+        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            throw new UnsupportedOperationException("Unsupported operation in WrappedActionSeparator.");
+        }
     }
 }
