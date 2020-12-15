@@ -90,11 +90,11 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     @Override
     protected void loadActions() {
         addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
-                createBackgroundActionListener("Stopping", () -> stopFunctionApp()), Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
+                createBackgroundActionListener("Stopping", () -> stopFunctionApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
         addAction(ACTION_START, new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
-                createBackgroundActionListener("Starting", () -> startFunctionApp()), Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
+                createBackgroundActionListener("Starting", () -> startFunctionApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
-                createBackgroundActionListener("Restarting", () -> restartFunctionApp()), Groupable.MAINTENANCEGROUP));
+                createBackgroundActionListener("Restarting", () -> restartFunctionApp()), Groupable.MAINTENANCE_GROUP));
         addAction(ACTION_DELETE, new DeleteFunctionAppAction());
         addAction("Open in Portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
             @Override
@@ -182,7 +182,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
         @Override
         public int getGroup() {
-            return Groupable.MAINTENANCEGROUP;
+            return Groupable.MAINTENANCE_GROUP;
         }
 
         @Override

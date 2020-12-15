@@ -225,16 +225,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     private JPopupMenu createPopupMenuForNode(Node node) {
         final JPopupMenu menu = new JPopupMenu();
-        final Map<Integer, List<NodeAction>> actionsMap = node.getNodeActions().stream().collect(Collectors.groupingBy(NodeAction::getGroup));
-        final List<Integer> groupList = actionsMap.keySet().stream().sorted().collect(Collectors.toList());
-        for (Integer groupNumber : groupList) {
+        final LinkedHashMap<Integer, List<NodeAction>> sortedNodeActionsGroupMap =
+            node.getNodeActions().stream()
+                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                .collect(Collectors.groupingBy(NodeAction::getGroup, LinkedHashMap::new, Collectors.toList()));
+        // Convert node actions map to menu items, as linked hash map keeps ordered, no need to sort again
+        sortedNodeActionsGroupMap.forEach((groupNumber, actions) -> {
             if (menu.getComponentCount() > 0) {
                 menu.addSeparator();
             }
-            actionsMap.get(groupNumber).stream()
-                      .sorted(Comparator.comparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
-                      .map(this::createMenuItemFromNodeAction).forEach(menu::add);
-        }
+            actions.stream().map(this::createMenuItemFromNodeAction).forEachOrdered(menu::add);
+        });
         return menu;
     }
 

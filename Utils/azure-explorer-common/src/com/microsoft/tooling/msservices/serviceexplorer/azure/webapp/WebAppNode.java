@@ -88,12 +88,12 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     protected void loadActions() {
         final NodeActionListener stopping_web_app = createBackgroundActionListener("Stopping Web App", this::stopWebApp);
         final WrappedTelemetryNodeActionListener actionListener = new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP, stopping_web_app);
-        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED), actionListener, Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY);
+        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED), actionListener, Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY);
         final NodeActionListener starting_web_app = createBackgroundActionListener("Starting Web App", this::startWebApp);
         addAction(ACTION_START, new WrappedTelemetryNodeActionListener(
-                WEBAPP, START_WEBAPP, starting_web_app, Groupable.MAINTENANCEGROUP, Sortable.HIGH_PRIORITY));
+                WEBAPP, START_WEBAPP, starting_web_app, Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
         final NodeActionListener restarting_web_app = createBackgroundActionListener("Restarting Web App", this::restartWebApp);
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app, Groupable.MAINTENANCEGROUP));
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app, Groupable.MAINTENANCE_GROUP));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
         final NodeActionListener openBrowserListener = new NodeActionListener() {
             @Override
@@ -195,7 +195,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
         @Override
         public int getGroup() {
-            return Groupable.MAINTENANCEGROUP;
+            return Groupable.MAINTENANCE_GROUP;
         }
 
         @Override
