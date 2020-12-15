@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model.mysql;
 
 import com.google.common.base.Preconditions;
+import com.microsoft.azure.management.mysql.v2020_01_01.NameAvailabilityRequest;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerPropertiesForDefaultCreate;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
@@ -32,6 +33,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.SslEnforcementEnum;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -54,6 +56,7 @@ import java.util.stream.Collectors;
 
 public class MySQLMvpModel {
 
+    private static final String NAME_AVAILABILITY_CHECK_TYPE = "Microsoft.DBforMySQL/servers";
     private static final String NAME_ALLOW_ACCESS_TO_AZURE_SERVICES = "AllowAllWindowsAzureIps";
     private static final String IP_ALLOW_ACCESS_TO_AZURE_SERVICES = "0.0.0.0";
     private static final String NAME_PREFIX_ALLOW_ACCESS_TO_LOCAL = "ClientIPAddress_";
@@ -149,6 +152,13 @@ public class MySQLMvpModel {
         parameters.withSslEnforcement(sslEnforcement);
         mySQLManager.servers().inner().update(server.resourceGroupName(), server.name(), parameters);
         return true;
+    }
+
+    public static boolean checkNameAvailabilitys(final String subscriptionId, final String name) {
+        final MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscriptionId);
+        NameAvailabilityRequest request = new NameAvailabilityRequest().withName(name).withType(NAME_AVAILABILITY_CHECK_TYPE);
+        NameAvailabilityInner nameAvailability = manager.checkNameAvailabilitys().inner().execute(request);
+        return nameAvailability.nameAvailable();
     }
 
     public static class DatabaseMvpModel {
