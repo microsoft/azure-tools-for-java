@@ -24,22 +24,23 @@ package com.microsoft.azure.toolkit.intellij.common;
 
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
 
 public class AzurePasswordFieldInput implements AzureFormInputComponent<String> {
 
     private JPasswordField delegate;
 
     @Getter
-    @Setter
     private boolean passwordInitialized;
 
     public AzurePasswordFieldInput(JPasswordField delegate) {
         this.delegate = delegate;
+        this.delegate.getDocument().addDocumentListener(generateInitializedListener());
     }
+
 
     public AzurePasswordFieldInput(JPasswordField delegate, final boolean passwordInitialized) {
         this.delegate = delegate;
@@ -68,6 +69,17 @@ public class AzurePasswordFieldInput implements AzureFormInputComponent<String> 
     @Override
     public JComponent getInputComponent() {
         return delegate;
+    }
+
+    private DocumentListener generateInitializedListener() {
+        return new TextDocumentListenerAdapter() {
+            @Override
+            public void onDocumentChanged() {
+                if (!passwordInitialized) {
+                    passwordInitialized = true;
+                }
+            }
+        };
     }
 
 }

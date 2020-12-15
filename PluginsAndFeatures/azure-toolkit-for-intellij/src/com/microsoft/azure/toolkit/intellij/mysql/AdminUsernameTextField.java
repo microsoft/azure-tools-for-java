@@ -40,7 +40,7 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
 
     @Getter
     @Setter
-    private boolean passwordInitialized;
+    private boolean valueInitialized;
 
     /**
      * Admin username must be at least 1 characters and at most 16 characters.
@@ -49,7 +49,7 @@ public class AdminUsernameTextField extends ValidationDebouncedTextInput {
      */
     @NotNull
     public AzureValidationInfo doValidateValue() {
-        if (!isPasswordInitialized()) {
+        if (!isValueInitialized()) {
             return AzureValidationInfo.UNINITIALIZED;
         }
         final AzureValidationInfo info = super.doValidateValue();
