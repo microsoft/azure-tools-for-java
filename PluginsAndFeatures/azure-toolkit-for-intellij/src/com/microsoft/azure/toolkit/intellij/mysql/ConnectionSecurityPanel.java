@@ -20,28 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.form;
+package com.microsoft.azure.toolkit.intellij.mysql;
 
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
-@Getter
-@Builder
-@Data
-public class AzureValidationInfo {
-    public static final AzureValidationInfo PENDING =
-        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
-    public static final AzureValidationInfo OK =
-        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
-    public static final AzureValidationInfo UNINITIALIZED =
-        AzureValidationInfo.builder().type(Type.INFO).message("UNINITIALIZED").build();
-    private final AzureFormInput<?> input;
-    private final String message;
-    @Builder.Default
-    private final Type type = Type.ERROR;
+import javax.swing.*;
 
-    public enum Type {
-        ERROR, WARNING, INFO, PENDING
+public class ConnectionSecurityPanel extends JPanel {
+    @Getter
+    private JCheckBox allowAccessFromAzureServicesCheckBox;
+    @Getter
+    private JCheckBox allowAccessFromLocalMachineCheckBox;
+    private JPanel rootPanel;
+
+    public ConnectionSecurityPanel() {
+        super();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        rootPanel.setVisible(visible);
     }
 }

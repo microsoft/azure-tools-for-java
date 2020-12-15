@@ -160,6 +160,12 @@
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
             <version>${azuretool.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-buffer</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

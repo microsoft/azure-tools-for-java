@@ -61,6 +61,7 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Warning;
 import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
@@ -512,6 +513,14 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                          .doOnNext(uri -> ctrlSubject.onNext(
                                  new SparkLogLine(TOOL, Info, "Uploaded to " + uri)))
                          .toList()
+                         .onErrorResumeNext(err -> {
+                             ctrlSubject.onNext(
+                                 new SparkLogLine(TOOL, Warning, "Failed to upload artifact: " + err));
+                             ctrlSubject.onNext(
+                                 new SparkLogLine(TOOL, Warning, "Try to start interactive session without those artifacts dependency..."));
+
+                             return Observable.empty();
+                         })
                          .map(uploadedUris -> {
                              this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
 

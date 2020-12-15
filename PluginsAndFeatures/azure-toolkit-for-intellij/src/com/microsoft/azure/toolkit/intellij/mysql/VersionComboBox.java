@@ -20,28 +20,20 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.form;
+package com.microsoft.azure.toolkit.intellij.mysql;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 
-@Getter
-@Builder
-@Data
-public class AzureValidationInfo {
-    public static final AzureValidationInfo PENDING =
-        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
-    public static final AzureValidationInfo OK =
-        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
-    public static final AzureValidationInfo UNINITIALIZED =
-        AzureValidationInfo.builder().type(Type.INFO).message("UNINITIALIZED").build();
-    private final AzureFormInput<?> input;
-    private final String message;
-    @Builder.Default
-    private final Type type = Type.ERROR;
+import java.util.List;
 
-    public enum Type {
-        ERROR, WARNING, INFO, PENDING
+public class VersionComboBox extends AzureComboBox<String> {
+
+    @NotNull
+    @Override
+    protected List<? extends String> loadItems() {
+        return MySQLMvpModel.listSupportedVersions();
     }
+
 }
