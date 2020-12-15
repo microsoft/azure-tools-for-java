@@ -48,7 +48,7 @@
         <azure.security.keyvault.certificates.version>4.1.0</azure.security.keyvault.certificates.version>
         <azure.storage.queue.version>12.7.0</azure.storage.queue.version>
         <azure.storage.blob.version>12.9.0</azure.storage.blob.version>
-        <azure.storage.blob.batch.version>12.6.0</azure.storage.blob.batch.version>
+        <azure.storage.blob.batch.version>12.7.0</azure.storage.blob.batch.version>
         <azure.storage.file.share.version>12.7.0</azure.storage.file.share.version>
         <azure.storage.file.datalake.version>12.3.0</azure.storage.file.datalake.version>
         <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
