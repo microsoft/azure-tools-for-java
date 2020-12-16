@@ -4,21 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Features:</h4>
-      <ul>
-        <li>Compatibility with Rider 2020.3</li>
-        <li>Add Function Deployment Slots in Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/401">#401</a>)</li>
-        <li>Add ability to deploy to Web/Function App Deployment Slots (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/72">#72</a>)</li>
-        <li>Add ability to create Web/Function App Deployment Slots from Azure Explorer node (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/397">#397</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/401">#401</a>)</li>
-        <li>Add support for Azure Table Storage Settings (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/387">#387</a>)</li>
-        <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a>)</li>
-        <li>Add file explorer for Web App and Function App in Azure explorer</li>
-        <li>Support flight recorder for Web App</li>
-      </ul>
       <h4>Bug fix:</h4>
       <ul>
-        <li>Remove port argument from run/debug function app configuration (<a href="https://youtrack.jetbrains.com/issue/RIDER-48182">RIDER-48182</a>)</li>
-        <li>Enhance error handling for azure cli token expires (<a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>)</li>
+        <li>Fix Null Pointer Exception in Azurite panel in Rider Settings (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/415">#415</a>)</li>
       </ul>
     </html>
     ]]>
