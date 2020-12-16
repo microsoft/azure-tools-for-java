@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -30,6 +31,8 @@ public class AzureTask {
     private Runnable runnable;
     private Object project;
     private boolean cancellable;
+    @Builder.Default
+    private boolean backgroundable = true;
     private String title;
 
     public AzureTask(Runnable runnable) {
