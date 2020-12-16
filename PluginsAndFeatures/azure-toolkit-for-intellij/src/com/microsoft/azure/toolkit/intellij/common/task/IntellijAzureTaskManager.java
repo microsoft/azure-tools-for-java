@@ -22,12 +22,16 @@
 
 package com.microsoft.azure.toolkit.intellij.common.task;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -69,10 +73,34 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInModal(final AzureTask task) {
+        if (task.isBackgroundable()) {
+            this.doRunInBackgroundableModal(task);
+        } else {
+            this.doRunInUnBackgroundableModal(task);
+        }
+    }
+
+    protected void doRunInUnBackgroundableModal(final AzureTask task) {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getRunnable().run();
+            }
+        };
+        ProgressManager.getInstance().run(modalTask);
+    }
+
+    protected void doRunInBackgroundableModal(final AzureTask task) {
+        final PerformInBackgroundOption foreground = PerformInBackgroundOption.DEAF;
+        // refer https://jetbrains.org/intellij/sdk/docs/basics/disposers.html
+        final Disposable disposable = Disposer.newDisposable();
+        // refer https://github.com/JetBrains/intellij-community/commit/077c5558993b97cfb6f68ccc3cbe13065ba3cba8
+        Registry.get("ide.background.tasks").setValue(false, disposable);
+        final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable(), foreground) {
+            @Override
+            public void run(@NotNull final ProgressIndicator progressIndicator) {
+                task.getRunnable().run();
+                Disposer.dispose(disposable);
             }
         };
         ProgressManager.getInstance().run(modalTask);
