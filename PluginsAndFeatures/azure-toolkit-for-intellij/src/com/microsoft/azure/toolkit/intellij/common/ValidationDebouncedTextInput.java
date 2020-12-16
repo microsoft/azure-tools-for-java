@@ -58,7 +58,7 @@ public class ValidationDebouncedTextInput extends AzureTextInput {
             this.setExtensions(spinner);
         } else if (info == AzureValidationInfo.OK) {
             this.setExtensions(valid);
-        } else {
+        } else if (info != AzureValidationInfo.UNINITIALIZED) {
             this.setExtensions(invalid);
         }
         return info;

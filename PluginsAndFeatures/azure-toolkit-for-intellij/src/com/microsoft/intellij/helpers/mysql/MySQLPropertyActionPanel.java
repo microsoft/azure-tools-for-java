@@ -20,20 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.projects
+package com.microsoft.intellij.helpers.mysql;
 
-import com.microsoft.azure.hdinsight.projects.SparkVersion.*
-import com.microsoft.azure.hdinsight.spark.exception.UnsupportedSparkVersionException
+import lombok.Getter;
 
-object SparkToolsLib {
-    private const val toolsVerForSpark2_1: String = "0.1.2"
-    private const val toolsVerForSpark2_3: String = "0.1.2"
+import javax.swing.*;
 
-    fun getJarFileName(sparkVer: SparkVersion): String = when (sparkVer) {
-        SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.0.jar"
-        SPARK_2_3_2 -> "spark-tools-${toolsVerForSpark2_3}_2.3.2.jar"
-        SPARK_2_1_0 -> "spark-tools-${toolsVerForSpark2_1}_2.1.jar"
-        else -> throw UnsupportedSparkVersionException(
-                "Unsupported version $sparkVer, Current Spark tools only supports Spark v2.1 and v2.3")
-    }
+public class MySQLPropertyActionPanel extends JPanel {
+    @Getter
+    private JButton saveButton;
+    @Getter
+    private JButton discardButton;
+    private JPanel rootPanel;
+
 }

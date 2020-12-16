@@ -35,8 +35,8 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
     private static final String DIALOG_TITLE = "Create Azure Database for MySQL";
     private JPanel rootPanel;
-    private MySQLCreationBasic basic;
-    private MySQLCreationAdvanced advanced;
+    private MySQLCreationBasicPanel basic;
+    private MySQLCreationAdvancedPanel advanced;
 
     private boolean advancedMode;
     private JCheckBox checkboxMode;
@@ -95,7 +95,7 @@ public class MySQLCreationDialog extends AzureDialog<AzureMySQLConfig> {
 
     private void createUIComponents() {
         AzureMySQLConfig config = AzureMySQLConfig.getDefaultAzureMySQLConfig();
-        basic = new MySQLCreationBasic(config);
-        advanced = new MySQLCreationAdvanced(config);
+        basic = new MySQLCreationBasicPanel(config);
+        advanced = new MySQLCreationAdvancedPanel(config);
     }
 }

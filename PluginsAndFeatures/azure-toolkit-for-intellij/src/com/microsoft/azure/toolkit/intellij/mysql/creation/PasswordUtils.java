@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
 
 import javax.swing.*;
+import java.util.Arrays;
 
 public class PasswordUtils {
     private static final int PASSWORD_LENGTH_MIN = 8;
@@ -101,33 +102,14 @@ public class PasswordUtils {
     }
 
     private static int countCharacterCategories(final String value) {
-        int count = 0;
-        boolean containsNumber = false;
-        boolean containsLowerAlpha = false;
-        boolean containsUpperAlpha = false;
-        boolean containsSpecialCharacter = false;
+        final Boolean[] categories = new Boolean[] {false, false, false, false};
         for (char ch : value.toCharArray()) {
-            if (!containsNumber && CharUtils.isAsciiNumeric(ch)) {
-                count++;
-                containsNumber = true;
-            }
-            if (!containsLowerAlpha & CharUtils.isAsciiAlphaLower(ch)) {
-                count++;
-                containsLowerAlpha = true;
-            }
-            if (!containsUpperAlpha & CharUtils.isAsciiAlphaUpper(ch)) {
-                count++;
-                containsUpperAlpha = true;
-            }
-            if (!containsSpecialCharacter && !CharUtils.isAsciiAlphanumeric(ch)) {
-                count++;
-                containsSpecialCharacter = true;
-            }
-            if (count >= PASSWORD_CATEGORIES_MIN) {
-                break;
-            }
+            categories[0] = categories[0] && CharUtils.isAsciiNumeric(ch);
+            categories[1] = categories[1] && CharUtils.isAsciiAlphaLower(ch);
+            categories[2] = categories[2] && CharUtils.isAsciiAlphaUpper(ch);
+            categories[3] = categories[3] && !CharUtils.isAsciiAlphanumeric(ch);
         }
-        return count;
+        return (int) Arrays.stream(categories).filter(e -> e).count();
     }
 
     /**

@@ -46,7 +46,7 @@ import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
+public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
 
     private JPanel rootPanel;
     private ConnectionSecurityPanel security;
@@ -72,7 +72,7 @@ public class MySQLCreationAdvanced extends JPanel implements AzureFormPanel<Azur
 
     private AzureMySQLConfig config;
 
-    MySQLCreationAdvanced(AzureMySQLConfig config) {
+    MySQLCreationAdvancedPanel(AzureMySQLConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.

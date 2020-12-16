@@ -37,7 +37,7 @@ import javax.swing.event.DocumentListener;
 import java.util.Arrays;
 import java.util.List;
 
-public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
+public class MySQLCreationBasicPanel extends JPanel implements AzureFormPanel<AzureMySQLConfig> {
 
     private JPanel rootPanel;
     @Getter
@@ -54,7 +54,7 @@ public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMy
 
     private AzureMySQLConfig config;
 
-    MySQLCreationBasic(AzureMySQLConfig config) {
+    MySQLCreationBasicPanel(AzureMySQLConfig config) {
         super();
         this.config = config;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -64,6 +64,8 @@ public class MySQLCreationBasic extends JPanel implements AzureFormPanel<AzureMy
     }
 
     private void init() {
+        serverNameTextField.setSubscription(config.getSubscription());
+        serverNameTextField.setResourceGroup(config.getResourceGroup());
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
     }
