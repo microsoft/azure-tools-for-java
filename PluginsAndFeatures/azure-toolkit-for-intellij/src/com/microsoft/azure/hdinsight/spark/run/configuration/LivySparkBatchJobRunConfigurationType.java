@@ -54,6 +54,11 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
         public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
             return new LivySparkBatchJobRunConfiguration(project, new SparkBatchJobConfigurableModel(project), this, NAME);
         }
+
+        @Override
+        public String getId() {
+            return NAME;
+        }
     }
 
     @NotNull

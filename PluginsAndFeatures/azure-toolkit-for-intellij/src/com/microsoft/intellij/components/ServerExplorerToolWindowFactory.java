@@ -33,6 +33,7 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
@@ -96,6 +97,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.setRootVisible(false);
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        new TreeSpeedSearch(tree);
 
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {

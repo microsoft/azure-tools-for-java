@@ -47,4 +47,6 @@ open class ArcadiaSparkConfigurationFactory (type: ConfigurationType) :
     override fun getName(): String {
         return NAME
     }
+
+    override fun getId(): String = NAME
 }

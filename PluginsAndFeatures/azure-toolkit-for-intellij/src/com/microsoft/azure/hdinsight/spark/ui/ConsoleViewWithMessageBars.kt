@@ -40,7 +40,7 @@ import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
 class ConsoleViewWithMessageBars(project: Project)
-    : ConsoleViewImpl(project, GlobalSearchScope.allScope(project), true, false) {
+    : ConsoleViewImpl(project, GlobalSearchScope.allScope(project), true, true) {
     companion object {
         private val CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_ATTRIBUTE = TextAttributesKey.createTextAttributesKey(
                 "CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_ATTRIBUTE")
