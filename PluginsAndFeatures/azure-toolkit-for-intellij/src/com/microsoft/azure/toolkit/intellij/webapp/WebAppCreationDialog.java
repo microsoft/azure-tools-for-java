@@ -53,11 +53,6 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     }
 
     @Override
-    public WebAppConfig getData() {
-        return super.getData();
-    }
-
-    @Override
     protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
         return advancedForm;
     }

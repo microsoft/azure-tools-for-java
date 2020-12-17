@@ -24,6 +24,9 @@ package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+
 public abstract class AzureTaskManager {
 
     private static AzureTaskManager instance;
@@ -63,39 +66,63 @@ public abstract class AzureTaskManager {
     }
 
     public final void read(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doRead(task);
     }
 
     public final void write(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doWrite(task);
     }
 
     public final void runLater(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doRunLater(task);
     }
 
     public final void runAndWait(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doRunAndWait(task);
     }
 
     public final void runInBackground(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doRunInBackground(task);
     }
 
     public final void runInModal(AzureTask task) {
-        final Runnable withClosure = AzureOperationsContext.deriveClosure(task.getRunnable());
+        final Runnable withClosure = AzureOperationsContext.deriveClosure(this.installListeners(task.getRunnable(), task));
         task.setRunnable(withClosure);
         this.doRunInModal(task);
+    }
+
+    private Runnable installListeners(Runnable runnable, AzureTask task) {
+        return () -> {
+            try {
+                runnable.run();
+                final Runnable successListener = task.getSuccessListener();
+                if (Objects.nonNull(successListener)) {
+                    successListener.run();
+                }
+            } catch (final Throwable e) {
+                final Consumer<Throwable> errorListener = task.getErrorListener();
+                if (Objects.nonNull(errorListener)) {
+                    errorListener.accept(e);
+                } else {
+                    throw e;
+                }
+            } finally {
+                final Runnable finishedListener = task.getFinishedListener();
+                if (Objects.nonNull(finishedListener)) {
+                    finishedListener.run();
+                }
+            }
+        };
     }
 
     protected abstract void doRead(AzureTask task);

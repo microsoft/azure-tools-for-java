@@ -26,6 +26,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.InterruptedIOException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 @Log
@@ -44,6 +45,14 @@ public abstract class AzureExceptionHandler {
 
     public static void onUncaughtException(final Throwable e) {
         AzureExceptionHandler.getInstance().handleException(e);
+    }
+
+    public static void notify(final Throwable e, @Nullable AzureExceptionAction... actions) {
+        AzureExceptionHandler.getInstance().handleException(e, actions);
+    }
+
+    public static void notify(final Throwable e, boolean background, @Nullable AzureExceptionAction... actions) {
+        AzureExceptionHandler.getInstance().handleException(e, background, actions);
     }
 
     public static void onRxException(final Throwable e) {
@@ -73,5 +82,20 @@ public abstract class AzureExceptionHandler {
         String name();
 
         void actionPerformed(Throwable throwable);
+
+        static AzureExceptionAction simple(String name, Consumer<? super Throwable> consumer) {
+            return new AzureExceptionAction() {
+                @Override
+                public String name() {
+                    return name;
+                }
+
+                @Override
+                public void actionPerformed(final Throwable throwable) {
+                    consumer.accept(throwable);
+                }
+            };
+        }
     }
+
 }
