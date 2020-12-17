@@ -24,16 +24,23 @@ package com.microsoft.azure.toolkit.intellij.webapp.action;
 
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
@@ -53,6 +60,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name("Create Web App")
 public class CreateWebAppAction extends NodeActionListener {
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private final WebAppService webappService;
     private final WebAppModule webappModule;
 
@@ -70,23 +78,50 @@ public class CreateWebAppAction extends NodeActionListener {
             !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
             return;
         }
+        this.openDialog(project, null);
+    }
+
+    private void openDialog(final Project project, @Nullable WebAppConfig config) {
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
-        dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
+        dialog.setOkActionListener((data) -> {
+            this.createWebApp(data, project, dialog);
+        });
+        if (Objects.nonNull(config)) {
+            dialog.setData(config);
+        }
         dialog.show();
     }
 
-    private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
-        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
-            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+    private void createWebApp(final WebAppConfig config, final Project project, final WebAppCreationDialog dialog) {
+        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), false, () -> {
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            indicator.setIndeterminate(true);
             final WebApp webapp = webappService.createWebApp(config);
-            callback.run();
             refreshAzureExplorer();
             final Path application = config.getApplication();
             if (Objects.nonNull(application) && application.toFile().exists()) {
                 AzureTaskManager.getInstance().runLater(() -> deploy(webapp, application, project));
             }
         });
+        task.setErrorListener((e) -> {
+            final AzureExceptionAction action = AzureExceptionAction.simple("Reopen Web App Creation Dialog", t -> {
+                AzureTaskManager.getInstance().runLater(() -> openDialog(project, config));
+            });
+            AzureExceptionHandler.notify(e, task.isRunningBackground(), action);
+        });
+        task.setSuccessListener(() -> {
+            DefaultLoader.getIdeHelper().invokeLater(dialog::close);
+            dialog.disposeIfNeeded();
+            this.notifyCreationSuccess(config);
+        });
         AzureTaskManager.getInstance().runInModal(task);
+    }
+
+    private void notifyCreationSuccess(final WebAppConfig config) {
+        final String title = message("webapp.create.task.success.notification.title");
+        final String message = String.format(message("webapp.create.task.success.notification.message"), config.getName());
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
+        Notifications.Bus.notify(notification);
     }
 
     @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.SERVICE)

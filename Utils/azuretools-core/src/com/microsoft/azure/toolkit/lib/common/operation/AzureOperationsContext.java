@@ -87,7 +87,7 @@ public class AzureOperationsContext {
         return (o) -> act(action, closure, parentThread, o);
     }
 
-    private static void act(final Action1 action, final Deque<AzureOperationRef> closure, final long parentThread, @Nullable final Object subscriber) {
+    private static <T> void act(final Action1<T> action, final Deque<AzureOperationRef> closure, final long parentThread, @Nullable final T subscriber) {
         final long currentThread = Thread.currentThread().getId();
         if (!Objects.equals(currentThread, parentThread)) {
             Thread.currentThread().setUncaughtExceptionHandler(rxExceptionHandler);

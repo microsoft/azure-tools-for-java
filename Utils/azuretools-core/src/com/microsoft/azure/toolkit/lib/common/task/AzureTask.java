@@ -25,6 +25,8 @@ package com.microsoft.azure.toolkit.lib.common.task;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.function.Consumer;
+
 @Data
 public class AzureTask {
     private Modality modality;
@@ -33,7 +35,11 @@ public class AzureTask {
     private boolean cancellable;
     @Builder.Default
     private boolean backgroundable = true;
+    private boolean runningBackground = true;
     private String title;
+    private Runnable successListener;
+    private Runnable finishedListener;
+    private Consumer<Throwable> errorListener;
 
     public AzureTask(Runnable runnable) {
         this.runnable = runnable;

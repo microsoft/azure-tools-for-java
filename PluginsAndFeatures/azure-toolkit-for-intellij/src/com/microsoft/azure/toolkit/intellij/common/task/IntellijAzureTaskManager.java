@@ -68,6 +68,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
                 task.getRunnable().run();
             }
         };
+        task.setRunningBackground(true);
         ApplicationManager.getApplication().invokeLater(() -> ProgressManager.getInstance().run(backgroundTask), ModalityState.any());
     }
 
@@ -87,6 +88,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
                 task.getRunnable().run();
             }
         };
+        task.setRunningBackground(false);
         ProgressManager.getInstance().run(modalTask);
     }
 
@@ -100,9 +102,15 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getRunnable().run();
-                disposable.dispose();
+                Disposer.dispose(disposable);
+            }
+
+            @Override
+            public void processSentToBackground() {
+                task.setRunningBackground(true);
             }
         };
+        task.setRunningBackground(false);
         ProgressManager.getInstance().run(modalTask);
     }
 
