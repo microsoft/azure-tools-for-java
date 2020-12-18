@@ -29,9 +29,11 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 
@@ -41,8 +43,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
 
     private static final String ICON_RESOURCE_MANAGEMENT = "arm_resourcegroup.png";
     private static final String ACTION_DELETE = "Delete";
-    private static final String DELETE_RESOURCE_GROUP_PROMPT_MESSAGE = "This operation will delete the Resource "
-        + "Group: %s. Are you sure you want to continue?";
+    private static final String DELETE_RESOURCE_GROUP_PROMPT_MESSAGE = "This operation will delete the Resource Group: %s. Are you sure you want to continue?";
     private static final String DELETE_RESOURCE_GROUP_PROGRESS_MESSAGE = "Deleting Resource Group";
     private final ResourceManagementNodePresenter rmNodePresenter;
     private final String sid;
@@ -84,10 +85,10 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
             rmNodePresenter.onDeleteDeployment(sid, id);
             removeDirectChildNode(node);
         }), (e) -> {
-            DefaultLoader.getUIHelper()
-                .showException("An error occurred while attempting to delete the resource group ",
-                    e, "Azure Services Explorer - Error Deleting Resource Group", false, true);
-        });
+                DefaultLoader.getUIHelper()
+                    .showException("An error occurred while attempting to delete the resource group ",
+                        e, "Azure Services Explorer - Error Deleting Resource Group", false, true);
+            });
     }
 
     public String getSid() {
@@ -111,6 +112,16 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) {
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
         }
     }
 

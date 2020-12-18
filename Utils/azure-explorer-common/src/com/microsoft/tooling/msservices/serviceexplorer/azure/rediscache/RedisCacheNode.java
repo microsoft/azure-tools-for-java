@@ -22,26 +22,28 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_REDIS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_BROWSER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
-
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_BROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
 
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
@@ -64,8 +66,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private static final String OPEN_EXPLORER = "Open Redis Explorer";
 
     // string format
-    private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s."
-            + "\nAre you sure you want to continue?";
+    private static final String DELETE_CONFIRM_DIALOG_FORMAT = "This operation will delete redis cache: %s." +
+            "\nAre you sure you want to continue?";
     private static final String DELETE_CONFIRM_TITLE = "Deleting Redis Cache";
     private static final String AZURE_PORTAL_LINK_FORMAT = "%s/#resource/%s/overview";
 
@@ -80,8 +82,8 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
      *            The basic information object for the node
      */
     public RedisCacheNode(Node parent, String subscriptionId, NodeContent content) {
-        super(subscriptionId + content.getName(), content.getProvisionState().equals(CREATING_STATE)
-                ? String.format(CREATING_REDIS_NAME_FORMAT, content.getName(), CREATING_STATE)
+        super(subscriptionId + content.getName(), content.getProvisionState().equals(CREATING_STATE) ?
+                String.format(CREATING_REDIS_NAME_FORMAT, content.getName(), CREATING_STATE)
                 : content.getName(), parent, REDISCACHE_ICON_PATH, true);
         this.name = content.getName();
         this.resourceId = content.getId();
@@ -124,6 +126,16 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_REDIS;
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
         }
     }
 

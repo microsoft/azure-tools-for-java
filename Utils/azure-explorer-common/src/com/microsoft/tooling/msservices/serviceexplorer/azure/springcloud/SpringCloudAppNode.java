@@ -41,13 +41,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private static final Logger LOGGER = Logger.getLogger(SpringCloudAppNodeView.class.getName());
-    private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: %s.\n"
-            + "Are you sure you want to continue?";
-    private static final String FAILED_TO_DELETE_APP = "Failed to delete Spring Cloud App: %s";
-    private static final String ERROR_DELETING_APP = "Azure Services Explorer - Error Deleting Spring Cloud App";
-    private static final String FAILED_TO_START_APP = "Failed to start Spring Cloud App: %s";
-    private static final String FAILED_TO_RESTART_APP = "Failed to restart Spring Cloud App: %s";
-    private static final String FAILED_TO_STOP_APP = "Failed to stop Spring Cloud App: %s";
+    private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: %s. Are you sure you want to continue?";
     private static final String DELETE_APP_PROGRESS_MESSAGE = "Deleting Spring Cloud App";
 
     private static final String ACTION_START = "Start";
@@ -121,12 +115,12 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     @Override
     protected void loadActions() {
         addAction(ACTION_START, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, START_SPRING_CLOUD_APP,
-                                                                       createBackgroundActionListener("Starting", () -> startSpringCloudApp())));
+                createBackgroundActionListener("Starting", () -> startSpringCloudApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
         addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, STOP_SPRING_CLOUD_APP,
-                                                                      createBackgroundActionListener("Stopping", () -> stopSpringCloudApp())));
+                createBackgroundActionListener("Stopping", () -> stopSpringCloudApp()), Groupable.MAINTENANCE_GROUP, Sortable.HIGH_PRIORITY));
 
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, RESTART_SPRING_CLOUD_APP,
-                                                                         createBackgroundActionListener("Restarting", () -> restartSpringCloudApp())));
+                createBackgroundActionListener("Restarting", () -> restartSpringCloudApp()), Groupable.MAINTENANCE_GROUP));
 
         addAction(ACTION_DELETE, new DeleteSpringCloudAppAction());
 
@@ -142,9 +136,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 if (StringUtils.isNotEmpty(app.properties().url())) {
                     DefaultLoader.getUIHelper().openInBrowser(app.properties().url());
                 } else {
-                    DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this,
-                                                         "Public url is not available for app: "
-                                                                 + app.name());
+                    DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this, "Public url is not available for app: " + app.name());
                 }
             }
         }));
@@ -226,7 +218,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private class DeleteSpringCloudAppAction extends AzureNodeActionPromptListener {
         DeleteSpringCloudAppAction() {
             super(SpringCloudAppNode.this, String.format(DELETE_APP_PROMPT_MESSAGE, SpringCloudIdHelper.getAppName(SpringCloudAppNode.this.id)),
-                  DELETE_APP_PROGRESS_MESSAGE);
+                    DELETE_APP_PROGRESS_MESSAGE);
         }
 
         @Override
@@ -246,6 +238,16 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_SPRING_CLOUD_APP;
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
         }
     }
 }

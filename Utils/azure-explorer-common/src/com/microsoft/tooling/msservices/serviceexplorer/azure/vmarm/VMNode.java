@@ -22,12 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_VM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
-
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
@@ -38,15 +32,23 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
 
 public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static String RUNNING_STATUS = "PowerState/running";
@@ -101,6 +103,16 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_VM;
         }
+
+        @Override
+        public int getPriority() {
+            return Sortable.LOW_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
+        }
     }
 
     public class RestartVMAction extends AzureNodeActionPromptListener {
@@ -129,6 +141,11 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return RESTART_VM;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
         }
     }
 
@@ -159,6 +176,16 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         protected String getOperationName(NodeActionEvent event) {
             return START_VM;
         }
+
+        @Override
+        public int getPriority() {
+            return Sortable.HIGH_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
+        }
     }
 
     public class ShutdownVMAction extends AzureNodeActionPromptListener {
@@ -188,6 +215,16 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return SHUTDOWN_VM;
+        }
+
+        @Override
+        public int getPriority() {
+            return Sortable.HIGH_PRIORITY;
+        }
+
+        @Override
+        public int getGroup() {
+            return Groupable.MAINTENANCE_GROUP;
         }
     }
 

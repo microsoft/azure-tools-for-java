@@ -35,6 +35,7 @@ import com.microsoft.intellij.helpers.springcloud.SpringCloudStreamingLogManager
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
@@ -102,5 +103,10 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
                 SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, target.name());
             }
         });
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }
