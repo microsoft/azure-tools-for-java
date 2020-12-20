@@ -171,4 +171,9 @@ public interface UIHelper {
     default void showWarningNotification(String title, String message) {
 
     }
+
+    default Icon loadIconByPath(String iconPath) {
+        return null;
+    }
+
 }

@@ -36,6 +36,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -61,6 +62,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     protected Node parent;
     protected ObservableList<Node> childNodes = new ObservableList<Node>();
     protected String iconPath;
+    @Getter
+    protected AzureIcon azureIcon;
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
@@ -297,11 +300,6 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         if (actions != null) {
             try {
                 for (Class<? extends NodeActionListener> actionListener : actions) {
-                    // process node action separator.
-                    if (actionListener.equals(NodeActionListener.WrappedActionSeparator.class)) {
-                        addAction(ActionSeparator.getInstance());
-                        continue;
-                    }
                     Name nameAnnotation = actionListener.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
                         addAction(nameAnnotation.value(), createNodeActionListener(actionListener));

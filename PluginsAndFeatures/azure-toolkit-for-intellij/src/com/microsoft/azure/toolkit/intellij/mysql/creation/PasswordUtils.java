@@ -104,10 +104,10 @@ public class PasswordUtils {
     private static int countCharacterCategories(final String value) {
         final Boolean[] categories = new Boolean[] {false, false, false, false};
         for (char ch : value.toCharArray()) {
-            categories[0] = categories[0] && CharUtils.isAsciiNumeric(ch);
-            categories[1] = categories[1] && CharUtils.isAsciiAlphaLower(ch);
-            categories[2] = categories[2] && CharUtils.isAsciiAlphaUpper(ch);
-            categories[3] = categories[3] && !CharUtils.isAsciiAlphanumeric(ch);
+            categories[0] = categories[0] || CharUtils.isAsciiNumeric(ch);
+            categories[1] = categories[1] || CharUtils.isAsciiAlphaLower(ch);
+            categories[2] = categories[2] || CharUtils.isAsciiAlphaUpper(ch);
+            categories[3] = categories[3] || !CharUtils.isAsciiAlphanumeric(ch);
         }
         return (int) Arrays.stream(categories).filter(e -> e).count();
     }

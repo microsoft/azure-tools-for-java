@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.intellij.helpers.mysql.MySQLPropertyView">
+  <grid id="27dc6" binding="rootPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
+    <constraints>
+      <xy x="20" y="20" width="642" height="857"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <scrollpane id="501ef" binding="scrollPane">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="96a64" binding="contextPanel" layout-manager="GridLayoutManager" row-count="10" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <nested-form id="fb60e" form-file="com/microsoft/intellij/helpers/mysql/MySQLPropertyActionPanel.form" binding="propertyActionPanel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <component id="423ca" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="overviewSeparator">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Overview"/>
+                </properties>
+              </component>
+              <nested-form id="653e5" form-file="com/microsoft/intellij/helpers/mysql/MySQLPropertryOverviewPanel.form" binding="overview">
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <component id="b53ae" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="connectionSecuritySeparator">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Connection security"/>
+                </properties>
+              </component>
+              <nested-form id="57155" form-file="com/microsoft/azure/toolkit/intellij/mysql/ConnectionSecurityPanel.form" binding="connectionSecurity">
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <component id="1c074" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="connectionStringsSeparator">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Connection strings"/>
+                </properties>
+              </component>
+              <nested-form id="4949c" form-file="com/microsoft/azure/toolkit/intellij/mysql/ConnectionStringsOutputPanel.form" binding="connectionStringsJDBC">
+                <constraints>
+                  <grid row="7" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <nested-form id="c0720" form-file="com/microsoft/azure/toolkit/intellij/mysql/ConnectionStringsOutputPanel.form" binding="connectionStringsSpring">
+                <constraints>
+                  <grid row="8" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+                </constraints>
+              </nested-form>
+              <vspacer id="e5094">
+                <constraints>
+                  <grid row="9" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <component id="c268b" class="javax.swing.JLabel" binding="databaseLabel">
+                <constraints>
+                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Choose a database for your conneciton strings:"/>
+                </properties>
+              </component>
+              <hspacer id="4b8df">
+                <constraints>
+                  <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </hspacer>
+              <component id="d41e3" class="com.microsoft.azure.toolkit.intellij.mysql.DatabaseComboBox" binding="databaseComboBox">
+                <constraints>
+                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+      <vspacer id="db438">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
+  </grid>
+</form>

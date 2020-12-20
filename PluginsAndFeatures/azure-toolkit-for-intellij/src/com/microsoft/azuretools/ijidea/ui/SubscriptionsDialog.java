@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.TableSpeedSearch;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -156,6 +157,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         column.setMinWidth(23);
         column.setMaxWidth(23);
         table.getTableHeader().setReorderingAllowed(false);
+        new TableSpeedSearch(table);
 
         // secret functionality: select all subs
         table.getTableHeader().addMouseListener(new MouseAdapter() {

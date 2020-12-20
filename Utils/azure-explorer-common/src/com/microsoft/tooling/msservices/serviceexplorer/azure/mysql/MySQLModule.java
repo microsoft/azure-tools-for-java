@@ -28,6 +28,8 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureAllIcons;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIcon;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
@@ -36,14 +38,18 @@ import java.util.List;
 public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView {
 
     // TODO (qianjin): updated once Tanya completes UI design.
-    protected static final String ICON_FILE = "azure-mysql-small.png";
-    protected static final String BASE_MODULE_NAME = "Azure Database for MySQL";
-    protected static final String ACTION_PATTERN_SUFFIX = BASE_MODULE_NAME + " (%s)...";
+    public static final String BASE_MODULE_NAME = "Azure Database for MySQL";
+    public static final String ACTION_PATTERN_SUFFIX = BASE_MODULE_NAME + " (%s)...";
     private static final String MYSQL_DATABASE_MODULE_ID = MySQLModule.class.getName();
 
     public MySQLModule(final Node parent) {
-        super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_FILE);
+        super(MYSQL_DATABASE_MODULE_ID, BASE_MODULE_NAME, parent, null);
         createListener();
+    }
+
+    @Override
+    public AzureIcon getAzureIcon() {
+        return AzureAllIcons.MySQL.MODULE;
     }
 
     public void renderChildren(List<Server> servers) {

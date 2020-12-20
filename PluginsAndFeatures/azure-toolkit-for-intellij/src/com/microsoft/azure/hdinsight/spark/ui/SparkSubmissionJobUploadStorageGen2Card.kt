@@ -37,8 +37,10 @@ import com.microsoft.azuretools.ijidea.ui.HintTextField
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
 import org.apache.commons.lang3.StringUtils
+import rx.Observable
 import java.awt.Dimension
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
@@ -106,7 +108,10 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
                 if (!storageKeyField.text.isNullOrBlank()) {
                     val viewModel = viewModel as? ViewModel ?: return
                     val credentialAccount = ADLS_GEN2.getSecureStoreServiceOf(viewModel.rootUri?.accountName) ?: return
-                    storageKeyField.text = secureStore?.loadPassword(credentialAccount, gen2Account) ?: ""
+
+                    Observable.just(secureStore?.loadPassword(credentialAccount, gen2Account) ?: "")
+                            .observeOn(IdeaSchedulers().dispatchUIThread())
+                            .subscribe { storageKeyField.text = it }
                 }
 
                 super.cluster = cluster

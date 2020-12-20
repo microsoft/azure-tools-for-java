@@ -38,8 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-import static com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule.ICON_FILE;
-
 
 public class MySQLNode extends Node {
 
@@ -50,7 +48,7 @@ public class MySQLNode extends Node {
     private ServerState serverState;
 
     public MySQLNode(AzureRefreshableNode parent, String subscriptionId, Server mysqlServer) {
-        super(mysqlServer.id(), mysqlServer.name(), parent, ICON_FILE, true);
+        super(mysqlServer.id(), mysqlServer.name(), parent, null, true);
         this.subscriptionId = subscriptionId;
         this.server = mysqlServer;
         this.serverState = server.userVisibleState();

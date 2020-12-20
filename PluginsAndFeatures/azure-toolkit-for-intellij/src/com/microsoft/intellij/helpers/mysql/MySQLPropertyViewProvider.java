@@ -20,17 +20,41 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer;
+package com.microsoft.intellij.helpers.mysql;
 
-public class ActionSeparator extends NodeAction {
+import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.FileEditorPolicy;
+import com.intellij.openapi.fileEditor.FileEditorProvider;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 
-    private static ActionSeparator INSTANCE = new ActionSeparator("Separator");
+public class MySQLPropertyViewProvider implements FileEditorProvider, DumbAware {
 
-    public static ActionSeparator getInstance() {
-        return INSTANCE;
+    public static final String TYPE = "AZURE_MYSQL_PROPERTY_VIEW";
+
+    @Override
+    public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        return virtualFile.getFileType().getName().equals(TYPE);
     }
 
-    private ActionSeparator(String name) {
-        super(null, name);
+    @NotNull
+    @Override
+    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+        MySQLPropertyView propertyView = new MySQLPropertyView();
+        return propertyView;
+    }
+
+    @NotNull
+    @Override
+    public String getEditorTypeId() {
+        return TYPE;
+    }
+
+    @NotNull
+    @Override
+    public FileEditorPolicy getPolicy() {
+        return FileEditorPolicy.HIDE_DEFAULT_EDITOR;
     }
 }

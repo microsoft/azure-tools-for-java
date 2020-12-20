@@ -95,6 +95,10 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         return null;
     }
 
+    public AzureIcon getAzureIcon() {
+        return null;
+    }
+
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
@@ -160,11 +164,4 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         // mark node as done loading
     }
 
-    public static class WrappedActionSeparator extends NodeActionListener {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            throw new UnsupportedOperationException("Unsupported operation in WrappedActionSeparator.");
-        }
-    }
 }
