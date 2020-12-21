@@ -33,10 +33,10 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ServerNameTextField extends ValidationDebouncedTextInput {
+
+    private static final Pattern PATTERN = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
     private Subscription subscription;
     private ResourceGroup resourceGroup;
-
-    private final Pattern pattern = Pattern.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]$");
 
     public void setSubscription(Subscription subscription) {
         if (!Objects.equals(subscription, this.subscription)) {
@@ -69,7 +69,7 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate special character
-        if (!pattern.matcher(value).matches()) {
+        if (!PATTERN.matcher(value).matches()) {
             return AzureValidationInfo.builder().input(this)
                     .message("Server name must only contain lowercase letters, numbers, and hyphens. The server name must not start or end in a hyphen.")
                     .type(AzureValidationInfo.Type.ERROR).build();

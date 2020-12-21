@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -59,26 +60,33 @@ import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
 import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
+import com.microsoft.intellij.helpers.mysql.MySQLPropertyView;
+import com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
+import com.microsoft.intellij.serviceexplorer.NodeIconsMap;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
@@ -87,6 +95,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -217,7 +226,7 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(STORAGE_KEY, storageAccount);
 
-        itemVirtualFile.setFileType(getFileType(itemName, iconName));
+        itemVirtualFile.setFileType(new AzureFileType(itemName, UIHelperImpl.loadIcon(iconName)));
 
         openItem(projectObject, itemVirtualFile);
     }
@@ -232,7 +241,7 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(CLIENT_STORAGE_KEY, clientStorageAccount);
 
-        itemVirtualFile.setFileType(getFileType(itemName, iconName));
+        itemVirtualFile.setFileType(new AzureFileType(itemName, UIHelperImpl.loadIcon(iconName)));
 
         openItem(projectObject, itemVirtualFile);
     }
@@ -244,48 +253,54 @@ public class UIHelperImpl implements UIHelper {
             .runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
-    @org.jetbrains.annotations.NotNull
-    private FileType getFileType(@NotNull final String itemName, @Nullable final String iconName) {
-        return new FileType() {
-            @NotNull
-            @Override
-            public String getName() {
-                return itemName;
-            }
+    private class AzureFileType implements FileType {
+        private String itemName;
+        private Icon icon;
 
-            @NotNull
-            @Override
-            public String getDescription() {
-                return itemName;
-            }
+        AzureFileType(String itemName, Icon icon) {
+            this.itemName = itemName;
+            this.icon = icon;
+        }
 
-            @NotNull
-            @Override
-            public String getDefaultExtension() {
-                return "";
-            }
+        @NotNull
+        @Override
+        public String getName() {
+            return itemName;
+        }
 
-            @Nullable
-            @Override
-            public Icon getIcon() {
-                return UIHelperImpl.loadIcon(iconName);
-            }
+        @NotNull
+        @Override
+        public String getDescription() {
+            return itemName;
+        }
 
-            @Override
-            public boolean isBinary() {
-                return true;
-            }
+        @NotNull
+        @Override
+        public String getDefaultExtension() {
+            return "";
+        }
 
-            @Override
-            public boolean isReadOnly() {
-                return false;
-            }
+        @Nullable
+        @Override
+        public Icon getIcon() {
+            // UIHelperImpl.loadIcon(iconName);
+            return icon;
+        }
 
-            @Override
-            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                return "UTF8";
-            }
-        };
+        @Override
+        public boolean isBinary() {
+            return true;
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return false;
+        }
+
+        @Override
+        public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+            return StandardCharsets.UTF_8.name();
+        }
     }
 
     @Override
@@ -353,8 +368,9 @@ public class UIHelperImpl implements UIHelper {
             LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
                                                                   RedisCachePropertyViewProvider.TYPE, resId);
             if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
-                                                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                itemVirtualFile = createVirtualFile(redisName, sid, resId);
+                itemVirtualFile.setFileType(
+                        new AzureFileType(RedisCachePropertyViewProvider.TYPE, UIHelperImpl.loadIcon(RedisCacheNode.REDISCACHE_ICON_PATH)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -382,8 +398,9 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
-                                                RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+            itemVirtualFile = createVirtualFile(redisName, sid, resId);
+            itemVirtualFile.setFileType(new AzureFileType(RedisCacheExplorerProvider.TYPE, UIHelperImpl.loadIcon(RedisCacheNode.REDISCACHE_ICON_PATH)));
+
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
@@ -398,8 +415,8 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), TYPE,
-                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
+            itemVirtualFile.setFileType(new AzureFileType(TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -422,8 +439,8 @@ public class UIHelperImpl implements UIHelper {
         final String appName = node.getAppName();
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
-                                                DeploymentNode.ICON_PATH, subscription, id);
+            itemVirtualFile = createVirtualFile(appName, subscription, id);
+            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
         }
         itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
         itemVirtualFile.putUserData(APP_ID, id);
@@ -441,8 +458,8 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
                                                               node.getId());
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), ResourceTemplateViewProvider.TYPE,
-                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
+            itemVirtualFile.setFileType(new AzureFileType(ResourceTemplateViewProvider.TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -478,8 +495,8 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
                                                               ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
-                                                ContainerRegistryNode.ICON_PATH, sid, resId);
+            itemVirtualFile = createVirtualFile(registryName, sid, resId);
+            itemVirtualFile.setFileType(new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, UIHelperImpl.loadIcon(ContainerRegistryNode.ICON_PATH)));
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
@@ -516,7 +533,9 @@ public class UIHelperImpl implements UIHelper {
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
                                                              : node.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(node.getWebAppName(), type, iconPath, sid, webAppId);
+            itemVirtualFile = createVirtualFile(node.getWebAppName(), sid, webAppId);
+            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
+
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -540,8 +559,8 @@ public class UIHelperImpl implements UIHelper {
             userData.put(RESOURCE_ID, resourceId);
             userData.put(WEBAPP_ID, node.getWebAppId());
             userData.put(SLOT_NAME, node.getName());
-            itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
-                                                type, iconPath, userData);
+            itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(), userData);
+            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -559,9 +578,34 @@ public class UIHelperImpl implements UIHelper {
         if (itemVirtualFile == null) {
             final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
                                                                      : functionNode.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
+            itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), subscriptionId, functionApId);
+            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    @Override
+    public void openMySQLPropertyView(@NotNull MySQLNode node) {
+        EventUtil.executeWithLog(TelemetryConstants.MYSQL, TelemetryConstants.MYSQL_SHOW_PROPERTIES, (operation) -> {
+            String name = node.getName();
+            String subscriptionId = node.getSubscriptionId();
+            String nodeId = node.getId();
+            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            if (fileEditorManager == null) {
+                return;
+            }
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, nodeId);
+            if (itemVirtualFile == null) {
+                itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
+                itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureAllIcons.MySQL.MODULE));
+            }
+            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
+            for (FileEditor editor : editors) {
+                if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
+                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                }
+            }
+        });
     }
 
     @Nullable
@@ -645,6 +689,26 @@ public class UIHelperImpl implements UIHelper {
         return new ImageIcon(url);
     }
 
+    @Override
+    public Icon loadIconByAction(AzureActionEnum actionEnum) {
+        Preconditions.checkNotNull(actionEnum, "actionEnum cannot be null.");
+        return NodeIconsMap.BASIC_ACTION_TO_ICON_MAP.get(actionEnum);
+    }
+
+    @Override
+    public Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
+        Preconditions.checkNotNull(states, "states cannot be null.");
+        ImmutableMap<NodeState, Icon> iconMap = NodeIconsMap.NODE_TO_ICON_WITH_STATE_MAP.get(clazz);
+        if (MapUtils.isNotEmpty(iconMap)) {
+            for (NodeState state : states) {
+                if (iconMap.containsKey(state)) {
+                    return iconMap.get(state);
+                }
+            }
+        }
+        return NodeIconsMap.NODE_TO_ICON_MAP.get(clazz);
+    }
+
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
         LightVirtualFile virtualFile = null;
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
@@ -658,18 +722,16 @@ public class UIHelperImpl implements UIHelper {
         return virtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String type, String icon, Map<Key, String> userData) {
+    private LightVirtualFile createVirtualFile(String name, Map<Key, String> userData) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
-        itemVirtualFile.setFileType(getFileType(type, icon));
         for (final Map.Entry<Key, String> data : userData.entrySet()) {
             itemVirtualFile.putUserData(data.getKey(), data.getValue());
         }
         return itemVirtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String type, String icon, String sid, String resId) {
+    private LightVirtualFile createVirtualFile(String name, String sid, String resId) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
-        itemVirtualFile.setFileType(getFileType(type, icon));
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
         itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;

@@ -93,6 +93,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"

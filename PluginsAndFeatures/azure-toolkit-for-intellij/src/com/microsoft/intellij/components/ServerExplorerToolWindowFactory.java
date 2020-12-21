@@ -57,10 +57,15 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -68,8 +73,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
@@ -244,7 +254,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
         final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
         menuItem.setEnabled(nodeAction.isEnabled());
-        if (nodeAction.getIconPath() != null) {
+        Icon icon = nodeAction.getNodeIcon();
+        if (Objects.nonNull(icon)) {
+            menuItem.setIcon(icon);
+        } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
             menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
         }
         // delegate the menu item click to the node action's listeners
@@ -388,7 +401,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             final String iconPath = node.getIconPath();
             if (Objects.nonNull(icon)) {
                 setIcon(icon);
-            } else if (iconPath != null && !iconPath.isEmpty()) {
+            } else if (StringUtils.isNotBlank(iconPath)) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }
 

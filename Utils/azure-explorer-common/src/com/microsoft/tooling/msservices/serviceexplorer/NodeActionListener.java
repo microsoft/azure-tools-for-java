@@ -91,11 +91,7 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
-    protected Icon getIcon() {
-        return null;
-    }
-
-    public AzureIcon getAzureIcon() {
+    public Icon getIcon() {
         return null;
     }
 

@@ -34,7 +34,11 @@ import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightReco
 import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.*;
+import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
@@ -64,7 +68,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NodeActionsMap {
     public static final Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions =

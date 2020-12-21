@@ -36,7 +36,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -62,8 +61,6 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     protected Node parent;
     protected ObservableList<Node> childNodes = new ObservableList<Node>();
     protected String iconPath;
-    @Getter
-    protected AzureIcon azureIcon;
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
     protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
@@ -212,7 +209,14 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
      */
     @Nullable
     public Icon getIcon() {
-        return null;
+        return DefaultLoader.getUIHelper().loadIconByNodeClass(this.getClass());
+    }
+
+    /**
+     * optionally to custom icon for different state.
+     */
+    protected Icon getIconByState(NodeState... states) {
+        return DefaultLoader.getUIHelper().loadIconByNodeClass(this.getClass(), states);
     }
 
     public void addChildNode(Node child) {
@@ -235,7 +239,12 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         nodeAction.addListener(actionListener);
         nodeAction.setPriority(actionListener.getPriority());
         nodeAction.setGroup(actionListener.getGroup());
+        nodeAction.setNodeIcon(actionListener.getIcon());
         return nodeAction;
+    }
+
+    public NodeAction addAction(BasicActionListener actionListener) {
+        return addAction(actionListener.getActionEnum().getName(), actionListener);
     }
 
     public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {

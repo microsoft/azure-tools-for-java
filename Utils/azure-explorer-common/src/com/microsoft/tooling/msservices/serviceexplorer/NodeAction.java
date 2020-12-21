@@ -25,7 +25,10 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +40,9 @@ public class NodeAction implements Sortable, Groupable {
     private List<NodeActionListener> listeners = new ArrayList<NodeActionListener>();
     private Node node; // the node with which this action is associated
     private String iconPath;
+    @Getter
+    @Setter
+    private Icon nodeIcon;
 
     public NodeAction(Node node, String name) {
         this.node = node;
