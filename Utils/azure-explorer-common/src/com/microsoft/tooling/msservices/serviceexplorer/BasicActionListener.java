@@ -22,21 +22,53 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
+import com.google.common.base.Preconditions;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import lombok.Builder;
 import lombok.Getter;
 
 import javax.swing.*;
+import java.util.Objects;
 
-@Builder
-public class AzureIcon {
-
-    private String icon;
+public final class BasicActionListener extends NodeActionListener {
 
     @Getter
-    private String darkIcon;
+    private final NodeActionListener delegate;
+    @Getter
+    private final AzureActionEnum actionEnum;
 
+    public BasicActionListener(NodeActionListener delegate, AzureActionEnum actionEnum) {
+        Preconditions.checkNotNull(delegate);
+        Preconditions.checkNotNull(actionEnum);
+        this.delegate = delegate;
+        this.actionEnum = actionEnum;
+    }
+
+    @Override
+    public int getPriority() {
+        if (Objects.nonNull(actionEnum.getPriority())) {
+            return delegate.getPriority() + actionEnum.getPriority();
+        } else {
+            return delegate.getPriority();
+        }
+    }
+
+    @Override
+    public int getGroup() {
+        if (Objects.nonNull(actionEnum.getGroup())) {
+            return delegate.getGroup() + actionEnum.getGroup();
+        } else {
+            return delegate.getGroup();
+        }
+    }
+
+    @Override
     public Icon getIcon() {
-        return DefaultLoader.getUIHelper().loadIconByPath(DefaultLoader.getUIHelper().isDarkTheme() ? darkIcon : icon);
+        return DefaultLoader.getUIHelper().loadIconByAction(actionEnum);
+    }
+
+    @Override
+    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+        delegate.actionPerformed(e);
     }
 }
