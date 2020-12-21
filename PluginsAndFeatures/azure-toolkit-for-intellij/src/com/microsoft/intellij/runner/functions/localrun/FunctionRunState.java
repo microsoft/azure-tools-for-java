@@ -228,7 +228,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {
-            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started") && !isDebuggerLaunched) {
+            if (isDebugMode() && isFuncInitialized(inputLine) && !isDebuggerLaunched) {
                 // launch debugger when func ready
                 isDebuggerLaunched = true;
                 launchDebugger(project, debugPort);
@@ -244,6 +244,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         });
         // Pending for function cli
         process.waitFor();
+    }
+
+    private boolean isFuncInitialized(String input) {
+        return StringUtils.containsIgnoreCase(input, "Job host started") ||
+            StringUtils.containsIgnoreCase(input, "Listening for transport dt_socket at address");
     }
 
     private void readInputStreamByLines(InputStream inputStream, Consumer<String> stringConsumer) {
