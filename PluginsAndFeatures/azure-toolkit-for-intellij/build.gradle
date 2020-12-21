@@ -231,8 +231,3 @@ spotbugsMain {
     includeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-include.xml")
     excludeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-exclude.xml")
 }
-
-task runIdeU(type: org.jetbrains.intellij.tasks.RunIdeTask, dependsOn: 'prepareSandbox') {
-    intellij.type = 'IU'
-    intellij.plugins += ['DatabaseTools']
-}

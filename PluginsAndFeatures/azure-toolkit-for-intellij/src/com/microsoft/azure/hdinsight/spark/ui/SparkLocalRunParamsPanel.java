@@ -36,6 +36,7 @@ import com.intellij.ui.MacroAwareTextBrowseFolderListener;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,7 +95,7 @@ public class SparkLocalRunParamsPanel {
                 myDataDefaultDirectory.setText(
                         Paths.get(myDataRootDirectoryFieldWithBrowseButton.getText(), "__default__").toString());
                 myHadoopUserDefaultDirectoryLabel.setText(
-                        Paths.get(myDataDefaultDirectory.getText(), "user", "current").toString());
+                    Paths.get(FilenameUtils.getFullPath(myDataDefaultDirectory.getText()), "user", "current").toString());
             }
         });
 
