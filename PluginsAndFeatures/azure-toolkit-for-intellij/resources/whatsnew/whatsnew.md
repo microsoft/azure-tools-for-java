@@ -1,5 +1,20 @@
-<!-- Version: 3.45.0 -->
+<!-- Version: 3.47.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.47.0
+
+### Added
+- Add Azure MySQL support in Azure Toolkits
+  - Manage Azure MySQL instance (create/start/stop/restart/configure/show properties)
+  - Configure Azure MySQL to allow access it from azure services and local PC
+  - Show sample of JDBC connection strings on MySQL
+  - Open and connect to MySQL server by Intellij database tools
+
+### Changed
+- Enhance App Service file explorer in Azure explorer
+
+### Fixed
+- [#4808](https://github.com/microsoft/azure-tools-for-java/issues/4808) Fixes unable to attach function host while running functions
 
 ## 3.46.0
 
