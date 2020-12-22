@@ -35,15 +35,29 @@
                 <li>Open and connect to MySQL server by Intellij database tools</li>
             </ul>
         </li>
+        <li>Add Stacktrace filter in Spark console</li>
+        <li>Enable speed search in subscription table</li>
+        <li>Enable speed search in Azure explorer tree</li>
     </ul>
     <h4>Changed</h4>
     <ul>
+        <li>Upgrade Azure Blob batch SDK to 12.7.0</li>
         <li>Enhance App Service file explorer in Azure explorer</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4801">#4801</a> Spark tools library serializer
+            potential issues</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4808">#4808</a> Fixes unable to attach
             function host while running functions</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4814">#4814</a> Spark livy console staring
+            being blocked by artifacts uploading failure</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4823">#4823</a> Compiling warnings of
+            ConfigurationFactory.getId being deprecated</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4827">#4827</a> Fix HDInsight cluster can't
+            link non-cluster-default Azure Blob storage account issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4829">#4829</a> UI hang issue with changing
+            Spark Synapse run configuration ADLS Gen2 storage key settings</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

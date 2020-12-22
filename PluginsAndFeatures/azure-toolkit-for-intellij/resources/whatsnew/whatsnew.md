@@ -9,12 +9,21 @@
   - Configure Azure MySQL to allow access it from azure services and local PC
   - Show sample of JDBC connection strings on MySQL
   - Open and connect to MySQL server by Intellij database tools
+- Add Stacktrace filter in Spark console
+- Enable speed search in subscription table
+- Enable speed search in Azure explorer tree
 
 ### Changed
+- Upgrade Azure Blob batch SDK to 12.7.0
 - Enhance App Service file explorer in Azure explorer
 
 ### Fixed
+- [#4801](https://github.com/microsoft/azure-tools-for-java/issues/4801) Spark tools library serializer potential issues
 - [#4808](https://github.com/microsoft/azure-tools-for-java/issues/4808) Fixes unable to attach function host while running functions
+- [#4814](https://github.com/microsoft/azure-tools-for-java/issues/4814) Spark livy console staring being blocked by artifacts uploading failure
+- [#4823](https://github.com/microsoft/azure-tools-for-java/issues/4823) Compiling warnings of ConfigurationFactory.getId being deprecated
+- [#4827](https://github.com/microsoft/azure-tools-for-java/issues/4827) Fix HDInsight cluster can't link non-cluster-default Azure Blob storage account issue
+- [#4829](https://github.com/microsoft/azure-tools-for-java/issues/4829) UI hang issue with changing Spark Synapse run configuration ADLS Gen2 storage key settings
 
 ## 3.46.0
 
