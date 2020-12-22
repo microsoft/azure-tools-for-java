@@ -74,7 +74,7 @@ public class MySQLNode extends Node {
         addAction(new BasicActionListener(new StopAzureMySQLAction(), AzureActionEnum.STOP));
         addAction(new BasicActionListener(new RestartAzureMySQLAction(), AzureActionEnum.RESTART));
         addAction(new BasicActionListener(new DeleteAzureMySQLAction(), AzureActionEnum.DELETE));
-        addAction(new BasicActionListener(new DeleteAzureMySQLAction(), AzureActionEnum.OPEN_IN_PORTAL));
+        addAction(new BasicActionListener(new OpenInBrowserAction(), AzureActionEnum.OPEN_IN_PORTAL));
         initActions();
     }
 
