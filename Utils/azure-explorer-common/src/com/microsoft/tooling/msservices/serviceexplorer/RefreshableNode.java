@@ -27,6 +27,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -56,7 +59,7 @@ public abstract class RefreshableNode extends Node {
             public void actionPerformed(NodeActionEvent e) {
                 load(true);
             }
-        });
+        }, Groupable.DEFAULT_GROUP, Sortable.HIGH_PRIORITY);
 
         super.loadActions();
     }
@@ -121,64 +124,46 @@ public abstract class RefreshableNode extends Node {
         final RefreshableNode node = this;
         final SettableFuture<List<Node>> future = SettableFuture.create();
 
-        DefaultLoader.getIdeHelper().runInBackground(getProject(), "Loading " + getName() + "...", true, true, null,
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!loading) {
-                            final String nodeName = node.getName();
-                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateName(nodeName + " (Refreshing...)", null);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Loading " + getName() + "...", true, new Runnable() {
+            @Override
+            public void run() {
+                if (!loading) {
+                    final String nodeName = node.getName();
+                    DefaultLoader.getIdeHelper().invokeLater(() -> updateName(nodeName + " (Refreshing...)", null));
+
+                    Futures.addCallback(future, new FutureCallback<List<Node>>() {
+                        @Override
+                        public void onSuccess(List<Node> nodes) {
+                            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                                if (node.getName().endsWith("(Refreshing...)")) {
+                                    updateName(nodeName, null);
                                 }
+                                updateNodeNameAfterLoading();
+                                expandNodeAfterLoading();
                             });
-
-                            Futures.addCallback(future, new FutureCallback<List<Node>>() {
-                                @Override
-                                public void onSuccess(List<Node> nodes) {
-                                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (node.getName().endsWith("(Refreshing...)")) {
-                                                updateName(nodeName, null);
-                                            }
-                                            updateNodeNameAfterLoading();
-                                            expandNodeAfterLoading();
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onFailure(Throwable throwable) {
-                                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            updateName(nodeName, throwable);
-                                            updateNodeNameAfterLoading();
-                                            expandNodeAfterLoading();
-                                        }
-                                    });
-                                }
-                            }, MoreExecutors.directExecutor());
-                            node.refreshItems(future, forceRefresh);
                         }
-                    }
 
-                    private void updateName(String name, final Throwable throwable) {
-                        node.setName(name);
-
-                        if (throwable != null) {
-                            DefaultLoader.getUIHelper().showException("An error occurred while attempting " +
-                                            "to load " + node.getName() + ".",
-                                    throwable,
-                                    "MS Azure Explorer - Error Loading " + node.getName(),
-                                    false,
-                                    true);
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                                updateName(nodeName, throwable);
+                                updateNodeNameAfterLoading();
+                                expandNodeAfterLoading();
+                            });
                         }
-                    }
+                    }, MoreExecutors.directExecutor());
+                    node.refreshItems(future, forceRefresh);
                 }
-        );
+            }
+
+            private void updateName(String name, final Throwable throwable) {
+                node.setName(name);
+
+                if (throwable != null) {
+                    AzureExceptionHandler.getInstance().handleException(throwable, true);
+                }
+            }
+        }));
 
         return future;
     }

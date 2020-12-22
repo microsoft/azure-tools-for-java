@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.40.0</version>
+        <version>3.47.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
@@ -39,6 +39,54 @@
             </testResource>
         </testResources>
         <plugins>
+            <plugin>
+                <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.11</version>
+                <configuration>
+                    <showWeaveInfo>false</showWeaveInfo>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <Xlint>ignore</Xlint>
+                    <complianceLevel>1.8</complianceLevel>
+                    <encoding>UTF-8</encoding>
+                    <verbose>false</verbose>
+                    <outxml>true</outxml>
+                    <forceAjcCompile>true</forceAjcCompile>
+                    <sources/><!-- this is important!-->
+                    <weaveDirectories>
+                        <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                    </weaveDirectories>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>com.microsoft.azuretools</groupId>
+                            <artifactId>azuretools-core</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile-with-aspectj</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-with-aspectj</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
+                            </weaveDirectories>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
@@ -109,18 +157,6 @@
             <version>${azuretool.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.microsoft.azure</groupId>
-                    <artifactId>azure-client-runtime</artifactId>
-                </exclusion>
-            </exclusions>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/../azuretools-core/lib/azure-keyvault-1.0.0-beta5-SNAPSHOT.jar</systemPath>-->
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.12</version>
@@ -144,11 +180,15 @@
             <version>3.0.3</version>
         </dependency>
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
-                <dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -163,12 +203,12 @@
             <artifactId>powermock-module-junit4</artifactId>
             <version>1.7.0RC4</version>
             <scope>test</scope>
-         </dependency>
-         <dependency>
-             <groupId>org.powermock</groupId>
-             <artifactId>powermock-api-mockito2</artifactId>
-             <version>1.7.0RC4</version>
-             <scope>test</scope>
-         </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito2</artifactId>
+            <version>1.7.0RC4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

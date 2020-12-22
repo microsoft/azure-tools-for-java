@@ -23,7 +23,6 @@
 package com.microsoft.intellij.ui.libraries;
 
 import com.intellij.openapi.application.AccessToken;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -39,6 +38,7 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBList;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
@@ -129,7 +129,7 @@ public class LibrariesConfigurationDialog extends AzureDialogWrapper {
                 for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
                     if (orderEntry instanceof ModuleLibraryOrderEntryImpl
                             && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                        ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(message(
+                        AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(message(
                             "error"), message("libraryExistsError")));
                         return;
                     }

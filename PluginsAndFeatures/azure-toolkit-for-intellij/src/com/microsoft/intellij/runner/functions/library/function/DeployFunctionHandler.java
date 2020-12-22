@@ -34,71 +34,74 @@ import com.microsoft.azure.common.function.handlers.artifact.DockerArtifactHandl
 import com.microsoft.azure.common.function.handlers.artifact.MSDeployArtifactHandlerImpl;
 import com.microsoft.azure.common.function.handlers.artifact.RunFromBlobArtifactHandlerImpl;
 import com.microsoft.azure.common.function.handlers.artifact.RunFromZipArtifactHandlerImpl;
+import com.microsoft.azure.common.function.model.FunctionResource;
 import com.microsoft.azure.common.handlers.ArtifactHandler;
 import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
 import com.microsoft.azure.common.utils.AppServiceUtils;
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.common.appservice.DeploymentType.*;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 /**
- * Deploy artifacts to target Azure Functions in Azure. If target Azure
- * Functions doesn't exist, it will be created.
+ * Deploy artifacts to target Azure Functions in Azure.
+ * Todo: Move the handler to tools-common
  */
 public class DeployFunctionHandler {
+    private static final int LIST_TRIGGERS_MAX_RETRY = 3;
+    private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
-    private static final String SET_FUNCTIONS_WORKER_RUNTIME = "Set function worker runtime to java";
-    private static final String CHANGE_FUNCTIONS_WORKER_RUNTIME = "Function worker runtime doesn't " +
-            "meet the requirement, change it from %s to java";
     private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
-    private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
-            "isn't configured, setting up the default value";
-    private static final String DEPLOY_START = "Trying to deploy the function app...";
-    private static final String DEPLOY_FINISH = "Successfully deployed the function app at https://%s.azurewebsites.net";
-    private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
-    private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app %s.";
-    private static final String UNKNOW_DEPLOYMENT_TYPE = "The value of <deploymentType> is unknown, supported values are: " +
-            "ftp, zip, msdeploy, run_from_blob and run_from_zip.";
+    private static final String AUTH_LEVEL = "authLevel";
+    private static final String HTTP_TRIGGER = "httpTrigger";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
-    private IAppServiceContext ctx;
+    private FunctionDeployModel model;
     private IPrompter prompter;
 
-    public DeployFunctionHandler(IAppServiceContext ctx, IPrompter prompter) {
-        Preconditions.checkNotNull(ctx);
-        this.ctx = ctx;
+    public DeployFunctionHandler(FunctionDeployModel model, IPrompter prompter) {
+        Preconditions.checkNotNull(model);
+        this.model = model;
         this.prompter = prompter;
     }
 
+    @AzureOperation(value = "deploy artifacts to function", type = AzureOperation.Type.SERVICE)
     public FunctionApp execute() throws Exception {
-
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
-        prompt(DEPLOY_START);
+        prompt(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        prompt(String.format(DEPLOY_FINISH, ctx.getAppName()));
+        prompt(String.format(message("function.deploy.hint.deployDone"), model.getAppName()));
+        listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
 
     private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
-        prompt(FUNCTION_APP_UPDATE);
+        prompt(message("function.deploy.hint.updateFunctionApp"));
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        prompt(String.format(FUNCTION_APP_UPDATE_DONE, ctx.getAppName()));
+        prompt(String.format(message("function.deploy.hint.updateDone"), model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -107,8 +110,74 @@ public class DeployFunctionHandler {
         }
     }
 
+    /**
+     * List anonymous HTTP Triggers url after deployment
+     */
+    @AzureOperation(value = "list http trigger urls", type = AzureOperation.Type.SERVICE)
+    private void listHTTPTriggerUrls() {
+        final List<FunctionResource> triggers = listFunctions();
+        final List<FunctionResource> httpFunction =
+                triggers.stream()
+                        .filter(function -> function.getTrigger() != null &&
+                                StringUtils.equalsIgnoreCase(function.getTrigger().getType(), HTTP_TRIGGER))
+                        .collect(Collectors.toList());
+        final List<FunctionResource> anonymousTriggers =
+                httpFunction.stream()
+                            .filter(bindingResource -> bindingResource.getTrigger() != null &&
+                                    StringUtils.equalsIgnoreCase(
+                                            (CharSequence) bindingResource.getTrigger().getProperty(AUTH_LEVEL),
+                                            AuthorizationLevel.ANONYMOUS.toString()))
+                            .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
+            prompt(message("function.deploy.hint.noAnonymousHttpTrigger"));
+            return;
+        }
+        prompt(message("function.deploy.hint.httpTriggerUrls"));
+        anonymousTriggers.forEach(trigger -> prompt(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
+        if (anonymousTriggers.size() < httpFunction.size()) {
+            prompt(message("function.deploy.error.listHttpTriggerFailed"));
+        }
+    }
+
+    /**
+     * Sync triggers and return function list of deployed function app
+     * Will retry when get empty result, the max retry times is LIST_TRIGGERS_MAX_RETRY
+     * @return List of functions in deployed function app
+     * @throws AzureExecutionException Throw if get empty result after LIST_TRIGGERS_MAX_RETRY times retry
+     * @throws IOException Throw if meet IOException while getting Azure client
+     * @throws InterruptedException Throw when thread was interrupted while sleeping between retry
+     */
+    @AzureOperation(
+        value = "sync triggers and list triggers of function[%s]",
+        params = {"@model.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private List<FunctionResource> listFunctions() {
+        final FunctionApp functionApp = getFunctionApp();
+        for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
+            try {
+                Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
+                prompt(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
+                functionApp.syncTriggers();
+                final List<FunctionResource> triggers =
+                        model.getAzureClient().appServices().functionApps()
+                             .listFunctions(model.getResourceGroup(), model.getAppName()).stream()
+                             .map(FunctionResource::parseFunction)
+                             .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(triggers)) {
+                    return triggers;
+                }
+            } catch (final Exception exception) {
+                // swallow sdk request runtime exception
+            }
+        }
+        final String error = String.format("No triggers found in function app[%s]", model.getAppName());
+        final String action = "try recompile the project by and deploy again.";
+        throw new AzureToolkitRuntimeException(error, action);
+    }
+
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
-        final RuntimeConfiguration runtime = ctx.getRuntime();
+        final RuntimeConfiguration runtime = model.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
             return Utils.parseOperationSystem(runtime.getOs());
         }
@@ -116,7 +185,7 @@ public class DeployFunctionHandler {
     }
 
     private DeploymentType getDeploymentType() throws AzureExecutionException {
-        final DeploymentType deploymentType = DeploymentType.fromString(ctx.getDeploymentType());
+        final DeploymentType deploymentType = DeploymentType.fromString(model.getDeploymentType());
         return deploymentType == DeploymentType.EMPTY ? getDeploymentTypeByRuntime() : deploymentType;
     }
 
@@ -133,26 +202,20 @@ public class DeployFunctionHandler {
     }
 
     private boolean isDedicatedPricingTier() {
-        return AppServiceUtils.getPricingTierFromString(ctx.getPricingTier()) != null;
+        return AppServiceUtils.getPricingTierFromString(model.getPricingTier()) != null;
     }
 
     private FunctionApp getFunctionApp() {
-        try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
-                    ctx.getAppName());
-        } catch (Exception ex) {
-            // Swallow exception for non-existing Azure Functions
-        }
-        return null;
+        return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
     }
 
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
-        final Map settings = ctx.getAppSettings();
-        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, SET_FUNCTIONS_WORKER_RUNTIME,
-                FUNCTIONS_WORKER_RUNTIME_VALUE, CHANGE_FUNCTIONS_WORKER_RUNTIME);
-        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, SET_FUNCTIONS_EXTENSION_VERSION,
-                FUNCTIONS_EXTENSION_VERSION_VALUE);
+        final Map settings = model.getAppSettings();
+        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
+                                  FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
+                             FUNCTIONS_EXTENSION_VERSION_VALUE);
         return settings;
     }
 
@@ -184,7 +247,7 @@ public class DeployFunctionHandler {
         final DeploymentType deploymentType = getDeploymentType();
         switch (deploymentType) {
             case MSDEPLOY:
-                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.ctx.getAppName());
+                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.model.getAppName());
                 break;
             case FTP:
                 builder = new FTPArtifactHandlerImpl.Builder();
@@ -203,10 +266,10 @@ public class DeployFunctionHandler {
                 builder = new RunFromZipArtifactHandlerImpl.Builder();
                 break;
             default:
-                throw new AzureExecutionException(UNKNOW_DEPLOYMENT_TYPE);
+                throw new AzureExecutionException(message("function.deploy.error.unknownType"));
         }
         return builder
-                .stagingDirectoryPath(this.ctx.getDeploymentStagingDirectoryPath())
+                .stagingDirectoryPath(this.model.getDeploymentStagingDirectoryPath())
                 .build();
     }
 

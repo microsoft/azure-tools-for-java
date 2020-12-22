@@ -9,6 +9,7 @@ SET JDK8_INSTALL_HOME=%OPT%\\${new File(jdkDir).name}
 SET SCALA211_HOME=%OPT%\\${new File(scalaSdkDir).name}
 SET IDEA_PROPERTIES=%IDE_BIN_DIR%\\idea.properties
 SET IDEA_VM_OPTIONS=%IDE_BIN_DIR%\\win\\idea%BITS%.exe.vmoptions
+SET IDEA_JDK=%cd%\\jbr
 :: SET SCALA211_INSTALL_HOME=%OPT%\\scala-2.11.12-win
 
 if EXIST %ADA_PROVIDER% (

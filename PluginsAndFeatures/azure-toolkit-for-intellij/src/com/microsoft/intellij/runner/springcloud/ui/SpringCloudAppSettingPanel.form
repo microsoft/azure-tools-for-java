@@ -15,11 +15,7 @@
           </grid>
         </constraints>
         <properties>
-          <model>
-            <item value="a"/>
-            <item value="b"/>
-            <item value="c"/>
-          </model>
+          <model/>
           <visible value="false"/>
         </properties>
       </component>

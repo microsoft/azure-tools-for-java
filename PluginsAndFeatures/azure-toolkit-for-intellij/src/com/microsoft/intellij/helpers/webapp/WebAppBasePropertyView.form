@@ -34,7 +34,8 @@
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
-                      <icon value="actions/download.png"/>
+                      <!-- Remove button icon as there will be IllegalArgumentException for disabled icons in IntelliJ 2020.2 -->
+                      <!-- <icon value="actions/download.png"/> -->
                       <text value="Get Publish Profile"/>
                     </properties>
                   </component>
@@ -44,7 +45,7 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <icon value="actions/cancel.png"/>
+                      <!-- <icon value="actions/cancel.png"/> -->
                       <text value="Discard"/>
                     </properties>
                   </component>
@@ -54,7 +55,8 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <icon value="runConfigurations/saveTempConfig.png"/>
+                      <hideActionText value="true"/>
+                      <!-- <icon value="actions/menu-saveall.png"/> -->
                       <text value="Save"/>
                     </properties>
                   </component>

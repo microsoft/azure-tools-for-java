@@ -137,13 +137,13 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String ENTER_APP_SERVICE_PLAN_NAME = "Enter a valid App Service Plan name.";
     private static final String NAME_ALREADY_TAKEN = "The name is already taken";
     private static final String APP_SERVICE_PLAN_NAME_MUST_UNUQUE = "App service plan name must be unuque in each "
-        + "subscription.";
+            + "subscription.";
     private static final String APP_SERVICE_PLAN_NAME_INVALID_MSG = "App Service Plan name can only include "
-        + "alphanumeric characters and hyphens.";
+            + "alphanumeric characters and hyphens.";
     private static final String RESOURCE_GROUP_NAME_INVALID_MSG = "Resounce group name can only include alphanumeric "
-        + "characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
+            + "characters, periods, underscores, hyphens, and parenthesis and can't end in a period.";
     private static final String WEB_APP_NAME_INVALID_MSG = "The name can contain letters, numbers and hyphens but the"
-        + " first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
+            + " first and last characters must be a letter or number. The length must be between 2 and 60 characters.";
 
     // validation regex
     private static final String WEB_APP_NAME_REGEX = "^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$";
@@ -175,8 +175,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
     private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
-    private static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
-    private static final WebContainerMod DEFAULT_WEB_CONTAINER = WebContainerMod.Newest_Tomcat_85;
+    private static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_9_0_JRE8;
+    private static final WebContainerMod DEFAULT_WEB_CONTAINER = WebContainerMod.Newest_Tomcat_90;
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";
@@ -198,9 +198,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     // tooltip
     private static final String APPSETTINGS_TOOLTIP = "You can configure application setting here, such as "
-        + "\"JAVA_OPTS\"";
-
-
+            + "\"JAVA_OPTS\"";
     private static ILog LOG = Activator.getDefault().getLog();
 
     private IProject project;
@@ -420,9 +418,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
         lblAppServiceUseExictingLocation = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExictingLocation.setEnabled(true);
-        GridData gd_lblAppServiceUseExictingLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAppServiceUseExictingLocation.horizontalIndent = 20;
-        lblAppServiceUseExictingLocation.setLayoutData(gd_lblAppServiceUseExictingLocation);
+        GridData gdLblAppServiceUseExictingLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblAppServiceUseExictingLocation.horizontalIndent = 20;
+        lblAppServiceUseExictingLocation.setLayoutData(gdLblAppServiceUseExictingLocation);
         lblAppServiceUseExictingLocation.setText(LBL_LOCATION);
 
         lblAppSevicePlanLocation = new Label(compositeAppServicePlan, SWT.NONE);
@@ -432,9 +430,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
         lblAppServiceUseExistiogPrisingTier = new Label(compositeAppServicePlan, SWT.NONE);
         lblAppServiceUseExistiogPrisingTier.setEnabled(true);
-        GridData gd_lblAppServiceUseExistiogPrisingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAppServiceUseExistiogPrisingTier.horizontalIndent = 20;
-        lblAppServiceUseExistiogPrisingTier.setLayoutData(gd_lblAppServiceUseExistiogPrisingTier);
+        GridData gdLblAppServiceUseExistiogPrisingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblAppServiceUseExistiogPrisingTier.horizontalIndent = 20;
+        lblAppServiceUseExistiogPrisingTier.setLayoutData(gdLblAppServiceUseExistiogPrisingTier);
         lblAppServiceUseExistiogPrisingTier.setText(LBL_PRICING_TIER);
 
         lblAppServicePlanPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
@@ -467,9 +465,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         textAppSevicePlanName.setEnabled(false);
 
         lblAppServiceCreateNewLocation = new Label(compositeAppServicePlan, SWT.NONE);
-        GridData gd_lblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAppServiceCreateNewLocation.horizontalIndent = 20;
-        lblAppServiceCreateNewLocation.setLayoutData(gd_lblAppServiceCreateNewLocation);
+        GridData gdLblAppServiceCreateNewLocation = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblAppServiceCreateNewLocation.horizontalIndent = 20;
+        lblAppServiceCreateNewLocation.setLayoutData(gdLblAppServiceCreateNewLocation);
         lblAppServiceCreateNewLocation.setText(LBL_LOCATION);
         lblAppServiceCreateNewLocation.setEnabled(false);
 
@@ -485,9 +483,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         dec_comboAppServicePlanLocation = decorateContorolAndRegister(comboAppServicePlanLocation);
 
         lblAppServiceCreateNewPricingTier = new Label(compositeAppServicePlan, SWT.NONE);
-        GridData gd_lblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAppServiceCreateNewPricingTier.horizontalIndent = 20;
-        lblAppServiceCreateNewPricingTier.setLayoutData(gd_lblAppServiceCreateNewPricingTier);
+        GridData gdLblAppServiceCreateNewPricingTier = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblAppServiceCreateNewPricingTier.horizontalIndent = 20;
+        lblAppServiceCreateNewPricingTier.setLayoutData(gdLblAppServiceCreateNewPricingTier);
         lblAppServiceCreateNewPricingTier.setText(LBL_PRICING_TIER);
         lblAppServiceCreateNewPricingTier.setEnabled(false);
 
@@ -506,7 +504,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(PRICING_URL));
                 } catch (PartInitException | MalformedURLException ex) {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "widgetSelected@SelectionAdapter@linkAppServicePricing@AppServiceCreateDialog", ex));
+                            "widgetSelected@SelectionAdapter@linkAppServicePricing@AppServiceCreateDialog", ex));
                 }
             }
         });
@@ -734,6 +732,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         updateTableActionBtnStatus(true);
     }
 
+    @SuppressWarnings("checkstyle:FallThrough")
     private void editingTableItem(TableItem item, int column) {
         final Text text = new Text(tblAppSettings, SWT.NONE);
         Listener textListener = e -> {
@@ -748,7 +747,11 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     switch (e.detail) {
                         case SWT.TRAVERSE_RETURN:
                             item.setText(column, text.getText());
-                            // FALL THROUGH
+                            text.dispose();
+                            e.doit = false;
+                            readTblAppSettings();
+                            updateTableActionBtnStatus(true);
+                            break;
                         case SWT.TRAVERSE_ESCAPE:
                             text.dispose();
                             e.doit = false;
@@ -884,7 +887,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
         final boolean isJarPacking = packaging.equals(WebAppUtils.TYPE_JAR);
         final JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
-        final List<WebContainerMod> webContainers = isJarPacking ? AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
+        final List<WebContainerMod> webContainers =
+                isJarPacking ? AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
         comboWebContainer.removeAll();
         binderWebConteiners = new ArrayList<>();
         for (int i = 0; i < webContainers.size(); i++) {
@@ -935,12 +939,12 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     Display.getDefault().asyncExec(() -> doFillSubscriptions());
                 } catch (Exception ex) {
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "run@ProgressDialog@updateAndFillSubscriptions@AppServiceCreateDialog", ex));
+                            "run@ProgressDialog@updateAndFillSubscriptions@AppServiceCreateDialog", ex));
                 }
             });
         } catch (InvocationTargetException | InterruptedException ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "updateAndFillSubscriptions@AppServiceCreateDialog",
-                ex));
+                    ex));
         }
     }
 
@@ -978,7 +982,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
 
         List<ResourceGroup> rgl = AzureModel.getInstance().getSubscriptionToResourceGroupMap()
-            .get(binderSubscriptionDetails.get(i));
+                .get(binderSubscriptionDetails.get(i));
         if (rgl == null) {
             return;
         }
@@ -1005,7 +1009,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
 
         List<AppServicePlan> appServicePlans = getAppservicePlanBySID(
-            binderSubscriptionDetails.get(i).getSubscriptionId());
+                binderSubscriptionDetails.get(i).getSubscriptionId());
         if (appServicePlans == null) {
             return;
         }
@@ -1041,7 +1045,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 return sidAspMap.get(sid);
             }
             List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionId(sid);
+                    .listAppServicePlanBySubscriptionId(sid);
             sidAspMap.put(sid, appServicePlans);
             return appServicePlans;
         } catch (Exception e) {
@@ -1055,16 +1059,16 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
             if (sdl.size() > 0) {
                 Observable.from(sdl).flatMap((sd) ->
-                    Observable.create((subscriber) -> {
-                        try {
-                            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                                .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
-                            map.put(sd.getSubscriptionId(), appServicePlans);
-                            subscriber.onCompleted();
-                        } catch (Exception e) {
-                            Exceptions.propagate(e);
-                        }
-                    }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+                        Observable.create((subscriber) -> {
+                            try {
+                                List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
+                                        .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
+                                map.put(sd.getSubscriptionId(), appServicePlans);
+                                subscriber.onCompleted();
+                            } catch (Exception e) {
+                                Exceptions.propagate(e);
+                            }
+                        }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
             }
             sidAspMap = map;
         } catch (Exception ignore) {
@@ -1125,14 +1129,14 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
             if (comboAppServicePlanPricingTier.getSelectionIndex() < 0
-                && comboAppServicePlanPricingTier.getItemCount() > 0) {
+                    && comboAppServicePlanPricingTier.getItemCount() > 0) {
                 comboAppServicePlanPricingTier.select(0);
             }
             String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
             CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
+                    "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
         }
     }
 
@@ -1191,8 +1195,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         recordUserSettings();
         Map<String, String> properties = new HashMap<>();
         properties.put("runtime",
-            model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()
-                : "windows-" + model.getWebContainer());
+                model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()
+                        : "windows-" + model.getWebContainer());
         if (!validated()) {
             return;
         }
@@ -1266,7 +1270,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 List<AppServicePlan> appServicePlans = getAppservicePlanBySID(model.getSubscriptionId());
                 for (AppServicePlan asp : appServicePlans) {
                     if (asp != null
-                        && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
+                            && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
                         setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
                         return false;
                     }
@@ -1293,7 +1297,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 return false;
             }
             for (ResourceGroup rg : AzureMvpModel.getInstance()
-                .getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
+                    .getResourceGroupsBySubscriptionId(model.getSubscriptionId())) {
                 if (rg != null && rg.name().toLowerCase().equals(model.getResourceGroup().toLowerCase())) {
                     setError(dec_textNewResGrName, NAME_ALREADY_TAKEN);
                     return false;

@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IWebUi;
 
 import java.net.URI;
@@ -43,12 +44,7 @@ class WebUi implements IWebUi {
         if(ApplicationManager.getApplication().isDispatchThread()) {
             buildAndShow(requestUri.toString(), redirectUri.toString());
         } else {
-            ApplicationManager.getApplication().invokeAndWait( new Runnable() {
-                @Override
-                public void run() {
-                    buildAndShow(requestUriStr, redirectUriStr);
-                }
-            });
+            AzureTaskManager.getInstance().runAndWait(() -> buildAndShow(requestUriStr, redirectUriStr));
         }
 
 //        final Callable<String> worker = new Callable<String>() {

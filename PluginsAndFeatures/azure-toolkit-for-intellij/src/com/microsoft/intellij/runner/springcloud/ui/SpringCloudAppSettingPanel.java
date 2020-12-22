@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.springcloud.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
@@ -35,6 +34,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.intellij.common.AzureResourceWrapper;
 import com.microsoft.intellij.common.CommonConst;
@@ -42,11 +42,12 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -59,7 +60,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private final SpringCloudDeployConfiguration configuration;
     private static final String CREATE_APP = "Create app ...";
     private JPanel panelRoot;
-    private JComboBox cbMavenProject;
+    private JComboBox<AzureArtifact> cbMavenProject;
     private JLabel lblMavenProject;
     private JComboBox cbSpringApps;
     private JRadioButton java8RadioButton;
@@ -94,7 +95,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private boolean isClusterInitialized = false;
 
     public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
-        super(project);
+        super(project, false);
         this.configuration = configuration;
         this.presenter = new SpringCloudDeploySettingPresenter();
         this.presenter.onAttachView(this);
@@ -222,7 +223,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private void onSelectApp() {
         final AzureResourceWrapper selectedObject = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
         if (selectedObject != null && selectedObject.isFixedOption() && selectedObject.getName().equals(CREATE_APP)) {
-            ApplicationManager.getApplication().invokeLater(() -> createNewAppWizard());
+            AzureTaskManager.getInstance().runLater(() -> createNewAppWizard());
         }
     }
 
@@ -400,11 +401,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         boolean isPublic = configuration.isPublic();
         this.radioPublic.setSelected(isPublic);
         this.radioNonPublic.setSelected(!isPublic);
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
         if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
             environmentVariableTable.setEnv(configuration.getEnvironment());
         }
-        setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
 
     private void fillComboBoxSilently(JComboBox cbArtifact, Runnable runnable, boolean shouldBeSilent) {
@@ -423,6 +422,16 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
             return i.toString();
         }
         return Integer.toString(defaultValue);
+    }
+
+    @NotNull
+    protected JLabel getLblAzureArtifact() {
+        return lblMavenProject;
+    }
+
+    @NotNull
+    protected JComboBox<AzureArtifact> getCbAzureArtifact() {
+        return cbMavenProject;
     }
 
     @Override
@@ -465,26 +474,14 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setEnablePersistentStorage(this.radioEnablePersistent.isSelected());
         configuration.setPublic(radioPublic.isSelected());
         configuration.setEnvironment(environmentVariableTable.getEnv());
-        configuration.setProjectName(getProjectName());
-    }
-
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetName) {
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (StringUtils.equals(prj.getName(), targetName)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
+        AzureArtifact artifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
+        if (Objects.nonNull(artifact)) {
+            configuration.setArtifactIdentifier(
+                    AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact));
+        } else {
+            configuration.setArtifactIdentifier("");
         }
-        cbMavenProject.setVisible(true);
-        getLblMavenProject().setVisible(true);
-    }
-
-    private String getProjectName() {
-        MavenProject mavenProject = (MavenProject) (cbMavenProject.getSelectedItem());
-        return mavenProject != null ? mavenProject.getName() : "";
+        syncBeforeRunTasks(artifact, configuration);
     }
 
     private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {

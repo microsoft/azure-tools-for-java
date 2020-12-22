@@ -27,19 +27,22 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -54,21 +57,16 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -76,9 +74,13 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -86,6 +88,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     private final Map<Project, DefaultTreeModel> treeModelMap = new HashMap<>();
 
     @Override
+    @AzureOperation(value = "initialize azure explorer", type = AzureOperation.Type.SERVICE)
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         AzureModule azureModule = new AzureModuleImpl(project);
@@ -104,9 +107,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.setRootVisible(false);
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        new TreeSpeedSearch(tree);
 
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    treeNodeDblClicked(e, tree, project);
+                }
+            }
+
             @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
@@ -139,8 +150,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     if (!node.isLoading()) {
                         node.getClickAction().fireNodeActionEvent();
                     }
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                } else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
                     if (node.hasNodeActions()) {
                         JPopupMenu menu = createPopupMenuForNode(node);
                         menu.show(e.getComponent(), (int) rectangle.getX(), (int) rectangle.getY());
@@ -172,30 +182,40 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         return root;
     }
 
-    private void treeMousePressed(MouseEvent e, JTree tree) {
-        // get the tree node associated with this mouse click
-        TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+    private void treeNodeDblClicked(MouseEvent e, JTree tree, final Project project) {
+        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
         if (treePath == null) {
             return;
         }
+        final Node node = getTreeNodeOnMouseClick(tree, treePath);
+        if (!node.isLoading()) {
+            node.onNodeDblClicked(project);
+        }
+    }
 
-        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
-        Node node = (Node) treeNode.getUserObject();
-
-        // set tree and tree path to expand the node later
-        node.setTree(tree);
-        node.setTreePath(treePath);
-
+    private void treeMousePressed(MouseEvent e, JTree tree) {
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
+            TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with left mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
             if (!node.isLoading()) {
                 node.getClickAction().fireNodeActionEvent();
             }
-        // for right click show the context menu populated with all the
-        // actions from the node
+            // for right click show the context menu populated with all the
+            // actions from the node
         } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+            TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with right mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             if (node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
@@ -206,22 +226,43 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         }
     }
 
+    private Node getTreeNodeOnMouseClick(JTree tree, TreePath treePath) {
+        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+        Node node = (Node) treeNode.getUserObject();
+        // set tree and tree path to expand the node later
+        node.setTree(tree);
+        node.setTreePath(treePath);
+        return node;
+    }
+
     private JPopupMenu createPopupMenuForNode(Node node) {
-        JPopupMenu menu = new JPopupMenu();
-
-        for (final NodeAction nodeAction : node.getNodeActions()) {
-            JMenuItem menuItem = new JMenuItem(nodeAction.getName());
-            menuItem.setEnabled(nodeAction.isEnabled());
-            if (nodeAction.getIconPath() != null) {
-                menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        final JPopupMenu menu = new JPopupMenu();
+        final LinkedHashMap<Integer, List<NodeAction>> sortedNodeActionsGroupMap =
+            node.getNodeActions().stream()
+                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                .collect(Collectors.groupingBy(NodeAction::getGroup, LinkedHashMap::new, Collectors.toList()));
+        // Convert node actions map to menu items, as linked hash map keeps ordered, no need to sort again
+        sortedNodeActionsGroupMap.forEach((groupNumber, actions) -> {
+            if (menu.getComponentCount() > 0) {
+                menu.addSeparator();
             }
-            // delegate the menu item click to the node action's listeners
-            menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
-
-            menu.add(menuItem);
-        }
-
+            actions.stream().map(this::createMenuItemFromNodeAction).forEachOrdered(menu::add);
+        });
         return menu;
+    }
+
+    private JMenuItem createMenuItemFromNodeAction(NodeAction nodeAction) {
+        final JMenuItem menuItem = new JMenuItem(nodeAction.getName());
+        menuItem.setEnabled(nodeAction.isEnabled());
+        Icon icon = nodeAction.getNodeIcon();
+        if (Objects.nonNull(icon)) {
+            menuItem.setIcon(icon);
+        } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
+            menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        }
+        // delegate the menu item click to the node action's listeners
+        menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
+        return menuItem;
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
@@ -240,11 +281,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode, project));
 
         // create child tree nodes for each child node
-        if (node.hasChildNodes()) {
-            for (Node childNode : node.getChildNodes()) {
-                treeNode.add(createTreeNode(childNode, project));
-            }
-        }
+        node.getChildNodes().stream()
+            .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
+            .map(childNode -> createTreeNode(childNode, project))
+            .forEach(treeNode::add);
 
         return treeNode;
     }
@@ -268,8 +308,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // if we are not running on the dispatch thread then switch
         // to dispatch thread
         if (!ApplicationManager.getApplication().isDispatchThread()) {
-            ApplicationManager.getApplication().invokeAndWait(() -> propertyChange(evt), ModalityState.any());
-
+            AzureTaskManager.getInstance().runAndWait(() -> propertyChange(evt), AzureTask.Modality.ANY);
             return;
         }
 
@@ -301,8 +340,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // if we are not running on the dispatch thread then switch
             // to dispatch thread
             if (!ApplicationManager.getApplication().isDispatchThread()) {
-                ApplicationManager.getApplication().invokeAndWait(() -> listChanged(e), ModalityState.any());
-
+                AzureTaskManager.getInstance().runAndWait(() -> listChanged(e), AzureTask.Modality.ANY);
                 return;
             }
 
@@ -359,8 +397,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 return;
             }
 
-            String iconPath = node.getIconPath();
-            if (iconPath != null && !iconPath.isEmpty()) {
+            final Icon icon = node.getIcon();
+            final String iconPath = node.getIconPath();
+            if (Objects.nonNull(icon)) {
+                setIcon(icon);
+            } else if (StringUtils.isNotBlank(iconPath)) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }
 
@@ -385,8 +426,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                 @Override
                                 public void update(AnActionEvent e) {
                                     boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(isDarkTheme
-                                            ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT));
+                                    final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
+                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
                                 }
                             },
                             new AzureSignInAction(),

@@ -22,6 +22,10 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
@@ -52,19 +56,14 @@ public class EventUtil {
     }
 
     public static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,
-        Map<String, String> properties, Map<String, Double> metrics) {
-        try {
-            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            mutableProps.put(CommonUtil.OPERATION_NAME, operName);
-            mutableProps.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
-            mutableProps.put(CommonUtil.ERROR_CODE, "1");
-            mutableProps.put(CommonUtil.ERROR_MSG, e != null ? e.getMessage() : "");
-            mutableProps.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
-            mutableProps.put(CommonUtil.ERROR_TYPE, errorType.name());
-            mutableProps.put(CommonUtil.ERROR_STACKTRACE, ExceptionUtils.getStackTrace(e));
-            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), metrics);
-        } catch (Exception ignore) {
-        }
+                                Map<String, String> properties, Map<String, Double> metrics) {
+        logError(serviceName, operName, errorType, e, properties, metrics, true);
+    }
+
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnly(String serviceName, String operName, ErrorType errorType, Throwable e,
+                                             Map<String, String> properties, Map<String, Double> metrics) {
+        logError(serviceName, operName, errorType, e, properties, metrics, false);
     }
 
     public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties,
@@ -103,6 +102,16 @@ public class EventUtil {
         ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnly(Operation operation, ErrorType errorType, Throwable e,
+                                Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        ((DefaultOperation) operation).logErrorClassNameOnly(errorType, e, properties, metrics);
+    }
+
     public static void logErrorWithComplete(Operation operation, ErrorType errorType, Throwable e,
                                 Map<String, String> properties, Map<String, Double> metrics) {
         if (operation == null) {
@@ -110,6 +119,17 @@ public class EventUtil {
         }
 
         logError(operation, errorType, e, properties, metrics);
+        operation.complete();
+    }
+
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnlyWithComplete(Operation operation, ErrorType errorType, Throwable e,
+                                            Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        logErrorClassNameOnly(operation, errorType, e, properties, metrics);
         operation.complete();
     }
 
@@ -166,5 +186,30 @@ public class EventUtil {
 
     public static <R> R executeWithLog(String serviceName, String operName, TelemetryFunction<Operation, R> function) {
         return executeWithLog(serviceName, operName, null, null, function, null);
+    }
+
+    // Will collect error stack traces only if user signed in with Azure account
+    public static boolean isAbleToCollectErrorStacks() {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        return azureManager != null && azureManager.getEnvironment() != null &&
+            ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
+    }
+
+    private static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,
+                                Map<String, String> properties, Map<String, Double> metrics, boolean logErrorTraces) {
+        try {
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            mutableProps.put(CommonUtil.OPERATION_NAME, operName);
+            mutableProps.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
+            mutableProps.put(CommonUtil.ERROR_CODE, "1");
+            mutableProps.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
+            mutableProps.put(CommonUtil.ERROR_TYPE, errorType.name());
+            if (logErrorTraces && isAbleToCollectErrorStacks()) {
+                mutableProps.put(CommonUtil.ERROR_MSG, e != null ? e.getMessage() : "");
+                mutableProps.put(CommonUtil.ERROR_STACKTRACE, ExceptionUtils.getStackTrace(e));
+            }
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), metrics);
+        } catch (Exception ignore) {
+        }
     }
 }

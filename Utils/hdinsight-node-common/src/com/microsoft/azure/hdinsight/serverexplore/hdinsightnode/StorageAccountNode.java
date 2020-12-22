@@ -28,7 +28,6 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -52,7 +51,8 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
     private IClusterDetail clusterDetail;
 
     public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, @NotNull IClusterDetail clusterDetail, boolean isDefaultStorageAccount) {
-       super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent, getIconPath(storageAccount));
+        super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent,
+              getIconPath(storageAccount));
         this.storageAccount = storageAccount;
         this.clusterDetail = clusterDetail;
         loadAdditionalActions();
@@ -62,9 +62,9 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
         if (clusterDetail instanceof ClusterDetail) {
             addAction("Open Storage in Azure Management Portal", new NodeActionListener() {
                 @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
-                    String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
+                protected void actionPerformed(NodeActionEvent e) {
+                    final String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
+                    final String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
                     openResourcesInPortal(subscriptionId, storageRelativePath);
                 }
             });
@@ -72,7 +72,7 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
     }
 
     private static String getIconPath(IHDIStorageAccount storageAccount) {
-        if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
+        if (storageAccount.getAccountType() == StorageAccountType.ADLS) {
             return ADLS_ICON_PATH;
         } else {
             return ICON_PATH;

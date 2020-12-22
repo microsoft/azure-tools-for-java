@@ -22,12 +22,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.io.IOException;
-
-import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -37,7 +34,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import java.util.HashMap;
+
 import java.util.List;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -59,19 +56,16 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    @AzureOperation(value = "reload web apps", type = AzureOperation.Type.ACTION)
+    protected void refreshItems() {
         webAppModulePresenter.onModuleRefresh();
     }
 
     @Override
+    @AzureOperation(value = "delete web app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
-        try {
-            webAppModulePresenter.onDeleteWebApp(sid, id);
-            removeDirectChildNode(node);
-        } catch (IOException | CloudException e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
-                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
-        }
+        webAppModulePresenter.onDeleteWebApp(sid, id);
+        removeDirectChildNode(node);
     }
 
     private void createListener() {
@@ -95,25 +89,13 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     switch (event.opsType) {
                         case ADD:
                             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                try {
-                                    addChildNode(new WebAppNode(WebAppModule.this,
-                                            ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                            webAppDetails.webApp.id(),
-                                            webAppDetails.webApp.name(),
-                                            webAppDetails.webApp.state(),
-                                            webAppDetails.webApp.defaultHostName(),
-                                            webAppDetails.webApp.operatingSystem().toString(),
-                                            null));
-                                } catch (Exception ex) {
-                                    DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
-                                    ex.printStackTrace();
-                                }
+                                addChildNode(new WebAppNode(WebAppModule.this,
+                                        ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
+                                        webAppDetails.webApp));
                             });
                             break;
                         case UPDATE:
-                            break;
                         case REMOVE:
-                            break;
                         default:
                             break;
                     }
@@ -127,16 +109,10 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
         for (final ResourceEx<WebApp> resourceEx : resourceExes) {
             final WebApp app = resourceEx.getResource();
-            final WebAppNode node = new WebAppNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
-                app.state(), app.defaultHostName(), app.operatingSystem().toString(),
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.regionName());
-                    }
-                });
+            final String sId = resourceEx.getSubscriptionId();
+            final WebAppNode node = new WebAppNode(this, sId, app);
 
             addChildNode(node);
-            node.refreshItems();
         }
     }
 }

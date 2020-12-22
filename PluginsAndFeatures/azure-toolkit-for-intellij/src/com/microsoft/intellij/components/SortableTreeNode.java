@@ -22,18 +22,25 @@
 
 package com.microsoft.intellij.components;
 
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
+import org.apache.commons.lang3.StringUtils;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.util.Comparator;
 
-public class SortableTreeNode extends DefaultMutableTreeNode {
+public class SortableTreeNode extends DefaultMutableTreeNode implements Sortable {
+
+    private Node node;
 
     public SortableTreeNode() {
         super();
     }
 
-    public SortableTreeNode(Object userObject, boolean allowsChildren) {
+    public SortableTreeNode(Node userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
+        this.node = userObject;
     }
 
     @SuppressWarnings("unchecked")
@@ -50,6 +57,14 @@ public class SortableTreeNode extends DefaultMutableTreeNode {
         this.children.sort(nodeComparator);
     }
 
+    @Override
+    public int getPriority() {
+        return node == null ? DEFAULT_PRIORITY : node.getPriority();
+    }
+
     private static final Comparator nodeComparator =
-            (Comparator<SortableTreeNode>) (node1, node2) -> node1.toString().compareToIgnoreCase(node2.toString());
+        (Object first, Object second) -> (first instanceof Sortable && second instanceof Sortable) ?
+                                         Comparator.comparing(Sortable::getPriority).thenComparing(Object::toString)
+                                                   .compare((Sortable) first, (Sortable) second) :
+                                         StringUtils.compare(first.toString(), second.toString());
 }

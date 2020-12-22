@@ -24,15 +24,12 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import rx.Observable
 import rx.Observable.just
-import rx.Observer
 import java.net.URI
-import java.util.AbstractMap.SimpleImmutableEntry
 
 class CosmosSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -55,7 +52,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
                     ?.let { just(URI.create(it)) }
                     ?: clusterDetail.get().map { it.livyUri } }
             .map { livyUri -> CosmosSparkBatchJob(
-                    prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
+                    updateStorageConfigForSubmissionParameter(submitModel),
                     SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri))
             }
     }

@@ -31,7 +31,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
@@ -44,6 +43,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
@@ -58,6 +58,11 @@ public class PluginUtil {
     public static final String BASE_PATH = "${basedir}" + File.separator + "..";
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.util.PluginUtil");
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    private static final String PLATFORM_PREFIX_KEY = "idea.platform.prefix";
+
+    private static final String IDEA_PREFIX = "idea";
+    private static final String IDEA_CE_PREFIX = "Idea";
+    private static final String COMMUNITY_PREFIX = IDEA_CE_PREFIX;
 
     //todo: check with multiple Idea projects open in separate windows
     private static HashMap<ToolWindowKey, IToolWindowProcessor> toolWindowManagerCollection = new HashMap<>();
@@ -118,12 +123,7 @@ public class PluginUtil {
 
     public static void displayErrorDialogInAWTAndLog(final String title, final String message, Throwable e) {
         LOG.error(message, e);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                PluginUtil.displayErrorDialog(title, message);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
     }
 
     public static void displayInfoDialog(String title, String message) {
@@ -135,12 +135,7 @@ public class PluginUtil {
     }
 
     public static void displayWarningDialogInAWT(final String title, final String message) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                displayWarningDialog(title, message);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> displayWarningDialog(title, message));
     }
 
     /**
@@ -190,7 +185,7 @@ public class PluginUtil {
 
     public static void showInfoNotificationProject(Project project, String title, String message) {
         new Notification(NOTIFICATION_GROUP_ID, title,
-                message, NotificationType.INFORMATION).notify(project);
+                         message, NotificationType.INFORMATION).notify(project);
     }
 
     public static void showWarningNotificationProject(Project project, String title, String message) {
@@ -202,15 +197,41 @@ public class PluginUtil {
                          message, NotificationType.ERROR).notify(project);
     }
 
+    public static void showInfoNotification(String title, String message) {
+        Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
+                                                     message, NotificationType.INFORMATION);
+        Notifications.Bus.notify(notification);
+    }
+
     public static void showWarnNotification(String title, String message) {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
-                message, NotificationType.WARNING);
+                                                     message, NotificationType.WARNING);
         Notifications.Bus.notify(notification);
     }
 
     public static void showErrorNotification(String title, String message) {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
-                message, NotificationType.ERROR);
+                                                     message, NotificationType.ERROR);
         Notifications.Bus.notify(notification);
+    }
+
+    public static String getPlatformPrefix() {
+        return getPlatformPrefix(IDEA_PREFIX);
+    }
+
+    public static String getPlatformPrefix(String defaultPrefix) {
+        return System.getProperty(PLATFORM_PREFIX_KEY, defaultPrefix);
+    }
+
+    public static boolean isIdeaUltimate() {
+        return is(IDEA_PREFIX);
+    }
+
+    public static boolean isIdeaCommunity() {
+        return is(COMMUNITY_PREFIX);
+    }
+
+    private static boolean is(String idePrefix) {
+        return idePrefix.equals(getPlatformPrefix());
     }
 }

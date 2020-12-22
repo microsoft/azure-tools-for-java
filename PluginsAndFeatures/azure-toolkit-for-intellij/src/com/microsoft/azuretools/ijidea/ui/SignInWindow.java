@@ -22,14 +22,12 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -37,14 +35,19 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
-import com.microsoft.azuretools.adauth.AuthCanceledException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -56,10 +59,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -98,7 +98,7 @@ public class SignInWindow extends AzureDialogWrapper {
         setOKButtonText("Sign in");
 
         this.authMethodDetails = authMethodDetails;
-        authFileTextField.setText(authMethodDetails.getCredFilePath());
+        authFileTextField.setText(authMethodDetails == null ? null : authMethodDetails.getCredFilePath());
 
         automatedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -180,7 +180,10 @@ public class SignInWindow extends AzureDialogWrapper {
     protected void doOKAction() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (automatedRadioButton.isSelected()) { // automated
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
+            final Map<String, String> properties = new HashMap<>();
+            properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+            properties.putAll(signInSPProp);
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 DefaultLoader.getUIHelper().showMessageDialog(contentPane,
@@ -219,8 +222,8 @@ public class SignInWindow extends AzureDialogWrapper {
         super.init();
         AzureTokenWrapper tokenWrapper = null;
         try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential();
-        } catch (IOException e) {
+            tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
+        } catch (IOException | RuntimeException e) {
             // swallow exception while getting azure cli credential
         }
         if (tokenWrapper != null) {
@@ -230,7 +233,7 @@ public class SignInWindow extends AzureDialogWrapper {
             azureCliRadioButton.setSelected(true);
         } else {
             azureCliPanel.setEnabled(false);
-            azureCliRadioButton.setText("Azure CLI (Not login)");
+            azureCliRadioButton.setText("Azure CLI (Not logged in)");
             azureCliRadioButton.setEnabled(false);
         }
         refreshAuthControlElements();
@@ -296,26 +299,19 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void doLogin(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
-        ProgressManager.getInstance().run(
-                new Task.Modal(project, "Sign In Progress", false) {
-                    @Override
-                    public void run(ProgressIndicator indicator) {
-                        try {
-                            EventUtil.logEvent(EventType.info, operation, properties);
-                            operation.start();
-                            loginCallable.call();
-                        } catch (AuthCanceledException ex) {
-                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                            System.out.println(ex.getMessage());
-                        } catch (Exception ex) {
-                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                            ApplicationManager.getApplication().invokeLater(
-                                () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
-                        } finally {
-                            operation.complete();
-                        }
-                    }
-                });
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Sign In Progress", false, () -> {
+            try {
+                EventUtil.logEvent(EventType.info, operation, properties);
+                operation.start();
+                loginCallable.call();
+            } catch (Exception e) {
+                throw new AzureToolkitRuntimeException(e.getMessage(), e);
+            } finally {
+                EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
+                    AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
+                operation.complete();
+            }
+        }));
     }
 
     private void doSignOut() {
@@ -346,26 +342,18 @@ public class SignInWindow extends AzureDialogWrapper {
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
-            ProgressManager.getInstance().run(new Task.Modal(project, "Load Subscriptions Progress", true) {
-                @Override
-                public void run(ProgressIndicator progressIndicator) {
-                    progressIndicator.setText("Loading subscriptions...");
-                    try {
-                        progressIndicator.setIndeterminate(true);
-                        subscriptionManager.getSubscriptionDetails();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error");
-                            }
-                        });
-
-                    }
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", true, () -> {
+                final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                progressIndicator.setText("Loading subscriptions...");
+                try {
+                    progressIndicator.setIndeterminate(true);
+                    subscriptionManager.getSubscriptionDetails();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
+                    AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error"));
                 }
-            });
+            }));
 
             SrvPriSettingsDialog d = SrvPriSettingsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
             List<SubscriptionDetail> subscriptionDetailsUpdated;

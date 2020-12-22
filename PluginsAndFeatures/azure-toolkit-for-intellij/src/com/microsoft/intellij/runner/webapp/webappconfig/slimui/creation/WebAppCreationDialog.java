@@ -23,10 +23,8 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.Comparing;
@@ -35,6 +33,8 @@ import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -67,10 +67,10 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
     private static final String DIALOG_TITLE = "Create WebApp";
     private static final String NOT_APPLICABLE = "N/A";
 
-    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
+    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_9_0_JRE8;
     public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_8_NEWEST;
     public static final WebAppUtils.WebContainerMod DEFAULT_WINDOWS_CONTAINER =
-        WebAppUtils.WebContainerMod.Newest_Tomcat_85;
+        WebAppUtils.WebContainerMod.Newest_Tomcat_90;
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
 
@@ -208,6 +208,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     @Override
     public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
+        updateConfiguration();
         cbExistAppServicePlan.removeAllItems();
         appServicePlans.stream()
             .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))
@@ -446,29 +447,26 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
-                EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
-                    progressIndicator.setIndeterminate(true);
-                    EventUtil.logEvent(EventType.info, operation, properties);
-                    result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        sendTelemetry(true, null);
-                        if (AzureUIRefreshCore.listeners != null) {
-                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                null));
-                        }
-                    });
-                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
-                }, (ex) -> {
-                        DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
-                                                              "Create WebApp Failed");
-                        sendTelemetry(false, ex.getMessage());
-                    });
-            }
-        });
+        AzureTaskManager.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", true, () -> {
+            Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
+                progressIndicator.setIndeterminate(true);
+                EventUtil.logEvent(EventType.info, operation, properties);
+                result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
+                AzureTaskManager.getInstance().runLater(() -> {
+                    sendTelemetry(true, null);
+                    if (AzureUIRefreshCore.listeners != null) {
+                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                    }
+                });
+                DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
+            }, (ex) -> {
+                DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
+                                                      "Create WebApp Failed");
+                sendTelemetry(false, ex.getMessage());
+            });
+        }));
     }
 
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {

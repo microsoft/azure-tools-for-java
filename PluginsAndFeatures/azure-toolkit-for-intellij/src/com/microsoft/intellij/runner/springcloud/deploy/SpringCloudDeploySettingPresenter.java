@@ -28,8 +28,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 
-import java.io.File;
-
 public class SpringCloudDeploySettingPresenter extends MvpPresenter<SpringCloudDeploySettingMvpView> {
     private static final String CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions.";
     private static final String CANNOT_LIST_CLUSTER = "Failed to list clusters.";
@@ -46,7 +44,7 @@ public class SpringCloudDeploySettingPresenter extends MvpPresenter<SpringCloudD
                         return;
                     }
                     getMvpView().fillSubscription(subscriptions);
-                }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
+                }));
     }
 
     public void onLoadClusters(String sid) {
@@ -57,7 +55,7 @@ public class SpringCloudDeploySettingPresenter extends MvpPresenter<SpringCloudD
                         return;
                     }
                     getMvpView().fillClusters(clusters);
-                }), e -> errorHandler(CANNOT_LIST_CLUSTER, (Exception) e));
+                }));
     }
 
     public void onLoadApps(String clusterId) {
@@ -68,7 +66,7 @@ public class SpringCloudDeploySettingPresenter extends MvpPresenter<SpringCloudD
                         return;
                     }
                     getMvpView().fillApps(apps);
-                }), e -> errorHandler(CANNOT_LIST_APP + new File(clusterId).getName(), (Exception) e));
+                }));
     }
 
     private void errorHandler(String msg, Exception e) {

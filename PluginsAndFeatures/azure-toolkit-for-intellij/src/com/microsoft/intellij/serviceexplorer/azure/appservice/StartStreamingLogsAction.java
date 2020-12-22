@@ -22,21 +22,20 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
-import org.jetbrains.annotations.NotNull;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
@@ -64,7 +63,7 @@ public class StartStreamingLogsAction extends NodeActionListener {
         this.operation = START_STREAMING_LOG_WEBAPP_SLOT;
     }
 
-    public StartStreamingLogsAction(FunctionNode functionNode) {
+    public StartStreamingLogsAction(FunctionAppNode functionNode) {
         super();
         this.project = (Project) functionNode.getProject();
         this.resourceId = functionNode.getId();
@@ -75,26 +74,28 @@ public class StartStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(service, operation, op -> {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Start Streaming Logs", true) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    switch (operation) {
-                        case START_STREAMING_LOG_FUNCTION_APP:
-                            AppServiceStreamingLogManager.INSTANCE.showFunctionStreamingLog(project, resourceId);
-                            break;
-                        case START_STREAMING_LOG_WEBAPP:
-                            AppServiceStreamingLogManager.INSTANCE.showWebAppStreamingLog(project, resourceId);
-                            break;
-                        case START_STREAMING_LOG_WEBAPP_SLOT:
-                            AppServiceStreamingLogManager.INSTANCE.showWebAppDeploymentSlotStreamingLog(project,
-                                                                                                        resourceId);
-                            break;
-                        default:
-                            DefaultLoader.getUIHelper().showError("Unsupported operation", "Unsupported operation");
-                            break;
-                    }
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", true, () -> {
+                switch (operation) {
+                    case START_STREAMING_LOG_FUNCTION_APP:
+                        AppServiceStreamingLogManager.INSTANCE.showFunctionStreamingLog(project, resourceId);
+                        break;
+                    case START_STREAMING_LOG_WEBAPP:
+                        AppServiceStreamingLogManager.INSTANCE.showWebAppStreamingLog(project, resourceId);
+                        break;
+                    case START_STREAMING_LOG_WEBAPP_SLOT:
+                        AppServiceStreamingLogManager.INSTANCE.showWebAppDeploymentSlotStreamingLog(project,
+                                                                                                    resourceId);
+                        break;
+                    default:
+                        DefaultLoader.getUIHelper().showError("Unsupported operation", "Unsupported operation");
+                        break;
                 }
-            });
+            }));
         });
+    }
+
+    @Override
+    public int getGroup() {
+        return Groupable.DIAGNOSTIC_GROUP;
     }
 }

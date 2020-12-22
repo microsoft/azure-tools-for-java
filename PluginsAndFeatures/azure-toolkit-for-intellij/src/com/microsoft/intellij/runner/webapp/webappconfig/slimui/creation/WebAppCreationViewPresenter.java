@@ -49,7 +49,7 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
                     return;
                 }
                 getMvpView().fillSubscription(subscriptions);
-            }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
+            }));
     }
 
     /**
@@ -63,7 +63,7 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
                     return;
                 }
                 getMvpView().fillResourceGroup(resourceGroups);
-            }), e -> errorHandler(CANNOT_LIST_RES_GRP, (Exception) e));
+            }));
     }
 
     /**
@@ -77,7 +77,7 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
                     return;
                 }
                 getMvpView().fillAppServicePlan(appServicePlans);
-            }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
+            }));
     }
 
     public void onLoadRegion(String sid, PricingTier pricingTier) {
@@ -88,18 +88,14 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
                           return;
                       }
                       getMvpView().fillRegion(regions);
-                  }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
+                  }));
     }
 
     /**
      * Load pricing tier from model.
      */
     public void onLoadPricingTier() {
-        try {
-            getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
-        } catch (IllegalAccessException e) {
-            errorHandler(CANNOT_LIST_PRICING_TIER, e);
-        }
+        getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
     }
 
     /**

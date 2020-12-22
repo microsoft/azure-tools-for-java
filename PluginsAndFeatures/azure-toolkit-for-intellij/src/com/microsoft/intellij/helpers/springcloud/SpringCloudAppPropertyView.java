@@ -26,7 +26,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
@@ -40,13 +39,14 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
@@ -188,12 +188,15 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             });
 
         });
+        // Remove button icon as there will be IllegalArgumentException for disabled icons in IntelliJ 2020.2
+        // this.saveButton.setIcon(UIHelperImpl.loadIcon("storagesaveas.png"));
 
         this.refreshButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.REFRESH_SPRING_CLOUD_APP, "Refreshing", project, (changes) -> {
                 // DO nothing
             });
         });
+        // this.refreshButton.setIcon(UIHelperImpl.loadIcon("refresh.png"));
 
         this.deleteButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, DELETING_ACTION, project, (changes) -> {
@@ -205,8 +208,9 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                             String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
-
         });
+        // this.deleteButton.setIcon(UIHelperImpl.loadIcon("Delete.png"));
+
         this.startButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.START_SPRING_CLOUD_APP, "Starting", project, (changes) -> {
                 try {
@@ -217,6 +221,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
+        // this.startButton.setIcon(UIHelperImpl.loadIcon("Start.png"));
 
         this.stopButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.STOP_SPRING_CLOUD_APP, "Stopping", project, (changes) -> {
@@ -228,6 +233,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
+        // this.stopButton.setIcon(UIHelperImpl.loadIcon("Stop.png"));
+
         this.restartButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.RESTART_SPRING_CLOUD_APP, "Restarting", project, (changes) -> {
                 try {
@@ -238,7 +245,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
-        this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
+        // this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
         jvmOpsTextField.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent) {
@@ -353,20 +360,19 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                 new String[]{"Yes", "No"},
                                                                 null)) {
             freezeUI();
-            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
-                () -> {
-                    EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
-                        action.accept(changes);
-                    });
-                    refreshData();
+            final String title = String.format("%s app '%s'", actionName, this.appName);
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                    action.accept(changes);
                 });
-
+                refreshData();
+            }));
         }
     }
 
     private void initUI() {
         // Todo: find better way to align UI labels
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             Dimension size = lblInstances.getPreferredSize();
             size.setSize(lblPersistentStorage.getWidth(), size.getHeight());
             lblInstances.setPreferredSize(size);
@@ -557,7 +563,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
             testKeyCache.refresh(clusterId);
             return Pair.of(app, deploy);
-        }).subscribeOn(Schedulers.io()).subscribe(pair -> ApplicationManager.getApplication().invokeLater(
+        }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskManager.getInstance().runLater(
             () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
     }
 
@@ -639,14 +645,13 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             deploymentResourceInner = AzureSpringCloudMvpModel
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
-            ApplicationManager.getApplication().invokeLater(() ->
+            AzureTaskManager.getInstance().runLater(() ->
                     PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
                             + "successfully"));
             refreshData();
 
         } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                                                                    PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -810,7 +815,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             targetViewModel.setStatus(status.toString());
             this.updateModel(targetViewModel);
         } catch (AzureExecutionException e) {
-            ApplicationManager.getApplication().invokeLater(() -> {
+            AzureTaskManager.getInstance().runLater(() -> {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
             });
         }

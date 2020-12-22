@@ -25,8 +25,6 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -123,10 +121,10 @@ public class SparkSubmissionParameter implements IConvertible {
                 parameter.getLocalArtifactPath(),
                 parameter.getFile(),
                 parameter.getMainClassName(),
-                ImmutableList.copyOf(parameter.getReferencedFiles()),
-                ImmutableList.copyOf(parameter.getReferencedJars()),
-                ImmutableList.copyOf(parameter.getArgs()),
-                ImmutableMap.copyOf(parameter.getJobConfig()));
+                new ArrayList<>(parameter.getReferencedFiles()),
+                new ArrayList<>(parameter.getReferencedJars()),
+                new ArrayList<>(parameter.getArgs()),
+                new HashMap<>(parameter.getJobConfig()));
         copiedParameter.setName(parameter.getName());
         return copiedParameter;
     }

@@ -52,7 +52,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.NameValuePair;
 import rx.Observable;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,10 +77,11 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     private static final String REST_SEGMENT_SUBSCRIPTION = "/subscriptions/";
     private static final String REST_SEGMENT_ADL_ACCOUNT = "providers/Microsoft.DataLakeAnalytics/accounts";
 
-    // FIXME!!!
+    // TODO!!!
     private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints()
             .getOrDefault("dataLakeSparkAccountFilter",
-                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and substring(name, length(name) sub 4) le '-c99'");
+                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and "
+                        + "substring(name, length(name) sub 4) le '-c99'");
 
     @NotNull
     private final HashMap<String, AzureHttpObservable> httpMap = new HashMap<>();
@@ -90,7 +90,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     private AzureEnvironment azureEnv = CommonSettings.getAdEnvironment();
 
     @NotNull
-    private ImmutableSortedSet<? extends AzureSparkServerlessAccount> accounts= ImmutableSortedSet.of();
+    private ImmutableSortedSet<? extends AzureSparkServerlessAccount> accounts = ImmutableSortedSet.of();
 
     public AzureSparkCosmosClusterManager() {
         this.httpMap.put("common", new AzureHttpObservable(ApiVersion.VERSION));
@@ -131,13 +131,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
     @Nullable
     public AzureManager getAzureManager() {
-        try {
-            return AuthMethodManager.getInstance().getAzureManager();
-        } catch (IOException e) {
-            log().info("Can't get Azure manager now, please sign in. error: " + e);
-
-            return null;
-        }
+        return AuthMethodManager.getInstance().getAzureManager();
     }
 
     /**
@@ -195,17 +189,15 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 }))
                 .map(account -> account.getClusters())
                 .flatMap(Observable::from)
-                .flatMap(cluster -> ((AzureSparkCosmosCluster)cluster).get().onErrorReturn(err -> {
+                .flatMap(cluster -> ((AzureSparkCosmosCluster) cluster).get().onErrorReturn(err -> {
                     log().warn(String.format("Can't get the cluster %s details: %s", cluster.getName(), err));
-
                     return (AzureSparkCosmosCluster) cluster;
                 }))
                 .map(clusters -> this)
                 .defaultIfEmpty(this);
     }
 
-    private Observable<List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>>
-    getAzureDataLakeAccountsRequest() {
+    private Observable<List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>> getAzureDataLakeAccountsRequest() {
         if (getAzureManager() == null) {
             return Observable.error(new AuthException(
                     "Can't get Azure Data Lake account since the user isn't signed in, please sign in by Azure Explorer."));
@@ -227,7 +219,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                 .get(subUriPair.getRight().toString(),
                                         getAccountFilter(),
                                         null,
-                                        // FIXME!!! Needs to support paging
+                                        // TODO!!! Needs to support paging
                                         GetAccountsListResponse.class)))
                 // account basic list -> account basic
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
@@ -333,9 +325,9 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
             props.put("requestUri", serviceException.getRequestUri() != null ? serviceException.getRequestUri().toString() : "");
             props.put("statusCode", String.valueOf(serviceException.getStatusCode()));
             props.put("x-ms-request-id", serviceException.getRequestId());
-            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.serviceError, serviceException,  props, null);
+            EventUtil.logErrorClassNameOnly(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.serviceError, serviceException, props, null);
         } else {
-            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.unclassifiedError, ex,  props, null);
+            EventUtil.logErrorClassNameOnly(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.unclassifiedError, ex, props, null);
         }
     }
 

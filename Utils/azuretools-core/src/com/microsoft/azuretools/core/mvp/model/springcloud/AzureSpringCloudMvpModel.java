@@ -23,12 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model.springcloud;
 
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.AppResourceProperties;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceProperties;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.TestKeys;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
@@ -37,6 +32,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.CloudFile;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
@@ -51,66 +47,57 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getAppName;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getClusterName;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getResourceGroup;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.*;
 
 
 public class AzureSpringCloudMvpModel {
+    private static final int SPRING_LOG_STREAMING_CONNECT_TIMEOUT = 3 * 1000; // 3s
+    private static final int SPRING_LOG_STREAMING_READ_TIMEOUT = 10 * 60 * 1000; // 10min
     private static final String LOG_STREAMING_ENDPOINT = "%s/api/logstream/apps/%s/instances/%s?follow=%b";
 
-    public static List<ServiceResourceInner> listAllSpringCloudClusters() throws IOException {
+    public static List<ServiceResourceInner> listAllSpringCloudClusters() {
         final List<ServiceResourceInner> clusters = new ArrayList<>();
         List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
         if (subs.size() == 0) {
             return clusters;
         }
         Observable.from(subs).flatMap((sd) -> Observable.create((subscriber) -> {
-            try {
-                List<ServiceResourceInner> clustersInSubs = listAllSpringCloudClustersBySubscription(
-                        sd.subscriptionId());
-                synchronized (clusters) {
-                    clusters.addAll(clustersInSubs);
-                }
-            } catch (IOException e) {
-                // swallow exception and skip error subscription
+            final List<ServiceResourceInner> clustersInSubs = listAllSpringCloudClustersBySubscription(
+                sd.subscriptionId());
+            synchronized (clusters) {
+                clusters.addAll(clustersInSubs);
             }
             subscriber.onCompleted();
         }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
         return clusters;
     }
 
-    public static List<ServiceResourceInner> listAllSpringCloudClustersBySubscription(String sid) throws IOException {
+    public static List<ServiceResourceInner> listAllSpringCloudClustersBySubscription(String sid) {
         PagedList<ServiceResourceInner> res = getSpringManager(sid).inner().services().list();
         res.loadAll();
         return res;
     }
 
-    public static List<AppResourceInner> listAppsByClusterId(String id) throws IOException {
+    public static List<AppResourceInner> listAppsByClusterId(String id) {
         PagedList<AppResourceInner> res = getSpringManager(getSubscriptionId(id)).inner().apps()
                 .list(getResourceGroup(id), getClusterName(id));
         res.loadAll();
         return res;
     }
 
-    public static Observable<DeploymentResource> listAllDeploymentsByClusterId(String id) throws IOException {
+    public static Observable<DeploymentResource> listAllDeploymentsByClusterId(String id) {
         return getSpringManager(getSubscriptionId(id)).deployments()
                 .listClusterAllDeploymentsAsync(getResourceGroup(id), getClusterName(id));
     }
 
-    public static AppResourceInner getAppById(String appId) throws IOException {
+    public static AppResourceInner getAppById(String appId) {
         return getSpringManager(getSubscriptionId(appId)).apps().inner().get(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId));
     }
 
-    public static DeploymentResourceInner getAppDeployment(String appId, String deploymentName) throws IOException {
+    public static DeploymentResourceInner getAppDeployment(String appId, String deploymentName) {
         String sid = getSubscriptionId(appId);
         String rid = getResourceGroup(appId);
         String cid = getClusterName(appId);
@@ -118,7 +105,7 @@ public class AzureSpringCloudMvpModel {
         return getSpringManager(sid).deployments().inner().get(rid, cid, appName, deploymentName);
     }
 
-    public static DeploymentResourceInner getActiveDeploymentForApp(String appId) throws IOException {
+    public static DeploymentResourceInner getActiveDeploymentForApp(String appId) {
         AppResourceInner app = getAppById(appId);
         if (app == null || StringUtils.isEmpty(app.properties().activeDeploymentName())) {
             return null;
@@ -127,38 +114,38 @@ public class AzureSpringCloudMvpModel {
         return getAppDeployment(appId, activeDeployment);
     }
 
-    public static Completable startApp(String appId, String deploymentName) throws IOException {
+    public static Completable startApp(String appId, String deploymentName) {
         return getSpringManager(getSubscriptionId(appId)).deployments().startAsync(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId), deploymentName);
     }
 
-    public static Completable stopApp(String appId, String deploymentName) throws IOException {
+    public static Completable stopApp(String appId, String deploymentName) {
         return getSpringManager(getSubscriptionId(appId)).deployments().stopAsync(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId), deploymentName);
     }
 
-    public static Completable restartApp(String appId, String deploymentName) throws IOException {
+    public static Completable restartApp(String appId, String deploymentName) {
         return getSpringManager(getSubscriptionId(appId)).deployments().restartAsync(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId), deploymentName);
     }
 
-    public static Completable deleteApp(String appId) throws IOException {
+    public static Completable deleteApp(String appId) {
         return getSpringManager(getSubscriptionId(appId)).apps().deleteAsync(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId));
     }
 
-    public static AppResourceInner setPublic(String appId, boolean isPublic) throws IOException {
+    public static AppResourceInner setPublic(String appId, boolean isPublic) {
         return getSpringManager(getSubscriptionId(appId)).apps().inner().update(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId), new AppResourceProperties().withPublicProperty(isPublic));
     }
 
-    public static AppResourceInner updateAppProperties(String appId, AppResourceProperties update) throws IOException {
+    public static AppResourceInner updateAppProperties(String appId, AppResourceProperties update) {
         return getSpringManager(getSubscriptionId(appId)).apps().inner().update(getResourceGroup(appId),
                 getClusterName(appId), getAppName(appId), update);
     }
 
     public static DeploymentResourceInner updateProperties(String appId, String activeDeploymentName,
-            DeploymentResourceProperties pr) throws IOException {
+            DeploymentResourceProperties pr) {
         String sid = getSubscriptionId(appId);
         String rid = getResourceGroup(appId);
         String cid = getClusterName(appId);
@@ -166,7 +153,7 @@ public class AzureSpringCloudMvpModel {
         return getSpringManager(sid).deployments().inner().update(rid, cid, appName, activeDeploymentName, pr);
     }
 
-    public static String getTestEndpoint(String appId) throws IOException {
+    public static String getTestEndpoint(String appId) {
         String sid = getSubscriptionId(appId);
         String rid = getResourceGroup(appId);
         String cid = getClusterName(appId);
@@ -179,12 +166,12 @@ public class AzureSpringCloudMvpModel {
         }
     }
 
-    public static String getTestEndpointForApp(String primaryTestEndpoint, String appName) {
+    public static @Nullable String getTestEndpointForApp(String primaryTestEndpoint, String appName) {
         return StringUtils.isNotEmpty(primaryTestEndpoint) && StringUtils.isNotEmpty(appName) ?
                String.format("%s/%s/default/", primaryTestEndpoint, appName) : null;
     }
 
-    public static String getPrimaryTestEndpoint(String clusterId) throws IOException {
+    public static String getPrimaryTestEndpoint(String clusterId) {
         String sid = getSubscriptionId(clusterId);
         String rid = getResourceGroup(clusterId);
         String cid = getClusterName(clusterId);
@@ -240,8 +227,8 @@ public class AzureSpringCloudMvpModel {
         final String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
         connection.setRequestProperty("Authorization", basicAuth);
 
-        connection.setReadTimeout(50000);
-        connection.setConnectTimeout(3000);
+        connection.setReadTimeout(SPRING_LOG_STREAMING_READ_TIMEOUT);
+        connection.setConnectTimeout(SPRING_LOG_STREAMING_CONNECT_TIMEOUT);
         connection.setRequestMethod("GET");
         connection.connect();
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -251,14 +238,14 @@ public class AzureSpringCloudMvpModel {
                 String.format("Failed to get log stream due to http error, unexpectedly status code: " + connection.getResponseCode()));
     }
 
-    public static ServiceResource getClusterById(String subscriptionId, String clusterId) throws IOException {
+    public static ServiceResource getClusterById(String subscriptionId, String clusterId) {
         final String clusterName = SpringCloudIdHelper.getClusterName(clusterId);
         final String resourceGroup = SpringCloudIdHelper.getResourceGroup(clusterId);
         final AppPlatformManager manager = getSpringManager(subscriptionId);
         return manager.services().getByResourceGroupAsync(resourceGroup, clusterName).toBlocking().firstOrDefault(null);
     }
 
-    private static AppPlatformManager getSpringManager(String sid) throws IOException {
+    private static AppPlatformManager getSpringManager(String sid) {
         return AuthMethodManager.getInstance().getAzureSpringCloudClient(sid);
     }
 }

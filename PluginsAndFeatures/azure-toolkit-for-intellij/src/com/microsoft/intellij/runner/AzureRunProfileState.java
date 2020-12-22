@@ -28,9 +28,13 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -99,11 +103,11 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
     }
 
     protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
-        onFail(error.getMessage(), processHandler);
-    }
-
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-
+        final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
+                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
+        processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
+        processHandler.notifyComplete();
+        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
     }
 
     protected void setText(RunProcessHandler runProcessHandler, String text) {

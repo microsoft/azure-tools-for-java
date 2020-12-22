@@ -26,8 +26,8 @@ import com.microsoft.azure.hdinsight.projects.SparkVersion.*
 import com.microsoft.azure.hdinsight.spark.exception.UnsupportedSparkVersionException
 
 object SparkToolsLib {
-    private const val toolsVerForSpark2_1: String = "0.1.1"
-    private const val toolsVerForSpark2_3: String = "0.1.1"
+    private const val toolsVerForSpark2_1: String = "0.1.2"
+    private const val toolsVerForSpark2_3: String = "0.1.2"
 
     fun getJarFileName(sparkVer: SparkVersion): String = when (sparkVer) {
         SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.0.jar"

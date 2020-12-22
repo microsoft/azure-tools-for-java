@@ -50,7 +50,7 @@ public class CosmosServerlessSparkViewJobsAction extends NodeActionListener {
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+    protected void actionPerformed(NodeActionEvent e) {
         viewJobsAction.onNext(Pair.of(adlAccount, adlAccountNode));
     }
 }

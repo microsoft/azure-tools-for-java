@@ -31,9 +31,10 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -57,19 +58,15 @@ public class WebAppOnLinuxAction extends AzureAnAction {
     }
 
     @Override
+    @AzureOperation(value = "start dockerized web app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
             return true;
         }
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
+            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
         }
-
         return true;
     }
 

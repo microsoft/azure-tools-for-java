@@ -24,17 +24,16 @@ package com.microsoft.intellij.runner.functions.core;
 
 import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.TextUtils;
-import com.microsoft.intellij.util.CommandUtils;
+import com.microsoft.azuretools.utils.CommandUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class FunctionCliResolver {
-    private static final String RUNTIME_NOT_FOUND = "Azure Functions Core Tools not found. " +
-            "Please go to https://aka.ms/azfunc-install to install Azure Functions Core Tools first.";
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
+public class FunctionCliResolver {
     public static String resolveFunc() throws IOException, InterruptedException {
         final boolean isWindows = CommandUtils.isWindows();
         final List<File> funCmdFiles = CommandUtils.resolvePathForCommand("func");
@@ -63,7 +62,7 @@ public class FunctionCliResolver {
                 return result.getAbsolutePath();
             }
         }
-        Log.warn(TextUtils.red(RUNTIME_NOT_FOUND));
+        Log.warn(TextUtils.red(message("function.cli.error.notFound")));
         return null;
     }
 

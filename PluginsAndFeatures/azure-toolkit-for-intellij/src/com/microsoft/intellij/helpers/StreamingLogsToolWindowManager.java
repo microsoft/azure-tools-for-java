@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers;
 
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -31,6 +30,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
@@ -50,7 +50,7 @@ public class StreamingLogsToolWindowManager {
 
     public void showStreamingLogConsole(Project project, String resourceId, String resourceName,
                                         ConsoleView consoleView) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             final ToolWindow toolWindow = getToolWindow(project);
             toolWindow.show(null);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();

@@ -25,16 +25,24 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NodeAction {
+public class NodeAction implements Sortable, Groupable {
+    private int priority = Sortable.DEFAULT_PRIORITY;
+    private int group = Groupable.DEFAULT_GROUP;
     private String name;
     private boolean enabled = true;
     private List<NodeActionListener> listeners = new ArrayList<NodeActionListener>();
     private Node node; // the node with which this action is associated
     private String iconPath;
+    @Getter
+    @Setter
+    private Icon nodeIcon;
 
     public NodeAction(Node node, String name) {
         this.node = node;
@@ -60,7 +68,7 @@ public class NodeAction {
                 listener.beforeActionPerformed(event);
                 Futures.addCallback(listener.actionPerformedAsync(event), new FutureCallback<Void>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
+                    public void onSuccess(Void voidParameter) {
                         listener.afterActionPerformed(event);
                     }
 
@@ -94,5 +102,23 @@ public class NodeAction {
 
     public void setIconPath(String iconPath) {
         this.iconPath = iconPath;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
     }
 }

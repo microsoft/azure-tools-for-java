@@ -33,6 +33,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -83,7 +84,7 @@ public enum WhatsNewManager {
         virtualFile.setContent(null, content, true);
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
         virtualFile.setWritable(false);
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runAndWait(() -> {
             final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
             for (FileEditor fileEditor : fileEditors) {
                 if (fileEditor instanceof MarkdownSplitEditor) {
@@ -92,7 +93,7 @@ public enum WhatsNewManager {
                                                                            true);
                 }
             }
-        }, ModalityState.defaultModalityState());
+        });
     }
 
     private String getWhatsNewContent() throws IOException {

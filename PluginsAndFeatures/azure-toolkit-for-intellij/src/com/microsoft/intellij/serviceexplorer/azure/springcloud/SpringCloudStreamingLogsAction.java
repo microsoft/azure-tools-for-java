@@ -25,6 +25,8 @@ package com.microsoft.intellij.serviceexplorer.azure.springcloud;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -67,7 +69,7 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            DefaultLoader.getIdeHelper().runInBackground(project, "Start Streaming Logs", false, true, null, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", false, () -> {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =
                             AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);
@@ -80,7 +82,6 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
                     if (CollectionUtils.isEmpty(instances)) {
                         DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayWarningDialog(
                                 FAILED_TO_START_LOG_STREAMING, NO_AVAILABLE_INSTANCES));
-                        return;
                     } else {
                         showLogStreamingDialog(instances);
                     }
@@ -89,7 +90,7 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
                                                 String.format(FAILED_TO_LIST_INSTANCES_WITH_MESSAGE, e.getMessage());
                     DefaultLoader.getUIHelper().showError(errorMessage, FAILED_TO_START_LOG_STREAMING);
                 }
-            });
+            }));
         });
     }
 

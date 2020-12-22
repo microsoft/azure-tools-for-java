@@ -27,7 +27,7 @@ import com.intellij.execution.process.ProcessOutputTypes.SYSTEM
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.io.BaseOutputReader
 import com.microsoft.azure.hdinsight.common.ConsoleViewLogLine
-import com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistration.Companion.contentTypeKeyMap
+import com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistrationListener.Companion.contentTypeKeyMap
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils

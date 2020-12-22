@@ -55,7 +55,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
             }
         }
     }.flatMap { arcadiaModel -> ArcadiaSparkComputeManager.getInstance()
-            .findCompute( arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
+            .findCompute(arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
             .first()
             .map { compute ->
                 val submission = SparkBatchArcadiaSubmission(
@@ -66,21 +66,10 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                         compute.workSpace.webUrl
                 )
 
-                if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
-                    val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
-                            ?: throw ExecutionException("No uploading path set in Run Configuration"))
-                    val storageKey = arcadiaModel.jobUploadStorageModel.storageKey
-                    submitModel.submissionParameter.jobConfig.put(
-                            SparkSubmissionParameter.Conf,
-                            SparkConfigures(mapOf(
-                                    "spark.hadoop.fs.azure.account.key.${fsRoot.storageAccount}.blob.core.windows.net"
-                                            to storageKey)))
-                }
-
                 val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, compute)
 
                 ArcadiaSparkBatchJob(
-                        prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
+                        updateStorageConfigForSubmissionParameter(submitModel),
                         submission,
                         jobDeploy)
             }}

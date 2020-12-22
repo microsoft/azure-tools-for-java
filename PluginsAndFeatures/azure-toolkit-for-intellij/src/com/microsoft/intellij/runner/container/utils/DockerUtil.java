@@ -22,19 +22,17 @@
 
 package com.microsoft.intellij.runner.container.utils;
 
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
-import com.spotify.docker.client.messages.RegistryAuth;
+import com.spotify.docker.client.messages.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,14 +40,12 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 public class DockerUtil {
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
+
     /**
      * create a docker file in specified folder.
      */
@@ -108,6 +104,11 @@ public class DockerUtil {
     /**
      * build image.
      */
+    @AzureOperation(
+        value = "build docker image[%s] in dir[%s] on docker host[%s]",
+        params = {"imageNameWithTag", "dockerDirectory.toString()", "$docker.getHost()"},
+        type = AzureOperation.Type.TASK
+    )
     public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
                                     String dockerFile, ProgressHandler progressHandler)
             throws DockerException, InterruptedException, IOException {
@@ -118,6 +119,11 @@ public class DockerUtil {
     /**
      * Push image to a private registry.
      */
+    @AzureOperation(
+        value = "push docker image[%s] to registry[%s]",
+        params = {"$targetImageName", "$registryUrl"},
+        type = AzureOperation.Type.TASK
+    )
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
                                  String registryPassword, String targetImageName,
                                  ProgressHandler handler)
@@ -177,14 +183,30 @@ public class DockerUtil {
      * Else return an empty String.
      */
     public static String getDefaultDockerFilePathIfExist(String basePath) {
-        try{
+        try {
             if (!Utils.isEmptyString(basePath)) {
                 Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
                 if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
                     return targetDockerfile.toString();
                 }
             }
-        } catch (RuntimeException ignored) {}
+        } catch (RuntimeException ignored) {
+        }
         return "";
+    }
+
+    @AzureOperation(
+        value = "try connecting docker[%s]",
+        params = {"$docker.getHost()"},
+        type = AzureOperation.Type.TASK
+    )
+    public static void ping(DockerClient docker) throws AzureExecutionException {
+        try {
+            docker.ping();
+        } catch (DockerException | InterruptedException e) {
+            final String msg = String.format(DOCKER_PING_ERROR, docker.getHost());
+            DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
+            throw new AzureExecutionException(String.format("Failed to connect docker host: %s", docker.getHost()));
+        }
     }
 }

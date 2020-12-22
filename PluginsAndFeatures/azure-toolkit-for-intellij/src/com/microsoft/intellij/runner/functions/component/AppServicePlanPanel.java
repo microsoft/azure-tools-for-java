@@ -22,16 +22,18 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -114,6 +116,11 @@ public class AppServicePlanPanel extends JPanel {
         return selectedAppServicePlan == null ? null : selectedAppServicePlan.resourceGroup;
     }
 
+    @AzureOperation(
+        value = "load app service plans of subscription[%s]",
+        params = {"$subscriptionId"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadAppServicePlan(String subscriptionId, OperatingSystem operatingSystem) {
         if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;
@@ -122,19 +129,15 @@ public class AppServicePlanPanel extends JPanel {
             if (rxDisposable != null && !rxDisposable.isDisposed()) {
                 rxDisposable.dispose();
             }
-            rxDisposable =
-                    ComponentUtils.loadResourcesAsync(
-                        () -> AzureFunctionMvpModel.getInstance()
-                                                   .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                                                   .sorted((first, second) ->
-                                                                   StringUtils.compare(first.name(), second.name()))
-                                                   .collect(Collectors.toList()),
-                        appServicePlans -> fillAppServicePlan(appServicePlans),
-                        exception -> {
-                            DefaultLoader.getUIHelper().showError(
-                                    "Failed to load app service plans", exception.getMessage());
-                            fillAppServicePlan(Collections.emptyList());
-                        });
+            rxDisposable = Observable
+                .fromCallable(() -> AzureFunctionMvpModel
+                    .getInstance()
+                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
+                    .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
+                    .collect(Collectors.toList()))
+                .subscribeOn(Schedulers.io())
+                .doOnError((e) -> fillAppServicePlan(Collections.emptyList()))
+                .subscribe(this::fillAppServicePlan);
         }
     }
 
@@ -152,7 +155,7 @@ public class AppServicePlanPanel extends JPanel {
             selectedAppServicePlan = (AppServicePlanWrapper) selectedObject;
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
-            ApplicationManager.getApplication().invokeLater(this::createAppServicePlan);
+            AzureTaskManager.getInstance().runLater(this::createAppServicePlan);
         } else {
             selectedAppServicePlan = null;
             showAppServicePlan(null);
@@ -205,9 +208,9 @@ public class AppServicePlanPanel extends JPanel {
         cbAppServicePlan.addItem(CREATE_APP_SERVICE_PLAN);
 
         final List<AppServicePlanWrapper> items = appServicePlanWrapperList.stream()
-                .filter(appServicePlanWrapper -> appServicePlanWrapper.isNewCreate() || operatingSystem.equals(appServicePlanWrapper.getOperatingSystem()))
+                .filter(appServicePlanWrapper -> appServicePlanWrapper.isNewCreate() || operatingSystem == appServicePlanWrapper.getOperatingSystem())
                 .collect(Collectors.toList());
-        items.stream().forEach(appServicePlanWrapper -> cbAppServicePlan.addItem(appServicePlanWrapper));
+        items.forEach(appServicePlanWrapper -> cbAppServicePlan.addItem(appServicePlanWrapper));
         final AppServicePlanWrapper selectedItem = items.size() == 0 ? null :
                 (selectedAppServicePlan == null || !items.contains(selectedAppServicePlan)) ? items.get(0) : selectedAppServicePlan;
         cbAppServicePlan.setSelectedItem(selectedItem);

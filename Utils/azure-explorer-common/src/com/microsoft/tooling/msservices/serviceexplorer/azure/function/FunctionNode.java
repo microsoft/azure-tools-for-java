@@ -22,225 +22,202 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNCTION;
 
-public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
-    private static final Logger LOGGER = Logger.getLogger(FunctionNode.class.getName());
-    private static final String DELETE_FUNCTION_PROMPT_MESSAGE = "This operation will delete the Function App: %s.\n" +
-            "Are you sure you want to continue?";
-    private static final String DELETE_FUNCTION_PROGRESS_MESSAGE = "Deleting Function App";
-    private static final String FUNCTION_LABEL = "Function";
-    private static final String FAILED_TO_START_FUNCTION_APP = "Failed to start function app %s";
-    private static final String FAILED_TO_RESTART_FUNCTION_APP = "Failed to restart function app %s";
-    private static final String FAILED_TO_STOP_FUNCTION_APP = "Failed to stop function app %s";
-    private static final String FAILED_TO_LOAD_TRIGGERS = "Failed to load triggers of function %s";
+public class FunctionNode extends Node {
 
-    private final FunctionNodePresenter<FunctionNode> functionNodePresenter;
-    private String functionAppName;
-    private String functionAppId;
-    private String region;
+    private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
+    private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
+    private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
+    private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
+
     private FunctionApp functionApp;
-    private String cachedMasterKey;
+    private FunctionEnvelope functionEnvelope;
+    private FunctionsNode functionNode;
 
-    /**
-     * Constructor.
-     */
-    public FunctionNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
-        super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
-                functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
-        this.functionApp = functionApp;
-        this.functionAppId = functionApp.id();
-        this.functionAppName = functionApp.name();
-        this.region = functionApp.regionName();
-        functionNodePresenter = new FunctionNodePresenter<>();
-        functionNodePresenter.onAttachView(FunctionNode.this);
-        loadActions();
-    }
-
-    @Override
-    public String getIconPath() {
-        return this.state == WebAppBaseState.STOPPED ? "azure-functions-stop.png" : "azure-functions-small.png";
-    }
-
-    @Override
-    protected void refreshItems() {
-        try {
-            functionNodePresenter.onRefreshFunctionNode(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_LOAD_TRIGGERS, functionAppName), e);
-        }
-    }
-
-    @Override
-    public void renderSubModules(List<FunctionEnvelope> functionEnvelopes) {
-        if (functionEnvelopes.isEmpty()) {
-            this.setName(this.functionAppName + " *(Empty)");
-        } else {
-            this.setName(this.functionAppName);
-        }
-        for (FunctionEnvelope functionEnvelope : functionEnvelopes) {
-            addChildNode(new SubFunctionNode(functionEnvelope, this));
-        }
+    public FunctionNode(FunctionEnvelope functionEnvelope, FunctionsNode parent) {
+        super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
+        this.functionEnvelope = functionEnvelope;
+        this.functionApp = parent.getFunctionApp();
+        this.functionNode = parent;
     }
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
-                createBackgroundActionListener("Stopping", () -> stopFunctionApp())));
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
-                createBackgroundActionListener("Starting", () -> startFunctionApp())));
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
-                createBackgroundActionListener("Restarting", () -> restartFunctionApp())));
-        addAction(ACTION_DELETE, new DeleteFunctionAppAction());
-        addAction("Open in portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        openResourcesInPortal(subscriptionId, functionAppId);
-                    }
-                }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) {
-                        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
-                    }
-                }));
-        super.loadActions();
+        addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
+            @Override
+            @AzureOperation(value = "trigger function app", type = AzureOperation.Type.ACTION)
+            protected void actionPerformed(NodeActionEvent e) {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
+            }
+        }));
+        // todo: find whether there is sdk to enable/disable trigger
     }
 
-    @Override
-    public Map<String, String> toProperties() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, region);
-        return properties;
+    @AzureOperation(
+        value = "trigger function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private void trigger() {
+        final Map triggerBinding = getTriggerBinding();
+        if (triggerBinding == null || !triggerBinding.containsKey("type")) {
+            final String error = String.format("failed to get trigger type of function[%s].", functionApp.name());
+            final String action = "confirm trigger type is configured.";
+            throw new AzureToolkitRuntimeException(error, action);
+        }
+        final String triggerType = (String) triggerBinding.get("type");
+        switch (triggerType.toLowerCase()) {
+            case "httptrigger":
+                triggerHttpTrigger(triggerBinding);
+                break;
+            case "timertrigger":
+                triggerTimerTrigger();
+                break;
+            case "eventhubtrigger":
+                triggerEventHubTrigger();
+                break;
+            default:
+                final String error = String.format("unknown trigger type[%s]", triggerType);
+                final String action = "only HttpTrigger, TimerTrigger, EventHubTrigger is supported for now.";
+                throw new AzureToolkitRuntimeException(error, action);
+        }
+
     }
 
-    public FunctionApp getFunctionApp() {
-        return functionApp;
-    }
-
-    public String getFunctionAppId() {
-        return this.functionAppId;
-    }
-
-    public String getFunctionAppName() {
-        return this.functionAppName;
-    }
-
-    public void startFunctionApp() {
+    // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
+    @AzureOperation(
+        value = "start timer trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
+    private void triggerTimerTrigger() {
         try {
-            functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
+            final HttpPost request = getFunctionTriggerRequest();
+            final StringEntity entity = new StringEntity("{}");
+            request.setEntity(entity);
+            HttpClients.createDefault().execute(request);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_START_FUNCTION_APP, functionAppName), e);
+            final String error = String.format("failed to trigger function[%s] with TimerTrigger", functionApp.name());
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
-    public void restartFunctionApp() {
+    @AzureOperation(
+        value = "start event hub trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
+    private void triggerEventHubTrigger() {
         try {
-            functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
+            final HttpPost request = getFunctionTriggerRequest();
+            final String value = DefaultLoader.getUIHelper().showInputDialog(tree.getParent(), "Please input test value: ", "Trigger Event Hub", null);
+            final StringEntity entity = new StringEntity(String.format("{\"input\":\"'%s'\"}", value));
+            request.setEntity(entity);
+            HttpClients.createDefault().execute(request);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_RESTART_FUNCTION_APP, functionAppName), e);
+            final String error = String.format("failed to trigger function[%s] with EventHubTrigger", functionApp.name());
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
-    public void stopFunctionApp() {
+    @AzureOperation(
+        value = "start http trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
+    private void triggerHttpTrigger(Map binding) {
+        final AuthorizationLevel authLevel = EnumUtils.getEnumIgnoreCase(AuthorizationLevel.class, (String) binding.get("authLevel"));
+        String targetUrl;
+        switch (authLevel) {
+            case ANONYMOUS:
+                targetUrl = getAnonymousHttpTriggerUrl();
+                break;
+            case FUNCTION:
+                targetUrl = getFunctionHttpTriggerUrl();
+                break;
+            case ADMIN:
+                targetUrl = getAdminHttpTriggerUrl();
+                break;
+            default:
+                final String format = String.format("Unsupported authorization level %s", authLevel);
+                throw new AzureToolkitRuntimeException(format);
+        }
+        DefaultLoader.getUIHelper().openInBrowser(targetUrl);
+    }
+
+    private String getAnonymousHttpTriggerUrl() {
+        return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
+    }
+
+    private String getFunctionHttpTriggerUrl() {
+        // Linux function app doesn't support list function keys, use master key as workaround.
+        if (functionApp.operatingSystem() == OperatingSystem.LINUX) {
+            return getAdminHttpTriggerUrl();
+        }
+        final Map<String, String> keyMap = functionApp.listFunctionKeys(this.name);
+        final String key = keyMap.values().stream().filter(StringUtils::isNotBlank)
+                .findFirst().orElse(functionApp.getMasterKey());
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+    }
+
+    private String getAdminHttpTriggerUrl() {
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name,
+                functionApp.getMasterKey());
+    }
+
+    private HttpPost getFunctionTriggerRequest() {
+        final String masterKey = functionApp.getMasterKey();
+        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
+        final HttpPost request = new HttpPost(targetUrl);
+        request.setHeader("x-functions-key", masterKey);
+        request.setHeader("Content-Type", "application/json");
+        return request;
+    }
+
+    private Map getTriggerBinding() {
         try {
-            functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_FUNCTION_APP, functionAppName), e);
-        }
-    }
-
-    // work around for API getMasterKey failed
-    public synchronized String getFunctionMasterKey() throws IOException {
-        if (StringUtils.isEmpty(cachedMasterKey)) {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final String subscriptionId = getSegment(functionApp.id(), "subscriptions");
-            final String resourceGroup = getSegment(functionApp.id(), "resourceGroups");
-            final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
-            final String authToken = azureManager.getAccessToken(tenant);
-            final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
-                            "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
-                    subscriptionId, resourceGroup, functionApp.name());
-
-            final HttpPost request = new HttpPost(targetUrl);
-            request.setHeader("Authorization", "Bearer " + authToken);
-            CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-            JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
-                    JsonObject.class);
-            cachedMasterKey = jsonObject.get("masterKey").getAsString();
-        }
-        return cachedMasterKey;
-    }
-
-    // Todo: Extract this methods to common Utils
-    private static String getSegment(String id, String segment) {
-        if (StringUtils.isEmpty(id)) {
+            final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
+            return (Map) bindings.stream()
+                    .filter(object ->
+                            StringUtils.containsIgnoreCase((CharSequence) ((Map) object).get("type"), "trigger"))
+                    .findFirst().orElse(null);
+        } catch (ClassCastException | NullPointerException e) {
+            // In case function.json lacks some parameters
             return null;
         }
-        final String[] attributes = id.split("/");
-        int pos = ArrayUtils.indexOf(attributes, segment);
-        if (pos >= 0) {
-            return attributes[pos + 1];
-        }
-        return null;
     }
 
-    private class DeleteFunctionAppAction extends AzureNodeActionPromptListener {
-        DeleteFunctionAppAction() {
-            super(FunctionNode.this, String.format(DELETE_FUNCTION_PROMPT_MESSAGE, getFunctionAppName()),
-                    DELETE_FUNCTION_PROGRESS_MESSAGE);
+    private static String getFunctionTriggerName(FunctionEnvelope functionEnvelope) {
+        if (functionEnvelope == null) {
+            return null;
         }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) {
-            getParent().removeNode(getSubscriptionId(), getFunctionAppId(), FunctionNode.this);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return FUNCTION;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_FUNCTION_APP;
-        }
+        final String fullName = functionEnvelope.inner().name();
+        final String[] splitNames = fullName.split("/");
+        return splitNames.length > 1 ? splitNames[1] : fullName;
     }
 }

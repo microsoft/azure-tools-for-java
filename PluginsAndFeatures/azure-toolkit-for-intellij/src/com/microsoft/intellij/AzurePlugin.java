@@ -22,29 +22,6 @@
 
 package com.microsoft.intellij;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.swing.event.EventListenerList;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -53,14 +30,15 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.PermanentInstallationID;
-import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.util.ExceptionUtil;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
@@ -69,11 +47,7 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -88,14 +62,26 @@ import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
+import javax.swing.event.EventListenerList;
+import java.io.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-public class AzurePlugin extends AbstractProjectComponent {
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
+
+public class AzurePlugin implements StartupActivity.DumbAware {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
@@ -116,48 +102,25 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
 
-    private final AzureSettings azureSettings;
+    private AzureSettings azureSettings;
 
     private String installationID;
 
     private Boolean firstInstallationByVersion;
 
-    public AzurePlugin(Project project) {
-        super(project);
+    @Override
+    public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
         String hasMac = GetHashMac.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-            TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
-    }
+                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
 
-    public void projectOpened() {
-        initializeAIRegistry();
-        initializeFeedbackNotification();
-        initializeWhatsNew();
-    }
+        initializeAIRegistry(project);
+        // Showing dialog needs to be run in UI thread
+        initializeFeedbackNotification(project);
+        initializeWhatsNew(project);
 
-    private void initializeWhatsNew() {
-        try {
-            WhatsNewManager.INSTANCE.showWhatsNew(false, myProject);
-        } catch (IOException e) {
-            // swallow this exception as shown whats new in startup should not block users
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    private void initializeFeedbackNotification() {
-        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
-    }
-
-    public void projectClosed() {
-    }
-
-    /**
-     * Method is called after plugin is already created and configured. Plugin can start to communicate with
-     * other plugins only in this method.
-     */
-    public void initComponent() {
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
             firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
@@ -166,7 +129,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 copyPluginComponents();
                 initializeTelemetry();
                 clearTempDirectory();
-                loadWebappsSettings();
+                loadWebappsSettings(project);
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
@@ -177,11 +140,25 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
+    private void initializeWhatsNew(Project project) {
+        EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
+            operation -> {
+                WhatsNewManager.INSTANCE.showWhatsNew(false, project);
+            },
+            error -> {
+                // swallow this exception as shown whats new in startup should not block users
+            });
+    }
+
+    private void initializeFeedbackNotification(Project myProject) {
+        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
+    }
+
     private synchronized void initializeTelemetry() throws Exception {
         boolean install = false;
         boolean upgrade = false;
 
-        if (new File(dataFile).exists()) {
+        if (isDataFileValid()) {
             String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (version == null || version.isEmpty()) {
                 upgrade = true;
@@ -246,7 +223,19 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeAIRegistry() {
+    private boolean isDataFileValid() {
+        final File file = new File(dataFile);
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            return ParserXMLUtility.parseXMLFile(dataFile) != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void initializeAIRegistry(Project myProject) {
         try {
             AzureSettings.getSafeInstance(myProject).loadAppInsights();
             Module[] modules = ModuleManager.getInstance(myProject).getModules();
@@ -272,7 +261,11 @@ public class AzurePlugin extends AbstractProjectComponent {
             }
             AzureSettings.getSafeInstance(myProject).saveAppInsights();
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000093184-What-is-com-intellij-openapi-progress-ProcessCanceledException
+            // should ignore ProcessCanceledException
+            if (Objects.isNull(ExceptionUtil.findCause(ex, ProcessCanceledException.class))) {
+                AzurePlugin.log(ex.getMessage(), ex);
+            }
         }
     }
 
@@ -310,7 +303,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void loadWebappsSettings() {
+    private void loadWebappsSettings(Project myProject) {
         StartupManager.getInstance(myProject).runWhenProjectIsInitialized(
                 new Runnable() {
                     @Override
@@ -335,7 +328,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 });
     }
 
-    private void telemetryAI() {
+    private void telemetryAI(Project myProject) {
         ModuleManager.getInstance(myProject).getModules();
     }
 

@@ -3,6 +3,15 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.46.0](#3460)
+  - [3.45.1](#3451)
+  - [3.45.0](#3450)
+  - [3.44.0](#3440)
+  - [3.43.0](#3430)
+  - [3.42.0](#3420)
+  - [3.41.1](#3411)
+  - [3.41.0](#3410)
+  - [3.40.0](#3400)
   - [3.39.0](#3390)
   - [3.38.0](#3380)
   - [3.37.0](#3370)
@@ -51,6 +60,106 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.46.0
+
+### Added
+- Support IntelliJ 2020.3 RC
+
+### Changed
+- Refactor error handling, unify the error notifications
+
+### Fixed
+- [#4764](https://github.com/microsoft/azure-tools-for-java/pull/4764) Fixes HDInsights clusters of all subscriptions(instead of the selected subscription) is listed 
+- [#4766](https://github.com/microsoft/azure-tools-for-java/pull/4766) Fixes duplicate before run task for Spring Cloud deployment run configuration
+- [#4784](https://github.com/microsoft/azure-tools-for-java/pull/4784) Fixes failed to auth with Azure CLI with multi Azure environment enabled
+
+
+## 3.45.1
+### Fixed
+- [#4765](https://github.com/microsoft/azure-tools-for-java/pull/4765) Fixes no before run tasks when deploy Spring Cloud app in project menu
+
+## 3.45.0
+### Added
+- Add file explorer for Web App and Function App in Azure explorer
+- Support flight recorder for Web App
+
+### Changed
+- New creation wizard for Function App with basic and advanced mode
+- More monitoring configuration in Web App/Function App creation wizard
+- Update template for function project
+
+### Fixed
+- [#4703](https://github.com/microsoft/azure-tools-for-java/pull/4703) Fix NPE issue in Function creation/deployment
+- [#4707](https://github.com/microsoft/azure-tools-for-java/pull/4707) Enhace error handling for azure cli token expires
+- [#4710](https://github.com/microsoft/azure-tools-for-java/pull/4710) Register service provider for insights before get insights client
+
+## 3.44.0
+### Added
+- Support new runtime JBOSS 7.2 for Linux Web App
+- Support Gradle projects for Web App and Spring Cloud
+- Support file deploy for Web App
+
+### Changed
+- New creation wizard for Web App with basic and advanced mode
+
+### Fixed
+- [#2975](https://github.com/microsoft/azure-tools-for-java/issues/2975),[#4600](https://github.com/microsoft/azure-tools-for-java/issues/4600),[#4605](https://github.com/microsoft/azure-tools-for-java/issues/4605),[#4544](https://github.com/microsoft/azure-tools-for-java/issues/4544) Enhance error handling for network issues
+- [#4545](https://github.com/microsoft/azure-tools-for-java/issues/4545),[#4566](https://github.com/microsoft/azure-tools-for-java/issues/4566) Unhandled ProcessCanceledException while start up
+- [#4530](https://github.com/microsoft/azure-tools-for-java/issues/4530) Unhandled exception in whats new document
+- [#4591](https://github.com/microsoft/azure-tools-for-java/issues/4591),[#4599](https://github.com/microsoft/azure-tools-for-java/issues/4599) Fix Spring Cloud deployment error handling
+- [#4558](https://github.com/microsoft/azure-tools-for-java/pull/4604) Unhandled exception in device login
+
+## 3.43.0
+
+### Added
+- Support SSH into Linux web app
+
+### Changed
+- Update Spring Cloud dependency constraint rule for spring-cloud-starter-azure-spring-cloud-client
+
+### Fixed
+- [#4555](https://github.com/microsoft/azure-tools-for-java/issues/4555) Azure CLI authentication does not show subscriptions for all tenants
+- [#4558](https://github.com/microsoft/azure-tools-for-java/issues/4558) Unhandled exception in device login
+- [#4560](https://github.com/microsoft/azure-tools-for-java/issues/4560) Unhandled exception while create application insights
+- [#4595](https://github.com/microsoft/azure-tools-for-java/pull/4595) Unhandled exception in Docker Run/Run on Web App for Containers
+- [#4601](https://github.com/microsoft/azure-tools-for-java/issues/4601) Fixed customized configuration are wrongly cleared after blob storage is slected for Synapse batch job issue
+- [#4607](https://github.com/microsoft/azure-tools-for-java/pull/4607) Fixed regression in service principal authentication
+
+## 3.42.0
+
+### Added
+- Support Custom Binding for Azure Functions
+
+### Fixed
+- [#1110](https://github.com/microsoft/azure-maven-plugins/issues/1110) Fixes XSS issue in authentication 
+
+
+## 3.41.1
+
+### Fixed
+- [#4576](https://github.com/microsoft/azure-tools-for-java/issues/4576) Can not list webapps in web app deployment panel
+
+## 3.41.0
+
+### Changed
+- Changed default tomcat version for app service to tomcat 9.0
+- Scaling Spring Cloud deployment before deploy artifacts
+
+### Fixed
+- [#4490](https://github.com/microsoft/azure-tools-for-java/issues/4490) Fix plugin initialization exceptions while parsing configuration
+- [#4511](https://github.com/microsoft/azure-tools-for-java/issues/4511) Fix `AuthMethodManager` initialization issues
+- [#4532](https://github.com/microsoft/azure-tools-for-java/issues/4532) Fix NPE in FunctionRunState and add validation for function run time
+- [#4534](https://github.com/microsoft/azure-tools-for-java/pull/4534) Create temp folder as function run/deploy staging folder in case staging folder conflict
+- [#4552](https://github.com/microsoft/azure-tools-for-java/issues/4552) Fix thread issues while prompt tooltips for deployment slot 
+- [#4553](https://github.com/microsoft/azure-tools-for-java/pull/4553) Fix deployment target selection issue after create new webapp
+
+## 3.40.0
+### Added
+- Support IntelliJ 2020.2
+
+### Changed
+- Show non-anonymous HTTP trigger urls after function deployment
 
 ## 3.39.0
 

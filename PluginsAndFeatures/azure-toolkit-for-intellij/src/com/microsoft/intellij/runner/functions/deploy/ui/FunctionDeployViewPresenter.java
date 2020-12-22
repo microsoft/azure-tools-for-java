@@ -23,38 +23,35 @@
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
+import rx.Subscription;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extends MvpPresenter<V> {
 
-    private static final String CANNOT_LIST_WEB_APP = "Failed to list function apps.";
-    private static final String CANNOT_SHOW_APP_SETTINGS = "Failed to show app settings";
+    private Subscription loadAppSettingsSubscription;
 
-    public void loadFunctionApps(boolean forceRefresh, boolean fillAppSettings) {
-        Observable.fromCallable(() -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillFunctionApps());
-            return AzureFunctionMvpModel.getInstance().listAllFunctions(forceRefresh)
-                    .stream()
-                    .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                    .collect(Collectors.toList());
-        }).subscribeOn(getSchedulerProvider().io())
-                .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (!isViewDetached()) {
-                        getMvpView().fillFunctionApps(functionApps, fillAppSettings);
-                    }
-                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
-    }
-
+    @AzureOperation(
+        value = "load app settings of function app[%s]",
+        params = {"$functionApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void loadAppSettings(FunctionApp functionApp) {
-        Observable.fromCallable(() -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillAppSettings());
+        if (functionApp == null) {
+            return;
+        }
+        unsubscribeSubscription(loadAppSettingsSubscription);
+        loadAppSettingsSubscription = Observable.fromCallable(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> getMvpView().beforeFillAppSettings(), AzureTask.Modality.ANY);
             return functionApp.getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -64,15 +61,6 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
                     final Map<String, String> result = new HashMap<>();
                     appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
                     getMvpView().fillAppSettings(result);
-                }), e -> errorHandler(CANNOT_SHOW_APP_SETTINGS, (Exception) e));
-    }
-
-    private void errorHandler(String msg, Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(msg, e);
-        });
+                }));
     }
 }

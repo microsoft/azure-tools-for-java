@@ -30,10 +30,13 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -106,7 +109,7 @@ public interface UIHelper {
 
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
-    default void openFunctionAppPropertyView(@NotNull FunctionNode node) {
+    default void openFunctionAppPropertyView(@NotNull FunctionAppNode node) {
 
     }
 
@@ -114,6 +117,10 @@ public interface UIHelper {
     }
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
+
+    default void openMySQLPropertyView(@NotNull MySQLNode node) {
+
+    }
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,
@@ -154,4 +161,25 @@ public interface UIHelper {
     default String showInputDialog(Component component, String message, String title, Icon icon) {
         return (String) JOptionPane.showInputDialog(component, message, title, JOptionPane.QUESTION_MESSAGE, icon, null, null);
     }
+
+    default void showInfoNotification(String title, String message) {
+
+    }
+
+    default void showErrorNotification(String title, String message) {
+
+    }
+
+    default void showWarningNotification(String title, String message) {
+
+    }
+
+    default Icon loadIconByAction(AzureActionEnum actionEnum) {
+        return null;
+    }
+
+    default Icon loadIconByNodeClass(Class<? extends Node> clazz, NodeState... states) {
+        return null;
+    }
+
 }

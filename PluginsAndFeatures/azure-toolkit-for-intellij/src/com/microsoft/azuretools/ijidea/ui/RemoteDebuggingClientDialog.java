@@ -22,16 +22,16 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.appservice.PlatformArchitecture;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -349,30 +349,22 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
     }
 
     protected void runWithProgress(IWorker worker, String title) {
-        ProgressManager.getInstance().run(new Task.Modal(project, title + " Progress", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-
-                progressIndicator.setIndeterminate(true);
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, title + " Progress", true, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            try {
+                worker.work(progressIndicator);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                //LOGGER.error("work@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex);
+                AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), title + "Error"));
                 try {
-                    worker.work(progressIndicator);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    //LOGGER.error("work@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex);
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            ErrorWindow.show(project, ex.getMessage(), title + "Error");
-                        }
-                    });
-                    try {
-                        worker.rollBack(progressIndicator);
-                    } catch (Exception ex1) {
-                        LOGGER.error("rollback@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex1);
-                    }
+                    worker.rollBack(progressIndicator);
+                } catch (Exception ex1) {
+                    LOGGER.error("rollback@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex1);
                 }
             }
-        });
+        }));
     }
 
 }

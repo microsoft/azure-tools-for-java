@@ -26,6 +26,7 @@ import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.azuretools.adauth.AuthException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.intellij.forms.ErrorMessageForm
@@ -39,7 +40,7 @@ class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
     override val errorType = ErrorType.toolError
 
     override fun handleByUser(){
-        ApplicationManager.getApplication().invokeLater {
+        AzureTaskManager.getInstance().runLater {
             val toolErrorDialog = ErrorMessageForm(title)
             toolErrorDialog.showErrorMessageForm(message, stackTrace)
             toolErrorDialog.show()

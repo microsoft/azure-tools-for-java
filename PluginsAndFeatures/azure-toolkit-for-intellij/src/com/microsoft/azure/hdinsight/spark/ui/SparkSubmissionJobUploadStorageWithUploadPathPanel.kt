@@ -108,7 +108,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         get() = SparkSubmitJobUploadStorageModel().apply { getData(this) }
 
     @Throws(RuntimeConfigurationException::class)
-    fun checkConfigurationBeforeRun(runner: SparkSubmissionRunner, config: SparkSubmitJobUploadStorageModel) {
+    fun checkConfigurationBeforeRun(config: SparkSubmitJobUploadStorageModel) {
         val uploadPath = config.uploadPath?.trimStart()
 
         val errHint = when {

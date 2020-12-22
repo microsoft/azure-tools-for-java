@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.springcloud.deploy;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
@@ -37,18 +36,17 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import com.microsoft.intellij.util.MavenUtils;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudStateManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -81,8 +79,6 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     private static final String SPRING_BOOT_LIB = "Spring-Boot-Lib";
     private static final String SPRING_BOOT_AUTOCONFIGURE = "spring-boot-autoconfigure";
     private static final String NOT_SPRING_BOOT_Artifact = "Artifact %s is not a spring-boot artifact.";
-    private static final String NO_SPRING_BOOT_LIB = "Missing Spring-Boot-Lib in %s!META_INF/MANIFEST.MF, "
-            + "did you use Spring Boot Maven plugin to repackage the target jar?";
     private static final String DEPENDENCIES_IS_NOT_UPDATED = "Azure Spring Cloud dependencies are not updated.";
     private static final String MAIN_CLASS_NOT_FOUND =
             "Main class cannot be found in %s, which is required for spring cloud app.";
@@ -107,20 +103,17 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         // prepare the jar to be deployed
         updateTelemetryMap(telemetryMap);
-        if (StringUtils.isEmpty(springCloudDeployConfiguration.getProjectName())) {
-            throw new AzureExecutionException("You must specify a maven project.");
+        if (StringUtils.isEmpty(springCloudDeployConfiguration.getArtifactIdentifier())) {
+            throw new AzureExecutionException("You must specify an artifact");
         }
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        MavenProject targetProject = mavenProjects
-                .stream()
-                .filter(t -> StringUtils.equals(t.getName(), springCloudDeployConfiguration.getProjectName()))
-                .findFirst()
-                .orElse(null);
-        if (targetProject == null) {
-            throw new AzureExecutionException(String.format("Project '%s' cannot be found.",
-                                                            springCloudDeployConfiguration.getProjectName()));
+
+        AzureArtifact artifact =
+                AzureArtifactManager.getInstance(project).getAzureArtifactById(springCloudDeployConfiguration.getArtifactIdentifier());
+        if (Objects.isNull(artifact)) {
+            throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists",
+                                                            springCloudDeployConfiguration.getArtifactIdentifier()));
         }
-        String finalJarName = MavenUtils.getSpringBootFinalJarPath(project, targetProject);
+        String finalJarName = AzureArtifactManager.getInstance(project).getFileForDeployment(artifact);
         if (!Files.exists(Paths.get(finalJarName))) {
             throw new AzureExecutionException(String.format("File '%s' cannot be found.",
                                                             finalJarName));
@@ -176,17 +169,6 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     }
 
     @Override
-    protected void onFail(Throwable throwable, @NotNull RunProcessHandler processHandler) {
-        DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed", false, true);
-        try {
-            processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
-        } catch (Exception ex) {
-            // should not propagate error infinitely
-        }
-        processHandler.notifyComplete();
-    }
-
-    @Override
     protected String getDeployTarget() {
         return "SPRING_CLOUD";
     }
@@ -198,18 +180,18 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     private void validateSpringCloudAppArtifact(String finalJar) throws AzureExecutionException, IOException {
         final JarFile jarFile = new JarFile(finalJar);
-        final Attributes maniFestAttributes = jarFile.getManifest().getMainAttributes();
-        final String mainClass = maniFestAttributes.getValue(MAIN_CLASS);
+        final Attributes manifestAttributes = jarFile.getManifest().getMainAttributes();
+        final String mainClass = manifestAttributes.getValue(MAIN_CLASS);
         if (StringUtils.isEmpty(mainClass)) {
-            throw new AzureExecutionException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
+            throw new SpringCloudValidationException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
         }
-        final String library = maniFestAttributes.getValue(SPRING_BOOT_LIB);
+        final String library = manifestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(library)) {
-            throw new AzureExecutionException(String.format(NO_SPRING_BOOT_LIB, finalJar));
+            return;
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
-            throw new AzureExecutionException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
+            throw new SpringCloudValidationException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
         }
         final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
         final List<String> missingDependencies = new ArrayList<>();
@@ -246,6 +228,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     private Map<String, String> getSpringAppDependencies(Enumeration<JarEntry> jarEntryEnumeration,
                                                          String libraryPath) {
+        final String[] springArtifacts = ArrayUtils.add(SPRING_ARTIFACTS, SPRING_BOOT_AUTOCONFIGURE);
         final List<JarEntry> jarEntries = Collections.list(jarEntryEnumeration);
         return jarEntries.stream()
                          .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
@@ -260,6 +243,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
                                     } :
                                     new String[]{fileName, ""};
                          })
+                         .filter(entry -> ArrayUtils.contains(springArtifacts, entry[0]))
                          .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
     }
 

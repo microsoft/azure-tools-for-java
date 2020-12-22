@@ -22,11 +22,11 @@
 
 package com.microsoft.intellij.secure
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.util.net.ssl.CertificateManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.http.ssl.TrustStrategy
 import java.security.cert.CertificateException
@@ -82,9 +82,9 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
                 return false
             }
 
-            ApplicationManager.getApplication().invokeLater({
+            AzureTaskManager.getInstance().runLater({
                 PluginUtil.displayInfoDialog(AcceptTitle, UserAcceptCAMsg)
-            }, ModalityState.any())
+            }, AzureTask.Modality.ANY)
 
             return true
         } catch (err: Exception) {

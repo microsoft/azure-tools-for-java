@@ -24,8 +24,6 @@
     <module>com.microsoft.azuretools.hdinsight.feature</module>
     <module>com.microsoft.azuretools.webapp</module>
     <module>com.microsoft.azuretools.webapp.feature</module>
-    <module>com.microsoft.azuretools.docker</module>
-    <module>com.microsoft.azuretools.docker.feature</module>
     <module>com.microsoft.azuretools.container</module>
     <module>com.microsoft.azuretools.container.feature</module>
     <module>WindowsAzurePlugin4EJ</module>
@@ -33,7 +31,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>0.25.0</tycho-version>
-    <azuretool.eclipse.version>3.23.0-SNAPSHOT</azuretool.eclipse.version>
+    <azuretool.eclipse.version>3.25.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
   <repositories>

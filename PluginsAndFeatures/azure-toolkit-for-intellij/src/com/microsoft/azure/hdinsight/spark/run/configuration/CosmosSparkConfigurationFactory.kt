@@ -40,4 +40,6 @@ open class CosmosSparkConfigurationFactory (type: ConfigurationType) : Configura
     override fun getName(): String {
         return NAME
     }
+
+    override fun getId(): String = NAME
 }

@@ -31,9 +31,10 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -42,28 +43,23 @@ import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
-import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeployFunctionAction extends AzureAnAction {
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-    private static final String DEPLOY_AZURE_FUNCTIONS_TITLE = "Deploy Azure Functions";
+public class DeployFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
+    @AzureOperation(value = "deploy function app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
-            }
-        } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                    PluginUtil.displayErrorDialog("Failed to deploy function", e.getMessage()));
+        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
+            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
         }
         return true;
     }
@@ -74,11 +70,15 @@ public class DeployFunctionAction extends AzureAnAction {
     }
 
     private void runConfiguration(Module module) {
+        // todo: investigate when will module be null
+        if (module == null) {
+            return;
+        }
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(configType);
         final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, factory);
-        if (RunDialog.editConfiguration(project, settings, DEPLOY_AZURE_FUNCTIONS_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+        if (RunDialog.editConfiguration(project, settings, message("function.deploy.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

@@ -4,12 +4,12 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.40.0</version>
+        <version>3.47.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-tools</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
 
     <modules>
         <module>spark-v2.1</module>
@@ -18,7 +18,7 @@
 
     <properties>
         <scala.version.major>2.11</scala.version.major>
-        <scala.version.minor>8</scala.version.minor>
+        <scala.version.minor>12</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
         <build.copyDependenciesPhase>none</build.copyDependenciesPhase>
         <CodeCacheSize>512m</CodeCacheSize>
@@ -32,6 +32,13 @@
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
                 <version>${hadoop.version}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jdk.tools</groupId>
+                        <artifactId>jdk.tools</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -105,6 +112,11 @@
                         <phase>none</phase>
                     </execution>
                 </executions>
+                <configuration><skip>true</skip></configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.0.0-M1</version>
                 <configuration><skip>true</skip></configuration>
             </plugin>
             <plugin>

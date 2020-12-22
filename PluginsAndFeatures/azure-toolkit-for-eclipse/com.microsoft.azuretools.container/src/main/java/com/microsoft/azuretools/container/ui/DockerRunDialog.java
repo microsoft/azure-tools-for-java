@@ -345,6 +345,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             ConsoleLogger.info(String.format("Building image ...  [%s]", imageNameWithTag));
             DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(),
                     dataModel.getDockerCertPath());
+            DockerUtil.ping(docker);
             DockerUtil.buildImage(docker, imageNameWithTag, targetDockerfile.getParent(),
                     targetDockerfile.getFileName().toString(), new DockerProgressHandler());
 

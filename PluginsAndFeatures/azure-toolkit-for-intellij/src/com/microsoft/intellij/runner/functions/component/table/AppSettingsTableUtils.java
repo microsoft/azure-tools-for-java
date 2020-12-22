@@ -30,8 +30,8 @@ import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
-import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
@@ -49,15 +49,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class AppSettingsTableUtils {
 
     private static final String DEFAULT_LOCAL_SETTINGS_JSON =
             "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
     private static final String LOCAL_SETTINGS_VALUES = "Values";
-    private static final String EXPORT_APP_SETTINGS = "Export app settings to local.settings.json";
-    private static final String EXPORT_APP_SETTINGS_FAILED = "Fail to save app settings to local.settings.json : %s";
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
-    private static final String EXPORT_LOCAL_SETTINGS_TITLE = "Export to local settings";
 
     public static JPanel createAppSettingPanel(AppSettingsTable appSettingsTable) {
         final JPanel result = new JPanel();
@@ -69,40 +68,40 @@ public class AppSettingsTableUtils {
         promptPanel.setFocusable(false);
         result.add(promptPanel, paneConstraint);
 
-        final AnActionButton btnAdd = new AnActionButton("Add", AllIcons.General.Add) {
+        final AnActionButton btnAdd = new AnActionButton(message("common.add"), AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final String key = DefaultLoader.getUIHelper().showInputDialog(
                         appSettingsTable,
-                        "Set app settings key",
-                        "Please input the app setting key: ",
+                        message("function.appSettings.add.key.message"),
+                        message("function.appSettings.add.key.title"),
                         null);
                 if (StringUtils.isEmpty(key)) {
                     return;
                 }
                 final String value = DefaultLoader.getUIHelper().showInputDialog(
                         appSettingsTable,
-                        "Set app settings value",
-                        "Please input the app setting value: ",
+                        message("function.appSettings.add.value.message"),
+                        message("function.appSettings.add.value.title"),
                         null);
                 appSettingsTable.addAppSettings(key, value);
                 appSettingsTable.repaint();
             }
         };
 
-        final AnActionButton btnRemove = new AnActionButton("Remove", AllIcons.General.Remove) {
+        final AnActionButton btnRemove = new AnActionButton(message("common.remove"), AllIcons.General.Remove) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 try {
                     appSettingsTable.removeAppSettings(appSettingsTable.getSelectedRow());
                     appSettingsTable.repaint();
                 } catch (IllegalArgumentException iae) {
-                    PluginUtil.displayErrorDialog("Failed to remove app settings", iae.getMessage());
+                    PluginUtil.displayErrorDialog(message("function.appSettings.remove.error.title"), iae.getMessage());
                 }
             }
         };
 
-        final AnActionButton importButton = new AnActionButton("Import", AllIcons.General.ImportProject) {
+        final AnActionButton importButton = new AnActionButton(message("common.import"), AllIcons.ToolbarDecorator.Import) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final ImportAppSettingsDialog importAppSettingsDialog = new ImportAppSettingsDialog(appSettingsTable.getLocalSettingsPath());
@@ -125,17 +124,19 @@ public class AppSettingsTableUtils {
             }
         };
 
-        final AnActionButton exportButton = new AnActionButton(EXPORT_LOCAL_SETTINGS_TITLE, AllIcons.General.ExportSettings) {
+        final AnActionButton exportButton = new AnActionButton(message("function.appSettings.export.title"), AllIcons.ToolbarDecorator.Export) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 try {
-                    final File file = DefaultLoader.getUIHelper().showFileSaver(EXPORT_APP_SETTINGS, LOCAL_SETTINGS_JSON);
+                    final File file = DefaultLoader.getUIHelper().showFileSaver(message("function.appSettings.export.description"), LOCAL_SETTINGS_JSON);
                     if (file != null) {
                         AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
-                        PluginUtil.displayInfoDialog("Export successfully", "Export app settings successfully");
+                        PluginUtil.displayInfoDialog(message("function.appSettings.export.succeed.title"),
+                                                     message("function.appSettings.export.succeed.message"));
                     }
                 } catch (IOException e) {
-                    PluginUtil.displayErrorDialog("Export failed", String.format(EXPORT_APP_SETTINGS_FAILED, e.getMessage()));
+                    PluginUtil.displayErrorDialog(message("function.appSettings.export.error.title"),
+                                                  String.format(message("function.appSettings.export.error.failedToSave"), e.getMessage()));
                 }
             }
         };

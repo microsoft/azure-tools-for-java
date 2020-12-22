@@ -34,8 +34,8 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -43,10 +43,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.actions.QualtricsSurveyAction;
+import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDateTime;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -85,7 +85,8 @@ public enum CustomerSurveyHelper {
 
     public void showFeedbackNotification(Project project) {
         if (isAbleToPopUpSurvey()) {
-            Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
+            Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS)
+                    .subscribeOn(new IdeaSchedulers(project).dispatchUIThread())
                     .take(1)
                     .subscribe(next -> {
                         SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
@@ -143,7 +144,7 @@ public enum CustomerSurveyHelper {
     }
 
     private void saveConfiguration() {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             try {
                 File configFile = getConfigFile();
                 ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();

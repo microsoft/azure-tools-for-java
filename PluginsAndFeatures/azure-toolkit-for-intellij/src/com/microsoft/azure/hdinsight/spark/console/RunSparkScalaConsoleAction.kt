@@ -65,35 +65,39 @@ abstract class RunSparkScalaConsoleAction
     }
 
     override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {
-        val dataContext = event.dataContext
-        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return true
+        try {
+            val dataContext = event.dataContext
+            val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return true
 
-        val runManagerEx = RunManagerEx.getInstanceEx(project)
-        val selectedConfigSettings = runManagerEx.selectedConfiguration
+            val runManagerEx = RunManagerEx.getInstanceEx(project)
+            val selectedConfigSettings = runManagerEx.selectedConfiguration
 
-        // Try current selected Configuration
-        (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
-            runExisting(selectedConfigSettings, runManagerEx, operation)
+            // Try current selected Configuration
+            (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
+                runExisting(selectedConfigSettings, runManagerEx, operation)
+                return false
+            }
+
+            val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
+            if (batchConfigurationType == null) {
+                val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
+                action?.actionPerformed(event)
+                operation?.complete()
+                return false
+            }
+
+            val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
+            if (batchConfigSettings.isNotEmpty()) {
+                // Find one from the same type list
+                runExisting(batchConfigSettings[0], runManagerEx, operation)
+            } else {
+                // Create a new one to run
+                createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler, operation)
+            }
             return false
+        } catch (ignored: RuntimeException) {
+            return true
         }
-
-        val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
-        if (batchConfigurationType == null) {
-            val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
-            action?.actionPerformed(event)
-            operation?.complete()
-            return false
-        }
-
-        val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
-        if (batchConfigSettings.isNotEmpty()) {
-            // Find one from the same type list
-            runExisting(batchConfigSettings[0], runManagerEx, operation)
-        } else {
-            // Create a new one to run
-            createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler, operation)
-        }
-        return false
     }
 
     private fun createAndRun(

@@ -28,11 +28,10 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
@@ -229,14 +228,12 @@ public class QueueFileEditor implements FileEditor {
                         null);
 
                 if (optionDialog == 0) {
-                    ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator progressIndicator) {
+                    AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Clearing queue messages", false, () -> {
                            /* try {
 
                                 StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
 
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                AzureTaskManager.getInstance().runLater(new Runnable() {
                                     @Override
                                     public void run() {
                                         fillGrid();
@@ -247,8 +244,7 @@ public class QueueFileEditor implements FileEditor {
                                 String.format(message("webappExpMsg"), e.getMessage());
                                 PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
                             }*/
-                        }
-                    });
+                    }));
                 }
             }
         });
@@ -262,45 +258,6 @@ public class QueueFileEditor implements FileEditor {
     }
 
     public void fillGrid() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading queue messages", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
-                    queueMessages = StorageClientSDKManager.getManager().getQueueMessages(storageAccount, queue);
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
-
-                            while (model.getRowCount() > 0) {
-                                model.removeRow(0);
-                            }
-
-                            for (QueueMessage queueMessage : queueMessages) {
-                                String[] values = {
-                                        queueMessage.getId(),
-                                        queueMessage.getContent(),
-                                        UIHelperImpl.readableFileSize(queueMessage.getContent().length()),
-                                        new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
-                                        new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
-                                        String.valueOf(queueMessage.getDequeueCount()),
-                                };
-
-                                model.addRow(values);
-                            }
-
-                            clearQueueButton.setEnabled(queueMessages.size() != 0);
-                            dequeueMessageButton.setEnabled(queueMessages.size() != 0);
-                        }
-                    });
-
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to get queue messages." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
     }
 
     private JPopupMenu createTablePopUp(boolean isFirstRow) {
@@ -314,28 +271,6 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void dequeueFirstMessage() {
-        final boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(
-                mainPanel, "Are you sure you want to dequeue the first message in the queue?", "Azure Explorer", null);
-        if (isConfirm) {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    /*try {
-                        StorageClientSDKManager.getManager().dequeueFirstQueueMessage(storageAccount, queue);
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                fillGrid();
-                            }
-                        });
-                    } catch (AzureCmdException e) {
-                        String msg = "An error occurred while attempting to dequeue messages." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                    }*/
-                }
-            });
-        }
     }
 
     private QueueMessage getSelectedQueueMessage() {

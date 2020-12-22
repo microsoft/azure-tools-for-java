@@ -67,12 +67,12 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             final AppServicePlan plan = azure.appServices().appServicePlans().getById(appBase.appServicePlanId());
             return generateProperty(appBase, plan);
         }).subscribeOn(getSchedulerProvider().io())
-            .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showProperty(property);
-            }), e -> errorHandler((Exception) e));
+                .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showProperty(property);
+                }));
     }
 
     protected WebAppProperty generateProperty(@NotNull final WebAppBase webAppBase, @NotNull final AppServicePlan plan) {
@@ -131,20 +131,19 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             updateAppSettings(sid, webAppId, name, editedSettings, toRemove);
             return true;
         }).subscribeOn(getSchedulerProvider().io())
-            .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showPropertyUpdateResult(true);
-                sendTelemetry("UpdateAppSettings", telemetryMap, true, null);
-            }), e -> {
-                errorHandler((Exception) e);
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showPropertyUpdateResult(false);
-                sendTelemetry("UpdateAppSettings", telemetryMap, false, e.getMessage());
-            });
+                .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showPropertyUpdateResult(true);
+                    sendTelemetry("UpdateAppSettings", telemetryMap, true, null);
+                }), e -> {
+                        if (isViewDetached()) {
+                            return;
+                        }
+                        getMvpView().showPropertyUpdateResult(false);
+                        sendTelemetry("UpdateAppSettings", telemetryMap, false, e.getMessage());
+                    });
     }
 
     public void onGetPublishingProfileXmlWithSecrets(@NotNull final String sid, @NotNull final String webAppId,
@@ -152,29 +151,19 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         final Map<String, String> telemetryMap = new HashMap<>();
         telemetryMap.put("SubscriptionId", sid);
         Observable.fromCallable(() -> getPublishingProfile(sid, webAppId, name, filePath))
-            .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().showGetPublishingProfileResult(res);
-            sendTelemetry("DownloadPublishProfile", telemetryMap, true, null);
-        }), e -> {
-            errorHandler((Exception) e);
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().showGetPublishingProfileResult(false);
-            sendTelemetry("DownloadPublishProfile", telemetryMap, false, e.getMessage());
-        });
-    }
-
-    protected void errorHandler(final Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(CANNOT_GET_WEB_APP_PROPERTY, e);
-        });
+                .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showGetPublishingProfileResult(res);
+                    sendTelemetry("DownloadPublishProfile", telemetryMap, true, null);
+                }), e -> {
+                        if (isViewDetached()) {
+                            return;
+                        }
+                        getMvpView().showGetPublishingProfileResult(false);
+                        sendTelemetry("DownloadPublishProfile", telemetryMap, false, e.getMessage());
+                    });
     }
 
     protected void sendTelemetry(@NotNull final String actionName, @NotNull final Map<String, String> telemetryMap,

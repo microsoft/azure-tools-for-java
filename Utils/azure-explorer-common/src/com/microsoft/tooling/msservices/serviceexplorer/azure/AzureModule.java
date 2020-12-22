@@ -26,6 +26,8 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -37,6 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
@@ -79,6 +82,8 @@ public class AzureModule extends AzureRefreshableNode {
     private FunctionModule functionModule;
     @NotNull
     private SpringCloudModule springCloudModule;
+    @NotNull
+    private MySQLModule mysqlModule;
 
     /**
      * Constructor.
@@ -97,6 +102,7 @@ public class AzureModule extends AzureRefreshableNode {
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
         springCloudModule = new SpringCloudModule(this);
+        mysqlModule = new MySQLModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -121,6 +127,9 @@ public class AzureModule extends AzureRefreshableNode {
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
             return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
 
+        } catch (AzureRuntimeException e) {
+            DefaultLoader.getUIHelper().showInfoNotification(
+                    ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorEnum.getDisplayMessageByCode(e.getCode()));
         } catch (Exception e) {
             final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
             DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
@@ -166,6 +175,9 @@ public class AzureModule extends AzureRefreshableNode {
         }
         if (!isDirectChild(springCloudModule)) {
             addChildNode(springCloudModule);
+        }
+        if (!isDirectChild(mysqlModule)) {
+            addChildNode(mysqlModule);
         }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);

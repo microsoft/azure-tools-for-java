@@ -48,6 +48,7 @@ public final class Messages extends NLS {
     public static String appInsightMng;
     public static String adAuth;
     public static String srvExp;
+    public static String azureStorage;
 
     static {
         // initialize resource bundle

@@ -40,6 +40,8 @@ class SparkScalaLivyConsole(module: Module) : ScalaLanguageConsole(module), Spar
         ScalaConsoleInfo.disposeConsole(this)
 
         // Add to Spark Console Manager
-        SparkConsoleManager.add(this, ConsoleHistoryController.getController(this), processHandler)
+        val controller = ConsoleHistoryController.getController(this)
+            ?: throw RuntimeException("Can't find controller for Livy console from console history controller")
+        SparkConsoleManager.add(this, controller, processHandler)
     }
 }

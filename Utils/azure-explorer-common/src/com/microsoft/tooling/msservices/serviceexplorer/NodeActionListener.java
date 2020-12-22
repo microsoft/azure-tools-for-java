@@ -24,25 +24,47 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.*;
 
+import javax.swing.*;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NodeActionListener implements EventListener {
+public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
+    protected int priority = Sortable.DEFAULT_PRIORITY;
+    protected int group = Groupable.DEFAULT_GROUP;
+
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
     }
 
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
+    }
+
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
-//        e.getAction().getNode().setLoading(true);
         sendTelemetry(e);
     }
 
@@ -69,6 +91,10 @@ public abstract class NodeActionListener implements EventListener {
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
+    public Icon getIcon() {
+        return null;
+    }
+
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
@@ -79,8 +105,9 @@ public abstract class NodeActionListener implements EventListener {
             EventUtil.logEvent(EventType.info, operation, buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
-        } catch (AzureCmdException ex) {
+        } catch (AzureCmdException | RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            AzureExceptionHandler.getInstance().handleException(ex, false);
             return Futures.immediateFailedFuture(ex);
         } finally {
             operation.complete();
@@ -131,6 +158,6 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
-//        e.getAction().getNode().setLoading(false);
     }
+
 }

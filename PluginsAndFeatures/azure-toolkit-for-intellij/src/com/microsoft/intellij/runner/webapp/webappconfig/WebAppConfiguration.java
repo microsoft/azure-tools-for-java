@@ -31,58 +31,36 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
-import org.apache.commons.lang.StringUtils;
-import org.jdom.Element;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.intellij.ui.components.AzureArtifactType;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
     // const string
-    private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
-    private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
-    private static final String MISSING_SLOT_NAME = "The deployment slot name is not provided.";
-    private static final String MISSING_SUBSCRIPTION = "Subscription not provided.";
-    private static final String MISSING_WEB_CONTAINER = "Web Container not provided.";
-    private static final String MISSING_RESOURCE_GROUP = "Resource Group not provided.";
-    private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
-    private static final String MISSING_LOCATION = "Location not provided.";
-    private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
-    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-        + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-        + "the digits '0' through '9', '.', '-' and '_'.";
-
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
-    private static final String INVALID_SLOT_NAME =
-        "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private static final String TOMCAT = "tomcat";
+    private static final String JAVA = "java";
+    private static final String JBOSS = "jboss";
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         webAppSettingModel = new IntelliJWebAppSettingModel();
-    }
-
-    @Override
-    public void readExternal(Element element) throws InvalidDataException {
-        super.readExternal(element);
-        if (!existVersionConfiguration(element) && !isFirstTimeCreated()) {
-            this.setUiVersion(IntelliJWebAppSettingModel.UIVersion.OLD);
-        }
-    }
-
-    private boolean existVersionConfiguration(Element configuration) {
-        return configuration.getChildren().stream()
-            .filter(element -> Comparing.equal(element.getAttributeValue("name"), "uiVersion")).count() > 0;
     }
 
     @Override
@@ -108,57 +86,79 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         checkAzurePreconditions();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
-                throw new ConfigurationException(MISSING_WEB_APP_NAME);
+                throw new ConfigurationException(message("webapp.deploy.validate.noWebAppName"));
             }
             if (webAppSettingModel.getOS() == OperatingSystem.WINDOWS && Utils.isEmptyString(webAppSettingModel.getWebContainer())) {
-                throw new ConfigurationException(MISSING_WEB_CONTAINER);
+                throw new ConfigurationException(message("webapp.deploy.validate.noWebContainer"));
             }
             if (Utils.isEmptyString(webAppSettingModel.getSubscriptionId())) {
-                throw new ConfigurationException(MISSING_SUBSCRIPTION);
+                throw new ConfigurationException(message("webapp.deploy.validate.noSubscription"));
             }
             if (Utils.isEmptyString(webAppSettingModel.getResourceGroup())) {
-                throw new ConfigurationException(MISSING_RESOURCE_GROUP);
+                throw new ConfigurationException(message("webapp.deploy.validate.noResourceGroup"));
             }
             if (webAppSettingModel.isCreatingAppServicePlan()) {
                 if (Utils.isEmptyString(webAppSettingModel.getRegion())) {
-                    throw new ConfigurationException(MISSING_LOCATION);
+                    throw new ConfigurationException(message("webapp.deploy.validate.noLocation"));
                 }
                 if (Utils.isEmptyString(webAppSettingModel.getPricing())) {
-                    throw new ConfigurationException(MISSING_PRICING_TIER);
+                    throw new ConfigurationException(message("webapp.deploy.validate.noPricingTier"));
                 }
                 if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanName())) {
-                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+                    throw new ConfigurationException(message("webapp.deploy.validate.noAppServicePlan"));
                 }
             } else {
                 if (Utils.isEmptyString(webAppSettingModel.getAppServicePlanId())) {
-                    throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
+                    throw new ConfigurationException(message("webapp.deploy.validate.noAppServicePlan"));
                 }
-            }
-            if (getUiVersion().equals(IntelliJWebAppSettingModel.UIVersion.NEW)) {
-                return;
             }
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
-                throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
+                throw new ConfigurationException(message("webapp.deploy.validate.noWebApp"));
             }
             if (webAppSettingModel.isDeployToSlot()) {
-                if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                if (webAppSettingModel.getSlotName().equals(Constants.CREATE_NEW_SLOT)) {
                     if (Utils.isEmptyString(webAppSettingModel.getNewSlotName())) {
-                        throw new ConfigurationException(MISSING_SLOT_NAME);
+                        throw new ConfigurationException(message("webapp.deploy.validate.noSlotName"));
                     }
                     if (!webAppSettingModel.getNewSlotName().matches(SLOT_NAME_REGEX)) {
-                        throw new ConfigurationException(INVALID_SLOT_NAME);
+                        throw new ConfigurationException(message("webapp.deploy.validate.invalidSlotName"));
                     }
                 } else if (StringUtils.isEmpty(webAppSettingModel.getSlotName())) {
-                    throw new ConfigurationException(MISSING_SLOT_NAME);
+                    throw new ConfigurationException(message("webapp.deploy.validate.noSlotName"));
                 }
             }
         }
-        if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
-            throw new ConfigurationException(MISSING_ARTIFACT);
+        // validate runtime with artifact
+        final String artifactPackage = webAppSettingModel.getPackaging();
+        final String runtime = StringUtils.lowerCase(getRuntime());
+        if (StringUtils.isEmpty(runtime)) {
+            throw new ConfigurationException(message("webapp.deploy.validate.invalidRuntime"));
+        } else if (StringUtils.contains(runtime, TOMCAT) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war")) {
+            throw new ConfigurationException(message("webapp.deploy.validate.invalidTomcatArtifact"));
+        } else if (StringUtils.contains(runtime, JBOSS) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
+            throw new ConfigurationException(message("webapp.deploy.validate.invalidJbossArtifact"));
+        } else if (StringUtils.contains(runtime, JAVA) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+            throw new ConfigurationException(message("webapp.deploy.validate.invalidJavaSeArtifact"));
         }
-        if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, webAppSettingModel.getTargetName()));
+        if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
+            throw new ConfigurationException(message("webapp.deploy.validate.missingArtifact"));
+        }
+    }
+
+    private String getRuntime() {
+        if (getOS() == OperatingSystem.LINUX) {
+            return getModel().getStack();
+        } else {
+            if (StringUtils.containsIgnoreCase(getWebContainer(), TOMCAT)) {
+                return TOMCAT;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JAVA)) {
+                return JAVA;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JBOSS)) {
+                return JBOSS;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -345,14 +345,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         return webAppSettingModel.getTargetName();
     }
 
-    public IntelliJWebAppSettingModel.UIVersion getUiVersion() {
-        return webAppSettingModel.getUiVersion();
-    }
-
-    public void setUiVersion(IntelliJWebAppSettingModel.UIVersion uiVersion) {
-        webAppSettingModel.setUiVersion(uiVersion);
-    }
-
     public boolean isOpenBrowserAfterDeployment() {
         return webAppSettingModel.isOpenBrowserAfterDeployment();
     }
@@ -367,5 +359,75 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
+    }
+
+    public AzureArtifactType getAzureArtifactType() {
+        return webAppSettingModel.getAzureArtifactType();
+    }
+
+    public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
+        webAppSettingModel.setAzureArtifactType(azureArtifactType);
+    }
+
+    public String getArtifactIdentifier() {
+        return webAppSettingModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        webAppSettingModel.setArtifactIdentifier(artifactIdentifier);
+    }
+
+    public void saveArtifact(AzureArtifact azureArtifact) {
+        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
+        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
+        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        webAppSettingModel.setPackaging(azureArtifact == null ? null : azureArtifactManager.getPackaging(azureArtifact));
+    }
+
+    public void saveModel(final WebAppComboBoxModel webAppComboBoxModel) {
+        setWebAppId(webAppComboBoxModel.getResourceId());
+        setWebAppName(webAppComboBoxModel.getAppName());
+        setResourceGroup(webAppComboBoxModel.getResourceGroup());
+        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
+        if (webAppComboBoxModel.isNewCreateResource()) {
+            setCreatingNew(true);
+            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            setAppServicePlanName(settingModel.getAppServicePlanName());
+            setRegion(settingModel.getRegion());
+            setPricing(settingModel.getPricing());
+            setAppServicePlanId(settingModel.getAppServicePlanId());
+            setOS(settingModel.getOS());
+            setStack(settingModel.getStack());
+            setVersion(settingModel.getVersion());
+            setJdkVersion(settingModel.getJdkVersion());
+            setWebContainer(settingModel.getWebContainer());
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            webAppSettingModel.setEnableApplicationLog(settingModel.isEnableApplicationLog());
+            webAppSettingModel.setApplicationLogLevel(settingModel.getApplicationLogLevel());
+            webAppSettingModel.setEnableWebServerLogging(settingModel.isEnableWebServerLogging());
+            webAppSettingModel.setWebServerLogQuota(settingModel.getWebServerLogQuota());
+            webAppSettingModel.setWebServerRetentionPeriod(settingModel.getWebServerRetentionPeriod());
+            webAppSettingModel.setEnableDetailedErrorMessage(settingModel.isEnableDetailedErrorMessage());
+            webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
+        } else {
+            setCreatingNew(false);
+            final WebApp webApp = webAppComboBoxModel.getResource();
+            if (webApp != null) {
+                setOS(webApp.operatingSystem());
+                setAppServicePlanId(webApp.appServicePlanId());
+                setRegion(webApp.regionName());
+                setWebContainer(webApp.javaContainer() + " " + webApp.javaContainerVersion());
+                setJdkVersion(webApp.javaVersion());
+                final String linuxFxVersion = webApp.linuxFxVersion();
+                if (StringUtils.contains(linuxFxVersion, "|")) {
+                    final String[] runtime = linuxFxVersion.split("\\|");
+                    setStack(runtime[0]);
+                    setVersion(runtime[1]);
+                }
+            }
+        }
     }
 }

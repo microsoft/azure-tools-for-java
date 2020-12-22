@@ -22,18 +22,13 @@
 
 package com.microsoft.azuretools.core.mvp.model.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionDeploymentSlots;
-import com.microsoft.azure.management.appservice.NameValuePair;
-import com.microsoft.azure.management.appservice.SupportedTlsVersions;
-import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppBaseWrapper;
 import rx.Completable;
 import rx.Observable;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp {
@@ -133,15 +128,30 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     }
 
     @Override
+    public Map<String, String> getSiteAppSettings() {
+        return getFunctionApp().getSiteAppSettings();
+    }
+
+    @Override
+    public Observable<Map<String, String>> getSiteAppSettingsAsync() {
+        return getFunctionApp().getSiteAppSettingsAsync();
+    }
+
+    @Override
     protected WebAppBase getWebAppBase() {
         return getFunctionApp();
     }
 
+    private FunctionApp functionApp;
+
     private FunctionApp getFunctionApp() {
-        try {
-            return AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to get function instance");
+        if (functionApp == null) {
+            synchronized (this) {
+                if (functionApp == null) {
+                    functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
+                }
+            }
         }
+        return functionApp;
     }
 }

@@ -33,7 +33,6 @@
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <icon value="actions/refresh.png"/>
               <text value="Refresh"/>
             </properties>
           </component>
@@ -52,7 +51,6 @@
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <icon value="icons/Stop.png"/>
               <text value="Stop"/>
             </properties>
           </component>
@@ -63,7 +61,6 @@
             </constraints>
             <properties>
               <enabled value="true"/>
-              <icon value="actions/delete.png"/>
               <text value="Delete"/>
             </properties>
           </component>
@@ -73,7 +70,6 @@
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <icon value="icons/storagesaveas.png"/>
               <text value="Save"/>
             </properties>
           </component>
@@ -83,7 +79,6 @@
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <icon value="general/run.png"/>
               <text value="Start"/>
             </properties>
           </component>

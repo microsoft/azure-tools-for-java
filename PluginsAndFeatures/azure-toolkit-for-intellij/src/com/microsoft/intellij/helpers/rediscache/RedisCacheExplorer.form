@@ -89,8 +89,7 @@
                         <properties>
                           <enabled value="false"/>
                           <font size="18"/>
-                          <icon value="icons/search.png"/>
-                          <text value=""/>
+                          <text value="Search"/>
                         </properties>
                       </component>
                       <component id="cb157" class="javax.swing.JButton" binding="btnScanMore">

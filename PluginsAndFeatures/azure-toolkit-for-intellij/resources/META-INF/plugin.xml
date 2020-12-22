@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.39.0</version>
+  <version>3.46.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,44 +24,23 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.39.0</h3>
+    <h3>3.46.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support Azure Functions with Java 11 runtime(Preview)</li>
-        <li>Support authentication with Azure CLI credentials</li>
+        <li>Support IntelliJ 2020.3 RC</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not</li>
-        <li>Remove Docker Host in Azure Explorer</li>
+        <li>Refactor error handling, unify the error notifications</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>Fix Spark history server link broken for Azure Synapse issue</li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/3712">#3712</a>
-            Fixes NPE while refreshing Azure node
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4449">#4449</a>
-            Fixes NPE while parsing Function bindings
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/2226">#2226</a>
-            Fixes AuthException for no subscrition account
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4102">#4102</a>
-            Fixes Exception when app service run process is terminated
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4389">#4389</a>
-            Fixes check box UI issue when create function project
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4307">#4307</a>
-            Selecting wrong module automatically when adding function run configuration for gradle function project
-        </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4764">#4764</a> Fixes HDInsights clusters of all
+            subscriptions(instead of the selected subscription) is listed </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4766">#4766</a> Fixes duplicate before run task
+            for Spring Cloud deployment run configuration</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4784">#4784</a> Fixes failed to auth with Azure
+            CLI with multi Azure environment enabled</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -70,12 +49,16 @@
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="193.5233" until-build="193.*"/>
+  <idea-version since-build="202.6397.20" until-build="202.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends optional="true">org.intellij.scala</depends>
+  <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
+  <depends>com.intellij.modules.java</depends>
   <depends>org.intellij.plugins.markdown</depends>
+  <depends>org.jetbrains.plugins.terminal</depends>
+  <depends>com.intellij.gradle</depends>
+  <depends optional="true">com.intellij.database</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -84,12 +67,11 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow
-            anchor="bottom"
-            factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
-            id="Azure Activity Log"
-            canCloseContents="true"
-            icon="/icons/RoleFolder.gif"
-            conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
+          anchor="bottom"
+          factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
+          id="Azure Activity Log"
+          canCloseContents="true"
+          icon="/icons/RoleFolder.gif"/>
     <projectConfigurable groupId="root"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"
@@ -111,6 +93,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
@@ -163,12 +146,13 @@
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory key="arm"
-                                   implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
+    <lang.syntaxHighlighterFactory language="arm"
+      implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
     <lang.parserDefinition language="arm"
                            implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
     <completion.contributor language="JSON" order="first"
-                            implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
+      implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
+    <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
     <facetType implementation="com.microsoft.intellij.wizards.functions.facet.FunctionsFacetType"/>
     <moduleBuilder builderClass="com.microsoft.intellij.wizards.functions.module.FunctionsModuleBuilder"/>
     <runConfigurationProducer implementation="com.microsoft.intellij.runner.functions.FunctionRunConfigurationProducer"/>
@@ -176,27 +160,12 @@
                               implementationClass="com.microsoft.intellij.runner.functions.FunctionRunLineMarkerProvider"/>
   </extensions>
 
-  <application-components>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistration</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
-    </component>
-  </application-components>
-
-  <project-components>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzurePlugin</implementation-class>
-      <loadForDefaultProject/>
-    </component>
-  </project-components>
+  <applicationListeners>
+    <listener class="com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistrationListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    <listener class="com.microsoft.azure.hdinsight.jobs.JobViewApplicationListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    <listener class="com.microsoft.intellij.AzureActionsListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    <listener class="com.microsoft.azure.hdinsight.projects.HDInsightActionsListener" topic="com.intellij.ide.AppLifecycleListener"/>
+  </applicationListeners>
 
   <actions>
     <action id="Actions.WhatsNew"
@@ -206,12 +175,8 @@
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
     <action id="Actions.ApplicationInsightsAction"
-            class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
+            class="com.microsoft.intellij.actions.ApplicationInsightsAction" text="Configure Application Insights..."
             description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
-    <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
-            text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
-            icon="/icons/PublishDockerContainer_16.png">
-    </action>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
             text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer_16.png"/>
     <action id="Actions.AzureCodeSamples"
@@ -339,8 +304,6 @@
       <reference ref="Actions.PushImage"/>
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
-      <reference ref="Actions.AzureDockerHostDeploy"/>
-      <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
       <reference ref="Actions.LibraryConfigurationAction"/>
     </group>
@@ -349,7 +312,6 @@
       <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
         <reference ref="Actions.WebDeployAction"/>
         <reference ref="Actions.WebAppOnLinux"/>
-        <reference ref="Actions.AzureDockerHostDeploy"/>
       </group>
       <reference ref="Actions.AzureExplorerOpenAction"/>
       <reference ref="Actions.AzureCodeSamples"/>

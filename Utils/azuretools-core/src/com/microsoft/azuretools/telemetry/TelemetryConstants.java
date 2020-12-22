@@ -31,6 +31,7 @@ public class TelemetryConstants {
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
     public static final String SPRING_CLOUD = "springcloud";
+    public static final String MYSQL = "azure-mysql";
     public static final String ACR = "acr";
     public static final String ARM = "arm";
     public static final String DOCKER = "docker";
@@ -67,6 +68,7 @@ public class TelemetryConstants {
     public static final String STOP_WEBAPP = "stop-webapp";
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
+    public static final String WEBAPP_SSHINTO = "sshinto-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
     public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
     public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";
@@ -101,6 +103,15 @@ public class TelemetryConstants {
     public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
     public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
     public static final String OPEN_IN_PORTAL_SPRING_CLOUD_APP = "open-inportal-springcloud-app";
+    public static final String MYSQL_CREATE = "mysql-create";
+    public static final String MYSQL_DELETE = "mysql-delete";
+    public static final String MYSQL_START = "mysql-start";
+    public static final String MYSQL_STOP = "mysql-stop";
+    public static final String MYSQL_RESTART = "mysql-restart";
+    public static final String MYSQL_OPEN_IN_PORTAL = "mysql-open-in-portal";
+    public static final String MYSQL_SHOW_PROPERTIES = "mysql-show-properties";
+    public static final String MYSQL_CONNECT_TO_SERVER = "mysql-connect-to-server";
+    public static final String MYSQL_BIND_INTO = "mysql-bind-into";
 
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
@@ -132,6 +143,7 @@ public class TelemetryConstants {
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
     public static final String SIGNOUT = "signout";
+    public static final String RESIGNIN = "re-signin";
     public static final String SELECT_SUBSCRIPTIONS = "select-subscriptions";
     public static final String GET_SUBSCRIPTIONS = "get-subscriptions";
     public static final String REPORT_ISSUES = "report-issues";
@@ -194,6 +206,8 @@ public class TelemetryConstants {
     public static final String PROVISION_A_CLUSTER = "provision-a-cluster";
     public static final String DELETE_A_CLUSTER = "delete-a-cluster";
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
+    public static final String SHOW_WHATS_NEW = "show-whats-new";
+    public static final String UNHANDLED_EXCEPTION = "unhandled-exception";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -206,6 +220,7 @@ public class TelemetryConstants {
     public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
+    public static final String AZURE_ENVIRONMENT = "azureEnvironment";
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();
