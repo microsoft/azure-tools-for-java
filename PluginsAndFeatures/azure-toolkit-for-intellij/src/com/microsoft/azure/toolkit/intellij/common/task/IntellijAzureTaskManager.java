@@ -39,33 +39,33 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
-    protected void doRead(final AzureTask task) {
-        ApplicationManager.getApplication().runReadAction(task.getRunnable());
+    protected void doRead(Runnable runnable, final AzureTask<?> task) {
+        ApplicationManager.getApplication().runReadAction(runnable);
     }
 
     @Override
-    protected void doWrite(final AzureTask task) {
-        ApplicationManager.getApplication().runWriteAction(task.getRunnable());
+    protected void doWrite(final Runnable runnable, final AzureTask<?> task) {
+        ApplicationManager.getApplication().runWriteAction(runnable);
     }
 
     @Override
-    protected void doRunLater(final AzureTask task) {
+    protected void doRunLater(final Runnable runnable, final AzureTask<?> task) {
         final ModalityState state = toIntellijModality(task);
-        ApplicationManager.getApplication().invokeLater(task.getRunnable(), state);
+        ApplicationManager.getApplication().invokeLater(runnable, state);
     }
 
     @Override
-    protected void doRunAndWait(final AzureTask task) {
+    protected void doRunAndWait(final Runnable runnable, final AzureTask<?> task) {
         final ModalityState state = toIntellijModality(task);
-        ApplicationManager.getApplication().invokeAndWait(task.getRunnable(), state);
+        ApplicationManager.getApplication().invokeAndWait(runnable, state);
     }
 
     @Override
-    protected void doRunInBackground(final AzureTask task) {
+    protected void doRunInBackground(final Runnable runnable, final AzureTask<?> task) {
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
-                task.getRunnable().run();
+                runnable.run();
             }
         };
         task.setRunningBackground(true);
@@ -73,26 +73,26 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     @Override
-    protected void doRunInModal(final AzureTask task) {
+    protected void doRunInModal(final Runnable runnable, final AzureTask<?> task) {
         if (task.isBackgroundable()) {
-            this.doRunInBackgroundableModal(task);
+            this.doRunInBackgroundableModal(runnable, task);
         } else {
-            this.doRunInUnBackgroundableModal(task);
+            this.doRunInUnBackgroundableModal(runnable, task);
         }
     }
 
-    protected void doRunInUnBackgroundableModal(final AzureTask task) {
+    protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
-                task.getRunnable().run();
+                runnable.run();
             }
         };
         task.setRunningBackground(false);
         ProgressManager.getInstance().run(modalTask);
     }
 
-    protected void doRunInBackgroundableModal(final AzureTask task) {
+    protected void doRunInBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
         final PerformInBackgroundOption foreground = PerformInBackgroundOption.DEAF;
         // refer https://jetbrains.org/intellij/sdk/docs/basics/disposers.html
         final Disposable disposable = Disposer.newDisposable();
@@ -101,7 +101,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable(), foreground) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
-                task.getRunnable().run();
+                runnable.run();
                 Disposer.dispose(disposable);
             }
 
@@ -114,7 +114,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         ProgressManager.getInstance().run(modalTask);
     }
 
-    private ModalityState toIntellijModality(final AzureTask task) {
+    private ModalityState toIntellijModality(final AzureTask<?> task) {
         final AzureTask.Modality modality = task.getModality();
         switch (modality) {
             case NONE:
