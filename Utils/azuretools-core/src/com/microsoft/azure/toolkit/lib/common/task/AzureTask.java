@@ -23,47 +23,76 @@
 package com.microsoft.azure.toolkit.lib.common.task;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@Data
-public class AzureTask {
-    private Modality modality;
-    private Runnable runnable;
-    private Object project;
-    private boolean cancellable;
+@Getter
+public class AzureTask<T> {
+    private final Modality modality;
+    private final Supplier<T> supplier;
+    private final Object project;
+    private final boolean cancellable;
     @Builder.Default
-    private boolean backgroundable = true;
-    private boolean runningBackground = true;
-    private String title;
-    private Runnable successListener;
-    private Runnable finishedListener;
-    private Consumer<Throwable> errorListener;
+    private final boolean backgroundable = true;
+    private final String title;
+
+    @Setter
+    private boolean runningBackground = false;
 
     public AzureTask(Runnable runnable) {
-        this.runnable = runnable;
-        this.modality = Modality.DEFAULT;
+        this(runnable, Modality.DEFAULT);
+    }
+
+    public AzureTask(String title, Runnable runnable) {
+        this(title, runnable, Modality.DEFAULT);
+    }
+
+    public AzureTask(Supplier<T> supplier) {
+        this(supplier, Modality.DEFAULT);
+    }
+
+    public AzureTask(String title, Supplier<T> supplier) {
+        this(null, title, false, supplier, Modality.DEFAULT);
     }
 
     public AzureTask(Runnable runnable, Modality modality) {
-        this.runnable = runnable;
-        this.modality = modality;
+        this(null, null, false, runnable, modality);
+    }
+
+    public AzureTask(String title, Runnable runnable, Modality modality) {
+        this(null, title, false, runnable, modality);
+    }
+
+    public AzureTask(Supplier<T> supplier, Modality modality) {
+        this(null, null, false, supplier, modality);
+    }
+
+    public AzureTask(String title, Supplier<T> supplier, Modality modality) {
+        this(null, title, false, supplier, modality);
     }
 
     public AzureTask(Object project, String title, boolean cancellable, Runnable runnable) {
-        this.project = project;
-        this.title = title;
-        this.cancellable = cancellable;
-        this.runnable = runnable;
-        this.modality = Modality.DEFAULT;
+        this(project, title, cancellable, runnable, Modality.DEFAULT);
+    }
+
+    public AzureTask(Object project, String title, boolean cancellable, Supplier<T> supplier) {
+        this(project, title, cancellable, supplier, Modality.DEFAULT);
     }
 
     public AzureTask(Object project, String title, boolean cancellable, Runnable runnable, Modality modality) {
+        this(project, title, cancellable, () -> {
+            runnable.run();
+            return null;
+        }, modality);
+    }
+
+    public AzureTask(Object project, String title, boolean cancellable, Supplier<T> supplier, Modality modality) {
         this.project = project;
         this.title = title;
         this.cancellable = cancellable;
-        this.runnable = runnable;
+        this.supplier = supplier;
         this.modality = modality;
     }
 
