@@ -65,10 +65,10 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
+                task.getContext().setBackgrounded(true);
                 runnable.run();
             }
         };
-        task.setRunningBackground(true);
         ApplicationManager.getApplication().invokeLater(() -> ProgressManager.getInstance().run(backgroundTask), ModalityState.any());
     }
 
@@ -85,10 +85,10 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
+                task.getContext().setBackgrounded(false);
                 runnable.run();
             }
         };
-        task.setRunningBackground(false);
         ProgressManager.getInstance().run(modalTask);
     }
 
@@ -101,16 +101,16 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable(), foreground) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
+                task.getContext().setBackgrounded(false);
                 runnable.run();
                 Disposer.dispose(disposable);
             }
 
             @Override
             public void processSentToBackground() {
-                task.setRunningBackground(true);
+                task.getContext().setBackgrounded(true);
             }
         };
-        task.setRunningBackground(false);
         ProgressManager.getInstance().run(modalTask);
     }
 

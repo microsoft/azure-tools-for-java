@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -44,21 +43,24 @@ public class AzureRxTaskManager {
         final Func1<Single.OnSubscribe, Single.OnSubscribe> oldSingleCreateHooks = RxJavaHooks.getOnSingleCreate();
         final Func1<Completable.OnSubscribe, Completable.OnSubscribe> oldCompletableCreateHooks = RxJavaHooks.getOnCompletableCreate();
         RxJavaHooks.setOnObservableCreate(onSubscribe -> {
-            final Observable.OnSubscribe<?> withClosure = AzureOperationsContext.deriveClosure(onSubscribe);
+            final AzureTaskContext.Node context = AzureTaskContext.current().derive();
+            final Observable.OnSubscribe<?> withClosure = (o) -> AzureTaskContext.run(() -> onSubscribe.call(o), context);
             if (Objects.isNull(oldObservableCreateHooks)) {
                 return withClosure;
             }
             return oldObservableCreateHooks.call(withClosure);
         });
         RxJavaHooks.setOnCompletableCreate(onSubscribe -> {
-            final Completable.OnSubscribe withClosure = AzureOperationsContext.deriveClosure(onSubscribe);
+            final AzureTaskContext.Node context = AzureTaskContext.current().derive();
+            final Completable.OnSubscribe withClosure = (o) -> AzureTaskContext.run(() -> onSubscribe.call(o), context);
             if (Objects.isNull(oldCompletableCreateHooks)) {
                 return withClosure;
             }
             return oldCompletableCreateHooks.call(withClosure);
         });
         RxJavaHooks.setOnSingleCreate(onSubscribe -> {
-            final Single.OnSubscribe<?> withClosure = AzureOperationsContext.deriveClosure(onSubscribe);
+            final AzureTaskContext.Node context = AzureTaskContext.current().derive();
+            final Single.OnSubscribe<?> withClosure = (o) -> AzureTaskContext.run(() -> onSubscribe.call(o), context);
             if (Objects.isNull(oldSingleCreateHooks)) {
                 return withClosure;
             }
