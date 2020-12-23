@@ -20,45 +20,38 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.operation;
+package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitOperationException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import lombok.extern.java.Log;
-import org.apache.commons.collections4.CollectionUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.util.Objects;
-import java.util.logging.Level;
 
 @Aspect
 @Log
 public final class AzureOperationEnhancer {
 
-    @Pointcut("execution(@AzureOperation * *..*.*(..))")
+    @Pointcut("execution(@com.microsoft.azure.toolkit.lib.common.operation.AzureOperation * *..*.*(..))")
     public void operation() {
     }
 
     @Before("operation()")
     public void enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        final AzureOperation.Type type = AzureOperationUtils.getAnnotation(operation).type();
-        if (type == AzureOperation.Type.ACTION) {
-            AzureOperationsContext.clear();
-        }
-        AzureOperationsContext.push(operation);
+        log.info(String.format("enter operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        AzureTaskContext.current().pushOperation(operation);
     }
 
     @AfterReturning("operation()")
     public void exitOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        if (CollectionUtils.isNotEmpty(AzureOperationsContext.getOperations())) {
-            final AzureOperationRef popped = AzureOperationsContext.pop();
-            if (!Objects.equals(popped, operation)) {
-                log.log(Level.SEVERE, "!!!operation stack is wrongly managed!!!");
-            }
-        }
+        log.info(String.format("exit operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        final AzureOperationRef popped = AzureTaskContext.current().popOperation();
+        assert Objects.equals(popped, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", popped, operation);
     }
 
     @AfterThrowing(pointcut = "operation()", throwing = "e")

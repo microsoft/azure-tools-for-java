@@ -29,17 +29,16 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.collections.CollectionUtils;
@@ -70,9 +69,12 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
 
     @Override
     protected void onHandleException(final Throwable throwable, final @Nullable AzureExceptionAction[] actions) {
-        final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-        final boolean background = Objects.isNull(indicator) || !indicator.isModal();
-        onHandleException(throwable, background, actions);
+        Boolean backgrounded = AzureTaskContext.current().getBackgrounded();
+        if (Objects.isNull(backgrounded)) {
+            //TODO: detect task running background or not.
+            backgrounded = false;
+        }
+        onHandleException(throwable, backgrounded, actions);
     }
 
     @Override
@@ -82,7 +84,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
 
     protected void onHandleException(final Project project, final Throwable throwable, final boolean isBackGround,
                                      final @Nullable AzureExceptionAction[] actions) {
-        final List<AzureOperationRef> operationRefList = AzureOperationsContext.getOperations();
+        final List<AzureOperationRef> operationRefList = revise(AzureTaskContext.getContextOperations(AzureTaskContext.current()));
         final List<Throwable> azureToolkitExceptions = (List<Throwable>) ExceptionUtils.getThrowableList(throwable).stream()
                                                                                        .filter(object -> object instanceof AzureToolkitRuntimeException
                                                                                            || object instanceof AzureToolkitException)
@@ -209,6 +211,18 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         }
         final AzureExceptionAction registerAction = exceptionActionMap.get(actionId);
         return registerAction == null ? actions : ArrayUtils.addAll(actions, registerAction);
+    }
+
+    public static List<AzureOperationRef> revise(Deque<? extends AzureOperationRef> operations) {
+        final LinkedList<AzureOperationRef> result = new LinkedList<>();
+        for (final AzureOperationRef op : operations) {
+            result.addFirst(op);
+            final AzureOperation annotation = AzureOperationUtils.getAnnotation(op);
+            if (annotation.type() == AzureOperation.Type.ACTION) {
+                break;
+            }
+        }
+        return result;
     }
 
     private static final class LazyLoader {

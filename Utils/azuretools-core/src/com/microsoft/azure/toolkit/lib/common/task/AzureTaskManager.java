@@ -22,13 +22,14 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
+import lombok.extern.java.Log;
 import rx.Emitter;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 
 import java.util.function.BiConsumer;
 
+@Log
 public abstract class AzureTaskManager {
 
     private static AzureTaskManager instance;
@@ -115,16 +116,20 @@ public abstract class AzureTaskManager {
         return this.runInObservable(this::doRunInModal, task);
     }
 
-    private <T> ConnectableObservable<T> runInObservable(final BiConsumer<Runnable, AzureTask<T>> consumer, final AzureTask<T> task) {
+    private <T> ConnectableObservable<T> runInObservable(final BiConsumer<? super Runnable, ? super AzureTask<T>> consumer, final AzureTask<T> task) {
         final ConnectableObservable<T> observable = Observable.create((Emitter<T> emitter) -> {
-            consumer.accept(AzureOperationsContext.deriveClosure(() -> {
+            final AzureTaskContext.Node context = AzureTaskContext.current().derive();
+            task.setContext(context); // set for temp usage.
+            final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
+                    // log.info(String.format("doing task[%s] in thread[%s]/context[%s]", task.getTitle(), Thread.currentThread().getId(), context));
                     emitter.onNext(task.getSupplier().get());
                     emitter.onCompleted();
                 } catch (final Throwable e) {
                     emitter.onError(e);
                 }
-            }), task);
+            }, context);
+            consumer.accept(t, task);
         }, Emitter.BackpressureMode.BUFFER).publish();
         observable.connect();
         return observable;
