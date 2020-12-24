@@ -10,15 +10,17 @@ import rx.Observable
 import java.io.File
 import java.io.InputStream
 
-class FunctionDeploymentSlotMock(private val name: String = "test-function-deployment-slot") : FunctionDeploymentSlot {
+class FunctionDeploymentSlotMock(
+        private val id: String = "test-function-deployment-slot-id",
+        private val name: String = "test-function-deployment-slot",
+        private val parent: FunctionApp? = null
+) : FunctionDeploymentSlot {
 
     override fun key(): String {
         TODO("Not yet implemented")
     }
 
-    override fun id(): String {
-        TODO("Not yet implemented")
-    }
+    override fun id(): String = id
 
     override fun name(): String = name
 
@@ -442,7 +444,5 @@ class FunctionDeploymentSlotMock(private val name: String = "test-function-deplo
         TODO("Not yet implemented")
     }
 
-    override fun parent(): FunctionApp {
-        TODO("Not yet implemented")
-    }
+    override fun parent(): FunctionApp = parent ?: throw Exception("No parent was provided for this mock.")
 }

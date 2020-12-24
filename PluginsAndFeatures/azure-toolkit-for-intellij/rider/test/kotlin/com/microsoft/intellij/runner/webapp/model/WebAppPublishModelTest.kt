@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.webapp.model
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeEmpty
 import com.jetbrains.rider.test.asserts.shouldBeFalse
+import org.jetbrains.mock.DeploymentSlotMock
 import org.jetbrains.mock.WebAppMock
 import org.testng.annotations.Test
 
@@ -36,6 +37,25 @@ class WebAppPublishModelTest {
 
         val model = WebAppPublishModel()
         model.resetOnPublish(mockWebApp)
+
+        model.isCreatingNewApp.shouldBeFalse()
+        model.appId.shouldBe(mockWebApp.id())
+        model.appName.shouldBeEmpty()
+
+        model.isCreatingResourceGroup.shouldBeFalse()
+        model.resourceGroupName.shouldBeEmpty()
+
+        model.isCreatingAppServicePlan.shouldBeFalse()
+        model.appServicePlanName.shouldBeEmpty()
+    }
+
+    @Test(description = "https://github.com/JetBrains/azure-tools-for-intellij/issues/423")
+    fun testResetOnPublish_DeploymentSlot() {
+        val mockWebApp = WebAppMock(id = "test-web-app-id")
+        val mockDeploymentSlot = DeploymentSlotMock(parent = mockWebApp)
+
+        val model = WebAppPublishModel()
+        model.resetOnPublish(mockDeploymentSlot)
 
         model.isCreatingNewApp.shouldBeFalse()
         model.appId.shouldBe(mockWebApp.id())

@@ -6,7 +6,7 @@
     <html>
       <h4>Bug fix:</h4>
       <ul>
-        <li>Fix Null Pointer Exception in Azurite panel in Rider Settings (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/415">#415</a>)</li>
+        <li>Fix Azure Toolkit for Rider: Deployment Slot setting is not saved (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/423">#423</a>)</li>
       </ul>
     </html>
     ]]>

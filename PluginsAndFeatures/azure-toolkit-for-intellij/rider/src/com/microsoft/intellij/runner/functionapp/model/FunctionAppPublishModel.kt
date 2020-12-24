@@ -29,7 +29,7 @@ import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
-import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.FunctionDeploymentSlot
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.SkuDescription
 import com.microsoft.azure.management.appservice.WebAppBase
@@ -100,7 +100,11 @@ class FunctionAppPublishModel {
      */
     fun resetOnPublish(functionApp: WebAppBase) {
         isCreatingNewApp = false
-        appId = functionApp.id()
+        if (functionApp is FunctionDeploymentSlot) {
+            appId = functionApp.parent().id()
+        } else {
+            appId = functionApp.id()
+        }
         appName = ""
 
         isCreatingResourceGroup = false

@@ -26,6 +26,7 @@ import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeEmpty
 import com.jetbrains.rider.test.asserts.shouldBeFalse
 import org.jetbrains.mock.FunctionAppMock
+import org.jetbrains.mock.FunctionDeploymentSlotMock
 import org.testng.annotations.Test
 
 class FunctionAppPublishModelTest {
@@ -36,6 +37,28 @@ class FunctionAppPublishModelTest {
 
         val model = FunctionAppPublishModel()
         model.resetOnPublish(mockFunctionApp)
+
+        model.isCreatingNewApp.shouldBeFalse()
+        model.appId.shouldBe(mockFunctionApp.id())
+        model.appName.shouldBeEmpty()
+
+        model.isCreatingResourceGroup.shouldBeFalse()
+        model.resourceGroupName.shouldBeEmpty()
+
+        model.isCreatingAppServicePlan.shouldBeFalse()
+        model.appServicePlanName.shouldBeEmpty()
+
+        model.isCreatingStorageAccount.shouldBeFalse()
+        model.storageAccountName.shouldBeEmpty()
+    }
+
+    @Test(description = "https://github.com/JetBrains/azure-tools-for-intellij/issues/423")
+    fun testResetOnPublish_DeploymentSlot() {
+        val mockFunctionApp = FunctionAppMock(id = "test-function-app-id")
+        val mockDeploymentSlot = FunctionDeploymentSlotMock(parent = mockFunctionApp)
+
+        val model = FunctionAppPublishModel()
+        model.resetOnPublish(mockDeploymentSlot)
 
         model.isCreatingNewApp.shouldBeFalse()
         model.appId.shouldBe(mockFunctionApp.id())

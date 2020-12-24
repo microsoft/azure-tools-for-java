@@ -94,7 +94,11 @@ class WebAppPublishModel {
      */
     fun resetOnPublish(app: WebAppBase) {
         isCreatingNewApp = false
-        appId = app.id()
+        if (app is DeploymentSlot) {
+            appId = app.parent().id()
+        } else {
+            appId = app.id()
+        }
         appName = ""
 
         isCreatingResourceGroup = false

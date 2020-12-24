@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.functionapp.config.ui
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.reactive.adviseOnce
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.RandomStringUtils
 import com.microsoft.azure.management.appservice.AppServicePlan
@@ -50,7 +51,7 @@ import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
-class FunctionAppPublishComponent(lifetime: Lifetime,
+class FunctionAppPublishComponent(private val lifetime: Lifetime,
                                   project: Project,
                                   private val model: FunctionAppPublishModel) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1, hidemode 3")),
@@ -119,15 +120,16 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         else pnlCreateFunctionApp.pnlStorageAccount.rdoUseExisting.doClick()
 
         // Deployment Slots
-        val slotCheckBox = pnlExistingFunctionApp.pnlDeploymentSlotSettings.checkBoxIsEnabled
-        if (config.isDeployToSlot.xor(slotCheckBox.isSelected)) {
-            slotCheckBox.doClick()
+        pnlExistingFunctionApp.pnlDeploymentSlotSettings.loadFinished.adviseOnce(lifetime.createNested()) { slotsData ->
+            val panel = pnlExistingFunctionApp.pnlDeploymentSlotSettings
+            if (config.isDeployToSlot.xor(panel.checkBoxIsEnabled.isSelected)) {
+                panel.checkBoxIsEnabled.doClick()
 
-            val cbDeploymentSlots = pnlExistingFunctionApp.pnlDeploymentSlotSettings.cbDeploymentSlots
-            if (config.appId.isNotEmpty() && config.slotName.isNotEmpty() && cbDeploymentSlots.items.isNotEmpty()) {
-                val slotToSelect = cbDeploymentSlots.items.find { it.name() == config.slotName }
-                if (slotToSelect != null)
-                    cbDeploymentSlots.selectedItem = slotToSelect
+                if (config.appId.isNotEmpty() && config.appId == slotsData.appId && config.slotName.isNotEmpty() && slotsData.slots.isNotEmpty()) {
+                    val slotToSelect = slotsData.slots.find { it.name() == config.slotName }
+                    if (slotToSelect != null)
+                        panel.cbDeploymentSlots.selectedItem = slotToSelect
+                }
             }
         }
 
