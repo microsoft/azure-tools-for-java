@@ -82,7 +82,10 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void openDialog(final Project project, @Nullable final WebAppConfig data) {
-        final WebAppCreationDialog dialog = this.createDialog(project, data);
+        final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
+        if (Objects.nonNull(data)) {
+            dialog.setData(data);
+        }
         dialog.setOkActionListener((config) -> {
             dialog.close();
             this.createWebApp(config)
@@ -110,7 +113,7 @@ public class CreateWebAppAction extends NodeActionListener {
         });
         return AzureTaskManager.getInstance().runInModal(task).toSingle().doOnSuccess(webapp -> {
             this.notifyCreationSuccess(webapp);
-            this.refreshAzureExplorer();
+            this.refreshAzureExplorer(webapp);
         });
     }
 
@@ -129,10 +132,10 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
-    private void refreshAzureExplorer() {
+    private void refreshAzureExplorer(WebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
             }
         });
     }
@@ -142,13 +145,5 @@ public class CreateWebAppAction extends NodeActionListener {
         final String message = String.format(message("webapp.create.task.success.notification.message"), app.name());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
-    }
-
-    private WebAppCreationDialog createDialog(final Project project, @Nullable WebAppConfig config) {
-        final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
-        if (Objects.nonNull(config)) {
-            dialog.setData(config);
-        }
-        return dialog;
     }
 }
