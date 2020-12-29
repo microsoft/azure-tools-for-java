@@ -28,6 +28,7 @@ import rx.Observable;
 import rx.observables.ConnectableObservable;
 
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 @Log
 public abstract class AzureTaskManager {
@@ -48,68 +49,100 @@ public abstract class AzureTaskManager {
         return this.read(new AzureTask<>(task));
     }
 
-    public final Observable<Void> write(Runnable task) {
-        return this.write(new AzureTask<>(task));
-    }
-
-    public final Observable<Void> runLater(Runnable task) {
-        return this.runLater(new AzureTask<>(task));
-    }
-
-    public final Observable<Void> runAndWait(Runnable task) {
-        return this.runAndWait(new AzureTask<>(task));
-    }
-
-    public final Observable<Void> runLater(Runnable task, AzureTask.Modality modality) {
-        return this.runLater(new AzureTask<>(task, modality));
-    }
-
-    public final Observable<Void> runAndWait(Runnable task, AzureTask.Modality modality) {
-        return this.runAndWait(new AzureTask<>(task, modality));
-    }
-
     public final Observable<Void> read(String title, Runnable task) {
         return this.read(new AzureTask<>(title, task));
-    }
-
-    public final Observable<Void> write(String title, Runnable task) {
-        return this.write(new AzureTask<>(title, task));
-    }
-
-    public final Observable<Void> runLater(String title, Runnable task) {
-        return this.runLater(new AzureTask<>(title, task));
-    }
-
-    public final Observable<Void> runAndWait(String title, Runnable task) {
-        return this.runAndWait(new AzureTask<>(title, task));
-    }
-
-    public final Observable<Void> runLater(String title, Runnable task, AzureTask.Modality modality) {
-        return this.runLater(new AzureTask<>(title, task, modality));
-    }
-
-    public final Observable<Void> runAndWait(String title, Runnable task, AzureTask.Modality modality) {
-        return this.runAndWait(new AzureTask<>(title, task, modality));
     }
 
     public final <T> Observable<T> read(AzureTask<T> task) {
         return this.runInObservable(this::doRead, task);
     }
 
+    public final Observable<Void> write(Runnable task) {
+        return this.write(new AzureTask<>(task));
+    }
+
+    public final Observable<Void> write(String title, Runnable task) {
+        return this.write(new AzureTask<>(title, task));
+    }
+
     public final <T> Observable<T> write(AzureTask<T> task) {
         return this.runInObservable(this::doWrite, task);
+    }
+
+    public final Observable<Void> runLater(Runnable task) {
+        return this.runLater(new AzureTask<>(task));
+    }
+
+    public final Observable<Void> runLater(String title, Runnable task) {
+        return this.runLater(new AzureTask<>(title, task));
+    }
+
+    public final Observable<Void> runLater(Runnable task, AzureTask.Modality modality) {
+        return this.runLater(new AzureTask<>(task, modality));
+    }
+
+    public final Observable<Void> runLater(String title, Runnable task, AzureTask.Modality modality) {
+        return this.runLater(new AzureTask<>(title, task, modality));
     }
 
     public final <T> Observable<T> runLater(AzureTask<T> task) {
         return this.runInObservable(this::doRunLater, task);
     }
 
+    public final Observable<Void> runAndWait(Runnable task) {
+        return this.runAndWait(new AzureTask<>(task));
+    }
+
+    public final Observable<Void> runAndWait(String title, Runnable task) {
+        return this.runAndWait(new AzureTask<>(title, task));
+    }
+
+    public final Observable<Void> runAndWait(Runnable task, AzureTask.Modality modality) {
+        return this.runAndWait(new AzureTask<>(task, modality));
+    }
+
+    public final Observable<Void> runAndWait(String title, Runnable task, AzureTask.Modality modality) {
+        return this.runAndWait(new AzureTask<>(title, task, modality));
+    }
+
     public final <T> Observable<T> runAndWait(AzureTask<T> task) {
         return this.runInObservable(this::doRunAndWait, task);
     }
 
+    public final Observable<Void> runInBackground(String title, Runnable task) {
+        return this.runInBackground(new AzureTask<>(title, task));
+    }
+
+    public final <T> Observable<T> runInBackground(String title, Supplier<T> task) {
+        return this.runInBackground(new AzureTask<>(title, task));
+    }
+
+    public final Observable<Void> runInBackground(String title, boolean cancellable, Runnable task) {
+        return this.runInBackground(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final <T> Observable<T> runInBackground(String title, boolean cancellable, Supplier<T> task) {
+        return this.runInBackground(new AzureTask<>(null, title, cancellable, task));
+    }
+
     public final <T> Observable<T> runInBackground(AzureTask<T> task) {
         return this.runInObservable(this::doRunInBackground, task);
+    }
+
+    public final Observable<Void> runInModal(String title, Runnable task) {
+        return this.runInModal(new AzureTask<>(title, task));
+    }
+
+    public final <T> Observable<T> runInModal(String title, Supplier<T> task) {
+        return this.runInModal(new AzureTask<>(title, task));
+    }
+
+    public final Observable<Void> runInModal(String title, boolean cancellable, Runnable task) {
+        return this.runInModal(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final <T> Observable<T> runInModal(String title, boolean cancellable, Supplier<T> task) {
+        return this.runInModal(new AzureTask<>(null, title, cancellable, task));
     }
 
     public final <T> Observable<T> runInModal(AzureTask<T> task) {
