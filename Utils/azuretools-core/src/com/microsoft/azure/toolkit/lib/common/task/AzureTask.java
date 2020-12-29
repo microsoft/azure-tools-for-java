@@ -36,7 +36,8 @@ public class AzureTask<T> {
     private final Object project;
     private final boolean cancellable;
     @Builder.Default
-    private final boolean backgroundable = true;
+    @Setter
+    private boolean backgroundable = true;
     private final String title;
 
     @Setter(AccessLevel.PACKAGE)
