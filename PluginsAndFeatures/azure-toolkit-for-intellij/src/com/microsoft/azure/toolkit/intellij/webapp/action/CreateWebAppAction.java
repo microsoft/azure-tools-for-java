@@ -117,9 +117,9 @@ public class CreateWebAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask<Void> task = new AzureTask<>(null, message("webapp.deploy.task.title"), true, () -> {
+        final AzureTask<Void> task = new AzureTask<>(null, message("webapp.deploy.task.title"), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();
@@ -128,7 +128,9 @@ public class CreateWebAppAction extends NodeActionListener {
             consoleView.attachToProcess(processHandler);
             WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
         });
-        AzureTaskManager.getInstance().runInModal(task);
+        AzureTaskManager.getInstance().runInModal(task).single().subscribe((none) -> {
+            this.notifyDeploymentSuccess(webapp);
+        }); // let root exception handler to show the error.
     }
 
     @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
@@ -142,7 +144,14 @@ public class CreateWebAppAction extends NodeActionListener {
 
     private void notifyCreationSuccess(final WebApp app) {
         final String title = message("webapp.create.task.success.notification.title");
-        final String message = String.format(message("webapp.create.task.success.notification.message"), app.name());
+        final String message = message("webapp.create.task.success.notification.message", app.name());
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
+        Notifications.Bus.notify(notification);
+    }
+
+    private void notifyDeploymentSuccess(final WebApp app) {
+        final String title = message("webapp.deploy.task.notification.success.title");
+        final String message = message("webapp.deploy.task.notification.success.message", app.name());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
         Notifications.Bus.notify(notification);
     }
