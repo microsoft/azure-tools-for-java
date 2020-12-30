@@ -27,7 +27,7 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -45,8 +45,9 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.Observable;
+import rx.Single;
 
-import javax.swing.*;
 import java.util.List;
 
 public class SelectSubscriptionsAction extends AzureAnAction {
@@ -59,41 +60,8 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     @AzureOperation(value = "select one/more subscriptions to work on", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
-        onShowSubscriptions(project);
+        selectSubscriptions(project).subscribe();
         return true;
-    }
-
-    public static void onShowSubscriptions(Project project) {
-        JFrame frame = WindowManager.getInstance().getFrame(project);
-
-        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
-            //Project project = ProjectManager.getInstance().getDefaultProject();();
-
-            AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-            if (manager == null) {
-                return;
-            }
-
-            final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
-
-            updateSubscriptionWithProgressDialog(subscriptionManager, project);
-            List<SubscriptionDetail> sdl = subscriptionManager.getSubscriptionDetails();
-            for (SubscriptionDetail sd : sdl) {
-                System.out.println(sd.getSubscriptionName());
-            }
-
-            //System.out.println("onShowSubscriptions: calling getSubscriptionDetails()");
-            SubscriptionsDialog d = SubscriptionsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
-            List<SubscriptionDetail> subscriptionDetailsUpdated;
-            if (d != null) {
-                subscriptionDetailsUpdated = d.getSubscriptionDetails();
-                subscriptionManager.setSubscriptionDetails(subscriptionDetailsUpdated);
-            }
-        }, (ex) -> {
-            ex.printStackTrace();
-            //LOGGER.error("onShowSubscriptions", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Select Subscriptions Action Error");
-        });
     }
 
     @Override
@@ -108,11 +76,40 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         }
     }
 
-    public static void updateSubscriptionWithProgressDialog(final SubscriptionManager subscriptionManager, Project project) {
-        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", true, () -> {
+    public static Single<List<SubscriptionDetail>> selectSubscriptions(Project project) {
+        //Project project = ProjectManager.getInstance().getDefaultProject();();
+
+        final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+        final AzureManager manager = authMethodManager.getAzureManager();
+        if (manager == null) {
+            return Single.fromCallable(() -> null);
+        }
+
+        final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
+
+        return loadSubscriptions(subscriptionManager, project)
+            .switchMap((list) -> selectSubscriptions(project, subscriptionManager))
+            .toSingle()
+            .doOnSuccess(subscriptionManager::setSubscriptionDetails);
+    }
+
+    private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, final SubscriptionManager subscriptionManager) {
+        return AzureTaskManager.getInstance().runLater(new AzureTask<>(() -> {
+            //System.out.println("onShowSubscriptions: calling getSubscriptionDetails()");
+            SubscriptionsDialog d = SubscriptionsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
+            List<SubscriptionDetail> subscriptionDetailsUpdated;
+            return d != null ? d.getSubscriptionDetails() : null;
+        }));
+    }
+
+    @AzureOperation(value = "load all available subscriptions from Azure", type = AzureOperation.Type.SERVICE)
+    public static Observable<List<SubscriptionDetail>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
+        return AzureTaskManager.getInstance().runInModal(new AzureTask<>(project, "Loading Subscriptions...", true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             //System.out.println("updateSubscriptionWithProgressDialog: calling getSubscriptionDetails()");
-            subscriptionManager.getSubscriptionDetails();
+            EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
+                return subscriptionManager.getSubscriptionDetails();
+            }, AzureExceptionHandler::onUncaughtException);
         }));
     }
 }

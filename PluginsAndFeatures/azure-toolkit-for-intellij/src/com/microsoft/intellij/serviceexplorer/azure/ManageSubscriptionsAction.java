@@ -42,7 +42,7 @@ public class ManageSubscriptionsAction extends NodeAction {
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                SelectSubscriptionsAction.onShowSubscriptions((Project) azureModule.getProject());
+                SelectSubscriptionsAction.selectSubscriptions((Project) azureModule.getProject()).subscribe();
             }
         });
     }

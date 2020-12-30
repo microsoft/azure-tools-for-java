@@ -121,7 +121,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             dm.getDataVector().removeAllElements();
             dm.fireTableDataChanged();
 
-            SelectSubscriptionsAction.updateSubscriptionWithProgressDialog(subscriptionManager, project);
+            SelectSubscriptionsAction.loadSubscriptions(subscriptionManager, project);
 
             //System.out.println("refreshSubscriptions: calling getSubscriptionDetails()");
             sdl = subscriptionManager.getSubscriptionDetails();

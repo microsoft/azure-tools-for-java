@@ -63,8 +63,9 @@ public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements 
         buttonLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                SelectSubscriptionsAction.onShowSubscriptions(project);
-                loadSubscriptions();
+                SelectSubscriptionsAction.selectSubscriptions(project).subscribe((subs) -> {
+                    loadSubscriptions();
+                });
             }
         });
 
