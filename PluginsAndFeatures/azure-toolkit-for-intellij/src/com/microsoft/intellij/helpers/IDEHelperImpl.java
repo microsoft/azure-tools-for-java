@@ -43,6 +43,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -379,18 +380,22 @@ public class IDEHelperImpl implements IDEHelper {
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFile target, Object context) {
         final AppServiceFileService fileService = AppServiceFileService.forApp(target.getApp());
-        final AppServiceFile file = fileService.getFileByPath(target.getPath());
-        if (file == null) {
-            UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(String.format("Target file %s has been deleted", target.getName()), "Open File"));
-            return;
-        }
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
-        final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
+        final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
+        final String failureFileDeleted = String.format("Target file %s has been deleted", target.getName());
         final String title = String.format("Opening file %s...", virtualFile.getName());
-        final AzureTask task = new AzureTask(null, title, true, () -> {
-            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+        final AzureTask<Void> task = new AzureTask<>(null, title, true, () -> {
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            indicator.setIndeterminate(true);
+            indicator.setText2("Checking file existence");
+            final AppServiceFile file = fileService.getFileByPath(target.getPath());
+            if (file == null) {
+                UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
+                return;
+            }
+            indicator.setText2("Loading file content");
             fileService
                 .getFileContent(file.getPath())
                 .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
