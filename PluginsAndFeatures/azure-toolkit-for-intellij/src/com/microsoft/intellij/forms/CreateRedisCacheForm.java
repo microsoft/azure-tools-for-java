@@ -283,11 +283,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
+                    fillLocationsAndResourceGrps(currentSub);
                 } catch (Exception ex) {
                     AzurePlugin.log("Error loading locations", ex);
                 }
             }));
-            fillLocationsAndResourceGrps(currentSub);
         }
 
         skus = RedisCacheUtil.initSkus();
