@@ -50,9 +50,15 @@ public class UpdateDeploymentAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         Project project = (Project) deploymentNode.getProject();
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
+            this.doActionPerformed(nodeActionEvent, isSuccess, project);
+        });
+    }
+
+    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            if (isLoggedIn) {
                 UpdateDeploymentForm updateDeploymentForm = new UpdateDeploymentForm(project, deploymentNode);
                 updateDeploymentForm.show();
             }

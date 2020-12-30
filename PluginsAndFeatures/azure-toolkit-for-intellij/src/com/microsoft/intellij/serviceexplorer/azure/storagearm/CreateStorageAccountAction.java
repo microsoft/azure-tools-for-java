@@ -47,8 +47,14 @@ public class CreateStorageAccountAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) storageModule.getProject();
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
+            this.doActionPerformed(e, isSuccess, project);
+        });
+    }
+
+    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            if (!isLoggedIn) {
                 return;
             }
             if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_STORAGE_ACCOUNT)) {

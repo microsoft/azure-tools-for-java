@@ -59,9 +59,15 @@ public class CreateDeploymentAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
+            this.doActionPerformed(nodeActionEvent, isLoggedIn, project);
+        });
+    }
+
+    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            if (isLoggedIn) {
                 if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_DEPLOYMENT)) {
                     return;
                 }

@@ -65,16 +65,17 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(value = "open function app creation dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "create function app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-            !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-            return;
-        }
-        openDialog(project, null);
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn && AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+                openDialog(project, null);
+            }
+        });
     }
 
+    @AzureOperation(value = "open function app creation dialog", type = AzureOperation.Type.ACTION)
     private void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         if (Objects.nonNull(data)) {

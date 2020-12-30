@@ -26,6 +26,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
@@ -41,6 +42,7 @@ import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.Single;
 
 import javax.swing.*;
 
@@ -134,23 +136,27 @@ public class AzureSignInAction extends AzureAnAction {
                 });
             }
         } else {
-            doSignIn(authMethodManager, project);
+            doSignIn(authMethodManager, project).subscribe();
         }
     }
 
     @AzureOperation(value = "sign in to Azure", type = AzureOperation.Type.SERVICE)
-    public static boolean doSignIn(AuthMethodManager authMethodManager, Project project) {
-        boolean isSignIn = authMethodManager.isSignedIn();
+    public static Single<Boolean> doSignIn(AuthMethodManager authMethodManager, Project project) {
+        final boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {
-            return true;
+            return Single.fromCallable(() -> true);
         }
-        SignInWindow w = SignInWindow.go(authMethodManager.getAuthMethodDetails(), project);
-        if (w != null) {
-            AuthMethodDetails authMethodDetailsUpdated = w.getAuthMethodDetails();
-            authMethodManager.setAuthMethodDetails(authMethodDetailsUpdated);
-            SelectSubscriptionsAction.onShowSubscriptions(project);
-            authMethodManager.notifySignInEventListener();
+        final SignInWindow dialog = new SignInWindow(authMethodManager.getAuthMethodDetails(), project);
+        dialog.show();
+        if (dialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            return dialog
+                .login()
+                .doOnSuccess(authMethodManager::setAuthMethodDetails)
+                .flatMap((a) -> SelectSubscriptionsAction.selectSubscriptions(project))
+                .doOnSuccess((subs) -> authMethodManager.notifySignInEventListener())
+                .map((unused) -> authMethodManager.isSignedIn());
+        } else {
+            return Single.fromCallable(authMethodManager::isSignedIn);
         }
-        return authMethodManager.isSignedIn();
     }
 }

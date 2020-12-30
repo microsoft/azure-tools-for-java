@@ -67,8 +67,14 @@ public class CreateMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) model.getProject();
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
+            this.doActionPerformed(e, isSuccess, project);
+        });
+    }
+
+    private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
+            if (!isLoggedIn ||
                 !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
                 return;
             }

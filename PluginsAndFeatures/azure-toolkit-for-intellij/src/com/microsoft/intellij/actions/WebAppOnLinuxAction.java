@@ -64,10 +64,12 @@ public class WebAppOnLinuxAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-        }
-        return true;
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isLoggedIn) -> {
+            if (isLoggedIn) {
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
+            }
+        });
+        return false;
     }
 
     @Override

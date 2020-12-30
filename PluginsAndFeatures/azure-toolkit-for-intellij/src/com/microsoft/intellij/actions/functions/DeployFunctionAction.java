@@ -58,10 +58,15 @@ public class DeployFunctionAction extends AzureAnAction {
     @AzureOperation(value = "deploy function app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
-        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
+        if (module == null) {
+            return true;
         }
-        return true;
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isSuccess) -> {
+            if (isSuccess) {
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
+            }
+        });
+        return false;
     }
 
     @Override

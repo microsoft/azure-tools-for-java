@@ -34,7 +34,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -61,14 +60,15 @@ public class DeploySpringCloudAction extends AzureAnAction {
     @AzureOperation(value = "deploy spring cloud application", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = anActionEvent.getData(LangDataKeys.MODULE);
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
+        if (module == null) {
+            return true;
+        }
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isLoggedIn) -> {
+            if (isLoggedIn) {
                 AzureTaskManager.getInstance().runLater(() -> deployConfiguration(module));
             }
-        } catch (Exception e) {
-            AzureExceptionHandler.onUncaughtException(e);
-        }
-        return true;
+        });
+        return false;
     }
 
     private static void deployConfiguration(Module module) {

@@ -60,11 +60,12 @@ public class WebDeployAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-            return true;
-        }
-        AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
-        return true;
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject()).subscribe((isLoggedIn) -> {
+            if (isLoggedIn) {
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
+            }
+        });
+        return false;
     }
 
     @Override

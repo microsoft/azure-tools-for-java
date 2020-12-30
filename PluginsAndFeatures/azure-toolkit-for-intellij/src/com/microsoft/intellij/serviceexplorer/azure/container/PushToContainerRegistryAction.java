@@ -72,13 +72,11 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         if (project == null) {
             return;
         }
-        try {
-            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
+            if (isLoggedIn) {
                 AzureTaskManager.getInstance().runLater(() -> runConfiguration(project));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})
