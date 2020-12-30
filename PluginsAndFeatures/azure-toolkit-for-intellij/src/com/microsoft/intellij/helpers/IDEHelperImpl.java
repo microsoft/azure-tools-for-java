@@ -497,7 +497,7 @@ public class IDEHelperImpl implements IDEHelper {
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
         final String title = String.format("Downloading file %s...", file.getName());
-        final AzureTask task = new AzureTask(project, title, true, () -> {
+        final AzureTask<Void> task = new AzureTask<>(project, title, true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             AppServiceFileService
                 .forApp(file.getApp())
@@ -514,7 +514,7 @@ public class IDEHelperImpl implements IDEHelper {
                     }
                 }, AzureExceptionHandler::onRxException);
         });
-        AzureTaskManager.getInstance().runInBackground(task);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
