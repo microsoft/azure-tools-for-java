@@ -231,7 +231,7 @@
     <editorNotificationProvider implementation="org.jetbrains.plugins.azure.identity.ad.notifications.DefaultAzureAdApplicationRegistrationNotificationProvider"/>
 
     <notificationGroup id="Azure" displayType="BALLOON" isLogByDefault="true"/>
-    <notificationGroup id="AzureFunctions" displayType="BALLOON" isLogByDefault="true"/>
+    <notificationGroup id="Azure Functions" displayType="BALLOON" isLogByDefault="true"/>
     <notificationGroup id="Azure Web App Publish Message" displayType="BALLOON" isLogByDefault="true" toolWindowId="Run"/>
   </extensions>
 

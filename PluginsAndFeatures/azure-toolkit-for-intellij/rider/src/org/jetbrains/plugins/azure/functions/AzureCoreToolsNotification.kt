@@ -41,7 +41,7 @@ import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 // TODO: FIX_VERSION: Replace with [SolutionLoadNotification] when async notifications are merged into 202
 class AzureCoreToolsNotification : StartupActivity {
     companion object {
-        private const val notificationGroupName = "AzureFunctions"
+        private const val notificationGroupName = "Azure Functions"
     }
 
     override fun runActivity(project: Project) {
