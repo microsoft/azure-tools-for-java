@@ -169,7 +169,7 @@
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="203" until-build="203.*"/>
+  <idea-version since-build="211" until-build="211.*"/>
 
   <resource-bundle>messages.RiderAzureMessages</resource-bundle>
 
@@ -186,6 +186,11 @@
                          id="com.microsoft.intellij.configuration.AzureRiderConfigurable"
                          provider="com.microsoft.intellij.configuration.AzureRiderConfigurableProvider"
                          dynamic="true"/>
+
+
+    <projectConfigurable parentId="FileTemplatesSettingsId"
+                         instance="org.jetbrains.plugins.azure.functions.settings.templates.RiderAzureCSharpFileTemplatesOptionPage"
+                         groupWeight="-150" />
 
     <configurationType implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppRunner"/>

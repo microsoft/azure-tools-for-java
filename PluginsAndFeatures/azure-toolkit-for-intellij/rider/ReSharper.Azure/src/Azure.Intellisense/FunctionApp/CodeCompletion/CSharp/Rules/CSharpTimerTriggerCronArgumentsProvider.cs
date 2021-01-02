@@ -50,7 +50,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.CodeCompletion.CSha
             }
         }
 
-        private readonly CronSuggestion[] CronSuggestions =
+        private readonly CronSuggestion[] _cronSuggestions =
         {
             new CronSuggestion("* * * * * *", "Every second"),
             new CronSuggestion("0 * * * * *", "Every minute"),
@@ -83,7 +83,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.CodeCompletion.CSha
 
         protected override bool AddLookupItems(CSharpCodeCompletionContext context, IItemsCollector collector)
         {
-            foreach (var cronSuggestion in CronSuggestions)
+            foreach (var cronSuggestion in _cronSuggestions)
             {
                 var literalExpression = context.NodeInFile.Parent as ICSharpLiteralExpression;
                 if (literalExpression == null) return false;

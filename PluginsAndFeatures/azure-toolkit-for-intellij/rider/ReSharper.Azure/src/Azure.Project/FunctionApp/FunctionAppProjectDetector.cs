@@ -18,12 +18,14 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.Assemblies.Interfaces;
 using JetBrains.ProjectModel.MSBuild;
 using JetBrains.ProjectModel.Properties;
 using JetBrains.ProjectModel.Properties.Managed;
+using JetBrains.Rider.Model;
 using JetBrains.Util;
 using JetBrains.Util.Dotnet.TargetFrameworkIds;
 
@@ -34,10 +36,41 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
         private static readonly NugetId ExpectedPackageForNet50 = new NugetId("Microsoft.Azure.Functions.Worker");
         private static readonly NugetId ExpectedPackageForOlder = new NugetId("Microsoft.NET.Sdk.Functions");
         
-        // TODO: Migrate [AzureFunctionsProjectDetector] from Rider to plugin codebase if possible.
-        // TODO: Grabbed it from ReSharper backend to handle the issue with moved [AzureFunctionsProjectDetector] class into
-        //       [JetBrains.ReSharper.Host.Features.ProjectModel.Azure] namespace. Unable to fix until EAP 8 with updated
-        //       assembly is released. So, copy the logic here to prevent blocking plugin release.
+        public static List<ProjectOutput> GetAzureFunctionsCompatibleProjectOutputs(
+            [NotNull] IProject project, 
+            [CanBeNull] out string problems, 
+            [CanBeNull] ILogger logger = null)
+        {
+            problems = null;
+            var projectOutputs = new List<ProjectOutput>();
+      
+            foreach (var tfm in project.TargetFrameworkIds)
+            {
+                if (!IsAzureFunctionsProject(project, tfm, out problems, logger))
+                {
+                    logger?.Trace($"Configuration for target framework does not have \"AzureFunctionsVersion\" property set: ${tfm.PresentableString}");
+                    continue;
+                }
+
+                var configuration = project.ProjectProperties.TryGetConfiguration<IManagedProjectConfiguration>(tfm);
+                if (configuration == null || (configuration.OutputType != ProjectOutputType.LIBRARY && configuration.OutputType != ProjectOutputType.CONSOLE_EXE))
+                {
+                    logger?.Trace("Project OutputType = {0}, skip configuration", configuration?.OutputType);
+                    continue;
+                }
+
+                var frameworkName = tfm.PresentableString;
+                var projectOutputPath = project.GetOutputFilePath(tfm);
+                projectOutputs.Add(new ProjectOutput(frameworkName,
+                    projectOutputPath.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
+                    new List<string>(),
+                    projectOutputPath.Directory.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
+                    string.Empty));
+            }
+
+            return projectOutputs;
+        }
+        
         public static bool IsAzureFunctionsProject([NotNull] IProject project)
         {
             foreach (var tfm in project.TargetFrameworkIds)

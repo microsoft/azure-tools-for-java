@@ -12,10 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="FunctionApp" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\Azure.Project\Azure.Project.csproj" />
       <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
     </ItemGroup>
 
