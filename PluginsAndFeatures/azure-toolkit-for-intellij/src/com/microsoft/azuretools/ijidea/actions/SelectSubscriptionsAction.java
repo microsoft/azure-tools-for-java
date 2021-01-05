@@ -88,7 +88,11 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         return loadSubscriptions(subscriptionManager, project)
             .switchMap((list) -> selectSubscriptions(project, subscriptionManager))
             .toSingle()
-            .doOnSuccess(subscriptionManager::setSubscriptionDetails);
+            .doOnSuccess((subs) -> {
+                if (Objects.nonNull(subs)) {
+                    subscriptionManager.setSubscriptionDetails(subs);
+                }
+            });
     }
 
     private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, final SubscriptionManager subscriptionManager) {
