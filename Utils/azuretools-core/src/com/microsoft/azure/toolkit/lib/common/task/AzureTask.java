@@ -98,6 +98,10 @@ public class AzureTask<T> {
         this.modality = modality;
     }
 
+    public String getId() {
+        return Integer.toHexString(System.identityHashCode(this));
+    }
+
     public enum Modality {
         DEFAULT, ANY, NONE
     }

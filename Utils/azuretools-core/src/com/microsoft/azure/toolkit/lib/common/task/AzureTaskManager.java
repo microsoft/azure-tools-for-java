@@ -152,7 +152,8 @@ public abstract class AzureTaskManager {
     private <T> ConnectableObservable<T> runInObservable(final BiConsumer<? super Runnable, ? super AzureTask<T>> consumer, final AzureTask<T> task) {
         final ConnectableObservable<T> observable = Observable.create((Emitter<T> emitter) -> {
             final AzureTaskContext.Node context = AzureTaskContext.current().derive();
-            task.setContext(context); // set for temp usage.
+            task.setContext(context);
+            context.setTask(task);
             final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
                     // log.info(String.format("doing task[%s] in thread[%s]/context[%s]", task.getTitle(), Thread.currentThread().getId(), context));

@@ -50,4 +50,8 @@ public class AzureOperationRef {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
         return String.format("{title:'%s', method:%s}", annotation.value(), method.getName());
     }
+
+    public String getId() {
+        return Integer.toHexString(System.identityHashCode(this));
+    }
 }

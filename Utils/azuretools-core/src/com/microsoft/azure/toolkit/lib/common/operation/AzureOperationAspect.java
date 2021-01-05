@@ -20,10 +20,9 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.task;
+package com.microsoft.azure.toolkit.lib.common.operation;
 
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitOperationException;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import lombok.extern.java.Log;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -33,35 +32,44 @@ import java.util.Objects;
 
 @Aspect
 @Log
-public final class AzureOperationEnhancer {
+public final class AzureOperationAspect {
 
     @Pointcut("execution(@com.microsoft.azure.toolkit.lib.common.operation.AzureOperation * *..*.*(..))")
     public void operation() {
     }
 
     @Before("operation()")
-    public void enterOperation(JoinPoint point) {
-        final AzureOperationRef operation = toOperationRef(point);
-        log.info(String.format("enter operation[%s] in context[%s]", operation, AzureTaskContext.current()));
-        AzureTaskContext.current().pushOperation(operation);
+    public void beforeEnter(JoinPoint point) {
+        enterOperation(point);
     }
 
     @AfterReturning("operation()")
-    public void exitOperation(JoinPoint point) {
-        final AzureOperationRef operation = toOperationRef(point);
-        log.info(String.format("exit operation[%s] in context[%s]", operation, AzureTaskContext.current()));
-        final AzureOperationRef popped = AzureTaskContext.current().popOperation();
-        assert Objects.equals(popped, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", popped, operation);
+    public void afterReturning(JoinPoint point) {
+        exitOperation(point);
     }
 
     @AfterThrowing(pointcut = "operation()", throwing = "e")
-    public void onOperationException(JoinPoint point, Throwable e) throws Throwable {
-        this.exitOperation(point);
+    public void afterThrowing(JoinPoint point, Throwable e) throws Throwable {
+        final AzureOperationRef operation = exitOperation(point);
         if (!(e instanceof RuntimeException)) {
-            throw e; // Do not handle checked exception
+            throw e; // do not wrap checked exception
         }
+        throw new AzureOperationException(operation, e);
+    }
+
+    private static AzureOperationRef enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        throw new AzureToolkitOperationException(operation, e);
+        log.info(String.format("enter operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        AzureTaskContext.current().pushOperation(operation);
+        return operation;
+    }
+
+    private static AzureOperationRef exitOperation(JoinPoint point) {
+        final AzureOperationRef current = toOperationRef(point);
+        final AzureOperationRef operation = AzureTaskContext.current().popOperation();
+        log.info(String.format("exit operation[%s] in context[%s]", operation, AzureTaskContext.current()));
+        assert Objects.equals(current, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", current, operation);
+        return operation;
     }
 
     private static AzureOperationRef toOperationRef(JoinPoint point) {

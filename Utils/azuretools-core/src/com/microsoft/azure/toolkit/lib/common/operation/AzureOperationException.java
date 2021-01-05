@@ -20,29 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.exception;
+package com.microsoft.azure.toolkit.lib.common.operation;
 
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.Getter;
 
 @Getter
-public class AzureToolkitOperationException extends AzureToolkitRuntimeException {
+public class AzureOperationException extends AzureToolkitRuntimeException {
     private final AzureOperationRef operation;
 
-    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause) {
+    AzureOperationException(final AzureOperationRef operation, final Throwable cause) {
         this(operation, cause, null);
     }
 
-    public AzureToolkitOperationException(final AzureOperationRef operation, final String action) {
+    AzureOperationException(final AzureOperationRef operation, final String action) {
         this(operation, null, action);
     }
 
-    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause, final String action) {
+    AzureOperationException(final AzureOperationRef operation, final Throwable cause, final String action) {
         this(operation, cause, action, null);
     }
 
-    public AzureToolkitOperationException(final AzureOperationRef operation, final Throwable cause, final String action, final String actionId) {
+    AzureOperationException(final AzureOperationRef operation, final Throwable cause, final String action, final String actionId) {
         super(AzureOperationUtils.getOperationTitle(operation), cause, action, actionId);
         this.operation = operation;
     }
