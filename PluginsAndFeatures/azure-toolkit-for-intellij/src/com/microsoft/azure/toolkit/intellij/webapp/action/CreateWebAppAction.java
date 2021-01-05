@@ -146,7 +146,7 @@ public class CreateWebAppAction extends NodeActionListener implements Basicable 
     private void refreshAzureExplorer(WebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }
         });
     }
