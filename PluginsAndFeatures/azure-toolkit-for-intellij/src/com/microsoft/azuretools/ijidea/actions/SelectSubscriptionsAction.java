@@ -27,7 +27,6 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -37,8 +36,6 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.ui.SubscriptionsDialog;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
@@ -49,6 +46,7 @@ import rx.Single;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SelectSubscriptionsAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
@@ -86,29 +84,23 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
 
         return loadSubscriptions(subscriptionManager, project)
-            .switchMap((list) -> selectSubscriptions(project, subscriptionManager))
+            .switchMap((subs) -> selectSubscriptions(project, subs))
             .toSingle()
-            .doOnSuccess((subs) -> {
-                if (Objects.nonNull(subs)) {
-                    subscriptionManager.setSubscriptionDetails(subs);
-                }
-            });
+            .doOnSuccess((subs) -> Optional.ofNullable(subs).ifPresent(subscriptionManager::setSubscriptionDetails));
     }
 
-    private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, final SubscriptionManager subscriptionManager) {
-        return AzureTaskManager.getInstance().runLater(new AzureTask<>(() -> {
-            SubscriptionsDialog d = SubscriptionsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
+    private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, List<SubscriptionDetail> subs) {
+        return AzureTaskManager.getInstance().runLaterAsObservable(new AzureTask<>(() -> {
+            final SubscriptionsDialog d = SubscriptionsDialog.go(subs, project);
             return Objects.nonNull(d) ? d.getSubscriptionDetails() : null;
         }));
     }
 
     @AzureOperation(value = "load all available subscriptions from Azure", type = AzureOperation.Type.SERVICE)
     public static Observable<List<SubscriptionDetail>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
-        return AzureTaskManager.getInstance().runInModal(new AzureTask<>(project, "Loading Subscriptions...", false, () -> {
+        return AzureTaskManager.getInstance().runInModalAsObservable(new AzureTask<>(project, "Loading Subscriptions...", false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
-                return subscriptionManager.getSubscriptionDetails();
-            }, AzureExceptionHandler::onUncaughtException);
+            return subscriptionManager.getSubscriptionDetails();
         }));
     }
 }

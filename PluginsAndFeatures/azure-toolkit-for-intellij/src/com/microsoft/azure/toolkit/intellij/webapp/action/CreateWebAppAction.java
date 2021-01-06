@@ -120,9 +120,9 @@ public class CreateWebAppAction extends NodeActionListener implements Basicable 
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
         });
-        return AzureTaskManager.getInstance().runInModal(task).toSingle().doOnSuccess(webapp -> {
-            this.notifyCreationSuccess(webapp);
-            this.refreshAzureExplorer(webapp);
+        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
+            this.notifyCreationSuccess(app);
+            this.refreshAzureExplorer(app);
         });
     }
 
@@ -137,7 +137,7 @@ public class CreateWebAppAction extends NodeActionListener implements Basicable 
             consoleView.attachToProcess(processHandler);
             WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
         });
-        AzureTaskManager.getInstance().runInModal(task).single().subscribe((none) -> {
+        AzureTaskManager.getInstance().runInModalAsObservable(task).single().subscribe((none) -> {
             this.notifyDeploymentSuccess(webapp);
         }); // let root exception handler to show the error.
     }

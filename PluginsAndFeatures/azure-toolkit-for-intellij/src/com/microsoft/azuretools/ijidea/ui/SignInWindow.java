@@ -185,7 +185,7 @@ public class SignInWindow extends AzureDialogWrapper {
             indicator.setIndeterminate(true);
             return this.doLogin();
         });
-        return AzureTaskManager.getInstance().runInModal(task).toSingle();
+        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle();
     }
 
     private AuthMethodDetails doLogin() {

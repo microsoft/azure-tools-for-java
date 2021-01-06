@@ -111,7 +111,7 @@ public class CreateFunctionAppAction extends NodeActionListener implements Basic
             indicator.setIndeterminate(true);
             return functionAppService.createFunctionApp(config);
         });
-        return AzureTaskManager.getInstance().runInModal(task).toSingle().doOnSuccess(app -> {
+        return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
             this.notifyCreationSuccess(app);
             this.refreshAzureExplorer(app);
         });
