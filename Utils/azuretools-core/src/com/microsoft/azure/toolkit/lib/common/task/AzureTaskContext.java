@@ -144,11 +144,12 @@ public abstract class AzureTaskContext {
         private void setup() {
             final Node current = AzureTaskContext.current();
             final long threadId = Thread.currentThread().getId();
+            assert current.threadId == -1 || current.threadId == threadId : String.format("[threadId:%s] illegal thread context[%s]", threadId, current);
             if (this.threadId > 0 || this.disposed) {
                 log.warning(String.format("[threadId:%s] context[%s] already setup/disposed", threadId, this));
             }
             this.threadId = threadId; // we can not decide in which thread this task will run until here.
-            if (this.threadId == current.threadId) {
+            if (threadId == current.threadId) { // this task runs in the same thread as parent.
                 this.parent = current;
                 log.info(String.format("[threadId:%s] setting up SYNC context[%s]", threadId, this));
             } else {
@@ -165,13 +166,15 @@ public abstract class AzureTaskContext {
                 log.warning(String.format("[threadId:%s] disposing a disposed context[%s].", threadId, this));
             }
             this.disposed = true;
-            if (this.threadId == this.parent.threadId) {
+            if (this.parent instanceof Node) { // this is not the root task of current thread.
                 log.info(String.format("[threadId:%s] disposing SYNC context[%s]", threadId, this));
-                assert !(this.parent instanceof Snapshot);
+                assert this.threadId == this.parent.threadId : String.format("current[%s].threadId != current.parent[%s].threadId", this, this.parent);
                 AzureTaskContext.context.set((Node) this.parent);
-            } else {
+            } else { // this is the root task of current thread.
                 log.info(String.format("[threadId:%s] disposing ASYNC context[%s]", threadId, this));
-                assert this.parent instanceof Snapshot;
+                if (this.threadId == this.parent.threadId) {
+                    log.warning(String.format("[threadId:%s] thread/threadId is reused.", threadId));
+                }
                 AzureTaskContext.context.remove();
             }
         }
