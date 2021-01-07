@@ -55,13 +55,11 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     // node related
     private static final String CREATING_STATE = "Creating";
     private static final String RUNNING_STATE = "Running";
+    private static final String SUCCESS_STATE = "Succeeded";
     private static final String STOPPED_STATE = "Stopped";
     private static final String CREATING_REDIS_NAME_FORMAT = "%s(%s...)";
 
     // action names
-    private static final String DELETE_ACTION = "Delete";
-    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in Browser";
     private static final String OPEN_EXPLORER = "Open Redis Explorer";
 
     // string format
@@ -93,7 +91,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState);
+        boolean running = RUNNING_STATE.equalsIgnoreCase(provisionState) || SUCCESS_STATE.equalsIgnoreCase(provisionState);
         boolean stopped = STOPPED_STATE.equalsIgnoreCase(provisionState);
         return running ? AzureIconSymbol.RedisCache.RUNNING : !stopped ? AzureIconSymbol.RedisCache.UPDATING : AzureIconSymbol.RedisCache.STOPPED;
     }
@@ -188,15 +186,10 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Open Explorer
-    private class OpenExplorerAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
+    private class OpenExplorerAction extends NodeActionListener implements ActionTelemetrable {
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage("Opening", RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
         }
 
         @Override

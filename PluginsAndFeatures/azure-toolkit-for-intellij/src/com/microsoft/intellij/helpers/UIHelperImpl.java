@@ -375,7 +375,7 @@ public class UIHelperImpl implements UIHelper {
             if (itemVirtualFile == null) {
                 itemVirtualFile = createVirtualFile(redisName, sid, resId);
                 itemVirtualFile.setFileType(
-                        new AzureFileType(RedisCachePropertyViewProvider.TYPE, UIHelperImpl.loadIcon(RedisCacheNode.REDISCACHE_ICON_PATH)));
+                        new AzureFileType(RedisCachePropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -404,7 +404,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(redisName, sid, resId);
-            itemVirtualFile.setFileType(new AzureFileType(RedisCacheExplorerProvider.TYPE, UIHelperImpl.loadIcon(RedisCacheNode.REDISCACHE_ICON_PATH)));
+            itemVirtualFile.setFileType(new AzureFileType(RedisCacheExplorerProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
 
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
@@ -445,7 +445,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(appName, subscription, id);
-            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
+            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
         }
         itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
         itemVirtualFile.putUserData(APP_ID, id);
@@ -536,10 +536,8 @@ public class UIHelperImpl implements UIHelper {
         final String type = WebAppPropertyViewProvider.TYPE;
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
-            final String iconPath = node.getParent() == null ? node.getIconPath()
-                                                             : node.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(node.getWebAppName(), sid, webAppId);
-            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.WebApp.MODULE)));
 
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -565,7 +563,7 @@ public class UIHelperImpl implements UIHelper {
             userData.put(WEBAPP_ID, node.getWebAppId());
             userData.put(SLOT_NAME, node.getName());
             itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(), userData);
-            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.DeploymentSlot.MODULE)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -584,7 +582,7 @@ public class UIHelperImpl implements UIHelper {
             final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
                                                                      : functionNode.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), subscriptionId, functionApId);
-            itemVirtualFile.setFileType(new AzureFileType(type, UIHelperImpl.loadIcon(iconPath)));
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
