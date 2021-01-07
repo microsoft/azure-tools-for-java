@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.AccessLevel;
@@ -90,7 +91,7 @@ public abstract class AzureTaskContext {
     }
 
     public String getId() {
-        return Integer.toHexString(System.identityHashCode(this));
+        return Utils.getId(this);
     }
 
     public static class Node extends AzureTaskContext {
@@ -191,7 +192,7 @@ public abstract class AzureTaskContext {
         }
 
         public String getId() {
-            return Integer.toHexString(System.identityHashCode(this));
+            return Utils.getId(this);
         }
     }
 

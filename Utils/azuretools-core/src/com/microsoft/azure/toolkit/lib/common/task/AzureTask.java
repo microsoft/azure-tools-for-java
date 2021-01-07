@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -99,7 +100,7 @@ public class AzureTask<T> {
     }
 
     public String getId() {
-        return Integer.toHexString(System.identityHashCode(this));
+        return Utils.getId(this);
     }
 
     public enum Modality {
