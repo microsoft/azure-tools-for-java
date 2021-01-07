@@ -29,9 +29,9 @@ import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import lombok.Getter;
 
 import java.util.List;
@@ -93,7 +93,7 @@ public class MySQLNode extends Node {
     }
 
     // Delete action class
-    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -103,7 +103,7 @@ public class MySQLNode extends Node {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
         }
 
         @Override
@@ -118,7 +118,7 @@ public class MySQLNode extends Node {
     }
 
     // Start action class
-    private class StartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -139,7 +139,7 @@ public class MySQLNode extends Node {
     }
 
     // Stop action class
-    private class StopAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -160,7 +160,7 @@ public class MySQLNode extends Node {
     }
 
     // Restart action class
-    private class RestartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -181,7 +181,7 @@ public class MySQLNode extends Node {
     }
 
     // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -200,7 +200,7 @@ public class MySQLNode extends Node {
     }
 
     // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {

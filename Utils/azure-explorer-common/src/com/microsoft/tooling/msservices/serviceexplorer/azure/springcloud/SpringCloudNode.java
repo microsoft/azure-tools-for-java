@@ -38,8 +38,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import io.reactivex.rxjava3.disposables.Disposable;
 
 import java.util.Arrays;
@@ -183,7 +183,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     }
 
     // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {

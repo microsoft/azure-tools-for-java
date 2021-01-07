@@ -37,7 +37,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Constructor;
@@ -46,7 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name(MySQLConnectToServerAction.ACTION_NAME)
-public class MySQLConnectToServerAction extends NodeActionListener implements Telemetrable {
+public class MySQLConnectToServerAction extends NodeActionListener implements ActionTelemetrable {
 
     private static final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
     public static final String ACTION_NAME = "Connect to Server";

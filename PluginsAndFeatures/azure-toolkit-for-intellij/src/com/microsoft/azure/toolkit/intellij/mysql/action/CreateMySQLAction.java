@@ -44,11 +44,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class CreateMySQLAction extends NodeActionListener implements Basicable {
+public class CreateMySQLAction extends NodeActionListener implements ActionBasicable {
 
     private final MySQLModule model;
 

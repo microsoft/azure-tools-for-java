@@ -38,9 +38,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
@@ -191,7 +191,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Delete action class
-    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -201,7 +201,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), SpringCloudModule.MODULE_NAME, SpringCloudAppNode.this.name);
         }
 
         @Override
@@ -216,7 +216,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Start action class
-    private class StartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -236,7 +236,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Stop action class
-    private class StopAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -256,7 +256,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Restart action class
-    private class RestartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -276,7 +276,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -295,7 +295,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -313,7 +313,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {

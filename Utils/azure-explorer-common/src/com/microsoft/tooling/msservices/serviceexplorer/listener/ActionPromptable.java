@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.listener;
 
 import org.apache.commons.lang3.StringUtils;
 
-public interface Promptable {
+public interface ActionPromptable {
 
     default String getPromptMessage() {
         return StringUtils.EMPTY;

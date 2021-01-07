@@ -39,9 +39,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.Ap
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -118,7 +118,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     // Delete action class
-    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -128,7 +128,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), FunctionModule.MODULE_NAME, FunctionAppNode.this.name);
         }
 
         @Override
@@ -142,7 +142,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         }
     }
 
-    private class StartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
         @Override
@@ -163,7 +163,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         }
     }
 
-    private class StopAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
         @Override
@@ -186,7 +186,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     // restart action class
-    private class RestartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
         @Override
@@ -209,7 +209,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     // Open in browser action class
-    private class OpenInPortalAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -228,7 +228,7 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     // Show properties
-    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
 
         @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
         @Override

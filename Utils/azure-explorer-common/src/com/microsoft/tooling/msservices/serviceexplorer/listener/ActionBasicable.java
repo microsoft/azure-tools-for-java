@@ -22,22 +22,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.listener;
 
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 
-public interface Telemetrable {
+public interface ActionBasicable {
 
-    default String getServiceName() {
-        return StringUtils.EMPTY;
-    }
-
-    default String getOperationName() {
-        return StringUtils.EMPTY;
-    }
-
-    /**
-     * higher priority than getServiceName() and getOperationName(). it is designed to deprecated both of them in future.
-     */
-    TelemetryParameter getTelemetryParameter();
+    AzureActionEnum getAction();
 
 }

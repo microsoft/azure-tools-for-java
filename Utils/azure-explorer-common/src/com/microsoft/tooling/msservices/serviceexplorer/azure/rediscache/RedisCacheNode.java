@@ -34,9 +34,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import lombok.Lombok;
 
 import java.util.HashMap;
@@ -125,7 +125,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Delete action class
-    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -134,7 +134,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
         }
 
         @Override
@@ -149,7 +149,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -174,7 +174,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -188,7 +188,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     // Open Explorer
-    private class OpenExplorerAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenExplorerAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
         @Override
         protected void actionPerformed(NodeActionEvent e) {
             DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);

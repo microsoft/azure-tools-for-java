@@ -48,7 +48,7 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     // action name
     private static final String OPEN_EXPLORER_ACTION = "Open ACR Explorer";
-    private static final String OPEN_IN_BROWSER_ACTION = "Open in browser";
+    private static final String OPEN_IN_BROWSER_ACTION = "Open in Portal";
 
     // string formatter
     private static final String AZURE_PORTAL_LINK_FORMAT = "%s/#resource/%s/overview";

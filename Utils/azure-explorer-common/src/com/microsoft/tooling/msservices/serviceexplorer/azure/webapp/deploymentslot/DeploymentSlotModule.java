@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
 import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -53,7 +54,7 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = "Linux".equalsIgnoreCase(webapp.operatingSystem().toString());
+        boolean isLinux = OperatingSystem.LINUX.name().equalsIgnoreCase(webapp.operatingSystem().toString());
         return isLinux ? AzureIconSymbol.DeploymentSlot.MODULE_ON_LINUX : AzureIconSymbol.DeploymentSlot.MODULE;
     }
 

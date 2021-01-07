@@ -37,9 +37,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 
 import java.util.List;
 
@@ -117,7 +117,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // Delete action class
-    private class DeleteAction extends NodeActionListener implements Backgroundable, Promptable, Telemetrable {
+    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
 
         @Override
         protected void actionPerformed(NodeActionEvent e) {
@@ -127,7 +127,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
         @Override
         public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName(), DeploymentSlotModule.MODULE_NAME, DeploymentSlotNode.this.name);
+            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), DeploymentSlotModule.MODULE_NAME, DeploymentSlotNode.this.name);
         }
 
         @Override
@@ -142,7 +142,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // start action class
-    private class StartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "start deployment slot", type = AzureOperation.Type.ACTION)
         @Override
@@ -163,7 +163,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // stop action class
-    private class StopAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "stop deployment slot", type = AzureOperation.Type.ACTION)
         @Override
@@ -185,7 +185,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // restart action class
-    private class RestartAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "restart deployment slot", type = AzureOperation.Type.ACTION)
         @Override
@@ -207,7 +207,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // restart action class
-    private class SwapAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class SwapAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "swap deployment slot for production", type = AzureOperation.Type.ACTION)
         @Override
@@ -228,7 +228,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements Backgroundable, Telemetrable {
+    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
 
         @AzureOperation(value = "open deployment slot in local browser", type = AzureOperation.Type.ACTION)
         @Override
@@ -248,7 +248,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     // Show properties action class
-    private class ShowPropertiesAction extends NodeActionListener implements Telemetrable {
+    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
 
         @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)
         @Override

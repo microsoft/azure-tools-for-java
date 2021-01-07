@@ -36,7 +36,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -55,7 +55,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
     public static final int DEFAULT_SORT_PRIORITY = 100;
     private static final String PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
-    private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s :%s. Are you sure you want to continue?";
+    private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s: %s. Are you sure you want to continue?";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -328,8 +328,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
             try {
                 for (Class<? extends NodeActionListener> actionClazz : actions) {
                     NodeActionListener actionListener = createNodeActionListener(actionClazz);
-                    if (actionListener instanceof Basicable && ((Basicable) actionListener).getAction() != null) {
-                        addAction(((Basicable) actionListener).getAction().getName(), actionListener.asGenericListener());
+                    if (actionListener instanceof ActionBasicable && ((ActionBasicable) actionListener).getAction() != null) {
+                        addAction(((ActionBasicable) actionListener).getAction().getName(), actionListener.asGenericListener());
                         continue;
                     }
                     Name nameAnnotation = actionClazz.getAnnotation(Name.class);

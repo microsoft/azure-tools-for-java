@@ -35,10 +35,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Backgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Promptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Telemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 
 import java.util.EventListener;
 import java.util.HashMap;
@@ -175,17 +175,17 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             return this;
         }
         NodeActionListener delegate = this;
-        if (this instanceof Backgroundable) {
-            Backgroundable backgroundable = (Backgroundable) this;
+        if (this instanceof ActionBackgroundable) {
+            ActionBackgroundable backgroundable = (ActionBackgroundable) this;
             delegate = new DelegateActionListener.BackgroundActionListener(
                     delegate, backgroundable.getProgressMessage(), backgroundable.isCancellable(), backgroundable.isConditionalModal());
         }
-        if (this instanceof Promptable) {
-            Promptable promptable = (Promptable) this;
+        if (this instanceof ActionPromptable) {
+            ActionPromptable promptable = (ActionPromptable) this;
             delegate = new DelegateActionListener.PromptActionListener(delegate, promptable.getPromptMessage());
         }
-        if (this instanceof Telemetrable) {
-            Telemetrable telemetrable = (Telemetrable) this;
+        if (this instanceof ActionTelemetrable) {
+            ActionTelemetrable telemetrable = (ActionTelemetrable) this;
             if (Objects.nonNull(telemetrable.getTelemetryParameter())) {
                 TelemetryParameter parameter = telemetrable.getTelemetryParameter();
                 delegate = new DelegateActionListener.TelemetricActionListener(delegate, parameter.getServiceName(), parameter.getOperationName());
@@ -193,8 +193,8 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
                 delegate = new DelegateActionListener.TelemetricActionListener(delegate, telemetrable.getServiceName(), telemetrable.getOperationName());
             }
         }
-        if (this instanceof Basicable) {
-            Basicable basicable = (Basicable) this;
+        if (this instanceof ActionBasicable) {
+            ActionBasicable basicable = (ActionBasicable) this;
             delegate = new DelegateActionListener.BasicActionListener(delegate, basicable.getAction());
         }
         return delegate;

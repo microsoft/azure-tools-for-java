@@ -33,9 +33,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.Basicable;
+import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBasicable;
 
-public class CreateRedisCacheAction extends NodeActionListener implements Basicable {
+public class CreateRedisCacheAction extends NodeActionListener implements ActionBasicable {
     private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
     private RedisCacheModule redisCacheModule;
 

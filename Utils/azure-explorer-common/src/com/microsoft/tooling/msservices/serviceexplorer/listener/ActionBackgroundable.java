@@ -22,10 +22,20 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.listener;
 
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import org.apache.commons.lang3.StringUtils;
 
-public interface Basicable {
+public interface ActionBackgroundable {
 
-    AzureActionEnum getAction();
+    default String getProgressMessage() {
+        return StringUtils.EMPTY;
+    }
+
+    default boolean isCancellable() {
+        return false;
+    }
+
+    default boolean isConditionalModal() {
+        return false;
+    }
 
 }
