@@ -69,7 +69,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Update icons in Azure toolkits
 - Update Tomcat base images
 - Using non-blocking UI to replace blocking progress indicator
-- Remove nonfunctional "cancel" buttons in foreground operations
+- Remove non-functional "cancel" buttons in foreground operations
 
 ## 3.47.0
 

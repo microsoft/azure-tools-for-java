@@ -30,7 +30,7 @@
         <li>Update icons in Azure toolkits</li>
         <li>Update Tomcat base images</li>
         <li>Using non-blocking UI to replace blocking progress indicator</li>
-        <li>Remove nonfunctional "cancel" buttons in foreground operations</li>
+        <li>Remove non-functional "cancel" buttons in foreground operations</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
