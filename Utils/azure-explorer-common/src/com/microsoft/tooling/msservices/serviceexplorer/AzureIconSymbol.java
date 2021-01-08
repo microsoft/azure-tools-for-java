@@ -44,31 +44,31 @@ public final class AzureIconSymbol {
 
     public interface Common {
 
-        AzureIconSymbol AZURE = fillInPath("common/Azure.svg");
-        AzureIconSymbol AZURE_ACTIVE_LOG = fillInPath("common/AzureActiveLog.svg");
+        AzureIconSymbol AZURE = fillInPath("Common/Azure.svg");
+        AzureIconSymbol AZURE_ACTIVE_LOG = fillInPath("Common/AzureActiveLog.svg");
 
-        AzureIconSymbol REFRESH = fillInPath("common/Refresh.svg");
-        AzureIconSymbol CREATE = fillInPath("common/Create.svg");
+        AzureIconSymbol REFRESH = fillInPath("Common/Refresh.svg");
+        AzureIconSymbol CREATE = fillInPath("Common/Create.svg");
 
-        AzureIconSymbol DELETE = fillInPath("common/Delete.svg");
-        AzureIconSymbol START = fillInPath("common/Start.svg");
-        AzureIconSymbol STOP = fillInPath("common/Stop.svg");
-        AzureIconSymbol RESTART = fillInPath("common/Restart.svg");
+        AzureIconSymbol DELETE = fillInPath("Common/Delete.svg");
+        AzureIconSymbol START = fillInPath("Common/Start.svg");
+        AzureIconSymbol STOP = fillInPath("Common/Stop.svg");
+        AzureIconSymbol RESTART = fillInPath("Common/Restart.svg");
 
-        AzureIconSymbol OPEN_IN_PORTAL = fillInPath("common/OpenInPortal.svg");
-        AzureIconSymbol SHOW_PROPERTIES = fillInPath("common/ShowProperties.svg");
+        AzureIconSymbol OPEN_IN_PORTAL = fillInPath("Common/OpenInPortal.svg");
+        AzureIconSymbol SHOW_PROPERTIES = fillInPath("Common/ShowProperties.svg");
     }
 
     public interface MySQL {
 
-        AzureIconSymbol MODULE = fillInPath("mysql/MySQL.svg");
+        AzureIconSymbol MODULE = fillInPath("MySQL/MySQL.svg");
 
-        AzureIconSymbol RUNNING = fillInPath("mysql/MySQLRunning.svg");
-        AzureIconSymbol STOPPED = fillInPath("mysql/MySQLStopped.svg");
-        AzureIconSymbol UPDATING = fillInPath("mysql/MySQLUpdating.svg");
+        AzureIconSymbol RUNNING = fillInPath("MySQL/MySQLRunning.svg");
+        AzureIconSymbol STOPPED = fillInPath("MySQL/MySQLStopped.svg");
+        AzureIconSymbol UPDATING = fillInPath("MySQL/MySQLUpdating.svg");
 
-        AzureIconSymbol CONNECT_TO_SERVER = fillInPath("mysql/ConnectToServer.svg");
-        AzureIconSymbol BIND_INTO = fillInPath("mysql/BindInto.svg");
+        AzureIconSymbol CONNECT_TO_SERVER = fillInPath("MySQL/ConnectToServer.svg");
+        AzureIconSymbol BIND_INTO = fillInPath("MySQL/BindInto.svg");
 
     }
 

@@ -61,7 +61,7 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/common/AzureActivityLog.svg"/>
+          icon="/icons/Common/AzureActivityLog.svg"/>
     <projectConfigurable groupId="root"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"
@@ -89,7 +89,7 @@
             factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
             id="Azure Explorer"
             canCloseContents="false"
-            icon="/icons/common/Azure.svg"/>
+            icon="/icons/Common/Azure.svg"/>
 
     <toolWindow
             anchor="bottom"
@@ -280,7 +280,7 @@
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
     </action>
 
-    <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/common/Azure.svg" popup="true" class="com.microsoft.intellij.actions.AzurePopupGroup">
+    <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/Common/Azure.svg" popup="true" class="com.microsoft.intellij.actions.AzurePopupGroup">
       <reference ref="Actions.RunFunction"/>
       <reference ref="Actions.DeployFunction"/>
       <separator/>

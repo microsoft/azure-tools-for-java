@@ -26,10 +26,12 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -50,12 +52,17 @@ public class StorageNode extends Node implements TelemetryProperties {
     private String subscriptionId;
 
     public StorageNode(Node parent, String subscriptionId, StorageAccount storageAccount) {
-        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH,  true);
+        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH, true);
 
         this.subscriptionId = subscriptionId;
         this.storageAccount = storageAccount;
 
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.StorageAccount.MODULE;
     }
 
     @Override
@@ -156,5 +163,7 @@ public class StorageNode extends Node implements TelemetryProperties {
                 + "<br>" + storageAccount.resourceGroupName();
     }
 
-    public String getSubscriptionId() { return subscriptionId; }
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
 }
