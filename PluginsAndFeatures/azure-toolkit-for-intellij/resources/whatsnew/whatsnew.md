@@ -1,6 +1,14 @@
 <!-- Version: 3.47.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.48.0
+
+### Changed
+- Update icons in Azure toolkits
+- Update Tomcat base images
+- Using non-blocking UI to replace blocking progress indicator
+- Remove nonfunctional "cancel" buttons in foreground operations
+
 ## 3.47.0
 
 ### Added

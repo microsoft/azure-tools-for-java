@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.48.0](#3480)
   - [3.47.0](#3470)
   - [3.46.0](#3460)
   - [3.45.1](#3451)
@@ -61,6 +62,14 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.48.0
+
+### Changed
+- Update icons in Azure toolkits
+- Update Tomcat base images
+- Using non-blocking UI to replace blocking progress indicator
+- Remove nonfunctional "cancel" buttons in foreground operations
 
 ## 3.47.0
 
