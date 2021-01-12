@@ -22,9 +22,6 @@
 
 package com.microsoft.intellij.runner.container.dockerhost;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -41,8 +38,8 @@ import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
-
 import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
@@ -50,12 +47,19 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 public class DockerHostRunState extends AzureRunProfileState<String> {
+    private static final String DEFAULT_PORT = Constant.TOMCAT_SERVICE_PORT;
+    private static final Pattern PORT_PATTERN = Pattern.compile("EXPOSE\\s+(\\d+).*");
     private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
     private final DockerHostRunSetting dataModel;
-
 
     public DockerHostRunState(Project project, DockerHostRunSetting dataModel) {
         super(project);
@@ -140,9 +144,11 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         );
 
         // docker run
+        final String port = getPortFromDockerfile(content);
         String containerId = DockerUtil.createContainer(
                 docker,
-                String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName())
+                String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()),
+                port
         );
         runningContainerId[0] = containerId;
         Container container = DockerUtil.runContainer(docker, containerId);
@@ -152,7 +158,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         ImmutableList<Container.PortMapping> ports = container.ports();
         if (ports != null) {
             for (Container.PortMapping portMapping : ports) {
-                if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
+                if (StringUtils.equals(port, String.valueOf(portMapping.privatePort()))) {
                     publicPort = String.valueOf(portMapping.publicPort());
                 }
             }
@@ -181,5 +187,13 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
         } else {
             telemetryMap.put("FileType", "");
         }
+    }
+
+    private String getPortFromDockerfile(@NotNull String dockerFileContent) {
+        final Matcher result = Arrays.stream(dockerFileContent.split("\\R+"))
+                                     .map(value -> PORT_PATTERN.matcher(value))
+                                     .filter(Matcher::matches)
+                                     .findFirst().orElse(null);
+        return result == null ? DEFAULT_PORT : result.group(1);
     }
 }
