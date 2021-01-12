@@ -270,7 +270,12 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
 
         protected ExtendableTextComponent.Extension getExtension() {
-            return AzureComboBox.this.getExtension();
+            final ExtendableTextComponent.Extension extension = AzureComboBox.this.getExtension();
+            return extension == null ? null : ExtendableTextComponent.Extension.create(
+                extension.getIcon(true), extension.getTooltip(), () -> {
+                    AzureComboBox.this.hidePopup();
+                    extension.getActionOnClick().run();
+                });
         }
     }
 
