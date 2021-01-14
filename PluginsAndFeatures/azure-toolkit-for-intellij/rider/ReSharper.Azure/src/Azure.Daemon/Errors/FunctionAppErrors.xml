@@ -42,7 +42,7 @@
 
             <Tag externalName="TimerTriggerCronExpressionError.HIGHLIGHTING_ID" default="ERROR">
                 <Title>Invalid Function App Timer Trigger Cron expression</Title>
-                <Description>Function App Timer Trigger Cron expresion is not valid and can not be used.</Description>
+                <Description>Function App Timer Trigger Cron expression is not valid and can not be used.</Description>
             </Tag>
 
         </Group>

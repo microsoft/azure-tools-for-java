@@ -59,7 +59,7 @@ class AzureFunctionRunMarkerTest : BaseTestWithMarkup() {
     @Test(description = "Check Http Trigger function having a required attribute, but on namespace level is shown without Function App gutter mark.")
     fun testFunctionApp_HttpTriggerWithNamespaceAttribute_NotDetected() = verifyLambdaGutterMark()
 
-    @Test(description = "Check multipole functions inside one class with [FunctionName] required attribute are shown with gutter mark.")
+    @Test(description = "Check multiple functions inside one class with [FunctionName] required attribute are shown with gutter mark.")
     fun testFunctionApp_MultipleFunctionApps_Detected() = verifyLambdaGutterMark()
 
     private fun verifyLambdaGutterMark() {

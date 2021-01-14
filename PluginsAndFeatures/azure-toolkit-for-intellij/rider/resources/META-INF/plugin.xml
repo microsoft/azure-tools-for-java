@@ -22,6 +22,14 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.40.0-2021.1]</p>
+        <ul>
+          <li>Compatibility with Rider 2021.1 EAP</li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+          <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
+        </ul>
         <p>[3.40.0-2020.3]</p>
         <ul>
           <li>Compatibility with Rider 2020.3 EAP</li>

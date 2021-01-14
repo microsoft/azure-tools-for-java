@@ -1,4 +1,4 @@
-// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -18,6 +18,8 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using JetBrains.Annotations;
 using JetBrains.ReSharper.Azure.Daemon.Errors.FunctionAppErrors;
 using JetBrains.ReSharper.Azure.Psi.FunctionApp;
 using JetBrains.ReSharper.Feature.Services.Daemon;
@@ -29,8 +31,10 @@ using NCrontab;
 namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis
 {
     /// <summary>
-    /// Analyzer for Cron expressions in Function App Timer Trigger matching NCRONTAB specification.
-    /// https://github.com/atifaziz/NCrontab
+    /// Analyzer for Cron expressions in Function App Timer Trigger
+    /// matching NCRONTAB specification, or System.TimeSpan.
+    /// 
+    /// NCRONTAB specification. https://github.com/atifaziz/NCrontab
     ///
     /// In general, NCRONTAB expressions are as follows:
     ///
@@ -68,13 +72,49 @@ namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis
             
             if (literal.StartsWith("%") && literal.EndsWith("%") && literal.Length > 2) return;
 
+            var mayBeTimeSpanSchedule = literal.Contains(":");
+            if (mayBeTimeSpanSchedule)
+            {
+                if (!IsValidTimeSpanSchedule(literal, out var errorMessage))
+                {
+                    consumer.AddHighlighting(new TimerTriggerCronExpressionError(expressionArgument, errorMessage));
+                }
+            }
+            else if (!IsValidCrontabSchedule(literal, out var errorMessage))
+            {
+                consumer.AddHighlighting(new TimerTriggerCronExpressionError(expressionArgument, errorMessage));
+            }
+        }
+
+        private bool IsValidCrontabSchedule(string literal, [CanBeNull] out string errorMessage)
+        {
             try
             {
                 CrontabSchedule.Parse(literal, new CrontabSchedule.ParseOptions {IncludingSeconds = true});
+                errorMessage = null;
+                return true;
             }
             catch (CrontabException e)
             {
-                consumer.AddHighlighting(new TimerTriggerCronExpressionError(expressionArgument, e.Message));
+                errorMessage = e.Message;
+                return false;
+            }
+        }
+        
+        private bool IsValidTimeSpanSchedule(string literal, out string errorMessage)
+        {
+            // See https://github.com/Azure/azure-webjobs-sdk-extensions/blob/dev/src/WebJobs.Extensions/Extensions/Timers/Scheduling/TimerSchedule.cs#L77
+            try
+            {
+                // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+                TimeSpan.Parse(literal);
+                errorMessage = null;
+                return true;
+            }
+            catch (FormatException e)
+            {
+                errorMessage = e.Message;
+                return false;
             }
         }
     }

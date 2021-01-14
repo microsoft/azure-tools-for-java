@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -35,10 +35,16 @@ class AzureFunctionAppSyntaxHighlightingTest : BaseTestWithMarkup() {
     override fun getSolutionDirectoryName(): String = "FunctionApp"
 
     @Test
-    fun testTimerTrigger_CronExpression_ValidExpression() = verifySyntaxHighlighting()
+    fun testTimerTrigger_CronExpression_ValidNCrontabExpression() = verifySyntaxHighlighting()
 
     @Test
-    fun testTimerTrigger_CronExpression_IncompleteExpression() = verifySyntaxHighlighting()
+    fun testTimerTrigger_CronExpression_IncompleteNCrontabExpression() = verifySyntaxHighlighting()
+
+    @Test
+    fun testTimerTrigger_CronExpression_ValidTimeSpanExpression() = verifySyntaxHighlighting()
+
+    @Test
+    fun testTimerTrigger_CronExpression_IncompleteTimeSpanExpression() = verifySyntaxHighlighting()
 
     @Test
     fun testTimerTrigger_CronExpression_EmptyString() = verifySyntaxHighlighting()
