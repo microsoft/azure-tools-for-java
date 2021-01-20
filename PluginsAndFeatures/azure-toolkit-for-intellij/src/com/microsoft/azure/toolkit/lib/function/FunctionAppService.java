@@ -25,8 +25,8 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
-import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHandler;
+import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
+import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;

@@ -28,7 +28,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.runner.functions.component.CreateApplicationInsightsDialog;
+import com.microsoft.azure.toolkit.intellij.function.runner.component.CreateApplicationInsightsDialog;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.collections.ListUtils;
 

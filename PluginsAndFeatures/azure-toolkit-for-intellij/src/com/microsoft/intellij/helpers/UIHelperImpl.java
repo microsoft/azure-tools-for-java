@@ -43,6 +43,11 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -57,11 +62,7 @@ import com.microsoft.intellij.forms.OpenSSLFinderForm;
 import com.microsoft.intellij.helpers.arm.DeploymentPropertyView;
 import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
 import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
-import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
-import com.microsoft.intellij.helpers.mysql.MySQLPropertyView;
-import com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
@@ -71,8 +72,7 @@ import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueFileEditor;
 import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.TableFileEditor;
-import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
-import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -111,7 +111,7 @@ import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
-import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+import static com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 
 public class UIHelperImpl implements UIHelper {
