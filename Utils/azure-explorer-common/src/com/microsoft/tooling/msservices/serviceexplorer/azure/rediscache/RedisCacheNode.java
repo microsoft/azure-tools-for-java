@@ -124,7 +124,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     }
 
     private void delete() {
-        RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.resourceId, RedisCacheNode.this);
+        this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
     private void openInBrowser() {
@@ -134,15 +134,15 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         } catch (Exception exception) {
             Lombok.sneakyThrow(exception);
         }
-        DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, RedisCacheNode.this.resourceId));
+        DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, this.resourceId));
     }
 
     private void showProperties() {
-        DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
+        DefaultLoader.getUIHelper().openRedisPropertyView(this);
     }
 
     private void openExplorer() {
-        DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
+        DefaultLoader.getUIHelper().openRedisExplorer(this);
     }
 
 }

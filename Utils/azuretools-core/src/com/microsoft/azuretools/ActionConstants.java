@@ -40,122 +40,128 @@ public final class ActionConstants {
         return new ActionEntity(params[0], params[1]);
     }
 
-    private static String build(String serviceName, String operationName) {
-        Preconditions.checkArgument(!StringUtils.contains(serviceName, SEPARATOR));
-        Preconditions.checkArgument(!StringUtils.contains(operationName, SEPARATOR));
-        return serviceName + SEPARATOR + operationName;
-    }
-
-    private static String buildOperationName(String head, String tail) {
-        return head + OPERATION_SEPARATOR + tail;
-    }
-
     public interface WebApp {
         String MODULE = "webapp";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
 
-        String CREATE = build(MODULE, "create-webapp");
-        String DELETE = build(MODULE, "delete-webapp");
-        String DEPLOY = build(MODULE, "deploy-webapp");
-        String START = build(MODULE, "start-webapp");
-        String STOP = build(MODULE, "stop-webapp");
-        String RESTART = build(MODULE, "restart-webapp");
-        String SHOW_PROPERTIES = build(MODULE, "showprop-webapp");
-        String SHINTO = build(MODULE, "sshinto-webapp");
-        String OPEN_IN_PORTAL = build(MODULE, "webapp-open-in-portal");
-        String OPEN_IN_BROWSER = build(MODULE, "open-inbrowser-webapp");
-        String START_STREAMING_LOG = build(MODULE, "start-streaming-log-webapp");
-        String STOP_STREAMING_LOG = build(MODULE, "stop-streaming-log-webapp");
+        String CREATE = OPERATION_PREFIX + "create-webapp";
+        String DELETE = OPERATION_PREFIX + "delete-webapp";
+        String DEPLOY = OPERATION_PREFIX + "deploy-webapp";
+        String START = OPERATION_PREFIX + "start-webapp";
+        String STOP = OPERATION_PREFIX + "stop-webapp";
+        String RESTART = OPERATION_PREFIX + "restart-webapp";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "showprop-webapp";
+        String SHINTO = OPERATION_PREFIX + "sshinto-webapp";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "webapp-open-in-portal";
+        String OPEN_IN_BROWSER = OPERATION_PREFIX + "open-inbrowser-webapp";
+        String START_STREAMING_LOG = OPERATION_PREFIX + "start-streaming-log-webapp";
+        String STOP_STREAMING_LOG = OPERATION_PREFIX + "stop-streaming-log-webapp";
 
-        String DEPLOY_DOCKERLOCAL = build(MODULE, "deploy-webapp-dockerlocal");
-        String DEPLOY_DOCKERHOST = build(MODULE, "deploy-webapp-dockerhost");
-        String DEPLOY_CONTAINER = build(MODULE, "deploy-webapp-container");
+        String DEPLOY_DOCKERLOCAL = OPERATION_PREFIX + "deploy-webapp-dockerlocal";
+        String DEPLOY_DOCKERHOST = OPERATION_PREFIX + "deploy-webapp-dockerhost";
+        String DEPLOY_CONTAINER = OPERATION_PREFIX + "deploy-webapp-container";
         // deployment slot
-        String OPEN_CREATEWEBAPP_DIALOG = build(MODULE, "open-create-webapp-dialog");
+        String OPEN_CREATEWEBAPP_DIALOG = OPERATION_PREFIX + "open-create-webapp-dialog";
 
-        String DEPLOY_TO_SLOT = build(MODULE, "webappDeployToSlot");
-        String CREATE_NEWWEBAPP = build(MODULE, "createNewWebapp");
+        String DEPLOY_TO_SLOT = OPERATION_PREFIX + "webappDeployToSlot";
+        String CREATE_NEWWEBAPP = OPERATION_PREFIX + "createNewWebapp";
 
         interface DeploymentSlot {
-            String DEPLOY = build(MODULE, "deploy-webapp-slot");
-            String CREATE = build(MODULE, "create-webapp-slot");
-            String STOP = build(MODULE, "stop-webapp-slot");
-            String START = build(MODULE, "start-webapp-slot");
-            String RESTART = build(MODULE, "restart-webapp-slot");
-            String DELETE = build(MODULE, "delete-webapp-slot");
-            String SWAP = build(MODULE, "swap-webapp-slot");
-            String SHOW_PROPERTIES = build(MODULE, "show-webapp-slot-prop");
-            String OPEN_IN_BROWSER = build(MODULE, "open-webappslot-inbrowser");
-            String OPEN_IN_PORTAL = build(MODULE, "open-webappslot-in-portal");
-            String START_STREAMING_LOG = build(MODULE, "start-streaming-log-webapp-slot");
-            String STOP_STREAMING_LOG = build(MODULE, "stop-streaming-log-webapp-slot");
+            String DEPLOY = OPERATION_PREFIX + "deploy-webapp-slot";
+            String CREATE = OPERATION_PREFIX + "create-webapp-slot";
+            String STOP = OPERATION_PREFIX + "stop-webapp-slot";
+            String START = OPERATION_PREFIX + "start-webapp-slot";
+            String RESTART = OPERATION_PREFIX + "restart-webapp-slot";
+            String DELETE = OPERATION_PREFIX + "delete-webapp-slot";
+            String SWAP = OPERATION_PREFIX + "swap-webapp-slot";
+            String SHOW_PROPERTIES = OPERATION_PREFIX + "show-webapp-slot-prop";
+            String OPEN_IN_BROWSER = OPERATION_PREFIX + "open-webappslot-inbrowser";
+            String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-webappslot-in-portal";
+            String START_STREAMING_LOG = OPERATION_PREFIX + "start-streaming-log-webapp-slot";
+            String STOP_STREAMING_LOG = OPERATION_PREFIX + "stop-streaming-log-webapp-slot";
         }
     }
 
     public interface FunctionApp {
         String MODULE = "function";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
 
-        String TRIGGER = build(MODULE, buildOperationName("trigger", MODULE));
-        String ENABLE = build(MODULE, buildOperationName("enable", MODULE));
-        String DISABLE = build(MODULE, buildOperationName("disable", MODULE));
-        String RUN = build(MODULE, "run-function-app");
-        String CREATE_TRIGGER = build(MODULE, "create-function-trigger");
-        String CREATE_PROJECT = build(MODULE, "create-function-project");
-        String CREATE = build(MODULE, "create-function-app");
-        String DEPLOY = build(MODULE, "deploy-function-app");
-        String DELETE = build(MODULE, "delete-function-app");
-        String START = build(MODULE, "start-function-app");
-        String STOP = build(MODULE, "stop-function-app");
-        String RESTART = build(MODULE, "restart-function-app");
-        String SHOW_PROPERTIES = build(MODULE, "showprop-function-app");
-        String START_STREAMING_LOG = build(MODULE, "start-streaming-log-function-app");
-        String STOP_STREAMING_LOG = build(MODULE, "stop-streaming-log-function-app");
-        String OPEN_IN_PORTAL = build(MODULE, "open-inbrowser-function-app");
+        String TRIGGER = OPERATION_PREFIX + "trigger-function";
+        String ENABLE = OPERATION_PREFIX + "enable-function";
+        String DISABLE = OPERATION_PREFIX + "disable-function";
+        String RUN = OPERATION_PREFIX + "run-function-app";
+        String CREATE_TRIGGER = OPERATION_PREFIX + "create-function-trigger";
+        String CREATE_PROJECT = OPERATION_PREFIX + "create-function-project";
+        String CREATE = OPERATION_PREFIX + "create-function-app";
+        String DEPLOY = OPERATION_PREFIX + "deploy-function-app";
+        String DELETE = OPERATION_PREFIX + "delete-function-app";
+        String START = OPERATION_PREFIX + "start-function-app";
+        String STOP = OPERATION_PREFIX + "stop-function-app";
+        String RESTART = OPERATION_PREFIX + "restart-function-app";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "showprop-function-app";
+        String START_STREAMING_LOG = OPERATION_PREFIX + "start-streaming-log-function-app";
+        String STOP_STREAMING_LOG = OPERATION_PREFIX + "stop-streaming-log-function-app";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-inbrowser-function-app";
     }
 
     public interface MySQL {
         String MODULE = "azure-mysql";
+        String OPERATION_PREFIX = MODULE + SEPARATOR + MODULE + OPERATION_SEPARATOR;
 
-        String CREATE = build(MODULE, buildOperationName(MODULE, "create"));
-        String DELETE = build(MODULE, buildOperationName(MODULE, "delete"));
-        String START = build(MODULE, buildOperationName(MODULE, "start"));
-        String STOP = build(MODULE, buildOperationName(MODULE, "stop"));
-        String RESTART = build(MODULE, buildOperationName(MODULE, "restart"));
-        String OPEN_IN_PORTAL = build(MODULE, buildOperationName(MODULE, "open-in-portal"));
-        String SHOW_PROPERTIES = build(MODULE, buildOperationName(MODULE, "show-properties"));
-        String CONNECT_TO_SERVER = build(MODULE, buildOperationName(MODULE, "connect-to-server"));
-        String BIND_INTO = build(MODULE, buildOperationName(MODULE, "bind-into"));
+        String CREATE = OPERATION_PREFIX + "create";
+        String DELETE = OPERATION_PREFIX + "delete";
+        String START = OPERATION_PREFIX + "start";
+        String STOP = OPERATION_PREFIX + "stop";
+        String RESTART = OPERATION_PREFIX + "restart";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-in-portal";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "show-properties";
+        String CONNECT_TO_SERVER = OPERATION_PREFIX + "connect-to-server";
+        String BIND_INTO = OPERATION_PREFIX + "bind-into";
     }
 
     public interface SpringCloud {
         String MODULE = "springcloud";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
 
-        String CREATE = build(MODULE, "create-springcloud-app");
-        String DELETE = build(MODULE, "delete-springcloud-app");
-        String START = build(MODULE, "start-springcloud-app");
-        String STOP = build(MODULE, "stop-springcloud-app");
-        String RESTART = build(MODULE, "restart-springcloud-app");
-        String OPEN_IN_PORTAL = build(MODULE, "open-inportal-springcloud-app");
-        String OPEN_IN_BROWSER = build(MODULE, "open-inbrowser-springcloud-app");
-        String SHOW_PROPERTIES = build(MODULE, "showprop-springcloud-app");
+        String CREATE = OPERATION_PREFIX + "create-springcloud-app";
+        String DELETE = OPERATION_PREFIX + "delete-springcloud-app";
+        String START = OPERATION_PREFIX + "start-springcloud-app";
+        String STOP = OPERATION_PREFIX + "stop-springcloud-app";
+        String RESTART = OPERATION_PREFIX + "restart-springcloud-app";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-inportal-springcloud-app";
+        String OPEN_IN_BROWSER = OPERATION_PREFIX + "open-inbrowser-springcloud-app";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "showprop-springcloud-app";
 
-        String SAVE = build(MODULE, "save-springcloud-app");
-        String REFRESH = build(MODULE, "refresh-springcloud-app");
-        String DEPLOY = build(MODULE, "deploy-springcloud-app");
-        String ADD_DEPENDENCY = build(MODULE, "add-dependency-springcloud-app");
-        String START_STREAMING_LOG = build(MODULE, "start-streaming-log-springcloud-app");
-        String STOP_STREAMING_LOG = build(MODULE, "stop-streaming-log-springcloud-app");
+        String SAVE = OPERATION_PREFIX + "save-springcloud-app";
+        String REFRESH = OPERATION_PREFIX + "refresh-springcloud-app";
+        String DEPLOY = OPERATION_PREFIX + "deploy-springcloud-app";
+        String ADD_DEPENDENCY = OPERATION_PREFIX + "add-dependency-springcloud-app";
+        String START_STREAMING_LOG = OPERATION_PREFIX + "start-streaming-log-springcloud-app";
+        String STOP_STREAMING_LOG = OPERATION_PREFIX + "stop-streaming-log-springcloud-app";
     }
 
     public interface RedisCache {
         String MODULE = "redis";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
 
-        String CREATE = build(MODULE, "create-redis");
-        String DELETE = build(MODULE, "delete-redis");
-        String SCAN = build(MODULE, "scan-redis");
-        String GET = build(MODULE, "get-redis");
-        String OPEN_IN_PORTAL = build(MODULE, "open-browser-redis");
-        String SHOW_PROPERTIES = build(MODULE, "readprop-redis");
-        String OPEN_EXPLORER = build(MODULE, "open-explorer-redis");
+        String CREATE = OPERATION_PREFIX + "create-redis";
+        String DELETE = OPERATION_PREFIX + "delete-redis";
+        String SCAN = OPERATION_PREFIX + "scan-redis";
+        String GET = OPERATION_PREFIX + "get-redis";
+        String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-browser-redis";
+        String SHOW_PROPERTIES = OPERATION_PREFIX + "readprop-redis";
+        String OPEN_EXPLORER = OPERATION_PREFIX + "open-explorer-redis";
+    }
+
+    public interface VirtualMachine {
+        String MODULE = "vm";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
+
+        String CREATE = OPERATION_PREFIX + "create-vm";
+        String DELETE = OPERATION_PREFIX + "delete-vm";
+        String START = OPERATION_PREFIX + "start-vm";
+        String RESTART = OPERATION_PREFIX + "restart-vm";
+        String SHUTDOWN = OPERATION_PREFIX + "shutdown-vm";
     }
 
     @AllArgsConstructor

@@ -119,24 +119,24 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     @AzureOperation(value = "start deployment slot", type = AzureOperation.Type.ACTION)
     private void start() {
         AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, webAppId, slotName);
-        DeploymentSlotNode.this.renderNode(WebAppBaseState.RUNNING);
+        this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(value = "stop deployment slot", type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, webAppId, slotName);
-        DeploymentSlotNode.this.renderNode(WebAppBaseState.STOPPED);
+        this.renderNode(WebAppBaseState.STOPPED);
     }
 
     @AzureOperation(value = "restart deployment slot", type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, webAppId, slotName);
-        DeploymentSlotNode.this.renderNode(WebAppBaseState.RUNNING);
+        this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(value = "delete deployment slot", type = AzureOperation.Type.ACTION)
     private void delete() {
-        this.getParent().removeNode(DeploymentSlotNode.this.getSubscriptionId(), DeploymentSlotNode.this.getName(), DeploymentSlotNode.this);
+        this.getParent().removeNode(this.getSubscriptionId(), this.getName(), DeploymentSlotNode.this);
     }
 
     @AzureOperation(value = "swap deployment slot for production", type = AzureOperation.Type.ACTION)
@@ -146,7 +146,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
     @AzureOperation(value = "open deployment slot in local browser", type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + DeploymentSlotNode.this.hostName);
+        DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
     }
 
     @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)

@@ -102,30 +102,30 @@ public class MySQLNode extends Node {
     }
 
     private void delete() {
-        MySQLNode.this.serverState = SERVER_UPDATING;
-        MySQLNode.this.getParent().removeNode(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getId(), MySQLNode.this);
+        this.serverState = SERVER_UPDATING;
+        this.getParent().removeNode(this.getSubscriptionId(), this.getId(), MySQLNode.this);
     }
 
     private void start() {
-        MySQLNode.this.serverState = SERVER_UPDATING;
-        MySQLMvpModel.start(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-        MySQLNode.this.refreshNode();
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.start(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
     private void stop() {
-        MySQLNode.this.serverState = SERVER_UPDATING;
-        MySQLMvpModel.stop(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-        MySQLNode.this.refreshNode();
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.stop(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
     private void restart() {
-        MySQLNode.this.serverState = SERVER_UPDATING;
-        MySQLMvpModel.restart(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-        MySQLNode.this.refreshNode();
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.restart(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
     private void openInPortal() {
-        MySQLNode.this.openResourcesInPortal(MySQLNode.this.subscriptionId, MySQLNode.this.server.id());
+        this.openResourcesInPortal(this.subscriptionId, this.server.id());
     }
 
     private void showProperties() {

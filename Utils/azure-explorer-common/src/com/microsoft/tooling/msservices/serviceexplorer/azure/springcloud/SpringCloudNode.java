@@ -185,7 +185,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     }
 
     private void openInPortal() {
-        SpringCloudNode.this.openResourcesInPortal(SpringCloudNode.this.subscriptionId, SpringCloudNode.this.clusterId);
+        this.openResourcesInPortal(this.subscriptionId, this.clusterId);
     }
 
 }

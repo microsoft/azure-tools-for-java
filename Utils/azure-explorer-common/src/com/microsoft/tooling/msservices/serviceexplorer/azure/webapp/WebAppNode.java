@@ -133,30 +133,30 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @AzureOperation(value = "delete web app", type = AzureOperation.Type.ACTION)
     private void delete() {
-        WebAppNode.this.getParent().removeNode(WebAppNode.this.getSubscriptionId(), WebAppNode.this.getId(), WebAppNode.this);
+        this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
     @AzureOperation(value = "start web app", type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureWebAppMvpModel.getInstance().startWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-        WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
+        AzureWebAppMvpModel.getInstance().startWebApp(this.subscriptionId, this.webapp.id());
+        this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(value = "stop web app", type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureWebAppMvpModel.getInstance().stopWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-        WebAppNode.this.renderNode(WebAppBaseState.STOPPED);
+        AzureWebAppMvpModel.getInstance().stopWebApp(this.subscriptionId, this.webapp.id());
+        this.renderNode(WebAppBaseState.STOPPED);
     }
 
     @AzureOperation(value = "restart web app", type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureWebAppMvpModel.getInstance().restartWebApp(WebAppNode.this.subscriptionId, WebAppNode.this.webapp.id());
-        WebAppNode.this.renderNode(WebAppBaseState.RUNNING);
+        AzureWebAppMvpModel.getInstance().restartWebApp(this.subscriptionId, this.webapp.id());
+        this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + WebAppNode.this.hostName);
+        DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
     }
 
     @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)

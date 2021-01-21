@@ -194,7 +194,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     private void delete() {
-        AzureSpringCloudMvpModel.deleteApp(SpringCloudAppNode.this.id).await();
+        AzureSpringCloudMvpModel.deleteApp(this.id).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(id, null);
     }
 

@@ -115,33 +115,33 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
     private void start() {
-        AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
+        AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, this.getFunctionAppId());
+        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
+        this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
     @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
     private void stop() {
-        AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
+        AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, this.getFunctionAppId());
+        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
+        this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
     @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
     private void restart() {
-        AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, FunctionAppNode.this.getFunctionAppId());
-        FunctionAppNode.this.renderNode(WebAppBaseState.fromString(target.state()));
+        AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, this.getFunctionAppId());
+        FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
+        this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
     @AzureOperation(value = "delete function app", type = AzureOperation.Type.ACTION)
     private void delete() {
-        this.getParent().removeNode(FunctionAppNode.this.getSubscriptionId(), FunctionAppNode.this.getFunctionAppId(), FunctionAppNode.this);
+        this.getParent().removeNode(this.getSubscriptionId(), this.getFunctionAppId(), FunctionAppNode.this);
     }
 
     @AzureOperation(value = "open function app in portal", type = AzureOperation.Type.ACTION)
     private void openInPortal() {
-        FunctionAppNode.this.openResourcesInPortal(subscriptionId, FunctionAppNode.this.getFunctionAppId());
+        this.openResourcesInPortal(subscriptionId, this.getFunctionAppId());
     }
 
     @AzureOperation(value = "show properties of function app", type = AzureOperation.Type.ACTION)
