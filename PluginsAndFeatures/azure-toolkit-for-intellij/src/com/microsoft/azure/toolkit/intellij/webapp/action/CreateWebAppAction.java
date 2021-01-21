@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.intellij.ui.messages.AzureBundle.operation;
 
 public class CreateWebAppAction extends NodeActionListener {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
@@ -112,7 +113,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(value = "create web app", type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureTask<WebApp> task = new AzureTask<>(null, message("webapp.create.title", config.getName()), false, () -> {
+        final AzureTask<WebApp> task = new AzureTask<>(null, operation("webapp.create.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
@@ -125,7 +126,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(value = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask<Void> task = new AzureTask<>(null, message("webapp.deploy.title", webapp.name()), false, () -> {
+        final AzureTask<Void> task = new AzureTask<>(null, operation("webapp.deploy.title", webapp.name()), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();

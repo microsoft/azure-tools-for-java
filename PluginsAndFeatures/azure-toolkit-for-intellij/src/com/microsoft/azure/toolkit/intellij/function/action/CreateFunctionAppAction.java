@@ -54,6 +54,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import static com.microsoft.intellij.ui.messages.AzureBundle.operation;
 
 @Name("Create")
 public class CreateFunctionAppAction extends NodeActionListener {
@@ -106,7 +107,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
 
     @AzureOperation(value = "create function app", type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureTask<FunctionApp> task = new AzureTask<>(null, message("function.create.task.title", config.getName()), false, () -> {
+        final AzureTask<FunctionApp> task = new AzureTask<>(null, operation("function.create.task.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return functionAppService.createFunctionApp(config);

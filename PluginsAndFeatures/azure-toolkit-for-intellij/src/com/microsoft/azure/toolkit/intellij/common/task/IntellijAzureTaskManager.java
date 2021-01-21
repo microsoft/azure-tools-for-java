@@ -62,7 +62,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInBackground(final Runnable runnable, final AzureTask<?> task) {
-        final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
+        final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle().getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(true);
@@ -82,7 +82,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
-        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
+        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle().getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
@@ -98,7 +98,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Disposable disposable = Disposer.newDisposable();
         // refer https://github.com/JetBrains/intellij-community/commit/077c5558993b97cfb6f68ccc3cbe13065ba3cba8
         Registry.get("ide.background.tasks").setValue(false, disposable);
-        final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable(), foreground) {
+        final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle().getTitle(), task.isCancellable(), foreground) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
