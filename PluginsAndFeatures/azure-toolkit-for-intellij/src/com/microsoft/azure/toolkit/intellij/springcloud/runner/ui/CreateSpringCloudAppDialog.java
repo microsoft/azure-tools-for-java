@@ -24,7 +24,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.runner.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.intellij.common.AzureResourceWrapper;
+import com.microsoft.azure.toolkit.intellij.springcloud.AzureResourceWrapper;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;

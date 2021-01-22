@@ -35,7 +35,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionSupportConfigurationType;

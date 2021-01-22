@@ -31,7 +31,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
@@ -47,8 +47,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.microsoft.intellij.common.CommonConst.EMPTY_TEXT;
-import static com.microsoft.intellij.common.CommonConst.LOADING_TEXT;
+import static com.microsoft.intellij.CommonConst.EMPTY_TEXT;
+import static com.microsoft.intellij.CommonConst.LOADING_TEXT;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 

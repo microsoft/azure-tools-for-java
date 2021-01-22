@@ -28,7 +28,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
 import icons.MavenIcons;

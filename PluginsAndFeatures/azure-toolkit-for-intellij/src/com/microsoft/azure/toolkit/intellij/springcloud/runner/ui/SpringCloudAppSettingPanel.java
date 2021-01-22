@@ -36,9 +36,9 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.Ser
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
-import com.microsoft.intellij.common.AzureResourceWrapper;
-import com.microsoft.intellij.common.CommonConst;
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.springcloud.AzureResourceWrapper;
+import com.microsoft.intellij.CommonConst;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudDeploySettingPresenter;

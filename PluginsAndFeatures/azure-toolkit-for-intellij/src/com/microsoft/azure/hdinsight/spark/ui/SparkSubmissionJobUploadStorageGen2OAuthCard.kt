@@ -30,7 +30,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.ui.HintTextField
+import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.ui.util.UIUtils
 import java.awt.Dimension
@@ -49,7 +49,7 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
 
     private val gen2RootPathTip = "e.g. abfs://<file_system>@<account_name>.dfs.core.windows.net/<path>"
     private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path")
-    private val gen2RootPathRawField = HintTextField (gen2RootPathTip).apply {
+    private val gen2RootPathRawField = HintTextField(gen2RootPathTip).apply {
         name = "gen2OAuthCardRootPathField"
         preferredSize = Dimension(500, 0)
 

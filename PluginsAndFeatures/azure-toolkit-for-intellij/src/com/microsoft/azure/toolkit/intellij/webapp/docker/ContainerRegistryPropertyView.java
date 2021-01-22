@@ -43,7 +43,7 @@ import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpMod
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.containerregistry.ContainerRegistryProperty;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;

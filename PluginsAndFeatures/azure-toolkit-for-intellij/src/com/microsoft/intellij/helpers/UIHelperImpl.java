@@ -59,13 +59,13 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
-import com.microsoft.intellij.helpers.arm.DeploymentPropertyView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
+import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
@@ -110,7 +110,7 @@ import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
-import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
+import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 

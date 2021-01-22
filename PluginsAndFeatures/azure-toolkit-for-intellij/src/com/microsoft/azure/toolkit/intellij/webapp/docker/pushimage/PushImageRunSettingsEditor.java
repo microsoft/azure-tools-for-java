@@ -23,8 +23,8 @@
 package com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.AzureSettingsEditor;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingsEditor;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.ui.SettingPanel;
 
 import org.jetbrains.annotations.NotNull;

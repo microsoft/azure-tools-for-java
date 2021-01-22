@@ -27,7 +27,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.CommonConst;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;

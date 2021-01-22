@@ -41,7 +41,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
 import com.microsoft.tooling.msservices.helpers.Name;

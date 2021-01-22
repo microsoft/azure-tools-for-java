@@ -23,7 +23,7 @@
 package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.ui;
 
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import icons.MavenIcons;
 

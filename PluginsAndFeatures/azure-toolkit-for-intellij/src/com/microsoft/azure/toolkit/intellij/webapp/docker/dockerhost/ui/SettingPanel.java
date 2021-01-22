@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.docker.dockerhost.ui;
 
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import icons.MavenIcons;
 
 import com.intellij.openapi.fileChooser.FileChooser;

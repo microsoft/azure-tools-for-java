@@ -41,7 +41,7 @@ import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction

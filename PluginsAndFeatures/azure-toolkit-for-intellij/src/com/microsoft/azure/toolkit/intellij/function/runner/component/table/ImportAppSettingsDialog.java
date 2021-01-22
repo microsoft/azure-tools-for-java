@@ -28,7 +28,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.CommonConst;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionsConstants;
 

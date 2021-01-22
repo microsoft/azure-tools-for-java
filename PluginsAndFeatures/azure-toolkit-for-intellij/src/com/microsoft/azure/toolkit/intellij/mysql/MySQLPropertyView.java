@@ -34,7 +34,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLProperty;

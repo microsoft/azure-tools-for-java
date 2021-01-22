@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.docker.utils;
 
-import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.RunProcessHandler;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ProgressMessage;

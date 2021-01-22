@@ -23,7 +23,7 @@
 package com.microsoft.intellij.feedback
 
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
 open class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)

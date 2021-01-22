@@ -33,7 +33,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
-import com.microsoft.intellij.runner.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionRunConfiguration;

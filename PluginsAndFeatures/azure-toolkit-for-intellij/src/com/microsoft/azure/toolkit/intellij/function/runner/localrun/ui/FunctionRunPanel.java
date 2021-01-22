@@ -29,7 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;

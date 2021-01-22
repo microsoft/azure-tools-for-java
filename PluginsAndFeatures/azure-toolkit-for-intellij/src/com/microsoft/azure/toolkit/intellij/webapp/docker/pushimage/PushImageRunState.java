@@ -29,8 +29,8 @@ import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSettin
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.intellij.runner.AzureRunProfileState;
-import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.intellij.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;

@@ -27,7 +27,7 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;

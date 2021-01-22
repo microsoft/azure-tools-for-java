@@ -45,7 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
+import static com.microsoft.intellij.CommonConst.NEW_CREATED_RESOURCE;
 import static com.microsoft.azure.toolkit.intellij.function.runner.component.NewAppServicePlanDialog.CONSUMPTION;
 import static com.microsoft.azure.toolkit.intellij.function.runner.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
 

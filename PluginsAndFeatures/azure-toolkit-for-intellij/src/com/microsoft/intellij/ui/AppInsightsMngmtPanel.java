@@ -33,8 +33,8 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.Applicatio
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.AzureSettings;

@@ -56,7 +56,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
-import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
