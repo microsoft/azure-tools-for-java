@@ -43,12 +43,12 @@ public class ResourceManagementModule extends AzureRefreshableNode implements Re
 
     private static final String RESOURCE_MANAGEMENT_MODULE_ID = ResourceManagementModule.class.getName();
     private static final String ICON_PATH = "arm_resourcegroup.png";
-    private static final String BASE_MODULE_NAME = "Resource Management";
+    protected static final String MODULE_NAME = "Resource Management";
     private final ResourceManagementModulePresenter<ResourceManagementModule> rmModulePresenter;
     public static final Object listenerObj = new Object();
 
     public ResourceManagementModule(Node parent) {
-        super(RESOURCE_MANAGEMENT_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+        super(RESOURCE_MANAGEMENT_MODULE_ID, MODULE_NAME, parent, ICON_PATH);
         rmModulePresenter = new ResourceManagementModulePresenter<>();
         rmModulePresenter.onAttachView(ResourceManagementModule.this);
         createListener();

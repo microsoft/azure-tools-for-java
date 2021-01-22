@@ -30,11 +30,12 @@ import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.intellij.wizards.createarmvm.CreateVMWizard;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
-@Name("Create VM")
+@Name("Create")
 public class CreateVMAction extends NodeActionListener {
     private static final String ERROR_CREATING_VIRTUAL_MACHINE = "Error creating virtual machine";
     private VMArmModule vmModule;
@@ -49,6 +50,11 @@ public class CreateVMAction extends NodeActionListener {
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isSuccess) -> {
             this.doActionPerformed(e, isSuccess, project);
         });
+    }
+
+    @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     private void doActionPerformed(NodeActionEvent e, boolean isLoggedIn, Project project) {

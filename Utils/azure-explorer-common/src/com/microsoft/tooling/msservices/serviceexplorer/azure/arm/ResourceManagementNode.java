@@ -24,17 +24,17 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 
 import java.util.List;
@@ -66,8 +66,14 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_DELETE, new DeleteResourceGroupAction());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         super.loadActions();
+    }
+
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(ResourceManagementModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
@@ -99,30 +105,9 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
         return rgName;
     }
 
-    private class DeleteResourceGroupAction extends AzureNodeActionPromptListener {
-        DeleteResourceGroupAction() {
-            super(ResourceManagementNode.this, String.format(DELETE_RESOURCE_GROUP_PROMPT_MESSAGE, rgName),
-                DELETE_RESOURCE_GROUP_PROGRESS_MESSAGE);
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) {
-            getParent().removeNode(sid, rgName, ResourceManagementNode.this);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
-        }
-
-        @Override
-        public int getPriority() {
-            return Sortable.LOW_PRIORITY;
-        }
-
-        @Override
-        public int getGroup() {
-            return Groupable.MAINTENANCE_GROUP;
-        }
+    @AzureOperation(value = ActionConstants.ResourceManagement.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        getParent().removeNode(sid, rgName, ResourceManagementNode.this);
     }
 
 }

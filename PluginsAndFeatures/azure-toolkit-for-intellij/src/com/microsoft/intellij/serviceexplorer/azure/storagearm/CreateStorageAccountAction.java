@@ -30,11 +30,12 @@ import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 
-@Name("Create Storage Account...")
+@Name("Create")
 public class CreateStorageAccountAction extends NodeActionListener {
 
     public static final String ERROR_CREATING_STORAGE_ACCOUNT = "Error creating storage account";
@@ -42,6 +43,11 @@ public class CreateStorageAccountAction extends NodeActionListener {
 
     public CreateStorageAccountAction(StorageModule storageModule) {
         this.storageModule = storageModule;
+    }
+
+    @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     @Override

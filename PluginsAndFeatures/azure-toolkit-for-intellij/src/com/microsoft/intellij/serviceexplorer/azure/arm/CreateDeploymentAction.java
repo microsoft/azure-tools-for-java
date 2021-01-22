@@ -33,13 +33,14 @@ import com.microsoft.intellij.forms.arm.CreateDeploymentForm;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 
-@Name("Create Deployment")
+@Name("Create")
 public class CreateDeploymentAction extends NodeActionListener {
     public static final String ERROR_CREATING_DEPLOYMENT = "Error creating Deployment";
     private final Project project;
@@ -55,6 +56,11 @@ public class CreateDeploymentAction extends NodeActionListener {
     public CreateDeploymentAction(ResourceManagementNode node) {
         this.project = (Project) node.getProject();
         this.node = node;
+    }
+
+    @Override
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 
     @Override

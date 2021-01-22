@@ -24,26 +24,22 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_STORAGE_IN_PORTAL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class StorageNode extends Node implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount_16.png";
@@ -73,84 +69,34 @@ public class StorageNode extends Node implements TelemetryProperties {
         return properties;
     }
 
-    public class OpenInPortalAction extends AzureNodeActionListener {
-
-        public OpenInPortalAction() {
-            super(StorageNode.this, "View storage in portal");
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            openResourcesInPortal(subscriptionId, storageAccount.id());
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return STORAGE;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return OPEN_STORAGE_IN_PORTAL;
-        }
+    @AzureOperation(value = ActionConstants.StorageAccount.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        openResourcesInPortal(subscriptionId, storageAccount.id());
     }
 
-    public class DeleteStorageAccountAction extends AzureNodeActionPromptListener {
-        public DeleteStorageAccountAction() {
-            super(StorageNode.this,
-                    String.format("This operation will delete storage account %s.\nAre you sure you want to continue?", storageAccount.name()),
-                    "Deleting Storage Account");
+    @AzureOperation(value = ActionConstants.StorageAccount.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            return;
         }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
-            try {
-                AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                // not signed in
-                if (azureManager == null) {
-                    return;
-                }
-                Azure azure = azureManager.getAzure(subscriptionId);
-                azure.storageAccounts().deleteByResourceGroup(storageAccount.resourceGroupName(), storageAccount.name());
-                DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        // instruct parent node to remove this node
-                        getParent().removeDirectChildNode(StorageNode.this);
-                    }
-                });
-            } catch (Exception ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
-                        "MS Services - Error Deleting Storage Account", false, true);
-            }
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return STORAGE;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_STORAGE_ACCOUNT;
-        }
+        Azure azure = azureManager.getAzure(subscriptionId);
+        azure.storageAccounts().deleteByResourceGroup(storageAccount.resourceGroupName(), storageAccount.name());
+        DefaultLoader.getIdeHelper().invokeLater(() -> getParent().removeDirectChildNode(StorageNode.this));
     }
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction("Open in Portal", new OpenInPortalAction());
-        addAction("Delete", new DeleteStorageAccountAction());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         return super.initActions();
+    }
+
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(StorageModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     public StorageAccount getStorageAccount() {
