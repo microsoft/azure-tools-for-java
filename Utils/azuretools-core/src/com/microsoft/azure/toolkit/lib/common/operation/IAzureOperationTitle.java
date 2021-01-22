@@ -14,8 +14,6 @@ public interface IAzureOperationTitle {
 
     Object[] getParams();
 
-    String getTitle();
-
     static IAzureOperationTitle fromTitle(String title) {
         return new Simple(title);
     }
@@ -24,7 +22,12 @@ public interface IAzureOperationTitle {
     @RequiredArgsConstructor
     class Simple implements IAzureOperationTitle {
         private final String title;
-        private final String name = "<no_name>";
+        private final String name = null;
         private final Object[] params = new Object[0];
+
+        @Override
+        public String toString() {
+            return title;
+        }
     }
 }

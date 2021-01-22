@@ -30,6 +30,8 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.PropertyKey;
 
+import java.util.Objects;
+
 public class AzureBundle extends AbstractBundle {
 
     public static String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, @NotNull Object... params) {
@@ -53,10 +55,13 @@ public class AzureBundle extends AbstractBundle {
     public static class MessageBundleBasedOperationTitle implements IAzureOperationTitle {
         private final String name;
         private final Object[] params;
+        private String title;
 
-        @Override
-        public String getTitle() {
-            return AzureBundle.ourInstance.getMessage(this.name, params);
+        public String toString() {
+            if (Objects.isNull(this.title)) {
+                this.title = AzureBundle.ourInstance.getMessage(this.name, params);
+            }
+            return this.title;
         }
     }
 }
