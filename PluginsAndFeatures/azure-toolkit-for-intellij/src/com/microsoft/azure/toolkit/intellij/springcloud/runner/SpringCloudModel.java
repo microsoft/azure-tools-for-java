@@ -5,9 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.runner;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
+@Setter
 public class SpringCloudModel {
     private boolean isCreateNewApp;
 
@@ -33,102 +38,6 @@ public class SpringCloudModel {
 
     public boolean isPublic() {
         return isPublic;
-    }
-
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getRuntimeVersion() {
-        return runtimeVersion;
-    }
-
-    public Integer getCpu() {
-        return cpu;
-    }
-
-    public Integer getMemoryInGB() {
-        return memoryInGB;
-    }
-
-    public Integer getInstanceCount() {
-        return instanceCount;
-    }
-
-    public String getJvmOptions() {
-        return jvmOptions;
-    }
-
-    public String getClusterId() {
-        return clusterId;
-    }
-
-    public boolean isEnablePersistentStorage() {
-        return enablePersistentStorage;
-    }
-
-    public Map<String, String> getEnvironment() {
-        return environment;
-    }
-
-    public void setPublic(boolean isPublic) {
-        this.isPublic = isPublic;
-    }
-
-    public void setSubscriptionId(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public void setRuntimeVersion(String runtimeVersion) {
-        this.runtimeVersion = runtimeVersion;
-    }
-
-    public void setCpu(Integer cpu) {
-        this.cpu = cpu;
-    }
-
-    public void setMemoryInGB(Integer memoryInGB) {
-        this.memoryInGB = memoryInGB;
-    }
-
-    public void setInstanceCount(Integer instanceCount) {
-        this.instanceCount = instanceCount;
-    }
-
-    public void setJvmOptions(String jvmOptions) {
-        this.jvmOptions = jvmOptions;
-    }
-
-    public void setEnablePersistentStorage(boolean enablePersistentStorage) {
-        this.enablePersistentStorage = enablePersistentStorage;
-    }
-
-    public void setEnvironment(Map<String, String> environment) {
-        this.environment = environment;
-    }
-
-    public void setCreateNewApp(boolean createNewApp) {
-        isCreateNewApp = createNewApp;
-    }
-
-    public void setClusterId(final String clusterId) {
-        this.clusterId = clusterId;
-    }
-
-    public String getArtifactIdentifier() {
-        return artifactIdentifier;
-    }
-
-    public void setArtifactIdentifier(final String artifactIdentifier) {
-        this.artifactIdentifier = artifactIdentifier;
     }
 
     public Map<String, String> getTelemetryProperties() {

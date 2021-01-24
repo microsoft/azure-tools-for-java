@@ -19,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2020_07_01.ProvisioningState;
 import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
 import com.microsoft.azure.management.appplatform.v2020_07_01.ServiceResource;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
@@ -54,29 +55,29 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
                 }
             });
 
-    private final SpringCloudModel springCloudModel;
+    private final SpringCloudModel model;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        springCloudModel = new SpringCloudModel();
+        model = new SpringCloudModel();
     }
 
     protected SpringCloudDeployConfiguration(@NotNull SpringCloudDeployConfiguration source) {
         super(source);
-        this.springCloudModel = JsonUtils.deepCopyWithJson(source.getModel());
+        this.model = JsonUtils.deepCopyWithJson(source.getModel());
     }
 
     public String getArtifactIdentifier() {
-        return springCloudModel.getArtifactIdentifier();
+        return model.getArtifactIdentifier();
     }
 
     public void setArtifactIdentifier(final String artifactIdentifier) {
-        springCloudModel.setArtifactIdentifier(artifactIdentifier);
+        model.setArtifactIdentifier(artifactIdentifier);
     }
 
     @Override
     public SpringCloudModel getModel() {
-        return this.springCloudModel;
+        return this.model;
     }
 
     @Override
@@ -92,7 +93,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     @Override
     public String getSubscriptionId() {
-        return springCloudModel.getSubscriptionId();
+        return model.getSubscriptionId();
     }
 
     @NotNull
@@ -108,40 +109,40 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public boolean isPublic() {
-        return springCloudModel.isPublic();
+        return model.isPublic();
     }
 
     public String getClusterId() {
-        return springCloudModel.getClusterId();
+        return model.getClusterId();
     }
 
     public boolean isCreateNewApp() {
-        return springCloudModel.isCreateNewApp();
+        return model.isCreateNewApp();
     }
 
     public String getAppName() {
-        return springCloudModel.getAppName();
+        return model.getAppName();
     }
 
     public RuntimeVersion getRuntimeVersion() {
-        final String runtimeString = springCloudModel.getRuntimeVersion();
+        final String runtimeString = model.getRuntimeVersion();
         return StringUtils.isEmpty(runtimeString) ? null : RuntimeVersion.fromString(runtimeString);
     }
 
     public Integer getCpu() {
-        return springCloudModel.getCpu();
+        return model.getCpu();
     }
 
     public Integer getMemoryInGB() {
-        return springCloudModel.getMemoryInGB();
+        return model.getMemoryInGB();
     }
 
     public Integer getInstanceCount() {
-        return springCloudModel.getInstanceCount();
+        return model.getInstanceCount();
     }
 
     public String getJvmOptions() {
-        return springCloudModel.getJvmOptions();
+        return model.getJvmOptions();
     }
 
     public String getResourceGroup() {
@@ -155,59 +156,59 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public boolean isEnablePersistentStorage() {
-        return springCloudModel.isEnablePersistentStorage();
+        return model.isEnablePersistentStorage();
     }
 
     public Map<String, String> getEnvironment() {
-        return springCloudModel.getEnvironment();
+        return model.getEnvironment();
     }
 
     public void setPublic(boolean isPublic) {
-        springCloudModel.setPublic(isPublic);
+        model.setPublic(isPublic);
     }
 
     public void setSubscriptionId(String subscriptionId) {
-        springCloudModel.setSubscriptionId(subscriptionId);
+        model.setSubscriptionId(subscriptionId);
     }
 
     public void setClusterId(String clusterId) {
-        springCloudModel.setClusterId(clusterId);
+        model.setClusterId(clusterId);
     }
 
     public void setAppName(String appName) {
-        springCloudModel.setAppName(appName);
+        model.setAppName(appName);
     }
 
     public void setCreateNewApp(boolean isNewApp) {
-        springCloudModel.setCreateNewApp(isNewApp);
+        model.setCreateNewApp(isNewApp);
     }
 
     public void saveRuntimeVersion(RuntimeVersion runtimeVersion) {
-        springCloudModel.setRuntimeVersion(Objects.toString(runtimeVersion, null));
+        model.setRuntimeVersion(Objects.toString(runtimeVersion, null));
     }
 
     public void setCpu(Integer cpu) {
-        springCloudModel.setCpu(cpu);
+        model.setCpu(cpu);
     }
 
     public void setMemoryInGB(Integer memoryInGB) {
-        springCloudModel.setMemoryInGB(memoryInGB);
+        model.setMemoryInGB(memoryInGB);
     }
 
     public void setInstanceCount(Integer instanceCount) {
-        springCloudModel.setInstanceCount(instanceCount);
+        model.setInstanceCount(instanceCount);
     }
 
     public void setJvmOptions(String jvmOptions) {
-        springCloudModel.setJvmOptions(jvmOptions);
+        model.setJvmOptions(jvmOptions);
     }
 
     public void setEnablePersistentStorage(boolean enablePersistentStorage) {
-        springCloudModel.setEnablePersistentStorage(enablePersistentStorage);
+        model.setEnablePersistentStorage(enablePersistentStorage);
     }
 
     public void setEnvironment(Map<String, String> environment) {
-        springCloudModel.setEnvironment(environment);
+        model.setEnvironment(environment);
     }
 
     @Override
@@ -244,4 +245,16 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         }
     }
 
+    public SpringCloudDeploymentConfig getDeployment() {
+        return SpringCloudDeploymentConfig.builder()
+            .cpu(this.model.getCpu())
+            .memoryInGB(this.model.getMemoryInGB())
+            .instanceCount(this.model.getInstanceCount())
+            .deploymentName(this.model.getDeploymentName())
+            .jvmOptions(this.model.getJvmOptions())
+            .runtimeVersion(this.model.getRuntimeVersion())
+            .enablePersistentStorage(this.model.isEnablePersistentStorage())
+            .environment(this.model.getEnvironment())
+            .build();
+    }
 }

@@ -104,6 +104,7 @@ dependencies {
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.3.0-SNAPSHOT', { force = true }
     aspect "com.microsoft.azure:azure-toolkit-common-lib:0.3.0-SNAPSHOT"
     compile 'com.microsoft.azuretools:azuretools-core:3.50.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
