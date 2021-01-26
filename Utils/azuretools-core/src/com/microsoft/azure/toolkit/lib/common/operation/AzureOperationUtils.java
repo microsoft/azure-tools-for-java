@@ -24,9 +24,6 @@ package com.microsoft.azure.toolkit.lib.common.operation;
 
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.EnvironmentConfiguration;
@@ -34,10 +31,10 @@ import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.functions.FunctionRequest;
 import org.jtwig.functions.SimpleJtwigFunction;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class AzureOperationUtils {
@@ -54,44 +51,25 @@ public class AzureOperationUtils {
         final String messageTemplate = annotation.value();
         final String[] parameters = annotation.params();
         final String[] params = Arrays.stream(parameters).map(expression -> interpretExpression(expression, ref)).toArray(String[]::new);
-        return String.format(messageTemplate, (Object[]) params);
+        return MessageFormat.format(String.format(messageTemplate, (Object[]) params), params);
     }
 
     private static String interpretExpression(String expression, AzureOperationRef ref) {
         final String[] paramNames = ref.getParamNames();
         final Object[] paramValues = ref.getParamValues();
-        final Object targetInstance = ref.getInstance();
-        final String fixedExpression = StringUtils.substring(expression, 1).trim();
-        final String parameterName = fixedExpression.split("[\\s|.]")[0].trim();
-        Object object = null;
-        if (StringUtils.startsWith(expression, "$")) {
-            // process parameter
-            final int parameterIndex = ArrayUtils.indexOf(paramNames, parameterName);
-            if (parameterIndex >= 0) {
-                object = paramValues[parameterIndex];
-            } else {
-                object = null;
-            }
-        } else if (StringUtils.startsWith(expression, "@")) {
-            // member variables
-            final Field variableField = FieldUtils.getField(targetInstance.getClass(), parameterName, true);
-            try {
-                if (variableField != null) {
-                    object = variableField.get(targetInstance);
-                }
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                // swallow exception while get variables
-            }
-        } else {
-            return expression;
+        final Map<String, Object> variables = new HashMap<>();
+        for (int i = 0; i < paramNames.length; i++) {
+            variables.put("$" + paramNames[i], paramValues[i]);
         }
-        return object != null ? interpretInline(fixedExpression, Collections.singletonMap(parameterName, object)) : null;
+        variables.put("$$", ref.getInstance());
+        final String fixedExpression = expression.replace("@.", "$$.").replace("@", "$$.");
+        return interpretInline(fixedExpression, variables);
     }
 
-    private static String interpretInline(String expr, Map<String, Object> variableMap) {
+    private static String interpretInline(String expr, Map<String, Object> variables) {
         final JtwigTemplate template = JtwigTemplate.inlineTemplate(String.format("{{%s}}", expr), jgConfig);
         final JtwigModel model = JtwigModel.newModel();
-        variableMap.forEach(model::with);
+        variables.forEach(model::with);
         return template.render(model);
     }
 
