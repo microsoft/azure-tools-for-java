@@ -152,7 +152,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refresher.debounce();
     }
 
-    @AzureOperation(value = "load/refresh items of combo box", type = AzureOperation.Type.ACTION)
+    @AzureOperation(
+        value = "load/refresh [%s] items in combo box",
+        params = {"@label()"},
+        type = AzureOperation.Type.ACTION
+    )
     private void doRefreshItems() {
         try {
             this.setLoading(true);
@@ -355,5 +359,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 }
             });
         }
+    }
+
+    protected String label() {
+        return this.getClass().getSimpleName();
     }
 }

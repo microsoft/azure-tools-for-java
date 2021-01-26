@@ -44,4 +44,9 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
         }
         return super.getItemText(item);
     }
+
+    @Override
+    protected String label() {
+        return "MySQL Region";
+    }
 }
