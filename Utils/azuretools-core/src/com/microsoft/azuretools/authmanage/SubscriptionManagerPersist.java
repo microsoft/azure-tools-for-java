@@ -25,6 +25,7 @@ package com.microsoft.azuretools.authmanage;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -59,6 +60,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
     }
 
     @Override
+    @AzureOperation(value = "refresh subscriptions cache", type = AzureOperation.Type.SERVICE)
     protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId()
                 + "SubscriptionManagerPersist.updateAccountSubscriptionList()");
@@ -102,6 +104,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         super.cleanSubscriptions();
     }
 
+    @AzureOperation(value = "clear persistent subscriptions cache from file system", type = AzureOperation.Type.TASK)
     public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
         FileStorage fs = null;
@@ -120,6 +123,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
+    @AzureOperation(value = "reload subscriptions cache from file system", type = AzureOperation.Type.TASK)
     private static List<SubscriptionDetail> loadSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("SubscriptionManagerPersist.loadSubscriptions()");
 
@@ -141,6 +145,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
+    @AzureOperation(value = "persist subscriptions cache to file system", type = AzureOperation.Type.TASK)
     private static void saveSubscriptions(List<SubscriptionDetail> sdl, String subscriptionsDetailsFileName)
             throws IOException {
         System.out.println("SubscriptionManagerPersist.saveSubscriptions()");

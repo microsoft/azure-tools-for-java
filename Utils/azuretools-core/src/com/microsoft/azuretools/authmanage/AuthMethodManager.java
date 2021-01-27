@@ -27,6 +27,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -75,6 +76,11 @@ public class AuthMethodManager {
     }
 
     @NotNull
+    @AzureOperation(
+        value = "create rest client for general Azure services in subscription(%s)",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
     public Azure getAzureClient(String sid) {
         final AzureManager manager = getAzureManager();
         if (manager != null) {
@@ -89,6 +95,11 @@ public class AuthMethodManager {
         throw new AzureToolkitRuntimeException(error, null, action, errorCode);
     }
 
+    @AzureOperation(
+        value = "create rest client for Azure Spring Cloud services in subscription(%s)",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
         final AzureManager manager = getAzureManager();
         if (manager != null) {
@@ -99,6 +110,11 @@ public class AuthMethodManager {
         throw new AzureToolkitRuntimeException(error, action);
     }
 
+    @AzureOperation(
+        value = "create rest client for Azure MySQL services in subscription(%s)",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
     public MySQLManager getMySQLManager(String sid) {
         final AzureManager manager = getAzureManager();
         if (manager != null) {
@@ -148,6 +164,7 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
+    @AzureOperation(value = "sign out from Azure", type = AzureOperation.Type.TASK)
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();
@@ -165,6 +182,7 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
+    @AzureOperation(value = "update auth settings", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         cleanAll();
         this.authMethodDetails = authMethodDetails;
@@ -212,6 +230,7 @@ public class AuthMethodManager {
         }
     }
 
+    @AzureOperation(value = "persist auth settings to file system", type = AzureOperation.Type.TASK)
     private void persistAuthMethodDetails() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
@@ -243,6 +262,7 @@ public class AuthMethodManager {
         });
     }
 
+    @AzureOperation(value = "load auth settings from file system", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {
