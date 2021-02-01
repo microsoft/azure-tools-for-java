@@ -114,38 +114,38 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
         return this.functionApp.regionName();
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureFunctionMvpModel.getInstance().startFunction(subscriptionId, this.getFunctionAppId());
         FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
         this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureFunctionMvpModel.getInstance().stopFunction(subscriptionId, this.getFunctionAppId());
         FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
         this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureFunctionMvpModel.getInstance().restartFunction(subscriptionId, this.getFunctionAppId());
         FunctionApp target = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, this.getFunctionAppId());
         this.renderNode(WebAppBaseState.fromString(target.state()));
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getFunctionAppId(), FunctionAppNode.this);
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(subscriptionId, this.getFunctionAppId());
     }
 
-    @AzureOperation(value = ActionConstants.FunctionApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.FunctionApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
     }

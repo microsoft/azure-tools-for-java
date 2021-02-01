@@ -75,7 +75,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(value = "create function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "create function app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
@@ -85,7 +85,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(value = "open function app creation dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "open function app creation dialog", type = AzureOperation.Type.ACTION)
     private void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         if (Objects.nonNull(data)) {
@@ -105,7 +105,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(value = "create function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "create function app", type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
         final AzureTask<FunctionApp> task = new AzureTask<>(null, operation("function.create.task.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
@@ -118,7 +118,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(FunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

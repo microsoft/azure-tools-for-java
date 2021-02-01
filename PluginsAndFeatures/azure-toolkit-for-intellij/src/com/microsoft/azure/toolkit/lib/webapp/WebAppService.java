@@ -46,7 +46,7 @@ public class WebAppService {
     }
 
     @AzureOperation(
-        value = "create web app[%s, rg=%s] in subscription[%s]",
+        name = "create web app[%s, rg=%s] in subscription[%s]",
         params = {
             "$config.getName()",
             "$config.getResourceGroup().name()",
@@ -72,7 +72,7 @@ public class WebAppService {
     }
 
     @AzureOperation(
-        value = "init web app configuration",
+        name = "init web app configuration",
         type = AzureOperation.Type.TASK
     )
     public static WebAppSettingModel convertConfig2Settings(final WebAppConfig config) {

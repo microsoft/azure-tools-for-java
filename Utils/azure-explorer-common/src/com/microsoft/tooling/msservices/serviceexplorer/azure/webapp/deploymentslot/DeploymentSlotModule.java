@@ -59,14 +59,14 @@ public class DeploymentSlotModule extends AzureRefreshableNode implements Deploy
     }
 
     @Override
-    @AzureOperation(value = "remove deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "remove deployment slot", type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
         presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
         removeDirectChildNode(node);
     }
 
     @Override
-    @AzureOperation(value = "refresh deployment slots", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "refresh deployment slots", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
     }

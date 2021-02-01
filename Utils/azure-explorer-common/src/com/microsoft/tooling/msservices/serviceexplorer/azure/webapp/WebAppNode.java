@@ -71,7 +71,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     @Override
-    @AzureOperation(value = "refresh content of web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "refresh content of web app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         this.renderSubModules();
     }
@@ -132,35 +132,35 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return webapp;
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), WebAppNode.this);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureWebAppMvpModel.getInstance().startWebApp(this.subscriptionId, this.webapp.id());
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureWebAppMvpModel.getInstance().stopWebApp(this.subscriptionId, this.webapp.id());
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureWebAppMvpModel.getInstance().restartWebApp(this.subscriptionId, this.webapp.id());
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }

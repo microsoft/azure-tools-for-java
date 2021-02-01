@@ -48,7 +48,7 @@ public class AzureOperationUtils {
 
     public static String getOperationTitle(@NotNull AzureOperationRef ref) {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(ref);
-        final String messageTemplate = annotation.value();
+        final String messageTemplate = annotation.name();
         final String[] parameters = annotation.params();
         final String[] params = Arrays.stream(parameters).map(expression -> interpretExpression(expression, ref)).toArray(String[]::new);
         return MessageFormat.format(String.format(messageTemplate, (Object[]) params), params);

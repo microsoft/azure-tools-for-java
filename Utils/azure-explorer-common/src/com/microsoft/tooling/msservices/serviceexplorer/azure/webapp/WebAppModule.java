@@ -65,13 +65,13 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    @AzureOperation(value = "reload web apps", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "reload web apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         webAppModulePresenter.onModuleRefresh();
     }
 
     @Override
-    @AzureOperation(value = "delete web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "delete web app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         webAppModulePresenter.onDeleteWebApp(sid, id);
         removeDirectChildNode(node);

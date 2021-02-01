@@ -99,7 +99,7 @@ public class CreateMySQLAction extends NodeActionListener {
         AzureTaskManager.getInstance().runInBackground(task);
     }
 
-    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(Server server) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

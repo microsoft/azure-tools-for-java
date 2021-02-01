@@ -143,7 +143,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "check if project[%s] is a valid function project",
+        name = "check if project[%s] is a valid function project",
         params = {"$project.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -162,7 +162,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "find function methods from module[%s] by annotation",
+        name = "find function methods from module[%s] by annotation",
         params = {"$model.getName"},
         type = AzureOperation.Type.TASK
     )
@@ -197,7 +197,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "copy local settings[%s] to staging folder[%s]",
+        name = "copy local settings[%s] to staging folder[%s]",
         params = {"$model.getName"},
         type = AzureOperation.Type.TASK
     )
@@ -212,7 +212,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "prepare staging folder for function method",
+        name = "prepare staging folder for function method",
         type = AzureOperation.Type.TASK
     )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)

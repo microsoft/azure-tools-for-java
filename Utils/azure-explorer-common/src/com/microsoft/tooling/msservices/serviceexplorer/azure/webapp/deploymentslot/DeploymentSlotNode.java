@@ -110,47 +110,47 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     @Override
-    @AzureOperation(value = "refresh deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "refresh deployment slot", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         final WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
         final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);
         this.renderNode(WebAppBaseState.fromString(slot.state()));
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureWebAppMvpModel.getInstance().startDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureWebAppMvpModel.getInstance().stopDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureWebAppMvpModel.getInstance().restartDeploymentSlot(subscriptionId, webAppId, slotName);
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.getSubscriptionId(), this.getName(), DeploymentSlotNode.this);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
     private void swap() {
         AzureWebAppMvpModel.getInstance().swapSlotWithProduction(subscriptionId, webAppId, slotName);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + this.hostName);
     }
 
-    @AzureOperation(value = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
     }

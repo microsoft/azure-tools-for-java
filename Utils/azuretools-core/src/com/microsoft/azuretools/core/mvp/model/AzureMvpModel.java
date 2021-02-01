@@ -75,7 +75,7 @@ public class AzureMvpModel {
      * @return Instance of Subscription
      */
     @AzureOperation(
-        value = "load details of subscription[%s]",
+        name = "load details of subscription[%s]",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -96,7 +96,7 @@ public class AzureMvpModel {
      * @return List of Subscription instances
      */
     @AzureOperation(
-        value = "load details of all selected subscriptions",
+        name = "load details of all selected subscriptions",
         type = AzureOperation.Type.SERVICE
     )
     public List<Subscription> getSelectedSubscriptions() {
@@ -125,7 +125,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        value = "list all resource groups of selected subscription",
+        name = "list all resource groups of selected subscription",
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups(boolean forceUpdate) throws CanceledByUserException {
@@ -155,7 +155,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        value = "delete resource group[%s]",
+        name = "delete resource group[%s]",
         params = {"$rgName"},
         type = AzureOperation.Type.SERVICE
     )
@@ -172,7 +172,7 @@ public class AzureMvpModel {
      * @return List of ResourceGroup instances
      */
     @AzureOperation(
-        value = "list all resource groups of subscription[%s]",
+        name = "list all resource groups of subscription[%s]",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -188,7 +188,7 @@ public class AzureMvpModel {
      * Get Resource Group by Subscription ID and Resource Group name.
      */
     @AzureOperation(
-        value = "load details of resource group[%s] in subscription[%s]",
+        name = "load details of resource group[%s] in subscription[%s]",
         params = {"$name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -207,7 +207,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        value = "list all deployments of selected subscriptions",
+        name = "list all deployments of selected subscriptions",
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> listAllDeployments() {
@@ -226,7 +226,7 @@ public class AzureMvpModel {
     }
 
     @AzureOperation(
-        value = "list all deployments of subscription[%s]",
+        name = "list all deployments of subscription[%s]",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -243,7 +243,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        value = "list all deployments of resource group[%s] in subscription[%s]",
+        name = "list all deployments of resource group[%s] in subscription[%s]",
         params = {"$name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -264,7 +264,7 @@ public class AzureMvpModel {
      * @return List of Location instances
      */
     @AzureOperation(
-        value = "load all locations of subscription[%s]",
+        name = "load all locations of subscription[%s]",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -286,7 +286,7 @@ public class AzureMvpModel {
      * @return List of PricingTier instances.
      */
     @AzureOperation(
-        value = "list all available pricing tiers",
+        name = "list all available pricing tiers",
         params = {"$name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )

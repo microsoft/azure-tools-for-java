@@ -58,7 +58,7 @@ public class DeploySpringCloudAction extends AzureAnAction {
     }
 
     @Override
-    @AzureOperation(value = "deploy spring cloud application", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "deploy spring cloud application", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = anActionEvent.getData(LangDataKeys.MODULE);
         if (module == null) {

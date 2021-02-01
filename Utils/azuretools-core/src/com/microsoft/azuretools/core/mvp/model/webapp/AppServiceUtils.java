@@ -35,7 +35,7 @@ import java.nio.file.Paths;
 @Log
 public class AppServiceUtils {
     @AzureOperation(
-        value = "get publishing profile of function app[%s] with secret",
+        name = "get publishing profile of function app[%s] with secret",
         params = {"$webAppBase.name()"},
         type = AzureOperation.Type.TASK
     )

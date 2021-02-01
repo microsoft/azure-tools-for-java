@@ -66,14 +66,14 @@ public class SubscriptionManager {
         return subscriptionIdToSubscriptionMap;
     }
 
-    @AzureOperation(value = "get details of all cached subscriptions", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "get details of all cached subscriptions", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return subscriptionDetails;
     }
 
-    @AzureOperation(value = "get details of selected subscriptions", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "get details of selected subscriptions", type = AzureOperation.Type.TASK)
     public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
@@ -91,7 +91,7 @@ public class SubscriptionManager {
         }
     }
 
-    @AzureOperation(value = "refresh cached subscriptions", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "refresh cached subscriptions", type = AzureOperation.Type.SERVICE)
     protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.updateAccountSubscriptionList()");
 

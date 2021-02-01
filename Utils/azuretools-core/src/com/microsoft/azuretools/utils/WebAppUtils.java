@@ -80,7 +80,7 @@ public class WebAppUtils {
 
     @NotNull
     @AzureOperation(
-        value = "prepare ftp connection for deployment",
+        name = "prepare ftp connection for deployment",
         type = AzureOperation.Type.TASK
     )
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -302,7 +302,7 @@ public class WebAppUtils {
      * @param progressIndicator
      */
     @AzureOperation(
-        value = "deploy artifact[%s] to app[%s]",
+        name = "deploy artifact[%s] to app[%s]",
         params = {"$artifact.getName()", "$deployTarget.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -360,7 +360,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "archive artifact[%s] to temporary zip file for deployment",
+        name = "archive artifact[%s] to temporary zip file for deployment",
         params = {"$artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -466,7 +466,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "delete web app[%s]",
+        name = "delete web app[%s]",
         params = {"$webAppDetails.webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -485,7 +485,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "update artifact of web app[%s]",
+        name = "update artifact of web app[%s]",
         params = {"$webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -517,7 +517,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "upload artifact[%s] to web app[%s]",
+        name = "upload artifact[%s] to web app[%s]",
         params = {"$fileName", "$webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -539,7 +539,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "upload file to ftp server",
+        name = "upload file to ftp server",
         type = AzureOperation.Type.TASK
     )
     private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) {

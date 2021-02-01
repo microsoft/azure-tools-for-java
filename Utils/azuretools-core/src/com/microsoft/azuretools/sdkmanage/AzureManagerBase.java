@@ -109,7 +109,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    @AzureOperation(value = "get tenant id of subscription(%s)", params = {"$subscriptionId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "get tenant id of subscription(%s)", params = {"$subscriptionId"}, type = AzureOperation.Type.TASK)
     public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
@@ -129,7 +129,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    @AzureOperation(value = "load subscriptions from authorized tenants", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "load subscriptions from authorized tenants", type = AzureOperation.Type.SERVICE)
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
@@ -268,7 +268,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    @AzureOperation(value = "get all subscriptions of tenant(%s)", params = {"$authentication.tenantId()"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "get all subscriptions of tenant(%s)", params = {"$authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
         return authentication.subscriptions().listAsync()
                 .toList()
@@ -276,7 +276,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
-    @AzureOperation(value = "get all authorized tenants", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "get all authorized tenants", type = AzureOperation.Type.TASK)
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
                 .toList()
@@ -284,7 +284,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
-    @AzureOperation(value = "authenticate tenant(%s)", params = {"$tenantId"}, type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "authenticate tenant(%s)", params = {"$tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()

@@ -51,7 +51,7 @@ public class FunctionsNode extends RefreshableNode {
     }
 
     @Override
-    @AzureOperation(value = "refresh functions in function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "refresh functions in function app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() throws AzureCmdException {
         AzureFunctionMvpModel.getInstance()
                 .listFunctionEnvelopeInFunctionApp(subscriptionId, functionApp.id())
