@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -57,8 +58,8 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-import static com.microsoft.intellij.ui.messages.AzureBundle.operation;
 
 public class CreateWebAppAction extends NodeActionListener {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
@@ -113,7 +114,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "create web app", type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureTask<WebApp> task = new AzureTask<>(null, operation("webapp.create.title", config.getName()), false, () -> {
+        final AzureTask<WebApp> task = new AzureTask<>(null, title("webapp.create.title", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
@@ -126,7 +127,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "deploy artifact to web app", type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask<Void> task = new AzureTask<>(null, operation("webapp.deploy.title", webapp.name()), false, () -> {
+        final AzureTask<Void> task = new AzureTask<>(null, title("webapp.deploy.title", webapp.name()), false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();

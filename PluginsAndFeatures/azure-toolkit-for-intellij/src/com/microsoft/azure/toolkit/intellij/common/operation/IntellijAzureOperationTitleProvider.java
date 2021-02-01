@@ -20,24 +20,20 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.ui.messages;
+package com.microsoft.azure.toolkit.intellij.common.operation;
 
 import com.intellij.AbstractBundle;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.PropertyKey;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 
-public class AzureBundle extends AbstractBundle {
+public class IntellijAzureOperationTitleProvider extends AbstractBundle implements AzureOperationBundle.Provider {
 
-    public static String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, @NotNull Object... params) {
-        return ourInstance.getMessage(key, params);
+    private static final IntellijAzureOperationTitleProvider INSTANCE = new IntellijAzureOperationTitleProvider();
+
+    private IntellijAzureOperationTitleProvider() {
+        super(AzureOperationBundle.TITLES);
     }
 
-    @NonNls
-    private static final String BUNDLE = "com.microsoft.intellij.ui.messages.messages";
-    private static final AzureBundle ourInstance = new AzureBundle();
-
-    private AzureBundle() {
-        super(BUNDLE);
+    public static void register() {
+        AzureOperationBundle.register(INSTANCE);
     }
 }

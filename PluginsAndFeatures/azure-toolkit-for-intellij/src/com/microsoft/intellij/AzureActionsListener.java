@@ -33,6 +33,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
+import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
@@ -91,6 +92,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureExceptionHandler.register(IntelliJAzureExceptionHandler.getInstance());
+        IntellijAzureOperationTitleProvider.register();
         Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());

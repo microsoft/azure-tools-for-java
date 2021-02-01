@@ -40,8 +40,8 @@ import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.util.logging.Logger;
 
+import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-import static com.microsoft.intellij.ui.messages.AzureBundle.operation;
 
 /**
  * SSH into Web App Action
@@ -78,7 +78,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
-        final IAzureOperationTitle title = operation("webapp.ssh.task.connectWebApp.title", webAppName);
+        final IAzureOperationTitle title = title("webapp.ssh.task.connectWebApp.title", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             // check these conditions to ssh into web app
             if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
@@ -93,7 +93,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                final IAzureOperationTitle messageTitle = operation("webapp.ssh.task.openSSH.title", webAppName);
+                final IAzureOperationTitle messageTitle = title("webapp.ssh.task.openSSH.title", webAppName);
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(project, messageTitle, false, () -> {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
