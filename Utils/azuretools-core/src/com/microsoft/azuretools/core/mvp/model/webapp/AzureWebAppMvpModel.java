@@ -80,7 +80,7 @@ public class AzureWebAppMvpModel {
      */
     @NotNull
     @AzureOperation(
-        name = "get detail info of web app[%s] in subscription[%s]",
+        name = "webapp.get",
         params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -104,7 +104,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "get detail info of web app[%s] in subscription[%s]",
+        name = "webapp.get",
         params = {"$appName", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -117,8 +117,8 @@ public class AzureWebAppMvpModel {
      * API to create new Web App by setting model.
      */
     @AzureOperation(
-        name = "create web app[%s, rg=%s] in subscription[%s]",
-        params = {"$model.getWebAppName()", "$model.getResourceGroup()", "$model.getSubscriptionId()"},
+        name = "webapp.create_detail",
+        params = {"$model.getWebAppName()"},
         type = AzureOperation.Type.SERVICE
     )
     public WebApp createWebApp(@NotNull WebAppSettingModel model) {
@@ -136,7 +136,7 @@ public class AzureWebAppMvpModel {
      * API to create a new Deployment Slot by setting model.
      */
     @AzureOperation(
-        name = "create deployment[%s] for web app[%s]",
+        name = "webapp|deployment.create",
         params = {"$model.getNewSlotName()", "$model.getWebAppName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -323,12 +323,11 @@ public class AzureWebAppMvpModel {
      * @throws IOException IOExceptions
      */
     @AzureOperation(
-        name = "create web app[%s, rg=%s] with private registry image[%s] in subscription[%s]",
+        name = "dockerapp.create_from_private_image",
         params = {
             "$model.getWebAppName()",
-            "$model.getResourceGroup()",
-            "$model.getPrivateRegistryImageSetting().getImageNameWithTag()",
-            "$model.getSubscriptionId()"
+            "$model.getSubscriptionId()",
+            "$model.getPrivateRegistryImageSetting().getImageNameWithTag()"
         },
         type = AzureOperation.Type.SERVICE
     )
@@ -407,7 +406,7 @@ public class AzureWebAppMvpModel {
      * @return instance of the updated Web App on Linux
      */
     @AzureOperation(
-        name = "update docker image of web app[%s] to [%s]",
+        name = "dockerapp|image.update",
         params = {"$webAppId|uri_to_name", "$imageSetting.getImageNameWithTag()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -437,7 +436,7 @@ public class AzureWebAppMvpModel {
      * @param toRemove entries to remove
      */
     @AzureOperation(
-        name = "update settings of web app[%s]",
+        name = "webapp.update_settings",
         params = {"$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -456,7 +455,7 @@ public class AzureWebAppMvpModel {
      * Update app settings of deployment slot.
      */
     @AzureOperation(
-        name = "update settings of deployment slot[%s] of web app[%s]",
+        name = "webapp|deployment.update_settings",
         params = {"$slotName", "$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -489,7 +488,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "start deployment slot[%s] of web app[%s]",
+        name = "webapp|deployment.start",
         params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -500,7 +499,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "stop deployment slot[%s] of web app[%s]",
+        name = "webapp|deployment.stop",
         params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -511,7 +510,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "restart deployment slot[%s] of web app[%s]",
+        name = "webapp|deployment.restart",
         params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -522,7 +521,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "swap deployment slot[%s] of web app[%s] for production",
+        name = "webapp|deployment.swap",
         params = {"$slotName", "$appId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -533,11 +532,7 @@ public class AzureWebAppMvpModel {
         slot.swap("production");
     }
 
-    @AzureOperation(
-        name = "delete deployment slot[%s] of web app[%s]",
-        params = {"$slotName", "$appId|uri_to_name"},
-        type = AzureOperation.Type.SERVICE
-    )
+    @AzureOperation(name = "webapp|deployment.delete", params = {"$slotName", "$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     public void deleteDeploymentSlotNode(final String subscriptionId, final String appId,
                                          final String slotName) {
         final WebApp app = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
@@ -547,11 +542,7 @@ public class AzureWebAppMvpModel {
     /**
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
-    @AzureOperation(
-        name = "get deployment slots of web app[%s]",
-        params = {"$appId|uri_to_name"},
-        type = AzureOperation.Type.SERVICE
-    )
+    @AzureOperation(name = "webapp|deployment.list", params = {"$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     public @Nullable List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
@@ -568,7 +559,7 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id and resource group name.
      */
     @AzureOperation(
-        name = "get all service plans in resource group[%s] of subscription[$s]",
+        name = "service_plan.list.subscription|rg",
         params = {"$group", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -581,7 +572,7 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id.
      */
     @AzureOperation(
-        name = "get all service plans in subscription[$s]",
+        name = "service_plan.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -628,7 +619,7 @@ public class AzureWebAppMvpModel {
      * @return list of Web App
      */
     @AzureOperation(
-        name = "get all web apps in selected subscription(s)",
+        name = "webapp.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
@@ -678,7 +669,7 @@ public class AzureWebAppMvpModel {
      */
     @NotNull
     @AzureOperation(
-        name = "get all web apps in subscription[%s]",
+        name = "webapp.list.subscription",
         params = {"$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
@@ -729,7 +720,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "get all web containers",
+        name = "common|web_container.list",
         type = AzureOperation.Type.TASK
     )
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
@@ -742,7 +733,7 @@ public class AzureWebAppMvpModel {
      * List available Third Party JDKs.
      */
     @AzureOperation(
-        name = "get all available JDKs",
+        name = "common.list_jdks",
         type = AzureOperation.Type.TASK
     )
     public List<JdkModel> listJdks() {
@@ -757,7 +748,7 @@ public class AzureWebAppMvpModel {
      * linux runtimes, do we really need to get the values from Mvp model every time?
      */
     @AzureOperation(
-        name = "get all available linux runtime stacks",
+        name = "common.list_linux_runtime",
         type = AzureOperation.Type.TASK
     )
     public List<RuntimeStack> getLinuxRuntimes() {
@@ -788,7 +779,7 @@ public class AzureWebAppMvpModel {
      * @return status indicating whether it is successful or not
      */
     @AzureOperation(
-        name = "get publishing profile of web app[%s] with secret",
+        name = "webapp.get_publishing_profile",
         params = {"$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -801,7 +792,7 @@ public class AzureWebAppMvpModel {
      * Download publish profile of deployment slot.
      */
     @AzureOperation(
-        name = "get publishing profile of deployment slot[%s] of web app[%s] with secret",
+        name = "webapp|deployment.get_publishing_profile",
         params = {"$slotName", "$webAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -849,7 +840,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "clear local cache of web apps",
+        name = "webapp.clear_cache",
         type = AzureOperation.Type.TASK
     )
     public void clearWebAppsCache() {
@@ -857,7 +848,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "get all available regions with pricing tier[%s] in subscription[%s]",
+        name = "region.list.subscription|tier",
         params = {"$pricingTier", "$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )

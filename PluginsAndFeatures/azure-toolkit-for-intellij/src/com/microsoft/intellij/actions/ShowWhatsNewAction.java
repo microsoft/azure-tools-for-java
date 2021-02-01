@@ -42,7 +42,7 @@ public class ShowWhatsNewAction extends AzureAnAction {
     private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
 
     @Override
-    @AzureOperation(name = "load what's new document", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.load_whatsnew", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull final AnActionEvent anActionEvent, @Nullable final Operation operation) {
         final Project project = anActionEvent.getProject();
         try {

@@ -75,7 +75,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(name = "create function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
         AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project).subscribe((isLoggedIn) -> {
@@ -85,7 +85,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(name = "open function app creation dialog", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.open_creation_dialog", type = AzureOperation.Type.ACTION)
     private void openDialog(final Project project, @Nullable final FunctionAppConfig data) {
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         if (Objects.nonNull(data)) {
@@ -105,9 +105,9 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
-    @AzureOperation(name = "create function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureTask<FunctionApp> task = new AzureTask<>(null, title("function.create.task.title", config.getName()), false, () -> {
+        final AzureTask<FunctionApp> task = new AzureTask<>(null, title("function.create_detail", config.getName()), false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return functionAppService.createFunctionApp(config);
@@ -118,7 +118,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(name = "refresh azure explorer", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "explorer.refresh", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(FunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

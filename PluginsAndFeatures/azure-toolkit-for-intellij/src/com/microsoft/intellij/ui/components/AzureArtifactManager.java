@@ -65,7 +65,7 @@ public class AzureArtifactManager {
     }
 
     @AzureOperation(
-        name = "get identifier of artifact[%s]",
+        name = "common|artifact.get_id",
         params = {"$artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -85,7 +85,7 @@ public class AzureArtifactManager {
     }
 
     @AzureOperation(
-        name = "get file of artifact[%s]",
+        name = "common|artifact.get_file",
         params = {"$artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
