@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -113,7 +114,8 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "webapp.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<WebApp> createWebApp(final WebAppConfig config) {
-        final AzureTask<WebApp> task = new AzureTask<>(null, title("webapp.create_detail", config.getName()), false, () -> {
+        final IAzureOperationTitle title = title("webapp.create_detail", config.getName());
+        final AzureTask<WebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return webappService.createWebApp(config);
@@ -126,7 +128,8 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "webapp.deploy_artifact", params = {"$webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final AzureTask<Void> task = new AzureTask<>(null, title("webapp.deploy_artifact", webapp.name()), false, () -> {
+        final IAzureOperationTitle title = title("webapp.deploy_artifact", webapp.name());
+        final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
             processHandler.addDefaultListener();

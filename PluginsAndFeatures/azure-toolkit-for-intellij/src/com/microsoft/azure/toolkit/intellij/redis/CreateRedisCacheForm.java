@@ -36,6 +36,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -287,7 +289,8 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
             currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
-            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("location.list.subscription", currentSub.getSubscriptionName());
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, title, false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
                     fillLocationsAndResourceGrps(currentSub);

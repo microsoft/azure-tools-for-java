@@ -25,6 +25,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -60,13 +62,13 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         });
     }
 
-    @AzureOperation(name = "appservice|file.download", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "app_service|file.download", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "appservice|file.refresh", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "app_service|file.refresh", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
@@ -76,7 +78,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
                         .forEach(this::addChildNode);
     }
 
-    @AzureOperation(name = "appservice|file.open", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "app_service|file.open", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }
@@ -90,8 +92,8 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             return;
         }
         final Runnable runnable = () -> open(context);
-        final String message = String.format("fetching file (%s)...", this.file.getName());
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), message, false, runnable));
+        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|file.get_content", file.getName(), file.getApp().name());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), title, false, runnable));
     }
 
     @Override

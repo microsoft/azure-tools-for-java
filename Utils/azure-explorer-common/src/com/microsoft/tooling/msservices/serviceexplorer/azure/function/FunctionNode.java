@@ -28,6 +28,8 @@ import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -72,7 +74,8 @@ public class FunctionNode extends Node {
             @Override
             @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
+                final IAzureOperationTitle title = AzureOperationBundle.title("function|trigger.start");
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> trigger()));
             }
         }));
         // todo: find whether there is sdk to enable/disable trigger

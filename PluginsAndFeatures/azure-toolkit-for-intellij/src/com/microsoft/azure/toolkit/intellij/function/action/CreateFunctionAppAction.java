@@ -33,6 +33,7 @@ import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
@@ -107,7 +108,8 @@ public class CreateFunctionAppAction extends NodeActionListener {
 
     @AzureOperation(name = "function.create_detail", params = {"$config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
-        final AzureTask<FunctionApp> task = new AzureTask<>(null, title("function.create_detail", config.getName()), false, () -> {
+        final IAzureOperationTitle title = title("function.create_detail", config.getName());
+        final AzureTask<FunctionApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return functionAppService.createFunctionApp(config);
