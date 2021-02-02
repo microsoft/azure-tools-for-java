@@ -23,6 +23,9 @@
 package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -74,7 +77,8 @@ public class StartStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(service, operation, op -> {
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("app_service|log_stream.start", ResourceUtils.nameFromResourceId(resourceId));
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 switch (operation) {
                     case START_STREAMING_LOG_FUNCTION_APP:
                         AppServiceStreamingLogManager.INSTANCE.showFunctionStreamingLog(project, resourceId);

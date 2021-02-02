@@ -25,7 +25,11 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -54,10 +58,8 @@ public enum AppServiceStreamingLogManager {
     INSTANCE;
 
     private static final String STREAMING_LOG_NOT_STARTED = message("appService.logStreaming.hint.notStart");
-    private static final String STARTING_STREAMING_LOG = message("appService.logStreaming.hint.start");
     private static final String FAILED_TO_START_STREAMING_LOG = message("appService.logStreaming.error.startFailed");
     private static final String FAILED_TO_CLOSE_STREAMING_LOG = message("appService.logStreaming.error.closeFailed");
-    private static final String CLOSING_STREAMING_LOG = message("appService.logStreaming.hint.closing");
     private static final String ENABLE_LOGGING = "Enable logging";
     private static final String NOT_SUPPORTED = "Not supported";
     private static final String SITES = "sites";
@@ -79,8 +81,10 @@ public enum AppServiceStreamingLogManager {
         showAppServiceStreamingLog(project, functionId, new FunctionLogStreaming(functionId));
     }
 
+    @AzureOperation(name = "app_service|log_stream.close", params = {"$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     public void closeStreamingLog(Project project, String appId) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, CLOSING_STREAMING_LOG, false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|log_stream.close", ResourceUtils.nameFromResourceId(appId));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
             } else {
@@ -90,8 +94,10 @@ public enum AppServiceStreamingLogManager {
         }));
     }
 
+    @AzureOperation(name = "app_service|log_stream.open", params = {"$resourceId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, STARTING_STREAMING_LOG, false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|log_stream.open", ResourceUtils.nameFromResourceId(resourceId));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             try {
                 final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);

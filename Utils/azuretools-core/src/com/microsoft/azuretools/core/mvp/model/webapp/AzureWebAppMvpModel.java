@@ -720,7 +720,7 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "common|web_container.list",
+        name = "common.list_web_containers",
         type = AzureOperation.Type.TASK
     )
     public List<WebAppUtils.WebContainerMod> listWebContainers() {

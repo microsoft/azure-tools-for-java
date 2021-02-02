@@ -164,7 +164,7 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
-    @AzureOperation(name = "auth.signout", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "auth.sign_out", type = AzureOperation.Type.TASK)
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();

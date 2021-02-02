@@ -42,6 +42,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.psi.PsiFile;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.AzureAnAction;
@@ -88,7 +90,8 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return true;
         }
 
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Update Azure Spring Cloud dependencies", true, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("spring_cloud.update_dependency", project.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());
             final SettableFuture<Boolean> isDirty = SettableFuture.create();

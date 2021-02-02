@@ -88,7 +88,7 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
         return subscriptionId;
     }
 
-    @AzureOperation(name = "common.show_properties", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "common.show_properties", params = {"@deployment.name()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
         DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
