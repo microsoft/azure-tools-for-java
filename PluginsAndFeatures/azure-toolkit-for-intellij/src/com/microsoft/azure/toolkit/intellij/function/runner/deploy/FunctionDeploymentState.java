@@ -70,7 +70,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(name = "deploy function app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "function.deploy.state", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         updateTelemetryMap(telemetryMap);
@@ -101,11 +101,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return deployFunctionHandler.execute();
     }
 
-    @AzureOperation(
-        name = "get or create function[%s] details from Azure server",
-        params = {"@deployModel.getAppName()"},
-        type = AzureOperation.Type.SERVICE
-    )
     private FunctionApp createFunctionApp(RunProcessHandler processHandler) {
         FunctionApp functionApp =
                 AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
@@ -123,7 +118,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @AzureOperation(
-        name = "prepare staging folder[%s] for function[%s]",
+        name = "function.prepare_staging_folder_detail",
         params = {"$stagingFolder.getName()", "@deployModel.getAppName()"},
         type = AzureOperation.Type.TASK
     )
@@ -148,7 +143,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     @AzureOperation(
-        name = "complete the deployment of function[%s] and refresh Azure Explorer",
+        name = "function.complete_deployment",
         params = {"@deployModel.getAppName()"},
         type = AzureOperation.Type.TASK
     )
