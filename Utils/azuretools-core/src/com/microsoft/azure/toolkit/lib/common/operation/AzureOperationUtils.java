@@ -51,7 +51,7 @@ public class AzureOperationUtils {
         final String messageTemplate = annotation.value();
         final String[] parameters = annotation.params();
         final String[] params = Arrays.stream(parameters).map(expression -> interpretExpression(expression, ref)).toArray(String[]::new);
-        return MessageFormat.format(String.format(messageTemplate, (Object[]) params), params);
+        return MessageFormat.format(messageTemplate, (Object[]) params);
     }
 
     private static String interpretExpression(String expression, AzureOperationRef ref) {
@@ -62,7 +62,7 @@ public class AzureOperationUtils {
             variables.put("$" + paramNames[i], paramValues[i]);
         }
         variables.put("$$", ref.getInstance());
-        final String fixedExpression = expression.replace("@.", "$$.").replace("@", "$$.");
+        final String fixedExpression = expression.replace("@", "$$.");
         return interpretInline(fixedExpression, variables);
     }
 
