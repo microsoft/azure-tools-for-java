@@ -84,6 +84,10 @@ sourceSets {
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        url 'https://pkgs.dev.azure.com/azure-toolkits/Java/_packaging/azure-toolkits-maven/maven/v1'
+        name 'azure-toolkits-maven'
+    }
 }
 
 configurations {
@@ -97,6 +101,7 @@ configurations {
 apply plugin: 'java'
 
 dependencies {
+    compile(group: 'com.microsoft.azure', name: 'azure-toolkit-appservice-lib', version: '0.2.0-SNAPSHOT')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.7'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'

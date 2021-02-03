@@ -53,6 +53,9 @@
         <azure.storage.file.datalake.version>12.3.0</azure.storage.file.datalake.version>
         <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
         <findsecbugs.version>1.11.0</findsecbugs.version>
+        <azure.resourcemanager.version>2.1.0</azure.resourcemanager.version>
+        <azure-identity.version>1.2.1</azure-identity.version>
+        <azure.toolkit-lib.version>0.2.0-SNAPSHOT</azure.toolkit-lib.version>
     </properties>
     <modules>
         <module>./check-tools</module>
@@ -62,6 +65,7 @@
         <module>./hdinsight-node-common</module>
         <module>./spark-localrun-mock</module>
     </modules>
+
     <profiles>
         <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
         <profile>
@@ -613,6 +617,23 @@
                 <version>1.7.0RC4</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>com.azure.resourcemanager</groupId>
+                <artifactId>azure-resourcemanager</artifactId>
+                <version>${azure.resourcemanager.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-identity</artifactId>
+                <version>${azure-identity.version}</version>
+            </dependency>
+            <!-- Tooling library -->
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-appservice-lib</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+            </dependency>
+            <!-- Tooling library -->
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -622,4 +643,16 @@
             <version>4.2</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>azure-toolkits-maven</id>
+            <url>https://pkgs.dev.azure.com/azure-toolkits/Java/_packaging/azure-toolkits-maven/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

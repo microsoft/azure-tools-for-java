@@ -22,6 +22,10 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.azure.core.credential.AccessToken;
+import com.azure.core.management.AzureEnvironment;
+import com.azure.core.management.profile.AzureProfile;
+import com.azure.resourcemanager.AzureResourceManager;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
@@ -33,11 +37,31 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.utils.Pair;
+import org.parboiled.common.StringUtils;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface AzureManager {
+    default AzureResourceManager getAzureResourceManager(String sid) {
+        // Todo: replace with identity implement
+        final AzureEnvironment azureEnvironment = AzureEnvironment.knownEnvironments().stream()
+                .filter(environment -> StringUtils.equalsIgnoreCase(environment.getManagementEndpoint(),
+                        getEnvironment().getAzureEnvironment().managementEndpoint()))
+                .findFirst().orElse(AzureEnvironment.AZURE);
+        final AzureProfile azureProfile = new AzureProfile(azureEnvironment);
+        return AzureResourceManager.authenticate(tokenRequestContext -> {
+            try {
+                final String token = getAccessToken(azureProfile.getEnvironment().getManagementEndpoint());
+                return Mono.just(new AccessToken(token, OffsetDateTime.MAX));
+            } catch (IOException e) {
+                return Mono.error(e);
+            }
+        }, azureProfile).withSubscription(sid);
+    }
+
     Azure getAzure(String sid);
 
     AppPlatformManager getAzureSpringCloudClient(String sid);
