@@ -41,12 +41,12 @@ public final class AzureOperationAspect {
 
     @Before("operation()")
     public void beforeEnter(JoinPoint point) {
-        enterOperation(point);
+        final AzureOperationRef operation = enterOperation(point);
     }
 
     @AfterReturning("operation()")
     public void afterReturning(JoinPoint point) {
-        exitOperation(point);
+        final AzureOperationRef operation = exitOperation(point);
     }
 
     @AfterThrowing(pointcut = "operation()", throwing = "e")
