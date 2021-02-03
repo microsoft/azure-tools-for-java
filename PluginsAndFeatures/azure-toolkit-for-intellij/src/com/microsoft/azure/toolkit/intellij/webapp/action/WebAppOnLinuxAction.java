@@ -58,7 +58,7 @@ public class WebAppOnLinuxAction extends AzureAnAction {
     }
 
     @Override
-    @AzureOperation(name = "dockerapp.start.configuration", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "docker.start.configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {

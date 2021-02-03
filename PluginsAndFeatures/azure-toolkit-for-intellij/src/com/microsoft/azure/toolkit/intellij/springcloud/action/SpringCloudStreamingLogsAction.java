@@ -73,7 +73,7 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            final IAzureOperationTitle title = AzureOperationBundle.title("spring_cloud|log_stream.open", ResourceUtils.nameFromResourceId(appId));
+            final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(appId));
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =

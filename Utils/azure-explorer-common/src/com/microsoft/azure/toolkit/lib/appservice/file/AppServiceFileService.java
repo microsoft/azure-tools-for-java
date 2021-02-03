@@ -59,7 +59,7 @@ public class AppServiceFileService {
 
     @Nullable
     @AzureOperation(
-            name = "app_service|file.get.path",
+            name = "appservice|file.get.path",
             params = {"$path", "@app.name()"},
             type = AzureOperation.Type.SERVICE
     )
@@ -73,7 +73,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        name = "app_service|file.list.dir",
+        name = "appservice|file.list.dir",
         params = {"$dir", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -89,7 +89,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        name = "app_service|file.get_content",
+        name = "appservice|file.get_content",
         params = {"$path", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -110,7 +110,7 @@ public class AppServiceFileService {
     }
 
     @AzureOperation(
-        name = "app_service|file.upload",
+        name = "appservice|file.upload",
         params = {"$path", "@app.name()"},
         type = AzureOperation.Type.SERVICE
     )

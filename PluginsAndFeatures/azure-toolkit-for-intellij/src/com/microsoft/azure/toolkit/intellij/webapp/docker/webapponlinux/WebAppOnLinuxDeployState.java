@@ -65,7 +65,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     }
 
     @Override
-    @AzureOperation(name = "dockerapp.deploy_image.state", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
     public WebApp executeSteps(@NotNull RunProcessHandler processHandler,
                                @NotNull Map<String, String> telemetryMap) throws Exception {
         processHandler.setText("Starting job ...  ");

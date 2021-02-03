@@ -75,7 +75,7 @@ public class AzureMvpModel {
      * @return Instance of Subscription
      */
     @AzureOperation(
-        name = "subscription.get_detail",
+        name = "account|subscription.get_detail",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -96,7 +96,7 @@ public class AzureMvpModel {
      * @return List of Subscription instances
      */
     @AzureOperation(
-        name = "subscription.get_detail.selected",
+        name = "account|subscription.get_detail.selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<Subscription> getSelectedSubscriptions() {
@@ -125,7 +125,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "rg.list.subscription|selected",
+        name = "arm|rg.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<ResourceGroup>> getResourceGroups(boolean forceUpdate) throws CanceledByUserException {
@@ -155,7 +155,7 @@ public class AzureMvpModel {
      * @return
      */
     @AzureOperation(
-        name = "rg.delete",
+        name = "arm|rg.delete",
         params = {"$rgName"},
         type = AzureOperation.Type.SERVICE
     )
@@ -172,7 +172,7 @@ public class AzureMvpModel {
      * @return List of ResourceGroup instances
      */
     @AzureOperation(
-        name = "rg.list.subscription",
+        name = "arm|rg.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -188,7 +188,7 @@ public class AzureMvpModel {
      * Get Resource Group by Subscription ID and Resource Group name.
      */
     @AzureOperation(
-        name = "rg.get.subscription",
+        name = "arm|rg.get.subscription",
         params = {"$name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -264,7 +264,7 @@ public class AzureMvpModel {
      * @return List of Location instances
      */
     @AzureOperation(
-        name = "location.list.subscription",
+        name = "common|region.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )

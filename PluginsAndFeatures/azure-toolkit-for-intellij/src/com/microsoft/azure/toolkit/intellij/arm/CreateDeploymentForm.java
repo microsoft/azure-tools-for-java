@@ -223,7 +223,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
         Map<SubscriptionDetail, List<Location>> subscription2Location =
                 AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
-            final IAzureOperationTitle title = AzureOperationBundle.title("subscription|cache.flush");
+            final IAzureOperationTitle title = AzureOperationBundle.title("account|subscription.flush_cache");
             AzureTaskManager.getInstance().runInModal(new AzureTask(project, title, false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);

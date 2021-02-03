@@ -140,7 +140,7 @@ public class AzureSignInAction extends AzureAnAction {
         }
     }
 
-    @AzureOperation(name = "auth.sign_in", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "account.sign_in", type = AzureOperation.Type.SERVICE)
     public static Single<Boolean> doSignIn(AuthMethodManager authMethodManager, Project project) {
         final boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {

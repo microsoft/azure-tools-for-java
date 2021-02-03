@@ -120,7 +120,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         });
     }
 
-    @AzureOperation(name = "explorer.refresh", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "common|explorer.refresh", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(FunctionApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

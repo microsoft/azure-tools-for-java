@@ -116,7 +116,7 @@ public class AzureFunctionMvpModel {
      * List app service plan by subscription id and resource group name.
      */
     @AzureOperation(
-        name = "service_plan.list.subscription|rg",
+        name = "appservice|plan.list.subscription|rg",
         params = {"$group", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -133,7 +133,7 @@ public class AzureFunctionMvpModel {
      * List app service plan by subscription id.
      */
     @AzureOperation(
-        name = "service_plan.list.subscription",
+        name = "appservice|plan.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )

@@ -81,9 +81,9 @@ public enum AppServiceStreamingLogManager {
         showAppServiceStreamingLog(project, functionId, new FunctionLogStreaming(functionId));
     }
 
-    @AzureOperation(name = "app_service|log_stream.close", params = {"$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "appservice|log_stream.close", params = {"$appId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     public void closeStreamingLog(Project project, String appId) {
-        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|log_stream.close", ResourceUtils.nameFromResourceId(appId));
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|log_stream.close", ResourceUtils.nameFromResourceId(appId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
@@ -94,9 +94,9 @@ public enum AppServiceStreamingLogManager {
         }));
     }
 
-    @AzureOperation(name = "app_service|log_stream.open", params = {"$resourceId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "appservice|log_stream.open", params = {"$resourceId|uri_to_name"}, type = AzureOperation.Type.SERVICE)
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
-        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|log_stream.open", ResourceUtils.nameFromResourceId(resourceId));
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|log_stream.open", ResourceUtils.nameFromResourceId(resourceId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             try {
                 final String name = logStreaming.getTitle();

@@ -182,7 +182,7 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     public Single<AuthMethodDetails> login() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("auth.sign_in");
+        final IAzureOperationTitle title = AzureOperationBundle.title("account.sign_in");
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);

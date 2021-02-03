@@ -164,7 +164,7 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
-    @AzureOperation(name = "auth.sign_out", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();
@@ -182,7 +182,7 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
-    @AzureOperation(name = "auth|setting.update", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         cleanAll();
         this.authMethodDetails = authMethodDetails;
@@ -230,7 +230,7 @@ public class AuthMethodManager {
         }
     }
 
-    @AzureOperation(name = "auth|setting.persist", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
     private void persistAuthMethodDetails() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
@@ -262,7 +262,7 @@ public class AuthMethodManager {
         });
     }
 
-    @AzureOperation(name = "auth|setting.load", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {

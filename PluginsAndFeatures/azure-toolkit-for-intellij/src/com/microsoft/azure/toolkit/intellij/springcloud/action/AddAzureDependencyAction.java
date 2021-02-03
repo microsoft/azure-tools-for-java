@@ -90,7 +90,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return true;
         }
 
-        final IAzureOperationTitle title = AzureOperationBundle.title("spring_cloud.update_dependency", project.getName());
+        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud.update_dependency", project.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());

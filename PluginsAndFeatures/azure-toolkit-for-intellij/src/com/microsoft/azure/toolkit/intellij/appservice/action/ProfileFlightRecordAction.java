@@ -83,7 +83,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
                                  "start-flight-recorder", op -> {
-                final IAzureOperationTitle title = AzureOperationBundle.title("app_service|flight_recorder.profile");
+                final IAzureOperationTitle title = AzureOperationBundle.title("appservice|flight_recorder.profile");
                 final AzureTask task = new AzureTask(project, title, true, this::doProfileFlightRecorderAll, AzureTask.Modality.ANY);
                 AzureTaskManager.getInstance().runInBackground(task);
             });

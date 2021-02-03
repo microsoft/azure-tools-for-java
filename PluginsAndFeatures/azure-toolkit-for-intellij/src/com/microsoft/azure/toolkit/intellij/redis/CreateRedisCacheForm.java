@@ -289,7 +289,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
             currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
-            final IAzureOperationTitle title = AzureOperationBundle.title("location.list.subscription", currentSub.getSubscriptionName());
+            final IAzureOperationTitle title = AzureOperationBundle.title("common|region.list.subscription", currentSub.getSubscriptionName());
             AzureTaskManager.getInstance().runInModal(new AzureTask(project, title, false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);

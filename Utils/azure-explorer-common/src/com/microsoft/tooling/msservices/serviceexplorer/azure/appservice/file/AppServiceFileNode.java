@@ -62,13 +62,13 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         });
     }
 
-    @AzureOperation(name = "app_service|file.download", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.download", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(name = "app_service|file.refresh", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.refresh", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
@@ -78,7 +78,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
                         .forEach(this::addChildNode);
     }
 
-    @AzureOperation(name = "app_service|file.open", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "appservice|file.open", params = {"@file.getName()"}, type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }
@@ -92,7 +92,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             return;
         }
         final Runnable runnable = () -> open(context);
-        final IAzureOperationTitle title = AzureOperationBundle.title("app_service|file.get_content", file.getName(), file.getApp().name());
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.get_content", file.getName(), file.getApp().name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), title, false, runnable));
     }
 

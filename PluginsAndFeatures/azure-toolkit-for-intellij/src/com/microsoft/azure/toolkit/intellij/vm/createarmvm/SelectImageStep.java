@@ -256,7 +256,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 final DefaultComboBoxModel<String> loadingModel = new DefaultComboBoxModel<>(new String[]{"<Loading...>"});
                 regionComboBox.setModel(loadingModel);
                 model.getCurrentNavigationState().NEXT.setEnabled(false);
-                final IAzureOperationTitle title = AzureOperationBundle.title("location.list.subscription", model.getSubscription().getSubscriptionName());
+                final IAzureOperationTitle title = AzureOperationBundle.title("common|region.list.subscription", model.getSubscription().getSubscriptionName());
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                     try {
                         AzureModelController.updateSubscriptionMaps(null);
