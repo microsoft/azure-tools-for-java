@@ -26,6 +26,8 @@ import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -187,7 +189,7 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            final String title = "Creating Application Insights Resource " + txtName.getText();
+            final IAzureOperationTitle title = AzureOperationBundle.title("ai.create.rg", txtName.getText(), resourceGroup);
             AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 try {
                     ApplicationInsightsComponent resource = AzureSDKManager.createInsightsResource(

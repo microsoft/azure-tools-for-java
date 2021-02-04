@@ -23,6 +23,8 @@
 package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
@@ -49,7 +51,8 @@ public class SpringCloudStreamingLogManager {
     public void showStreamingLog(Project project, String appId, String instanceName) {
         final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
                 instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Starting Streaming Log...", false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.start", instanceName);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             try {
                 consoleView.startLog(() -> {
                     try {
@@ -67,7 +70,8 @@ public class SpringCloudStreamingLogManager {
     }
 
     public void closeStreamingLog(String instanceName) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, "Closing Streaming Log...", false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.close", instanceName);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
             final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
             if (consoleView != null && consoleView.getStatus() == ACTIVE) {
                 consoleView.shutdown();

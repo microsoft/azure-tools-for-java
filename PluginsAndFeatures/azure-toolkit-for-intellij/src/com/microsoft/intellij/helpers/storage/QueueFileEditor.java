@@ -226,26 +226,6 @@ public class QueueFileEditor implements FileEditor {
                         new String[]{"Yes", "No"},
                         null,
                         null);
-
-                if (optionDialog == 0) {
-                    AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Clearing queue messages", false, () -> {
-                           /* try {
-
-                                StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
-
-                                AzureTaskManager.getInstance().runLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        fillGrid();
-                                    }
-                                });
-                            } catch (AzureCmdException e) {
-                                String msg = "An error occurred while attempting to clear queue messages." + "\n" +
-                                String.format(message("webappExpMsg"), e.getMessage());
-                                PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                            }*/
-                    }));
-                }
             }
         });
         node.addAction(OPEN, new NodeActionListener() {

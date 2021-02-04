@@ -35,12 +35,7 @@ import lombok.SneakyThrows;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AzurePerformanceMetricsCollector {
@@ -53,6 +48,8 @@ public class AzurePerformanceMetricsCollector {
     private static final String TELEMETRY_OP_ID = "id";
     private static final String TELEMETRY_OP_PARENT_ID = "parent_id";
     private static final String TELEMETRY_OP_NAME = "name";
+    private static final String TELEMETRY_OP_SERVICE_NAME = "servicename";
+    private static final String TELEMETRY_OP_OPERATION_NAME = "operationname";
     private static final String TELEMETRY_OP_TYPE = "type";
     private static final String OP_ACTION_CREATE = "CREATE";
     private static final String OP_ACTION_ENTER = "ENTER";
@@ -87,10 +84,17 @@ public class AzurePerformanceMetricsCollector {
         final Deque<IAzureOperation> ctxOperations = AzureTaskContext.getContextOperations();
         final Optional<IAzureOperation> parent = Optional.ofNullable(ctxOperations.peekFirst());
         final Map<String, String> properties = new HashMap<>();
+        final String name = op.getName().replaceAll("\\(.+\\)", "(***)"); // e.g. `appservice|file.list.dir`
+        final String[] parts = name.split("\\."); // ["appservice|file", "list", "dir"]
+        final String[] compositeServiceName = parts[0].split("\\|"); // ["appservice", "file"]
+        final String mainServiceName = compositeServiceName[0]; // "appservice"
+        final String operationName = compositeServiceName.length > 1 ? parts[1] + "_" + compositeServiceName[1] : parts[1]; // "list_file"
         properties.put(TELEMETRY_OP_CONTEXT_ID, getCompositeId(ctxOperations, op));
         properties.put(TELEMETRY_OP_ID, op.getId());
         properties.put(TELEMETRY_OP_PARENT_ID, parent.map(IAzureOperation::getId).orElse("/"));
-        properties.put(TELEMETRY_OP_NAME, op.getName().replaceAll("\\(.+\\)","(***)"));
+        properties.put(TELEMETRY_OP_NAME, name);
+        properties.put(TELEMETRY_OP_SERVICE_NAME, mainServiceName);
+        properties.put(TELEMETRY_OP_OPERATION_NAME, operationName);
         properties.put(TELEMETRY_OP_TYPE, op.getType());
         return properties;
     }
@@ -124,11 +128,13 @@ public class AzurePerformanceMetricsCollector {
     }
 
     private static void writeToCsvFile(Map<String, String> properties) throws IOException {
-        final String val = String.format("%s, %s, %s, %s, %s, %s, %s",
+        final String val = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s",
             properties.get(TELEMETRY_OP_CONTEXT_ID),
             properties.get(TELEMETRY_OP_TIMESTAMP),
             properties.get(TELEMETRY_OP_ID),
             properties.get(TELEMETRY_OP_NAME),
+            properties.get(TELEMETRY_OP_SERVICE_NAME),
+            properties.get(TELEMETRY_OP_OPERATION_NAME),
             properties.get(TELEMETRY_OP_TYPE),
             properties.get(TELEMETRY_OP_ACTION),
             properties.get(TELEMETRY_OP_PARENT_ID)
