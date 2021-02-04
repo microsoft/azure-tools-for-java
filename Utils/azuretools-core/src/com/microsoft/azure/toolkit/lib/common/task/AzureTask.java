@@ -123,7 +123,7 @@ public class AzureTask<T> implements IAzureOperation {
 
     @Override
     public String getName() {
-        return Optional.ofNullable(this.getTitle()).map(IAzureOperationTitle::getName).orElse("<no_name>");
+        return Optional.ofNullable(this.getTitle()).map(IAzureOperationTitle::getName).orElse("<unknown>.<unknown>");
     }
 
     @Override

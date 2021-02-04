@@ -45,7 +45,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInBackground(final Runnable runnable, final AzureTask<?> task) {
-        final String title = String.format("Processing (%s)...", task.getTitle().toString());
+        final String title = String.format("Doing %s...", task.getTitle().toString());
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
