@@ -36,6 +36,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -208,7 +210,8 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         if (vmSizeComboBox.getItemCount() == 0) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading VM sizes...", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().name());
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
 

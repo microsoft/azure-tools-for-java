@@ -71,7 +71,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     @Override
-    @AzureOperation(name = "refresh content of web app", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.refresh", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         this.renderSubModules();
     }
