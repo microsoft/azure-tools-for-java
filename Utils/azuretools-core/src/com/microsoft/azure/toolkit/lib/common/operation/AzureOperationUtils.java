@@ -61,7 +61,7 @@ public class AzureOperationUtils {
             variables.put("$" + paramNames[i], paramValues[i]);
         }
         variables.put("$$", ref.getInstance());
-        final String fixedExpression = expression.replace("@.", "$$.").replace("@", "$$.");
+        final String fixedExpression = expression.replace("@", "$$.");
         return interpretInline(fixedExpression, variables);
     }
 
