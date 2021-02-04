@@ -110,7 +110,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     @Override
-    @AzureOperation(name = "refresh deployment slot", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp|deployment.refresh", params = {"@slotName", "@webAppName"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         final WebApp app = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
         final DeploymentSlot slot = app.deploymentSlots().getByName(slotName);

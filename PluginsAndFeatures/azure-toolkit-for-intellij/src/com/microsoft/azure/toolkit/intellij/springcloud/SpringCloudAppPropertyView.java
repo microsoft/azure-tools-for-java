@@ -365,8 +365,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                 new String[]{"Yes", "No"},
                                                                 null)) {
             freezeUI();
-            final String title = String.format("%s app (%s)", actionName, this.appName);
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+            final String message = String.format("%s app (%s)", actionName, this.appName);
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, message, false, () -> {
                 EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
                     action.accept(changes);
                 });

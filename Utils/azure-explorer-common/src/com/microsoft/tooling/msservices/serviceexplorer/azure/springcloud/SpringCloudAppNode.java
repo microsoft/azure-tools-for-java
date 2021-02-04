@@ -145,15 +145,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 .withInstanceName(name);
     }
 
-    private static NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
-        return new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
-            }
-        };
-    }
-
     private static String getStatusDisplay(DeploymentResourceStatus status) {
         return status == null ? "Unknown" : status.toString();
     }
