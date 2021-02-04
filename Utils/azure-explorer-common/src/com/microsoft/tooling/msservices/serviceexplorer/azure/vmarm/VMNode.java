@@ -64,7 +64,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         return running ? AzureIconSymbol.VirtualMachine.RUNNING : AzureIconSymbol.VirtualMachine.STOPPED;
     }
 
-    @AzureOperation(value = ActionConstants.VirtualMachine.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.VirtualMachine.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
@@ -78,19 +78,19 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         });
     }
 
-    @AzureOperation(value = ActionConstants.VirtualMachine.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.VirtualMachine.START, type = AzureOperation.Type.ACTION)
     private void start() {
         virtualMachine.start();
         refreshItems();
     }
 
-    @AzureOperation(value = ActionConstants.VirtualMachine.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.VirtualMachine.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         virtualMachine.restart();
         refreshItems();
     }
 
-    @AzureOperation(value = ActionConstants.VirtualMachine.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.VirtualMachine.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         virtualMachine.powerOff();
         refreshItems();

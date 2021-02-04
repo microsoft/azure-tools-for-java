@@ -77,7 +77,7 @@ public class AuthMethodManager {
 
     @NotNull
     @AzureOperation(
-        value = "create rest client for general Azure services in subscription(%s)",
+        name = "common|rest_client.create",
         params = {"$sid"},
         type = AzureOperation.Type.TASK
     )
@@ -96,7 +96,7 @@ public class AuthMethodManager {
     }
 
     @AzureOperation(
-        value = "create rest client for Azure Spring Cloud services in subscription(%s)",
+        name = "common|rest_client.create_asc",
         params = {"$sid"},
         type = AzureOperation.Type.TASK
     )
@@ -111,7 +111,7 @@ public class AuthMethodManager {
     }
 
     @AzureOperation(
-        value = "create rest client for Azure MySQL services in subscription(%s)",
+        name = "common|rest_client.create_mysql",
         params = {"$sid"},
         type = AzureOperation.Type.TASK
     )
@@ -164,7 +164,7 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
-    @AzureOperation(value = "sign out from Azure", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
     public void signOut() {
         cleanAll();
         notifySignOutEventListener();
@@ -182,7 +182,7 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
-    @AzureOperation(value = "update auth settings", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         cleanAll();
         this.authMethodDetails = authMethodDetails;
@@ -230,7 +230,7 @@ public class AuthMethodManager {
         }
     }
 
-    @AzureOperation(value = "persist auth settings to file system", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
     private void persistAuthMethodDetails() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
@@ -262,7 +262,7 @@ public class AuthMethodManager {
         });
     }
 
-    @AzureOperation(value = "load auth settings from file system", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {

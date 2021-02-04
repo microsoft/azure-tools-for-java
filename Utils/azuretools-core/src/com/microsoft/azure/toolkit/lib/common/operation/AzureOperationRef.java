@@ -49,12 +49,12 @@ public class AzureOperationRef implements IAzureOperation {
     @Override
     public String toString() {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
-        return String.format("{title:'%s', method:%s}", annotation.value(), method.getName());
+        return String.format("{title:'%s', method:%s}", annotation.name(), method.getName());
     }
 
     public String getName() {
         final AzureOperation annotation = AzureOperationUtils.getAnnotation(this);
-        return annotation.value();
+        return annotation.name();
     }
 
     public String getType() {

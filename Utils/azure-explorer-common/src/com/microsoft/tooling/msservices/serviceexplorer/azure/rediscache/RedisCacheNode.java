@@ -125,12 +125,12 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    @AzureOperation(value = ActionConstants.RedisCache.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.RedisCache.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    @AzureOperation(value = ActionConstants.RedisCache.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.RedisCache.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         String portalUrl = "";
         try {

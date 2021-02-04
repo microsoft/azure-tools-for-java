@@ -32,6 +32,8 @@ import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -86,7 +88,8 @@ public class UpdateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         String deploymentName = deploymentNode.getDeployment().name();
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Update your azure resource (" + deploymentName + ")...", false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("arm|deployment.update", deploymentName);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.UPDATE_DEPLOYMENT, (operation -> {
                 Deployment.Update update = deploymentNode.getDeployment().update();
 
