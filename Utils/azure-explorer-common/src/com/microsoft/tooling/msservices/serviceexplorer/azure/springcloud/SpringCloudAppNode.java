@@ -145,15 +145,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 .withInstanceName(name);
     }
 
-    private static NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
-        return new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
-            }
-        };
-    }
-
     private static String getStatusDisplay(DeploymentResourceStatus status) {
         return status == null ? "Unknown" : status.toString();
     }
@@ -195,36 +186,36 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         syncActionState();
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         AzureSpringCloudMvpModel.deleteApp(this.id).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(id, null);
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.START, type = AzureOperation.Type.ACTION)
     private void start() {
         AzureSpringCloudMvpModel.startApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         AzureSpringCloudMvpModel.stopApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         AzureSpringCloudMvpModel.restartApp(app.id(), app.properties().activeDeploymentName()).await();
         SpringCloudMonitorUtil.awaitAndMonitoringStatus(app.id(), status);
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         openResourcesInPortal(getSubscriptionId(), getAppId());
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
         // add this statement for false updating notice to update Property view
@@ -233,7 +224,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 app, deploy);
     }
 
-    @AzureOperation(value = ActionConstants.SpringCloud.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.SpringCloud.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         if (StringUtils.isNotEmpty(app.properties().url())) {
             DefaultLoader.getUIHelper().openInBrowser(app.properties().url());

@@ -103,39 +103,39 @@ public class MySQLNode extends Node {
         this.serverState = result.userVisibleState();
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         this.serverState = SERVER_UPDATING;
         this.getParent().removeNode(this.getSubscriptionId(), this.getId(), MySQLNode.this);
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.START, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.START, type = AzureOperation.Type.ACTION)
     private void start() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.start(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.STOP, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.STOP, type = AzureOperation.Type.ACTION)
     private void stop() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.stop(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.RESTART, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.RESTART, type = AzureOperation.Type.ACTION)
     private void restart() {
         this.serverState = SERVER_UPDATING;
         MySQLMvpModel.restart(this.getSubscriptionId(), this.getServer());
         this.refreshNode();
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         this.openResourcesInPortal(this.subscriptionId, this.server.id());
     }
 
-    @AzureOperation(value = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
     }

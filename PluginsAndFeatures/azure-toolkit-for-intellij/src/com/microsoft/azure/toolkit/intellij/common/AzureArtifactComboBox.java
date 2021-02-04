@@ -166,4 +166,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
             this.setSelectedItem(null);
         }
     }
+
+    @Override
+    protected String label() {
+        return "Artifact";
+    }
 }

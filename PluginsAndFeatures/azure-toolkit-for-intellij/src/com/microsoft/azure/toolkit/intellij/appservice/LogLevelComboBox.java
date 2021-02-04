@@ -36,4 +36,9 @@ public class LogLevelComboBox extends AzureComboBox<LogLevel> {
     protected List<? extends LogLevel> loadItems() throws Exception {
         return Arrays.asList(LogLevel.ERROR, LogLevel.WARNING, LogLevel.INFORMATION, LogLevel.VERBOSE);
     }
+
+    @Override
+    protected String label() {
+        return "Log Level";
+    }
 }

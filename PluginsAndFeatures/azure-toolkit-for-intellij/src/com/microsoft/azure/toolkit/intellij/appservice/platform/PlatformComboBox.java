@@ -66,4 +66,9 @@ public class PlatformComboBox extends AzureComboBox<Platform> {
     protected List<? extends Platform> loadItems() throws Exception {
         return platformList;
     }
+
+    @Override
+    protected String label() {
+        return "Platform/Runtime Stack";
+    }
 }

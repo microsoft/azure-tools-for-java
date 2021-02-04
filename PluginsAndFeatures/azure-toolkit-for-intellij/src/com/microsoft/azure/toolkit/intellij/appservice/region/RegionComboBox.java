@@ -75,4 +75,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
         }
         return Collections.emptyList();
     }
+
+    @Override
+    protected String label() {
+        return "Region/Location";
+    }
 }

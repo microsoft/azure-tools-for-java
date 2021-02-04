@@ -74,7 +74,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(value = "deploy web app with configuration", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.deploy_artifact", params = {"@webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
@@ -92,7 +92,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
-    @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "webapp.open_browser.state", type = AzureOperation.Type.ACTION)
     private void openWebAppInBrowser(String url, RunProcessHandler processHandler) {
         try {
             Desktop.getDesktop().browse(new URL(url).toURI());
@@ -107,8 +107,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    @AzureOperation(value = "update local configuration and open url of web app in local browser", type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(name = "webapp.complete_starting.state", type = AzureOperation.Type.ACTION)
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
@@ -170,7 +169,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @AzureOperation(
-        value = "get the artifact to be deployed to web app[%s]",
+        name = "webapp|artifact.get.state",
         params = {"@webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -186,7 +185,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @AzureOperation(
-        value = "create web app[%s]",
+        name = "webapp.create_detail",
         params = {"@webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -201,7 +200,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @AzureOperation(
-        value = "create deployment slot for web app[%s]",
+        name = "webapp|deployment.create.state",
         params = {"@webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )

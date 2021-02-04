@@ -51,4 +51,9 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
         }
         return ((Subscription) item).displayName();
     }
+
+    @Override
+    protected String label() {
+        return "Subscription";
+    }
 }

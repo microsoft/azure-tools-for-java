@@ -69,12 +69,12 @@ public class StorageNode extends Node implements TelemetryProperties {
         return properties;
     }
 
-    @AzureOperation(value = ActionConstants.StorageAccount.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.StorageAccount.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
         openResourcesInPortal(subscriptionId, storageAccount.id());
     }
 
-    @AzureOperation(value = ActionConstants.StorageAccount.DELETE, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = ActionConstants.StorageAccount.DELETE, type = AzureOperation.Type.ACTION)
     private void delete() {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
