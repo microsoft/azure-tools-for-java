@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
-import com.microsoft.azure.toolkit.lib.common.performance.AzurePerformanceMetricsCollector;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import lombok.extern.java.Log;
 import org.aspectj.lang.JoinPoint;
@@ -43,7 +43,7 @@ public final class AzureOperationAspect {
 
     private static AzureOperationRef enterOperation(JoinPoint point) {
         final AzureOperationRef operation = toOperationRef(point);
-        AzurePerformanceMetricsCollector.beforeEnter(operation);
+        AzureTelemeter.beforeEnter(operation);
         AzureTaskContext.current().pushOperation(operation);
         return operation;
     }
@@ -51,7 +51,7 @@ public final class AzureOperationAspect {
     private static AzureOperationRef exitOperation(JoinPoint point) {
         final AzureOperationRef current = toOperationRef(point);
         final AzureOperationRef operation = (AzureOperationRef) AzureTaskContext.current().popOperation();
-        AzurePerformanceMetricsCollector.afterExit(operation);
+        AzureTelemeter.afterExit(operation);
         assert Objects.equals(current, operation) : String.format("popped operation[%s] is not the exiting operation[%s]", current, operation);
         return operation;
     }

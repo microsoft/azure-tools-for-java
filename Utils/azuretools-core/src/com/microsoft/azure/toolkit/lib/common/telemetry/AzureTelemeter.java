@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.lib.common.performance;
+package com.microsoft.azure.toolkit.lib.common.telemetry;
 
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -12,8 +12,10 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import lombok.SneakyThrows;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import org.joda.time.Instant;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,45 +23,48 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AzurePerformanceMetricsCollector {
+public class AzureTelemeter {
     private static final File file = new File(System.getProperty("user.home") + "/performance.csv");
 
-    private static final String PERFORMANCE = "PERFORMANCE";
-    private static final String TELEMETRY_OP_TIMESTAMP = "timestamp";
-    private static final String TELEMETRY_OP_ACTION = "action";
-    private static final String TELEMETRY_OP_CONTEXT_ID = "context_id";
-    private static final String TELEMETRY_OP_ID = "id";
-    private static final String TELEMETRY_OP_PARENT_ID = "parent_id";
-    private static final String TELEMETRY_OP_NAME = "name";
-    private static final String TELEMETRY_OP_SERVICE_NAME = "servicename";
-    private static final String TELEMETRY_OP_OPERATION_NAME = "operationname";
-    private static final String TELEMETRY_OP_TYPE = "type";
+    private static final String OP_ID = "id";
+    private static final String OP_NAME = "name";
+    private static final String OP_TIMESTAMP = "timestamp";
+    private static final String OP_TYPE = "type";
+    private static final String OP_SERVICE_NAME = "serviceName";
+    private static final String OP_OPERATION_NAME = "operationName";
+    private static final String OP_ACTION = "action";
+    private static final String OP_PARENT_ID = "parentId";
+    private static final String OP_CONTEXT_ID = "contextId";
     private static final String OP_ACTION_CREATE = "CREATE";
     private static final String OP_ACTION_ENTER = "ENTER";
     private static final String OP_ACTION_EXIT = "EXIT";
 
     public static void afterCreate(final IAzureOperation op) {
-        final long timestamp = System.currentTimeMillis();
         final Map<String, String> properties = buildProperties(op);
-        properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
-        properties.put(TELEMETRY_OP_ACTION, OP_ACTION_CREATE);
-        sendTelemetry(properties);
+        properties.put(OP_TIMESTAMP, Instant.now().toString());
+        properties.put(OP_ACTION, OP_ACTION_CREATE);
+        AzureTelemeter.log(EventType.info, properties);
     }
 
     public static void beforeEnter(final IAzureOperation op) {
-        final long timestamp = System.currentTimeMillis();
         final Map<String, String> properties = buildProperties(op);
-        properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
-        properties.put(TELEMETRY_OP_ACTION, OP_ACTION_ENTER);
-        sendTelemetry(properties);
+        properties.put(OP_TIMESTAMP, Instant.now().toString());
+        properties.put(OP_ACTION, OP_ACTION_ENTER);
+        AzureTelemeter.log(EventType.opStart, properties);
     }
 
     public static void afterExit(final IAzureOperation op) {
-        final long timestamp = System.currentTimeMillis();
         final Map<String, String> properties = buildProperties(op);
-        properties.put(TELEMETRY_OP_TIMESTAMP, String.valueOf(timestamp));
-        properties.put(TELEMETRY_OP_ACTION, OP_ACTION_EXIT);
-        sendTelemetry(properties);
+        properties.put(OP_TIMESTAMP, Instant.now().toString());
+        properties.put(OP_ACTION, OP_ACTION_EXIT);
+        AzureTelemeter.log(EventType.opEnd, properties);
+    }
+
+    public static void onError(final IAzureOperation op, Throwable error) {
+        final Map<String, String> properties = buildProperties(op);
+        properties.put(OP_TIMESTAMP, Instant.now().toString());
+        properties.put(OP_ACTION, OP_ACTION_EXIT);
+        AzureTelemeter.error(error, properties);
     }
 
     @NotNull
@@ -72,13 +77,13 @@ public class AzurePerformanceMetricsCollector {
         final String[] compositeServiceName = parts[0].split("\\|"); // ["appservice", "file"]
         final String mainServiceName = compositeServiceName[0]; // "appservice"
         final String operationName = compositeServiceName.length > 1 ? parts[1] + "_" + compositeServiceName[1] : parts[1]; // "list_file"
-        properties.put(TELEMETRY_OP_CONTEXT_ID, getCompositeId(ctxOperations, op));
-        properties.put(TELEMETRY_OP_ID, op.getId());
-        properties.put(TELEMETRY_OP_PARENT_ID, parent.map(IAzureOperation::getId).orElse("/"));
-        properties.put(TELEMETRY_OP_NAME, name);
-        properties.put(TELEMETRY_OP_SERVICE_NAME, mainServiceName);
-        properties.put(TELEMETRY_OP_OPERATION_NAME, operationName);
-        properties.put(TELEMETRY_OP_TYPE, op.getType());
+        properties.put(OP_CONTEXT_ID, getCompositeId(ctxOperations, op));
+        properties.put(OP_ID, op.getId());
+        properties.put(OP_PARENT_ID, parent.map(IAzureOperation::getId).orElse("/"));
+        properties.put(OP_NAME, name);
+        properties.put(OP_SERVICE_NAME, mainServiceName);
+        properties.put(OP_OPERATION_NAME, operationName);
+        properties.put(OP_TYPE, op.getType());
         return properties;
     }
 
@@ -105,22 +110,31 @@ public class AzurePerformanceMetricsCollector {
         return result;
     }
 
-    @SneakyThrows
-    private static void sendTelemetry(final Map<String, String> properties) {
-        AppInsightsClient.create(PERFORMANCE, null, properties);
+    private static void error(final Throwable ex, final Map<String, String> properties) {
+        final String serviceName = properties.get(OP_SERVICE_NAME);
+        final String operationName = properties.get(OP_OPERATION_NAME);
+        final ErrorType type = ErrorType.userError;
+        // TODO: (@wangmi & @Hanxiao.Liu)decide error type based on the type of ex.
+        EventUtil.logError(serviceName, operationName, type, ex, properties, null);
+    }
+
+    private static void log(final EventType type, final Map<String, String> properties) {
+        final String serviceName = properties.get(OP_SERVICE_NAME);
+        final String operationName = properties.get(OP_OPERATION_NAME);
+        EventUtil.logEvent(type, serviceName, operationName, properties, null);
     }
 
     private static void writeToCsvFile(Map<String, String> properties) throws IOException {
         final String val = String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s",
-            properties.get(TELEMETRY_OP_CONTEXT_ID),
-            properties.get(TELEMETRY_OP_TIMESTAMP),
-            properties.get(TELEMETRY_OP_ID),
-            properties.get(TELEMETRY_OP_NAME),
-            properties.get(TELEMETRY_OP_SERVICE_NAME),
-            properties.get(TELEMETRY_OP_OPERATION_NAME),
-            properties.get(TELEMETRY_OP_TYPE),
-            properties.get(TELEMETRY_OP_ACTION),
-            properties.get(TELEMETRY_OP_PARENT_ID)
+            properties.get(OP_CONTEXT_ID),
+            properties.get(OP_TIMESTAMP),
+            properties.get(OP_ID),
+            properties.get(OP_NAME),
+            properties.get(OP_SERVICE_NAME),
+            properties.get(OP_OPERATION_NAME),
+            properties.get(OP_TYPE),
+            properties.get(OP_ACTION),
+            properties.get(OP_PARENT_ID)
         );
         FileUtils.writeStringToFile(file, val + System.lineSeparator(), StandardCharsets.UTF_8, true);
     }

@@ -15,7 +15,15 @@ import java.lang.annotation.Target;
 public @interface AzureOperation {
     String name();
 
+    /**
+     * expression supported, e.g. <code>{"@webapp", "$subsId"}</code>
+     */
     String[] params() default {};
+
+    /**
+     * expression supported, e.g. <code>@buildProps($webapp)</code>
+     */
+    String props() default "";
 
     Type type() default Type.DEFAULT;
 

@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
-import com.microsoft.azure.toolkit.lib.common.performance.AzurePerformanceMetricsCollector;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import lombok.extern.java.Log;
 import rx.Emitter;
 import rx.Observable;
@@ -354,7 +354,7 @@ public abstract class AzureTaskManager {
             final AzureTaskContext.Node context = AzureTaskContext.current().derive();
             task.setContext(context);
             context.setTask(task);
-            AzurePerformanceMetricsCollector.afterCreate(task);
+            AzureTelemeter.afterCreate(task);
             final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
                     emitter.onNext(task.getSupplier().get());
