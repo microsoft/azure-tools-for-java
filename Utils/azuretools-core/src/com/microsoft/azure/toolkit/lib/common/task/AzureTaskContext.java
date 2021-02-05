@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
-import com.microsoft.azure.toolkit.lib.common.performance.AzurePerformanceMetricsCollector;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -72,16 +72,19 @@ public abstract class AzureTaskContext {
         try {
             context.setup();
             Optional.ofNullable(context.getTask()).ifPresent(task -> {
-                AzurePerformanceMetricsCollector.beforeEnter(task);
+                AzureTelemeter.beforeEnter(task);
                 AzureTaskContext.current().pushOperation(task);
             });
             runnable.run();
         } catch (final Throwable throwable) {
             AzureExceptionHandler.onRxException(throwable);
+            Optional.ofNullable(context.getTask()).ifPresent(task -> {
+                AzureTelemeter.onError(task, throwable);
+            });
         } finally {
             Optional.ofNullable(context.getTask()).ifPresent(task -> {
                 final IAzureOperation popped = AzureTaskContext.current().popOperation();
-                AzurePerformanceMetricsCollector.afterExit(task);
+                AzureTelemeter.afterExit(task);
                 assert Objects.equals(task, popped) : String.format("popped op[%s] is not the exiting async task[%s]", popped, task);
             });
             context.dispose();

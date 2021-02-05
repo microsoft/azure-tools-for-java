@@ -15,6 +15,7 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
@@ -91,6 +92,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
+    @AzureOperation(name = "account|subscription.get_tenant", params = {"$subscriptionId"}, type = AzureOperation.Type.TASK)
     public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
@@ -110,6 +112,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
+    @AzureOperation(name = "account|subscription.list.tenant|authorized", type = AzureOperation.Type.SERVICE)
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
@@ -248,6 +251,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
+    @AzureOperation(name = "account|subscription.list.tenant", params = {"$authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
         return authentication.subscriptions().listAsync()
                 .toList()
@@ -255,6 +259,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
+    @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
                 .toList()
@@ -262,6 +267,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
+    @AzureOperation(name = "account|tenant.auth", params = {"$tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()

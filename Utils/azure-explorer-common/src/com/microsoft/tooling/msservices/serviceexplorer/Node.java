@@ -421,8 +421,8 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         return TelemetryConstants.ACTION;
     }
 
-    @AzureOperation(value = "open setting page in portal", type = AzureOperation.Type.ACTION)
-    public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) {
+    @AzureOperation(name = "common.open_portal", params = {"$resourceId|uri_to_name"}, type = AzureOperation.Type.ACTION)
+    public void openResourcesInPortal(String subscriptionId, String resourceId) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
         if (azureManager == null) {
@@ -434,7 +434,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
                 + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
                 + tenantId
                 + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-                + resourceRelativePath;
+                + resourceId;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
     }
 

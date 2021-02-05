@@ -52,6 +52,7 @@
         <azure.storage.file.share.version>12.7.0</azure.storage.file.share.version>
         <azure.storage.file.datalake.version>12.3.0</azure.storage.file.datalake.version>
         <jtwig.core.version>5.87.0.RELEASE</jtwig.core.version>
+        <jetbrains.annotations.version>19.0.0</jetbrains.annotations.version>
         <findsecbugs.version>1.11.0</findsecbugs.version>
     </properties>
     <modules>
@@ -309,6 +310,11 @@
                 <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
                 <artifactId>azure-mgmt-insights</artifactId>
                 <version>1.0.0-beta</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${jetbrains.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.spotify</groupId>

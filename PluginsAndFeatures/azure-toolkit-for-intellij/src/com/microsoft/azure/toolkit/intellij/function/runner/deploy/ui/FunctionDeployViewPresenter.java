@@ -24,7 +24,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
     private Subscription loadAppSettingsSubscription;
 
     @AzureOperation(
-        value = "load app settings of function app[%s]",
+        name = "function.load_setting",
         params = {"$functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )

@@ -13,6 +13,8 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -237,7 +239,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 final DefaultComboBoxModel<String> loadingModel = new DefaultComboBoxModel<>(new String[]{"<Loading...>"});
                 regionComboBox.setModel(loadingModel);
                 model.getCurrentNavigationState().NEXT.setEnabled(false);
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading Available Locations...", false, () -> {
+                final IAzureOperationTitle title = AzureOperationBundle.title("common|region.list.subscription", model.getSubscription().getSubscriptionName());
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                     try {
                         AzureModelController.updateSubscriptionMaps(null);
                         DefaultLoader.getIdeHelper().invokeLater(this::fillRegions);
@@ -296,7 +299,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         if (customImageBtn.isSelected()) {
             disableNext();
 
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading publishers...", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("vm|publisher.list");
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
 
@@ -326,13 +330,15 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private void fillOffers() {
         disableNext();
 
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading offers...", false, () -> {
+        final VirtualMachinePublisher publisher = (VirtualMachinePublisher) publisherComboBox.getSelectedItem();
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm|offer.list", publisher.name());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             RxJavaUtils.unsubscribeSubscription(fillOfferSubscription);
             clearSelection(offerComboBox, skuComboBox, imageLabelList);
             fillOfferSubscription =
-                Observable.fromCallable(() -> ((VirtualMachinePublisher) publisherComboBox.getSelectedItem()).offers().list())
+                Observable.fromCallable(() -> publisher.offers().list())
                           .subscribeOn(Schedulers.io())
                           .subscribe(offerList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                                          offerComboBox.setModel(new DefaultComboBoxModel(offerList.toArray()));
@@ -350,13 +356,15 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         disableNext();
 
         if (offerComboBox.getItemCount() > 0) {
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading skus...", false, () -> {
+            final VirtualMachineOffer offer = (VirtualMachineOffer) offerComboBox.getSelectedItem();
+            final IAzureOperationTitle title = AzureOperationBundle.title("vm|sku.list", offer.name());
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
                 RxJavaUtils.unsubscribeSubscription(fillSkuSubscription);
                 clearSelection(skuComboBox, imageLabelList);
                 fillSkuSubscription =
-                    Observable.fromCallable(() -> ((VirtualMachineOffer) offerComboBox.getSelectedItem()).skus().list())
+                    Observable.fromCallable(() -> offer.skus().list())
                               .subscribeOn(Schedulers.io())
                               .subscribe(skuList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                                              skuComboBox.setModel(new DefaultComboBoxModel(skuList.toArray()));
@@ -377,7 +385,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private void fillImages() {
         disableNext();
 
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading images...", false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("vm|image.list");
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             VirtualMachineSku sku = (VirtualMachineSku) skuComboBox.getSelectedItem();

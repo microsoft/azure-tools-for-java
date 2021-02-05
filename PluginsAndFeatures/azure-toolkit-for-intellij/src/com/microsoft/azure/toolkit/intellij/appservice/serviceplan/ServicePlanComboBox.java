@@ -141,4 +141,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         });
         dialog.show();
     }
+
+    @Override
+    protected String label() {
+        return "Service Plan";
+    }
 }

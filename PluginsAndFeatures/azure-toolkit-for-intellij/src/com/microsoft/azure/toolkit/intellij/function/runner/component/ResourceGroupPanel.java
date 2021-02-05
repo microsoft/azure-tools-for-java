@@ -76,7 +76,7 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     @AzureOperation(
-        value = "load resource groups of subscription[%s]",
+        name = "arm|rg.list.subscription",
         params = {"$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )

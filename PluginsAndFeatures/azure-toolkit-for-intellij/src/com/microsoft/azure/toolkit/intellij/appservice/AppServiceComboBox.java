@@ -129,4 +129,9 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
                     appServiceName, runtime, resourceGroup);
         }
     }
+
+    @Override
+    protected String label() {
+        return "App Service[WebApp/Function]";
+    }
 }

@@ -66,7 +66,7 @@ public class DeployFunctionHandler {
         this.prompter = prompter;
     }
 
-    @AzureOperation(value = "deploy artifacts to function", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "function.deploy_artifact", type = AzureOperation.Type.SERVICE)
     public FunctionApp execute() throws Exception {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
@@ -96,7 +96,7 @@ public class DeployFunctionHandler {
     /**
      * List anonymous HTTP Triggers url after deployment
      */
-    @AzureOperation(value = "list http trigger urls", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(name = "function|trigger.list_urls", type = AzureOperation.Type.SERVICE)
     private void listHTTPTriggerUrls() {
         final List<FunctionResource> triggers = listFunctions();
         final List<FunctionResource> httpFunction =
@@ -131,7 +131,7 @@ public class DeployFunctionHandler {
      * @throws InterruptedException Throw when thread was interrupted while sleeping between retry
      */
     @AzureOperation(
-        value = "sync triggers and list triggers of function[%s]",
+        name = "function|trigger.list",
         params = {"@model.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )

@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.lib.common.task;
 
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,7 +25,7 @@ public class AzureTask<T> implements IAzureOperation {
     @Builder.Default
     @Setter
     private boolean backgroundable = true;
-    private final String title;
+    private final IAzureOperationTitle title;
 
     @Setter(AccessLevel.PACKAGE)
     private AzureTaskContext.Node context;
@@ -37,6 +38,10 @@ public class AzureTask<T> implements IAzureOperation {
         this(title, runnable, Modality.DEFAULT);
     }
 
+    public AzureTask(IAzureOperationTitle title, Runnable runnable) {
+        this(title, runnable, Modality.DEFAULT);
+    }
+
     public AzureTask(Supplier<T> supplier) {
         this(supplier, Modality.DEFAULT);
     }
@@ -45,19 +50,31 @@ public class AzureTask<T> implements IAzureOperation {
         this(null, title, false, supplier, Modality.DEFAULT);
     }
 
+    public AzureTask(IAzureOperationTitle title, Supplier<T> supplier) {
+        this(null, title, false, supplier, Modality.DEFAULT);
+    }
+
     public AzureTask(Runnable runnable, Modality modality) {
-        this(null, null, false, runnable, modality);
+        this(null, (String) null, false, runnable, modality);
     }
 
     public AzureTask(String title, Runnable runnable, Modality modality) {
         this(null, title, false, runnable, modality);
     }
 
+    public AzureTask(IAzureOperationTitle title, Runnable runnable, Modality modality) {
+        this(null, title, false, runnable, modality);
+    }
+
     public AzureTask(Supplier<T> supplier, Modality modality) {
-        this(null, null, false, supplier, modality);
+        this(null, (String) null, false, supplier, modality);
     }
 
     public AzureTask(String title, Supplier<T> supplier, Modality modality) {
+        this(null, title, false, supplier, modality);
+    }
+
+    public AzureTask(IAzureOperationTitle title, Supplier<T> supplier, Modality modality) {
         this(null, title, false, supplier, modality);
     }
 
@@ -65,11 +82,23 @@ public class AzureTask<T> implements IAzureOperation {
         this(project, title, cancellable, runnable, Modality.DEFAULT);
     }
 
+    public AzureTask(Object project, IAzureOperationTitle title, boolean cancellable, Runnable runnable) {
+        this(project, title, cancellable, runnable, Modality.DEFAULT);
+    }
+
     public AzureTask(Object project, String title, boolean cancellable, Supplier<T> supplier) {
         this(project, title, cancellable, supplier, Modality.DEFAULT);
     }
 
+    public AzureTask(Object project, IAzureOperationTitle title, boolean cancellable, Supplier<T> supplier) {
+        this(project, title, cancellable, supplier, Modality.DEFAULT);
+    }
+
     public AzureTask(Object project, String title, boolean cancellable, Runnable runnable, Modality modality) {
+        this(project, new IAzureOperationTitle.Simple(title), cancellable, runnable, modality);
+    }
+
+    public AzureTask(Object project, IAzureOperationTitle title, boolean cancellable, Runnable runnable, Modality modality) {
         this(project, title, cancellable, () -> {
             runnable.run();
             return null;
@@ -77,6 +106,10 @@ public class AzureTask<T> implements IAzureOperation {
     }
 
     public AzureTask(Object project, String title, boolean cancellable, Supplier<T> supplier, Modality modality) {
+        this(project, new IAzureOperationTitle.Simple(title), cancellable, supplier, modality);
+    }
+
+    public AzureTask(Object project, IAzureOperationTitle title, boolean cancellable, Supplier<T> supplier, Modality modality) {
         this.project = project;
         this.title = title;
         this.cancellable = cancellable;
@@ -90,7 +123,7 @@ public class AzureTask<T> implements IAzureOperation {
 
     @Override
     public String getName() {
-        return Optional.ofNullable(this.getTitle()).orElse("<no_name>");
+        return Optional.ofNullable(this.getTitle()).map(IAzureOperationTitle::getName).orElse("<unknown>.<unknown>");
     }
 
     @Override

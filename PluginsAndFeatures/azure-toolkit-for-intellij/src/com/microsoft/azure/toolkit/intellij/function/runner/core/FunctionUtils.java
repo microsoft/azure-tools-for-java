@@ -95,6 +95,11 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        name = "function.clean_staging_folder",
+        params = {"$stagingFolder.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public static void cleanUpStagingFolder(File stagingFolder) {
         try {
             if (stagingFolder != null) {
@@ -105,6 +110,11 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        name = "function.list_function_modules",
+        params = {"$project.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public static Module[] listFunctionModules(Project project) {
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         return Arrays.stream(modules).filter(m -> {
@@ -126,7 +136,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "check if project[%s] is a valid function project",
+        name = "function.validate_project",
         params = {"$project.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -145,7 +155,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "find function methods from module[%s] by annotation",
+        name = "function.list_function_methods",
         params = {"$model.getName"},
         type = AzureOperation.Type.TASK
     )
@@ -180,7 +190,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "copy local settings[%s] to staging folder[%s]",
+        name = "function.copy_settings",
         params = {"$model.getName"},
         type = AzureOperation.Type.TASK
     )
@@ -195,7 +205,7 @@ public class FunctionUtils {
     }
 
     @AzureOperation(
-        value = "prepare staging folder for function method",
+        name = "function.prepare_staging_folder",
         type = AzureOperation.Type.TASK
     )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)

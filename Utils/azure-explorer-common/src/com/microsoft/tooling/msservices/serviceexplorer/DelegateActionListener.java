@@ -75,7 +75,8 @@ class DelegateActionListener extends NodeActionListener {
                     Lombok.sneakyThrow(ex);
                 }
             };
-            AzureTask task = new AzureTask(e.getAction().getNode().getProject(), progressMessage, cancellable, runnable);
+            final Object project = e.getAction().getNode().getProject();
+            AzureTask task = new AzureTask(project, progressMessage, cancellable, runnable);
             if (conditionalModal) {
                 AzureTaskManager.getInstance().runInModal(task);
             } else {

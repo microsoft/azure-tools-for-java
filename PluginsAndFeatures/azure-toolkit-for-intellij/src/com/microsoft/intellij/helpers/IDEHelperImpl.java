@@ -46,6 +46,8 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -356,7 +358,7 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     @AzureOperation(
-        value = "open file[%s] in editor",
+        name = "appservice|file.open",
         params = {"$target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -367,7 +369,7 @@ public class IDEHelperImpl implements IDEHelper {
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
         final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
-        final String title = String.format("Opening file (%s)...", virtualFile.getName());
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -438,12 +440,13 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-        value = "save file[%s] to azure",
+        name = "appservice|file.save",
         params = {"$appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format("Saving file (%s)...", appServiceFile.getName()), false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
             final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
@@ -467,7 +470,7 @@ public class IDEHelperImpl implements IDEHelper {
      * user is asked to choose where to save the file is @param dest is null
      */
     @AzureOperation(
-        value = "download file[%s] to local",
+        name = "appservice|file.download",
         params = {"$file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -479,7 +482,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final String title = String.format("Downloading file (%s)...", file.getName());
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.download", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             AppServiceFileService

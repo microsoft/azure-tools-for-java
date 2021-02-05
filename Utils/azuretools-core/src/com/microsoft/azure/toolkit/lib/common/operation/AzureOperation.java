@@ -11,11 +11,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
+@Target({ElementType.METHOD})
 public @interface AzureOperation {
-    String value();
+    String name();
 
+    /**
+     * expression supported, e.g. <code>{"@webapp", "$subsId"}</code>
+     */
     String[] params() default {};
+
+    /**
+     * expression supported, e.g. <code>@buildProps($webapp)</code>
+     */
+    String props() default "";
 
     Type type() default Type.DEFAULT;
 

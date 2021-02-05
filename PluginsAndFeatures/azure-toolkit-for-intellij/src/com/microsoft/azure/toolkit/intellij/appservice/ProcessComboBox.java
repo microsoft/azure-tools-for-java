@@ -67,4 +67,9 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     public boolean isRequired() {
         return true;
     }
+
+    @Override
+    protected String label() {
+        return "Flight Recorder process";
+    }
 }

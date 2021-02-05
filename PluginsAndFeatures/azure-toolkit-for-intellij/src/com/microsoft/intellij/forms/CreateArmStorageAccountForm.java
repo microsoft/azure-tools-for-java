@@ -16,6 +16,8 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -203,7 +205,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         // creating from Azure Explorer directly
         setSubscription((SubscriptionDetail) subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
-            final String title = "Creating storage account (" + nameTextField.getText() + ")...";
+            final IAzureOperationTitle title = AzureOperationBundle.title("storage.create_account", nameTextField.getText());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
@@ -421,7 +423,8 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     public void loadRegions() {
         Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null || subscription2Location.get(subscriptionComboBox.getSelectedItem()) == null) {
-            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("common.list_regions");
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, title, false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
                     fillRegions();

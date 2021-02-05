@@ -63,7 +63,7 @@ public class WebAppUtils {
 
     @NotNull
     @AzureOperation(
-        value = "prepare ftp connection for deployment",
+        name = "webapp|artifact.prepare_ftp",
         type = AzureOperation.Type.TASK
     )
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -285,7 +285,7 @@ public class WebAppUtils {
      * @param progressIndicator
      */
     @AzureOperation(
-        value = "deploy artifact[%s] to app[%s]",
+        name = "webapp|artifact.upload",
         params = {"$artifact.getName()", "$deployTarget.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -343,7 +343,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "archive artifact[%s] to temporary zip file for deployment",
+        name = "webapp|artifact.zip",
         params = {"$artifact.getName()"},
         type = AzureOperation.Type.TASK
     )
@@ -449,7 +449,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "delete web app[%s]",
+        name = "webapp.delete_detail",
         params = {"$webAppDetails.webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -468,7 +468,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "update artifact of web app[%s]",
+        name = "webapp|artifact.update",
         params = {"$webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -500,7 +500,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "upload artifact[%s] to web app[%s]",
+        name = "webapp|artifact.upload",
         params = {"$fileName", "$webApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -522,7 +522,7 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "upload file to ftp server",
+        name = "webapp|artifact.upload_ftp",
         type = AzureOperation.Type.TASK
     )
     private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) {

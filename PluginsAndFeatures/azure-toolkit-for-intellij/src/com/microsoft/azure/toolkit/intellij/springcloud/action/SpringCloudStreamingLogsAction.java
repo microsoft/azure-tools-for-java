@@ -8,8 +8,11 @@ package com.microsoft.azure.toolkit.intellij.springcloud.action;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudAppStreamingLogDialog;
 import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudStreamingLogManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -53,7 +56,8 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", false, () -> {
+            final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(appId));
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =
                             AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);
