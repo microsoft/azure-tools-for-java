@@ -49,9 +49,11 @@ namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
 
                 var range = declaration.GetNameDocumentRange();
 
-                var highlighting = new RunMarkerHighlighting(declaration,
-                    FunctionAppRunMarkerAttributeIds.FUNCTION_APP_RUN_METHOD_MARKER_ID, range,
-                    file.GetPsiModule().TargetFrameworkId);
+                var highlighting = new RunMarkerHighlighting(
+                    method: declaration.DeclaredElement,
+                    declaration: declaration,
+                    attributeId: FunctionAppRunMarkerAttributeIds.FUNCTION_APP_RUN_METHOD_MARKER_ID, range: range,
+                    targetFrameworkId: file.GetPsiModule().TargetFrameworkId);
 
                 consumer.AddHighlighting(highlighting, range);
             }

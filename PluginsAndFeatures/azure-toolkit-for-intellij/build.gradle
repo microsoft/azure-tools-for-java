@@ -140,14 +140,6 @@ configure(mainProjects) {
         jvmArgs '-Xmx2048m'
     }
 
-    instrumentCode {
-        // javac2 is required to compile .form files from IntelliJ IDEA UI Designer
-        // Since Rider distribution does not contain it, take it from IDEA
-        javac2 {
-            "${project(":idea").extensions.getByName("intellij").ideaDependency.classes}/lib/javac2.jar"
-        }
-    }
-
     test {
         testLogging.showStandardStreams = true
         testLogging {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -38,9 +38,6 @@ import com.jetbrains.rider.model.debuggerWorker.DotNetCoreExeStartInfo
 import com.jetbrains.rider.model.debuggerWorker.DotNetCoreInfo
 import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
-import org.jetbrains.concurrency.AsyncPromise
-import org.jetbrains.concurrency.Promise
-import org.jetbrains.concurrency.resolvedPromise
 
 class AzureFunctionsDotNetCoreDebugProfile(
         private val dotNetExecutable: DotNetExecutable,
@@ -88,19 +85,17 @@ class AzureFunctionsDotNetCoreDebugProfile(
         dotNetExecutable.validate()
     }
 
-    override fun createModelStartInfoAsync(lifetime: Lifetime): Promise<DebuggerStartInfoBase> {
-        return AsyncPromise<DebuggerStartInfoBase>().apply {
-            setResult(DotNetCoreExeStartInfo(
-                    DotNetCoreInfo(coreToolsExecutablePath, funcCoreToolsPath),
-                    dotNetExecutable.exePath, dotNetExecutable.workingDirectory,
-                    dotNetExecutable.programParameterString,
-                    dotNetExecutable.environmentVariables.toModelMap, dotNetExecutable.runtimeArguments,
-                    dotNetExecutable.executeAsIs, dotNetExecutable.useExternalConsole, false))
-        }
-    }
-
-    override fun createModelStartInfo(): DebuggerStartInfoBase {
-        throw IllegalStateException("Should not get there. Call async version.")
+    override suspend fun createModelStartInfo(lifetime: Lifetime): DebuggerStartInfoBase {
+        return DotNetCoreExeStartInfo(
+                DotNetCoreInfo(coreToolsExecutablePath),
+                dotNetExecutable.exePath,
+                dotNetExecutable.workingDirectory,
+                dotNetExecutable.programParameterString,
+                dotNetExecutable.environmentVariables.toModelMap,
+                dotNetExecutable.runtimeArguments,
+                dotNetExecutable.executeAsIs,
+                dotNetExecutable.useExternalConsole,
+                false)
     }
 
     override val attached: Boolean = false

@@ -32,7 +32,7 @@ import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.asserts.shouldBe
-import com.jetbrains.rider.test.asserts.shouldContain
+import com.jetbrains.rider.test.asserts.shouldContains
 import com.jetbrains.rider.test.base.BaseTestWithSolution
 import com.jetbrains.rider.test.enums.CoreVersion
 import com.jetbrains.rider.test.scriptingApi.*
@@ -114,7 +114,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
         configuration.parameters.projectFilePath = projectToRun.projectFilePath
         configuration.parameters.workingDirectory = projectToRun.projectOutputs.first().workingDirectory
         configuration.parameters.exePath = projectToRun.projectOutputs.first().exePath
-        configuration.parameters.projectTfm = projectToRun.projectOutputs.first().tfm
+        configuration.parameters.projectTfm = projectToRun.projectOutputs.first().tfm?.presentableName ?: ""
 
         configuration.beforeRunTasks.size.shouldBe(1)
         configuration.beforeRunTasks[0].providerId.shouldBe(BuildFunctionsProjectBeforeRunTaskProvider.providerId)
@@ -156,8 +156,8 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
     }
 
     private fun assertBuildCompleteMessage(projectName: String, buildOutput: String) {
-        buildOutput.shouldContain("------- Started building project: $projectName")
-        buildOutput.shouldContain("------- Finished building project: $projectName. Succeeded: True.")
-        buildOutput.shouldContain("Build completed in")
+        buildOutput.shouldContains("------- Started building project: $projectName")
+        buildOutput.shouldContains("------- Finished building project: $projectName. Succeeded: True.")
+        buildOutput.shouldContains("Build completed in")
     }
 }

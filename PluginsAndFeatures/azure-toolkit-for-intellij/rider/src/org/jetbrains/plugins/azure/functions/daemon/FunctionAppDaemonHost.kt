@@ -160,7 +160,7 @@ class FunctionAppDaemonHost(project: Project) : LifetimedProjectComponent(projec
 
         configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
         configuration.parameters.projectKind = prjToConfigure.kind
-        configuration.parameters.projectTfm = projectOutput?.tfm ?: ""
+        configuration.parameters.projectTfm = projectOutput?.tfm?.presentableName ?: ""
         configuration.parameters.exePath = projectOutput?.exePath ?: ""
         configuration.parameters.programParameters = ParametersListUtil.join(projectOutput?.defaultArguments
                 ?: listOf())

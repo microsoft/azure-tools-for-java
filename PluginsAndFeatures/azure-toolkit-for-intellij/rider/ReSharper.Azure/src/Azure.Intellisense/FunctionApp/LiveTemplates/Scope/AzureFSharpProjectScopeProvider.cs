@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2021 JetBrains s.r.o.
 // <p/>
 // All rights reserved.
 // <p/>
@@ -22,44 +22,33 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Application;
 using JetBrains.ProjectModel;
-using JetBrains.ReSharper.Azure.Project.FunctionApp;
-using JetBrains.ReSharper.Feature.Services.LiveTemplates.Context;
 using JetBrains.ReSharper.Feature.Services.LiveTemplates.Scope;
 
 namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
 {
-    public class InAzureFunctionsProject : InAnyProject
+    public class InAzureFunctionsFSharpProject : InAzureFunctionsProject
     {
-        private static readonly Guid DefaultGuid = new Guid("41A8B8D2-2DE7-43F8-A812-220E5BC95BEB");
-    
-        public override Guid GetDefaultUID() => DefaultGuid;
-        public override string PresentableShortName => "Azure Functions projects";
+        private static readonly Guid ourDefaultGuid = new Guid("6EAE234E-60AA-410E-B021-D219A2478F98");
+
+        public override Guid GetDefaultUID() => ourDefaultGuid;
+        public override string PresentableShortName => "Azure Functions (F#) projects";
     }
-    
+
     [ShellComponent]
-    public class AzureProjectScopeProvider : ScopeProvider
+    public class AzureFSharpScopeProvider : AzureCSharpProjectScopeProvider
     {
-        public AzureProjectScopeProvider()
+        public AzureFSharpScopeProvider()
         {
-            Creators.Add(TryToCreate<InAzureFunctionsProject>);
+            Creators.Add(TryToCreate<InAzureFunctionsFSharpProject>);
         }
 
-        public override IEnumerable<ITemplateScopePoint> ProvideScopePoints(TemplateAcceptanceContext context)
+        protected override IEnumerable<ITemplateScopePoint> GetLanguageSpecificScopePoints(IProject project)
         {
-            var project = context.GetProject();
-            if (project == null) yield break;
-            if (FunctionAppProjectDetector.IsAzureFunctionsProject(project)) 
-            {
-                yield return new InAzureFunctionsProject();
-        
-                foreach (var scope in GetLanguageSpecificScopePoints(project)) 
-                    yield return scope;
-            }
-        }
+            var baseItems = base.GetLanguageSpecificScopePoints(project);
+            foreach (var item in baseItems) yield return item;
 
-        protected virtual IEnumerable<ITemplateScopePoint> GetLanguageSpecificScopePoints(IProject project)
-        {
-            yield break;
+            if (project.ProjectProperties.GetType().Name == "FSharpProjectProperties") // TODO: reconsider after possibly adding a direct dependency on F# plugin in #392
+                yield return new InAzureFunctionsFSharpProject();
         }
     }
 }

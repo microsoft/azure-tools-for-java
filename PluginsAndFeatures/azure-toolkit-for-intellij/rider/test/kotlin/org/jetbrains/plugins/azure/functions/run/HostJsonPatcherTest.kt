@@ -27,7 +27,7 @@ import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeFalse
 import com.jetbrains.rider.test.asserts.shouldBeTrue
-import com.jetbrains.rider.test.asserts.shouldContain
+import com.jetbrains.rider.test.asserts.shouldContains
 import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
@@ -193,7 +193,7 @@ class HostJsonPatcherTest {
             val errorStream = ByteArrayOutputStream()
             System.setErr(PrintStream(errorStream))
             action()
-            errorStream.toString().shouldContain(warnMessage)
+            errorStream.toString().shouldContains(warnMessage)
         } finally {
             System.setErr(originErr)
         }

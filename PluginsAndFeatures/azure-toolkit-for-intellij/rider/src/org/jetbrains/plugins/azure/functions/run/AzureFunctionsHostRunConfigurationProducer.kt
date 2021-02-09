@@ -76,7 +76,7 @@ class AzureFunctionsHostRunConfigurationProducer
         }
         configuration.parameters.apply {
             projectFilePath = selectedProjectFilePathInvariant
-            projectTfm = runnableProject.projectOutputs.firstOrNull()?.tfm ?: projectTfm
+            projectTfm = runnableProject.projectOutputs.firstOrNull()?.tfm?.presentableName ?: projectTfm
         }
 
         return true

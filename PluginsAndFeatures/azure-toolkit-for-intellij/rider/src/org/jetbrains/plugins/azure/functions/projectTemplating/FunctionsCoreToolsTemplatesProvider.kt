@@ -58,7 +58,7 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
 
     private class InstallTemplates : RiderProjectTemplate {
         override val group: String?
-            get() = ".NET Core"
+            get() = ".NET / .NET Core"
         override val name: String
             get() = "Azure Functions"
         override val icon: Icon

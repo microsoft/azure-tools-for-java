@@ -113,7 +113,7 @@ class AzureFunctionsHostConfigurationViewModel(
 
     private fun handleChangeTfmSelection() {
         projectSelector.project.valueOrNull?.projectOutputs
-                ?.singleOrNull { it.tfm == tfmSelector.string.valueOrNull }
+                ?.singleOrNull { it.tfm?.presentableName == tfmSelector.string.valueOrNull }
                 ?.let { projectOutput ->
                     val shouldChangeExePath = trackProjectExePath
                     val shouldChangeWorkingDirectory = trackProjectWorkingDirectory
@@ -149,7 +149,7 @@ class AzureFunctionsHostConfigurationViewModel(
 
         val programParameters = programParametersEditor.parametersString.value
 
-        selectedProject.projectOutputs.singleOrNull { it.tfm == selectedTfm }?.let { projectOutput ->
+        selectedProject.projectOutputs.singleOrNull { it.tfm?.presentableName == selectedTfm }?.let { projectOutput ->
             trackProjectExePath = exePathSelector.path.value == projectOutput.exePath
 
             val defaultArguments = projectOutput.defaultArguments
@@ -195,7 +195,7 @@ class AzureFunctionsHostConfigurationViewModel(
 
     private fun reloadTfmSelector(runnableProject: RunnableProject) {
         tfmSelector.stringList.clear()
-        runnableProject.projectOutputs.map { it.tfm }.sorted().forEach {
+        runnableProject.projectOutputs.map { it.tfm?.presentableName ?: "" }.sorted().forEach {
             tfmSelector.stringList.add(it)
         }
         if (tfmSelector.stringList.isNotEmpty()) {
@@ -279,7 +279,8 @@ class AzureFunctionsHostConfigurationViewModel(
                     val fakeProjectName = File(projectFilePath).name
                     val fakeProject = RunnableProject(
                             fakeProjectName, fakeProjectName, projectFilePath, RunnableProjectKind.Unloaded,
-                            listOf(ProjectOutput(projectTfm, exePath, ParametersListUtil.parse(programParameters), workingDirectory, "")),
+                            listOf(ProjectOutput(RdTargetFrameworkId("", projectTfm, false, false), exePath,
+                                    ParametersListUtil.parse(programParameters), workingDirectory, "", null)),
                             envs.map { EnvironmentVariable(it.key, it.value) }.toList(), null, listOf()
                     )
                     projectSelector.projectList.apply {
@@ -301,12 +302,12 @@ class AzureFunctionsHostConfigurationViewModel(
 
                     // Set TFM
                     reloadTfmSelector(runnableProject)
-                    val projectTfmExists = runnableProject.projectOutputs.any { it.tfm == projectTfm }
-                    val selectedTfm = if (projectTfmExists) projectTfm else runnableProject.projectOutputs.firstOrNull()?.tfm ?: ""
+                    val projectTfmExists = runnableProject.projectOutputs.any { it.tfm?.presentableName == projectTfm }
+                    val selectedTfm = if (projectTfmExists) projectTfm else runnableProject.projectOutputs.firstOrNull()?.tfm?.presentableName ?: ""
                     tfmSelector.string.set(selectedTfm)
 
                     // Set Project Output
-                    val projectOutput = runnableProject.projectOutputs.singleOrNull { it.tfm == selectedTfm }
+                    val projectOutput = runnableProject.projectOutputs.singleOrNull { it.tfm?.presentableName == selectedTfm }
                     val effectiveExePath = if (trackProjectExePath && projectOutput != null) projectOutput.exePath else exePath
                     val effectiveProgramParameters =
                             if (trackProjectArguments && projectOutput != null && projectOutput.defaultArguments.isNotEmpty())

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,7 +25,6 @@ package org.jetbrains.plugins.azure.functions.settings.templates
 import com.intellij.openapi.options.Configurable
 import com.jetbrains.rider.settings.simple.SimpleOptionsPage
 
-class RiderAzureCSharpFileTemplatesOptionPage: SimpleOptionsPage("Azure (C#)", "RiderAzureCSharpFileTemplatesSettings"), Configurable.NoScroll {
+class RiderAzureFSharpFileTemplatesOptionPage: SimpleOptionsPage("Azure (F#)", "RiderAzureFSharpFileTemplatesSettings"), Configurable.NoScroll {
     override fun getId() = pageId + "Id"
 }
-

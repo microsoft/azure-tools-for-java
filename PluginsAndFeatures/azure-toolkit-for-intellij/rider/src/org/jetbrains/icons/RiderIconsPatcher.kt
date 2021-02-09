@@ -47,7 +47,7 @@ internal class RiderIconsPatcher : IconPathPatcher() {
         else originalClassLoader
 
     private val myIconsOverrideMap = mapOf(
-            "/resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to "CommonIcons.AzureFunctions.FunctionAppRunConfiguration",
-            "/resharper/FunctionAppRunMarkers/Trigger.svg" to "RestClientIcons.Http_requests_filetype"
+            "resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to "CommonIcons.AzureFunctions.FunctionAppRunConfiguration",
+            "resharper/FunctionAppRunMarkers/Trigger.svg" to "RestClientIcons.Http_requests_filetype"
     )
 }

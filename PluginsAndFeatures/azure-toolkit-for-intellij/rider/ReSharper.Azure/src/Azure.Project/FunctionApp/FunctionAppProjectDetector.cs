@@ -25,6 +25,7 @@ using JetBrains.ProjectModel.Assemblies.Interfaces;
 using JetBrains.ProjectModel.MSBuild;
 using JetBrains.ProjectModel.Properties;
 using JetBrains.ProjectModel.Properties.Managed;
+using JetBrains.ReSharper.Host.Features.ProjectModel.TargetFrameworks;
 using JetBrains.Rider.Model;
 using JetBrains.Util;
 using JetBrains.Util.Dotnet.TargetFrameworkIds;
@@ -59,13 +60,14 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                     continue;
                 }
 
-                var frameworkName = tfm.PresentableString;
                 var projectOutputPath = project.GetOutputFilePath(tfm);
-                projectOutputs.Add(new ProjectOutput(frameworkName,
-                    projectOutputPath.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
-                    new List<string>(),
-                    projectOutputPath.Directory.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
-                    string.Empty));
+                projectOutputs.Add(new ProjectOutput(
+                    tfm: tfm.ToRdTargetFrameworkInfo(),
+                    exePath: projectOutputPath.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
+                    defaultArguments: new List<string>(),
+                    workingDirectory: projectOutputPath.Directory.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
+                    dotNetCorePlatformRoot: string.Empty,
+                    configuration: null));
             }
 
             return projectOutputs;

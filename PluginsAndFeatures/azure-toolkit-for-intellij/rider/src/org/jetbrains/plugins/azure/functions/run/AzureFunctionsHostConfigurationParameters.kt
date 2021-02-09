@@ -124,7 +124,7 @@ open class AzureFunctionsHostConfigurationParameters(
 
         return DotNetExecutable(
                 exePath = coreToolsInfo!!.coreToolsExecutable,
-                projectTfm = projectOutput?.tfm ?: projectTfm,
+                projectTfm = projectOutput?.tfm,
                 workingDirectory = effectiveWorkingDirectory,
                 programParameterString = effectiveArguments,
                 useMonoRuntime = useMonoRuntime,
@@ -172,7 +172,7 @@ open class AzureFunctionsHostConfigurationParameters(
     }
 
     private fun tryGetProjectOutput(runnableProject: RunnableProject): ProjectOutput? {
-        return runnableProject.projectOutputs.singleOrNull { it.tfm == projectTfm }
+        return runnableProject.projectOutputs.singleOrNull { it.tfm?.presentableName == projectTfm }
                 ?: runnableProject.projectOutputs.firstOrNull()
     }
 

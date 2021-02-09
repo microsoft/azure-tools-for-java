@@ -24,7 +24,7 @@
       <html>
         <p>[3.40.0-2021.1]</p>
         <ul>
-          <li>Compatibility with Rider 2021.1 EAP</li>
+          <li>Compatibility with Rider 2021.1 EAP2</li>
         </ul>
         <h4>Fixed bugs:</h4>
         <ul>
@@ -198,6 +198,10 @@
 
     <projectConfigurable parentId="FileTemplatesSettingsId"
                          instance="org.jetbrains.plugins.azure.functions.settings.templates.RiderAzureCSharpFileTemplatesOptionPage"
+                         groupWeight="-150" />
+
+    <projectConfigurable parentId="FileTemplatesSettingsId"
+                         instance="org.jetbrains.plugins.azure.functions.settings.templates.RiderAzureFSharpFileTemplatesOptionPage"
                          groupWeight="-150" />
 
     <configurationType implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppConfigurationType"/>

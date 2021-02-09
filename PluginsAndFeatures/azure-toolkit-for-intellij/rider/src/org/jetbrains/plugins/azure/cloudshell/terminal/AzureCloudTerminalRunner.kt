@@ -37,6 +37,7 @@ import org.jetbrains.plugins.azure.cloudshell.controlchannel.CloudConsoleControl
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalRunner
+import java.awt.Dimension
 import java.net.URI
 
 class AzureCloudTerminalRunner(project: Project,
@@ -79,14 +80,15 @@ class AzureCloudTerminalRunner(project: Project,
 
         // Build TTY
         val connector = object : AzureCloudProcessTtyConnector(process) {
-            override fun resizeImmediately() {
-                if (pendingTermSize != null) {
-                    val resizeResult = cloudConsoleService.resizeTerminal(
-                            resizeTerminalUrl, pendingTermSize.width, pendingTermSize.height).execute()
 
-                    if (!resizeResult.isSuccessful) {
-                        logger.error("Could not resize cloud terminal. Response received from API: ${resizeResult.code()} ${resizeResult.message()} - ${resizeResult.errorBody()?.string()}")
-                    }
+            override fun resize(termWinSize: Dimension) {
+                if (!this.isConnected) return
+
+                val resizeResult = cloudConsoleService.resizeTerminal(
+                        resizeTerminalUrl, termWinSize.width, termWinSize.height).execute()
+
+                if (!resizeResult.isSuccessful) {
+                    logger.error("Could not resize cloud terminal. Response received from API: ${resizeResult.code()} ${resizeResult.message()} - ${resizeResult.errorBody()?.string()}")
                 }
             }
 

@@ -22,44 +22,31 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Application;
 using JetBrains.ProjectModel;
-using JetBrains.ReSharper.Azure.Project.FunctionApp;
-using JetBrains.ReSharper.Feature.Services.LiveTemplates.Context;
+using JetBrains.ProjectModel.Properties;
 using JetBrains.ReSharper.Feature.Services.LiveTemplates.Scope;
 
 namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
 {
-    public class InAzureFunctionsProject : InAnyProject
+    public class InAzureFunctionsCSharpProject : InAzureFunctionsProject
     {
-        private static readonly Guid DefaultGuid = new Guid("41A8B8D2-2DE7-43F8-A812-220E5BC95BEB");
+        private static readonly Guid DefaultGuid = new Guid("CF6B0FD8-3787-41DE-AD81-D0B5AE9CBFA3");
     
         public override Guid GetDefaultUID() => DefaultGuid;
-        public override string PresentableShortName => "Azure Functions projects";
+        public override string PresentableShortName => "Azure Functions (C#) projects";
     }
-    
+
     [ShellComponent]
-    public class AzureProjectScopeProvider : ScopeProvider
+    public class AzureCSharpProjectScopeProvider : AzureProjectScopeProvider
     {
-        public AzureProjectScopeProvider()
+        public AzureCSharpProjectScopeProvider()
         {
-            Creators.Add(TryToCreate<InAzureFunctionsProject>);
+            Creators.Add(TryToCreate<InAzureFunctionsCSharpProject>);
         }
 
-        public override IEnumerable<ITemplateScopePoint> ProvideScopePoints(TemplateAcceptanceContext context)
+        protected override IEnumerable<ITemplateScopePoint> GetLanguageSpecificScopePoints(IProject project)
         {
-            var project = context.GetProject();
-            if (project == null) yield break;
-            if (FunctionAppProjectDetector.IsAzureFunctionsProject(project)) 
-            {
-                yield return new InAzureFunctionsProject();
-        
-                foreach (var scope in GetLanguageSpecificScopePoints(project)) 
-                    yield return scope;
-            }
-        }
-
-        protected virtual IEnumerable<ITemplateScopePoint> GetLanguageSpecificScopePoints(IProject project)
-        {
-            yield break;
+            var language = project.ProjectProperties.DefaultLanguage;
+            if (language == ProjectLanguage.CSHARP) yield return new InAzureFunctionsCSharpProject();
         }
     }
 }
