@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.authmanage;
@@ -25,6 +8,7 @@ package com.microsoft.azuretools.authmanage;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -59,6 +43,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
     }
 
     @Override
+    @AzureOperation(name = "account|subscription.flush_cache", type = AzureOperation.Type.SERVICE)
     protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId()
                 + "SubscriptionManagerPersist.updateAccountSubscriptionList()");
@@ -102,6 +87,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         super.cleanSubscriptions();
     }
 
+    @AzureOperation(name = "account|subscription.clear_cache", type = AzureOperation.Type.TASK)
     public static synchronized void deleteSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("cleaning " + subscriptionsDetailsFileName + " file");
         FileStorage fs = null;
@@ -120,6 +106,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
+    @AzureOperation(name = "account|subscription.load_cache", type = AzureOperation.Type.TASK)
     private static List<SubscriptionDetail> loadSubscriptions(String subscriptionsDetailsFileName) {
         System.out.println("SubscriptionManagerPersist.loadSubscriptions()");
 
@@ -141,6 +128,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         }
     }
 
+    @AzureOperation(name = "account|subscription.persist", type = AzureOperation.Type.TASK)
     private static void saveSubscriptions(List<SubscriptionDetail> sdl, String subscriptionsDetailsFileName)
             throws IOException {
         System.out.println("SubscriptionManagerPersist.saveSubscriptions()");

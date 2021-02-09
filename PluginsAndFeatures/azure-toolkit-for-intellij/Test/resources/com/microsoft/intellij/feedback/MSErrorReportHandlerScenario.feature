@@ -148,7 +148,7 @@ Feature: MSErrorReportHandler tests
         at com.microsoft.intellij.util.ApplicationHelpersKt.runInReadAction(ApplicationHelpers.kt:42)
         at com.microsoft.azure.hdinsight.spark.run.action.SparkRunConfigurationAction.runExisting(SparkRunConfigurationAction.kt:162)
         at com.microsoft.azure.hdinsight.spark.run.action.SparkRunConfigurationAction.onActionPerformed(SparkRunConfigurationAction.kt:116)
-        at com.microsoft.azuretools.ijidea.utility.AzureAnAction.actionPerformed(AzureAnAction.java:75)
+        at com.microsoft.intellij.AzureAnAction.actionPerformed(AzureAnAction.java:75)
         at com.intellij.openapi.actionSystem.ex.ActionUtil$1.run(ActionUtil.java:265)
         at com.intellij.openapi.actionSystem.ex.ActionUtil.performActionDumbAware(ActionUtil.java:282)
         at com.intellij.openapi.actionSystem.ex.ActionUtil.performActionDumbAwareWithCallbacks(ActionUtil.java:256)
@@ -203,5 +203,5 @@ Feature: MSErrorReportHandler tests
         at com.microsoft.intellij.util.ApplicationHelpersKt.runInReadAction(ApplicationHelpers.kt:42)
         at com.microsoft.azure.hdinsight.spark.run.action.SparkRunConfigurationAction.runExisting(SparkRunConfigurationAction.kt:162)
         at com.microsoft.azure.hdinsight.spark.run.action.SparkRunConfigurationAction.onActionPerformed(SparkRunConfigurationAction.kt:116)
-        at com.microsoft.azuretools.ijidea.utility.AzureAnAction.actionPerformed(AzureAnAction.java:75)
+        at com.microsoft.intellij.AzureAnAction.actionPerformed(AzureAnAction.java:75)
       """

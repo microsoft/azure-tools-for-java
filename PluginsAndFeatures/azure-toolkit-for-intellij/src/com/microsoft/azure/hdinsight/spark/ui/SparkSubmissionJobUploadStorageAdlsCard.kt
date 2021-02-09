@@ -39,7 +39,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageMod
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN1
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.ui.HintTextField
+import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils

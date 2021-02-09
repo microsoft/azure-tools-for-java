@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.mysql.action;
@@ -27,8 +10,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -37,7 +19,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.Constructor;
@@ -46,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Name(MySQLConnectToServerAction.ACTION_NAME)
-public class MySQLConnectToServerAction extends NodeActionListener implements ActionTelemetrable {
+public class MySQLConnectToServerAction extends NodeActionListener {
 
     private static final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
     public static final String ACTION_NAME = "Connect to Server";
@@ -71,11 +52,6 @@ public class MySQLConnectToServerAction extends NodeActionListener implements Ac
     @Override
     public AzureIconSymbol getIconSymbol() {
         return AzureIconSymbol.MySQL.CONNECT_TO_SERVER;
-    }
-
-    @Override
-    public TelemetryParameter getTelemetryParameter() {
-        return TelemetryParameter.MySQL.CONNECT_TO_SERVER;
     }
 
     @Override

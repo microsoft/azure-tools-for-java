@@ -1,27 +1,12 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import lombok.extern.java.Log;
 import rx.Emitter;
 import rx.Observable;
@@ -52,6 +37,10 @@ public abstract class AzureTaskManager {
         this.read(new AzureTask<>(title, task));
     }
 
+    public final void read(IAzureOperationTitle title, Runnable task) {
+        this.read(new AzureTask<>(title, task));
+    }
+
     public final void read(AzureTask<Void> task) {
         this.runInObservable(this::doRead, task).subscribe();
     }
@@ -61,6 +50,10 @@ public abstract class AzureTaskManager {
     }
 
     public final void write(String title, Runnable task) {
+        this.write(new AzureTask<>(title, task));
+    }
+
+    public final void write(IAzureOperationTitle title, Runnable task) {
         this.write(new AzureTask<>(title, task));
     }
 
@@ -76,11 +69,19 @@ public abstract class AzureTaskManager {
         this.runLater(new AzureTask<>(title, task));
     }
 
+    public final void runLater(IAzureOperationTitle title, Runnable task) {
+        this.runLater(new AzureTask<>(title, task));
+    }
+
     public final void runLater(Runnable task, AzureTask.Modality modality) {
         this.runLater(new AzureTask<>(task, modality));
     }
 
     public final void runLater(String title, Runnable task, AzureTask.Modality modality) {
+        this.runLater(new AzureTask<>(title, task, modality));
+    }
+
+    public final void runLater(IAzureOperationTitle title, Runnable task, AzureTask.Modality modality) {
         this.runLater(new AzureTask<>(title, task, modality));
     }
 
@@ -96,11 +97,19 @@ public abstract class AzureTaskManager {
         this.runAndWait(new AzureTask<>(title, task));
     }
 
+    public final void runAndWait(IAzureOperationTitle title, Runnable task) {
+        this.runAndWait(new AzureTask<>(title, task));
+    }
+
     public final void runAndWait(Runnable task, AzureTask.Modality modality) {
         this.runAndWait(new AzureTask<>(task, modality));
     }
 
     public final void runAndWait(String title, Runnable task, AzureTask.Modality modality) {
+        this.runAndWait(new AzureTask<>(title, task, modality));
+    }
+
+    public final void runAndWait(IAzureOperationTitle title, Runnable task, AzureTask.Modality modality) {
         this.runAndWait(new AzureTask<>(title, task, modality));
     }
 
@@ -112,7 +121,15 @@ public abstract class AzureTaskManager {
         this.runInBackground(new AzureTask<>(title, task));
     }
 
+    public final void runInBackground(IAzureOperationTitle title, Runnable task) {
+        this.runInBackground(new AzureTask<>(title, task));
+    }
+
     public final void runInBackground(String title, Supplier<Void> task) {
+        this.runInBackground(new AzureTask<>(title, task));
+    }
+
+    public final void runInBackground(IAzureOperationTitle title, Supplier<Void> task) {
         this.runInBackground(new AzureTask<>(title, task));
     }
 
@@ -120,7 +137,15 @@ public abstract class AzureTaskManager {
         this.runInBackground(new AzureTask<>(null, title, cancellable, task));
     }
 
+    public final void runInBackground(IAzureOperationTitle title, boolean cancellable, Runnable task) {
+        this.runInBackground(new AzureTask<>(null, title, cancellable, task));
+    }
+
     public final void runInBackground(String title, boolean cancellable, Supplier<Void> task) {
+        this.runInBackground(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final void runInBackground(IAzureOperationTitle title, boolean cancellable, Supplier<Void> task) {
         this.runInBackground(new AzureTask<>(null, title, cancellable, task));
     }
 
@@ -132,7 +157,15 @@ public abstract class AzureTaskManager {
         this.runInModal(new AzureTask<>(title, task));
     }
 
+    public final void runInModal(IAzureOperationTitle title, Runnable task) {
+        this.runInModal(new AzureTask<>(title, task));
+    }
+
     public final void runInModal(String title, Supplier<Void> task) {
+        this.runInModal(new AzureTask<>(title, task));
+    }
+
+    public final void runInModal(IAzureOperationTitle title, Supplier<Void> task) {
         this.runInModal(new AzureTask<>(title, task));
     }
 
@@ -140,7 +173,15 @@ public abstract class AzureTaskManager {
         this.runInModal(new AzureTask<>(null, title, cancellable, task));
     }
 
+    public final void runInModal(IAzureOperationTitle title, boolean cancellable, Runnable task) {
+        this.runInModal(new AzureTask<>(null, title, cancellable, task));
+    }
+
     public final void runInModal(String title, boolean cancellable, Supplier<Void> task) {
+        this.runInModal(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final void runInModal(IAzureOperationTitle title, boolean cancellable, Supplier<Void> task) {
         this.runInModal(new AzureTask<>(null, title, cancellable, task));
     }
 
@@ -156,6 +197,10 @@ public abstract class AzureTaskManager {
         return this.readAsObservable(new AzureTask<>(title, task));
     }
 
+    public final Observable<Void> readAsObservable(IAzureOperationTitle title, Runnable task) {
+        return this.readAsObservable(new AzureTask<>(title, task));
+    }
+
     public final <T> Observable<T> readAsObservable(AzureTask<T> task) {
         return this.runInObservable(this::doRead, task);
     }
@@ -165,6 +210,10 @@ public abstract class AzureTaskManager {
     }
 
     public final Observable<Void> writeAsObservable(String title, Runnable task) {
+        return this.writeAsObservable(new AzureTask<>(title, task));
+    }
+
+    public final Observable<Void> writeAsObservable(IAzureOperationTitle title, Runnable task) {
         return this.writeAsObservable(new AzureTask<>(title, task));
     }
 
@@ -180,11 +229,19 @@ public abstract class AzureTaskManager {
         return this.runLaterAsObservable(new AzureTask<>(title, task));
     }
 
+    public final Observable<Void> runLaterAsObservable(IAzureOperationTitle title, Runnable task) {
+        return this.runLaterAsObservable(new AzureTask<>(title, task));
+    }
+
     public final Observable<Void> runLaterAsObservable(Runnable task, AzureTask.Modality modality) {
         return this.runLaterAsObservable(new AzureTask<>(task, modality));
     }
 
     public final Observable<Void> runLaterAsObservable(String title, Runnable task, AzureTask.Modality modality) {
+        return this.runLaterAsObservable(new AzureTask<>(title, task, modality));
+    }
+
+    public final Observable<Void> runLaterAsObservable(IAzureOperationTitle title, Runnable task, AzureTask.Modality modality) {
         return this.runLaterAsObservable(new AzureTask<>(title, task, modality));
     }
 
@@ -200,11 +257,19 @@ public abstract class AzureTaskManager {
         return this.runAndWaitAsObservable(new AzureTask<>(title, task));
     }
 
+    public final Observable<Void> runAndWaitAsObservable(IAzureOperationTitle title, Runnable task) {
+        return this.runAndWaitAsObservable(new AzureTask<>(title, task));
+    }
+
     public final Observable<Void> runAndWaitAsObservable(Runnable task, AzureTask.Modality modality) {
         return this.runAndWaitAsObservable(new AzureTask<>(task, modality));
     }
 
     public final Observable<Void> runAndWaitAsObservable(String title, Runnable task, AzureTask.Modality modality) {
+        return this.runAndWaitAsObservable(new AzureTask<>(title, task, modality));
+    }
+
+    public final Observable<Void> runAndWaitAsObservable(IAzureOperationTitle title, Runnable task, AzureTask.Modality modality) {
         return this.runAndWaitAsObservable(new AzureTask<>(title, task, modality));
     }
 
@@ -216,7 +281,15 @@ public abstract class AzureTaskManager {
         return this.runInBackgroundAsObservable(new AzureTask<>(title, task));
     }
 
+    public final Observable<Void> runInBackgroundAsObservable(IAzureOperationTitle title, Runnable task) {
+        return this.runInBackgroundAsObservable(new AzureTask<>(title, task));
+    }
+
     public final <T> Observable<T> runInBackgroundAsObservable(String title, Supplier<T> task) {
+        return this.runInBackgroundAsObservable(new AzureTask<>(title, task));
+    }
+
+    public final <T> Observable<T> runInBackgroundAsObservable(IAzureOperationTitle title, Supplier<T> task) {
         return this.runInBackgroundAsObservable(new AzureTask<>(title, task));
     }
 
@@ -224,7 +297,15 @@ public abstract class AzureTaskManager {
         return this.runInBackgroundAsObservable(new AzureTask<>(null, title, cancellable, task));
     }
 
+    public final Observable<Void> runInBackgroundAsObservable(IAzureOperationTitle title, boolean cancellable, Runnable task) {
+        return this.runInBackgroundAsObservable(new AzureTask<>(null, title, cancellable, task));
+    }
+
     public final <T> Observable<T> runInBackgroundAsObservable(String title, boolean cancellable, Supplier<T> task) {
+        return this.runInBackgroundAsObservable(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final <T> Observable<T> runInBackgroundAsObservable(IAzureOperationTitle title, boolean cancellable, Supplier<T> task) {
         return this.runInBackgroundAsObservable(new AzureTask<>(null, title, cancellable, task));
     }
 
@@ -236,7 +317,15 @@ public abstract class AzureTaskManager {
         return this.runInModalAsObservable(new AzureTask<>(title, task));
     }
 
+    public final Observable<Void> runInModalAsObservable(IAzureOperationTitle title, Runnable task) {
+        return this.runInModalAsObservable(new AzureTask<>(title, task));
+    }
+
     public final <T> Observable<T> runInModalAsObservable(String title, Supplier<T> task) {
+        return this.runInModalAsObservable(new AzureTask<>(title, task));
+    }
+
+    public final <T> Observable<T> runInModalAsObservable(IAzureOperationTitle title, Supplier<T> task) {
         return this.runInModalAsObservable(new AzureTask<>(title, task));
     }
 
@@ -244,7 +333,15 @@ public abstract class AzureTaskManager {
         return this.runInModalAsObservable(new AzureTask<>(null, title, cancellable, task));
     }
 
+    public final Observable<Void> runInModalAsObservable(IAzureOperationTitle title, boolean cancellable, Runnable task) {
+        return this.runInModalAsObservable(new AzureTask<>(null, title, cancellable, task));
+    }
+
     public final <T> Observable<T> runInModalAsObservable(String title, boolean cancellable, Supplier<T> task) {
+        return this.runInModalAsObservable(new AzureTask<>(null, title, cancellable, task));
+    }
+
+    public final <T> Observable<T> runInModalAsObservable(IAzureOperationTitle title, boolean cancellable, Supplier<T> task) {
         return this.runInModalAsObservable(new AzureTask<>(null, title, cancellable, task));
     }
 
@@ -257,9 +354,9 @@ public abstract class AzureTaskManager {
             final AzureTaskContext.Node context = AzureTaskContext.current().derive();
             task.setContext(context);
             context.setTask(task);
+            AzureTelemeter.afterCreate(task);
             final Runnable t = () -> AzureTaskContext.run(() -> {
                 try {
-                    // log.info(String.format("doing task[%s] in thread[%s]/context[%s]", task.getTitle(), Thread.currentThread().getId(), context));
                     emitter.onNext(task.getSupplier().get());
                     emitter.onCompleted();
                 } catch (final Throwable e) {

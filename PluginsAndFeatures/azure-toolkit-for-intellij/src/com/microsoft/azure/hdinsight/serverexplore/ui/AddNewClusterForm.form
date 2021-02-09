@@ -78,7 +78,7 @@
                           <text value=" Cluster Name/URL:"/>
                         </properties>
                       </component>
-                      <component id="ef732" class="com.microsoft.azuretools.ijidea.ui.HintTextField" binding="clusterNameOrUrlField" custom-create="true">
+                      <component id="ef732" class="com.microsoft.intellij.ui.HintTextField" binding="clusterNameOrUrlField" custom-create="true">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
                             <preferred-size width="300" height="-1"/>
@@ -133,13 +133,13 @@
                         </constraints>
                         <properties/>
                       </component>
-                      <component id="a3d19" class="com.microsoft.azuretools.ijidea.ui.HintTextField" binding="livyEndpointField" custom-create="true">
+                      <component id="a3d19" class="com.microsoft.intellij.ui.HintTextField" binding="livyEndpointField" custom-create="true">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties/>
                       </component>
-                      <component id="c6945" class="com.microsoft.azuretools.ijidea.ui.HintTextField" binding="yarnEndpointField" custom-create="true">
+                      <component id="c6945" class="com.microsoft.intellij.ui.HintTextField" binding="yarnEndpointField" custom-create="true">
                         <constraints>
                           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -193,13 +193,13 @@
                           <text value="Name:"/>
                         </properties>
                       </component>
-                      <component id="7bd75" class="com.microsoft.azuretools.ijidea.ui.HintTextField" binding="arisHostField" custom-create="true" default-binding="true">
+                      <component id="7bd75" class="com.microsoft.intellij.ui.HintTextField" binding="arisHostField" custom-create="true" default-binding="true">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties/>
                       </component>
-                      <component id="626be" class="com.microsoft.azuretools.ijidea.ui.HintTextField" binding="arisClusterNameField" custom-create="true" default-binding="true">
+                      <component id="626be" class="com.microsoft.intellij.ui.HintTextField" binding="arisClusterNameField" custom-create="true" default-binding="true">
                         <constraints>
                           <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>

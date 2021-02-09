@@ -1,6 +1,13 @@
 <!-- Version: 3.47.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.49.0
+
+### Changed
+- Collect performance metrics data via telemetry for future performance tuning.
+- Update the status text on progress indicator.
+- Update context menu icons in Azure Explorer.
+
 ## 3.48.0
 
 ### Changed

@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.helpers;
@@ -63,6 +46,8 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -373,7 +358,7 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     @AzureOperation(
-        value = "open file[%s] in editor",
+        name = "appservice|file.open",
         params = {"$target.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -383,15 +368,15 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
         final OutputStream output = virtualFile.getOutputStream(null);
-        final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
-        final String title = String.format("Opening file %s...", virtualFile.getName());
+        final String failure = String.format("Can not open file (%s). Try downloading it first and open it manually.", virtualFile.getName());
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.open", virtualFile.getName());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             indicator.setText2("Checking file existence");
             final AppServiceFile file = fileService.getFileByPath(target.getPath());
             if (file == null) {
-                final String failureFileDeleted = String.format("Target file %s has been deleted", target.getName());
+                final String failureFileDeleted = String.format("Target file (%s) has been deleted", target.getName());
                 UIUtil.invokeLaterIfNeeded(() -> Messages.showWarningDialog(failureFileDeleted, "Open File"));
                 return;
             }
@@ -455,12 +440,13 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @AzureOperation(
-        value = "save file[%s] to azure",
+        name = "appservice|file.save",
         params = {"$appServiceFile.getName()"},
         type = AzureOperation.Type.SERVICE
     )
     private void saveFileToAzure(final AppServiceFile appServiceFile, final String content, final Project project) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format("Saving %s", appServiceFile.getName()), false, () -> {
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.save", appServiceFile.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final AppServiceFileService fileService = AppServiceFileService.forApp(appServiceFile.getApp());
             final AppServiceFile target = fileService.getFileByPath(appServiceFile.getPath());
             final boolean deleted = target == null;
@@ -484,7 +470,7 @@ public class IDEHelperImpl implements IDEHelper {
      * user is asked to choose where to save the file is @param dest is null
      */
     @AzureOperation(
-        value = "download file[%s] to local",
+        name = "appservice|file.download",
         params = {"$file.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -496,7 +482,7 @@ public class IDEHelperImpl implements IDEHelper {
         }
         final OutputStream output = new FileOutputStream(destFile);
         final Project project = (Project) context;
-        final String title = String.format("Downloading file %s...", file.getName());
+        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.download", file.getName());
         final AzureTask<Void> task = new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             AppServiceFileService

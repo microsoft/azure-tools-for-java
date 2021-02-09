@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.49.0](#3490)
   - [3.48.0](#3480)
   - [3.47.0](#3470)
   - [3.46.0](#3460)
@@ -62,6 +63,13 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.49.0
+
+### Changed
+- Collect performance metrics data via telemetry for future performance tuning.
+- Update the status text on progress indicator.
+- Update context menu icons in Azure Explorer.
 
 ## 3.48.0
 
