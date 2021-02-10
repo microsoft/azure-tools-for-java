@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -23,15 +23,17 @@
 package org.jetbrains.plugins.azure.functions
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
 import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.jetbrains.rd.platform.util.getComponent
 import com.jetbrains.rider.nuget.RiderNuGetHost
@@ -43,14 +45,21 @@ import com.jetbrains.rider.projectView.nodes.containingProject
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {
         private const val enableAzureFunctionsInstallMissingNupkg = "rider.enable.azure.functions.install.missing.nupkg"
-
-        private fun shouldProcess(projectFileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
-                file.exists() && projectFileIndex.isInContent(file)
+        private val markedForProcessing = Key<Boolean>("AzureCoreToolsMissingNupkgInstaller_MarkedForProcessing")
 
         private fun hasKnownFileSuffix(file: VirtualFile): Boolean =
                 file.extension.equals("cs", true) ||
                 file.extension.equals("vb", true) ||
                 file.extension.equals("fs", true)
+
+        private fun existsInCurrentProject(projectFileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
+                file.exists() && projectFileIndex.isInContent(file)
+
+        private fun isNewOrMarkedForProcessing(file: VirtualFile, event: VFileEvent) = when (event) {
+            is VFileCreateEvent -> true
+            is VFileContentChangeEvent -> file.getUserData(markedForProcessing) ?: false
+            else -> false
+        }
 
         private val knownMarkerWords = listOf(
                 "FunctionName",
@@ -81,10 +90,16 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 for (event in events) {
                     val file = event.file ?: continue
 
-                    if (shouldProcess(projectFileIndex, file) &&
-                            hasKnownFileSuffix(file) && // Only process certain file types
-                            event.requestor !is FileDocumentManagerImpl && // Don't process when typing in document
-                            file.length > 0) {
+                    if (hasKnownFileSuffix(file) &&
+                            existsInCurrentProject(projectFileIndex, file) &&
+                            isNewOrMarkedForProcessing(file, event)) {
+
+                        // First pass(es), no content will be in the file.
+                        // If that is the case, mark the file for processing on later changes.
+                        if (file.length < 25 || event is VFileCreateEvent) {
+                            file.putUserData(markedForProcessing, true)
+                            continue
+                        }
 
                         ApplicationManager.getApplication().runReadAction {
                             val text = LoadTextUtil.loadText(file, 4096)
@@ -114,6 +129,9 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                                     }
                                 }
                             }
+
+                            // Remove marker
+                            file.putUserData(markedForProcessing, false)
                         }
                     }
                 }
