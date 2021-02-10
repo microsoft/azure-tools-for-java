@@ -770,7 +770,7 @@ namespace $NAMESPACE$
         [FunctionName("$CLASS$_HttpStart")]
         public static async Task&lt;HttpResponseMessage&gt; HttpStart(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req,
-            [OrchestrationClient]IDurableOrchestrationClient starter,
+            [DurableClient]IDurableOrchestrationClient starter,
             ILogger log)
         {
             // Function input comes from the request content.
