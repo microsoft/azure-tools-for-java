@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.core.mvp.model.function;
@@ -56,7 +39,7 @@ public class AzureFunctionMvpModel {
 
     @NotNull
     @AzureOperation(
-        value = "get detail info of function app[%s] in subscription[%s]",
+        name = "function.get_detail",
         params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -71,7 +54,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "get detail info of function app[%s] in subscription[%s]",
+        name = "function.get_detail",
         params = {"$name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -79,18 +62,14 @@ public class AzureFunctionMvpModel {
         return getFunctionAppsClient(sid).getByResourceGroup(resourceGroup, name);
     }
 
-    @AzureOperation(
-        value = "delete function app[%s] in subscription[%s]",
-        params = {"$appId|uri_to_name", "$sid"},
-        type = AzureOperation.Type.SERVICE
-    )
+    @AzureOperation(name = "function.delete", params = {"$appId|uri_to_name", "$sid"}, type = AzureOperation.Type.SERVICE)
     public void deleteFunction(String sid, String appId) {
         getFunctionAppsClient(sid).deleteById(appId);
         subscriptionIdToFunctionApps.remove(sid);
     }
 
     @AzureOperation(
-        value = "restart function app[%s] in subscription[%s]",
+        name = "function.restart",
         params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -99,7 +78,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "start function app[%s] in subscription[%s]",
+        name = "function.start",
         params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -108,7 +87,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "stop function app[%s] in subscription[%s]",
+        name = "function.stop",
         params = {"$appId|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -120,7 +99,7 @@ public class AzureFunctionMvpModel {
      * List app service plan by subscription id and resource group name.
      */
     @AzureOperation(
-        value = "get all service plans in resource group[%s] of subscription[$s]",
+        name = "appservice|plan.list.subscription|rg",
         params = {"$group", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -137,7 +116,7 @@ public class AzureFunctionMvpModel {
      * List app service plan by subscription id.
      */
     @AzureOperation(
-        value = "get all service plans in subscription[$s]",
+        name = "appservice|plan.list.subscription",
         params = {"$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -152,7 +131,7 @@ public class AzureFunctionMvpModel {
      * @return list of Function App
      */
     @AzureOperation(
-        value = "get all function apps in selected subscription(s)",
+        name = "function.list.subscription|selected",
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean forceReload) {
@@ -173,7 +152,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "get all envelops of function app[%s] in subscription[$s]",
+        name = "function|envelops.list",
         params = {"$id|uri_to_name", "$sid"},
         type = AzureOperation.Type.SERVICE
     )
@@ -185,7 +164,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "get publishing profile of function app[%s] with secret",
+        name = "function.get_publishing_profile",
         params = {"$functionAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -195,7 +174,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "update settings of function app[%s]",
+        name = "function.update_setting",
         params = {"$functionAppId|uri_to_name"},
         type = AzureOperation.Type.SERVICE
     )
@@ -209,7 +188,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "get all available pricing tiers for function apps",
+        name = "function.get_tiers",
         type = AzureOperation.Type.TASK
     )
     public List<PricingTier> listFunctionPricingTier() {
@@ -234,7 +213,7 @@ public class AzureFunctionMvpModel {
     }
 
     @AzureOperation(
-        value = "turn on application log for function app[%s]",
+        name = "function.turn_on_logs",
         params = {"$functionApp.name()"},
         type = AzureOperation.Type.TASK
     )
@@ -252,7 +231,7 @@ public class AzureFunctionMvpModel {
      */
     @NotNull
     @AzureOperation(
-        value = "get all function apps in subscription[%s]",
+        name = "function.list.subscription",
         params = {"$subscriptionId"},
         type = AzureOperation.Type.SERVICE
     )
@@ -272,11 +251,6 @@ public class AzureFunctionMvpModel {
         return functions;
     }
 
-    @AzureOperation(
-        value = "get function apps client for subscription[%s]",
-        params = {"$sId"},
-        type = AzureOperation.Type.TASK
-    )
     private static FunctionApps getFunctionAppsClient(String sid) {
         return AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps();
     }

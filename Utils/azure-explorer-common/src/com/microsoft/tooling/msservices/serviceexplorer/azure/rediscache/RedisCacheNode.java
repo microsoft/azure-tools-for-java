@@ -1,42 +1,22 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
 import lombok.Lombok;
 
 import java.util.HashMap;
@@ -99,12 +79,18 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     @Override
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
-            addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
-            addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
-            addAction(OPEN_EXPLORER, new OpenExplorerAction().asGenericListener());
+            addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+            addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+            addAction(OPEN_EXPLORER, initActionBuilder(this::openExplorer).build("Opening"));
         }
-        addAction(new OpenInBrowserAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         super.loadActions();
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(RedisCacheModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
@@ -122,80 +108,28 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         return this.resourceId;
     }
 
-    // Delete action class
-    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId, RedisCacheNode.this.resourceId, RedisCacheNode.this);
-        }
-
-        @Override
-        public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.RedisCache.DELETE;
-        }
+    @AzureOperation(name = ActionConstants.RedisCache.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        this.getParent().removeNode(this.subscriptionId, this.resourceId, this);
     }
 
-    // Open in browser action class
-    private class OpenInBrowserAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            String portalUrl = "";
-            try {
-                portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
-            } catch (Exception exception) {
-                Lombok.sneakyThrow(exception);
-            }
-            DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, RedisCacheNode.this.resourceId));
+    @AzureOperation(name = ActionConstants.RedisCache.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        String portalUrl = "";
+        try {
+            portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+        } catch (Exception exception) {
+            Lombok.sneakyThrow(exception);
         }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), RedisCacheModule.MODULE_NAME, RedisCacheNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.RedisCache.OPEN_IN_PORTAL;
-        }
+        DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl, this.resourceId));
     }
 
-    // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openRedisPropertyView(RedisCacheNode.this);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.RedisCache.SHOW_PROPERTIES;
-        }
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openRedisPropertyView(this);
     }
 
-    // Open Explorer
-    private class OpenExplorerAction extends NodeActionListener implements ActionTelemetrable {
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openRedisExplorer(RedisCacheNode.this);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.RedisCache.OPEN_EXPLORER;
-        }
+    private void openExplorer() {
+        DefaultLoader.getUIHelper().openRedisExplorer(this);
     }
 
 }

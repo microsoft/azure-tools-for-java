@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.common.task;
@@ -62,7 +45,8 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRunInBackground(final Runnable runnable, final AzureTask<?> task) {
-        final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
+        final String title = String.format("Doing %s...", task.getTitle().toString());
+        final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(true);
@@ -82,7 +66,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
-        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
+        final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle().toString(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
@@ -98,7 +82,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final Disposable disposable = Disposer.newDisposable();
         // refer https://github.com/JetBrains/intellij-community/commit/077c5558993b97cfb6f68ccc3cbe13065ba3cba8
         Registry.get("ide.background.tasks").setValue(false, disposable);
-        final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable(), foreground) {
+        final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle().toString(), task.isCancellable(), foreground) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);

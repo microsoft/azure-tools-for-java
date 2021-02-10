@@ -36,7 +36,7 @@ import com.microsoft.azure.hdinsight.spark.run.getNormalizedClassNameForSpark
 import com.microsoft.azure.hdinsight.spark.run.getSparkConfigurationContext
 import com.microsoft.azure.hdinsight.spark.run.getSparkMainClassWithElement
 import com.microsoft.azure.hdinsight.spark.run.isSparkContext
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation

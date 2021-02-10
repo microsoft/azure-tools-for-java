@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel.
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableViewport
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.UniqueColumnNameTableSchema
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import org.junit.Ignore
 import org.junit.Test

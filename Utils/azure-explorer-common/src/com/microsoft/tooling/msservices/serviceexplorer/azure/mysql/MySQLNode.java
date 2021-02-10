@@ -1,37 +1,25 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionBackgroundable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionPromptable;
-import com.microsoft.tooling.msservices.serviceexplorer.listener.ActionTelemetrable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import lombok.Getter;
 
 import java.util.List;
@@ -67,13 +55,19 @@ public class MySQLNode extends Node {
 
     @Override
     protected void loadActions() {
-        addAction(new StartAction().asGenericListener(AzureActionEnum.START));
-        addAction(new StopAction().asGenericListener(AzureActionEnum.STOP));
-        addAction(new RestartAction().asGenericListener(AzureActionEnum.RESTART));
-        addAction(new DeleteAction().asGenericListener(AzureActionEnum.DELETE));
-        addAction(new OpenInPortalAction().asGenericListener(AzureActionEnum.OPEN_IN_PORTAL));
-        addAction(new ShowPropertiesAction().asGenericListener(AzureActionEnum.SHOW_PROPERTIES));
+        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         initActions();
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(MySQLModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
@@ -92,125 +86,41 @@ public class MySQLNode extends Node {
         this.serverState = result.userVisibleState();
     }
 
-    // Delete action class
-    private class DeleteAction extends NodeActionListener implements ActionBackgroundable, ActionPromptable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            MySQLNode.this.serverState = SERVER_UPDATING;
-            MySQLNode.this.getParent().removeNode(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getId(), MySQLNode.this);
-        }
-
-        @Override
-        public String getPromptMessage() {
-            return Node.getPromptMessage(AzureActionEnum.DELETE.getName().toLowerCase(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.DELETE.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.DELETE;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        this.serverState = SERVER_UPDATING;
+        this.getParent().removeNode(this.getSubscriptionId(), this.getId(), MySQLNode.this);
     }
 
-    // Start action class
-    private class StartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            MySQLNode.this.serverState = SERVER_UPDATING;
-            MySQLMvpModel.start(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-            MySQLNode.this.refreshNode();
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.START.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.START;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.START, type = AzureOperation.Type.ACTION)
+    private void start() {
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.start(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
-    // Stop action class
-    private class StopAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            MySQLNode.this.serverState = SERVER_UPDATING;
-            MySQLMvpModel.stop(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-            MySQLNode.this.refreshNode();
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.STOP.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.STOP;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.STOP, type = AzureOperation.Type.ACTION)
+    private void stop() {
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.stop(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
-    // Restart action class
-    private class RestartAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            MySQLNode.this.serverState = SERVER_UPDATING;
-            MySQLMvpModel.restart(MySQLNode.this.getSubscriptionId(), MySQLNode.this.getServer());
-            MySQLNode.this.refreshNode();
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.RESTART.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.RESTART;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.RESTART, type = AzureOperation.Type.ACTION)
+    private void restart() {
+        this.serverState = SERVER_UPDATING;
+        MySQLMvpModel.restart(this.getSubscriptionId(), this.getServer());
+        this.refreshNode();
     }
 
-    // Open in portal action class
-    private class OpenInPortalAction extends NodeActionListener implements ActionBackgroundable, ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            MySQLNode.this.openResourcesInPortal(MySQLNode.this.subscriptionId, MySQLNode.this.server.id());
-        }
-
-        @Override
-        public String getProgressMessage() {
-            return Node.getProgressMessage(AzureActionEnum.OPEN_IN_PORTAL.getDoingName(), MySQLModule.MODULE_NAME, MySQLNode.this.name);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.OPEN_IN_PORTAL;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        this.openResourcesInPortal(this.subscriptionId, this.server.id());
     }
 
-    // Show Properties
-    private class ShowPropertiesAction extends NodeActionListener implements ActionTelemetrable {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
-        }
-
-        @Override
-        public TelemetryParameter getTelemetryParameter() {
-            return TelemetryParameter.MySQL.SHOW_PROPERTIES;
-        }
+    @AzureOperation(name = ActionConstants.MySQL.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openMySQLPropertyView(MySQLNode.this);
     }
 
 }

@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.helpers;
@@ -43,36 +26,36 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetry.TelemetryParameter;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
-import com.microsoft.intellij.helpers.arm.DeploymentPropertyView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
-import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
-import com.microsoft.intellij.helpers.mysql.MySQLPropertyView;
-import com.microsoft.intellij.helpers.mysql.MySQLPropertyViewProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
 import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.QueueFileEditor;
 import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
 import com.microsoft.intellij.helpers.storage.TableFileEditor;
-import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
-import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -110,8 +93,8 @@ import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
-import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
-import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
+import static com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -501,7 +484,8 @@ public class UIHelperImpl implements UIHelper {
                                                               ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            itemVirtualFile.setFileType(new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, UIHelperImpl.loadIcon(ContainerRegistryNode.ICON_PATH)));
+            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
+            itemVirtualFile.setFileType(fileType);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
@@ -589,7 +573,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openMySQLPropertyView(@NotNull MySQLNode node) {
-        EventUtil.executeWithLog(TelemetryParameter.MySQL.SHOW_PROPERTIES, (operation) -> {
+        EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
             String name = node.getName();
             String subscriptionId = node.getSubscriptionId();
             String nodeId = node.getId();

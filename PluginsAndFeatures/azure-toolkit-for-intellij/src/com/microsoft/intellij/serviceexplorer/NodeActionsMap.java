@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.serviceexplorer;
@@ -32,24 +15,24 @@ import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
-import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
-import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
-import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.SSHIntoWebAppAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.CreateDeploymentAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.EditDeploymentAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.ExportParameterAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.ExportTemplateAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.action.PushToContainerRegistryAction;
+import com.microsoft.azure.toolkit.intellij.redis.action.CreateRedisCacheAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.action.SpringCloudStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
-import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.azure.toolkit.intellij.vm.CreateVMAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
