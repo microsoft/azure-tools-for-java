@@ -4,9 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Bug fix:</h4>
+      <h4>Added:</h4>
       <ul>
-        <li>Fix Azure Toolkit for Rider: Deployment Slot setting is not saved (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/423">#423</a>)</li>
+        <li>Compatibility with Rider 2021.1 EAP2</li>
       </ul>
     </html>
     ]]>
