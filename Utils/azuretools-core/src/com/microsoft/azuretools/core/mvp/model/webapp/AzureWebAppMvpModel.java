@@ -24,8 +24,6 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -610,25 +608,20 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
-        final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (subs.size() == 0) {
-            return webApps;
-        }
-        Observable.from(subs)
-                  .flatMap((sd) ->
-                               Observable.create((subscriber) -> {
-                                   final List<ResourceEx<WebApp>> webAppList = listWebApps(sd.subscriptionId(),
-                                                                                           force);
-                                   synchronized (webApps) {
-                                       webApps.addAll(webAppList);
-                                   }
-                                   subscriber.onCompleted();
-                               }).subscribeOn(Schedulers.io()), subs.size())
-                  .subscribeOn(Schedulers.io())
-                  .toBlocking()
-                  .subscribe();
-        return webApps;
+        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listWebApps(sd.subscriptionId(), force).stream())
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    @AzureOperation(
+        name = "webapp.list.java|subscription|selected",
+        type = AzureOperation.Type.SERVICE
+    )
+    public List<ResourceEx<WebApp>> listJavaWebApps(final boolean force) {
+        return this.listAllWebApps(force).parallelStream()
+            .filter(app -> WebAppUtils.isJavaWebApp(app.getResource()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -671,14 +664,14 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
-        if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
+        if (!force && subscriptionIdToWebApps.containsKey(subscriptionId)) {
             return subscriptionIdToWebApps.get(subscriptionId);
         }
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
         final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(","))
                                                                                     .contains("functionapp");
         final List<ResourceEx<WebApp>> webapps = azure.appServices().webApps()
-                                                      .inner().list().stream().filter(filter)
+                                                      .inner().list().stream().parallel().filter(filter)
                                                       .map(inner -> new WebAppWrapper(subscriptionId, inner))
                                                       .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
                                                       .collect(Collectors.toList());
