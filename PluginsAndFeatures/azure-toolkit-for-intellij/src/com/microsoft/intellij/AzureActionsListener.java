@@ -18,8 +18,8 @@ import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
 import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -28,7 +28,6 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
@@ -37,12 +36,14 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import lombok.extern.java.Log;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 import rx.internal.util.PlatformDependent;
@@ -58,9 +59,9 @@ import java.util.logging.SimpleFormatter;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
 
+@Log
 public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
-    private static final Logger LOG = Logger.getInstance(AzureActionsListener.class);
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
     private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForIntelliJ";
     private static FileHandler logFileHandler = null;
@@ -101,7 +102,8 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
             DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
             popupGroup.add(am.getAction("AzurePopupGroup"));
-            loadWebApps();
+            initWebAppListeners();
+            this.warmup();
         }
         try {
             PlatformDependent.isAndroid();
@@ -115,6 +117,23 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         }
     }
 
+    private void warmup() {
+        AzureTaskManager.getInstance().runLater(() -> {
+            try {
+                log.info("begin warming up cache");
+                final AuthMethodManager manager = AuthMethodManager.getInstance();
+                final AzureWebAppMvpModel service = AzureWebAppMvpModel.getInstance();
+                if (manager.isSignedIn()) {
+                    service.listJavaWebApps(true); // warmup cache.
+                }
+            } catch (final Exception e) {
+                log.log(Level.WARNING, "error occurs during warming up", e);
+            } finally {
+                log.info("done warming up cache");
+            }
+        });
+    }
+
     private void initAuthManage() {
         if (CommonSettings.getUiFactory() == null) {
             CommonSettings.setUiFactory(new UIFactory());
@@ -124,18 +143,17 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
             CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
             initLoggerFileHandler();
-        } catch (IOException ex) {
-            LOG.error("initAuthManage()", ex);
+        } catch (final IOException ex) {
+            log.log(Level.SEVERE, "initAuthManage()", ex);
         }
     }
 
-    private void loadWebApps() {
+    private void initWebAppListeners() {
         System.out.println("AzurePlugin@loadWebApps");
-        Runnable forceCleanWebAppsAction = () -> {
-            AzureWebAppMvpModel.getInstance().clearWebAppsCache();
-        };
-
-        AuthMethodManager.getInstance().addSignOutEventListener(forceCleanWebAppsAction);
+        final AuthMethodManager manager = AuthMethodManager.getInstance();
+        manager.getAzureManager().getSubscriptionManager().addListener(b -> this.warmup());
+        final AzureWebAppMvpModel service = AzureWebAppMvpModel.getInstance();
+        manager.addSignOutEventListener(service::clearWebAppsCache);
     }
 
     private void initLoggerFileHandler() {
@@ -151,7 +169,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             l.info("=== Log session started ===");
         } catch (IOException e) {
             e.printStackTrace();
-            LOG.error("initLoggerFileHandler()", e);
+            log.log(Level.SEVERE, "initLoggerFileHandler()", e);
         }
     }
 
