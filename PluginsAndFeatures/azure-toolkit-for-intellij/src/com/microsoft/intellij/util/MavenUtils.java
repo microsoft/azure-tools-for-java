@@ -6,7 +6,7 @@
 package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.springcloud.SpringCloudDependencyManager;
+import com.microsoft.azure.toolkit.intellij.springcloud.dependency.SpringCloudDependencyManager;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;

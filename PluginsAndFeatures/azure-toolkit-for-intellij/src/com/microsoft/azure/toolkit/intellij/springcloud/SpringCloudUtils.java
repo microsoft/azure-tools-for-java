@@ -24,9 +24,9 @@ package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudValidationException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.springcloud.dependency.SpringCloudDependencyManager;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,7 +86,7 @@ public class SpringCloudUtils {
         final Attributes manifestAttributes = jarFile.getManifest().getMainAttributes();
         final String mainClass = manifestAttributes.getValue(MAIN_CLASS);
         if (StringUtils.isEmpty(mainClass)) {
-            throw new SpringCloudValidationException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
+            throw new AzureExecutionException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
         }
         final String library = manifestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(library)) {
@@ -94,7 +94,7 @@ public class SpringCloudUtils {
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
-            throw new SpringCloudValidationException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
+            throw new AzureExecutionException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
         }
         final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
         final List<String> missingDependencies = new ArrayList<>();
@@ -137,7 +137,7 @@ public class SpringCloudUtils {
                 .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
                         && StringUtils.equalsIgnoreCase(FilenameUtils.getExtension(jarEntry.getName()), JAR))
                 .map(jarEntry -> {
-                    String fileName = FilenameUtils.getBaseName(jarEntry.getName());
+                    final String fileName = FilenameUtils.getBaseName(jarEntry.getName());
                     final int i = StringUtils.lastIndexOf(fileName, "-");
                     return (i > 0 && i < fileName.length() - 1) ?
                             new String[]{

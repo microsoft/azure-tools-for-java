@@ -11,11 +11,11 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.SimpleListCellRenderer;
+import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfiguration;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
@@ -225,7 +225,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             return;
         }
         List<AzureArtifact> azureArtifacts =
-                configuration instanceof SpringCloudDeployConfiguration ?
+                configuration instanceof SpringCloudDeploymentConfiguration ?
                 AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
                 AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
         getCbAzureArtifact().removeAllItems();
