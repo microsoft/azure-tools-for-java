@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,24 +20,27 @@
  * SOFTWARE.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package com.microsoft.intellij.ui.component
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.IconLoader
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.jetbrains.rider.projectView.ProjectModelViewHost
-import com.jetbrains.rider.projectView.nodes.isProject
-import com.jetbrains.rider.projectView.nodes.isUnloadedProject
+import com.jetbrains.rider.projectView.calculateIcon
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.isProject
+import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import java.io.File
+import java.nio.file.Path
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JPanel
@@ -89,18 +92,18 @@ class PublishableProjectComponent(private val project: Project) :
                 if (project.isDisposed) return
 
                 if (publishableProject == null) {
-                    setText(message("run_config.publish.form.project.empty_message"))
+                    text = message("run_config.publish.form.project.empty_message")
                     return
                 }
 
-                setText(publishableProject.projectName)
+                text = publishableProject.projectName
 
-                val projectVf = VfsUtil.findFileByIoFile(File(publishableProject.projectFilePath), false) ?: return
-                val projectArray = ProjectModelViewHost.getInstance(project).getItemsByVirtualFile(projectVf)
-                val projectNodes = projectArray.filter { it.isProject() || it.isUnloadedProject() }
+                val projectNodes = WorkspaceModel.getInstance(project)
+                        .getProjectModelEntities(Path.of(publishableProject.projectFilePath), project)
+                        .filter { it.isProject() || it.isUnloadedProject() }
 
                 if (projectNodes.isEmpty()) return
-                val itemIcon = projectNodes[0].getIcon()
+                val itemIcon = projectNodes[0].calculateIcon(project)
                 if (itemIcon != null) {
                     val icon =
                             if (canBePublishedAction(publishableProject)) itemIcon

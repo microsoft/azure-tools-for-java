@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package org.jetbrains.plugins.azure.functions.run
 
 import com.intellij.execution.CantRunException
@@ -33,14 +35,14 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.execution.ParametersListUtil
-import com.jetbrains.rd.platform.util.getComponent
+import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rider.model.ProjectOutput
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
-import com.jetbrains.rider.projectView.ProjectModelViewHost
-import com.jetbrains.rider.projectView.isUnloadedProject
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.isUnloadedProject
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationParameters
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
 import com.jetbrains.rider.runtime.DotNetExecutable
@@ -50,6 +52,7 @@ import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import java.io.File
+import java.nio.file.Path
 
 open class AzureFunctionsHostConfigurationParameters(
         project: Project,
@@ -94,7 +97,7 @@ open class AzureFunctionsHostConfigurationParameters(
     }
 
     val isUnloadedProject: Boolean
-        get() = project.getComponent<ProjectModelViewHost>().isUnloadedProject(projectFilePath)
+        get() = WorkspaceModel.getInstance(project).getProjectModelEntities(Path.of(projectFilePath), project).any { it.isUnloadedProject() }
 
     override fun toDotNetExecutable(): DotNetExecutable {
         val runnableProject = tryGetRunnableProject()

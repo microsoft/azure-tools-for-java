@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -28,8 +28,8 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.run.configurations.publishing.RiderContextPublishProvider
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfiguration
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfigurationType
@@ -50,10 +50,10 @@ class FunctionAppContextPublishProvider : RiderContextPublishProvider {
         get() = RUN_CONFIG_NAME
 
     override fun getConfigurationForNode(project: Project,
-                                         projectModelNode: ProjectModelNode): Pair<RunConfiguration, ConfigurationFactory> {
+                                         entity: ProjectModelEntity): Pair<RunConfiguration, ConfigurationFactory> {
 
-        val projectData = RiderContextPublishProvider.getProjectDataRecursive(project, projectModelNode)
-                ?: error("Unexpected project node type. Cannot get project data for node ${projectModelNode.location}")
+        val projectData = RiderContextPublishProvider.getProjectDataRecursive(project, entity)
+                ?: error("Unexpected project node type. Cannot get project data for entity ${entity.url}")
 
         val factory = ConfigurationTypeUtil.findConfigurationType(FunctionAppConfigurationType::class.java).configurationFactories.single()
         val configuration = FunctionAppConfiguration(project, factory, String.format(RUN_CONFIG_PROJECT_NAME, projectData.value.projectName))
@@ -66,8 +66,8 @@ class FunctionAppContextPublishProvider : RiderContextPublishProvider {
     private fun isProjectPublishable(projectData: PublishableProjectModel?) =
             projectData != null && projectData.isAzureFunction
 
-    override fun isAvailable(project: Project, projectModelNode: ProjectModelNode): Boolean {
-        val projectData = RiderContextPublishProvider.getProjectData(project, projectModelNode)
+    override fun isAvailable(project: Project, entity: ProjectModelEntity): Boolean {
+        val projectData = RiderContextPublishProvider.getProjectData(project, entity)
         return isProjectPublishable(projectData?.value)
     }
 

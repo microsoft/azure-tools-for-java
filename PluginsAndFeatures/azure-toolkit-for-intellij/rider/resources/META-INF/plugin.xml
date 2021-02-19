@@ -24,7 +24,7 @@
       <html>
         <p>[3.40.0-2021.1]</p>
         <ul>
-          <li>Compatibility with Rider 2021.1 EAP2</li>
+          <li>Compatibility with Rider 2021.1 EAP3</li>
         </ul>
         <h4>Fixed bugs:</h4>
         <ul>
@@ -183,6 +183,7 @@
 
   <depends>com.intellij.modules.rider</depends>
   <depends>com.intellij.database</depends>
+  <depends>com.intellij.css</depends>
   <depends>com.jetbrains.restClient</depends>
   <depends>JavaScript</depends>
 

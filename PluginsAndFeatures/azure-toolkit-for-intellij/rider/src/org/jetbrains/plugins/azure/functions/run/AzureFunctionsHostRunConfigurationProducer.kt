@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -32,6 +32,7 @@ import com.intellij.psi.PsiElement
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.projectView.workspace.getFile
 import com.jetbrains.rider.run.configurations.getSelectedProject
 
 class AzureFunctionsHostRunConfigurationProducer

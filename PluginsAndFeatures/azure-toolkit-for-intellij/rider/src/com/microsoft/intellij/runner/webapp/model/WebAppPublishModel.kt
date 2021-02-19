@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,6 +27,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.xmlb.annotations.Attribute
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
@@ -111,9 +112,11 @@ class WebAppPublishModel {
     fun readExternal(project: Project, element: Element) {
 
         val projectPath = JDOMExternalizerUtil.readField(element, AZURE_WEB_APP_PROJECT) ?: ""
-        project.solution.publishableProjectsModel.publishableProjects.advise(project.createLifetime()) {
-            if (it.newValueOpt?.projectFilePath == projectPath)
-                publishableProject = it.newValueOpt
+        application.invokeLater {
+            project.solution.publishableProjectsModel.publishableProjects.advise(project.createLifetime()) {
+                if (it.newValueOpt?.projectFilePath == projectPath)
+                    publishableProject = it.newValueOpt
+            }
         }
 
         val subscriptionId = JDOMExternalizerUtil.readField(element, AZURE_WEB_APP_SUBSCRIPTION_ID) ?: ""

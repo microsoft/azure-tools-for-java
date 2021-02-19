@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -74,7 +74,7 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
 
                 override fun expand(): Runnable? {
                     // just close dialog and show again to refresh templates
-                    return Runnable { ProjectTemplateDialog.show(context.project, context.item) }
+                    return Runnable { ProjectTemplateDialog.show(context.project, context.entity) }
                 }
 
                 override fun getComponent(): JComponent {

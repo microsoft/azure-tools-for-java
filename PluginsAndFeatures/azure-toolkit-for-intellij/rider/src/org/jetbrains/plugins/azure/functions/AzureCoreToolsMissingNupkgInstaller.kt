@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package org.jetbrains.plugins.azure.functions
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.registry.Registry
@@ -35,12 +35,13 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.jetbrains.rd.platform.util.getComponent
+import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.nuget.RiderNuGetHost
-import com.jetbrains.rider.projectView.ProjectModelViewHost
-import com.jetbrains.rider.projectView.nodes.ProjectModelNode
-import com.jetbrains.rider.projectView.nodes.ProjectModelNodeVisitor
-import com.jetbrains.rider.projectView.nodes.containingProject
+import com.jetbrains.rider.projectView.workspace.containingProjectEntity
+import com.jetbrains.rider.projectView.workspace.getId
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.impl.WorkspaceProjectRootsTracker
 
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {
@@ -52,8 +53,8 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 file.extension.equals("vb", true) ||
                 file.extension.equals("fs", true)
 
-        private fun existsInCurrentProject(projectFileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
-                file.exists() && projectFileIndex.isInContent(file)
+        private fun existsInCurrentProject(project: Project, file: VirtualFile): Boolean =
+                WorkspaceProjectRootsTracker.getInstance(project).contains(file)
 
         private fun isNewOrMarkedForProcessing(file: VirtualFile, event: VFileEvent) = when (event) {
             is VFileCreateEvent -> true
@@ -85,14 +86,12 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
             override fun after(events: MutableList<out VFileEvent>) {
                 if (!Registry.`is`(enableAzureFunctionsInstallMissingNupkg, true)) return
 
-                val projectFileIndex = ProjectFileIndex.SERVICE.getInstance(project) ?: return
-
                 for (event in events) {
                     val file = event.file ?: continue
 
                     if (hasKnownFileSuffix(file) &&
-                            existsInCurrentProject(projectFileIndex, file) &&
-                            isNewOrMarkedForProcessing(file, event)) {
+                            isNewOrMarkedForProcessing(file, event) &&
+                            existsInCurrentProject(project, file)) {
 
                         // First pass(es), no content will be in the file.
                         // If that is the case, mark the file for processing on later changes.
@@ -101,58 +100,50 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                             continue
                         }
 
-                        ApplicationManager.getApplication().runReadAction {
-                            val text = LoadTextUtil.loadText(file, 4096)
+                        application.invokeLater {
+                            application.runReadAction {
+                                var keepMarker = false
+                                val text = LoadTextUtil.loadText(file, 4096)
 
-                            // Check for known marker words
-                            if (knownMarkerWords.any { text.contains(it, true) }) {
-                                // Determine project(s) to install into
-                                val installableProjects = project.getComponent<ProjectModelViewHost>()
-                                        .findProjectsWithVirtualFile(file)
+                                // Check for known marker words
+                                if (knownMarkerWords.any { text.contains(it, true) }) {
+                                    // Determine project(s) to install into
+                                    val installableProjects = WorkspaceModel.getInstance(project)
+                                            .getProjectModelEntities(file, project)
+                                            .mapNotNull { it.containingProjectEntity() }
 
-                                // For every known trigger name, verify required dependencies are installed
-                                for ((triggerName, dependency) in triggerMap) {
-                                    if (text.contains(triggerName, true)) {
-                                        for (installableProject in installableProjects) {
-                                            val riderNuGetFacade = RiderNuGetHost.getInstance(installableProject.project).facade
+                                    if (installableProjects.isEmpty()) {
+                                        keepMarker = true
+                                    }
 
-                                            val isInstalled =
-                                                    riderNuGetFacade.host.nuGetProjectModel.projects[installableProject.id]
-                                                            ?.explicitPackages?.any { it.id.equals(dependency.id, ignoreCase = true) }
+                                    // For every known trigger name, verify required dependencies are installed
+                                    for ((triggerName, dependency) in triggerMap) {
+                                        if (text.contains(triggerName, true)) {
+                                            for (installableProject in installableProjects) {
+                                                val riderNuGetFacade = RiderNuGetHost.getInstance(project)
+                                                        .facade
+
+                                                val isInstalled = riderNuGetFacade.host.nuGetProjectModel
+                                                        .projects[installableProject.getId(project)]
+                                                        ?.explicitPackages?.any { it.id.equals(dependency.id, ignoreCase = true) }
                                                             ?: false
 
-                                            if (!isInstalled) {
-                                                riderNuGetFacade.installForProject(
-                                                        installableProject.name, dependency.id, dependency.version)
+                                                if (!isInstalled) {
+                                                    riderNuGetFacade.installForProject(
+                                                            installableProject.name, dependency.id, dependency.version)
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            // Remove marker
-                            file.putUserData(markedForProcessing, false)
+                                // Remove marker
+                                file.putUserData(markedForProcessing, keepMarker)
+                            }
                         }
                     }
                 }
             }
         })
     }
-}
-
-fun ProjectModelViewHost.findProjectsWithVirtualFile(virtualFile: VirtualFile): List<ProjectModelNode> {
-    val visitor = object : ProjectModelNodeVisitor() {
-        val projects: HashSet<ProjectModelNode> = hashSetOf()
-
-        override fun visitNode(node: ProjectModelNode): Result {
-            if (node.getVirtualFile() == virtualFile) {
-                node.containingProject()?.let { projects.add(it) }
-            }
-
-            return Result.Continue
-        }
-    }
-
-    visitor.visit(solutionNode)
-    return visitor.projects.toList()
 }
