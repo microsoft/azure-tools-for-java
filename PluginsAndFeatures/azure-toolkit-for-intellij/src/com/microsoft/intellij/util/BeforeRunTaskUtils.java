@@ -19,7 +19,7 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.util.Producer;
 import com.intellij.util.containers.ContainerUtil;
-import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;

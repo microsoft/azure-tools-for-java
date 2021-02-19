@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig;
 
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.intellij.ui.components.AzureArtifactType;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
