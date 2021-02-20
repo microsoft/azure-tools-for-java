@@ -9,6 +9,10 @@
         <li>Compatibility with Rider 2021.1 EAP4</li>
         <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
       </ul>
+      <h4>Bug fixes:</h4>
+      <ul>
+        <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
+      </ul>
     </html>
     ]]>
   </change-notes>
@@ -29,12 +33,7 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
-    <toolWindow
-          anchor="bottom"
-          factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
-          id="Azure Activity Log"
-          canCloseContents="true"
-          icon="CommonIcons.ToolWindow.AzureLog" />
+    <postStartupActivity implementation="com.microsoft.intellij.activitylog.RegisterDeploymentListenerActivity"/>
 
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
 
@@ -67,13 +66,6 @@
           canCloseContents="false"
           icon="CommonIcons.ToolWindow.Azure"
           order="after Project" />
-
-    <toolWindow
-            anchor="bottom"
-            factoryClass="com.microsoft.intellij.helpers.StreamingLogsToolWindowFactory"
-            id="Azure Streaming Log"
-            icon="CommonIcons.ToolWindow.AzureStreamingLog"
-            canCloseContents="true"/>
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
     <lang.syntaxHighlighterFactory language="arm"

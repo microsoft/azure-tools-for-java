@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,12 +26,13 @@ package com.microsoft.intellij.helpers;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.RegisterToolWindowTask;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManagerAdapter;
-import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.*;
+import com.microsoft.intellij.AzurePlugin;
+import icons.CommonIcons;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
@@ -39,7 +41,7 @@ import java.util.Map;
 
 public class StreamingLogsToolWindowManager {
 
-    private static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
+    public static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
 
     private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private BidiMap<String, String> resourceIdToNameMap = new DualHashBidiMap<>();
@@ -87,7 +89,7 @@ public class StreamingLogsToolWindowManager {
             return toolWindowMap.get(project);
         }
         // Add content manager listener when get tool window at the first time
-        final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(LOG_TOOL_WINDOW);
+        final ToolWindow toolWindow = getOrRegisterToolWindow(project);
         toolWindow.getContentManager().addContentManagerListener(new ContentManagerAdapter() {
             @Override
             public void contentRemoved(ContentManagerEvent contentManagerEvent) {
@@ -97,6 +99,25 @@ public class StreamingLogsToolWindowManager {
         });
         toolWindowMap.put(project, toolWindow);
         return toolWindow;
+    }
+
+    private ToolWindow getOrRegisterToolWindow(Project project) {
+        final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(LOG_TOOL_WINDOW);
+        if (toolWindow != null) return toolWindow;
+
+        // Register a new tool window
+        return toolWindowManager.registerToolWindow(new RegisterToolWindowTask(
+                LOG_TOOL_WINDOW,
+                ToolWindowAnchor.BOTTOM,
+                null,
+                false,
+                true,
+                false,
+                !AzurePlugin.IS_ANDROID_STUDIO,
+                null,
+                CommonIcons.ToolWindow.AzureStreamingLog,
+                null));
     }
 
     private static final class SingletonHolder {

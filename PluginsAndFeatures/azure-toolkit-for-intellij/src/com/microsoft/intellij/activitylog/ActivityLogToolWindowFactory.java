@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,19 +26,16 @@ package com.microsoft.intellij.activitylog;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.*;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.intellij.util.ui.PlatformColors;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.PluginUtil;
+import icons.CommonIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -72,13 +70,17 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         this.project = project;
+        initToolWindowContent(toolWindow);
+        registerDeploymentListener(project);
+    }
+
+    public void initToolWindowContent(@NotNull final ToolWindow toolWindow) {
         table = new TableView<DeploymentTableItem>(new ListTableModel<DeploymentTableItem>(DESC, PROGRESS, STATUS, START_TIME));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // add mouse listener for links in table
         table.addMouseListener(createTableMouseListener());
 
         toolWindow.getComponent().add(new JBScrollPane(table));
-        registerDeploymentListener();
     }
 
     private MouseListener createTableMouseListener() {
@@ -99,46 +101,58 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         };
     }
 
-    public void registerDeploymentListener() {
-        AzurePlugin.addDeploymentEventListener(
-                new DeploymentEventListener() {
+    private ToolWindow getOrRegisterToolWindow(Project project) {
+        final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(ACTIVITY_LOG_WINDOW);
+        if (toolWindow != null) {
+            return toolWindow;
+        }
 
-                    @Override
-                    public void onDeploymentStep(final DeploymentEventArgs args) {
+        final ToolWindow newToolWindow = toolWindowManager.registerToolWindow(new RegisterToolWindowTask(
+                ACTIVITY_LOG_WINDOW,
+                ToolWindowAnchor.BOTTOM,
+                null,
+                false,
+                true,
+                false,
+                !AzurePlugin.IS_ANDROID_STUDIO,
+                null,
+                CommonIcons.ToolWindow.AzureLog,
+                null));
+
+        initToolWindowContent(newToolWindow);
+        return newToolWindow;
+    }
+
+    public void registerDeploymentListener(Project project) {
+        AzurePlugin.addDeploymentEventListener(
+                args -> {
+                    ApplicationManager.getApplication().invokeLater(() -> {
+
+                        final ToolWindow toolWindow = getOrRegisterToolWindow(project);
+
                         // unique identifier for deployment
-                        String key = args.getId() + args.getStartTime().getTime();
+                        final String key = args.getId() + args.getStartTime().getTime();
                         if (rows.containsKey(key)) {
                             final DeploymentTableItem item = rows.get(key);
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    item.progress = args.getDeployCompleteness();
-                                    if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
-                                        String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
-                                        item.description = message("runStatusVisible");
-                                        item.link = args.getDeploymentURL();
-                                        if (!ToolWindowManager.getInstance(project).getToolWindow(ActivityLogToolWindowFactory.ACTIVITY_LOG_WINDOW).isVisible()) {
-                                            ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null,
-                                                    new BrowserHyperlinkListener());
-                                        }
-                                    } else {
-                                        item.description = args.getDeployMessage();
-                                    }
-                                    table.getListTableModel().fireTableDataChanged();
+                            item.progress = args.getDeployCompleteness();
+                            if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
+                                final String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
+                                item.description = message("runStatusVisible");
+                                item.link = args.getDeploymentURL();
+                                if (!toolWindow.isVisible()) {
+                                    ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null, new BrowserHyperlinkListener());
                                 }
-                            });
+                            } else {
+                                item.description = args.getDeployMessage();
+                            }
+                            table.getListTableModel().fireTableDataChanged();
                         } else {
-                            final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(),
-                                    dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
+                            final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(), dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
                             rows.put(key, item);
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    table.getListTableModel().addRow(item);
-                                }
-                            });
+                            table.getListTableModel().addRow(item);
                         }
-                    }
+                    });
                 });
     }
 
