@@ -68,10 +68,10 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         // prepare the jar to be deployed
         updateTelemetryMap(telemetryMap);
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
-        final AzureArtifact artifact = ((WrappedAzureArtifact) appConfig.getDeployment().getArtifact()).getArtifact();
-        final File artifactFile = SpringCloudUtils.getArtifactFile(artifact, project);
+        final String artifactId = appConfig.getDeployment().getArtifact().getId();
+        final File artifactFile = SpringCloudUtils.getArtifactFile(artifactId, project);
         final boolean enableDisk = appConfig.getDeployment() != null && appConfig.getDeployment().isEnablePersistentStorage();
-        final String clusterName = SpringCloudIdHelper.getClusterName(appConfig.getClusterName());
+        final String clusterName = appConfig.getClusterName();
         final String appName = appConfig.getAppName();
 
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();

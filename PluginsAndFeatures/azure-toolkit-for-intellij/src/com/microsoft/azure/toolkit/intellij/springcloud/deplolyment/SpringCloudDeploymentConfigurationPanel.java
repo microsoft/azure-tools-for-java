@@ -11,12 +11,17 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
@@ -41,9 +46,9 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
-    private JComboBox<Integer> cbCPU;
-    private JComboBox<Integer> cbMemory;
-    private JComboBox<Integer> cbInstanceCount;
+    private JComboBox<String> cbCPU;
+    private JComboBox<String> cbMemory;
+    private JComboBox<String> cbInstanceCount;
     private JTextField textJvmOptions;
     private JRadioButton useJava8;
     private JRadioButton useJava11;
@@ -85,11 +90,13 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
 
     public void setData(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        this.cbCPU.setSelectedItem(Optional.ofNullable(deploymentConfig.getCpu()).orElse(1));
-        this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).orElse(1));
-        this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).orElse(1));
+        this.cbCPU.setSelectedItem(Optional.ofNullable(deploymentConfig.getCpu()).map(String::valueOf).orElse("1"));
+        this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).map(String::valueOf).orElse("1"));
+        this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).map(String::valueOf).orElse("1"));
         this.textJvmOptions.setText(deploymentConfig.getJvmOptions());
-
+        this.selectorSubscription.setValue(new AzureComboBox.FakeValue<>(Subscription.class, s -> appConfig.getSubscriptionId().equals(s.subscriptionId())));
+        this.selectorCluster.setValue(new AzureComboBox.FakeValue<>(SpringCloudCluster.class, c -> appConfig.getClusterName().equals(c.name())));
+        this.selectorApp.setValue(new AzureComboBox.FakeValue<>(SpringCloudApp.class, a -> appConfig.getAppName().equals(a.name())));
         final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString());
         this.useJava11.setSelected(useJava11);
         this.useJava8.setSelected(!useJava11);
@@ -122,13 +129,14 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         appConfig.setAppName(this.selectorApp.getValue().name());
         appConfig.setIsPublic(enablePublic.isSelected());
         appConfig.setRuntimeVersion(javaVersion.toString());
-        deploymentConfig.setCpu(((Integer) this.cbCPU.getSelectedItem()));
-        deploymentConfig.setMemoryInGB((Integer) this.cbMemory.getSelectedItem());
-        deploymentConfig.setInstanceCount((Integer) this.cbInstanceCount.getSelectedItem());
+        deploymentConfig.setCpu(Optional.ofNullable(this.cbCPU.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
+        deploymentConfig.setMemoryInGB(Optional.ofNullable(this.cbMemory.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
+        deploymentConfig.setInstanceCount(Optional.ofNullable(this.cbInstanceCount.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
         deploymentConfig.setJvmOptions(Optional.ofNullable(this.textJvmOptions.getText()).map(String::trim).orElse(""));
         deploymentConfig.setEnablePersistentStorage(this.enablePersistent.isSelected());
         deploymentConfig.setEnvironment(environmentVariableTable.getEnv());
-        deploymentConfig.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue()));
+        final AzureArtifact artifact = this.selectorArtifact.getValue();
+        deploymentConfig.setArtifact(IArtifact.fromId(AzureArtifactManager.getInstance(this.project).getArtifactIdentifier(artifact)));
         return appConfig;
     }
 

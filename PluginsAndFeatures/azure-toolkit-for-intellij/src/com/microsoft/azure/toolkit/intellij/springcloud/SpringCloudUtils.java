@@ -39,7 +39,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,6 +71,18 @@ public class SpringCloudUtils {
             "Azure dependencies are missing or incompatible";
     private static final String DEPENDENCY_WARNING = "Azure dependencies are missing or incompatible, you "
             + "may update the dependencies by Azure -> Add Azure Spring Cloud dependency on project context menu.\n";
+
+    @NotNull
+    public static File getArtifactFile(@NotNull final String artifactId, final Project project) throws AzureExecutionException, IOException {
+        if (StringUtils.isEmpty(artifactId)) {
+            throw new AzureExecutionException("You must specify an artifact");
+        }
+        final AzureArtifact artifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(artifactId);
+        if (Objects.isNull(artifact)) {
+            throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", artifactId));
+        }
+        return getArtifactFile(artifact, project);
+    }
 
     @NotNull
     public static File getArtifactFile(@NotNull final AzureArtifact artifact, final Project project) throws AzureExecutionException, IOException {
