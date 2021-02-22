@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
@@ -52,7 +53,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Getter
     @Setter
     private boolean required;
-    private T value;
+    private Object value;
     private boolean valueNotSet = true;
 
     public AzureComboBox() {
@@ -108,18 +109,27 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refreshValue();
     }
 
+    public void setValue(final FakeValue<T> val) {
+        this.valueNotSet = false;
+        this.value = val;
+        this.refreshValue();
+    }
+
     private void refreshValue() {
         if (Objects.equals(this.value, this.getSelectedItem())) {
             return;
         }
         final List<T> items = this.getItems();
+        if (!this.valueNotSet && this.value instanceof FakeValue) {
+            items.stream().filter(i -> Objects.equals(this.value, i)).findFirst().ifPresent(this::setValue);
+        }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
         } else if (value instanceof Draft) {
             // todo: unify model for custom created resource
-            super.addItem(value);
+            super.addItem((T) value);
             super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
@@ -346,5 +356,23 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     protected String label() {
         return this.getClass().getSimpleName();
+    }
+
+    public static class FakeValue<T> {
+        private final Class<? extends T> clazz;
+        private final Predicate<? super T> equals;
+
+        public FakeValue(Class<? extends T> clazz, Predicate<? super T> equals) {
+            this.clazz = clazz;
+            this.equals = equals;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!clazz.isInstance(obj)) {
+                return false;
+            }
+            return this.equals.test(clazz.cast(obj));
+        }
     }
 }
