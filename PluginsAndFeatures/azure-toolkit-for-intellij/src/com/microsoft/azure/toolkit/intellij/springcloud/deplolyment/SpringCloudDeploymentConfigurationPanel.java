@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.subscription.Subscription
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
@@ -94,9 +94,9 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).map(String::valueOf).orElse("1"));
         this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).map(String::valueOf).orElse("1"));
         this.textJvmOptions.setText(deploymentConfig.getJvmOptions());
-        this.selectorSubscription.setValue(new AzureComboBox.FakeValue<>(Subscription.class, s -> appConfig.getSubscriptionId().equals(s.subscriptionId())));
-        this.selectorCluster.setValue(new AzureComboBox.FakeValue<>(SpringCloudCluster.class, c -> appConfig.getClusterName().equals(c.name())));
-        this.selectorApp.setValue(new AzureComboBox.FakeValue<>(SpringCloudApp.class, a -> appConfig.getAppName().equals(a.name())));
+        this.selectorSubscription.setValue(new ItemReference<>(Subscription.class, s -> appConfig.getSubscriptionId().equals(s.subscriptionId())));
+        this.selectorCluster.setValue(new ItemReference<>(SpringCloudCluster.class, c -> appConfig.getClusterName().equals(c.name())));
+        this.selectorApp.setValue(new ItemReference<>(SpringCloudApp.class, a -> appConfig.getAppName().equals(a.name())));
         final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString());
         this.useJava11.setSelected(useJava11);
         this.useJava8.setSelected(!useJava11);
