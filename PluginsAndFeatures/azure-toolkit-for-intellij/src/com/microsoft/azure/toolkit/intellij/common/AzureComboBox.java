@@ -372,6 +372,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
 
         public boolean is(Object obj) {
+            if (Objects.isNull(obj)) {
+                return false;
+            }
             return this.predicate.test((T) obj);
         }
     }

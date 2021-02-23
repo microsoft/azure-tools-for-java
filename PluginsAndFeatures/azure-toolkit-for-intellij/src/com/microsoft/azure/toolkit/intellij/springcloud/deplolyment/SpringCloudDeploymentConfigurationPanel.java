@@ -13,14 +13,12 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
@@ -94,9 +92,12 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).map(String::valueOf).orElse("1"));
         this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).map(String::valueOf).orElse("1"));
         this.textJvmOptions.setText(deploymentConfig.getJvmOptions());
-        this.selectorSubscription.setValue(new ItemReference<>(Subscription.class, s -> appConfig.getSubscriptionId().equals(s.subscriptionId())));
-        this.selectorCluster.setValue(new ItemReference<>(SpringCloudCluster.class, c -> appConfig.getClusterName().equals(c.name())));
-        this.selectorApp.setValue(new ItemReference<>(SpringCloudApp.class, a -> appConfig.getAppName().equals(a.name())));
+        Optional.ofNullable(appConfig.getSubscriptionId())
+            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::subscriptionId))));
+        Optional.ofNullable(appConfig.getClusterName())
+            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
+        Optional.ofNullable(appConfig.getAppName())
+            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
         final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString());
         this.useJava11.setSelected(useJava11);
         this.useJava8.setSelected(!useJava11);
@@ -136,7 +137,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         deploymentConfig.setEnablePersistentStorage(this.enablePersistent.isSelected());
         deploymentConfig.setEnvironment(environmentVariableTable.getEnv());
         final AzureArtifact artifact = this.selectorArtifact.getValue();
-        deploymentConfig.setArtifact(IArtifact.fromId(AzureArtifactManager.getInstance(this.project).getArtifactIdentifier(artifact)));
+        deploymentConfig.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue(), this.project));
         return appConfig;
     }
 
