@@ -85,6 +85,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         final SpringCloudApp app = cluster.app(appName);
         final String deploymentName = StringUtils.firstNonBlank(
             deploymentConfig.getDeploymentName(),
+            appConfig.getActiveDeploymentName(),
             app.getActiveDeploymentName(),
             DEFAULT_DEPLOYMENT_NAME
         );
@@ -116,7 +117,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(cluster.id(), getInner(app.entity()), getInner(deployment.entity()));
 
         final SpringCloudApp.Updater appUpdater = app.update()
-            .activate(StringUtils.firstNonBlank(app.getActiveDeploymentName(), deploymentName))
+            .activate(StringUtils.firstNonBlank(StringUtils.firstNonBlank(app.getActiveDeploymentName(), toCreateDeployment ? deploymentName : null)))
             .setPublic(appConfig.isPublic())
             .enablePersistentDisk(enableDisk);
         if (!appUpdater.isSkippable()) {
