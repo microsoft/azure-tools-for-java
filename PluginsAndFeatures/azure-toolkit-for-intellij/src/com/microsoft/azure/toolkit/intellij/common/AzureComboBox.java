@@ -109,7 +109,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refreshValue();
     }
 
-    public void setValue(final FakeValue<T> val) {
+    public void setValue(final ItemReference<T> val) {
         this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
@@ -120,7 +120,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             return;
         }
         final List<T> items = this.getItems();
-        if (!this.valueNotSet && this.value instanceof FakeValue) {
+        if (!this.valueNotSet && this.value instanceof AzureComboBox.ItemReference) {
             items.stream().filter(i -> Objects.equals(this.value, i)).findFirst().ifPresent(this::setValue);
         }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
@@ -358,13 +358,13 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         return this.getClass().getSimpleName();
     }
 
-    public static class FakeValue<T> {
+    public static class ItemReference<T> {
         private final Class<? extends T> clazz;
         private final Predicate<? super T> equals;
 
-        public FakeValue(Class<? extends T> clazz, Predicate<? super T> equals) {
+        public ItemReference(Class<? extends T> clazz, Predicate<? super T> predicate) {
             this.clazz = clazz;
-            this.equals = equals;
+            this.equals = predicate;
         }
 
         @Override
