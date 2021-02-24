@@ -24,9 +24,11 @@ package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.springcloud.dependency.SpringCloudDependencyManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +39,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,7 +73,7 @@ public class SpringCloudUtils {
             + "may update the dependencies by Azure -> Add Azure Spring Cloud dependency on project context menu.\n";
 
     @NotNull
-    public static File getArtifact(final String artifactId, final Project project) throws AzureExecutionException, IOException {
+    public static File getArtifactFile(@NotNull final String artifactId, final Project project) throws AzureExecutionException, IOException {
         if (StringUtils.isEmpty(artifactId)) {
             throw new AzureExecutionException("You must specify an artifact");
         }
@@ -73,6 +81,11 @@ public class SpringCloudUtils {
         if (Objects.isNull(artifact)) {
             throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", artifactId));
         }
+        return getArtifactFile(artifact, project);
+    }
+
+    @NotNull
+    public static File getArtifactFile(@NotNull final AzureArtifact artifact, final Project project) throws AzureExecutionException, IOException {
         final String path = AzureArtifactManager.getInstance(project).getFileForDeployment(artifact);
         if (!Files.exists(Paths.get(path))) {
             throw new AzureExecutionException(String.format("File '%s' cannot be found.", path));
@@ -148,5 +161,9 @@ public class SpringCloudUtils {
                 })
                 .filter(entry -> ArrayUtils.contains(springArtifacts, entry[0]))
                 .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
+    }
+
+    public static AppPlatformManager getSpringManager(String sid) {
+        return AuthMethodManager.getInstance().getAzureSpringCloudClient(sid);
     }
 }
