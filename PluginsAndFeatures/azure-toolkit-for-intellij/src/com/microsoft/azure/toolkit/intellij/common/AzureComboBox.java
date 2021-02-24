@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -121,7 +123,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
         final List<T> items = this.getItems();
         if (!this.valueNotSet && this.value instanceof AzureComboBox.ItemReference) {
-            items.stream().filter(i -> Objects.equals(this.value, i)).findFirst().ifPresent(this::setValue);
+            items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
         }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
@@ -304,7 +306,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
@@ -359,20 +361,18 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     public static class ItemReference<T> {
-        private final Class<? extends T> clazz;
-        private final Predicate<? super T> equals;
+        private final Predicate<? super T> predicate;
 
-        public ItemReference(Class<? extends T> clazz, Predicate<? super T> predicate) {
-            this.clazz = clazz;
-            this.equals = predicate;
+        public ItemReference(@Nonnull Predicate<? super T> predicate) {
+            this.predicate = predicate;
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (!clazz.isInstance(obj)) {
-                return false;
-            }
-            return this.equals.test(clazz.cast(obj));
+        public ItemReference(@Nonnull Object val, Function<T, ?> mapper) {
+            this.predicate = t -> Objects.equals(val, mapper.apply(t));
+        }
+
+        public boolean is(Object obj) {
+            return this.predicate.test((T) obj);
         }
     }
 }
