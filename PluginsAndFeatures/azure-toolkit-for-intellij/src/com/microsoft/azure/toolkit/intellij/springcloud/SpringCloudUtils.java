@@ -24,9 +24,11 @@ package com.microsoft.azure.toolkit.intellij.springcloud;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.toolkit.intellij.springcloud.runner.deploy.SpringCloudValidationException;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
+import com.microsoft.azure.toolkit.intellij.springcloud.dependency.SpringCloudDependencyManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +39,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,7 +73,7 @@ public class SpringCloudUtils {
             + "may update the dependencies by Azure -> Add Azure Spring Cloud dependency on project context menu.\n";
 
     @NotNull
-    public static File getArtifact(final String artifactId, final Project project) throws AzureExecutionException, IOException {
+    public static File getArtifactFile(@NotNull final String artifactId, final Project project) throws AzureExecutionException, IOException {
         if (StringUtils.isEmpty(artifactId)) {
             throw new AzureExecutionException("You must specify an artifact");
         }
@@ -73,6 +81,11 @@ public class SpringCloudUtils {
         if (Objects.isNull(artifact)) {
             throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", artifactId));
         }
+        return getArtifactFile(artifact, project);
+    }
+
+    @NotNull
+    public static File getArtifactFile(@NotNull final AzureArtifact artifact, final Project project) throws AzureExecutionException, IOException {
         final String path = AzureArtifactManager.getInstance(project).getFileForDeployment(artifact);
         if (!Files.exists(Paths.get(path))) {
             throw new AzureExecutionException(String.format("File '%s' cannot be found.", path));
@@ -86,7 +99,7 @@ public class SpringCloudUtils {
         final Attributes manifestAttributes = jarFile.getManifest().getMainAttributes();
         final String mainClass = manifestAttributes.getValue(MAIN_CLASS);
         if (StringUtils.isEmpty(mainClass)) {
-            throw new SpringCloudValidationException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
+            throw new AzureExecutionException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
         }
         final String library = manifestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(library)) {
@@ -94,7 +107,7 @@ public class SpringCloudUtils {
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
-            throw new SpringCloudValidationException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
+            throw new AzureExecutionException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
         }
         final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
         final List<String> missingDependencies = new ArrayList<>();
@@ -137,7 +150,7 @@ public class SpringCloudUtils {
                 .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
                         && StringUtils.equalsIgnoreCase(FilenameUtils.getExtension(jarEntry.getName()), JAR))
                 .map(jarEntry -> {
-                    String fileName = FilenameUtils.getBaseName(jarEntry.getName());
+                    final String fileName = FilenameUtils.getBaseName(jarEntry.getName());
                     final int i = StringUtils.lastIndexOf(fileName, "-");
                     return (i > 0 && i < fileName.length() - 1) ?
                             new String[]{
@@ -148,5 +161,9 @@ public class SpringCloudUtils {
                 })
                 .filter(entry -> ArrayUtils.contains(springArtifacts, entry[0]))
                 .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
+    }
+
+    public static AppPlatformManager getSpringManager(String sid) {
+        return AuthMethodManager.getInstance().getAzureSpringCloudClient(sid);
     }
 }
