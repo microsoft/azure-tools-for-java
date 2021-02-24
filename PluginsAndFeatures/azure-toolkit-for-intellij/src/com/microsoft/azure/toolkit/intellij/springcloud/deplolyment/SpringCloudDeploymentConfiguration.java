@@ -6,25 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.LocatableConfiguration;
-import com.intellij.execution.configurations.LocatableConfigurationBase;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.util.xmlb.Accessor;
-import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azuretools.utils.JsonUtils;
 import lombok.Getter;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBase implements LocatableConfiguration {
     private static final String NEED_SPECIFY_ARTIFACT = "Please select an artifact";
@@ -44,7 +39,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
     @Getter
-    private final SpringCloudAppConfig appConfig;
+    private SpringCloudAppConfig appConfig;
 
     public SpringCloudDeploymentConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -53,26 +48,34 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             .build();
     }
 
-    protected SpringCloudDeploymentConfiguration(@NotNull SpringCloudDeploymentConfiguration source) {
-        super(source.getProject(), source.getFactory(), source.getName());
-        this.appConfig = JsonUtils.deepCopyWithJson(source.appConfig);
-    }
-
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
-        XmlSerializer.deserializeInto(this.appConfig, element);
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.getProject());
+        this.appConfig = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
+            .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
+            .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
+        Optional.ofNullable(element.getChild("Artifact"))
+            .map(e -> e.getAttributeValue("identifier"))
+            .map(manager::getAzureArtifactById)
+            .map(a -> new WrappedAzureArtifact(a, this.getProject()))
+            .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
     }
 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        XmlSerializer.serializeInto(this.appConfig, element, new SerializationFilterBase() {
-            @Override
-            protected boolean accepts(@NotNull Accessor accessor, @NotNull Object bean, @Nullable Object beanValue) {
-                return !"password".equalsIgnoreCase(accessor.getName());
-            }
-        });
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.getProject());
+        final Element appConfigElement = XmlSerializer.serialize(this.appConfig, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName()));
+        final IArtifact artifact = this.appConfig.getDeployment().getArtifact();
+        Optional.ofNullable(this.appConfig)
+            .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName())))
+            .ifPresent(element::addContent);
+        Optional.ofNullable(this.appConfig)
+            .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
+            .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
+            .map(id -> new Element("Artifact").setAttribute("identifier", id))
+            .ifPresent(element::addContent);
     }
 
     @NotNull
@@ -84,7 +87,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
-        return new SpringCloudDeploymentConfigurationState(getProject(), new SpringCloudDeploymentConfiguration(this));
+        return new SpringCloudDeploymentConfigurationState(getProject(), this);
     }
 
     @Override

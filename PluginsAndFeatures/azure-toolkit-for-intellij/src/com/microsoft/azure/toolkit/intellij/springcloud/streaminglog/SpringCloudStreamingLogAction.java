@@ -31,6 +31,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP;
@@ -65,12 +66,13 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
             final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(appId));
             AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
                 try {
-                    if (this.app.getActiveDeploymentName() == null) {
+                    final String deploymentName = this.app.getActiveDeploymentName();
+                    final SpringCloudDeployment deployment = Optional.ofNullable(deploymentName).map(this.app::deployment).orElse(null);
+                    if (deploymentName == null || !deployment.exists()) {
                         DefaultLoader.getIdeHelper().invokeLater(() ->
                             PluginUtil.displayWarningDialog(FAILED_TO_START_LOG_STREAMING, NO_ACTIVE_DEPLOYMENT));
                         return;
                     }
-                    final SpringCloudDeployment deployment = this.app.deployment(this.app.getActiveDeploymentName());
                     final List<DeploymentInstance> instances = deployment.entity().getInstances();
                     if (CollectionUtils.isEmpty(instances)) {
                         DefaultLoader.getIdeHelper().invokeLater(() ->
