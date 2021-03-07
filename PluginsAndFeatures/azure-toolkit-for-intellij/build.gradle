@@ -58,7 +58,7 @@ intellij {
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
-	downloadSources = Boolean.valueOf(sources)
+	downloadSources = Boolean.valueOf(true)
 }
 
 sourceSets {
@@ -98,6 +98,8 @@ configurations {
 apply plugin: 'java'
 
 dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-sdk-reference-book')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.7'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
