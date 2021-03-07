@@ -11,11 +11,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />
+            <option value="$PROJECT_DIR$/azure-sdk-reference-book" />
             <option value="$PROJECT_DIR$/buildSrc" />
           </set>
         </option>
-        <option name="useAutoImport" value="true" />
-        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>
