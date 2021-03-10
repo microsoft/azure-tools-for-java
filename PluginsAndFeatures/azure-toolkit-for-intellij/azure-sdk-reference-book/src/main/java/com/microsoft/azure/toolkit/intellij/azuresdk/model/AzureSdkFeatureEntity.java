@@ -7,17 +7,22 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 @Builder
 @Getter
-@ToString(of = "name", includeFieldNames = false)
 public class AzureSdkFeatureEntity {
     private final String name;
     private final String service;
     private final String description;
+    @Nonnull
     private final List<AzureSdkPackageEntity> clientPackages;
+    @Nonnull
     private final List<AzureSdkPackageEntity> managementPackages;
+
+    public String toString() {
+        return this.name;
+    }
 }

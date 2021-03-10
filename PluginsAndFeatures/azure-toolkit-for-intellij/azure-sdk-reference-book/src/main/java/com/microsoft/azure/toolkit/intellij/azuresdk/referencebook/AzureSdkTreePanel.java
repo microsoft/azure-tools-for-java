@@ -1,0 +1,136 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
+
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.CommonActionsManager;
+import com.intellij.ide.DefaultTreeExpander;
+import com.intellij.ide.IdeBundle;
+import com.intellij.ide.util.treeView.NodeRenderer;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
+import com.intellij.ui.RelativeFont;
+import com.intellij.ui.SearchTextField;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.render.RenderingUtil;
+import com.intellij.ui.treeStructure.SimpleTree;
+import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.tree.TreeUtil;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+public class AzureSdkTreePanel {
+    @Setter
+    private Consumer<AzureSdkFeatureEntity> onSdkFeatureNodeSelected;
+    @Getter
+    private JPanel contentPanel;
+    private Tree serviceTree;
+    private ActionToolbarImpl toolbar;
+    private JBScrollPane scroller;
+    private SearchTextField searchBox;
+    private DefaultTreeModel model;
+
+    public AzureSdkTreePanel() {
+        this.initEventListeners();
+    }
+
+    private void initEventListeners() {
+        this.serviceTree.addTreeSelectionListener(e -> {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.serviceTree.getLastSelectedPathComponent();
+            if (Objects.nonNull(node) && node.isLeaf() && node.getUserObject() instanceof AzureSdkFeatureEntity) {
+                this.onSdkFeatureNodeSelected.accept((AzureSdkFeatureEntity) node.getUserObject());
+            }
+        });
+    }
+
+    public void reload() {
+        final AzureSdkLibraryService service = AzureSdkLibraryService.getInstance();
+        try {
+            service.reloadAzureSDKArtifacts();
+            this.setData(service.getServices());
+        } catch (final IOException e) {
+            //TODO: messager.warning(...)
+            e.printStackTrace();
+        }
+    }
+
+    public void setData(@Nonnull final List<? extends AzureSdkServiceEntity> services) {
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.model.getRoot();
+        root.removeAllChildren();
+        this.model.reload();
+        for (final AzureSdkServiceEntity service : services) {
+            final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
+            this.model.insertNodeInto(serviceNode, root, root.getChildCount());
+            for (final AzureSdkFeatureEntity feature : service.getFeatures()) {
+                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
+                this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
+            }
+        }
+        this.serviceTree.expandPath(new TreePath(root));
+    }
+
+    private void createUIComponents() {
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Azure SDK Libraries");
+        this.model = new DefaultTreeModel(root);
+        this.serviceTree = new SimpleTree(model);
+        this.serviceTree.putClientProperty(RenderingUtil.ALWAYS_PAINT_SELECTION_AS_FOCUSED, true);
+        this.serviceTree.setCellRenderer(new NodeRenderer());
+        this.serviceTree.setRootVisible(false);
+        this.serviceTree.setShowsRootHandles(true);
+        this.serviceTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        TreeUtil.installActions(this.serviceTree);
+        RelativeFont.BOLD.install(this.serviceTree);
+
+        final DefaultTreeExpander expander = new DefaultTreeExpander(this.serviceTree);
+        final DefaultActionGroup group = new DefaultActionGroup();
+        final CommonActionsManager manager = CommonActionsManager.getInstance();
+        group.add(new RefreshAction());
+        group.addSeparator();
+        group.add(manager.createExpandAllAction(expander, this.serviceTree));
+        group.add(manager.createCollapseAllAction(expander, this.serviceTree));
+
+        this.toolbar = new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
+    }
+
+    private class RefreshAction extends com.intellij.ide.actions.RefreshAction {
+        private boolean loading = false;
+
+        RefreshAction() {
+            super(IdeBundle.messagePointer("action.refresh"), IdeBundle.messagePointer("action.refresh"), AllIcons.Actions.Refresh);
+        }
+
+        @Override
+        public final void actionPerformed(@NotNull final AnActionEvent e) {
+            this.loading = true;
+            AzureSdkTreePanel.this.reload();
+            this.loading = false;
+        }
+
+        @Override
+        public final void update(@NotNull final AnActionEvent event) {
+            final Presentation presentation = event.getPresentation();
+            presentation.setEnabled(!loading);
+        }
+    }
+}

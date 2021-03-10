@@ -11,18 +11,18 @@ public class OpenSdkReferenceBook extends AnAction {
     public void actionPerformed(@Nonnull final AnActionEvent anActionEvent) {
         System.out.println(OpenSdkReferenceBook.class.getName());
         // todo: remove test codes
-        AzureSdkLibraryService.getInstance().getArtifactEntities().stream()
-                              .forEach(azureSDKArtifactEntity -> System.out.println(azureSDKArtifactEntity.getDisplayName()));
-        AzureSdkLibraryService.getInstance().getServiceEntities().stream()
-                              .forEach(azureSdkServiceEntity -> {
-                                  System.out.println(azureSdkServiceEntity.getName());
-                                  azureSdkServiceEntity.getFeatures().stream().forEach(feature -> {
-                                      final String description = String.format("\t %s : %d %d",
-                                                                               feature.getName(),
-                                                                               feature.getClientPackages().size(),
-                                                                               feature.getManagementPackages().size());
-                                      System.out.println(description);
-                                  });
-                              });
+        AzureSdkLibraryService.getInstance().getArtifacts()
+            .forEach(azureSDKArtifactEntity -> System.out.println(azureSDKArtifactEntity.getDisplayName()));
+        AzureSdkLibraryService.getInstance().getServices()
+            .forEach(azureSdkServiceEntity -> {
+                System.out.println(azureSdkServiceEntity.getName());
+                azureSdkServiceEntity.getFeatures().forEach(feature -> {
+                    final String description = String.format("\t %s : %d %d",
+                        feature.getName(),
+                        feature.getClientPackages().size(),
+                        feature.getManagementPackages().size());
+                    System.out.println(description);
+                });
+            });
     }
 }

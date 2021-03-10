@@ -25,4 +25,14 @@ public class AzureSdkPackageEntity {
     private final String javadocPath;
     private final String demoPath;
     private final String mavenPath;
+
+    public CharSequence generateMavenDependencySnippet() {
+        return String.join("", "",
+            "<dependency>\n",
+            "    <groupId>", this.group, "</groupId>\n",
+            "    <artifactId>", this.artifact, "</artifactId>\n",
+            "    <version>", this.versionGA, "</version>\n",
+            "</dependency>"
+        );
+    }
 }
