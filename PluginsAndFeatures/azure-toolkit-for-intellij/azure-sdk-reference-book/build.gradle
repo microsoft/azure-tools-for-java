@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id "org.jetbrains.intellij"
+}
+
+group 'com.microsoft.azuretools'
+
+intellij {
+    version = intellij_version
+    downloadSources = Boolean.valueOf(true)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
