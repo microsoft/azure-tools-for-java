@@ -16,15 +16,15 @@ repositories {
 }
 
 dependencies {
-    compile project(':azure-intellij-plugin-lib')
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
-    implementation 'org.jetbrains:annotations:20.1.0'
-    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.12.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-}
 
-test {
-    useJUnitPlatform()
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.11.2', {
+        exclude group: "com.fasterxml.jackson", module: "jackson-bom"
+    }
+
+    implementation project(':azure-intellij-plugin-lib')
+    implementation "com.microsoft.azure:azure-toolkit-common-lib:0.4.0-SNAPSHOT"
 }
