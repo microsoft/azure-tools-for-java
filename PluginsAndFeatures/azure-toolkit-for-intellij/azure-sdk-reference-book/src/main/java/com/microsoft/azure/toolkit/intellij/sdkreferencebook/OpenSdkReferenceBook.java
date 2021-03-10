@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.sdkreferencebook;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.intellij.sdkreferencebook.service.AzureSDKArtifactService;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSDKArtifactService;
 
 import javax.annotation.Nonnull;
 
