@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @NoArgsConstructor
-public class AzureSDKArtifactEntity {
+public class AzureSdkArtifactEntity {
     @JsonProperty("Package")
     private String packageName;
     @JsonProperty("GroupId")
