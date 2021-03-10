@@ -3,12 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.sdkreferencebook.activity;
+package com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.microsoft.azure.toolkit.intellij.sdkreferencebook.service.AzureSDKArtifactService;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSDKArtifactService;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

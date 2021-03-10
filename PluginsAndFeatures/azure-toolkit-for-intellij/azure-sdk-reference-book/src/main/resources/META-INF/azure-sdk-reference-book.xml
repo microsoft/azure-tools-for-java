@@ -2,11 +2,11 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.sdkreferencebook.activity.AzurePreloadingActivity"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.AzurePreloadingActivity"/>
     </extensions>
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"
-                class="com.microsoft.azure.toolkit.intellij.sdkreferencebook.OpenSdkReferenceBook"
+                class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"
                 text="Azure SDKs"
                 description="Open Azure SDK reference book dialog.">
             <add-to-group group-id="AzureToolkit.menu.tools"/>

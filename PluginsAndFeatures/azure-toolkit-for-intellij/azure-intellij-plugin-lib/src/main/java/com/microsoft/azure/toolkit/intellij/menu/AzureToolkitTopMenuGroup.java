@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.action;
+package com.microsoft.azure.toolkit.intellij.menu;
 
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.sdkreferencebook.model;
+package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

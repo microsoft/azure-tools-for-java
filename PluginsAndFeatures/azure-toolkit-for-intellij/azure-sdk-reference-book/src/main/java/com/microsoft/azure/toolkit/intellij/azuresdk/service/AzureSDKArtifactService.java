@@ -3,13 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.sdkreferencebook.service;
+package com.microsoft.azure.toolkit.intellij.azuresdk.service;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.microsoft.azure.toolkit.intellij.sdkreferencebook.model.AzureSDKArtifactEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSDKArtifactEntity;
 
 import java.io.IOException;
 import java.net.URL;
