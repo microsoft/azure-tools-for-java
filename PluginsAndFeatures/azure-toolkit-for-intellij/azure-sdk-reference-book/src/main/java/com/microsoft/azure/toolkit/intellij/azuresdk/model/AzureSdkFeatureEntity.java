@@ -16,6 +16,7 @@ import java.util.List;
 @ToString(of = "name", includeFieldNames = false)
 public class AzureSdkFeatureEntity {
     private final String name;
+    private final String service;
     private final String description;
     private final List<AzureSdkPackageEntity> clientPackages;
     private final List<AzureSdkPackageEntity> managementPackages;

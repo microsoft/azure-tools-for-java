@@ -13,8 +13,11 @@ import lombok.ToString;
 @Builder
 @ToString(of = "artifact", includeFieldNames = false)
 public class AzureSdkPackageEntity {
-    private final String artifact;
+    private final String service;
+    private final String feature;
     private final String group;
+    private final String artifact;
+    private final String type;
     private final String versionGA;
     private final String versionPreview;
     private final String repoPath;

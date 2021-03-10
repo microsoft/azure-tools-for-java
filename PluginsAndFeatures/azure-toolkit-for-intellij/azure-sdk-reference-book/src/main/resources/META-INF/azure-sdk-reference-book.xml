@@ -6,7 +6,7 @@
     </extensions>
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"
-                class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"
+                class="com.microsoft.azure.toolkit.intellij.sdkreferencebook.OpenSdkReferenceBook"
                 text="Azure SDKs"
                 description="Open Azure SDK reference book dialog.">
             <add-to-group group-id="AzureToolkit.menu.tools"/>

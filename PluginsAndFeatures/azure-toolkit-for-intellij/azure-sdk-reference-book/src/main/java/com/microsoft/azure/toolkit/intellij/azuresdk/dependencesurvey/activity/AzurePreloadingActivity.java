@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSDKArtifactService;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
 import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class AzurePreloadingActivity extends PreloadingActivity {
         // Using progress manager as azure task manager is not initialized
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
-                AzureSDKArtifactService.getInstance().reloadAzureSDKArtifacts();
+                AzureSdkLibraryService.getInstance().reloadAzureSDKArtifacts();
             } catch (IOException e) {
                 logger.warn(ExceptionUtils.getStackTrace(e)); // preload exception should not block plugin
             }
