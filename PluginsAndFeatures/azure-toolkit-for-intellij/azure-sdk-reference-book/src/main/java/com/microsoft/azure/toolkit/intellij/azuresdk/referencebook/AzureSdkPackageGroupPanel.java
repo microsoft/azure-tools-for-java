@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.XHtmlFileType;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
@@ -31,8 +30,11 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AzureSdkPackageGroupPanel {
     @Getter
@@ -47,9 +49,9 @@ public class AzureSdkPackageGroupPanel {
         initCodeSnippetPanel();
     }
 
-    public void setData(@Nonnull final List<AzureSdkPackageEntity> packages) {
+    public void setData(@Nonnull final List<? extends AzureSdkPackageEntity> packages) {
         this.editor.getDocument().setText("");
-        this.packagesTableModel.setItems(packages);
+        this.packagesTableModel.setItems(new ArrayList<>(packages));
         if (packages.size() > 0) {
             this.packagesTable.setVisible(true);
             this.packagesTable.setRowSelectionInterval(0, 0);
@@ -75,16 +77,6 @@ public class AzureSdkPackageGroupPanel {
         this.editor.getGutterComponentEx().setForceShowRightFreePaintersArea(true);
         this.editor.getFoldingModel().setFoldingEnabled(false);
         final EditorSettings settings = this.editor.getSettings();
-        this.editor.getDocument().setText("<!DOCTYPE html>\n" +
-            "<html lang=\"en\">\n" +
-            "<head>\n" +
-            "    <meta charset=\"UTF-8\">\n" +
-            "    <title>Title</title>\n" +
-            "</head>\n" +
-            "<body>\n" +
-            "\n" +
-            "</body>\n" +
-            "</html>");
         settings.setAnimatedScrolling(false);
         settings.setRefrainFromScrolling(false);
         settings.setLineNumbersShown(true);
@@ -92,39 +84,42 @@ public class AzureSdkPackageGroupPanel {
         this.codePanel.add(this.editor.getComponent(), BorderLayout.CENTER);
     }
 
-    private void createUIComponents() {
-        final PackageColumn nameColumn = new PackageColumn(PackageColumn.NAME);
-        final PackageColumn versionColumn = new PackageColumn(PackageColumn.VERSION);
-        final PackageColumn linksColumn = new PackageColumn(PackageColumn.LINKS);
+    private void initPackagesTable() {
+        final PackageTableColumn nameColumn = new PackageTableColumn(PackageTableColumn.NAME);
+        final PackageTableColumn versionColumn = new PackageTableColumn(PackageTableColumn.VERSION);
+        final PackageTableColumn linksColumn = new PackageTableColumn(PackageTableColumn.LINKS);
         this.packagesTableModel = new ListTableModel<>(nameColumn, versionColumn, linksColumn);
         this.packagesTable = new TableView<>(this.packagesTableModel);
-        this.packagesTable.setTableHeader(new JTableHeader(this.packagesTable.getColumnModel()));
-        ((DefaultTableCellRenderer) this.packagesTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEADING);
+        final TableColumnModel columnModel = this.packagesTable.getColumnModel();
+        this.packagesTable.setTableHeader(new JTableHeader(columnModel));
+        ((DefaultTableCellRenderer) this.packagesTable.getTableHeader().getDefaultRenderer())
+            .setHorizontalAlignment(JLabel.LEADING);
+        columnModel.getColumn(0).setPreferredWidth(80);
+        columnModel.getColumn(1).setPreferredWidth(80);
         this.packagesTable.setRowSelectionAllowed(true);
         this.packagesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.packagesTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         this.packagesTable.setVisibleRowCount(3);
+        this.packagesTable.setBorder(BorderFactory.createEmptyBorder());
         this.packagesTable.getSelectionModel().addListSelectionListener((e) -> {
             final int row = this.packagesTable.getSelectedRow();
             if (row >= 0 && row + 1 != this.packagesTable.getRowCount()) {
                 final AzureSdkPackageEntity pkg = this.packagesTableModel.getRowValue(row);
-                this.onPackageSelected(pkg);
-            } else {
-                this.packagesTable.clearSelection();
+                if (pkg.getArtifact() != null) {
+                    this.onPackageSelected(pkg);
+                    return;
+                }
             }
+            this.packagesTable.clearSelection();
         });
     }
 
-    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
-    public void $$$setupUI$$$() {
-    }
-
-    private static class PackageColumn extends ColumnInfo<AzureSdkPackageEntity, String> {
+    private static class PackageTableColumn extends ColumnInfo<AzureSdkPackageEntity, Object> {
         private static final String NAME = "Name";
         private static final String VERSION = "Version";
         private static final String LINKS = "Links";
 
-        public PackageColumn(String name) {
+        public PackageTableColumn(String name) {
             super(name);
         }
 
@@ -140,22 +135,48 @@ public class AzureSdkPackageGroupPanel {
                 case VERSION:
                     return StringUtils.firstNonBlank(o.getVersionGA(), "3.12.0-FAKE");
                 case LINKS:
-                    return "Maven";
+                    return "Javadoc";
             }
             return o.getArtifact();
         }
 
         @Override
-        public @Nullable Icon getIcon() {
-            if (getName().equals(VERSION)) {
-                return AllIcons.Providers.Microsoft;
+        public TableCellRenderer getRenderer(AzureSdkPackageEntity entity) {
+            if (NAME.equals(getName()) || Objects.isNull(entity.getArtifact())) {
+                return null;
             }
-            return null;
+            return new PackageTableCellRenderer(getName());
+        }
+    }
+
+    public static class PackageTableCellRenderer extends JPanel implements TableCellRenderer {
+
+        private PackageTableCellRenderer(String name) {
+            super();
+            this.setLayout(new BorderLayout());
+            this.setName(name);
         }
 
-        @Override
-        public TableCellRenderer getCustomizedRenderer(AzureSdkPackageEntity entity, TableCellRenderer renderer) {
-            return super.getCustomizedRenderer(entity, renderer);
+        public JComponent getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            final AzureSdkVersionTag tag = new AzureSdkVersionTag();
+            this.add(tag.getTagPanel(), BorderLayout.WEST);
+            if (PackageTableColumn.LINKS.equals(getName())) {
+                tag.setName("Javadoc");
+                tag.setValue("3.12.0-FAKE");
+            }
+            if (PackageTableColumn.VERSION.equals(getName())) {
+                tag.setName("Maven");
+                tag.setValue(value);
+            }
+            return this;
         }
+    }
+
+    private void createUIComponents() {
+        initPackagesTable();
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    public void $$$setupUI$$$() {
     }
 }
