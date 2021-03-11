@@ -16,6 +16,7 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
@@ -34,13 +35,13 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class AzureSdkPackageGroupPanel {
     @Getter
     private JPanel contentPanel;
     private JPanel codePanel;
     private JBTable packagesTable;
+    private JBScrollPane tableContainer;
     private EditorEx editor;
     private ListTableModel<AzureSdkPackageEntity> packagesTableModel;
 
@@ -57,7 +58,6 @@ public class AzureSdkPackageGroupPanel {
             this.packagesTable.setRowSelectionInterval(0, 0);
             this.packagesTable.getSelectionModel().setSelectionInterval(0, 0);
             this.onPackageSelected(packages.get(0));
-            this.packagesTableModel.addRow(AzureSdkPackageEntity.builder().artifact(null).build());
         } else {
             this.packagesTable.setVisible(false);
         }
@@ -103,14 +103,10 @@ public class AzureSdkPackageGroupPanel {
         this.packagesTable.setBorder(BorderFactory.createEmptyBorder());
         this.packagesTable.getSelectionModel().addListSelectionListener((e) -> {
             final int row = this.packagesTable.getSelectedRow();
-            if (row >= 0 && row + 1 != this.packagesTable.getRowCount()) {
+            if (row >= 0) {
                 final AzureSdkPackageEntity pkg = this.packagesTableModel.getRowValue(row);
-                if (pkg.getArtifact() != null) {
-                    this.onPackageSelected(pkg);
-                    return;
-                }
+                this.onPackageSelected(pkg);
             }
-            this.packagesTable.clearSelection();
         });
     }
 
@@ -142,7 +138,7 @@ public class AzureSdkPackageGroupPanel {
 
         @Override
         public TableCellRenderer getRenderer(AzureSdkPackageEntity entity) {
-            if (NAME.equals(getName()) || Objects.isNull(entity.getArtifact())) {
+            if (NAME.equals(getName())) {
                 return null;
             }
             return new PackageTableCellRenderer(getName());

@@ -45,11 +45,6 @@ public class AzureSdkFeatureDetailPanel {
         AzureTaskManager.getInstance().runLater(() -> {
             this.titleLabel.setText(feature.getName());
 
-            this.descLabel.setText("<html><body>" + "FIXME: " +
-                "This repo is for Spring Boot Starters of Azure services. " +
-                "It helps Spring Boot developers to adopt Azure services." +
-                "</body></html>");
-
             this.featureDocLink.setHyperlinkText("Product documentation");
             this.featureDocLink.setHyperlinkTarget("https://azure.github.io/azure-sdk-for-java/index.html");
             this.featureAuthLink.setHyperlinkText("Setup authentication for your application");
