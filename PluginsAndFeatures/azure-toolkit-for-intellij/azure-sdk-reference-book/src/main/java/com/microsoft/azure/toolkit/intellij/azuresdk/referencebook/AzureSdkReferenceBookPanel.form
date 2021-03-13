@@ -17,7 +17,9 @@
       </component>
       <scrollpane id="9ca44" class="com.intellij.ui.components.JBScrollPane" binding="rightPane">
         <constraints border-constraint="East"/>
-        <properties/>
+        <properties>
+          <horizontalScrollBarPolicy value="31"/>
+        </properties>
         <border type="none"/>
         <children>
           <nested-form id="efa15" form-file="com/microsoft/azure/toolkit/intellij/azuresdk/referencebook/AzureSdkFeatureDetailPanel.form" binding="featureDetailPanel">
