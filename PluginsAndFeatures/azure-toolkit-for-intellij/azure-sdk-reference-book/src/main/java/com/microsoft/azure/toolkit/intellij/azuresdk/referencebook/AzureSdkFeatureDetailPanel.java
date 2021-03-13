@@ -10,6 +10,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkPackageEntity;
+import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -19,7 +20,7 @@ import java.util.List;
 
 public class AzureSdkFeatureDetailPanel {
     private JBLabel titleLabel;
-    private JPanel profilePanel;
+    private JPanel descPanel;
     @Getter
     private JPanel contentPanel;
     private JBTabbedPane tabPane;
@@ -28,22 +29,15 @@ public class AzureSdkFeatureDetailPanel {
     private JBLabel descLabel;
     private AzureSdkFeatureEntity feature;
 
-    public AzureSdkFeatureDetailPanel() {
-        this.initEventListeners();
-    }
-
-    private void initEventListeners() {
-        this.featureDocLink.addHyperlinkListener((e) -> {
-        });
-        this.featureAuthLink.addHyperlinkListener((e) -> {
-
-        });
-    }
-
     public void setData(final AzureSdkFeatureEntity feature) {
         this.feature = feature;
         AzureTaskManager.getInstance().runLater(() -> {
             this.titleLabel.setText(feature.getName());
+            SwingUtils.setTextAndEnableAutoWrap(this.descLabel,
+                "To get started with a specific service library, " +
+                    "see the README.md file located in the library's project folder. " +
+                    "You can find service libraries in the /sdk directory. " +
+                    "For a list of all the services we support access our list of all existing libraries.");
 
             this.featureDocLink.setHyperlinkText("Product documentation");
             this.featureDocLink.setHyperlinkTarget("https://azure.github.io/azure-sdk-for-java/index.html");
