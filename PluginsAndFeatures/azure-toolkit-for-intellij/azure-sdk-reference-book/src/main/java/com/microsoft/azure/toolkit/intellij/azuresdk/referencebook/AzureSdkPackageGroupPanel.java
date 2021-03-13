@@ -5,17 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
-import com.intellij.ide.highlighter.XHtmlFileType;
-import com.intellij.openapi.editor.EditorFactory;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.editor.EditorSettings;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.editor.colors.EditorColorsScheme;
-import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.editor.highlighter.EditorHighlighter;
-import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.ui.EditorTextField;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.table.TableView;
@@ -42,16 +37,11 @@ public class AzureSdkPackageGroupPanel {
     private JPanel codePanel;
     private JBTable packagesTable;
     private JBScrollPane tableContainer;
-    private EditorEx editor;
+    private EditorTextField viewer;
     private ListTableModel<AzureSdkPackageEntity> packagesTableModel;
 
-    public AzureSdkPackageGroupPanel() {
-        this.$$$setupUI$$$();
-        initCodeSnippetPanel();
-    }
-
     public void setData(@Nonnull final List<? extends AzureSdkPackageEntity> packages) {
-        this.editor.getDocument().setText("");
+        this.viewer.setText("");
         this.packagesTableModel.setItems(new ArrayList<>(packages));
         if (packages.size() > 0) {
             this.packagesTable.setVisible(true);
@@ -64,24 +54,18 @@ public class AzureSdkPackageGroupPanel {
     }
 
     private void onPackageSelected(AzureSdkPackageEntity pkg) {
-        this.editor.getDocument().setText(pkg.generateMavenDependencySnippet());
+        this.viewer.getDocument().setText(pkg.generateMavenDependencySnippet());
     }
 
-    private void initCodeSnippetPanel() {
-        final DocumentImpl document = new DocumentImpl("", true);
-        this.editor = (EditorEx) EditorFactory.getInstance().createViewer(document);
-        final EditorColorsScheme scheme = EditorColorsManager.getInstance().getGlobalScheme();
+    private void initDependencyViewer() {
         final Project project = ProjectManager.getInstance().getOpenProjects()[0];
-        final EditorHighlighter highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, XHtmlFileType.INSTANCE);
-        this.editor.setHighlighter(highlighter);
-        this.editor.getGutterComponentEx().setForceShowRightFreePaintersArea(true);
-        this.editor.getFoldingModel().setFoldingEnabled(false);
-        final EditorSettings settings = this.editor.getSettings();
-        settings.setAnimatedScrolling(false);
-        settings.setRefrainFromScrolling(false);
-        settings.setLineNumbersShown(true);
-        settings.setFoldingOutlineShown(true);
-        this.codePanel.add(this.editor.getComponent(), BorderLayout.CENTER);
+        final DocumentImpl document = new DocumentImpl("", true);
+        this.viewer = new EditorTextField(document, project, XmlFileType.INSTANCE, true, false);
+        this.viewer.addSettingsProvider(editor -> { // add scrolling/line number features
+            editor.setHorizontalScrollbarVisible(true);
+            editor.setVerticalScrollbarVisible(true);
+            editor.getSettings().setLineNumbersShown(true);
+        });
     }
 
     private void initPackagesTable() {
@@ -169,7 +153,8 @@ public class AzureSdkPackageGroupPanel {
     }
 
     private void createUIComponents() {
-        initPackagesTable();
+        this.initDependencyViewer();
+        this.initPackagesTable();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

@@ -26,7 +26,7 @@ public class AzureSdkPackageEntity {
     private final String demoPath;
     private final String mavenPath;
 
-    public CharSequence generateMavenDependencySnippet() {
+    public String generateMavenDependencySnippet() {
         return String.join("", "",
             "<dependency>\n",
             "    <groupId>", this.group, "</groupId>\n",
