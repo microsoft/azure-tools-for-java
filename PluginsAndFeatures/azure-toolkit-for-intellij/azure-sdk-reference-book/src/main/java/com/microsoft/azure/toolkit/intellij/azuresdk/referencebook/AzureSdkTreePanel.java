@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.ActivityTracker;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.IdeBundle;
@@ -15,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
+import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.RelativeFont;
 import com.intellij.ui.SearchTextField;
 import com.intellij.ui.components.JBScrollPane;
@@ -25,6 +27,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
@@ -130,13 +133,18 @@ public class AzureSdkTreePanel {
         @Override
         public final void actionPerformed(@NotNull final AnActionEvent e) {
             this.loading = true;
-            AzureSdkTreePanel.this.reload();
-            this.loading = false;
+            ActivityTracker.getInstance().inc();
+            AzureTaskManager.getInstance().runLater(() -> {
+                AzureSdkTreePanel.this.reload();
+                this.loading = false;
+            });
         }
 
         @Override
         public final void update(@NotNull final AnActionEvent event) {
             final Presentation presentation = event.getPresentation();
+            final Icon icon = loading ? new AnimatedIcon.Default() : this.getTemplatePresentation().getIcon();
+            presentation.setIcon(icon);
             presentation.setEnabled(!loading);
         }
     }
