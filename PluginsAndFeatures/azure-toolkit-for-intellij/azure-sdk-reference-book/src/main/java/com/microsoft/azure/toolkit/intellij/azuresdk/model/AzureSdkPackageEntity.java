@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.Map;
+
 @Getter
 @Builder
 @ToString(of = "artifact", includeFieldNames = false)
@@ -20,18 +22,15 @@ public class AzureSdkPackageEntity {
     private final String type;
     private final String versionGA;
     private final String versionPreview;
-    private final String repoPath;
-    private final String msDocPath;
-    private final String javadocPath;
-    private final String demoPath;
     private final String mavenPath;
+    private final Map<String, String> links;
 
-    public String generateMavenDependencySnippet() {
+    public String generateMavenDependencySnippet(String version) {
         return String.join("", "",
             "<dependency>\n",
             "    <groupId>", this.group, "</groupId>\n",
             "    <artifactId>", this.artifact, "</artifactId>\n",
-            "    <version>", this.versionGA, "</version>\n",
+            "    <version>", version, "</version>\n",
             "</dependency>"
         );
     }

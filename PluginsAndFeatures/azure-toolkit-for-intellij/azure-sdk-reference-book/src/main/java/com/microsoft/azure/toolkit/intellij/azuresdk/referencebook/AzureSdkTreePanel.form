@@ -15,7 +15,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="a4c3d" class="com.intellij.ui.treeStructure.Tree" binding="serviceTree" custom-create="true">
+          <component id="a4c3d" class="com.intellij.ui.treeStructure.Tree" binding="tree" custom-create="true">
             <constraints/>
             <properties/>
           </component>

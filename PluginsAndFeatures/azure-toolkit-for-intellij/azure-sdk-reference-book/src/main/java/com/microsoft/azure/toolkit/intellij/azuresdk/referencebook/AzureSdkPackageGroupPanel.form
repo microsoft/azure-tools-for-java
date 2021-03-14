@@ -10,26 +10,21 @@
       <component id="26589" class="com.intellij.ui.JBSplitter">
         <constraints border-constraint="Center"/>
         <properties>
-          <firstComponent value="fdb51"/>
+          <dividerPositionStrategy value="KEEP_PROPORTION"/>
+          <firstComponent value="53066"/>
           <orientation value="true"/>
+          <proportion value="0.5"/>
           <secondComponent value="125a2"/>
         </properties>
       </component>
-      <scrollpane id="fdb51" class="com.intellij.ui.components.JBScrollPane" binding="tableContainer">
+      <grid id="53066" binding="pkgsPnl" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
         <constraints border-constraint="North"/>
         <properties/>
         <border type="none"/>
-        <children>
-          <component id="a96d0" class="com.intellij.ui.table.TableView" binding="packagesTable" custom-create="true">
-            <constraints/>
-            <properties>
-              <showHorizontalLines value="false"/>
-              <showVerticalLines value="false"/>
-            </properties>
-          </component>
-        </children>
-      </scrollpane>
-      <grid id="125a2" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <children/>
+      </grid>
+      <grid id="125a2" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints border-constraint="South"/>
         <properties/>
@@ -43,12 +38,20 @@
               <viewer value="true"/>
             </properties>
           </component>
+          <component id="41eef" class="com.intellij.openapi.actionSystem.impl.ActionToolbarImpl" binding="toolbar" custom-create="true" default-binding="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="0" anchor="5" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <orientation value="1"/>
+            </properties>
+          </component>
         </children>
       </grid>
     </children>
   </grid>
   <buttonGroups>
-    <group name="packagesGroup">
+    <group name="pkgsGroup" bound="true">
       <member id="d1f07"/>
       <member id="40783"/>
     </group>

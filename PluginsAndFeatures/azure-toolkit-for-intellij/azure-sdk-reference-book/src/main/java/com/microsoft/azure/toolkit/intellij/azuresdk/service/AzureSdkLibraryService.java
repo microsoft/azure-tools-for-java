@@ -19,7 +19,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AzureSdkLibraryService {
@@ -88,6 +90,13 @@ public class AzureSdkLibraryService {
 
     private AzureSdkPackageEntity convertArtifactToPackageEntity(AzureSdkArtifactEntity artifactEntity) {
         // todo: get exact service and feature name from `Notes` of `AzureSDKArtifactEntity`
+        final Map<String, String> links = new HashMap<>();
+        if (StringUtils.isNotBlank(artifactEntity.getMsDocs())) {
+            links.put("msdoc", artifactEntity.getMsDocs());
+        }
+        if (StringUtils.isNotBlank(artifactEntity.getGhDocs())) {
+            links.put("ghdoc", artifactEntity.getGhDocs());
+        }
         return AzureSdkPackageEntity.builder()
             .service(artifactEntity.getServiceName())
             .feature(artifactEntity.getDisplayName())
@@ -96,11 +105,9 @@ public class AzureSdkLibraryService {
             .type(artifactEntity.getType())
             .versionGA(artifactEntity.getVersionGA())
             .versionPreview(artifactEntity.getVersionPreview())
-            .repoPath(artifactEntity.getRepoPath())
-            .msDocPath(artifactEntity.getMsDocs())
-            .javadocPath(StringUtils.EMPTY) // todo: find correct values for the following parameters
-            .demoPath(StringUtils.EMPTY)
-            .mavenPath(StringUtils.EMPTY).build();
+            .mavenPath(artifactEntity.getRepoPath())
+            .links(links)
+            .build();
     }
 
     private static class Holder {

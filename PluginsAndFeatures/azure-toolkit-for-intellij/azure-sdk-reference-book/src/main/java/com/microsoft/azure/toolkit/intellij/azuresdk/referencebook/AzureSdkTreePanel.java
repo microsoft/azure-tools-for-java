@@ -45,7 +45,7 @@ public class AzureSdkTreePanel {
     private Consumer<AzureSdkFeatureEntity> onSdkFeatureNodeSelected;
     @Getter
     private JPanel contentPanel;
-    private Tree serviceTree;
+    private Tree tree;
     private ActionToolbarImpl toolbar;
     private JBScrollPane scroller;
     private SearchTextField searchBox;
@@ -56,8 +56,8 @@ public class AzureSdkTreePanel {
     }
 
     private void initEventListeners() {
-        this.serviceTree.addTreeSelectionListener(e -> {
-            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.serviceTree.getLastSelectedPathComponent();
+        this.tree.addTreeSelectionListener(e -> {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf() && node.getUserObject() instanceof AzureSdkFeatureEntity) {
                 this.onSdkFeatureNodeSelected.accept((AzureSdkFeatureEntity) node.getUserObject());
             }
@@ -87,30 +87,37 @@ public class AzureSdkTreePanel {
                 this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
             }
         }
-        this.serviceTree.expandPath(new TreePath(root));
+        this.tree.expandPath(new TreePath(root));
     }
 
-    private void createUIComponents() {
-        final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Azure SDK Libraries");
-        this.model = new DefaultTreeModel(root);
-        this.serviceTree = new SimpleTree(model);
-        this.serviceTree.putClientProperty(RenderingUtil.ALWAYS_PAINT_SELECTION_AS_FOCUSED, true);
-        this.serviceTree.setCellRenderer(new NodeRenderer());
-        this.serviceTree.setRootVisible(false);
-        this.serviceTree.setShowsRootHandles(true);
-        this.serviceTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        TreeUtil.installActions(this.serviceTree);
-        RelativeFont.BOLD.install(this.serviceTree);
-
-        final DefaultTreeExpander expander = new DefaultTreeExpander(this.serviceTree);
+    private ActionToolbarImpl initToolbar() {
+        final DefaultTreeExpander expander = new DefaultTreeExpander(this.tree);
         final DefaultActionGroup group = new DefaultActionGroup();
         final CommonActionsManager manager = CommonActionsManager.getInstance();
         group.add(new RefreshAction());
         group.addSeparator();
-        group.add(manager.createExpandAllAction(expander, this.serviceTree));
-        group.add(manager.createCollapseAllAction(expander, this.serviceTree));
+        group.add(manager.createExpandAllAction(expander, this.tree));
+        group.add(manager.createCollapseAllAction(expander, this.tree));
+        return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
+    }
 
-        this.toolbar = new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
+    private Tree initTree() {
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode("Azure SDK Libraries");
+        this.model = new DefaultTreeModel(root);
+        final SimpleTree tree = new SimpleTree(model);
+        tree.putClientProperty(RenderingUtil.ALWAYS_PAINT_SELECTION_AS_FOCUSED, true);
+        tree.setCellRenderer(new NodeRenderer());
+        tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        TreeUtil.installActions(tree);
+        RelativeFont.BOLD.install(tree);
+        return tree;
+    }
+
+    private void createUIComponents() {
+        this.tree = this.initTree();
+        this.toolbar = this.initToolbar();
     }
 
     private class RefreshAction extends com.intellij.ide.actions.RefreshAction {
