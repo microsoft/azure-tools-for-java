@@ -27,23 +27,28 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
+import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class AzureSdkTreePanel {
+public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
+    private final TailingDebouncer filter;
     @Setter
     private Consumer<AzureSdkFeatureEntity> onSdkFeatureNodeSelected;
     @Getter
@@ -53,18 +58,31 @@ public class AzureSdkTreePanel {
     private JBScrollPane scroller;
     private SearchTextField searchBox;
     private DefaultTreeModel model;
+    private List<? extends AzureSdkServiceEntity> services;
 
     public AzureSdkTreePanel() {
         this.initEventListeners();
+        this.filter = new TailingDebouncer(() -> this.filter(this.searchBox.getText()), 300);
     }
 
     private void initEventListeners() {
+        this.searchBox.addDocumentListener(this);
         this.tree.addTreeSelectionListener(e -> {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf() && node.getUserObject() instanceof AzureSdkFeatureEntity) {
                 this.onSdkFeatureNodeSelected.accept((AzureSdkFeatureEntity) node.getUserObject());
             }
         });
+    }
+
+    @Override
+    public void onDocumentChanged() {
+        this.filter.debounce();
+    }
+
+    private void filter(final String text) {
+        final String[] filters = Arrays.stream(text.split("\\s+")).filter(StringUtils::isNoneBlank).map(String::toLowerCase).toArray(String[]::new);
+        this.loadData(this.services, filters);
     }
 
     public void reload() {
@@ -79,18 +97,34 @@ public class AzureSdkTreePanel {
     }
 
     public void setData(@Nonnull final List<? extends AzureSdkServiceEntity> services) {
+        this.services = services;
+        this.loadData(this.services);
+    }
+
+    private void loadData(final List<? extends AzureSdkServiceEntity> services, String... filters) {
         final DefaultMutableTreeNode root = (DefaultMutableTreeNode) this.model.getRoot();
         root.removeAllChildren();
-        this.model.reload();
         for (final AzureSdkServiceEntity service : services) {
             final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
-            this.model.insertNodeInto(serviceNode, root, root.getChildCount());
+            final boolean serviceMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(service.getName(), f));
             for (final AzureSdkFeatureEntity feature : service.getFeatures()) {
-                final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
-                this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
+                final boolean featureMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(feature.getName(), f));
+                if (ArrayUtils.isEmpty(filters) || serviceMatched || featureMatched) {
+                    final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);
+                    this.model.insertNodeInto(featureNode, serviceNode, serviceNode.getChildCount());
+                }
+            }
+            if (ArrayUtils.isEmpty(filters) || serviceMatched || serviceNode.getChildCount() > 0) {
+                this.model.insertNodeInto(serviceNode, root, root.getChildCount());
             }
         }
-        this.tree.expandPath(new TreePath(root));
+        this.model.reload();
+        this.tree.expandRow(0);
+        if (ArrayUtils.isNotEmpty(filters)) {
+            for (int i = 0; i < tree.getRowCount(); ++i) {
+                tree.expandRow(i);
+            }
+        }
     }
 
     private ActionToolbarImpl initToolbar() {
