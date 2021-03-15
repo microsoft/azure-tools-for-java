@@ -5,41 +5,45 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
-@ToString
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 @Getter
+@Setter
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkArtifactEntity {
-    @JsonProperty("Package")
-    private String packageName;
-    @JsonProperty("GroupId")
+    private String artifactId;
     private String groupId;
-    @JsonProperty("VersionGA")
     private String versionGA;
-    @JsonProperty("VersionPreview")
     private String versionPreview;
-    @JsonProperty("DisplayName")
-    private String displayName;
-    @JsonProperty("ServiceName")
-    private String serviceName;
-    @JsonProperty("RepoPath")
-    private String repoPath;
-    @JsonProperty("MSDocs")
-    private String msDocs;
-    @JsonProperty("GHDocs")
-    private String ghDocs;
-    @JsonProperty("Type")
-    private String type;
-    @JsonProperty("New")
-    private Boolean isNew; // New
-    @JsonProperty("PlannedVersions")
-    private String plannedVersions;
-    @JsonProperty(value = "Hide")
-    private Boolean isHide;
-    @JsonProperty("Notes")
-    private String notes;
+    private List<Link> links;
+
+    public String generateMavenDependencySnippet(String version) {
+        return String.join("", "",
+            "<dependency>\n",
+            "    <groupId>", this.groupId, "</groupId>\n",
+            "    <artifactId>", this.artifactId, "</artifactId>\n",
+            "    <version>", version, "</version>\n",
+            "</dependency>"
+        );
+    }
+
+    public Optional<Link> getLink(String rel) {
+        return links.stream().filter(link -> Objects.equals(rel, link.rel)).findAny();
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Link {
+        private String rel;
+        private String href;
+    }
 }

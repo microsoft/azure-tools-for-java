@@ -3,7 +3,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBRadioButton;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkPackageEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -11,25 +11,25 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
-public class AzureSdkPackageDetailPanel {
+public class AzureSdkArtifactDetailPanel {
     @Getter
     private JPanel contentPanel;
     private JBRadioButton artifactId;
     private ComboBox<String> version;
     private HyperlinkLabel mavenRepoLink;
     private JPanel links;
-    private AzureSdkPackageEntity pkg;
+    private AzureSdkArtifactEntity artifact;
     @Setter
-    private BiConsumer<? super AzureSdkPackageEntity, String> onPackageOrVersionSelected;
+    private BiConsumer<? super AzureSdkArtifactEntity, String> onArtifactOrVersionSelected;
 
-    public AzureSdkPackageDetailPanel(AzureSdkPackageEntity pkg) {
+    public AzureSdkArtifactDetailPanel(AzureSdkArtifactEntity artifact) {
         this.$$$setupUI$$$();
         this.initEventListeners();
         this.version.setBorder(BorderFactory.createEmptyBorder());
-        this.setData(pkg);
+        this.setData(artifact);
     }
 
     private void initEventListeners() {
@@ -40,33 +40,37 @@ public class AzureSdkPackageDetailPanel {
         });
         this.version.addItemListener((e) -> {
             if (this.artifactId.isSelected() && e.getStateChange() == ItemEvent.SELECTED) {
-                this.onPackageOrVersionSelected.accept(this.pkg, (String) this.version.getSelectedItem());
+                this.onArtifactOrVersionSelected.accept(this.artifact, (String) this.version.getSelectedItem());
             }
         });
     }
 
-    public void setData(@Nonnull final AzureSdkPackageEntity pkg) {
-        this.pkg = pkg;
-        this.artifactId.setText(pkg.getArtifact());
-        if (StringUtils.isNotBlank(pkg.getVersionGA())) {
-            this.version.addItem(pkg.getVersionGA());
+    public void setData(@Nonnull final AzureSdkArtifactEntity artifact) {
+        this.artifact = artifact;
+        this.artifactId.setText(artifact.getArtifactId());
+        if (StringUtils.isNotBlank(artifact.getVersionGA())) {
+            this.version.addItem(artifact.getVersionGA());
         }
-        if (StringUtils.isNotBlank(pkg.getVersionPreview())) {
-            this.version.addItem(pkg.getVersionPreview());
+        if (StringUtils.isNotBlank(artifact.getVersionPreview())) {
+            this.version.addItem(artifact.getVersionPreview());
         }
-        this.mavenRepoLink.setHyperlinkText("Maven");
-        this.mavenRepoLink.setHyperlinkTarget(pkg.getMavenPath());
-        for (final Map.Entry<String, String> e : pkg.getLinks().entrySet()) {
+        artifact.getLink("repopath").ifPresent(l -> {
+            this.mavenRepoLink.setHyperlinkText("Maven");
+            this.mavenRepoLink.setHyperlinkTarget(l.getHref());
+        });
+        for (final AzureSdkArtifactEntity.Link l : artifact.getLinks()) {
             final HyperlinkLabel link = new HyperlinkLabel();
-            link.setHyperlinkText(e.getKey());
-            link.setHyperlinkTarget(e.getValue());
-            this.links.add(link);
+            if (StringUtils.isNotBlank(l.getHref()) && Objects.equals(l.getRel(), "repopath")) {
+                link.setHyperlinkText(l.getRel());
+                link.setHyperlinkTarget(l.getHref());
+                this.links.add(link);
+            }
         }
     }
 
     public void setSelected(boolean selected) {
         this.artifactId.setSelected(selected);
-        this.onPackageOrVersionSelected.accept(this.pkg, (String) this.version.getSelectedItem());
+        this.onArtifactOrVersionSelected.accept(this.artifact, (String) this.version.getSelectedItem());
     }
 
     public void attachToGroup(ButtonGroup group) {

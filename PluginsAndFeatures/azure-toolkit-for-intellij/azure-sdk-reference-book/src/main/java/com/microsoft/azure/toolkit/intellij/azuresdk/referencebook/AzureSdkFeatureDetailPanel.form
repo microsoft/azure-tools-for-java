@@ -37,7 +37,7 @@
           </component>
           <component id="fee2b" class="com.intellij.ui.HyperlinkLabel" binding="featureDocLink">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <iconAtRight value="true"/>
@@ -46,7 +46,7 @@
           </component>
           <component id="f06a2" class="com.intellij.ui.HyperlinkLabel" binding="featureAuthLink">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <iconAtRight value="true"/>

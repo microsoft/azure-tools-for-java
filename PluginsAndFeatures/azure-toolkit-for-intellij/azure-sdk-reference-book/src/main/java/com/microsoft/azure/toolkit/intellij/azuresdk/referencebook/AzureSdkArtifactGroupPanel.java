@@ -18,7 +18,7 @@ import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
-import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkPackageEntity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,42 +29,42 @@ import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AzureSdkPackageGroupPanel {
+public class AzureSdkArtifactGroupPanel {
     @Getter
     private JPanel contentPanel;
     private EditorTextField viewer;
-    private JPanel pkgsPnl;
+    private JPanel artifactsPnl;
     private ActionToolbarImpl toolbar;
-    private ButtonGroup pkgsGroup;
-    private final List<AzureSdkPackageDetailPanel> pkgPnls = new ArrayList<>();
+    private ButtonGroup artifactsGroup;
+    private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
 
-    public void setData(@Nonnull final List<? extends AzureSdkPackageEntity> packages) {
+    public void setData(@Nonnull final List<? extends AzureSdkArtifactEntity> artifacts) {
         this.clear();
 
-        if (packages.size() > 0) {
-            for (final AzureSdkPackageEntity pkg : packages) {
-                final AzureSdkPackageDetailPanel pkgPnl = new AzureSdkPackageDetailPanel(pkg);
-                pkgPnl.attachToGroup(pkgsGroup);
-                pkgPnl.setOnPackageOrVersionSelected(this::onPackageOrVersionSelected);
-                final JPanel contentPanel = pkgPnl.getContentPanel();
+        if (artifacts.size() > 0) {
+            for (final AzureSdkArtifactEntity pkg : artifacts) {
+                final AzureSdkArtifactDetailPanel artifactPnl = new AzureSdkArtifactDetailPanel(pkg);
+                artifactPnl.attachToGroup(artifactsGroup);
+                artifactPnl.setOnArtifactOrVersionSelected(this::onPackageOrVersionSelected);
+                final JPanel contentPanel = artifactPnl.getContentPanel();
                 final Dimension maximum = contentPanel.getMaximumSize();
                 final Dimension preferred = contentPanel.getPreferredSize();
                 contentPanel.setMaximumSize(new Dimension(maximum.width, preferred.height));
-                this.pkgsPnl.add(contentPanel);
-                this.pkgPnls.add(pkgPnl);
+                this.artifactsPnl.add(contentPanel);
+                this.artifactPnls.add(artifactPnl);
             }
-            this.pkgPnls.get(0).setSelected(true);
+            this.artifactPnls.get(0).setSelected(true);
         }
     }
 
     private void clear() {
         this.viewer.setText("");
-        this.pkgPnls.forEach(p -> p.detachFromGroup(this.pkgsGroup));
-        this.pkgPnls.clear();
-        this.pkgsPnl.removeAll();
+        this.artifactPnls.forEach(p -> p.detachFromGroup(this.artifactsGroup));
+        this.artifactPnls.clear();
+        this.artifactsPnl.removeAll();
     }
 
-    private void onPackageOrVersionSelected(AzureSdkPackageEntity pkg, String version) {
+    private void onPackageOrVersionSelected(AzureSdkArtifactEntity pkg, String version) {
         this.viewer.getDocument().setText(pkg.generateMavenDependencySnippet(version));
     }
 
@@ -91,7 +91,7 @@ public class AzureSdkPackageGroupPanel {
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, false);
     }
 
-    private JPanel initPackagesPanel() {
+    private JPanel initArtifactsPanel() {
         final JPanel panel = new JPanel();
         final BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
         panel.setLayout(layout);
@@ -99,7 +99,7 @@ public class AzureSdkPackageGroupPanel {
     }
 
     private void createUIComponents() {
-        this.pkgsPnl = this.initPackagesPanel();
+        this.artifactsPnl = this.initArtifactsPanel();
         this.viewer = this.initCodeViewer();
         this.toolbar = this.initCodeViewerToolbar();
         this.toolbar.setForceMinimumSize(true);

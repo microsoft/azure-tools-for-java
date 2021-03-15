@@ -107,7 +107,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         for (final AzureSdkServiceEntity service : services) {
             final DefaultMutableTreeNode serviceNode = new DefaultMutableTreeNode(service);
             final boolean serviceMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(service.getName(), f));
-            for (final AzureSdkFeatureEntity feature : service.getFeatures()) {
+            for (final AzureSdkFeatureEntity feature : service.getContent()) {
                 final boolean featureMatched = Arrays.stream(filters).allMatch(f -> StringUtils.containsIgnoreCase(feature.getName(), f));
                 if (ArrayUtils.isEmpty(filters) || serviceMatched || featureMatched) {
                     final DefaultMutableTreeNode featureNode = new DefaultMutableTreeNode(feature);

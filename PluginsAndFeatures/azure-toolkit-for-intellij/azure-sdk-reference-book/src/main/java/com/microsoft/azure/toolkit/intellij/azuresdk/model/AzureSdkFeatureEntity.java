@@ -5,24 +5,37 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
-@Builder
 @Getter
+@Setter
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkFeatureEntity {
-    private final String name;
-    private final String service;
-    private final String description;
-    @Nonnull
-    private final List<AzureSdkPackageEntity> clientPackages;
-    @Nonnull
-    private final List<AzureSdkPackageEntity> managementPackages;
+    private String id;
+    private String name;
+    private String description;
+    private String msdocs;
+    private List<AzureSdkArtifactEntity> artifacts;
 
     public String toString() {
         return this.name;
+    }
+
+    public List<AzureSdkArtifactEntity> getClientArtifacts() {
+        return null;
+    }
+
+    public List<AzureSdkArtifactEntity> getSpringArtifacts() {
+        return artifacts;
+    }
+
+    public List<AzureSdkArtifactEntity> getManagementArtifacts() {
+        return null;
     }
 }
