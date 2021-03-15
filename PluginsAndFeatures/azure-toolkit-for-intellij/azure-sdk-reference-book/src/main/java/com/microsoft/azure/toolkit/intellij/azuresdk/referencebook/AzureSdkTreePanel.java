@@ -121,6 +121,8 @@ public class AzureSdkTreePanel {
     private void createUIComponents() {
         this.tree = this.initTree();
         this.toolbar = this.initToolbar();
+        this.toolbar.setTargetComponent(this.tree);
+        this.toolbar.setForceMinimumSize(true);
     }
 
     private class RefreshAction extends com.intellij.ide.actions.RefreshAction {

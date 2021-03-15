@@ -5,22 +5,27 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.editor.impl.DocumentImpl;
+import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkPackageEntity;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,11 +80,14 @@ public class AzureSdkPackageGroupPanel {
         return viewer;
     }
 
-    private ActionToolbarImpl initToolbar() {
+    private ActionToolbarImpl initCodeViewerToolbar() {
         final DefaultActionGroup group = new DefaultActionGroup();
-        final ActionManager manager = ActionManager.getInstance();
-        group.addSeparator();
-        group.add(manager.getAction(IdeActions.ACTION_COPY));
+        group.add(new AnAction(ActionsBundle.message("action.$Copy.text"), ActionsBundle.message("action.$Copy.description"), AllIcons.Actions.Copy) {
+            @Override
+            public void actionPerformed(@NotNull final AnActionEvent e) {
+                CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
+            }
+        });
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, false);
     }
 
@@ -91,8 +99,10 @@ public class AzureSdkPackageGroupPanel {
     }
 
     private void createUIComponents() {
-        this.viewer = this.initCodeViewer();
-        this.toolbar = this.initToolbar();
         this.pkgsPnl = this.initPackagesPanel();
+        this.viewer = this.initCodeViewer();
+        this.toolbar = this.initCodeViewerToolbar();
+        this.toolbar.setForceMinimumSize(true);
+        this.toolbar.setTargetComponent(this.viewer);
     }
 }
