@@ -119,11 +119,8 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             }
         }
         this.model.reload();
-        this.tree.expandRow(0);
         if (ArrayUtils.isNotEmpty(filters)) {
-            for (int i = 0; i < tree.getRowCount(); ++i) {
-                tree.expandRow(i);
-            }
+            TreeUtil.expandAll(this.tree);
         }
     }
 
