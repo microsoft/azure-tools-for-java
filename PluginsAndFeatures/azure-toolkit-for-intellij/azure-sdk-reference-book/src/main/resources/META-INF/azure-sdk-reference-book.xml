@@ -1,9 +1,6 @@
 <idea-plugin>
     <extensionPoints>
     </extensionPoints>
-    <extensions defaultExtensionNs="com.intellij">
-        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.AzurePreloadingActivity"/>
-    </extensions>
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"
                 class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"

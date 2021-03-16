@@ -85,11 +85,9 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.loadData(this.services, filters);
     }
 
-    public void reload() {
-        final AzureSdkLibraryService service = AzureSdkLibraryService.getInstance();
+    public void reload(Boolean... force) {
         try {
-            service.reloadAzureSDKArtifacts();
-            this.setData(service.getServices());
+            this.setData(AzureSdkLibraryService.loadAzureSdkServices(force));
         } catch (final IOException e) {
             //TODO: messager.warning(...)
             e.printStackTrace();
@@ -169,7 +167,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
             this.loading = true;
             ActivityTracker.getInstance().inc();
             AzureTaskManager.getInstance().runLater(() -> {
-                AzureSdkTreePanel.this.reload();
+                AzureSdkTreePanel.this.reload(true);
                 this.loading = false;
             });
         }

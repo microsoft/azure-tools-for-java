@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "org.jetbrains.intellij"
+    id "io.freefair.aspectj.post-compile-weaving"
 }
 
 group 'com.microsoft.azuretools'
@@ -25,6 +26,8 @@ dependencies {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
 
-    implementation project(':azure-intellij-plugin-lib')
-    implementation "com.microsoft.azure:azure-toolkit-common-lib:0.4.0-SNAPSHOT"
+    compile project(':azure-intellij-plugin-lib')
+    compile "com.microsoft.azure:azure-toolkit-common-lib:0.4.0-SNAPSHOT"
+
+    aspect "com.microsoft.azure:azure-toolkit-common-lib:0.4.0-SNAPSHOT"
 }
