@@ -6,6 +6,6 @@ public class AzureToolkitTopMenuGroup extends DefaultActionGroup{
 
     public AzureToolkitTopMenuGroup() {
         super();
-        getTemplatePresentation().setText("Azure Toolkit");
+        getTemplatePresentation().setText("Azure");
     }
 }
