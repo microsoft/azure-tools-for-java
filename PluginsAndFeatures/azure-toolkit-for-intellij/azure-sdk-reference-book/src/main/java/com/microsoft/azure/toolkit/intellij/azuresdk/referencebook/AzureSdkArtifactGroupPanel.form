@@ -10,7 +10,7 @@
       <component id="26589" class="com.intellij.ui.JBSplitter">
         <constraints border-constraint="Center"/>
         <properties>
-          <dividerPositionStrategy value="KEEP_PROPORTION"/>
+          <dividerPositionStrategy value="KEEP_FIRST_SIZE"/>
           <firstComponent value="53066"/>
           <orientation value="true"/>
           <proportion value="0.5"/>
