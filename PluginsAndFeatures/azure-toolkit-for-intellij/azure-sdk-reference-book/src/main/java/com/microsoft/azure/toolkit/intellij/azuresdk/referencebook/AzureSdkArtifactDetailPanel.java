@@ -59,6 +59,7 @@ public class AzureSdkArtifactDetailPanel {
                 this.links.add(new JToolBar.Separator());
                 link.setHyperlinkText(linkNames.get(l.getRel()));
                 link.setHyperlinkTarget(l.getHref());
+                this.links.add(new JSeparator(SwingConstants.VERTICAL));
                 this.links.add(link);
             }
         }
