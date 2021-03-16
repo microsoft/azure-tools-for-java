@@ -43,9 +43,9 @@ public class AzureSdkFeatureDetailPanel {
     }
 
     private void buildTabs(AzureSdkFeatureEntity feature) {
-        final List<AzureSdkArtifactEntity> clientArtifacts = feature.getClientArtifacts();
-        final List<AzureSdkArtifactEntity> springArtifacts = feature.getSpringArtifacts();
-        final List<AzureSdkArtifactEntity> managementArtifacts = feature.getManagementArtifacts();
+        final List<AzureSdkArtifactEntity> clientArtifacts = feature.getArtifacts(AzureSdkArtifactEntity.Type.CLIENT);
+        final List<AzureSdkArtifactEntity> springArtifacts = feature.getArtifacts(AzureSdkArtifactEntity.Type.SPRING);
+        final List<AzureSdkArtifactEntity> managementArtifacts = feature.getArtifacts(AzureSdkArtifactEntity.Type.MANAGEMENT);
         this.tabPane.removeAll();
         if (CollectionUtils.isNotEmpty(clientArtifacts)) {
             final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();

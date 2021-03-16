@@ -23,6 +23,7 @@ public class AzureSdkArtifactEntity {
     private String groupId;
     private String versionGA;
     private String versionPreview;
+    private String type;
     private List<Link> links;
 
     public String generateMavenDependencySnippet(String version) {
@@ -45,5 +46,11 @@ public class AzureSdkArtifactEntity {
     public static class Link {
         private String rel;
         private String href;
+    }
+
+    public static class Type {
+        public static final String SPRING = "spring";
+        public static final String CLIENT = "client";
+        public static final String MANAGEMENT = "mgmt";
     }
 }

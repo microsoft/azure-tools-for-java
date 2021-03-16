@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -27,15 +29,7 @@ public class AzureSdkFeatureEntity {
         return this.name;
     }
 
-    public List<AzureSdkArtifactEntity> getClientArtifacts() {
-        return null;
-    }
-
-    public List<AzureSdkArtifactEntity> getSpringArtifacts() {
-        return artifacts;
-    }
-
-    public List<AzureSdkArtifactEntity> getManagementArtifacts() {
-        return null;
+    public List<AzureSdkArtifactEntity> getArtifacts(String type) {
+        return this.artifacts.stream().filter(a -> Objects.equals(a.getType(), type)).collect(Collectors.toList());
     }
 }
