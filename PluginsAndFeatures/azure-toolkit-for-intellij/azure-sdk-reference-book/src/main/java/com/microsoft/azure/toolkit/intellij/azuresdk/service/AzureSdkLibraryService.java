@@ -6,11 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.service;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,19 +33,14 @@ public class AzureSdkLibraryService {
 
     public void reloadAzureSDKArtifacts() throws IOException {
         final URL destination = new URL(SDK_METADATA_URL);
-        final ObjectReader reader = mapper.readerFor(RawData.class);
-        final RawData rawData = reader.readValue(destination);
+        final ObjectReader reader = mapper.readerFor(AzureSdkServiceEntity.class);
+        final MappingIterator<AzureSdkServiceEntity> data = reader.readValues(destination);
         synchronized (this) {
-            this.services = rawData.getSpring();
+            this.services = data.readAll();
         }
     }
 
     private static class Holder {
         private static final AzureSdkLibraryService instance = new AzureSdkLibraryService();
-    }
-
-    @Getter
-    private static class RawData {
-        private List<AzureSdkServiceEntity> spring;
     }
 }

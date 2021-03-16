@@ -25,11 +25,10 @@ public class AzureSdkArtifactDetailPanel {
     private BiConsumer<? super AzureSdkArtifactEntity, String> onArtifactOrVersionSelected;
     private final AzureSdkArtifactEntity artifact;
     private final Map<String, String> linkNames = ImmutableMap.of(
-            "github", "Source Code",
-            "repopath", "Maven Repository",
-            "msdocs", "Microsoft Docs",
-            "ghdocs", "GitHub Docs"
-    );
+        "github", "GitHub Repository",
+        "repopath", "Maven Repository",
+        "msdocs", "Microsoft Docs",
+        "javadoc", "Javadoc");
 
     public AzureSdkArtifactDetailPanel(AzureSdkArtifactEntity artifact) {
         this.artifact = artifact;
@@ -53,16 +52,16 @@ public class AzureSdkArtifactDetailPanel {
     }
 
     private void buildLinks() {
-        for (final AzureSdkArtifactEntity.Link l : artifact.getLinks()) {
+        artifact.getLinks().forEach((type, url) -> {
             final HyperlinkLabel link = new HyperlinkLabel();
-            if (StringUtils.isNotBlank(l.getHref())) {
+            if (StringUtils.isNotBlank(url)) {
                 this.links.add(new JToolBar.Separator());
-                link.setHyperlinkText(linkNames.get(l.getRel()));
-                link.setHyperlinkTarget(l.getHref());
+                link.setHyperlinkText(linkNames.get(type));
+                link.setHyperlinkTarget(url);
                 this.links.add(new JSeparator(SwingConstants.VERTICAL));
                 this.links.add(link);
             }
-        }
+        });
     }
 
     private void buildVersionSelector() {

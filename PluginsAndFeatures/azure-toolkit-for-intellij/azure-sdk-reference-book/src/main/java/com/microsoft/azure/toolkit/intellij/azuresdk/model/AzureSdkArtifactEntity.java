@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public class AzureSdkArtifactEntity {
     private String versionGA;
     private String versionPreview;
     private String type;
-    private List<Link> links;
+    private Map<String, String> links;
 
     public String generateMavenDependencySnippet(String version) {
         return String.join(
@@ -36,16 +37,8 @@ public class AzureSdkArtifactEntity {
         );
     }
 
-    public Optional<Link> getLink(String rel) {
-        return links.stream().filter(link -> Objects.equals(rel, link.rel)).findAny();
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class Link {
-        private String rel;
-        private String href;
+    public String getLink(String rel) {
+        return this.links.get(rel);
     }
 
     public static class Type {
