@@ -26,7 +26,6 @@ public class AzureSdkFeatureDetailPanel {
     private JPanel contentPanel;
     private JBTabbedPane tabPane;
     private HyperlinkLabel featureDocLink;
-    private HyperlinkLabel featureAuthLink;
     private JBLabel descLabel;
 
     public void setData(final AzureSdkFeatureEntity feature) {
