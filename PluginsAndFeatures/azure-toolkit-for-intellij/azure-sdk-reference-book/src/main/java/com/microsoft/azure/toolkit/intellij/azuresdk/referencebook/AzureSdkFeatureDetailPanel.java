@@ -39,25 +39,29 @@ public class AzureSdkFeatureDetailPanel {
                 this.featureDocLink.setHyperlinkTarget(link);
             });
 
-            final List<AzureSdkArtifactEntity> clientArtifacts = feature.getClientArtifacts();
-            final List<AzureSdkArtifactEntity> springArtifacts = feature.getSpringArtifacts();
-            final List<AzureSdkArtifactEntity> managementArtifacts = feature.getManagementArtifacts();
-            this.tabPane.removeAll();
-            if (CollectionUtils.isNotEmpty(clientArtifacts)) {
-                final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
-                this.tabPane.insertTab("Client SDK", null, clientPanel.getContentPanel(), "", this.tabPane.getTabCount());
-                clientPanel.setData(clientArtifacts);
-            }
-            if (CollectionUtils.isNotEmpty(springArtifacts)) {
-                final AzureSdkArtifactGroupPanel springPanel = new AzureSdkArtifactGroupPanel();
-                this.tabPane.insertTab("Spring SDK", null, springPanel.getContentPanel(), "", this.tabPane.getTabCount());
-                springPanel.setData(springArtifacts);
-            }
-            if (CollectionUtils.isNotEmpty(managementArtifacts)) {
-                final AzureSdkArtifactGroupPanel managementSdkPanel = new AzureSdkArtifactGroupPanel();
-                this.tabPane.insertTab("Management SDK", null, managementSdkPanel.getContentPanel(), "", this.tabPane.getTabCount());
-                managementSdkPanel.setData(managementArtifacts);
-            }
+            this.buildTabs(feature);
         });
+    }
+
+    private void buildTabs(AzureSdkFeatureEntity feature) {
+        final List<AzureSdkArtifactEntity> clientArtifacts = feature.getClientArtifacts();
+        final List<AzureSdkArtifactEntity> springArtifacts = feature.getSpringArtifacts();
+        final List<AzureSdkArtifactEntity> managementArtifacts = feature.getManagementArtifacts();
+        this.tabPane.removeAll();
+        if (CollectionUtils.isNotEmpty(clientArtifacts)) {
+            final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
+            this.tabPane.insertTab("Client SDK", null, clientPanel.getContentPanel(), "", this.tabPane.getTabCount());
+            clientPanel.setData(clientArtifacts);
+        }
+        if (CollectionUtils.isNotEmpty(springArtifacts)) {
+            final AzureSdkArtifactGroupPanel springPanel = new AzureSdkArtifactGroupPanel();
+            this.tabPane.insertTab("Spring SDK", null, springPanel.getContentPanel(), "", this.tabPane.getTabCount());
+            springPanel.setData(springArtifacts);
+        }
+        if (CollectionUtils.isNotEmpty(managementArtifacts)) {
+            final AzureSdkArtifactGroupPanel managementSdkPanel = new AzureSdkArtifactGroupPanel();
+            this.tabPane.insertTab("Management SDK", null, managementSdkPanel.getContentPanel(), "", this.tabPane.getTabCount());
+            managementSdkPanel.setData(managementArtifacts);
+        }
     }
 }
