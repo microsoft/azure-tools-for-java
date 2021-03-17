@@ -27,12 +27,12 @@ public class AzureSdkArtifactEntity {
     private List<Link> links;
 
     public String generateMavenDependencySnippet(String version) {
-        return String.join("", "",
-            "<dependency>\n",
-            "    <groupId>", this.groupId, "</groupId>\n",
-            "    <artifactId>", this.artifactId, "</artifactId>\n",
-            "    <version>", version, "</version>\n",
-            "</dependency>"
+        return String.join(
+                "<dependency>\n",
+                "    <groupId>", this.groupId, "</groupId>\n",
+                "    <artifactId>", this.artifactId, "</artifactId>\n",
+                "    <version>", version, "</version>\n",
+                "</dependency>"
         );
     }
 
