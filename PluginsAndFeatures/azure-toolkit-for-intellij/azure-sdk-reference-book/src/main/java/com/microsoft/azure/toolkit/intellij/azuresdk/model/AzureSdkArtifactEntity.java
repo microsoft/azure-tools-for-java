@@ -34,8 +34,8 @@ public class AzureSdkArtifactEntity {
         );
     }
 
-    public String getLink(String rel) {
-        return this.links.get(rel);
+    public String getLink(String type) {
+        return this.links.get(type);
     }
 
     public static class Type {
