@@ -15,24 +15,28 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,8 +51,8 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
         return LazyLoader.INSTANCE;
     }
 
-    public void handleException(Project object, Throwable throwable, boolean isBackGround, @Nullable AzureExceptionHandler.AzureExceptionAction... action) {
-        this.onHandleException(object, throwable, isBackGround, action);
+    public void handleException(Project project, Throwable throwable, boolean isBackground, @Nullable AzureExceptionHandler.AzureExceptionAction... action) {
+        this.onHandleException(project, throwable, isBackground, action);
     }
 
     @Override
@@ -62,31 +66,32 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
     }
 
     @Override
-    protected void onHandleException(final Throwable throwable, final boolean isBackGround, final @Nullable AzureExceptionAction[] actions) {
-        onHandleException(null, throwable, isBackGround, actions);
+    protected void onHandleException(final Throwable throwable, final boolean isBackground, final @Nullable AzureExceptionAction[] actions) {
+        onHandleException(null, throwable, isBackground, actions);
     }
 
-    protected void onHandleException(final Project project, final Throwable throwable, final boolean isBackGround,
+    protected void onHandleException(final Project project, final Throwable throwable, final boolean isBackground,
                                      final @Nullable AzureExceptionAction[] actions) {
         final List<AzureOperationRef> operationRefList = revise(AzureTaskContext.getContextOperations(AzureTaskContext.current()));
-        final List<Throwable> azureToolkitExceptions = (List<Throwable>) ExceptionUtils.getThrowableList(throwable).stream()
-                                                                                       .filter(object -> object instanceof AzureToolkitRuntimeException
-                                                                                           || object instanceof AzureToolkitException)
-                                                                                       .collect(Collectors.toList());
+        final List<Throwable> azureToolkitExceptions = ExceptionUtils
+            .getThrowableList(throwable).stream()
+            .filter(object -> object instanceof AzureToolkitRuntimeException
+                || object instanceof AzureToolkitException)
+            .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(azureToolkitExceptions) && CollectionUtils.isEmpty(operationRefList)) {
-            showException(project, isBackGround, throwable.getMessage(), null, actions, throwable);
+            showException(project, isBackground, throwable.getMessage(), null, actions, throwable);
         } else {
             // get action from the latest exception
             final AzureExceptionAction[] actionArray = getActions(azureToolkitExceptions, actions);
             final String description = getAzureErrorMessage(operationRefList, azureToolkitExceptions);
             final List<String> operationStack = getAzureOperationStack(operationRefList, azureToolkitExceptions);
-            showException(project, isBackGround, description, operationStack, actionArray, throwable);
+            showException(project, isBackground, description, operationStack, actionArray, throwable);
         }
     }
 
-    private void showException(Project project, boolean isBackGround, String message, List<String> operationStack, AzureExceptionAction[] actions,
+    private void showException(Project project, boolean isBackground, String message, List<String> operationStack, AzureExceptionAction[] actions,
                                Throwable throwable) {
-        if (isBackGround) {
+        if (isBackground) {
             showBackgroundException(project, message, operationStack, actions, throwable);
         } else {
             showForegroundException(project, message, operationStack, actions, throwable);
@@ -94,8 +99,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
     }
 
     private void showForegroundException(Project project, String message, List<String> operationStack, AzureExceptionAction[] actions, Throwable throwable) {
-        final String details = CollectionUtils.isEmpty(operationStack) ?
-                               StringUtils.EMPTY : getErrorDialogDetails(operationStack);
+        final String details = CollectionUtils.isEmpty(operationStack) ? StringUtils.EMPTY : getErrorDialogDetails(operationStack);
         UIUtil.invokeLaterIfNeeded(() -> {
             final AzureToolkitErrorDialog errorDialog = new AzureToolkitErrorDialog(project, AZURE_TOOLKIT_ERROR, message, details, actions, throwable);
             final Window dialogWindow = errorDialog.getWindow();
@@ -122,11 +126,11 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
     private void showBackgroundException(Project project, String message, List<String> operations, AzureExceptionAction[] actions, Throwable throwable) {
         final String body = getNotificationBody(message, operations);
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, AZURE_TOOLKIT_ERROR, body, NotificationType.ERROR);
-        for (AzureExceptionAction exceptionAction : actions) {
-            notification.addAction(new AnAction(exceptionAction.name()) {
+        for (final AzureExceptionAction action : actions) {
+            notification.addAction(new AnAction(action.name()) {
                 @Override
-                public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
-                    exceptionAction.actionPerformed(throwable);
+                public void actionPerformed(@Nonnull final AnActionEvent anActionEvent) {
+                    action.actionPerformed(throwable);
                 }
             });
         }
@@ -138,30 +142,30 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             return String.format("<html>%s</html>", message);
         }
         final String liList = operations.stream()
-                                        .map(string -> String.format("<li>%s</li>", StringUtils.capitalize(string)))
-                                        .collect(Collectors.joining(System.lineSeparator()));
+            .map(string -> String.format("<li>%s</li>", StringUtils.capitalize(string)))
+            .collect(Collectors.joining(System.lineSeparator()));
         return String.format("<html>%s <div><p>Call Stack: </p><ol>%s</ol></div></html>", message, liList);
     }
 
-    private List<String> getAzureOperationStack(List<AzureOperationRef> callStacks, List<Throwable> throwableList) {
-        final Stream<String> callStackStream = callStacks.stream().map(operation -> AzureOperationUtils.getOperationTitle(operation));
-        final Stream<String> exceptionStream = throwableList.stream().map(throwable -> throwable.getMessage());
+    private List<String> getAzureOperationStack(List<? extends AzureOperationRef> callStacks, List<? extends Throwable> throwableList) {
+        final Stream<String> callStackStream = callStacks.stream().map(AzureOperationRef::getTitle);
+        final Stream<String> exceptionStream = throwableList.stream().map(Throwable::getMessage);
         return Stream.concat(callStackStream, exceptionStream).collect(Collectors.toList());
     }
 
-    private String getAzureErrorMessage(List<AzureOperationRef> callStacks, List<Throwable> azureToolkitExceptions) {
+    private String getAzureErrorMessage(List<? extends AzureOperationRef> callStacks, List<Throwable> azureToolkitExceptions) {
         final String action = getActionText(azureToolkitExceptions);
         final String operation = CollectionUtils.isNotEmpty(callStacks) ?
-                                 AzureOperationUtils.getOperationTitle(callStacks.get(0)) :
-                                 azureToolkitExceptions.get(0).getMessage();
+            callStacks.get(0).getTitle() :
+            azureToolkitExceptions.get(0).getMessage();
         final String cause = CollectionUtils.isNotEmpty(azureToolkitExceptions) ?
-                             azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
-                             AzureOperationUtils.getOperationTitle(callStacks.get(callStacks.size() - 1));
+            azureToolkitExceptions.get(azureToolkitExceptions.size() - 1).getMessage() :
+            callStacks.get(callStacks.size() - 1).getTitle();
         if (StringUtils.isNotEmpty(action)) {
             return String.format("Failed to %s, please %s", operation, action);
         } else {
             return StringUtils.equals(operation, cause) ?
-                   String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
+                String.format("Failed to %s", operation) : String.format("Failed to %s, as %s failed", operation, cause);
         }
     }
 
@@ -171,7 +175,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             final Throwable throwable = iterator.previous();
             if (throwable instanceof AzureToolkitException || throwable instanceof AzureToolkitRuntimeException) {
                 final String action = throwable instanceof AzureToolkitException ? ((AzureToolkitException) throwable).getAction() :
-                                      ((AzureToolkitRuntimeException) throwable).getAction();
+                    ((AzureToolkitRuntimeException) throwable).getAction();
                 if (StringUtils.isNotEmpty(action)) {
                     return action;
                 }
@@ -187,7 +191,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             final Throwable throwable = iterator.previous();
             if (throwable instanceof AzureToolkitException || throwable instanceof AzureToolkitRuntimeException) {
                 actionId = throwable instanceof AzureToolkitException ? ((AzureToolkitException) throwable).getActionId() :
-                           ((AzureToolkitRuntimeException) throwable).getActionId();
+                    ((AzureToolkitRuntimeException) throwable).getActionId();
                 if (StringUtils.isNotEmpty(actionId)) {
                     break;
                 }
@@ -203,7 +207,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
             if (op instanceof AzureOperationRef) {
                 final AzureOperationRef operation = (AzureOperationRef) op;
                 result.addFirst(operation);
-                final AzureOperation annotation = AzureOperationUtils.getAnnotation(operation);
+                final AzureOperation annotation = operation.getAnnotation(AzureOperation.class);
                 if (annotation.type() == AzureOperation.Type.ACTION) {
                     break;
                 }
