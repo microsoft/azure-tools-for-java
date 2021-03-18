@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -66,6 +66,7 @@ class AzuriteServiceViewSessionDescriptor(private val project: Project)
             .createBuilder(project).apply { setViewer(true) }.console
 
     init {
+        Disposer.register(project, consoleView)
         Disposer.register(project, this)
     }
 
