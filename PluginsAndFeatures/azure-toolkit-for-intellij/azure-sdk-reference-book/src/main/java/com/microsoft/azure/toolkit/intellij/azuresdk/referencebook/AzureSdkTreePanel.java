@@ -85,7 +85,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.loadData(this.services, filters);
     }
 
-    public void reload(Boolean... force) {
+    public void reload(boolean... force) {
         try {
             this.setData(AzureSdkLibraryService.loadAzureSdkServices(force));
         } catch (final IOException e) {
