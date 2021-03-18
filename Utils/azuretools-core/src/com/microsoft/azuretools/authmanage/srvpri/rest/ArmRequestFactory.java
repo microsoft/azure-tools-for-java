@@ -8,15 +8,15 @@ package com.microsoft.azuretools.authmanage.srvpri.rest;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureArmException;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 
 /**
  * Created by vlashch on 8/29/16.
  */
 class ArmRequestFactory extends RequestFactoryBase {
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final AzureManagerBase preAccessTokenAzureManager;
 
-    public ArmRequestFactory(AccessTokenAzureManager preAccessTokenAzureManager, String tenantId) {
+    public ArmRequestFactory(AzureManagerBase preAccessTokenAzureManager, String tenantId) {
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
         this.urlPrefix = CommonSettings.getAdEnvironment().resourceManagerEndpoint() + "subscriptions/";
         this.tenantId = tenantId;
@@ -30,7 +30,7 @@ class ArmRequestFactory extends RequestFactoryBase {
     }
 
     @Override
-    AccessTokenAzureManager getPreAccessTokenAzureManager() {
+    AzureManagerBase getPreAccessTokenAzureManager() {
         return this.preAccessTokenAzureManager;
     }
 }

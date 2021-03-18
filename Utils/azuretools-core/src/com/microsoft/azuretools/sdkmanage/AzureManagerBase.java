@@ -5,7 +5,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.google.common.base.Throwables;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
@@ -15,29 +14,37 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
-import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
+import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.authmanage.interact.INotification;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
+
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azuretools.authmanage.Environment.*;
+import static com.microsoft.azuretools.authmanage.Environment.CHINA;
+import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
+import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
+import static com.microsoft.azuretools.authmanage.Environment.US_GOVERNMENT;
 
 /**
  * Created by vlashch on 1/27/17.
@@ -118,6 +125,7 @@ public abstract class AzureManagerBase implements AzureManager {
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
         final List<Tenant> tenants = getTenants(authentication);
+        final List<String> failedTenantIds = new ArrayList<>();
         for (final Tenant tenant : tenants) {
             try {
                 final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
@@ -127,21 +135,16 @@ public abstract class AzureManagerBase implements AzureManager {
                 }
             } catch (final Exception e) {
                 // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
-                // "AADSTS50076" is the code of a weired error related to multi-tenant configuration.
-                // "AADSTS50057" is the code of an error related to having a disabled account in the tenant.
-                final Predicate<Throwable> tenantError = (c) -> c instanceof AuthException &&
-                        (((AuthException) c).getErrorMessage().contains("AADSTS50076") ||
-                                ((AuthException) c).getErrorMessage().contains("AADSTS50057"));
-                
-                if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode() ||
-                    Throwables.getCausalChain(e).stream().anyMatch(tenantError)) {
-                    // TODO: @wangmi better to notify user
-                    LOGGER.log(Level.WARNING, e.getMessage(), e);
-                } else {
-                    throw e;
-                }
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+                failedTenantIds.add(tenant.tenantId());
+
             }
         }
+        if (!failedTenantIds.isEmpty()) {
+            final INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
+            nw.deliver("Lack permission for some tenants", "You don't have permission on the tenant(s): " + StringUtils.join(failedTenantIds, ","));
+        }
+
         return subscriptions;
     }
 

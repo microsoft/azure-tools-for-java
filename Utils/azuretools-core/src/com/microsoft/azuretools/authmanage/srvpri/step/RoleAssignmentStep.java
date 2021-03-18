@@ -12,7 +12,7 @@ import com.microsoft.azuretools.authmanage.srvpri.entities.RoleDefinitionRet;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
 import com.microsoft.azuretools.authmanage.srvpri.rest.ArmRestHelper;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 import com.microsoft.azuretools.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -29,9 +29,9 @@ public class RoleAssignmentStep implements IStep {
     private ArmRestHelper armRestHelper;
     private Reporter<String> reporter;
     private List<Pair<String, String>> roleAssignmentNames = new LinkedList<>();
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final AzureManagerBase preAccessTokenAzureManager;
 
-    public RoleAssignmentStep(AccessTokenAzureManager preAccessTokenAzureManager) {
+    public RoleAssignmentStep(AzureManagerBase preAccessTokenAzureManager) {
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
     }
 

@@ -6,7 +6,7 @@
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -40,7 +40,7 @@ abstract class RequestFactoryBase implements IRequestFactory {
         return urlPrefix;
     }
 
-    abstract AccessTokenAzureManager getPreAccessTokenAzureManager();
+    abstract AzureManagerBase getPreAccessTokenAzureManager();
 
     public String getAccessToken() throws IOException {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is null");

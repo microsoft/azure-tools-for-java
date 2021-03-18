@@ -13,6 +13,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -34,7 +35,10 @@ import com.microsoft.azuretools.authmanage.srvpri.step.RoleAssignmentStep;
 import com.microsoft.azuretools.authmanage.srvpri.step.ServicePrincipalStep;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.authmanage.srvpri.step.StepManager;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
+
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 /**
  * Created by vlashch on 8/16/16.
@@ -47,7 +51,7 @@ public class SrvPriManager {
     // sp - role (1-many)
 
     private final static Logger LOGGER = Logger.getLogger(SrvPriManager.class.getName());
-    public static String createSp(AccessTokenAzureManager preAccessTokenAzureManager,
+    public static String createSp(AzureManagerBase preAccessTokenAzureManager,
                                   String tenantId,
                                   List<String> subscriptionIds,
                                   String suffix,
@@ -120,15 +124,11 @@ public class SrvPriManager {
             );
 
             statusReporter.report(new Status("Waiting for service principal activation to complete...", null, null));
-            final int SLEEP_SEC_TO_PROPAGATE = 40;
-            try {
-                Thread.sleep(SLEEP_SEC_TO_PROPAGATE * 1000);
-            } catch (InterruptedException e) {
-                fileReporter.report("Interrupted sleep: " + e.getMessage());
+            statusReporter.report(new Status("Checking auth file...", null, null));
+            if (!checkArtifact(fileReporter, filePath).block()) {
+                throw new IllegalStateException(String.format("Failed to check cred file - retry limit has reached"));
             }
 
-            statusReporter.report(new Status("Checking auth file...", null, null));
-            checkArtifact(fileReporter, filePath);
 
             String successSidsResult = String.format("Succeeded for %d of %d subscriptions. ",
                     CommonParams.getResultSubscriptionIdList().size(),
@@ -166,7 +166,8 @@ public class SrvPriManager {
                 private boolean skipLineSeparator = false;
                 @Override
                 public void write(String str) throws IOException {
-                    System.out.println(str);
+                    // avoid to print key in SP
+                    // System.out.println(str);
                     if (str.startsWith("#")) {
                         skipLineSeparator = true;
                         return;
@@ -207,17 +208,16 @@ public class SrvPriManager {
         }
     }
 
-    private static void checkArtifact(Reporter<String> fileReporter, Path filePath) throws IOException {
+    private static Mono<Boolean> checkArtifact(Reporter<String> fileReporter, Path filePath) {
         // here we try to use the file to check it's ok with retry logic
         fileReporter.report("Checking cred file...");
-        final int RETRY_QNTY = 5;
-        final int SLEEP_SEC = 10;
-        int retry_count = 0;
-        File authFiel = new File(filePath.toString());
-        while (retry_count < RETRY_QNTY) {
+
+        int maxRetry = 4;
+        return Mono.fromCallable(() -> {
+            File authFile = new File(filePath.toString());
             try {
                 fileReporter.report("Checking: Azure.authenticate(authFile)...");
-                Azure.Authenticated azureAuthenticated = Azure.authenticate(authFiel);
+                Azure.Authenticated azureAuthenticated = Azure.authenticate(authFile);
                 fileReporter.report("Checking: azureAuthenticated.subscriptions().list()...");
                 azureAuthenticated.subscriptions().list();
                 fileReporter.report("Checking: azureAuthenticated.withDefaultSubscription()...");
@@ -225,28 +225,22 @@ public class SrvPriManager {
                 fileReporter.report("Checking: resourceGroups().list()...");
                 azure.resourceGroups().list();
                 fileReporter.report("Done.");
-                break;
+                return true;
             } catch (Throwable e) {
                 LOGGER.info("=== checkArtifact@SrvPriManager exception: " + e.getMessage());
                 //e.printStackTrace();
                 if (needToRetry(e)) {
-                    retry_count++;
-                    if ((retry_count >= RETRY_QNTY)) {
-                        fileReporter.report(String.format("Failed to check cred file -retry limit %s has reached, error: %s", RETRY_QNTY, e.getMessage()));
-                        throw e;
-                    }
-                    LOGGER.info(String.format("Failed %d/%d, will retry in %s seconds, error: %s", retry_count, RETRY_QNTY, SLEEP_SEC, e.getMessage()));
-                    try {
-                        Thread.sleep(SLEEP_SEC * 1000);
-                    } catch (InterruptedException e1) {
-                        fileReporter.report("Interrupted sleep: " + e.getMessage());
-                    }
-                } else {
-                    fileReporter.report(String.format("Failed to check cred file after %s retries, error", retry_count, e.getMessage()));
+                    // make the retry work
                     throw e;
                 }
+                return false;
             }
-        }
+        }).retryWhen(Retry.backoff(maxRetry, Duration.ofSeconds(10))).onErrorResume(e -> {
+            fileReporter.report(String.format("Failed to check cred file after %s retries, error: %s", maxRetry, e.getMessage()));
+            return Mono.just(false);
+        });
+
+
     }
 
     private static boolean needToRetry(Throwable e) throws IOException {
@@ -265,7 +259,7 @@ public class SrvPriManager {
             // we are looking for an error text;
             String mes = e.getMessage();
             int i1 = mes.indexOf(ERROR_LABEL);
-            if (i1 >=0) {
+            if (i1 >= 0) {
                 String error = mes.substring(i1 + ERROR_LABEL.length());
                 if (error.contains(ERROR_TEXT)) {
                     return true;

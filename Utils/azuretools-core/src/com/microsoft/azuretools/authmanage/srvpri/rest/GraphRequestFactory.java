@@ -13,12 +13,12 @@ package com.microsoft.azuretools.authmanage.srvpri.rest;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureGraphException;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 
 public class GraphRequestFactory extends RequestFactoryBase {
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final AzureManagerBase preAccessTokenAzureManager;
 
-    public GraphRequestFactory(AccessTokenAzureManager preAccessTokenAzureManager, String tenantId) {
+    public GraphRequestFactory(AzureManagerBase preAccessTokenAzureManager, String tenantId) {
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
         this.tenantId = tenantId;
         this.urlPrefix = CommonSettings.getAdEnvironment().graphEndpoint() + this.tenantId + "/";
@@ -32,7 +32,7 @@ public class GraphRequestFactory extends RequestFactoryBase {
     }
 
     @Override
-    AccessTokenAzureManager getPreAccessTokenAzureManager() {
+    AzureManagerBase getPreAccessTokenAzureManager() {
         return preAccessTokenAzureManager;
     }
 }

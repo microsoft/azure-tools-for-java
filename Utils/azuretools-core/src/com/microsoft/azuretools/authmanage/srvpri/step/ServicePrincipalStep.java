@@ -9,7 +9,7 @@ import com.microsoft.azuretools.authmanage.srvpri.entities.ServicePrincipal;
 import com.microsoft.azuretools.authmanage.srvpri.entities.ServicePrincipalRet;
 import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
 import com.microsoft.azuretools.authmanage.srvpri.rest.GraphRestHelper;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -23,9 +23,9 @@ import java.util.UUID;
 public class ServicePrincipalStep implements IStep {
     private GraphRestHelper graphRestHelper;
     private Reporter<String> reporter;
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final AzureManagerBase preAccessTokenAzureManager;
 
-    public ServicePrincipalStep(AccessTokenAzureManager preAccessTokenAzureManager) {
+    public ServicePrincipalStep(AzureManagerBase preAccessTokenAzureManager) {
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
     }
 

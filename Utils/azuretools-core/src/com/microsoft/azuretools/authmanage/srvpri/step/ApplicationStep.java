@@ -11,7 +11,7 @@ import com.microsoft.azuretools.authmanage.srvpri.entities.ApplicationRet;
 import com.microsoft.azuretools.authmanage.srvpri.entities.PasswordCredentials;
 import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
 import com.microsoft.azuretools.authmanage.srvpri.rest.GraphRestHelper;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureManagerBase;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -30,9 +30,9 @@ import java.util.UUID;
 public class ApplicationStep implements IStep {
     private GraphRestHelper graphRestHelper;
     private Reporter<String> reporter;
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final AzureManagerBase preAccessTokenAzureManager;
 
-    public ApplicationStep(AccessTokenAzureManager preAccessTokenAzureManager) {
+    public ApplicationStep(AzureManagerBase preAccessTokenAzureManager) {
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
     }
 
@@ -53,7 +53,7 @@ public class ApplicationStep implements IStep {
         reporter.report("displayName: " + displayName);
         reporter.report("homePage: " + homePage);
         reporter.report("identifierUri: " + identifierUri);
-        reporter.report("password: " + password);
+        reporter.report("password: " + "***********************");
 
         reporter.report("Creating ADD Application...");
         ApplicationRet app = createAadApplication(
@@ -171,7 +171,7 @@ public class ApplicationStep implements IStep {
         // GET /72f988bf-86f1-41af-91ab-2d7cd011db47/applications?$filter=appId%20eq%20'd43b8e8a-3ab5-436a-b8ab-bef2e3cef533'&api-version=1.6 HTTP/1.1
 
         String resp = graphRestHelper.doGet("applications", "$filter=appId%20eq%20'" + appId.toString() + "'");
-        System.out.println("getAadApplication responce: " + resp);
+        System.out.println("getAadApplication response: " + resp);
         ObjectMapper mapper = new ObjectMapper();
         ApplicationGet applicationGet = mapper.readValue(resp, ApplicationGet.class);
         return applicationGet;
