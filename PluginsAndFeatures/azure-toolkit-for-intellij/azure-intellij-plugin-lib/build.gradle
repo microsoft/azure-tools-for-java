@@ -16,5 +16,9 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
     implementation "com.microsoft.azure:azure-toolkit-common-lib:0.4.0-SNAPSHOT"
 }

@@ -5,41 +5,42 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
-@ToString
+import java.util.Map;
+
 @Getter
+@Setter
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkArtifactEntity {
-    @JsonProperty("Package")
-    private String packageName;
-    @JsonProperty("GroupId")
+    private String artifactId;
     private String groupId;
-    @JsonProperty("VersionGA")
     private String versionGA;
-    @JsonProperty("VersionPreview")
     private String versionPreview;
-    @JsonProperty("DisplayName")
-    private String displayName;
-    @JsonProperty("ServiceName")
-    private String serviceName;
-    @JsonProperty("RepoPath")
-    private String repoPath;
-    @JsonProperty("MSDocs")
-    private String msDocs;
-    @JsonProperty("GHDocs")
-    private String ghDocs;
-    @JsonProperty("Type")
     private String type;
-    @JsonProperty("New")
-    private Boolean isNew; // New
-    @JsonProperty("PlannedVersions")
-    private String plannedVersions;
-    @JsonProperty(value = "Hide")
-    private Boolean isHide;
-    @JsonProperty("Notes")
-    private String notes;
+    private Map<String, String> links;
+
+    public String generateMavenDependencySnippet(String version) {
+        return String.join("",
+                "<dependency>\n",
+                "    <groupId>", this.groupId, "</groupId>\n",
+                "    <artifactId>", this.artifactId, "</artifactId>\n",
+                "    <version>", version, "</version>\n",
+                "</dependency>"
+        );
+    }
+
+    public String getLink(String type) {
+        return this.links.get(type);
+    }
+
+    public static class Type {
+        public static final String SPRING = "spring";
+        public static final String CLIENT = "client";
+        public static final String MANAGEMENT = "mgmt";
+    }
 }

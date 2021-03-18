@@ -4,8 +4,5 @@
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
     <actions>
-        <group id="AzureToolkit.menu.tools" class="com.microsoft.azure.toolkit.intellij.menu.AzureToolkitTopMenuGroup" popup="true">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </group>
     </actions>
 </idea-plugin>
