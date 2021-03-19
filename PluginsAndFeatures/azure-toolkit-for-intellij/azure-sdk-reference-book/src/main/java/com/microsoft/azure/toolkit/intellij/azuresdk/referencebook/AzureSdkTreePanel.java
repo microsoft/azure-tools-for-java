@@ -122,6 +122,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         if (ArrayUtils.isNotEmpty(filters)) {
             TreeUtil.expandAll(this.tree);
         }
+        TreeUtil.promiseSelectFirstLeaf(this.tree);
     }
 
     private ActionToolbarImpl initToolbar() {
