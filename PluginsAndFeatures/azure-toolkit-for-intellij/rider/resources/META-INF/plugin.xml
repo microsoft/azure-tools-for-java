@@ -26,6 +26,7 @@
         <ul>
           <li>Compatibility with Rider 2021.1 EAP8</li>
           <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
+          <li>Enable build-throttling and support compound run configurations (<a href="https://youtrack.jetbrains.com/issue/RIDER-57482">RIDER-57482</a>)</li>
         </ul>
         <h4>Fixed bugs:</h4>
         <ul>

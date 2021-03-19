@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -34,6 +34,7 @@ import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.platform.util.getComponent
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.build.BuildParameters
+import com.jetbrains.rider.build.tasks.BuildTaskThrottler
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.BuildTarget
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
@@ -84,17 +85,8 @@ class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildFu
         }
         if (!buildHost.ready.value)
             return false
-        val finished = Semaphore()
-        finished.down()
-        var result = false
-        // when false returned build was not started because another is in progress, we should not run task
-        application.invokeLater {
-            result = buildHost.requestBuild(BuildParameters(BuildTarget(), selectedProjectsForBuild)) {
-                result = it == BuildResultKind.Successful || it == BuildResultKind.HasWarnings
-                finished.up()
-            }
-        }
-        finished.waitFor()
-        return result
+
+        val throttler = BuildTaskThrottler.getInstance(project)
+        return throttler.runBuildWithThrottling(BuildParameters(BuildTarget(), selectedProjectsForBuild)).get()
     }
 }
