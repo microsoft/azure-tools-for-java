@@ -23,7 +23,7 @@ public class AzureSdkLibraryService {
     private static final String SDK_METADATA_URL = "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/master/sdk/spring/spring-reference.yml";
 
     @Preload
-    @Cacheable(value = "sdk-services", condition = "$force[0]!=true")
+    @Cacheable(value = "sdk-services", condition = "!(force&&force[0])")
     public static List<AzureSdkServiceEntity> loadAzureSdkServices(Boolean... force) throws IOException {
         final URL destination = new URL(SDK_METADATA_URL);
         final ObjectReader reader = mapper.readerFor(AzureSdkServiceEntity.class);
