@@ -120,7 +120,7 @@ public class CommandUtils {
         executor.setExitValues(null);
         try {
             executor.execute(commandLine);
-            if (!mergeErrorStream) {
+            if (!mergeErrorStream && err.size() > 0) {
                 logger.log(Level.SEVERE, err.toString());
             }
             return out.toString();
