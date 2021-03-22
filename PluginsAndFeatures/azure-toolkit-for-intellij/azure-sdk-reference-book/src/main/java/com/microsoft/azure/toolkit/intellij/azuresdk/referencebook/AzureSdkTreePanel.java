@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkFeatureEntity
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkServiceEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
@@ -70,9 +71,14 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.tree.addTreeSelectionListener(e -> {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.tree.getLastSelectedPathComponent();
             if (Objects.nonNull(node) && node.isLeaf() && node.getUserObject() instanceof AzureSdkFeatureEntity) {
-                this.onSdkFeatureNodeSelected.accept((AzureSdkFeatureEntity) node.getUserObject());
+                selectFeature((AzureSdkFeatureEntity) node.getUserObject());
             }
         });
+    }
+
+    @AzureOperation(name = "sdk|reference_book.select_feature", params = "feature.getName()", type = AzureOperation.Type.ACTION)
+    private void selectFeature(final AzureSdkFeatureEntity feature) {
+        this.onSdkFeatureNodeSelected.accept(feature);
     }
 
     @Override
@@ -80,6 +86,7 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
         this.filter.debounce();
     }
 
+    @AzureOperation(name = "sdk|reference_book.search", params = "text", type = AzureOperation.Type.ACTION)
     private void filter(final String text) {
         final String[] filters = Arrays.stream(text.split("\\s+")).filter(StringUtils::isNoneBlank).map(String::toLowerCase).toArray(String[]::new);
         this.loadData(this.services, filters);
