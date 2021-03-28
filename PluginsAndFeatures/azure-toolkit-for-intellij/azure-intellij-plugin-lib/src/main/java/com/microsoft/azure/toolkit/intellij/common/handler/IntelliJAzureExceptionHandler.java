@@ -14,7 +14,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.intellij.common.AzureToolkitErrorDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;

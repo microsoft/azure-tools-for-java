@@ -43,8 +43,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final int DEBOUNCE_DELAY = 500;
@@ -284,7 +282,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             // do nothing: item can not be set on loading
             super.setItem(item);
             if (item == null) {
-                this.editor.setText(message("common.refreshing"));
+                this.editor.setText("Refreshing...");
             }
         }
 

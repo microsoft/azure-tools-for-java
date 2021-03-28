@@ -17,7 +17,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
+import javax.annotation.Nonnull;
 
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
@@ -48,7 +49,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         final String title = String.format("Azure: %s...", task.getTitle().toString());
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), title, task.isCancellable()) {
             @Override
-            public void run(@NotNull final ProgressIndicator progressIndicator) {
+            public void run(@Nonnull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(true);
                 runnable.run();
             }
@@ -68,7 +69,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     protected void doRunInUnBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle().toString(), task.isCancellable()) {
             @Override
-            public void run(@NotNull final ProgressIndicator progressIndicator) {
+            public void run(@Nonnull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
                 runnable.run();
             }
@@ -84,7 +85,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         Registry.get("ide.background.tasks").setValue(false, disposable);
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle().toString(), task.isCancellable(), foreground) {
             @Override
-            public void run(@NotNull final ProgressIndicator progressIndicator) {
+            public void run(@Nonnull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
                 runnable.run();
                 Disposer.dispose(disposable);
