@@ -12,7 +12,6 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
-import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;

@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.lib.webapp;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
