@@ -5,8 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +23,7 @@ public class AzureComboBoxSimple<T> extends AzureComboBox<T> {
         this.provider = provider;
     }
 
-    @NotNull
+    @Nonnull
     protected List<? extends T> loadItems() throws Exception {
         if (Objects.nonNull(this.provider)) {
             return this.provider.loadData();

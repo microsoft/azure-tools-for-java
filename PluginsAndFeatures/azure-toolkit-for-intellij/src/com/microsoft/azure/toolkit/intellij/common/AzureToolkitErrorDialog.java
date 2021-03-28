@@ -8,21 +8,25 @@ package com.microsoft.azure.toolkit.intellij.common;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.intellij.openapi.ui.Messages.wrapToScrollPaneIfNeeded;
 
-public class AzureToolkitErrorDialog extends AzureDialogWrapper {
+public class AzureToolkitErrorDialog extends AzureDialog<Void> {
     private JPanel pnlMain;
     private JPanel pnlHolder;
     private JPanel pnlDetails;
@@ -30,27 +34,22 @@ public class AzureToolkitErrorDialog extends AzureDialogWrapper {
     private JLabel lblIcon;
     private JPanel pnlMessage;
 
-    private HideableDecorator slotDecorator;
-
-    private String title;
-    private String message;
-    private String details;
-    private Throwable throwable;
-    private Action[] actions;
-    private Project project;
+    private final String title;
+    private final String message;
+    private final String details;
+    private final Throwable throwable;
+    private final Action[] actions;
 
     public AzureToolkitErrorDialog(final Project project, String title, String message, String details,
                                    AzureExceptionHandler.AzureExceptionAction[] actions, Throwable throwable) {
-        super(project, true);
-        this.project = project;
+        super(project);
         this.title = title;
         this.message = message;
         this.details = details;
         this.actions = getExceptionAction(actions);
         this.throwable = throwable;
-        setTitle(title);
         if (StringUtils.isNotEmpty(details)) {
-            slotDecorator = new HideableDecorator(pnlHolder, "Details", true);
+            final HideableDecorator slotDecorator = new HideableDecorator(pnlHolder, "Details", true);
             slotDecorator.setContentComponent(pnlDetails);
             slotDecorator.setOn(false);
         } else {
@@ -91,5 +90,20 @@ public class AzureToolkitErrorDialog extends AzureDialogWrapper {
                 exceptionAction.actionPerformed(throwable);
             }
         }).toArray(Action[]::new);
+    }
+
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public AzureForm<Void> getForm() {
+        throw new AzureToolkitRuntimeException("no form found in " + AzureToolkitErrorDialog.class.getSimpleName());
+    }
+
+    @Override
+    protected String getDialogTitle() {
+        return this.title;
     }
 }

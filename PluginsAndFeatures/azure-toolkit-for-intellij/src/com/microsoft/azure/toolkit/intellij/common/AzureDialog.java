@@ -5,11 +5,11 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Log
-public abstract class AzureDialog<T> extends AzureDialogWrapper {
+public abstract class AzureDialog<T> extends DialogWrapper {
     protected OkActionListener<T> okActionListener;
 
     public AzureDialog(Project project) {

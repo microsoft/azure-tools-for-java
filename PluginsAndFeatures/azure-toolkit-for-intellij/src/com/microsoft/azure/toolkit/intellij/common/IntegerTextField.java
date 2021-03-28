@@ -7,11 +7,12 @@ package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.ui.components.JBTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -27,6 +28,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     @Setter
     private Integer maxValue;
 
+    @Nullable
     @Override
     public Integer getValue() {
         final String text = getText();
@@ -38,7 +40,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
         setText(val == null ? StringUtils.EMPTY : String.valueOf(val));
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public AzureValidationInfo doValidate() {
         if (!this.isEnabled() || !this.isVisible()) {
@@ -52,7 +54,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
             }
             return AzureValidationInfo.OK;
         }
-        Integer value = getValue();
+        final Integer value = getValue();
         if (value == null) {
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message(message(
                     "common.integer.validate.notInteger")).build();

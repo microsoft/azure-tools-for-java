@@ -15,20 +15,19 @@ import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
@@ -71,7 +70,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.init();
         this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
         if (refresh) {
-            DefaultLoader.getIdeHelper().invokeLater(this::refreshItems);
+            AzureTaskManager.getInstance().runLater(this::refreshItems, AzureTask.Modality.ANY);
         }
     }
 
@@ -87,7 +86,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.setEditor(this.inputEditor);
         this.setRenderer(new SimpleListCellRenderer<T>() {
             @Override
-            public void customize(@NotNull final JList<? extends T> l, final T t, final int i, final boolean b,
+            public void customize(@Nonnull final JList<? extends T> l, final T t, final int i, final boolean b,
                                   final boolean b1) {
                 setText(getItemText(t));
                 setIcon(getItemIcon(t));
@@ -161,7 +160,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             this.setLoading(true);
             final List<? extends T> items = this.loadItems();
             this.setLoading(false);
-            DefaultLoader.getIdeHelper().invokeLater(() -> this.setItems(items));
+            AzureTaskManager.getInstance().runLater(() -> this.setItems(items), AzureTask.Modality.ANY);
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
@@ -191,15 +190,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void setLoading(final boolean loading) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (loading) {
                 this.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
             } else {
-                this.setEnabled(forceDisable ? false : true);
+                this.setEnabled(!forceDisable);
                 this.setEditor(this.inputEditor);
             }
-        });
+        }, AzureTask.Modality.ANY);
     }
 
     protected String getItemText(Object item) {
@@ -220,19 +219,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected Observable<? extends List<? extends T>> loadItemsAsync() {
-        return Observable.fromCallable(this::loadItems).subscribeOn(getSchedulerProvider().io());
+        return Observable.fromCallable(this::loadItems).subscribeOn(Schedulers.io());
     }
 
-    @NotNull
+    @Nonnull
     protected abstract List<? extends T> loadItems() throws Exception;
 
     @Nullable
     protected T getDefaultValue() {
         return null;
-    }
-
-    protected SchedulerProvider getSchedulerProvider() {
-        return SchedulerProviderFactory.getInstance().getSchedulerProvider();
     }
 
     protected void handleLoadingError(Throwable e) {
@@ -272,6 +267,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             return textField;
         }
 
+        @Nullable
         protected ExtendableTextComponent.Extension getExtension() {
             final ExtendableTextComponent.Extension extension = AzureComboBox.this.getExtension();
             return extension == null ? null : ExtendableTextComponent.Extension.create(
@@ -347,16 +343,16 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
 
         @Override
-        protected void textChanged(@NotNull final DocumentEvent documentEvent) {
-            DefaultLoader.getIdeHelper().invokeLater(() -> {
+        protected void textChanged(@Nonnull final DocumentEvent documentEvent) {
+            AzureTaskManager.getInstance().runLater(() -> {
                 try {
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
-                    list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(item -> addItem(item));
-                    getItems().stream().filter(item -> !filter.test(item, text)).forEach(item -> removeItem(item));
+                    list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(AzureComboBox.this::addItem);
+                    getItems().stream().filter(item -> !filter.test(item, text)).forEach(AzureComboBox.this::removeItem);
                 } catch (BadLocationException e) {
                     // swallow exception and show all items
                 }
-            });
+            }, AzureTask.Modality.ANY);
         }
     }
 
