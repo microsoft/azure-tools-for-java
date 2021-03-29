@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -48,7 +49,7 @@ public class RedisCacheExplorerProvider implements FileEditorProvider, DumbAware
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
         String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
-        RedisCacheExplorer redisCacheExplorer = new RedisCacheExplorer(sid, id);
+        RedisCacheExplorer redisCacheExplorer = new RedisCacheExplorer(sid, id, virtualFile);
         return redisCacheExplorer;
     }
 

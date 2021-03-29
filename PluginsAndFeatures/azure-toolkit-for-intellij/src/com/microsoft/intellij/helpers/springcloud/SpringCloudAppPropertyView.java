@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -30,6 +31,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -160,7 +162,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                                }
                                                                            });
 
-    public SpringCloudAppPropertyView(Project project, String clusterId, String appId) {
+    public SpringCloudAppPropertyView(Project project, String clusterId, String appId, @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.project = project;
         this.clusterId = clusterId;
         this.appId = appId;

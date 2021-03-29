@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,7 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.base.AppBasePropertyView;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,15 +38,15 @@ public class WebAppPropertyView extends AppBasePropertyView {
      * Initialize the Web App Property View and return it.
      */
     public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                             @NotNull final String webAppId) {
-        final WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId);
+                                             @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        final WebAppPropertyView view = new WebAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
     private WebAppPropertyView(@NotNull final Project project, @NotNull final String sid,
-                               @NotNull final String webAppId) {
-        super(project, sid, webAppId, null);
+                               @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        super(project, sid, webAppId, null, virtualFile);
     }
 
     @Override

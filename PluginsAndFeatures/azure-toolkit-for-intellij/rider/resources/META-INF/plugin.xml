@@ -24,13 +24,16 @@
       <html>
         <p>[3.40.0-2021.1]</p>
         <ul>
-          <li>Compatibility with Rider 2021.1 EAP8</li>
+          <li>Compatibility with Rider 2021.1</li>
           <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
           <li>Enable build-throttling and support compound run configurations (<a href="https://youtrack.jetbrains.com/issue/RIDER-57482">RIDER-57482</a>)</li>
         </ul>
         <h4>Fixed bugs:</h4>
         <ul>
+          <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
           <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
+          <li>Don't output error message when not needed (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/461">#461</a>)</li>
+          <li>Exception in FileEditors - implement getFile (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/463">#463</a>)</li>
         </ul>
         <p>[3.40.0-2020.3]</p>
         <ul>

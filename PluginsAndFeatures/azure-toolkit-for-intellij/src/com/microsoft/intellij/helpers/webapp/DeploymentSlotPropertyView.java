@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,7 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.base.AppBasePropertyView;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,15 +38,17 @@ public class DeploymentSlotPropertyView extends AppBasePropertyView {
      * Initialize the Web App Property View and return it.
      */
     public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                             @NotNull final String resId, @NotNull final String slotName) {
-        final DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName);
+                                             @NotNull final String resId, @NotNull final String slotName,
+                                             @NotNull final VirtualFile virtualFile) {
+        final DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName, virtualFile);
         view.onLoadWebAppProperty(sid, resId, slotName);
         return view;
     }
 
     private DeploymentSlotPropertyView(@NotNull final Project project, @NotNull final String sid,
-                                       @NotNull final String webAppId, @NotNull final String slotName) {
-        super(project, sid, webAppId, slotName);
+                                       @NotNull final String webAppId, @NotNull final String slotName,
+                                       @NotNull final VirtualFile virtualFile) {
+        super(project, sid, webAppId, slotName, virtualFile);
     }
 
     @Override

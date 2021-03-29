@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,7 @@
 
 package com.microsoft.intellij.helpers.arm;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.PagedList;
@@ -75,7 +77,8 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
     private DeploymentNode deploymentNode;
     private static final String PNL_OVERVIEW = "Overview";
 
-    public DeploymentPropertyView() {
+    public DeploymentPropertyView(@NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         deploymentPropertyViewPresenter = new DeploymentPropertyViewPresenter<>();
         deploymentPropertyViewPresenter.onAttachView(this);
 

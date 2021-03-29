@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -76,7 +77,8 @@ public class ResourceTemplateView extends BaseEditor {
     private String originParameters;
     private MessageBusConnection messageBusConnection;
 
-    public ResourceTemplateView() {
+    public ResourceTemplateView(@NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         exportTemplateButton.addActionListener((e) -> {
             new ExportTemplate(node).doExportTemplate(getTemplate());
         });

@@ -15,6 +15,7 @@
         <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
         <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
         <li>Don't output error message when not needed (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/461">#461</a>)</li>
+        <li>Exception in FileEditors - implement getFile (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/463">#463</a>)</li>
       </ul>
     </html>
     ]]>

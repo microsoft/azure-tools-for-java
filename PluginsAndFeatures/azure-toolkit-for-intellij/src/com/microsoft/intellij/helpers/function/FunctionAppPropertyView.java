@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,6 +24,7 @@
 package com.microsoft.intellij.helpers.function;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.helpers.base.AppBasePropertyView;
@@ -37,15 +39,15 @@ public class FunctionAppPropertyView extends AppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.function.FunctionAppPropertyView";
 
     public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                             @NotNull final String webAppId) {
-        final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId);
+                                             @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+        final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
 
-    protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
-        super(project, sid, resId, null);
+    protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId, @NotNull final VirtualFile virtualFile) {
+        super(project, sid, resId, null, virtualFile);
     }
 
     @Override

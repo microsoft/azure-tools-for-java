@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -35,6 +35,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
@@ -71,7 +72,8 @@ public class TableFileEditor implements FileEditor {
     private static final String NEW_ENTITY = "NewEntity";
 
     private ClientStorageAccount storageAccount;
-    private Project project;
+    private final Project project;
+    private final VirtualFile virtualFile;
     private Table table;
     private JPanel mainPanel;
     private JButton refreshButton;
@@ -85,8 +87,9 @@ public class TableFileEditor implements FileEditor {
 
     private FileEditorVirtualNode fileEditorVirtualNode;
 
-    public TableFileEditor(final Project project) {
+    public TableFileEditor(final Project project, final VirtualFile virtualFile) {
         this.project = project;
+        this.virtualFile = virtualFile;
         fileEditorVirtualNode = createFileEditorVirtualNode("");
         ActionListener queryActionListener = new ActionListener() {
             @Override
@@ -524,6 +527,11 @@ public class TableFileEditor implements FileEditor {
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
+
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return virtualFile;
     }
 
     private void unregisterSubscriptionsChanged()

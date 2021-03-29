@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,6 +28,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +36,12 @@ import javax.swing.*;
 import java.beans.PropertyChangeListener;
 
 public abstract class BaseEditor implements FileEditor {
+
+    protected final VirtualFile virtualFile;
+
+    public BaseEditor(final VirtualFile virtualFile) {
+        this.virtualFile = virtualFile;
+    }
 
     @Override
     public void setState(@NotNull FileEditorState fileEditorState) { }
@@ -95,5 +103,10 @@ public abstract class BaseEditor implements FileEditor {
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
 
+    }
+
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return virtualFile;
     }
 }

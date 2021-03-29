@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -45,7 +46,7 @@ public class SpringCloudAppPropertyViewProvider implements FileEditorProvider, D
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final String clusterId = virtualFile.getUserData(UIHelperImpl.CLUSTER_ID);
         final String appId = virtualFile.getUserData(UIHelperImpl.APP_ID);
-        return new SpringCloudAppPropertyView(project, clusterId, appId);
+        return new SpringCloudAppPropertyView(project, clusterId, appId, virtualFile);
     }
 
     @NotNull

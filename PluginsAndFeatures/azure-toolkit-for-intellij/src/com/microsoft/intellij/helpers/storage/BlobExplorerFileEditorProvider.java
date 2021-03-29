@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -54,7 +55,7 @@ public class BlobExplorerFileEditorProvider implements FileEditorProvider, DumbA
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        BlobExplorerFileEditor blobExplorerFileEditor = new BlobExplorerFileEditor(project);
+        BlobExplorerFileEditor blobExplorerFileEditor = new BlobExplorerFileEditor(project, virtualFile);
 
         StorageAccount storageAccount = virtualFile.getUserData(UIHelperImpl.STORAGE_KEY);
         BlobContainer blobContainer = virtualFile.getUserData(CONTAINER_KEY);

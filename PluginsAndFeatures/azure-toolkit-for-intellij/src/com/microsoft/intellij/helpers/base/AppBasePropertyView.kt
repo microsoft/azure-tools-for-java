@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -28,6 +28,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Comparing
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.HideableTitledPanel
@@ -41,6 +42,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBaseP
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter
 import icons.CommonIcons
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.annotations.NotNull
 import java.awt.Font
 import java.awt.event.ActionEvent
 import javax.swing.*
@@ -49,7 +51,8 @@ import javax.swing.table.DefaultTableModel
 abstract class AppBasePropertyView(val project: Project,
                                    val subscriptionId: String,
                                    val resourceId: String,
-                                   val slotName: String?) : BaseEditor(), WebAppBasePropertyMvpView {
+                                   val slotName: String?,
+                                   virtualFile: VirtualFile) : BaseEditor(virtualFile), WebAppBasePropertyMvpView {
 
     companion object {
         private const val HEADER_OVERVIEW = "Overview"

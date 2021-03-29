@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,7 @@
 
 package com.microsoft.intellij.helpers.rediscache;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisCacheProperty;
@@ -57,7 +59,8 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
     private JButton btnSecondaryKey;
 
 
-    public RedisCachePropertyView() {
+    public RedisCachePropertyView(@NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.redisPropertyViewPresenter = new RedisPropertyViewPresenter<>();
         this.redisPropertyViewPresenter.onAttachView(this);
 

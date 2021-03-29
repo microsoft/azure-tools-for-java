@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -40,6 +40,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
@@ -108,7 +109,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     private String connectionString;
     private BlobContainer blobContainer;
     private String storageAccount;
-    private Project project;
+    private final Project project;
+    private final VirtualFile virtualFile;
 
     private LinkedList<BlobDirectory> directoryQueue = new LinkedList<BlobDirectory>();
     private List<BlobItem> blobItems;
@@ -116,8 +118,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     private ISubscriptionSelectionListener subscriptionListener;
     private FileEditorVirtualNode fileEditorVirtualNode;
 
-    public BlobExplorerFileEditor(Project project) {
+    public BlobExplorerFileEditor(final Project project, final VirtualFile virtualFile) {
         this.project = project;
+        this.virtualFile = virtualFile;
         blobListTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         DefaultTableModel model = new DefaultTableModel() {
@@ -922,6 +925,11 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
+
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return virtualFile;
     }
 
     public void setConnectionString(String connectionString) {

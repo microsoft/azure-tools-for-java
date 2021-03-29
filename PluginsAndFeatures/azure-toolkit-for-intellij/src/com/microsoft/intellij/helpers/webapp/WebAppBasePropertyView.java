@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -108,7 +108,9 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private AnActionButton btnEdit;
 
     protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid,
-                                     @NotNull String resId, @Nullable String slotName) {
+                                     @NotNull String resId, @Nullable String slotName,
+                                     @NotNull final VirtualFile virtualFile) {
+        super(virtualFile);
         this.id = getId();
         this.presenter = createPresenter();
         this.presenter.onAttachView(this);

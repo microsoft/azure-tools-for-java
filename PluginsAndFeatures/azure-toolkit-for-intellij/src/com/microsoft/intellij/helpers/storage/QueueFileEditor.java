@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -36,6 +36,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
@@ -69,7 +70,8 @@ public class QueueFileEditor implements FileEditor {
     static final String CLEAR_QUEUE = "Clear Queue";
     static final String REFRESH = "Refresh";
 
-    private Project project;
+    private final Project project;
+    private final VirtualFile virtualFile;
     private ClientStorageAccount storageAccount;
     private Queue queue;
     private JPanel mainPanel;
@@ -82,8 +84,9 @@ public class QueueFileEditor implements FileEditor {
 
     private FileEditorVirtualNode fileEditorVirtualNode;
 
-    public QueueFileEditor(final Project project) {
+    public QueueFileEditor(final Project project, final VirtualFile virtualFile) {
         this.project = project;
+        this.virtualFile = virtualFile;
         fileEditorVirtualNode = createFileEditorVirtualNode("");
         queueTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -455,6 +458,11 @@ public class QueueFileEditor implements FileEditor {
 
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    }
+
+    @Override
+    public @Nullable VirtualFile getFile() {
+        return virtualFile;
     }
 
     //    private void registerSubscriptionsChanged()

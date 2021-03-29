@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -42,7 +43,7 @@ public class DeploymentPropertyViewProvider implements FileEditorProvider, DumbA
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        return new DeploymentPropertyView();
+        return new DeploymentPropertyView(virtualFile);
     }
 
     @NotNull

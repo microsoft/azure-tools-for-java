@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -163,5 +164,10 @@ public class JobViewEditor implements FileEditor {
     @Override
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
 
+    }
+
+    @Override
+    public @org.jetbrains.annotations.Nullable VirtualFile getFile() {
+        return myVirtualFile;
     }
 }

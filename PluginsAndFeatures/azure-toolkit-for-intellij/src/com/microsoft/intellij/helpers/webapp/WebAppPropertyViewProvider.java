@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -37,7 +38,7 @@ public class WebAppPropertyViewProvider extends WebAppBasePropertyViewProvider {
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
         String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
-        return WebAppPropertyView.create(project, sid, id);
+        return WebAppPropertyView.create(project, sid, id, virtualFile);
     }
 
     @Override

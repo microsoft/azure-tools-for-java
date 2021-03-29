@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -49,6 +49,6 @@ public class FunctionAppPropertyViewProvider extends WebAppBasePropertyViewProvi
         if (functionAppId == null)
             throw new IllegalStateException("Unable to get ResourceID from User Data.");
 
-        return FunctionAppPropertyView.create(project, subscriptionId, functionAppId);
+        return FunctionAppPropertyView.create(project, subscriptionId, functionAppId, virtualFile);
     }
 }
