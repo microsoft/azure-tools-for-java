@@ -140,7 +140,11 @@ public abstract class AzureManagerBase implements AzureManager {
             } catch (final Exception e) {
                 // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
                 // "AADSTS50076" is the code of a weired error related to multi-tenant configuration.
-                final Predicate<Throwable> tenantError = (c) -> c instanceof AuthException && ((AuthException) c).getErrorMessage().contains("AADSTS50076");
+                // "AADSTS50057" is the code of an error related to having a disabled account in the tenant.
+                final Predicate<Throwable> tenantError = (c) -> c instanceof AuthException &&
+                        (((AuthException) c).getErrorMessage().contains("AADSTS50076") ||
+                                ((AuthException) c).getErrorMessage().contains("AADSTS50057"));
+
                 if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode() ||
                     Throwables.getCausalChain(e).stream().anyMatch(tenantError)) {
                     // TODO: @wangmi better to notify user

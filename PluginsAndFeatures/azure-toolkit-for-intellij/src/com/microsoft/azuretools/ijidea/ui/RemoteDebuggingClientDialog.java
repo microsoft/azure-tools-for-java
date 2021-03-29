@@ -362,7 +362,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            ErrorWindow.show(project, ex.getMessage(), title + "Error");
+                            ErrorWindow.show(project, ex, title + "Error");
                         }
                     });
                     try {

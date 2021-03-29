@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -43,8 +43,11 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.CloudError;
+import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -129,18 +132,58 @@ public class UIHelperImpl implements UIHelper {
                               @NotNull final String title,
                               final boolean appendEx,
                               final boolean suggestDetail) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
 
-                String details = getDetails(ex);
+        if (tryNotifyUserRetryableException(message, ex, title)) {
+            return;
+        }
 
-                ErrorMessageForm em = new ErrorMessageForm(title);
-                em.showErrorMessageForm(headerMessage, details);
-                em.show();
-            }
+        ApplicationManager.getApplication().invokeLater(() -> {
+            String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
+
+            String details = getDetails(ex);
+
+            ErrorMessageForm em = new ErrorMessageForm(title);
+            em.showErrorMessageForm(headerMessage, details);
+            em.show();
         });
+    }
+
+    private boolean tryNotifyUserRetryableException(
+            final String message,
+            final Throwable ex,
+            final String title) {
+
+        if (ex instanceof CloudException) {
+            final CloudException cloudException = (CloudException)ex;
+
+            boolean isSignedIn = false;
+            try {
+                isSignedIn = AuthMethodManager.getInstance().isSignedIn();
+            } catch (Exception e) {
+                // Intentionally ignoring
+            }
+
+            // Exceptions similar to https://github.com/JetBrains/azure-tools-for-intellij/issues/436
+            // may be user-retryable. Do further analysis...
+            // Example: {"error":{"code":"InvalidAuthenticationToken","message":"The access token is invalid."}}
+            if (!isSignedIn && cloudException.response().code() == 401) {
+                final CloudError cloudError = cloudException.body();
+                if (cloudError != null && cloudError.code() != null && "InvalidAuthenticationToken".equals(cloudError.code())) {
+                    // Skip report error form, show a notification instead.
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        showErrorNotification(
+                                cloudError.message(),
+                                "Authorization is required to use Azure resources. Please sign out and sign in again.");
+                    });
+
+                    logWarning(cloudError.message(), ex);
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -196,6 +239,10 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void logError(String message, Throwable ex) {
         AzurePlugin.log(message, ex);
+    }
+
+    public void logWarning(String message, Throwable ex) {
+        AzurePlugin.logWarning(message, ex);
     }
 
     /**

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2021 jetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,6 +24,8 @@
 package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.adauth.AuthException;
+import com.microsoft.azuretools.authmanage.AuthExceptionUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,10 +41,25 @@ public class ErrorWindow extends AzureDialogWrapper {
         show(project, message, title, null, null);
     }
 
-    public static void show(@Nullable Project project, String message, String title, String okButtonText, Runnable okAction){
+    public static void show(@Nullable Project project, String message, String title, String okButtonText, Runnable okAction) {
         ErrorWindow w = new ErrorWindow(project, message, title, okButtonText, okAction);
         w.show();
+    }
 
+    public static void show(@Nullable Project project, Exception exception, String title) {
+        show(project, exception, title, null, null);
+    }
+
+    public static void show(@Nullable Project project, Exception exception, String title, String okButtonText, Runnable okAction) {
+        String message = exception.getMessage();
+
+        final AuthException authException = AuthExceptionUtil.getUserRetryableAuthException(exception);
+        if (authException != null) {
+            message += "\n\n" + authException.getErrorMessage();
+        }
+
+        ErrorWindow w = new ErrorWindow(project, message, title, okButtonText, okAction);
+        w.show();
     }
 
     protected ErrorWindow(@Nullable Project project, String message, String title){

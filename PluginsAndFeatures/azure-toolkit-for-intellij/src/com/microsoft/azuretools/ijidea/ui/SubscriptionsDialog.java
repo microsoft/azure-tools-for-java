@@ -131,7 +131,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         }, (ex) -> {
                 ex.printStackTrace();
                 //LOGGER.error("refreshSubscriptions", ex);
-                ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
+                ErrorWindow.show(project, ex, "Refresh Subscriptions Error");
             });
     }
 

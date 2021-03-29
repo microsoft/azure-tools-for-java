@@ -428,6 +428,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         LOG.error(message, ex);
     }
 
+    public static void logWarning(String message, Throwable ex) {
+        LOG.warn(message, ex);
+    }
+
     public static void log(String message) {
         LOG.info(message);
     }

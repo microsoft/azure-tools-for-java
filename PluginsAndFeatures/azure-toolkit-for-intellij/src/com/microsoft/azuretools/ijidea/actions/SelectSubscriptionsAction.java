@@ -91,7 +91,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
         }, (ex) -> {
             ex.printStackTrace();
             //LOGGER.error("onShowSubscriptions", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Select Subscriptions Action Error");
+            ErrorWindow.show(project, ex, "Select Subscriptions Action Error");
         });
     }
 

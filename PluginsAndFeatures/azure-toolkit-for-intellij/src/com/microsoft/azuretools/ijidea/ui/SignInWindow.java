@@ -288,7 +288,7 @@ public class SignInWindow extends AzureDialogWrapper {
             return dcAuthManager;
         } catch (Exception ex) {
             ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
+            ErrorWindow.show(project, ex, SIGN_IN_ERROR);
         }
 
         return null;
@@ -310,7 +310,7 @@ public class SignInWindow extends AzureDialogWrapper {
                         } catch (Exception ex) {
                             EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
                             ApplicationManager.getApplication().invokeLater(
-                                () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                                () -> ErrorWindow.show(project, ex, SIGN_IN_ERROR));
                         } finally {
                             EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
                                     AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
@@ -327,7 +327,7 @@ public class SignInWindow extends AzureDialogWrapper {
             AuthMethod.DC.getAdAuthManager().signOut();
         } catch (Exception ex) {
             ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
+            ErrorWindow.show(project, ex, "Sign Out Error");
         }
     }
 
@@ -361,7 +361,7 @@ public class SignInWindow extends AzureDialogWrapper {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error");
+                                ErrorWindow.show(project, ex, "Load Subscription Error");
                             }
                         });
 
@@ -415,7 +415,7 @@ public class SignInWindow extends AzureDialogWrapper {
         } catch (Exception ex) {
             ex.printStackTrace();
             //LOGGER.error("doCreateServicePrincipal", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Get Subscription Error");
+            ErrorWindow.show(project, ex, "Get Subscription Error");
 
         } finally {
             if (dcAuthManager != null) {
