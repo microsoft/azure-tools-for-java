@@ -28,7 +28,7 @@ import com.jetbrains.rider.model.PublishableProjectOutput
 import com.jetbrains.rider.test.asserts.shouldBe
 import com.jetbrains.rider.test.asserts.shouldBeTrue
 import com.jetbrains.rider.test.asserts.shouldNotBe
-import com.microsoft.intellij.runner.RunProcessHandler
+import com.microsoft.intellij.RunProcessHandler
 import org.jetbrains.mock.FunctionAppMock
 import org.jetbrains.mock.PublishableProjectMock
 import org.jetbrains.mock.SqlDatabaseMock

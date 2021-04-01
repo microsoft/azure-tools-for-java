@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureVali
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.intellij.util.JavaValidationUtils;
 import com.microsoft.intellij.util.ValidationUtils;
 
 import javax.swing.*;
@@ -38,7 +39,7 @@ public class SpringCloudAppCreationDialog extends AzureDialog<SpringCloudAppEnti
 
     private AzureValidationInfo validateName() {
         try {
-            ValidationUtils.validateSpringCloudAppName(this.textName.getValue(), this.cluster);
+            JavaValidationUtils.validateSpringCloudAppName(this.textName.getValue(), this.cluster);
         } catch (final IllegalArgumentException e) {
             final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
             return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();

@@ -86,9 +86,9 @@ collect_spark_artifacts() {
 
     local sparkToolsDir="$ARTIFACTS_COMMON_DIR"/spark
     mkdir -p "$sparkToolsDir"
-    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.1.jar "$sparkToolsDir"
-    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.3.0.jar "$sparkToolsDir"
-    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.3.2.jar "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.2_2.1.jar "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.2_2.3.0.jar "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.2_2.3.2.jar "$sparkToolsDir"
 
     set -x
 }

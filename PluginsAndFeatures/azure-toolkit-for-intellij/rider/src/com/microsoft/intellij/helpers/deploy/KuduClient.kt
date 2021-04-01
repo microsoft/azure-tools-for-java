@@ -25,7 +25,7 @@ package com.microsoft.intellij.helpers.deploy
 import com.intellij.openapi.diagnostic.Logger
 import com.microsoft.azure.management.appservice.PublishingProfile
 import com.microsoft.azure.management.appservice.WebAppBase
-import com.microsoft.intellij.runner.RunProcessHandler
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.runner.utils.AppDeploySession
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil
 import okhttp3.Response

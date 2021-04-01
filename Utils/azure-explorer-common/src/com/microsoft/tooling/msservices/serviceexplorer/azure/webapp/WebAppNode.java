@@ -12,31 +12,18 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 
-import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
@@ -79,20 +66,40 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp));
+        boolean isDeploymentSlotSupported = isDeploymentSlotSupported(this.subscriptionId, this.webapp);
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp, isDeploymentSlotSupported));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }
 
     @Override
-    protected void loadActions() {
-        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
-        addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
-        super.loadActions();
+    protected NodeActionListener getStartActionListener() {
+        return initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getRestartActionListener() {
+        return initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getStopActionListener() {
+        return initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getShowPropertiesActionListener() {
+        return initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build();
+    }
+
+    @Override
+    protected NodeActionListener getOpenInBrowserActionListener() {
+        return initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getDeleteActionListener() {
+        return initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build();
     }
 
     protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
@@ -124,9 +131,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running);
-        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
-        return super.getNodeActions();
         NodeAction sshNodeAction = getNodeActionByName(SSH_INTO);
 
         List<NodeAction> nodeActions = super.getNodeActions();

@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.lib.function;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;

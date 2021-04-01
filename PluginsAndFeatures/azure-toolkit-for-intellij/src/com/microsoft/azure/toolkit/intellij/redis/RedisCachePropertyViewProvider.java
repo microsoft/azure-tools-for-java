@@ -25,7 +25,7 @@ public class RedisCachePropertyViewProvider implements FileEditorProvider, DumbA
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        RedisCachePropertyView redisCachePropertyView = new RedisCachePropertyView();
+        RedisCachePropertyView redisCachePropertyView = new RedisCachePropertyView(virtualFile);
         return redisCachePropertyView;
     }
 

@@ -3,6 +3,20 @@ import org.apache.tools.ant.filters.*
 
 plugins {
     id "com.github.ben-manes.versions" version "0.28.0"
+    id "com.github.spotbugs" version "4.6.0"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+//    ajc {
+//        enabled = false
+//    }
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+//    ajc {
+//        enabled = false
+//    }
 }
 
 processResources {
@@ -32,11 +46,12 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', 'gradle', dep_plugins, 'properties', 'markdown', 'terminal']
+    plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
     downloadSources = Boolean.valueOf(sources)
 }
 
 configurations {
+    compile.exclude module:'stax-api'
     cucumberRuntime {
         extendsFrom testRuntime
     }
@@ -47,10 +62,11 @@ dependencies {
 
     compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3'
     compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
+    compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.3.0', { force = true }
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    compileOnly "org.projectlombok:lombok:${lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
 
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'
@@ -66,6 +82,8 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-stdlib"
     testCompile "org.jetbrains.kotlin:kotlin-test"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit"
+
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }
 
 test {
@@ -102,17 +120,9 @@ task cucumber() {
     }
 }
 
-buildSearchableOptions.onlyIf { false }
-
 test.dependsOn cucumber
 
 defaultTasks 'buildPlugin'
-
-//wrapper() {
-//    gradleVersion = '5.0'
-//    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
-//    gradle-${gradleVersion}-all.zip"
-//}
 
 installIdea.dependsOn buildPlugin
 // Disable check style as it is failed with existing rules that require copyright, etc.
@@ -120,4 +130,24 @@ installIdea.dependsOn buildPlugin
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
+}
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+    ignoreFailures = true
+    showStackTraces = true
+    showProgress = true
+    effort = 'max'
+    reportLevel = 'high'
+    maxHeapSize = '1g'
+    extraArgs = [ '-nested:false' ]
+    jvmArgs = [ '-Duser.language=en' ]
+    includeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-include.xml")
+    excludeFilter = file("$rootProject.projectDir/../../tools/spotbugs-security-exclude.xml")
 }

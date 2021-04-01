@@ -26,7 +26,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.ui.forms.appservice.webapp.slot.WebAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -48,24 +48,25 @@ class WebAppCreateDeploymentSlotAction(private val node: DeploymentSlotModule) :
             return
         }
 
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Deployment Slot. User is not signed in.")
-            return
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val webAppNode = node.parent as? WebAppNode
+            if (webAppNode == null) {
+                val message = "Cannot find Web App node for Deployment Slot module '${node.name}'"
+                logger.error(message)
+                throw IllegalStateException(message)
+            }
+
+            val createSlotForm = WebAppCreateDeploymentSlotDialog(
+                    lifetimeDef = project.defineNestedLifetime(),
+                    project = project,
+                    app = webAppNode.webapp,
+                    onCreate = { node.load(true) })
+
+            createSlotForm.show()
+        }.doOnError {
+            logger.error("Failed to create Deployment Slot. User is not signed in: $it")
         }
-
-        val webAppNode = node.parent as? WebAppNode
-        if (webAppNode == null) {
-            logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
-            return
-        }
-
-        val createSlotForm = WebAppCreateDeploymentSlotDialog(
-                lifetimeDef = project.defineNestedLifetime(),
-                project = project,
-                app = webAppNode.webapp,
-                onCreate = { node.load(true) })
-
-        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

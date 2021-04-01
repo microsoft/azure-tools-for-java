@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -33,7 +33,7 @@ import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.helpers.validator.IpAddressInputValidator
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -56,8 +56,6 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
     public override fun actionPerformed(e: NodeActionEvent) {
         val project = node.project as? Project ?: return
 
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
-
         // Get server details
         val databaseServerNode = when (node) {
             is SqlDatabaseNode -> node.parent as SqlServerNode
@@ -65,26 +63,29 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
             else -> return
         }
 
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
 
-        // Fetch current IP address
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.cloud_shell.add_ip_to_firewall.retrieving_ip_address"), true, PerformInBackgroundOption.DEAF) {
-            override fun run(indicator: ProgressIndicator) {
-                val publicIpAddressResult = PublicIpAddressProvider.retrieveCurrentPublicIpAddress()
+            // Fetch current IP address
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.cloud_shell.add_ip_to_firewall.retrieving_ip_address"), true, PerformInBackgroundOption.DEAF) {
+                override fun run(indicator: ProgressIndicator) {
+                    val publicIpAddressResult = PublicIpAddressProvider.retrieveCurrentPublicIpAddress()
 
-                if (publicIpAddressResult != PublicIpAddressProvider.Result.none) {
-                    ApplicationManager.getApplication().invokeLater {
-                        requestAddFirewallRule(project, sqlServer, publicIpAddressResult)
+                    if (publicIpAddressResult != PublicIpAddressProvider.Result.none) {
+                        ApplicationManager.getApplication().invokeLater {
+                            requestAddFirewallRule(project, sqlServer, publicIpAddressResult)
+                        }
+                    } else {
+                        AzureNotifications.notify(project,
+                                message("notification.cloud_shell.add_ip_to_firewall.title"),
+                                message("notification.cloud_shell.add_ip_to_firewall.subtitle"),
+                                message("notification.cloud_shell.add_ip_to_firewall.message"),
+                                NotificationType.ERROR)
                     }
-                } else {
-                    AzureNotifications.notify(project,
-                            message("notification.cloud_shell.add_ip_to_firewall.title"),
-                            message("notification.cloud_shell.add_ip_to_firewall.subtitle"),
-                            message("notification.cloud_shell.add_ip_to_firewall.message"),
-                            NotificationType.ERROR)
                 }
-            }
-        })
+            })
+        }
     }
 
     private fun requestAddFirewallRule(project: Project, sqlServer: SqlServer, publicIpAddressResult: PublicIpAddressProvider.Result) {

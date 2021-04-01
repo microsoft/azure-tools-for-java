@@ -8,7 +8,6 @@ package com.microsoft.intellij.util;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
@@ -131,19 +130,6 @@ public class ValidationUtils {
             throw new IllegalArgumentException(message("function.applicationInsights.validate.invalidChar", String.join(",", invalidCharacters)));
         }
     }
-
-    public static void validateSpringCloudAppName(final String name, final SpringCloudCluster cluster) {
-        if (StringUtils.isEmpty(name)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.empty"));
-        } else if (!name.matches(SPRING_CLOUD_APP_NAME_PATTERN)) {
-            throw new IllegalArgumentException(message("springCloud.app.name.validate.invalid"));
-        } else {
-            if (cluster.app(name).exists()) {
-                throw new IllegalArgumentException(message("springCloud.app.name.validate.exist", name));
-            }
-        }
-    }
-
 
     private static void cacheAndThrow(Map exceptionCache, Object key, String errorMessage) {
         exceptionCache.put(key, errorMessage);

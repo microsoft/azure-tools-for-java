@@ -30,13 +30,13 @@ import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.configuration.AzureRiderSettings
-import com.microsoft.intellij.runner.AzureRunProfileState
-import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.getAppUrl
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.openAppInBrowser
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.refreshAzureExplorer
@@ -147,7 +147,7 @@ class FunctionAppRunState(project: Project, private val myModel: FunctionAppSett
         }
     }
 
-    override fun onFail(errorMessage: String, processHandler: RunProcessHandler) {
+    override fun onFail(error: Throwable, processHandler: RunProcessHandler) {
         if (processHandler.isProcessTerminated || processHandler.isProcessTerminating) return
 
         if (isFunctionAppCreated) {
@@ -160,7 +160,7 @@ class FunctionAppRunState(project: Project, private val myModel: FunctionAppSett
 
         showPublishNotification(message("notification.publish.publish_failed"), NotificationType.ERROR)
 
-        processHandler.println(errorMessage, ProcessOutputTypes.STDERR)
+        processHandler.println(error.message, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()
     }
 

@@ -13,7 +13,7 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -40,7 +40,7 @@ public class DeployFunctionAction extends AzureAnAction {
     @Override
     @AzureOperation(name = "function.deploy.configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
-        final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
+        final Module module = LangDataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {
             return true;
         }

@@ -6,21 +6,19 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
-import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.intellij.helpers.base.AppBasePropertyView;
-import org.jetbrains.annotations.NotNull;
-
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
+import org.jetbrains.annotations.NotNull;
 
-public class DeploymentSlotPropertyView extends AppBasePropertyView {
+public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
 
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
+    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
                                              @NotNull final String resId, @NotNull final String slotName,
                                              @NotNull final VirtualFile virtualFile) {
         final DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName, virtualFile);

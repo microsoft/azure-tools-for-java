@@ -7,7 +7,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm;
 
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
@@ -20,14 +19,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.List;
@@ -152,13 +144,13 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     @Override
     public List<NodeAction> getNodeActions() {
         if (startAction == null)
-            startAction = getNodeActionByName(ACTION_START);
+            startAction = getNodeActionByName(AzureActionEnum.START.getName());
 
         if (restartAction == null)
-            restartAction = getNodeActionByName(ACTION_RESTART);
+            restartAction = getNodeActionByName(AzureActionEnum.RESTART.getName());
 
         if (stopAction == null)
-            stopAction = getNodeActionByName(ACTION_SHUTDOWN);
+            stopAction = getNodeActionByName(AzureActionEnum.STOP.getName());
 
         List<NodeAction> nodeActions = super.getNodeActions();
 
@@ -179,14 +171,6 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
 
         restartAction.setEnabled(started);
-
-//        boolean stopped = virtualMachine.getStatus().equals(VirtualMachine.Status.Stopped) ||
-//                virtualMachine.getStatus().equals(VirtualMachine.Status.StoppedDeallocated);
-//
-//        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(!stopped && hasRDPPort(virtualMachine));
-        getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
-        getNodeActionByName(ACTION_START).setEnabled(!started);
-        getNodeActionByName(ACTION_RESTART).setEnabled(started);
 
         return nodeActions;
     }

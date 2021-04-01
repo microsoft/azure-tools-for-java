@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
@@ -61,8 +62,8 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     private Boolean originalAllowAccessToAzureServices;
     private Boolean originalAllowAccessToLocal;
 
-    MySQLPropertyView() {
-        super();
+    MySQLPropertyView(@NotNull VirtualFile virtualFile) {
+        super(virtualFile);
         overviewSeparator.addContentComponent(overview);
         connectionSecuritySeparator.addContentComponent(connectionSecurity);
         connectionStringsSeparator.addContentComponent(databaseLabel);

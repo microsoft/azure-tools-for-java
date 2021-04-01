@@ -31,8 +31,11 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
-        properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        StorageAccount account = (StorageAccount) this.storageAccount;
+        if (account != null) {
+            properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(account.id()).subscriptionId());
+            properties.put(AppInsightsConstants.Region, account.regionName());
+        }
         return properties;
     }
 
@@ -51,8 +54,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         }
 
         @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
+        protected void azureNodeAction(NodeActionEvent e) {
             Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.getName(), queue);
 
             if (openedFile != null) {
@@ -70,8 +72,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         }
 
         @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e)
-                throws AzureCmdException {
+        protected void onSubscriptionsChanged(NodeActionEvent e) {
         }
     }
 
@@ -83,8 +84,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         }
 
         @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
+        protected void azureNodeAction(NodeActionEvent e) {
             try {
                 StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
 
@@ -95,8 +95,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         }
 
         @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e)
-                throws AzureCmdException {
+        protected void onSubscriptionsChanged(NodeActionEvent e) {
         }
     }
 
@@ -134,7 +133,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     protected void loadActions() {
         addAction(ACTION_VIEW_QUEUE, new ViewQueue());
         addAction(ACTION_CLEAR_QUEUE, new ClearQueue());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteQueue(), NodeActionPosition.BOTTOM);
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteQueue(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
         super.loadActions();
     }
 }

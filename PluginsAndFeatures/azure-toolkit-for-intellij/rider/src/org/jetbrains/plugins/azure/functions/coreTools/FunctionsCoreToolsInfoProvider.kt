@@ -25,8 +25,8 @@ package org.jetbrains.plugins.azure.functions.coreTools
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
+import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver
 import com.microsoft.intellij.configuration.AzureRiderSettings
-import com.microsoft.intellij.runner.functions.core.FunctionCliResolver
 import java.io.File
 
 data class FunctionsCoreToolsInfo(val coreToolsPath: String, var coreToolsExecutable: String)

@@ -26,6 +26,7 @@ import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.SequentialLifetimes
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase
 import javax.swing.JComponent
 
 /**

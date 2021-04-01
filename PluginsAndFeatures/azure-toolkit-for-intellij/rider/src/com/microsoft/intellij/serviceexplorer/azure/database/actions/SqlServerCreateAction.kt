@@ -25,7 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.database.actions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.ui.forms.sqlserver.CreateSqlServerDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -37,12 +37,14 @@ class SqlServerCreateAction(private val databasesModule: AzureDatabaseModule) : 
 
     override fun actionPerformed(event: NodeActionEvent?) {
         val project = databasesModule.project as? Project ?: return
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
 
-        val createSqlServerForm =
-                CreateSqlServerDialog(project.defineNestedLifetime(), project, Runnable { databasesModule.load(true) })
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val createSqlServerForm =
+                    CreateSqlServerDialog(project.defineNestedLifetime(), project) { databasesModule.load(true) }
 
-        createSqlServerForm.show()
+            createSqlServerForm.show()
+        }
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

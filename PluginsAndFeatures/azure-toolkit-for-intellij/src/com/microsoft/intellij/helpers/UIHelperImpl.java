@@ -30,11 +30,17 @@ import com.microsoft.azure.CloudError;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -47,42 +53,25 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
-import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
-import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
-import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditor;
-import com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.QueueFileEditor;
-import com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider;
-import com.microsoft.intellij.helpers.storage.TableFileEditor;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
+import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NotImplementedException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,9 +88,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
-import static com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -122,8 +109,8 @@ public class UIHelperImpl implements UIHelper {
                         Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
-    private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
-    private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
+    protected static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
+    protected static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
 
     @Override
     public void showException(@NotNull final String message,
@@ -298,7 +285,7 @@ public class UIHelperImpl implements UIHelper {
             .runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
-    private class AzureFileType implements FileType {
+    protected class AzureFileType implements FileType {
         private String itemName;
         private Icon icon;
 
@@ -472,27 +459,6 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
-        Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        final String id = node.getAppId();
-        final String subscription = getSubscriptionId(id);
-        final String appName = node.getAppName();
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(appName, subscription, id);
-            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
-        }
-        itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
-        itemVirtualFile.putUserData(APP_ID, id);
-        fileEditorManager.openFile(itemVirtualFile, true, true);
-    }
-
-    @Override
     public void openResourceTemplateView(DeploymentNode node, String template) {
         Project project = (Project) node.getProject();
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
@@ -525,32 +491,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
-        String registryName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
-        String sid = node.getSubscriptionId();
-        String resId = node.getResourceId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
-        }
-        Project project = (Project) node.getProject();
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                                                              ContainerRegistryPropertyViewProvider.TYPE, resId);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
-            itemVirtualFile.setFileType(fileType);
-        }
-        FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-        for (FileEditor editor: editors) {
-            if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
-                editor instanceof ContainerRegistryPropertyView) {
-                ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
-            }
-        }
+        throw new NotImplementedException("Must be defined by inheritors");
     }
 
     protected FileEditorManager getFileEditorManager(@NotNull final String sid, @NotNull final String webAppId,
@@ -634,8 +575,7 @@ public class UIHelperImpl implements UIHelper {
             userData.put(RESOURCE_ID, resourceId);
             userData.put(FUNCTIONAPP_ID, node.getAppId());
             userData.put(SLOT_NAME, node.getName());
-            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(),
-                                                type, iconPath, userData);
+            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(), userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
@@ -710,14 +650,6 @@ public class UIHelperImpl implements UIHelper {
         return UIUtil.isUnderDarcula();
     }
 
-    public void closeSpringCloudAppPropertyView(@NotNull Object projectObject, String appId) {
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
-        LightVirtualFile file = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, appId);
-        if (file != null) {
-            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(file));
-        }
-    }
-
     @NotNull
     private static String getHeaderMessage(@NotNull String message, @Nullable Throwable ex,
                                            boolean appendEx, boolean suggestDetail) {
@@ -763,7 +695,7 @@ public class UIHelperImpl implements UIHelper {
         return IconLoader.getIcon("/icons/" + name);
     }
 
-    private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
+    protected LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
         LightVirtualFile virtualFile = null;
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             String fileResourceId = editedFile.getUserData(RESOURCE_ID);
@@ -784,14 +716,14 @@ public class UIHelperImpl implements UIHelper {
         return itemVirtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String sid, String resId) {
+    protected LightVirtualFile createVirtualFile(String name, String sid, String resId) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
         itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;
     }
 
-    private boolean isSubscriptionIdAndResourceIdEmpty(String sid, String resId) {
+    protected boolean isSubscriptionIdAndResourceIdEmpty(String sid, String resId) {
         if (Utils.isEmptyString(sid)) {
             showError("Cannot get Subscription ID", UNABLE_TO_OPEN_EDITOR_WINDOW);
             return true;

@@ -17,19 +17,17 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.intellij.util.ui.EmptyIcon;
-import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.components.AzureModuleProvider;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
@@ -46,11 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -58,13 +52,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
@@ -257,7 +246,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
-        SortableTreeNode treeNode = new SortableTreeNode(node, true, node.getNodeComparator());
+        SortableTreeNode treeNode = new SortableTreeNode(node, true);
 
         // associate the DefaultMutableTreeNode with the Node via it's "viewData"
         // property; this allows us to quickly retrieve the DefaultMutableTreeNode

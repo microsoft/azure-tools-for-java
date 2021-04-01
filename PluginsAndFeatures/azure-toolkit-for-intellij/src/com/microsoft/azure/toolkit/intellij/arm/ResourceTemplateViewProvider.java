@@ -25,7 +25,7 @@ public class ResourceTemplateViewProvider implements FileEditorProvider, DumbAwa
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        return new ResourceTemplateView();
+        return new ResourceTemplateView(virtualFile);
     }
 
     @NotNull

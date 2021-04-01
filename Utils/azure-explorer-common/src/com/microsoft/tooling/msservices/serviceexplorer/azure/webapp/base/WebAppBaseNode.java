@@ -6,9 +6,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.CommonIcons;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.SkuDescription;
+import com.microsoft.azure.management.appservice.SkuName;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -27,6 +31,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected static final String ACTION_SHOW_PROPERTY = "Show Properties";
     protected static final String ICON_RUNNING_POSTFIX = "Running.svg";
     protected static final String ICON_STOPPED_POSTFIX = "Stopped.svg";
+    protected static final String OS_LINUX = "Linux";
 
     protected final String subscriptionId;
     protected final String hostName;
@@ -42,8 +47,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
 
     public WebAppBaseNode(final String id, final String name, final String label, final AzureRefreshableNode parent,
                           final String subscriptionId, final String hostName, final String os, final String state) {
-        super(id, name, parent, null, true);
-        this.iconPath = getIcon(os, label, WebAppBaseState.fromString(state));
+        super(id, name, parent, getIcon(os, label, WebAppBaseState.fromString(state)), true);
         this.state = WebAppBaseState.fromString(state);
         this.label = label;
         this.subscriptionId = subscriptionId;
@@ -65,13 +69,13 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         addAction(ACTION_STOP, CommonIcons.ACTION_STOP, getStopActionListener());
         addAction(ACTION_SHOW_PROPERTY, CommonIcons.ACTION_OPEN_PREFERENCES, getShowPropertiesActionListener());
         addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, getOpenInBrowserActionListener());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), NodeActionPosition.BOTTOM);
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
 
         super.loadActions();
     }
 
     // Remove static to provide ability to override IconPath logic for [FunctionAppNode].
-    protected String getIcon(final String os, final String label, final WebAppBaseState state) {
+    protected static String getIcon(final String os, final String label, final WebAppBaseState state) {
         return StringUtils.capitalize(os.toLowerCase())
             + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }

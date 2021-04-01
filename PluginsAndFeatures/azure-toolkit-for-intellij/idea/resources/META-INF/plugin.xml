@@ -1,6 +1,6 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
-  <name>Azure Toolkit for IntelliJ</name>
+  <name>Azure Toolkit for IDEA</name>
 <!--  <version>3.50.1</version>-->
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
@@ -45,12 +45,12 @@
   <resource-bundle>com.microsoft.azure.toolkit.operation.titles</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
 
-  <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.modules.java</depends>
   <depends>org.intellij.plugins.markdown</depends>
   <depends>com.intellij.gradle</depends>
-  <depends optional="true">com.intellij.database</depends>
+  <depends>org.intellij.scala</depends>
+  <depends>com.intellij.database</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -109,11 +109,6 @@
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
 
-    <projectConfigurable groupId="root"
-                         id="com.microsoft.intellij.AzureConfigurable"
-                         provider="com.microsoft.intellij.AzureConfigurableProvider"
-                         dynamic="true"/>
-
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.azure.toolkit.intellij.webapp.runner.WebAppConfigurationType"/>
@@ -155,10 +150,6 @@
     <facetType implementation="com.microsoft.azure.toolkit.intellij.function.wizard.facet.FunctionsFacetType"/>
     <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.function.wizard.module.FunctionsModuleBuilder"/>
     <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunConfigurationProducer"/>
-    <postStartupActivity implementation="com.microsoft.intellij.AzureJavaPlugin"/>
-    <facetType implementation="com.microsoft.intellij.wizards.functions.facet.FunctionsFacetType"/>
-    <moduleBuilder builderClass="com.microsoft.intellij.wizards.functions.module.FunctionsModuleBuilder"/>
-    <runConfigurationProducer implementation="com.microsoft.intellij.runner.functions.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
@@ -171,7 +162,6 @@
   <extensions defaultExtensionNs="com.microsoft.intellij">
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.NodeJavaActionsMap" />
     <serverExplorerToolWindowListener implementation="com.microsoft.intellij.serviceexplorer.ServerExplorerToolWindowJavaListener" />
-    <dockerArtifactProvider implementation="com.microsoft.intellij.docker.DockerArtifactsFromJavaProjectModel" />
     <azureModuleProvider implementation="com.microsoft.intellij.components.JavaAzureModuleProvider" />
   </extensions>
 
@@ -248,18 +238,10 @@
             class="com.microsoft.intellij.actions.NewCustomerIssueFeedbackAction"
             text="Report Issues" />
 
-    <action id="AzureToolkit.FeatureRequest"
-            class="com.microsoft.azuretools.ijidea.actions.NewFeatureRequestFeedbackAction"
-            text="Request Feature" />
-
     <group id="AzureToolkit.Feedback">
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
                     anchor="after"
                     relative-to-action="AzureToolkit.DisableSSLCertificateValidation"/>
-
-      <action id="AzureToolkit.GithubIssue"
-              class="com.microsoft.azuretools.ijidea.actions.NewCustomerIssueFeedbackAction"
-              text="Report Issues"/>
 
       <action id="AzureToolkit.FeatureRequest"
               class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction"
@@ -497,6 +479,4 @@
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
     </action>
   </actions>
-
-  <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

@@ -123,7 +123,7 @@ public class TableNode extends RefreshableNode implements TelemetryProperties {
     @Override
     protected void loadActions() {
         addAction(ACTION_VIEW_TABLE, new ViewTable());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteTable(), NodeActionPosition.BOTTOM);
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteTable(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
         super.loadActions();
     }
 }

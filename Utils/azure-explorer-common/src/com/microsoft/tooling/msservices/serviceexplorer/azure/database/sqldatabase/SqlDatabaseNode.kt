@@ -25,10 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatab
 import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.Node
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
+import com.microsoft.tooling.msservices.serviceexplorer.*
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
@@ -56,7 +53,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), NodeActionPosition.BOTTOM)
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY)
         super.loadActions()
     }
 

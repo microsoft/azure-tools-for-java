@@ -91,7 +91,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     private void onArtifactChanged(final ItemEvent e) {
-        final DataContext context = DataManager.getInstance().getDataContext(getContentPanel());
+        final DataContext context = DataManager.getInstance().getDataContext(contentPanel);
         final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
         final AzureArtifact artifact = (AzureArtifact) e.getItem();
         if (Objects.nonNull(editor) && Objects.nonNull(artifact)) {

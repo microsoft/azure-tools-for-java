@@ -10,7 +10,6 @@ import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -56,8 +55,7 @@ public class ContainerNode extends RefreshableNode implements TelemetryPropertie
         }
 
         @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
+        protected void azureNodeAction(NodeActionEvent e) {
             Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(),
                     storageAccount != null
                         ? storageAccount.name()
@@ -92,14 +90,7 @@ public class ContainerNode extends RefreshableNode implements TelemetryPropertie
         }
 
         @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e)
-                throws AzureCmdException {
-        }
-
-        @Override
-        protected @Nullable String getIconPath() {
-            return CommonIcons.ACTION_DISCARD;
-        }
+        protected void onSubscriptionsChanged(NodeActionEvent e) { }
     }
 
     private static final String CONTAINER_MODULE_ID = ContainerNode.class.getName();
@@ -154,7 +145,7 @@ public class ContainerNode extends RefreshableNode implements TelemetryPropertie
     @Override
     protected void loadActions() {
         addAction(ACTION_VIEW_BLOB_CONTAINER, new ViewBlobContainer());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteBlobContainer(), NodeActionPosition.BOTTOM);
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteBlobContainer(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
         super.loadActions();
     }
 }

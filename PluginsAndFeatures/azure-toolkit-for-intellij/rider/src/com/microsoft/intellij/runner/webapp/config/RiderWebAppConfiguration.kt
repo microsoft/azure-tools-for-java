@@ -28,7 +28,7 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
-import com.microsoft.intellij.runner.AzureRunConfigurationBase
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase
 import com.microsoft.intellij.runner.validator.ConfigurationValidator
 import com.microsoft.intellij.runner.validator.ProjectConfigValidator
 import com.microsoft.intellij.runner.validator.SqlDatabaseConfigValidator

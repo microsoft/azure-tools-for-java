@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -326,6 +326,22 @@ class DeploymentSlotMock(
         TODO("Not yet implemented")
     }
 
+    override fun deploy(p0: DeployType?, p1: File?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deploy(p0: DeployType?, p1: File?, p2: DeployOptions?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deploy(p0: DeployType?, p1: InputStream?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun deploy(p0: DeployType?, p1: InputStream?, p2: DeployOptions?) {
+        TODO("Not yet implemented")
+    }
+
     override fun getContainerLogs(): ByteArray {
         TODO("Not yet implemented")
     }
@@ -454,7 +470,31 @@ class DeploymentSlotMock(
         TODO("Not yet implemented")
     }
 
+    override fun getSiteAppSettings(): MutableMap<String, String> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getSiteAppSettingsAsync(): Observable<MutableMap<String, String>> {
+        TODO("Not yet implemented")
+    }
+
     override fun update(): DeploymentSlotBase.Update<DeploymentSlot> {
+        TODO("Not yet implemented")
+    }
+
+    override fun deployAsync(p0: DeployType?, p1: File?): Completable {
+        TODO("Not yet implemented")
+    }
+
+    override fun deployAsync(p0: DeployType?, p1: File?, p2: DeployOptions?): Completable {
+        TODO("Not yet implemented")
+    }
+
+    override fun deployAsync(p0: DeployType?, p1: InputStream?): Completable {
+        TODO("Not yet implemented")
+    }
+
+    override fun deployAsync(p0: DeployType?, p1: InputStream?, p2: DeployOptions?): Completable {
         TODO("Not yet implemented")
     }
 

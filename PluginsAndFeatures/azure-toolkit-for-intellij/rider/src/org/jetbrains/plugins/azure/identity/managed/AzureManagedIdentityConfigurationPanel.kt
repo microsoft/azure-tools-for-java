@@ -36,7 +36,7 @@ import com.intellij.util.ui.UIUtil
 import com.microsoft.azuretools.authmanage.AuthMethod
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle
@@ -61,14 +61,12 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
             lateinit var signInRow: Row
             signInRow = row {
                 button(RiderAzureBundle.message("settings.managedidentity.sign_in")) {
-                    try {
-                        AuthMethodManager.getInstance().signOut()
-                        if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                            dialogPanel.reset()
-                        }
-                    } catch (e: Exception) {
-                        logger.error("Error while signing in", e)
-                    }
+                    AuthMethodManager.getInstance().signOut()
+                    AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+                            .doOnSuccess { dialogPanel.reset() }
+                            .doOnError {
+                                logger.error("Error while signing in", it)
+                            }
                 }
             }.onGlobalReset {
                 signInRow.visible = !isSignedIn()

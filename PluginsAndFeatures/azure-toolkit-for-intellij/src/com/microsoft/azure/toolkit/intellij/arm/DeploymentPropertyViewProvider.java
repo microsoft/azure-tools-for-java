@@ -25,7 +25,7 @@ public class DeploymentPropertyViewProvider implements FileEditorProvider, DumbA
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        return new DeploymentPropertyView();
+        return new DeploymentPropertyView(virtualFile);
     }
 
     @NotNull

@@ -55,8 +55,8 @@ import com.microsoft.azure.management.graphrbac.implementation.GraphRbacManageme
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.azuretools.sdkmanage.AzureManager
+import com.microsoft.intellij.actions.AzureSignInAction
 import icons.CommonIcons
 import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.RiderAzureBundle
@@ -99,81 +99,82 @@ class RegisterApplicationInAzureAdAction
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val projectModelNode = tryGetProjectModelEntityFromFile(project, e.dataContext.PsiFile?.virtualFile)
+                    ?: return@doOnSuccess
 
-        val projectModelNode = tryGetProjectModelEntityFromFile(project, e.dataContext.PsiFile?.virtualFile)
-                ?: return
+            val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return@doOnSuccess
+            if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return@doOnSuccess
 
-        val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return
-        if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return
+            val application = ApplicationManager.getApplication()
+            val azureManager = AuthMethodManager.getInstance().azureManager ?: return@doOnSuccess
 
-        val application = ApplicationManager.getApplication()
-        val azureManager = AuthMethodManager.getInstance().azureManager ?: return
+            // Read local settings
+            val azureAdSettings = AppSettingsAzureAdSectionManager()
+                    .readAzureAdSectionFrom(appSettingsJsonVirtualFile, project)
 
-        // Read local settings
-        val azureAdSettings = AppSettingsAzureAdSectionManager()
-                .readAzureAdSectionFrom(appSettingsJsonVirtualFile, project)
+            val matchingTenantIdFromAppSettings = if (azureAdSettings != null
+                    && !azureAdSettings.isDefaultProjectTemplateContent()
+                    && azureAdSettings.tenantId != null) azureAdSettings.tenantId
+            else null
 
-        val matchingTenantIdFromAppSettings = if (azureAdSettings != null
-                && !azureAdSettings.isDefaultProjectTemplateContent()
-                && azureAdSettings.tenantId != null) azureAdSettings.tenantId
-        else null
+            // Retrieve matching subscription/tenant
+            object : Task.Backgroundable(project, RiderAzureBundle.message("progress.common.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF) {
+                override fun run(indicator: ProgressIndicator) {
+                    logger.debug("Retrieving Azure subscription details...")
 
-        // Retrieve matching subscription/tenant
-        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.common.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF) {
-            override fun run(indicator: ProgressIndicator) {
-                logger.debug("Retrieving Azure subscription details...")
+                    val selectedSubscriptions = azureManager.subscriptionManager.subscriptionDetails
+                            .asSequence()
+                            .filter { it.isSelected }
+                            .toList()
 
-                val selectedSubscriptions = azureManager.subscriptionManager.subscriptionDetails
-                        .asSequence()
-                        .filter { it.isSelected }
-                        .toList()
+                    logger.debug("Retrieved ${selectedSubscriptions.count()} Azure subscriptions")
 
-                logger.debug("Retrieved ${selectedSubscriptions.count()} Azure subscriptions")
+                    // One subscription? Only one tenant? No popup needed
+                    val bestMatchingSubscription = when {
+                        matchingTenantIdFromAppSettings != null -> selectedSubscriptions.firstOrNull { it.tenantId == matchingTenantIdFromAppSettings }
+                        selectedSubscriptions.count() == 1 -> selectedSubscriptions.first()
+                        else -> null
+                    }
+                    if (bestMatchingSubscription != null) {
+                        application.invokeLater {
+                            if (project.isDisposed) return@invokeLater
 
-                // One subscription? Only one tenant? No popup needed
-                val bestMatchingSubscription = when {
-                    matchingTenantIdFromAppSettings != null -> selectedSubscriptions.firstOrNull { it.tenantId == matchingTenantIdFromAppSettings }
-                    selectedSubscriptions.count() == 1 -> selectedSubscriptions.first()
-                    else -> null
-                }
-                if (bestMatchingSubscription != null) {
+                            fetchDataAndShowDialog(projectModelNode, project, azureManager, bestMatchingSubscription)
+                        }
+                        return
+                    }
+
+                    // Multiple subscriptions? Popup.
                     application.invokeLater {
                         if (project.isDisposed) return@invokeLater
 
-                        fetchDataAndShowDialog(projectModelNode, project, azureManager, bestMatchingSubscription)
-                    }
-                    return
-                }
+                        val step = object : BaseListPopupStep<SubscriptionDetail>(RiderAzureBundle.message("popup.common.start.select_subscription"), selectedSubscriptions) {
+                            override fun getTextFor(value: SubscriptionDetail?): String {
+                                if (value != null) {
+                                    return "${value.subscriptionName} (${value.subscriptionId})"
+                                }
 
-                // Multiple subscriptions? Popup.
-                application.invokeLater {
-                    if (project.isDisposed) return@invokeLater
-
-                    val step = object : BaseListPopupStep<SubscriptionDetail>(RiderAzureBundle.message("popup.common.start.select_subscription"), selectedSubscriptions) {
-                        override fun getTextFor(value: SubscriptionDetail?): String {
-                            if (value != null) {
-                                return "${value.subscriptionName} (${value.subscriptionId})"
+                                return super.getTextFor(value)
                             }
 
-                            return super.getTextFor(value)
-                        }
-
-                        override fun onChosen(selectedValue: SubscriptionDetail, finalChoice: Boolean): PopupStep<*>? {
-                            doFinalStep {
-                                fetchDataAndShowDialog(projectModelNode, project, azureManager, selectedValue)
+                            override fun onChosen(selectedValue: SubscriptionDetail, finalChoice: Boolean): PopupStep<*>? {
+                                doFinalStep {
+                                    fetchDataAndShowDialog(projectModelNode, project, azureManager, selectedValue)
+                                }
+                                return PopupStep.FINAL_CHOICE
                             }
-                            return PopupStep.FINAL_CHOICE
                         }
+
+                        logger.debug("Showing popup to select Azure subscription")
+
+                        val popup = JBPopupFactory.getInstance().createListPopup(step)
+                        popup.showCenteredInCurrentWindow(project)
                     }
-
-                    logger.debug("Showing popup to select Azure subscription")
-
-                    val popup = JBPopupFactory.getInstance().createListPopup(step)
-                    popup.showCenteredInCurrentWindow(project)
                 }
-            }
-        }.queue()
+            }.queue()
+        }
     }
 
     private fun fetchDataAndShowDialog(entity: ProjectModelEntity,

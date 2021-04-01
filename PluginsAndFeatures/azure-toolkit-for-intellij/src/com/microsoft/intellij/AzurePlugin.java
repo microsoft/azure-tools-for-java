@@ -37,8 +37,6 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.TelemetryUtils;
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
@@ -57,7 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 

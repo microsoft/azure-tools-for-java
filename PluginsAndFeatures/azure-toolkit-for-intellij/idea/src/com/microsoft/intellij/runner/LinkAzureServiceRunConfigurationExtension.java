@@ -18,8 +18,9 @@ import java.util.Map;
 public class LinkAzureServiceRunConfigurationExtension extends RunConfigurationExtension {
 
     @Override
-    public <T extends RunConfigurationBase> void updateJavaParameters(@NotNull T t, @NotNull JavaParameters javaParameters,
-                                                                      RunnerSettings runnerSettings) throws ExecutionException {
+    public <T extends RunConfigurationBase<?>> void updateJavaParameters(@NotNull final T t,
+                                                                         @NotNull final JavaParameters javaParameters,
+                                                                         final RunnerSettings runnerSettings) throws ExecutionException {
         Boolean linkAzureServiceFlag = t.getUserData(LinkAzureServiceBeforeRunProvider.LINK_AZURE_SERVICE);
         Map<String, String> envMap = t.getUserData(LinkAzureServiceBeforeRunProvider.LINK_AZURE_SERVICE_ENVS);
         if (Boolean.TRUE.equals(linkAzureServiceFlag) && MapUtils.isNotEmpty(envMap)) {

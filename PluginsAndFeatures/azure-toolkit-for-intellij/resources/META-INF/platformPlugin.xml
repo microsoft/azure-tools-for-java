@@ -1,21 +1,17 @@
 <idea-plugin url="https://github.com/JetBrains/azure-tools-for-intellij">
-  <!--<version>3.46.0</version>-->
+  <!--<version>3.50.0</version>-->
 
   <change-notes>
     <![CDATA[
     <html>
       <h4>Added:</h4>
       <ul>
-        <li>Compatibility with Rider 2021.1</li>
+        <li>Compatibility with Rider 2021.1 EAP4</li>
         <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
-        <li>Enable build-throttling and support compound run configurations (<a href="https://youtrack.jetbrains.com/issue/RIDER-57482">RIDER-57482</a>)</li>
       </ul>
-      <h4>Fixed bugs:</h4>
+      <h4>Bug fixes:</h4>
       <ul>
         <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
-        <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
-        <li>Don't output error message when not needed (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/461">#461</a>)</li>
-        <li>Exception in FileEditors - implement getFile (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/463">#463</a>)</li>
       </ul>
     </html>
     ]]>
@@ -28,8 +24,8 @@
   <extensionPoints>
     <extensionPoint qualifiedName="com.microsoft.intellij.nodeActionsMap"
                     interface="com.microsoft.intellij.serviceexplorer.NodeActionsMap" />
-    <extensionPoint qualifiedName="com.microsoft.intellij.serverExplorerToolWindowListener"
-                    interface="com.microsoft.intellij.components.ServerExplorerToolWindowListener" />
+<!--    <extensionPoint qualifiedName="com.microsoft.intellij.serverExplorerToolWindowListener"-->
+<!--                    interface="com.microsoft.intellij.components.ServerExplorerToolWindowListener" />-->
     <extensionPoint qualifiedName="com.microsoft.intellij.dockerArtifactProvider"
                     interface="com.microsoft.intellij.docker.DockerArtifactProvider" />
     <extensionPoint qualifiedName="com.microsoft.intellij.azureModuleProvider"
@@ -37,7 +33,7 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
-    <postStartupActivity implementation="com.microsoft.intellij.activitylog.RegisterDeploymentListenerActivity"/>
+<!--    <postStartupActivity implementation="com.microsoft.intellij.activitylog.RegisterDeploymentListenerActivity"/>-->
 
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
 
@@ -46,14 +42,13 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.TableExplorerFileEditorProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
     <lang.syntaxHighlighterFactory key="arm"
@@ -64,12 +59,12 @@
                             implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
 
     <toolWindow
-          anchor="left"
-          factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
-          id="Azure Explorer"
-          canCloseContents="false"
-          icon="CommonIcons.ToolWindow.Azure"
-          order="after Project" />
+            anchor="left"
+            factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
+            id="Azure Explorer"
+            canCloseContents="false"
+            icon="CommonIcons.ToolWindow.Azure"
+            order="after Project" />
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
     <lang.syntaxHighlighterFactory language="arm"
@@ -82,7 +77,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
-      <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.DefaultNodeActionsMap" />
+    <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.DefaultNodeActionsMap" />
   </extensions>
 
   <actions>
@@ -94,11 +89,11 @@
             icon="CommonIcons.AzureExplorer" />
 
     <action id="AzureToolkit.AzureSignIn"
-            class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction"
+            class="com.microsoft.intellij.actions.AzureSignInAction"
             text="Azure Sign In..." />
 
     <action id="AzureToolkit.SelectSubscriptions"
-            class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction"
+            class="com.microsoft.intellij.actions.SelectSubscriptionsAction"
             text="Select Subscriptions..."
             description="ShowSubscriptionsAction"/>
 

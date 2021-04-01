@@ -26,7 +26,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.ui.forms.appservice.webapp.CreateWebAppDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -47,17 +47,17 @@ class WebAppCreateAction(private val webAppModule: WebAppModule) : NodeActionLis
             return
         }
 
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Web App. User is not signed in.")
-            return
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val createWebAppForm = CreateWebAppDialog(
+                    lifetimeDef = project.defineNestedLifetime(),
+                    project = project,
+                    onCreate = { webAppModule.load(true) })
+
+            createWebAppForm.show()
+        }.doOnError {
+            logger.error("Failed to create Web App. User is not signed in: $it")
         }
-
-        val createWebAppForm = CreateWebAppDialog(
-                lifetimeDef = project.defineNestedLifetime(),
-                project = project,
-                onCreate = { webAppModule.load(true) })
-
-        createWebAppForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

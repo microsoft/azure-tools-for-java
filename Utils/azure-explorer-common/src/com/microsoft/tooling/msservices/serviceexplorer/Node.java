@@ -28,7 +28,6 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -228,34 +227,18 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         childNodes.add(child);
     }
 
-    public void addAction(NodeAction action, NodeActionPosition position) {
-        switch (position) {
-            case TOP:
-                nodeActionsTop.add(action);
-                break;
-
-            case BOTTOM:
-                nodeActionsBottom.add(action);
-                break;
-
-            default:
-                nodeActions.add(action);
-                break;
-        }
-    }
-
     public void addAction(NodeAction action) {
-        addAction(action, NodeActionPosition.NONE);
+        nodeActions.add(action);
     }
 
     // Convenience method to add a new action with a pre-configured listener. If
     // an action with the same name already exists then the listener is added
     // to that action.
-    public NodeAction addAction(String name, NodeActionListener actionListener, NodeActionPosition position) {
+    public NodeAction addAction(String name, NodeActionListener actionListener) {
         NodeAction nodeAction = getNodeActionByName(name);
         if (nodeAction == null) {
             nodeAction = new NodeAction(this, name);
-            addAction(nodeAction, position);
+            addAction(nodeAction);
         }
         nodeAction.addListener(actionListener);
         nodeAction.setPriority(actionListener.getPriority());
@@ -282,10 +265,6 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         nodeAction.setGroup(group);
         nodeAction.setPriority(priority);
         return nodeAction;
-    }
-
-    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
-        return addAction(name, iconPath, actionListener, NodeActionPosition.NONE);
     }
 
     protected void loadActions() {

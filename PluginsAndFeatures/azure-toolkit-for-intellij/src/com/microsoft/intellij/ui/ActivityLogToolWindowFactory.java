@@ -1,11 +1,12 @@
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved.
- * Copyright (c) JetBrains s.r.o.
+ * Copyright (c) 2021 JetBrains s.r.o.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.*;
@@ -15,9 +16,6 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.intellij.util.ui.PlatformColors;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
-import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.PluginUtil;
 import icons.CommonIcons;
@@ -94,16 +92,16 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
         }
 
         final ToolWindow newToolWindow = toolWindowManager.registerToolWindow(new RegisterToolWindowTask(
-                ACTIVITY_LOG_WINDOW,
-                ToolWindowAnchor.BOTTOM,
-                null,
-                false,
-                true,
-                false,
-                !AzurePlugin.IS_ANDROID_STUDIO,
-                null,
-                CommonIcons.ToolWindow.AzureLog,
-                null));
+            ACTIVITY_LOG_WINDOW,
+            ToolWindowAnchor.BOTTOM,
+            null,
+            false,
+            true,
+            false,
+            !AzurePlugin.IS_ANDROID_STUDIO,
+            null,
+            CommonIcons.ToolWindow.AzureLog,
+            null));
 
         initToolWindowContent(newToolWindow);
         return newToolWindow;
@@ -111,37 +109,34 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
 
     public void registerDeploymentListener(Project project) {
         AzurePlugin.addDeploymentEventListener(
-                args -> {
-                    ApplicationManager.getApplication().invokeLater(() -> {
+            args -> {
+                ApplicationManager.getApplication().invokeLater(() -> {
 
-                        final ToolWindow toolWindow = getOrRegisterToolWindow(project);
+                    final ToolWindow toolWindow = getOrRegisterToolWindow(project);
 
-                        // unique identifier for deployment
-                        final String key = args.getId() + args.getStartTime().getTime();
-                        if (rows.containsKey(key)) {
-                            final DeploymentTableItem item = rows.get(key);
-                            AzureTaskManager.getInstance().runLater(() -> {
-                                item.progress = args.getDeployCompleteness();
-                                if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
-                                    String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
-                                    item.description = message("runStatusVisible");
-                                    item.link = args.getDeploymentURL();
-                                    if (!toolWindow.isVisible()) {
-                                        ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null,
-                                                new BrowserHyperlinkListener());
-                                    }
-                                } else {
-                                    item.description = args.getDeployMessage();
-                                }
-                                table.getListTableModel().fireTableDataChanged();
-                            });
+                    // unique identifier for deployment
+                    final String key = args.getId() + args.getStartTime().getTime();
+                    if (rows.containsKey(key)) {
+                        final DeploymentTableItem item = rows.get(key);
+                        item.progress = args.getDeployCompleteness();
+                        if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
+                            final String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
+                            item.description = message("runStatusVisible");
+                            item.link = args.getDeploymentURL();
+                            if (!toolWindow.isVisible()) {
+                                ToolWindowManager.getInstance(project).notifyByBalloon(ACTIVITY_LOG_WINDOW, MessageType.INFO, html, null, new BrowserHyperlinkListener());
+                            }
                         } else {
-                            final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(), dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
-                            rows.put(key, item);
-                            AzureTaskManager.getInstance().runLater(() -> table.getListTableModel().addRow(item));
+                            item.description = args.getDeployMessage();
                         }
+                        table.getListTableModel().fireTableDataChanged();
+                    } else {
+                        final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(), dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
+                        rows.put(key, item);
+                        table.getListTableModel().addRow(item);
                     }
                 });
+            });
     }
 
     private class ProgressBarRenderer implements TableCellRenderer {

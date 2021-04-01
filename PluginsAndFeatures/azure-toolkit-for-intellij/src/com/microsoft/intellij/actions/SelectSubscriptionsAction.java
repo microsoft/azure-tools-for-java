@@ -6,7 +6,7 @@
 package com.microsoft.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -42,7 +42,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     @Override
     @AzureOperation(name = "account|subscription.select", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
-        Project project = DataKeys.PROJECT.getData(e.getDataContext());
+        Project project = LangDataKeys.PROJECT.getData(e.getDataContext());
         selectSubscriptions(project).subscribe();
         return true;
     }

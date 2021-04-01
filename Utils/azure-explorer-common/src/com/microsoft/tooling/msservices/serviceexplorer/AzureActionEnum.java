@@ -22,9 +22,9 @@ public enum AzureActionEnum {
     DELETE("Delete", "Deleting", AzureIconSymbol.Common.DELETE, Groupable.MAINTENANCE_GROUP, Sortable.DEFAULT_PRIORITY + 4);
 
     @Getter
-    private final String name;
+    public final String name;
     @Getter
-    private final String doingName;
+    public final String doingName;
     @Getter
     private final AzureIconSymbol iconSymbol;
     @Getter

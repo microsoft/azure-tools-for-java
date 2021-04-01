@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.intellij.ui.ErrorWindow;
 import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;

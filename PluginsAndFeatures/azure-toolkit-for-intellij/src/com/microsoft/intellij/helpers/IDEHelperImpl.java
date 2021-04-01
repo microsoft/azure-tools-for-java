@@ -18,12 +18,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.compiler.CompileContext;
-import com.intellij.openapi.compiler.CompileScope;
-import com.intellij.openapi.compiler.CompileStatusNotification;
-import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.TextEditor;
@@ -66,16 +61,10 @@ import javax.swing.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 
 @Log
 public class IDEHelperImpl implements IDEHelper {
@@ -258,26 +247,6 @@ public class IDEHelperImpl implements IDEHelper {
         }
 
         return project;
-    }
-
-    @NotNull
-    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
-        throws AzureCmdException {
-        Artifact artifact = null;
-
-        for (Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
-                artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
-                artifact = projectArtifact;
-                break;
-            }
-        }
-
-        if (artifact == null) {
-            throw new AzureCmdException("Unable to find an artifact with the specified description.");
-        }
-
-        return artifact;
     }
 
     public void openLinkInBrowser(@NotNull String url) {

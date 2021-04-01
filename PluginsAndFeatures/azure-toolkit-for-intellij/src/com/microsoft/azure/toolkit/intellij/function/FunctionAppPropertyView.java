@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppBasePropertyView;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.intellij.helpers.base.AppBasePropertyView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,10 +18,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-public class FunctionAppPropertyView extends AppBasePropertyView {
+public class FunctionAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyView";
 
-    public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
+    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
                                              @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
         final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);

@@ -8,20 +8,15 @@ package com.microsoft.azure.toolkit.intellij.function.runner.localrun;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.JavaRunConfigurationModule;
-import com.intellij.execution.configurations.LocatableConfiguration;
-import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
+import com.microsoft.intellij.runner.JavaAzureRunConfigurationBase;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +28,7 @@ import java.util.Map;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
+public class FunctionRunConfiguration extends JavaAzureRunConfigurationBase<FunctionRunModel>
     implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
     private JsonObject appSettingsJsonObject;
     private FunctionRunModel functionRunModel;

@@ -12,10 +12,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
@@ -57,14 +54,33 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     }
 
     @Override
-    protected void loadActions() {
-        addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
-        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
-        super.loadActions();
+    protected NodeActionListener getStartActionListener() {
+        return initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getRestartActionListener() {
+        return initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getStopActionListener() {
+        return initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getShowPropertiesActionListener() {
+        return initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build();
+    }
+
+    @Override
+    protected NodeActionListener getOpenInBrowserActionListener() {
+        return initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build();
+    }
+
+    @Override
+    protected NodeActionListener getDeleteActionListener() {
+        return initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build();
     }
 
     private BasicActionBuilder initActionBuilder(Runnable runnable) {
@@ -132,5 +148,4 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionAppNode.this);
     }
-
 }

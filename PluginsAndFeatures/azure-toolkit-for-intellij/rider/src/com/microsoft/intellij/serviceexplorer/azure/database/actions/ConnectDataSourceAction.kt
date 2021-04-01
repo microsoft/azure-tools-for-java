@@ -25,8 +25,8 @@ import com.intellij.database.autoconfig.DataSourceDetector
 import com.intellij.database.autoconfig.DataSourceRegistry
 import com.intellij.openapi.project.Project
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.AzurePlugin
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -36,9 +36,8 @@ abstract class ConnectDataSourceAction(protected val node: Node) : NodeActionLis
     public override fun actionPerformed(e: NodeActionEvent) {
         val project = node.project as? Project ?: return
 
-        try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
-
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
             val registry = DataSourceRegistry(project)
 
             val builder = populateConnectionBuilder(registry.builder)
@@ -47,9 +46,9 @@ abstract class ConnectDataSourceAction(protected val node: Node) : NodeActionLis
                 builder.commit()
                 registry.showDialog()
             }
-        } catch (ex: Throwable) {
-            AzurePlugin.log("Error connecting to database", ex)
-            throw RuntimeException("Error connecting to database", ex)
+        }.doOnError {
+            AzurePlugin.log("Error connecting to database", it)
+            throw RuntimeException("Error connecting to database", it)
         }
     }
 

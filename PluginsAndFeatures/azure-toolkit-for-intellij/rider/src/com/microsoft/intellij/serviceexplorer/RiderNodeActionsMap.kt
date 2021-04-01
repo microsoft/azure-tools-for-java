@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,9 +23,9 @@
 package com.microsoft.intellij.serviceexplorer
 
 import com.google.common.collect.ImmutableList
-import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction
+import com.microsoft.azure.toolkit.intellij.appservice.action.SSHIntoWebAppAction
+import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogsAction
+import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction
 import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
 import com.microsoft.intellij.serviceexplorer.azure.functionapp.actions.FunctionAppCreateAction
 import com.microsoft.intellij.serviceexplorer.azure.functionapp.actions.FunctionAppCreateDeploymentSlotAction
@@ -36,13 +36,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule
-import java.util.*
 
 class RiderNodeActionsMap : NodeActionsMap() {
 
@@ -94,6 +94,11 @@ class RiderNodeActionsMap : NodeActionsMap() {
                 .add(StartStreamingLogsAction::class.java)
                 .add(StopStreamingLogsAction::class.java)
                 .build()
+
+            node2Actions[FunctionAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener?>>()
+                 .add(StartStreamingLogsAction::class.java)
+                 .add(StopStreamingLogsAction::class.java)
+                 .build()
 
             node2Actions[FunctionDeploymentSlotModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                 .add(FunctionAppCreateDeploymentSlotAction::class.java)

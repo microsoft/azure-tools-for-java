@@ -27,9 +27,10 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
+import com.microsoft.tooling.msservices.serviceexplorer.Groupable
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
@@ -65,7 +66,7 @@ class SqlServerNode(parent: AzureDatabaseModule,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlServerAction(), NodeActionPosition.BOTTOM)
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlServerAction(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY)
         super.loadActions()
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -26,12 +26,12 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.ui.forms.appservice.functionapp.slot.FunctionAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule
 
 @Name("New Deployment Slot")
@@ -49,24 +49,24 @@ class FunctionAppCreateDeploymentSlotAction(private val node: FunctionDeployment
             return
         }
 
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Deployment Slot. User is not signed in.")
-            return
+        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+        signInFuture.doOnSuccess {
+            val functionAppNode = node.parent as? FunctionAppNode
+            if (functionAppNode == null) {
+                logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
+                return@doOnSuccess
+            }
+
+            val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
+                    lifetimeDef = project.defineNestedLifetime(),
+                    project = project,
+                    app = functionAppNode.functionApp,
+                    onCreate = { node.load(true) })
+
+            createSlotForm.show()
+        }.doOnError {
+            logger.error("Failed to create Deployment Slot. User is not signed in: $it")
         }
-
-        val functionAppNode = node.parent as? FunctionNode
-        if (functionAppNode == null) {
-            logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
-            return
-        }
-
-        val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
-            lifetimeDef = project.defineNestedLifetime(),
-            project = project,
-            app = functionAppNode.functionApp,
-            onCreate = { node.load(true) })
-
-        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

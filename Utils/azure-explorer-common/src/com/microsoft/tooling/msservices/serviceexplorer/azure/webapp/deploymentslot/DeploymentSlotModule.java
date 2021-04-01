@@ -13,13 +13,11 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleBase;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModulePresenterBase;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot.DeploymentSlotModuleView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +34,6 @@ public class DeploymentSlotModule extends DeploymentSlotModuleBase<DeploymentSlo
     private final DeploymentSlotModulePresenterBase<DeploymentSlot, DeploymentSlotModuleView<DeploymentSlot>> myPresenter;
 
     public static final String MODULE_NAME = "Deployment Slots";
-    protected final String subscriptionId;
-    protected final WebApp webapp;
 
     public DeploymentSlotModule(final Node parent, final String subscriptionId, final WebApp webapp, final boolean isDeploymentSlotsSupported) {
         super(MODULE_ID, parent, subscriptionId, webapp, isDeploymentSlotsSupported, myLogger);
@@ -53,28 +49,28 @@ public class DeploymentSlotModule extends DeploymentSlotModuleBase<DeploymentSlo
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = OperatingSystem.LINUX.name().equalsIgnoreCase(webapp.operatingSystem().toString());
+        boolean isLinux = OperatingSystem.LINUX.name().equalsIgnoreCase(getApp().operatingSystem().toString());
         return isLinux ? AzureIconSymbol.DeploymentSlot.MODULE_ON_LINUX : AzureIconSymbol.DeploymentSlot.MODULE;
     }
 
     @Override
     @AzureOperation(name = "webapp|deployment.delete", params = {"$name", "@webapp.name()"}, type = AzureOperation.Type.ACTION)
     public void removeNode(final String sid, final String name, Node node) {
-        presenter.onDeleteDeploymentSlot(sid, this.webapp.id(), name);
+        myPresenter.onDeleteDeploymentSlot(sid, this.getApp().id(), name);
         removeDirectChildNode(node);
     }
 
     @Override
     @AzureOperation(name = "webapp|deployment.reload", params = {"@webapp.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
-        presenter.onRefreshDeploymentSlotModule(this.subscriptionId, this.webapp.id());
+        myPresenter.onRefreshDeploymentSlotModule(this.getSubscriptionId(), this.getApp().id());
     }
 
     @Override
-    public void renderDeploymentSlots(@NotNull final List<DeploymentSlot> slots) {
-        slots.forEach(slot -> addChildNode(
+    public void renderDeploymentSlots(@org.jetbrains.annotations.NotNull List<? extends DeploymentSlot> deploymentSlots) {
+        deploymentSlots.forEach(slot -> addChildNode(
                 new DeploymentSlotNode(slot.id(), slot.parent().id(), slot.parent().name(),
                         this, slot.name(), slot.state(), slot.operatingSystem().toString(),
-                        this.subscriptionId, slot.defaultHostName())));
+                        this.getSubscriptionId(), slot.defaultHostName())));
     }
 }

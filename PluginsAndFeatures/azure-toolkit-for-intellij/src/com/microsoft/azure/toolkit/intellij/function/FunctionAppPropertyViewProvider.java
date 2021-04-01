@@ -25,6 +25,6 @@ public class FunctionAppPropertyViewProvider extends WebAppBasePropertyViewProvi
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final String subscriptionId = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
         final String functionAppId = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
-        return FunctionAppPropertyView.create(project, subscriptionId, functionAppId);
+        return FunctionAppPropertyView.create(project, subscriptionId, functionAppId, virtualFile);
     }
 }

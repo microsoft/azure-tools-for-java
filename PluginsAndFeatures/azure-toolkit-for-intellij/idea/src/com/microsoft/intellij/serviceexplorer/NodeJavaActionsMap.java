@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -26,20 +26,21 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.SSHIntoWebAppAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction;
 import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
-import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.action.PushToContainerRegistryAction;
 import com.microsoft.intellij.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
@@ -57,7 +58,7 @@ public class NodeJavaActionsMap extends NodeActionsMap {
 
     static {
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(PushToContainerRegistryAction.class).build());
+            .add(PushToContainerRegistryAction.class).build());
 
         node2Actions.put(HDInsightRootModuleImpl.class,
                          new ImmutableList.Builder<Class<? extends NodeActionListener>>()
@@ -68,7 +69,7 @@ public class NodeJavaActionsMap extends NodeActionsMap {
                                  .add(LinkSqlServerBigDataClusterAction.class).build());
 
         node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(SpringCloudStreamingLogsAction.class).build());
+            .add(SpringCloudStreamingLogAction.class).build());
 
         node2Actions.put(FunctionModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateFunctionAppAction.class).build());
@@ -92,6 +93,12 @@ public class NodeJavaActionsMap extends NodeActionsMap {
         node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class)
                 .add(StopStreamingLogsAction.class)
+                .build());
+
+        node2Actions.put(FunctionAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class)
+                .add(StopStreamingLogsAction.class)
+                .add(DeployFunctionAppAction.class)
                 .build());
     }
 
