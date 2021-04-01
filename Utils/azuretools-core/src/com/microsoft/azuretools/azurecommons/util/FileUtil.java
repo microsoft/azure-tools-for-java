@@ -1,35 +1,14 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -70,11 +49,10 @@ public class FileUtil {
 
     /**
      * Copies jar file from zip
+     *
      * @throws IOException
      */
-    public static boolean copyFileFromZip(File zipResource, String fileName, File destFile)
-    throws IOException {
-
+    public static boolean copyFileFromZip(File zipResource, String fileName, File destFile) throws IOException {
         boolean success = false;
 
         ZipFile zipFile = new ZipFile(zipResource);
@@ -83,17 +61,17 @@ public class FileUtil {
         File destParentFile = destFile.getParentFile();
 
         // create parent directories if not existing
-        if (destFile != null && destParentFile != null    && !destParentFile.exists()) {
+        if (destFile != null && destParentFile != null && !destParentFile.exists()) {
             destParentFile.mkdir();
         }
 
         while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                if (zipEntry.getName().equals(fileName)) {
-                    writeFile(zipFile.getInputStream(zipEntry), new BufferedOutputStream(new FileOutputStream(destFile)));
-                    success = true;
-                    break;
-                }
+            ZipEntry zipEntry = entries.nextElement();
+            if (zipEntry.getName().equals(fileName)) {
+                writeFile(zipFile.getInputStream(zipEntry), new BufferedOutputStream(new FileOutputStream(destFile)));
+                success = true;
+                break;
+            }
         }
         zipFile.close();
 
@@ -159,6 +137,11 @@ public class FileUtil {
      * @param sourceFiles source files array
      * @param targetZipFile ZIP file that will be created or overwritten
      */
+    @AzureOperation(
+        name = "common|artifact.zip_files",
+        params = {"$targetZipFile.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public static void zipFiles(@NotNull final File[] sourceFiles,
                                 @NotNull final File targetZipFile) throws Exception {
         ensureValidZipSourceAndTarget(sourceFiles, targetZipFile);
@@ -178,7 +161,7 @@ public class FileUtil {
         }
     }
 
-    public static boolean isNonEmptyFolder(String filePath){
+    public static boolean isNonEmptyFolder(String filePath) {
         File file = new File(filePath);
         return file.exists() && file.isDirectory() && file.listFiles() != null && file.listFiles().length > 0;
     }

@@ -31,9 +31,8 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.IdeaSettableControlWithRwLock
 import com.microsoft.azure.hdinsight.common.mvvm.Mvvm
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azure.hdinsight.spark.run.SparkSubmissionRunner
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.Companion.isNotReadyPath
-import com.microsoft.azuretools.ijidea.ui.AccessibleHideableTitledPanel
+import com.microsoft.intellij.ui.AccessibleHideableTitledPanel
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers

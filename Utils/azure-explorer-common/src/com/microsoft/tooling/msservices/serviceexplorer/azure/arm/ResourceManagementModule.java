@@ -1,62 +1,52 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.*;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.io.IOException;
 import java.util.List;
 
 public class ResourceManagementModule extends AzureRefreshableNode implements ResourceManagementModuleView {
 
     private static final String RESOURCE_MANAGEMENT_MODULE_ID = ResourceManagementModule.class.getName();
     private static final String ICON_PATH = "AzureARM.svg";
-    private static final String BASE_MODULE_NAME = "Resource Management";
+    public static final String MODULE_NAME = "Resource Management";
     private final ResourceManagementModulePresenter<ResourceManagementModule> rmModulePresenter;
     public static final Object listenerObj = new Object();
 
     public ResourceManagementModule(Node parent) {
-        super(RESOURCE_MANAGEMENT_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+        super(RESOURCE_MANAGEMENT_MODULE_ID, MODULE_NAME, parent, ICON_PATH);
         rmModulePresenter = new ResourceManagementModulePresenter<>();
         rmModulePresenter.onAttachView(ResourceManagementModule.this);
         createListener();
     }
 
     @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.ResourceManagement.MODULE;
+    }
+
+    @Override
     protected void refreshItems() throws AzureCmdException {
         try {
             rmModulePresenter.onModuleRefresh();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
         } catch (final CanceledByUserException e) {
             DefaultLoader.getUIHelper().showWarningNotification("Refreshing cancelled", "You canceled refreshing resource groups.");
         }

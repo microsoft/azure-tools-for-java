@@ -46,4 +46,6 @@ class SparkFailureTaskDebugConfigurationFactory(type: ConfigurationType) : Confi
     override fun getName(): String {
         return NAME
     }
+
+    override fun getId(): String = NAME
 }

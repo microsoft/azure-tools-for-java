@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import com.microsoft.azuretools.ijidea.ui.AccessibleHideableTitledPanel
+import com.microsoft.intellij.ui.AccessibleHideableTitledPanel
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JComponent
 

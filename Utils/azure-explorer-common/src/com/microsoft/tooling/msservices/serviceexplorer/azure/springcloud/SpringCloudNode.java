@@ -1,49 +1,32 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentResource;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import io.reactivex.rxjava3.disposables.Disposable;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_IN_PORTAL_SPRING_CLOUD_APP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
 import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule.ICON_FILE;
 
 /**
@@ -73,6 +56,11 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         loadActions();
     }
 
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.SpringCloud.CLUSTER;
+    }
+
     private void notifyDataRefresh(SpringCloudAppEvent event) {
         if (event.isDelete()) {
             SpringCloudAppNode matchedNode =
@@ -95,24 +83,18 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    openResourcesInPortal(subscriptionId, clusterId);
-                }
-            }));
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(SpringCloudModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
     protected void refreshItems() {
-        try {
-            springCloudNodePresenter.onRefreshSpringCloudServiceNode(this.subscriptionId, this.clusterId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_LOAD_APPS, this.clusterName), e);
-            DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_LOAD_APPS, this.clusterName),
-                                                      e, ERROR_LOAD_APP, false, true);
-        }
+        springCloudNodePresenter.onRefreshSpringCloudServiceNode(this.subscriptionId, this.clusterId);
     }
 
     @Override
@@ -184,4 +166,9 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
             rxSubscription.dispose();
         }
     }
+
+    private void openInPortal() {
+        this.openResourcesInPortal(this.subscriptionId, this.clusterId);
+    }
+
 }

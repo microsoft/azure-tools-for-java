@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
@@ -26,12 +9,19 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -41,10 +31,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_STORAGE_IN_PORTAL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
 
@@ -57,12 +43,17 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
     private String subscriptionId;
 
     public StorageNode(Node parent, String subscriptionId, StorageAccount storageAccount) {
-        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH,  true);
+        super(storageAccount.name(), storageAccount.name(), parent, STORAGE_ACCOUNT_ICON_PATH, true);
 
         this.subscriptionId = subscriptionId;
         this.storageAccount = storageAccount;
 
         loadActions();
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.StorageAccount.MODULE;
     }
 
     @Override
@@ -73,76 +64,21 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
         return properties;
     }
 
-    public class OpenInPortalAction extends AzureNodeActionListener {
-
-        public OpenInPortalAction() {
-            super(StorageNode.this, "View storage in portal");
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            openResourcesInPortal(subscriptionId, storageAccount.id());
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return STORAGE;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return OPEN_STORAGE_IN_PORTAL;
-        }
+    @AzureOperation(name = ActionConstants.StorageAccount.OPEN_IN_PORTAL, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        openResourcesInPortal(subscriptionId, storageAccount.id());
     }
 
-    public class DeleteStorageAccountAction extends AzureNodeActionPromptListener {
-        public DeleteStorageAccountAction() {
-            super(StorageNode.this,
-                    String.format("This operation will delete storage account %s.\nAre you sure you want to continue?", storageAccount.name()),
-                    "Deleting Storage Account");
+    @AzureOperation(name = ActionConstants.StorageAccount.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            return;
         }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e)
-                throws AzureCmdException {
-            try {
-                AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                // not signed in
-                if (azureManager == null) {
-                    return;
-                }
-                Azure azure = azureManager.getAzure(subscriptionId);
-                azure.storageAccounts().deleteByResourceGroup(storageAccount.resourceGroupName(), storageAccount.name());
-                DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        // instruct parent node to remove this node
-                        getParent().removeDirectChildNode(StorageNode.this);
-                    }
-                });
-            } catch (Throwable ex) {
-                throw new RuntimeException("An error occurred while attempting to delete storage account.", ex);
-            }
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
-        }
-
-        @Override
-        protected String getServiceName(NodeActionEvent event) {
-            return STORAGE;
-        }
-
-        @Override
-        protected String getOperationName(NodeActionEvent event) {
-            return DELETE_STORAGE_ACCOUNT;
-        }
+        Azure azure = azureManager.getAzure(subscriptionId);
+        azure.storageAccounts().deleteByResourceGroup(storageAccount.resourceGroupName(), storageAccount.name());
+        DefaultLoader.getIdeHelper().invokeLater(() -> getParent().removeDirectChildNode(StorageNode.this));
     }
 
     @Override
@@ -156,9 +92,15 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction(ACTION_OPEN_IN_PORTAL, CommonIcons.ACTION_OPEN_IN_BROWSER, new OpenInPortalAction());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteStorageAccountAction(), NodeActionPosition.BOTTOM);
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         return super.initActions();
+    }
+
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(StorageModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     public StorageAccount getStorageAccount() {
@@ -171,5 +113,7 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
                 + "<br>" + storageAccount.resourceGroupName();
     }
 
-    public String getSubscriptionId() { return subscriptionId; }
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
 }

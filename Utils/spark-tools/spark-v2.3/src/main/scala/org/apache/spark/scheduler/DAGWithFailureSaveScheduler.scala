@@ -23,6 +23,7 @@
 package org.apache.spark.scheduler
 
 import java.io._
+import java.net.URI
 import java.text.SimpleDateFormat
 import java.util.{Base64, Date}
 
@@ -31,6 +32,7 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.{FileUtil, Path}
 import org.apache.spark._
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.failure.{BroadcastValue, FailureTask, ShuffleData, ShuffleDeps}
 import org.apache.spark.network.buffer.ManagedBuffer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage._
@@ -39,6 +41,7 @@ import org.json4s.jackson.Serialization.write
 
 import scala.collection.mutable
 import scala.language.postfixOps
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 private[spark]
@@ -69,23 +72,26 @@ class DAGWithFailureSaveScheduler(
 //  private val mapOutputTracker = sc.env.mapOutputTracker.asInstanceOf[MapOutputTrackerMaster]
   val failedEvents: mutable.HashMap[Int, CompletionEvent] = new mutable.HashMap()
   private val wd = org.apache.hadoop.fs.FileSystem.get(sc.hadoopConfiguration).getWorkingDirectory
-  private val failureEventsDir = sc.eventLogDir.getOrElse(wd.toUri)
+  private val failureContextPathKey = "spark.failure.path"
+  private val failureEventsDir = if (sc.conf.contains(failureContextPathKey)) {
+    URI.create(sc.conf.get(failureContextPathKey))
+  } else {
+    sc.eventLogDir.getOrElse(wd.toUri)
+  }
   private val fs = Utils.getHadoopFileSystem(failureEventsDir, sc.hadoopConfiguration)
   private val minSizeForBroadcast =
     sc.conf.getSizeAsBytes("spark.shuffle.mapOutput.minSizeForBroadcast", "512k").toInt
+  private val serializer = SparkEnv.get.closureSerializer.newInstance()
 
   def getEncodedByteArray(buffer: Array[Byte]): String =
     Base64.getEncoder.encode(buffer)
       .map(_.toChar)
       .mkString
 
-  def encodeObject(obj: Any): String = {
-    val bytesOutputStream = new ByteArrayOutputStream()
-    val objOutputStream = new ObjectOutputStream(bytesOutputStream)
-    objOutputStream.writeObject(obj)
-    objOutputStream.close()
+  def encodeObject[T: ClassTag](obj: T): String = {
+    val objBytes = serializer.serialize[T](obj).array()
 
-    getEncodedByteArray(bytesOutputStream.toByteArray)
+    getEncodedByteArray(objBytes)
   }
 
   def writeIndexFile(outputStream: OutputStream, lengths: Array[Long]): Unit = {
@@ -121,7 +127,7 @@ class DAGWithFailureSaveScheduler(
     }
   }
 
-  def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Unit = {
+  def saveFailureTask(task: Task[_], stageId: Int, taskId: String, attemptId: Int, timestamp: String): Path = {
     def getFailureSavingPath(fileName: String = null): Path = {
       val appFolderName = sc.applicationId + sc.applicationAttemptId.map(attemptId => s"_attempt_${attemptId}_").getOrElse("_") + timestamp
       
@@ -267,6 +273,8 @@ class DAGWithFailureSaveScheduler(
           case NonFatal(err) => logWarning(s"Got an error when saving runtime $runtimeFile", err)
         }
       }))
+
+    failureContextFile.getParent
   }
 
   override private[scheduler] def handleTaskCompletion(event: CompletionEvent): Unit = {
@@ -289,22 +297,34 @@ class DAGWithFailureSaveScheduler(
 
   override private[scheduler] def handleTaskSetFailed(taskSet: TaskSet, reason: String, exception: Option[Throwable]): Unit = {
     val FailureMessageRegEx = """(?s)^Task (\d+) in stage (.+) failed (\d+) times.*""".r
-    reason match {
+    val reasonWithFailureDebug: String = reason match {
       case FailureMessageRegEx(taskIndex, stage, retries) => {
         failedEvents.get(taskIndex.toInt)
-          .foreach(event => {
+          .map(event => {
             val task = event.task
             val taskId = event.taskInfo.id
             val stageId = task.stageId
             val taskFailureTimestamp = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'").format(new Date(event.taskInfo.finishTime))
 
             logInfo("Save failure task " + taskIndex)
-            saveFailureTask(task, stageId, taskId, event.taskInfo.attemptNumber, taskFailureTimestamp)
+            val savedFolder = saveFailureTask(task, stageId, taskId, event.taskInfo.attemptNumber, taskFailureTimestamp)
+
+            val driverStacktraceStart = reason.indexOf("Driver stacktrace:")
+            val insertPlace = if (driverStacktraceStart < 0)
+              reason.size
+            else
+              driverStacktraceStart
+
+            s"""
+              |${reason.substring(0, insertPlace)}Failure debugging:
+              |    Failure context saved into $savedFolder
+              |${reason.substring(insertPlace)}""".stripMargin
           })
+          .getOrElse(reason)
       }
-      case _ =>
+      case _ => reason
     }
 
-    super.handleTaskSetFailed(taskSet, reason, exception)
+    super.handleTaskSetFailed(taskSet, reasonWithFailureDebug, exception)
   }
 }

@@ -31,7 +31,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.WEBHDFS
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
-import com.microsoft.azuretools.ijidea.ui.HintTextField
+import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.ui.util.UIUtils
 import java.awt.CardLayout

@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.common;
@@ -31,11 +14,11 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -46,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
@@ -57,11 +41,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
-    private static final String ERROR_LOADING_ITEMS = "Failed to list resources";
     private static final int DEBOUNCE_DELAY = 500;
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
@@ -69,8 +57,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Getter
     @Setter
     private boolean required;
-    private T value;
+    private Object value;
     private boolean valueNotSet = true;
+    @Setter
+    private boolean forceDisable;
+    private String label;
 
     public AzureComboBox() {
         this(true);
@@ -125,18 +116,27 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refreshValue();
     }
 
+    public void setValue(final ItemReference<T> val) {
+        this.valueNotSet = false;
+        this.value = val;
+        this.refreshValue();
+    }
+
     private void refreshValue() {
         if (Objects.equals(this.value, this.getSelectedItem())) {
             return;
         }
         final List<T> items = this.getItems();
+        if (!this.valueNotSet && this.value instanceof AzureComboBox.ItemReference) {
+            items.stream().filter(i -> ((ItemReference<?>) this.value).is(i)).findFirst().ifPresent(this::setValue);
+        }
         if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
         } else if (value instanceof Draft) {
             // todo: unify model for custom created resource
-            super.addItem(value);
+            super.addItem((T) value);
             super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
@@ -152,6 +152,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.refresher.debounce();
     }
 
+    @AzureOperation(
+        name = "common|combobox.load_items",
+        params = {"@label()"},
+        type = AzureOperation.Type.ACTION
+    )
     private void doRefreshItems() {
         try {
             this.setLoading(true);
@@ -161,7 +166,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-                throw (RuntimeException) e;
+                return;
             }
             this.setLoading(false);
             this.handleLoadingError(e);
@@ -194,7 +199,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 // Reset item to show "Refreshing..." while new items are being fetched
                 this.editor.setItem(null);
             } else {
-                this.setEnabled(true);
+                this.setEnabled(forceDisable ? false : true);
                 this.setEditor(this.inputEditor);
             }
         });
@@ -234,10 +239,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void handleLoadingError(Throwable e) {
-        final MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
-        if (uiHelper != null) {
-            uiHelper.showException(ERROR_LOADING_ITEMS, (Exception) e);
-        }
+        AzureExceptionHandler.onRxException(e);
     }
 
     protected boolean isFilterable() {
@@ -274,7 +276,12 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
 
         protected ExtendableTextComponent.Extension getExtension() {
-            return AzureComboBox.this.getExtension();
+            final ExtendableTextComponent.Extension extension = AzureComboBox.this.getExtension();
+            return extension == null ? null : ExtendableTextComponent.Extension.create(
+                extension.getIcon(true), extension.getTooltip(), () -> {
+                    AzureComboBox.this.hidePopup();
+                    extension.getActionOnClick().run();
+                });
         }
     }
 
@@ -285,7 +292,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             // do nothing: item can not be set on loading
             super.setItem(item);
             if (item == null) {
-                this.editor.setText("Refreshing...");
+                this.editor.setText(message("common.refreshing"));
             }
         }
 
@@ -353,6 +360,37 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                     // swallow exception and show all items
                 }
             });
+        }
+    }
+
+    public void setLabel(final String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return Optional.ofNullable(this.label).orElse("");
+    }
+
+    private String label() {
+        return Optional.ofNullable(this.label).orElse(this.getClass().getSimpleName());
+    }
+
+    public static class ItemReference<T> {
+        private final Predicate<? super T> predicate;
+
+        public ItemReference(@Nonnull Predicate<? super T> predicate) {
+            this.predicate = predicate;
+        }
+
+        public ItemReference(@Nonnull Object val, Function<T, ?> mapper) {
+            this.predicate = t -> Objects.equals(val, mapper.apply(t));
+        }
+
+        public boolean is(Object obj) {
+            if (Objects.isNull(obj)) {
+                return false;
+            }
+            return this.predicate.test((T) obj);
         }
     }
 }

@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.sdkmanage;
@@ -28,12 +11,15 @@ import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
@@ -41,7 +27,6 @@ import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,6 +54,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
     protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
+    protected Map<String, MySQLManager> sidToMySQLManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
@@ -106,7 +92,8 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public String getTenantIdBySubscription(String subscriptionId) throws IOException {
+    @AzureOperation(name = "account|subscription.get_tenant", params = {"$subscriptionId"}, type = AzureOperation.Type.TASK)
+    public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
@@ -120,12 +107,13 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public List<Subscription> getSubscriptions() throws IOException {
+    public List<Subscription> getSubscriptions() {
         return getSubscriptionsWithTenant().stream().map(Pair::first).collect(Collectors.toList());
     }
 
     @Override
-    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException {
+    @AzureOperation(name = "account|subscription.list.tenant|authorized", type = AzureOperation.Type.SERVICE)
+    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
@@ -158,7 +146,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public Azure getAzure(String sid) throws IOException {
+    public @Nullable Azure getAzure(String sid) {
         if (!isSignedIn()) {
             return null;
         }
@@ -174,30 +162,36 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+    public @Nullable AppPlatformManager getAzureSpringCloudClient(String sid) {
         if (!isSignedIn()) {
             return null;
         }
         return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authSpringCloud(sid, tid);
         });
     }
 
     @Override
-    public InsightsManager getInsightsManager(String sid) throws IOException {
+    public MySQLManager getMySQLManager(String sid) {
+        if (!isSignedIn()) {
+            return null;
+        }
+        return sidToMySQLManagerMap.computeIfAbsent(sid, s -> {
+            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            return authMySQL(sid, tid);
+        });
+    }
+
+    public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
         }
         return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
-            try {
-                // Register insights namespace first
-                final Azure azure = getAzure(sid);
-                azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
-            } catch (IOException e) {
-                // swallow exception while get azure client
-            }
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            // Register insights namespace first
+            final Azure azure = getAzure(sid);
+            azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
+            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authApplicationInsights(sid, tid);
         });
     }
@@ -216,7 +210,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public String getManagementURI() throws IOException {
+    public @Nullable String getManagementURI() {
         if (!isSignedIn()) {
             return null;
         }
@@ -224,6 +218,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getEnvironment().getAzureEnvironment().resourceManagerEndpoint();
     }
 
+    @Override
     public String getStorageEndpointSuffix() {
         if (!isSignedIn()) {
             return null;
@@ -237,12 +232,12 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public void drop() throws IOException {
+    public void drop() {
         LOGGER.log(Level.INFO, "ServicePrincipalAzureManager.drop()");
         this.subscriptionManager.cleanSubscriptions();
     }
 
-    protected abstract String getCurrentTenantId() throws IOException;
+    protected abstract String getCurrentTenantId();
 
     protected boolean isSignedIn() {
         return false;
@@ -260,6 +255,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
+    @AzureOperation(name = "account|subscription.list.tenant", params = {"$authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
         return authentication.subscriptions().listAsync()
                 .toList()
@@ -267,6 +263,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
+    @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
                 .toList()
@@ -274,6 +271,7 @@ public abstract class AzureManagerBase implements AzureManager {
                 .singleOrDefault(Collections.emptyList());
     }
 
+    @AzureOperation(name = "account|tenant.auth", params = {"$tenantId"}, type = AzureOperation.Type.TASK)
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()
@@ -286,6 +284,14 @@ public abstract class AzureManagerBase implements AzureManager {
     protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(AppPlatformManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
+                .authenticate(credentials, subscriptionId);
+    }
+
+    protected MySQLManager authMySQL(String subscriptionId, String tenantId) {
+        final AzureTokenCredentials credentials = getCredentials(tenantId);
+        return buildAzureManager(MySQLManager.configure())
                 .withInterceptor(new TelemetryInterceptor())
                 .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);

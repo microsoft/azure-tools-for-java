@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
 open class SeqActions(private vararg val actionIds: String): AzureAnAction(), ILogger {

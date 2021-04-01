@@ -1,23 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.forms;
@@ -29,6 +13,8 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -123,31 +109,6 @@ public class QueueMessageForm extends AzureDialogWrapper {
 
         final String message = messageTextArea.getText();
         final int expireSeconds = getExpireSeconds();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Adding queue message", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                try {
-                    QueueMessage queueMessage = new QueueMessage(
-                            "",
-                            queue.getName(),
-                            message,
-                            new GregorianCalendar(),
-                            new GregorianCalendar(),
-                            0);
-
-                    StorageClientSDKManager.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
-
-                    if (onAddedMessage != null) {
-                        ApplicationManager.getApplication().invokeLater(onAddedMessage);
-                    }
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to add queue message." + "\n"
-                            + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
-                }
-            }
-        });
 
         sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);

@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.46.0</version>
+        <version>3.50.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
@@ -40,6 +40,56 @@
             </testResource>
         </testResources>
         <plugins>
+            <plugin>
+                <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.11</version>
+                <configuration>
+                    <showWeaveInfo>false</showWeaveInfo>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <Xlint>ignore</Xlint>
+                    <complianceLevel>1.8</complianceLevel>
+                    <encoding>UTF-8</encoding>
+                    <verbose>false</verbose>
+                    <outxml>true</outxml>
+                    <forceAjcCompile>true</forceAjcCompile>
+                    <sources/><!-- this is important!-->
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>com.microsoft.azure</groupId>
+                            <artifactId>azure-toolkit-common-lib</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile-with-aspectj</id>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                            </weaveDirectories>
+                        </configuration>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-with-aspectj</id>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
+                            </weaveDirectories>
+                        </configuration>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
@@ -86,6 +136,10 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-appservice-lib</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.azure.functions</groupId>
             <artifactId>azure-functions-java-library</artifactId>
@@ -134,9 +188,8 @@
             <version>4.5.12</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
+            <groupId>com.microsoft.azure.appplatform.v2020_07_01</groupId>
             <artifactId>azure-mgmt-appplatform</artifactId>
-            <version>1.0.0-beta-2</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>

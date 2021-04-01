@@ -1,34 +1,20 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments;
 
 import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -44,11 +30,6 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
     public static final String ICON_PATH = "AzureARMDeployment.svg";
     private static final String EXPORT_TEMPLATE_SUCCESS = "Export successfully.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
-    private static final String SHOW_PROPERTY_ACTION = "Show Properties";
-    private static final String DELETE_ACTION = "Delete";
-    private static final String DELETE_DEPLOYMENT_PROMPT_MESSAGE = "This operation will delete the Deployment "
-        + "%s. Are you sure you want to continue?";
-    private static final String DELETE_DEPLOYMENT_PROGRESS_MESSAGE = "Deleting Deployment";
     private final Deployment deployment;
     private final DeploymentNodePresenter deploymentNodePresenter;
     private final String subscriptionId;
@@ -73,9 +54,15 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, CommonIcons.ACTION_OPEN_PREFERENCES, new ShowDeploymentPropertyAction());
-        addAction(DELETE_ACTION, CommonIcons.ACTION_DISCARD, new DeleteDeploymentAction(), NodeActionPosition.BOTTOM);
+        addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
         super.loadActions();
+    }
+
+    protected final BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName("Deployment of Resource Management")
+                .withInstanceName(name);
     }
 
     public Deployment getDeployment() {
@@ -90,30 +77,14 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
         return subscriptionId;
     }
 
-    // Show property action class
-    private class ShowDeploymentPropertyAction extends NodeActionListener {
-
-        @Override
-        protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-            EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
-            DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
-        }
+    @AzureOperation(name = "common.show_properties", params = {"@deployment.name()"}, type = AzureOperation.Type.ACTION)
+    private void showProperties() {
+        EventUtil.logEvent(EventType.info, ARM, SHOW_DEPLOYMENT_PROPERTY, null);
+        DefaultLoader.getUIHelper().openDeploymentPropertyView(DeploymentNode.this);
     }
 
-    private class DeleteDeploymentAction extends AzureNodeActionPromptListener {
-
-        DeleteDeploymentAction() {
-            super(DeploymentNode.this, String.format(DELETE_DEPLOYMENT_PROMPT_MESSAGE, deployment.name()),
-                DELETE_DEPLOYMENT_PROGRESS_MESSAGE);
-        }
-
-        @Override
-        protected void azureNodeAction(NodeActionEvent e) {
-            getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
-        }
-
-        @Override
-        protected void onSubscriptionsChanged(NodeActionEvent e) {
-        }
+    @AzureOperation(name = ActionConstants.ResourceManagement.Deployment.DELETE, type = AzureOperation.Type.ACTION)
+    private void delete() {
+        getParent().removeNode(subscriptionId, deployment.id(), DeploymentNode.this);
     }
 }

@@ -1,0 +1,6 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="~.*(spark|cosmosspark|cosmosserverlessspark|hdinsight|projectarcadia|sqlbigdata).*"/>
+        <Bug category="SECURITY"/>
+    </Match>
+</FindBugsFilter>

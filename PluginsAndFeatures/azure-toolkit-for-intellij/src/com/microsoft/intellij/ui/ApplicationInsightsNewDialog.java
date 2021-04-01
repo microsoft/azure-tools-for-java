@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.ui;
@@ -26,13 +9,16 @@ import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
 import javax.swing.*;
@@ -186,31 +172,23 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            DefaultLoader.getIdeHelper().runInBackground(null,
-                                                         "Creating Application Insights Resource " + txtName.getText(),
-                                                         false,
-                                                         true,
-                                                         "Creating Application Insights Resource " + txtName.getText(),
-                                                         new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                ApplicationInsightsComponent resource =
-                                        AzureSDKManager.createInsightsResource(
-                                                currentSub,
-                                                resourceGroup,
-                                                isNewGroup,
-                                                txtName.getText(),
-                                                (String) comboReg.getSelectedItem());
-                                resourceToAdd = new ApplicationInsightsResource(resource, currentSub , true);
-                                if (onCreate != null) {
-                                    onCreate.run();
-                                }
-                            } catch (Exception ex) {
-                                PluginUtil.displayErrorDialogInAWTAndLog(message("aiErrTtl"), message("resCreateErrMsg"), ex);
-                            }
-                        }
-                    });
+            final IAzureOperationTitle title = AzureOperationBundle.title("ai.create.rg", txtName.getText(), resourceGroup);
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                try {
+                    ApplicationInsightsComponent resource = AzureSDKManager.createInsightsResource(
+                            currentSub,
+                            resourceGroup,
+                            isNewGroup,
+                            txtName.getText(),
+                            (String) comboReg.getSelectedItem());
+                    resourceToAdd = new ApplicationInsightsResource(resource, currentSub, true);
+                    if (onCreate != null) {
+                        onCreate.run();
+                    }
+                } catch (Exception ex) {
+                    PluginUtil.displayErrorDialogInAWTAndLog(message("aiErrTtl"), message("resCreateErrMsg"), ex);
+                }
+            }));
             super.doOKAction();
         }
     }

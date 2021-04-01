@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
@@ -70,12 +53,12 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             final AppServicePlan plan = azure.appServices().appServicePlans().getById(appBase.appServicePlanId());
             return generateProperty(appBase, plan);
         }).subscribeOn(getSchedulerProvider().io())
-            .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showProperty(property);
-            }), e -> errorHandler((Exception) e));
+                .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showProperty(property);
+                }));
     }
 
     protected WebAppProperty generateProperty(@NotNull final WebAppBase webAppBase, @NotNull final AppServicePlan plan) {
@@ -136,20 +119,19 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
             updateAppSettings(sid, webAppId, name, editedSettings, toRemove);
             return true;
         }).subscribeOn(getSchedulerProvider().io())
-            .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showPropertyUpdateResult(true);
-                sendTelemetry("UpdateAppSettings", telemetryMap, true, null);
-            }), e -> {
-                errorHandler((Exception) e);
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().showPropertyUpdateResult(false);
-                sendTelemetry("UpdateAppSettings", telemetryMap, false, e.getMessage());
-            });
+                .subscribe(property -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showPropertyUpdateResult(true);
+                    sendTelemetry("UpdateAppSettings", telemetryMap, true, null);
+                }), e -> {
+                        if (isViewDetached()) {
+                            return;
+                        }
+                        getMvpView().showPropertyUpdateResult(false);
+                        sendTelemetry("UpdateAppSettings", telemetryMap, false, e.getMessage());
+                    });
     }
 
     public void onGetPublishingProfileXmlWithSecrets(@NotNull final String sid, @NotNull final String webAppId,
@@ -157,29 +139,19 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         final Map<String, String> telemetryMap = new HashMap<>();
         telemetryMap.put("SubscriptionId", sid);
         Observable.fromCallable(() -> getPublishingProfile(sid, webAppId, name, filePath))
-            .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().showGetPublishingProfileResult(res);
-            sendTelemetry("DownloadPublishProfile", telemetryMap, true, null);
-        }), e -> {
-            errorHandler((Exception) e);
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().showGetPublishingProfileResult(false);
-            sendTelemetry("DownloadPublishProfile", telemetryMap, false, e.getMessage());
-        });
-    }
-
-    protected void errorHandler(final Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(CANNOT_GET_WEB_APP_PROPERTY, e);
-        });
+                .subscribeOn(getSchedulerProvider().io()).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    if (isViewDetached()) {
+                        return;
+                    }
+                    getMvpView().showGetPublishingProfileResult(res);
+                    sendTelemetry("DownloadPublishProfile", telemetryMap, true, null);
+                }), e -> {
+                        if (isViewDetached()) {
+                            return;
+                        }
+                        getMvpView().showGetPublishingProfileResult(false);
+                        sendTelemetry("DownloadPublishProfile", telemetryMap, false, e.getMessage());
+                    });
     }
 
     protected void sendTelemetry(@NotNull final String actionName, @NotNull final Map<String, String> telemetryMap,

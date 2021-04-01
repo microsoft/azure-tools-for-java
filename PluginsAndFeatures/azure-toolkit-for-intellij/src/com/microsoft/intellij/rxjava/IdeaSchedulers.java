@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.rxjava;
@@ -33,6 +16,8 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.slf4j.LoggerFactory;
@@ -64,22 +49,20 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
     }
 
     public Scheduler processBarVisibleAsync(@NotNull final String title) {
-        return from(command -> ApplicationManager.getApplication().invokeLater(() -> {
+        return from(command -> AzureTaskManager.getInstance().runLater(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull final ProgressIndicator progressIndicator) {
                     command.run();
                 }
             };
-
             final ProgressIndicator progressIndicator = new BackgroundableProcessIndicator(task);
-
             ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, progressIndicator);
-        }, ModalityState.any()));
+        }, AzureTask.Modality.ANY));
     }
 
     public Scheduler processBarVisibleSync(@NotNull final String title) {
-        return from(command -> ApplicationManager.getApplication().invokeAndWait(() -> {
+        return from(command -> AzureTaskManager.getInstance().runAndWait(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull final ProgressIndicator progressIndicator) {
@@ -108,7 +91,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                     application.invokeLater(command, state);
                 }
             } catch (final ProcessCanceledException ignored) {
-                // FIXME!!! Not support process canceling currently, just ignore it
+                // TODO!!! Not support process canceling currently, just ignore it
             }
         });
     }
@@ -125,7 +108,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                     application.executeOnPooledThread(command);
                 }
             } catch (final ProcessCanceledException ignored) {
-                // FIXME!!! Not support process canceling currently, just ignore it
+                // TODO!!! Not support process canceling currently, just ignore it
             }
         });
     }
@@ -147,7 +130,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
     }
 
     public Scheduler backgroundableTask(final String title) {
-        return from(command -> ProgressManager.getInstance().run(new Backgroundable(project, title, true, DEAF) {
+        return from(command -> ProgressManager.getInstance().run(new Backgroundable(project, title, false, DEAF) {
             @Override
             public void run(final @NotNull ProgressIndicator indicator) {
                 final Thread workerThread = Thread.currentThread();

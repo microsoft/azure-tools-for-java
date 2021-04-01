@@ -1,5 +1,75 @@
-<!-- Version: 3.45.0 -->
+<!-- Version: 3.50.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.50.0
+
+### Added
+<img src="https://user-images.githubusercontent.com/19339116/109937625-11666400-7d0a-11eb-9850-82a62d65f3fa.gif" width="840" height="525" />
+
+- Development workflow for Azure Database for MySQL
+  - Connect Azure Database for MySQL Server to local project from Azure Explorer or application.properties file
+  - Automatically inject datasource connection properties into runtime environment for local run
+  - Publish Azure Web App with datasource connection properties in application settings
+
+## 3.49.0
+
+### Changed
+- Collect performance metrics data via telemetry for future performance tuning.
+- Update the status text on progress indicator.
+- Update context menu icons in Azure Explorer.
+
+## 3.48.0
+
+### Changed
+- Update icons in Azure toolkits
+- Update Tomcat base images
+- Using non-blocking UI to replace blocking progress indicator
+- Remove non-functional "cancel" buttons in foreground operations
+
+## 3.47.0
+
+### Added
+<img src="https://user-images.githubusercontent.com/19339116/102885897-15b30d00-448f-11eb-9733-ecbf77ee9760.gif" width="840" height="525" />
+
+- Add Azure Database for MySQL support in Azure Toolkits
+  - Manage Azure Database for MySQL instance (create/start/stop/restart/configure/show properties)
+  - Configure Azure Database for MySQL to allow access it from azure services and local PC
+  - Show sample of JDBC connection strings on Azure Database for MySQL
+  - Open and connect to Azure Database for MySQL server by Intellij database tools
+- Add Stacktrace filter in Spark console
+- Enable speed search in subscription table
+- Enable speed search in Azure explorer tree
+
+### Changed
+- Upgrade Azure Blob batch SDK to 12.7.0
+- Enhance App Service file explorer in Azure explorer
+
+### Fixed
+- [#4801](https://github.com/microsoft/azure-tools-for-java/issues/4801) Spark tools library serializer potential issues
+- [#4808](https://github.com/microsoft/azure-tools-for-java/issues/4808) Fixes unable to attach function host while running functions
+- [#4814](https://github.com/microsoft/azure-tools-for-java/issues/4814) Spark livy console staring being blocked by artifacts uploading failure
+- [#4823](https://github.com/microsoft/azure-tools-for-java/issues/4823) Compiling warnings of ConfigurationFactory.getId being deprecated
+- [#4827](https://github.com/microsoft/azure-tools-for-java/issues/4827) Fix HDInsight cluster can't link non-cluster-default Azure Blob storage account issue
+- [#4829](https://github.com/microsoft/azure-tools-for-java/issues/4829) UI hang issue with changing Spark Synapse run configuration ADLS Gen2 storage key settings
+
+## 3.46.0
+
+### Added
+- Support IntelliJ 2020.3 RC
+
+### Changed
+- Refactor error handling, unify the error notifications
+
+### Fixed
+- [#4764](https://github.com/microsoft/azure-tools-for-java/pull/4764) Fixes HDInsights clusters of all subscriptions(instead of the selected subscription) is listed 
+- [#4766](https://github.com/microsoft/azure-tools-for-java/pull/4766) Fixes duplicate before run task for Spring Cloud deployment run configuration
+- [#4784](https://github.com/microsoft/azure-tools-for-java/pull/4784) Fixes failed to auth with Azure CLI with multi Azure environment enabled
+
+
+## 3.45.1
+### Fixed
+- [#4765](https://github.com/microsoft/azure-tools-for-java/pull/4765) Fixes no before run tasks when deploy Spring Cloud app in project menu
+
 
 ## 3.45.0
 Flight recorder support was added in the latest Azure Toolkit for IntelliJ v3.45.0! You may monitor your online app

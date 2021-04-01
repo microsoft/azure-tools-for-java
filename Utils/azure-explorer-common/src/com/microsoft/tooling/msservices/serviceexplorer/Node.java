@@ -1,33 +1,15 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -43,19 +25,22 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class Node implements MvpView, BasicTelemetryProperty {
+public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     private static final String CLICK_ACTION = "click";
     public static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
+    public static final int DEFAULT_SORT_PRIORITY = 100;
+    private static final String PROGRESS_MESSAGE_PATTERN = "%s %s (%s)...";
+    private static final String PROMPT_MESSAGE_PATTERN = "This operation will %s your %s: %s. Are you sure you want to continue?";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -84,8 +69,22 @@ public class Node implements MvpView, BasicTelemetryProperty {
         this(id, name, null, null, false);
     }
 
+    public Node(String id, String name, Node parent) {
+        this(id, name, parent, false);
+    }
+
     public Node(String id, String name, Node parent, String iconPath) {
         this(id, name, parent, iconPath, false);
+    }
+
+    public Node(String id, String name, Node parent, boolean delayActionLoading) {
+        this.id = id;
+        this.name = name;
+        this.parent = parent;
+
+        if (!delayActionLoading) {
+            loadActions();
+        }
     }
 
     public Node(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
@@ -142,11 +141,13 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public boolean isDescendant(Node node) {
-        if (isDirectChild(node))
+        if (isDirectChild(node)) {
             return true;
-        for (Node child : childNodes) {
-            if (child.isDescendant(node))
+        }
+        for (final Node child : childNodes) {
+            if (child.isDescendant(node)) {
                 return true;
+            }
         }
 
         return false;
@@ -154,11 +155,13 @@ public class Node implements MvpView, BasicTelemetryProperty {
 
     // Walk up the tree till we find a parent node who's type
     // is equal to "clazz".
-    public <T extends Node> T findParentByType(Class<T> clazz) {
-        if (parent == null)
+    public <T extends Node> @Nullable T findParentByType(Class<T> clazz) {
+        if (parent == null) {
             return null;
-        if (parent.getClass().equals(clazz))
+        }
+        if (parent.getClass().equals(clazz)) {
             return (T) parent;
+        }
         return parent.findParentByType(clazz);
     }
 
@@ -193,6 +196,14 @@ public class Node implements MvpView, BasicTelemetryProperty {
             // registered on it's child nodes to fire
             childNodes.remove(0);
         }
+    }
+
+    /**
+     * higher priority than iconPath and icon
+     */
+    @Nullable
+    public AzureIconSymbol getIconSymbol() {
+        return null;
     }
 
     public String getIconPath() {
@@ -247,16 +258,29 @@ public class Node implements MvpView, BasicTelemetryProperty {
             addAction(nodeAction, position);
         }
         nodeAction.addListener(actionListener);
+        nodeAction.setPriority(actionListener.getPriority());
+        nodeAction.setGroup(actionListener.getGroup());
+        nodeAction.setIconSymbol(actionListener.getIconSymbol());
         return nodeAction;
     }
 
-    public NodeAction addAction(String name, NodeActionListener actionListener) {
-        return addAction(name, actionListener, NodeActionPosition.NONE);
+    public NodeAction addAction(DelegateActionListener.BasicActionListener actionListener) {
+        return addAction(actionListener.getActionEnum().getName(), actionListener);
     }
 
-    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, NodeActionPosition position) {
-        NodeAction nodeAction = addAction(name, actionListener, position);
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
+        return addAction(name, iconPath, actionListener, Groupable.DEFAULT_GROUP, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group) {
+        return addAction(name, iconPath, actionListener, group, Sortable.DEFAULT_PRIORITY);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group, int priority) {
+        NodeAction nodeAction = addAction(name, actionListener);
         nodeAction.setIconPath(iconPath);
+        nodeAction.setGroup(group);
+        nodeAction.setPriority(priority);
         return nodeAction;
     }
 
@@ -283,7 +307,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
                     Class<? extends NodeActionListener> listenerClass = entry.getValue();
                     NodeActionListener actionListener = createNodeActionListener(listenerClass);
                     addAction(entry.getKey(), actionListener);
-                } catch (Throwable e) {
+                } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException("MS Services - Error", e);
                 }
             }
@@ -309,16 +333,18 @@ public class Node implements MvpView, BasicTelemetryProperty {
         List<Class<? extends NodeActionListener>> actions = node2Actions.get(this.getClass());
         if (actions != null) {
             try {
-                for (Class<? extends NodeActionListener> actionListener : actions) {
-                    Name nameAnnotation = actionListener.getAnnotation(Name.class);
-                    if (nameAnnotation == null) continue;
-
-                    NodeActionListener actionInstance = createNodeActionListener(actionListener);
-                    if (actionInstance == null) continue;
-
-                    addAction(nameAnnotation.value(), actionInstance.getIconPath(), actionInstance);
+                for (Class<? extends NodeActionListener> actionClazz : actions) {
+                    NodeActionListener actionListener = createNodeActionListener(actionClazz);
+                    if (Objects.nonNull(actionListener.getAction())) {
+                        addAction(new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction()));
+                        continue;
+                    }
+                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
+                    if (nameAnnotation != null) {
+                        addAction(nameAnnotation.value(), actionListener);
+                    }
                 }
-            } catch (Throwable e) {
+            } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 throw new RuntimeException("MS Services - Error", e);
             }
         }
@@ -335,28 +361,15 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public List<NodeAction> getNodeActions() {
-        return getRegisteredNodeActions();
-    }
-
-    final protected List<NodeAction> getRegisteredNodeActions() {
-        List<NodeAction> combinedActions = new ArrayList<>();
-        combinedActions.addAll(nodeActionsTop);
-        combinedActions.addAll(nodeActions);
-        combinedActions.addAll(nodeActionsBottom);
-        return combinedActions;
+        return nodeActions;
     }
 
     public NodeAction getNodeActionByName(final String name) {
-        return Iterators.tryFind(getRegisteredNodeActions().iterator(), new Predicate<NodeAction>() {
-            @Override
-            public boolean apply(NodeAction nodeAction) {
-                return name.compareTo(nodeAction.getName()) == 0;
-            }
-        }).orNull();
+        return Iterators.tryFind(nodeActions.iterator(), nodeAction -> name.compareTo(nodeAction.getName()) == 0).orNull();
     }
 
     public boolean hasNodeActions() {
-        return !getRegisteredNodeActions().isEmpty();
+        return !nodeActions.isEmpty();
     }
 
     public void addActions(Iterable<NodeAction> actions) {
@@ -419,7 +432,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
         Node.node2Actions = node2Actions;
     }
 
-    public void removeNode(String sid, String id, Node node) { }
+    public void removeNode(String sid, String id, Node node) {
+    }
 
     public Node createNode(Node parent, String sid, NodeContent content) {
         return new Node(content.getId(), content.getName());
@@ -431,28 +445,28 @@ public class Node implements MvpView, BasicTelemetryProperty {
         return TelemetryConstants.ACTION;
     }
 
-    public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) throws AzureCmdException {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null) {
-                return;
-            }
-            final String portalUrl = azureManager.getPortalUrl();
-            final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
-            String url = portalUrl
-                    + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
-                    + tenantId
-                    + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-                    + resourceRelativePath;
-            DefaultLoader.getIdeHelper().openLinkInBrowser(url);
-        } catch (IOException e) {
-            throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
+    @AzureOperation(name = "common.open_portal", params = {"$resourceId|uri_to_name"}, type = AzureOperation.Type.ACTION)
+    public void openResourcesInPortal(String subscriptionId, String resourceId) {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            return;
         }
+        final String portalUrl = azureManager.getPortalUrl();
+        final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
+        final String url = portalUrl
+                + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+                + tenantId
+                + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
+                + resourceId;
+        DefaultLoader.getIdeHelper().openLinkInBrowser(url);
     }
 
-    @Nullable
-    public Comparator<Node> getNodeComparator() {
-        return null;
+    public static String getProgressMessage(String doingName, String moduleName, String nodeName) {
+        return String.format(PROGRESS_MESSAGE_PATTERN, doingName, moduleName, nodeName);
+    }
+
+    public static String getPromptMessage(String actionName, String moduleName, String nodeName) {
+        return String.format(PROMPT_MESSAGE_PATTERN, actionName, moduleName, nodeName);
     }
 }

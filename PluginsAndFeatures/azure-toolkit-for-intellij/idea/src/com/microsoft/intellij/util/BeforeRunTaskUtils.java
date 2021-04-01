@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.util;
@@ -26,172 +9,164 @@ import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemBeforeRunTask;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTask;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.CollectionListModel;
-import com.intellij.util.Producer;
 import com.intellij.util.containers.ContainerUtil;
-import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.plugins.gradle.execution.GradleBeforeRunTaskProvider;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
-import javax.swing.JComponent;
+import javax.annotation.Nonnull;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class BeforeRunTaskUtils {
     private static final String GRADLE_TASK_ASSEMBLE = "assemble";
     private static final String MAVEN_TASK_PACKAGE = "package";
 
-    public static void addOrRemoveBeforeRunTask(JComponent runConfigurationEditorComponent,
-                                                 AzureArtifact azureArtifact,
-                                                 RunConfiguration configuration,
-                                                 final boolean add) throws IllegalAccessException {
-        switch (azureArtifact.getType()) {
-            case Maven:
-                addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
-                                                                               (MavenProject) azureArtifact.getReferencedObject(),
-                                                                               configuration, add);
-                break;
-            case Gradle:
-                addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
-                                                                                (ExternalProjectPojo) azureArtifact.getReferencedObject(),
-                                                                                configuration, add);
-                break;
-            case Artifact:
-                addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
-                                                                           (Artifact) azureArtifact.getReferencedObject(),
-                                                                           configuration, add);
-                break;
-            default:
-                // do nothing
-
+    public static void addBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
+        final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
+        final BeforeRunTask<?> task = createBuildTask(artifact, config);
+        if(Objects.nonNull(task)){ // task is null if artifact is File type.
+            addTask(editor, tasks, task, config);
         }
     }
 
-    public static void addOrRemoveBuildArtifactBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
-                                                               @NotNull Artifact artifact,
-                                                               RunConfiguration runConfiguration,
-                                                               boolean add) throws IllegalAccessException {
-        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, BuildArtifactsBeforeRunTask.class,
-            task ->
-                  Objects.nonNull(task) &&
-                          Objects.nonNull(task.getArtifactPointers())
-                          && task.getArtifactPointers().size() == 1
-                          && Objects.equals(task.getArtifactPointers().get(0).getArtifact(),
-                                                               artifact), () -> {
-                BuildArtifactsBeforeRunTaskProvider provider =
-                      new BuildArtifactsBeforeRunTaskProvider(runConfiguration.getProject());
-                BuildArtifactsBeforeRunTask task = provider.createTask(runConfiguration);
-                task.addArtifact(artifact);
-                return task;
-            }, runConfiguration, add);
+    public static void removeBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
+        final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
+        removeTasks(editor, tasks);
     }
 
-    public static void addOrRemoveBuildMavenProjectBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
-                                                                   @NotNull MavenProject mavenProject,
-                                                                   RunConfiguration runConfiguration,
-                                                                   boolean add) throws IllegalAccessException {
-        String pomXmlPath = MavenUtils.getMavenModulePath(mavenProject);
-        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, MavenBeforeRunTask.class, task ->
-                                      Objects.nonNull(task) && StringUtils.equals(task.getProjectPath(), pomXmlPath)
-                                              && StringUtils.equals(MAVEN_TASK_PACKAGE, task.getGoal()),
-            () -> {
-                MavenBeforeRunTask task = new MavenBeforeRunTask();
-                task.setEnabled(true);
-                task.setProjectPath(pomXmlPath);
-                task.setGoal(MAVEN_TASK_PACKAGE);
-                return task;
-            }, runConfiguration, add);
+    public static List<? extends BeforeRunTask<?>> getBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
+        switch (artifact.getType()) {
+            case Maven:
+                return getMavenPackageTasks(editor, (MavenProject) artifact.getReferencedObject());
+            case Gradle:
+                return getGradleAssembleTasks(editor, (ExternalProjectPojo) artifact.getReferencedObject());
+            case Artifact:
+                return getIntellijBuildTasks(editor, (Artifact) artifact.getReferencedObject());
+            case File:
+                return Collections.emptyList();
+        }
+        throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
 
-    public static void addOrRemoveBuildGradleProjectBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
-                                                                    @NotNull ExternalProjectPojo gradleProject,
-                                                                    RunConfiguration runConfiguration, boolean add)
-            throws IllegalAccessException {
-        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, ExternalSystemBeforeRunTask.class, task ->
-                                      Objects.nonNull(task) &&
-                                              Objects.nonNull(task.getTaskExecutionSettings())
-                                              && StringUtils.equals(task.getTaskExecutionSettings()
-                                                                        .getExternalProjectPath(),
-                                                                    gradleProject.getPath())
-                                              && CollectionUtils.isEqualCollection(task.getTaskExecutionSettings().getTaskNames(),
-                                                                                   Arrays.asList(GRADLE_TASK_ASSEMBLE)),
-            () -> {
-                GradleBeforeRunTaskProvider provider = new GradleBeforeRunTaskProvider(
-                        runConfiguration.getProject());
-                ExternalSystemBeforeRunTask task = provider.createTask(runConfiguration);
-                task.getTaskExecutionSettings()
-                    .setExternalSystemIdString(GradleConstants.SYSTEM_ID.toString());
-                task.getTaskExecutionSettings().setExternalProjectPath(gradleProject.getPath());
-                task.getTaskExecutionSettings().setTaskNames(Arrays.asList(GRADLE_TASK_ASSEMBLE));
-                return task;
-            }, runConfiguration, add);
+    public static @Nullable BeforeRunTask<?> createBuildTask(@Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
+        switch (artifact.getType()) {
+            case Maven:
+                return createMavenPackageTask((MavenProject) artifact.getReferencedObject(), config);
+            case Gradle:
+                return createGradleAssembleTask((ExternalProjectPojo) artifact.getReferencedObject(), config);
+            case Artifact:
+                return createIntellijBuildTask((Artifact) artifact.getReferencedObject(), config);
+            case File:
+                return null;
+        }
+        throw new AzureToolkitRuntimeException("unsupported project/artifact type");
     }
 
-    public static synchronized <T extends BeforeRunTask> void addOrRemoveBeforeRunOption(
-            @NotNull JComponent runConfigurationEditorComponent,
-            @NotNull Class<T> runTaskClass,
-            @NotNull Predicate<T> filter,
-            Producer<T> producer,
-            RunConfiguration runConfiguration,
-            boolean add) throws IllegalAccessException {
-        DataContext dataContext = DataManager.getInstance().getDataContext(runConfigurationEditorComponent);
-        ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(
-                dataContext);
-        if (editor != null) {
-            List<T> matchedTasks = ContainerUtil.findAll(editor.getStepsBeforeLaunch(), runTaskClass)
-                                         .stream()
-                                         .filter(filter)
-                                         .collect(Collectors.toList());
-            if (add && matchedTasks.isEmpty()) {
-                T task = producer.produce();
-                task.setEnabled(true);
-                RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
-                List<BeforeRunTask> tasksFromConfig = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
-                // need to add the before run task back to runConfiguration since for the create scenario:
-                // the before run task editor will reset tasks in runConfiguration, that's the reason why
-                // here we need to add the task here
-                tasksFromConfig.add(task);
-                manager.setBeforeRunTasks(runConfiguration, tasksFromConfig);
-                editor.addBeforeLaunchStep(task);
-            } else {
-                if (add) {
-                    for (T task : matchedTasks) {
-                        task.setEnabled(true);
-                    }
-                } else {
-                    // there is no way of removing tasks, use reflection
-                    Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
-                    CollectionListModel model = (CollectionListModel) FieldUtils.readField(myBeforeRunStepsPanelField,
-                                                                                           "myModel",
-                                                                                           true);
-                    if (model != null) {
-                        for (T task : matchedTasks) {
-                            task.setEnabled(false);
-                            model.remove(task);
-                        }
-                    } else {
-                        for (T task : matchedTasks) {
-                            task.setEnabled(false);
-                        }
-                    }
-                }
+    @NotNull
+    public static List<BeforeRunTask<?>> getIntellijBuildTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull Artifact artifact) {
+        return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), BuildArtifactsBeforeRunTask.class).stream()
+            .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getArtifactPointers())
+                && task.getArtifactPointers().size() == 1
+                && Objects.equals(task.getArtifactPointers().get(0).getArtifact(), artifact))
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    public static List<BeforeRunTask<?>> getMavenPackageTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @Nonnull MavenProject project) {
+        final String pomXmlPath = MavenUtils.getMavenModulePath(project);
+        return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), MavenBeforeRunTask.class).stream()
+            .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getProjectPath()) && Objects.nonNull(pomXmlPath)
+                && Paths.get(task.getProjectPath()).equals(Paths.get(pomXmlPath))
+                && StringUtils.equals(MAVEN_TASK_PACKAGE, task.getGoal()))
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    public static List<BeforeRunTask<?>> getGradleAssembleTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull ExternalProjectPojo project) {
+        return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), ExternalSystemBeforeRunTask.class).stream()
+            .filter(task -> Objects.nonNull(task)
+                && StringUtils.equals(task.getTaskExecutionSettings().getExternalProjectPath(), project.getPath())
+                && CollectionUtils.isEqualCollection(task.getTaskExecutionSettings().getTaskNames(),
+                Collections.singletonList(GRADLE_TASK_ASSEMBLE)))
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    public static BeforeRunTask<?> createIntellijBuildTask(@NotNull Artifact artifact, @NotNull RunConfiguration config) {
+        final BuildArtifactsBeforeRunTaskProvider provider = new BuildArtifactsBeforeRunTaskProvider(config.getProject());
+        final BuildArtifactsBeforeRunTask task = provider.createTask(config);
+        task.addArtifact(artifact);
+        return task;
+    }
+
+    @NotNull
+    public static BeforeRunTask<?> createMavenPackageTask(@Nonnull MavenProject project, @NotNull RunConfiguration config) {
+        final String pomXmlPath = MavenUtils.getMavenModulePath(project);
+        final MavenBeforeRunTask task = new MavenBeforeRunTask();
+        task.setEnabled(true);
+        task.setProjectPath(pomXmlPath);
+        task.setGoal(MAVEN_TASK_PACKAGE);
+        return task;
+    }
+
+    @NotNull
+    public static BeforeRunTask<?> createGradleAssembleTask(@NotNull ExternalProjectPojo project, @NotNull RunConfiguration config) {
+        final GradleBeforeRunTaskProvider provider = new GradleBeforeRunTaskProvider(config.getProject());
+        final ExternalSystemBeforeRunTask task = provider.createTask(config);
+        task.getTaskExecutionSettings().setExternalSystemIdString(GradleConstants.SYSTEM_ID.toString());
+        task.getTaskExecutionSettings().setExternalProjectPath(project.getPath());
+        task.getTaskExecutionSettings().setTaskNames(Collections.singletonList(GRADLE_TASK_ASSEMBLE));
+        return task;
+    }
+
+    @SneakyThrows
+    private static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, List<T> tasks) {
+        // there is no way of removing tasks, use reflection
+        final Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
+        final CollectionListModel<T> model = (CollectionListModel<T>) FieldUtils.readField(myBeforeRunStepsPanelField, "myModel", true);
+        for (final T t : tasks) {
+            t.setEnabled(false);
+            model.remove(t);
+        }
+    }
+
+    private static synchronized <T extends BeforeRunTask<?>> void addTask(
+        @Nonnull ConfigurationSettingsEditorWrapper editor,
+        List<? extends T> tasks, T task, RunConfiguration config
+    ) {
+        if (tasks.isEmpty()) {
+            task.setEnabled(true);
+            final RunManagerEx manager = RunManagerEx.getInstanceEx(config.getProject());
+            final List<BeforeRunTask> tasksFromConfig = new ArrayList<>(manager.getBeforeRunTasks(config));
+            // need to add the before run task back to runConfiguration since for the create scenario:
+            // the before run task editor will reset tasks in runConfiguration, that's the reason why
+            // here we need to add the task here
+            tasksFromConfig.add(task);
+            manager.setBeforeRunTasks(config, tasksFromConfig);
+            editor.addBeforeLaunchStep(task);
+        } else {
+            for (final T t : tasks) {
+                t.setEnabled(true);
             }
         }
     }

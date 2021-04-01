@@ -89,8 +89,7 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
                 // Livy release notes: https://livy.apache.org/history/
                 // JIRA: https://issues.apache.org/jira/browse/LIVY-41
                 submitModel.submissionParameter.apply {
-                    name = mainClassName + "_$currentUtcTime"
-                    prepareSubmissionParameterWithTransformedGen2Uri(this)
+                    updateStorageConfigForSubmissionParameter(submitModel).apply { name = mainClassName + "_$currentUtcTime" }
                 },
                 SparkBatchSubmission.getInstance(),
                 jobDeploy

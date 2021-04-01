@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.appservice;
@@ -58,20 +41,21 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         this.removeAllItems();
         this.addItem(defaultValue);
         subscription = this.loadItemsAsync()
-                           .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               items.forEach(this::addItem);
-                               this.resetDefaultValue(defaultValue);
-                               this.setLoading(false);
-                           }), (e) -> {
-                                   this.handleLoadingError(e);
-                               });
+            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                synchronized (AppServiceComboBox.this) {
+                    AppServiceComboBox.this.removeAllItems();
+                    items.forEach(this::addItem);
+                    this.resetDefaultValue(defaultValue);
+                    this.setLoading(false);
+                }
+            }), this::handleLoadingError);
     }
 
     private void resetDefaultValue(@NotNull T defaultValue) {
         final AppServiceComboBoxModel model = getItems()
-                .stream()
-                .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item) && item != defaultValue)
-                .findFirst().orElse(null);
+            .stream()
+            .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item) && item != defaultValue)
+            .findFirst().orElse(null);
         if (model != null) {
             this.setSelectedItem(model);
             this.removeItem(defaultValue);
@@ -98,7 +82,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-                AllIcons.General.Add, "Create", this::createResource);
+            AllIcons.General.Add, "Create", this::createResource);
     }
 
     @Override
@@ -106,7 +90,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
         if (item instanceof AppServiceComboBoxModel) {
             final AppServiceComboBoxModel selectedItem = (AppServiceComboBoxModel) item;
             return selectedItem.isNewCreateResource() ?
-                   String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
+                String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
         } else {
             return Objects.toString(item, StringUtils.EMPTY);
         }
@@ -135,12 +119,12 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
 
         private String getAppServiceLabel(AppServiceComboBoxModel appServiceModel) {
             final String appServiceName = appServiceModel.isNewCreateResource() ?
-                                      String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
+                String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
             final String runtime = appServiceModel.getRuntime();
             final String resourceGroup = appServiceModel.getResourceGroup();
 
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
-                    appServiceName, runtime, resourceGroup);
+                appServiceName, runtime, resourceGroup);
         }
     }
 }

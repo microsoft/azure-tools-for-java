@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
@@ -34,6 +17,7 @@ import com.microsoft.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -50,12 +34,18 @@ public class StorageModule extends AzureRefreshableNode {
     // TODO: Decide whether we show "Deprecated" message since service is functioning.
     //       I assume we should replace it for Rider if it is deprecated.
     private static final String BASE_MODULE_NAME = "Storage Accounts";
+    public static final String MODULE_NAME = "Storage Account";
 
     public StorageModule(Node parent) {
         super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
 
         // Add Storage Emulator persistent node when initialize the Storage module.
         addChildNode(new EmulatorStorageNode(this));
+    }
+
+    @Override
+    public @Nullable AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.StorageAccount.MODULE;
     }
 
     @Override
@@ -91,26 +81,6 @@ public class StorageModule extends AzureRefreshableNode {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Storage Accounts\n\n" + ex.getMessage(), ex);
         }
 
-//            public List<ArmStorageAccount> execute(@NotNull Azure azure) throws Throwable {
-//                List<ArmStorageAccount> storageAccounts = new ArrayList<>();
-//                for (StorageAccount storageAccount : azure.storageAccounts().list()){
-//                    ArmStorageAccount sa = new ArmStorageAccount(storageAccount.name(), subscriptionId, storageAccount);
-//
-//                    sa.setProtocol("https");
-//                    sa.setType(storageAccount.sku().name().toString());
-//                    sa.setLocation(Strings.nullToEmpty(storageAccount.regionName()));
-//                    List<StorageAccountKey> keys = storageAccount.keys();
-//                    if (!(keys == null || keys.isEmpty())) {
-//                        sa.setPrimaryKey(keys.get(0).value());
-//                        if (keys.size() > 1) {
-//                            sa.setSecondaryKey(keys.get(1).value());
-//                        }
-//                    }
-//                    sa.setResourceGroupName(storageAccount.resourceGroupName());
-//                    storageAccounts.add(sa);
-//                }
-//                return storageAccounts;
-//            }
         //TODO
         // load External Accounts
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(getProject())) {
@@ -126,16 +96,5 @@ public class StorageModule extends AzureRefreshableNode {
             }
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Storage Accounts\n\n" + errorMessage.toString(), null);
         }
-    }
-
-    @Override
-    @Nullable
-    public Comparator<Node> getNodeComparator() {
-        return (node1, node2) -> {
-            if (node1 instanceof EmulatorStorageNode) return -1;
-            if (node2 instanceof EmulatorStorageNode) return 1;
-
-            return node1.getName().compareTo(node2.getName());
-        };
     }
 }

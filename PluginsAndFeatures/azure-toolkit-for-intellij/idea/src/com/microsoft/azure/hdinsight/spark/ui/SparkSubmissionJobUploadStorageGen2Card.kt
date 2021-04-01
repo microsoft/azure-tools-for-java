@@ -33,12 +33,14 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GE
 import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.ui.HintTextField
+import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
 import org.apache.commons.lang3.StringUtils
+import rx.Observable
 import java.awt.Dimension
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
@@ -57,7 +59,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
     val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip; name = "gen2CardstorageKeyField" }
     private val gen2RootPathTip = "e.g. abfs://<file_system>@<account_name>.dfs.core.windows.net/<path>"
     private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path")
-    val gen2RootPathField = HintTextField (gen2RootPathTip).apply {
+    val gen2RootPathField = HintTextField(gen2RootPathTip).apply {
         name = "gen2CardRootPathField"
         preferredSize = Dimension(500, 0)
 
@@ -106,7 +108,10 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
                 if (!storageKeyField.text.isNullOrBlank()) {
                     val viewModel = viewModel as? ViewModel ?: return
                     val credentialAccount = ADLS_GEN2.getSecureStoreServiceOf(viewModel.rootUri?.accountName) ?: return
-                    storageKeyField.text = secureStore?.loadPassword(credentialAccount, gen2Account) ?: ""
+
+                    Observable.just(secureStore?.loadPassword(credentialAccount, gen2Account) ?: "")
+                            .observeOn(IdeaSchedulers().dispatchUIThread())
+                            .subscribe { storageKeyField.text = it }
                 }
 
                 super.cluster = cluster

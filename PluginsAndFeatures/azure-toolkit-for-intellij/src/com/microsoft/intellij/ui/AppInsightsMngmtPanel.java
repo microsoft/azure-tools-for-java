@@ -1,29 +1,10 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -32,17 +13,16 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTable
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
+import com.microsoft.intellij.actions.AzureSignInAction;
+import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.AzureSettings;
 import com.microsoft.intellij.util.MethodUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
@@ -54,6 +34,8 @@ import javax.swing.table.TableColumn;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
     private JPanel contentPane;
@@ -225,22 +207,19 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
 
     private void createNewDilaog() {
         try {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationInsightsNewDialog dialog = new ApplicationInsightsNewDialog();
-                    dialog.setOnCreate(() -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                        ApplicationInsightsResource resource = ApplicationInsightsNewDialog.getResource();
-                        if (resource != null && !ApplicationInsightsResourceRegistry.getAppInsightsResrcList().contains(resource)) {
-                            ApplicationInsightsResourceRegistry.getAppInsightsResrcList().add(resource);
-                            AzureSettings.getSafeInstance(myProject).saveAppInsights();
-                            ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
-                            ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
-                        }
-                    }));
-                    dialog.show();
-                }
-            }, ModalityState.defaultModalityState());
+            AzureTaskManager.getInstance().runAndWait(() -> {
+                ApplicationInsightsNewDialog dialog = new ApplicationInsightsNewDialog();
+                dialog.setOnCreate(() -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    ApplicationInsightsResource resource = ApplicationInsightsNewDialog.getResource();
+                    if (resource != null && !ApplicationInsightsResourceRegistry.getAppInsightsResrcList().contains(resource)) {
+                        ApplicationInsightsResourceRegistry.getAppInsightsResrcList().add(resource);
+                        AzureSettings.getSafeInstance(myProject).saveAppInsights();
+                        ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
+                        ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
+                    }
+                }));
+                dialog.show();
+            });
         } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
         }
@@ -289,10 +268,11 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
 
     private ActionListener manageSubscriptionsListener() {
         return e -> {
-            SelectSubscriptionsAction.onShowSubscriptions(myProject);
-            loadInfoFirstTime();
-            ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
-            ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
+            SelectSubscriptionsAction.selectSubscriptions(myProject).subscribe((subs) -> {
+                loadInfoFirstTime();
+                ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
+                ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
+            });
         };
     }
 

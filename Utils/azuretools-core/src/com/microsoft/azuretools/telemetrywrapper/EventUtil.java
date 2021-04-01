@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.telemetrywrapper;
@@ -25,10 +8,9 @@ package com.microsoft.azuretools.telemetrywrapper;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -152,6 +134,24 @@ public class EventUtil {
         }
     }
 
+    public static void executeWithLog(String actionString, Map<String, String> properties,
+                                      Map<String, Double> metrics, TelemetryConsumer<Operation> consumer, Consumer<Exception> errorHandle) {
+        Operation operation = TelemetryManager.createOperation(actionString);
+        try {
+            operation.start();
+            consumer.accept(operation);
+        } catch (Exception e) {
+            logError(operation, ErrorType.userError, e, properties, metrics);
+            if (errorHandle != null) {
+                errorHandle.accept(e);
+            } else {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            operation.complete();
+        }
+    }
+
     public static <R> R executeWithLog(String serviceName, String operName, Map<String, String> properties,
         Map<String, Double> metrics, TelemetryFunction<Operation, R> function, Consumer<Exception> errorHandle) {
         Operation operation = TelemetryManager.createOperation(serviceName, operName);
@@ -169,6 +169,10 @@ public class EventUtil {
             operation.complete();
         }
         return null;
+    }
+
+    public static void executeWithLog(String actionString, TelemetryConsumer<Operation> consumer) {
+        executeWithLog(actionString, null, null, consumer, null);
     }
 
     public static void executeWithLog(String serviceName, String operName, TelemetryConsumer<Operation> consumer) {
@@ -191,13 +195,9 @@ public class EventUtil {
 
     // Will collect error stack traces only if user signed in with Azure account
     public static boolean isAbleToCollectErrorStacks() {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            return azureManager != null && azureManager.getEnvironment() != null &&
-                    ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
-        } catch (IOException e) {
-            return false;
-        }
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        return azureManager != null && azureManager.getEnvironment() != null &&
+            ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
     }
 
     private static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,

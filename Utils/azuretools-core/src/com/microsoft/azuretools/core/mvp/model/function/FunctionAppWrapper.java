@@ -1,39 +1,17 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.core.mvp.model.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionDeploymentSlots;
-import com.microsoft.azure.management.appservice.NameValuePair;
-import com.microsoft.azure.management.appservice.SupportedTlsVersions;
-import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppBaseWrapper;
 import rx.Completable;
 import rx.Observable;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp {
@@ -133,6 +111,16 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     }
 
     @Override
+    public Map<String, String> getSiteAppSettings() {
+        return getFunctionApp().getSiteAppSettings();
+    }
+
+    @Override
+    public Observable<Map<String, String>> getSiteAppSettingsAsync() {
+        return getFunctionApp().getSiteAppSettingsAsync();
+    }
+
+    @Override
     protected WebAppBase getWebAppBase() {
         return getFunctionApp();
     }
@@ -143,11 +131,7 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
         if (functionApp == null) {
             synchronized (this) {
                 if (functionApp == null) {
-                    try {
-                        functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to get function instance");
-                    }
+                    functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
                 }
             }
         }

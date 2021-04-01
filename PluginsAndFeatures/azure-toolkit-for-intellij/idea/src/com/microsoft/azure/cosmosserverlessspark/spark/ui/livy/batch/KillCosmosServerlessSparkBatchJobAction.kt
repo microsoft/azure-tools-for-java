@@ -28,7 +28,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SchedulerState
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob
-import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.intellij.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.azuretools.telemetrywrapper.EventType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
