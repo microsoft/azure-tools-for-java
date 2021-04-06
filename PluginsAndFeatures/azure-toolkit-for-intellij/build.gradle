@@ -1,5 +1,3 @@
-import org.jetbrains.intellij.IntelliJPluginExtension
-
 buildscript {
     repositories {
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
