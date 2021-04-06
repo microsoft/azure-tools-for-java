@@ -31,7 +31,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class MySQLConnectToServerAction extends NodeActionListener {
 
     private static final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-    public static final String ACTION_NAME = "Open by Database Tools";
+    public static final String ACTION_NAME = "Open in Database Tools";
     private static final String MYSQL_PATTERN_NAME = "Azure Database for MySQL - %s";
     private static final String MYSQL_DEFAULT_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String MYSQL_PATTERN_URL = "jdbc:mysql://%s:3306?serverTimezone=UTC&useSSL=true&requireSSL=false";

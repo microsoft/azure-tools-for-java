@@ -32,6 +32,8 @@ import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogs
 import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction;
 import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.LinkMySQLAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
@@ -43,6 +45,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -70,6 +73,10 @@ public class NodeJavaActionsMap extends NodeActionsMap {
 
         node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(SpringCloudStreamingLogAction.class).build());
+
+        node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(LinkMySQLAction.class)
+            .build());
 
         node2Actions.put(FunctionModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateFunctionAppAction.class).build());

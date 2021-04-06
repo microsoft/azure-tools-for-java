@@ -31,9 +31,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.management.sql.SqlServer
-import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
-import com.microsoft.intellij.actions.AzureSignInAction
 import com.microsoft.intellij.helpers.validator.IpAddressInputValidator
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
@@ -63,8 +61,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
             else -> return
         }
 
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-        signInFuture.doOnSuccess {
+        runWhenSignedIn(project) {
             val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
 
             // Fetch current IP address

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,35 +22,29 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.intellij.AzurePlugin
 import com.microsoft.intellij.actions.AzureSignInAction
-import com.microsoft.tooling.msservices.serviceexplorer.Node
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
+import com.microsoft.intellij.ui.messages.AzureBundle
+import com.microsoft.intellij.util.AzureLoginHelper
+import com.microsoft.tooling.msservices.components.DefaultLoader
 
-abstract class OpenInBrowserAction(private val subscriptionId: String, private val node: Node)
-    : NodeActionListener() {
+fun runWhenSignedIn(project: Project, action: (Unit) -> Unit) {
+    AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
+            .subscribe { isSuccess: Boolean? ->
+                run {
+                    try {
+                        if (isSuccess != true ||
+                                !AzureLoginHelper.isAzureSubsAvailableOrReportError(AzureBundle.message("common.error.signIn"))) {
+                            return@run
+                        }
+                    } catch (ex: Exception) {
+                        AzurePlugin.log(AzureBundle.message("common.error.signIn"), ex)
+                        DefaultLoader.getUIHelper().showException(AzureBundle.message("common.error.signIn"), ex, AzureBundle.message("common.error.signIn"), false, true)
+                    }
 
-    override fun actionPerformed(event: NodeActionEvent?) {
-        val project = node.project as? Project ?: return
-
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-
-        signInFuture.doOnSuccess {
-            val url = AzureMvpModel.getInstance().getResourceUri(subscriptionId, node.id)
-                    ?: throw RuntimeException("Unable to get URL for resource: '${node.id}'")
-
-            BrowserUtil.browse(url)
-        }.doOnError {
-            val message = "Error opening resource with id '${node.id}' in browser: $it"
-            AzurePlugin.log(message)
-            throw RuntimeException(message)
-        }
-    }
-
-    override fun getIconPath(): String = "OpenInBrowser.svg"
+                    action.invoke(Unit)
+                }
+            }
 }

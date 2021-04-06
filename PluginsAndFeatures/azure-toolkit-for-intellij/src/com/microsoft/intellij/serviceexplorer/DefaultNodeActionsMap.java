@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -28,7 +28,6 @@ import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogs
 import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.*;
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.LinkMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
 import com.microsoft.azure.toolkit.intellij.redis.action.CreateRedisCacheAction;
 import com.microsoft.azure.toolkit.intellij.vm.CreateVMAction;
@@ -86,7 +85,6 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
 
         node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(MySQLConnectToServerAction.class)
-            .add(LinkMySQLAction.class)
             .build());
 
         // todo: what is ConfirmDialogAction?

@@ -60,13 +60,13 @@ class RiderNodeActionsMap : NodeActionsMap() {
 
             node2Actions[SqlServerNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                 .add(SqlDatabaseCreateAction::class.java)
-                .add(SqlServerOpenInBrowserAction::class.java)
+                .add(SqlServerOpenInPortalAction::class.java)
                 .add(SqlServerAddCurrentIpAddressToFirewallAction::class.java)
                 .add(SqlServerConnectDataSourceAction::class.java)
                 .build()
 
             node2Actions[SqlDatabaseNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
-                .add(SqlDatabaseOpenInBrowserAction::class.java)
+                .add(SqlDatabaseOpenInPortalAction::class.java)
                 .add(SqlDatabaseAddCurrentIpAddressToFirewallAction::class.java)
                 .add(SqlDatabaseConnectDataSourceAction::class.java)
                 .build()

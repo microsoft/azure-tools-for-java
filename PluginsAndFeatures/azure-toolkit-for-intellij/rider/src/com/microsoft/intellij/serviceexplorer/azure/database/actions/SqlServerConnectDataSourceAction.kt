@@ -27,7 +27,7 @@ import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
-@Name("Connect to Server")
+@Name("Open in Database Tools")
 class SqlServerConnectDataSourceAction(private val databaseServerNode: SqlServerNode)
     : ConnectDataSourceAction(databaseServerNode) {
 

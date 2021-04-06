@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,9 +22,26 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
-import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
+import com.microsoft.tooling.msservices.serviceexplorer.Node
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 
-@Name("Open in Browser")
-class SqlServerOpenInBrowserAction(private val sqlServerNode: SqlServerNode)
-    : OpenInBrowserAction(sqlServerNode.subscriptionId, sqlServerNode)
+abstract class OpenInPortalAction(private val subscriptionId: String, private val node: Node)
+    : NodeActionListener() {
+
+    override fun actionPerformed(e: NodeActionEvent) {
+        val project = node.project as? Project ?: return
+
+        runWhenSignedIn(project) {
+            val url = AzureMvpModel.getInstance().getResourceUri(subscriptionId, node.id)
+                    ?: throw RuntimeException("Unable to get URL for resource: '${node.id}'")
+
+            BrowserUtil.browse(url)
+        }
+    }
+
+    override fun getIconPath(): String = "OpenInBrowser.svg"
+}
