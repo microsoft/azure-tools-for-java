@@ -27,6 +27,7 @@ import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.intellij.ui.forms.sqldatabase.CreateSqlDatabaseOnServerDialog
 import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
@@ -47,5 +48,5 @@ class SqlDatabaseCreateAction(private val sqlServerNode: SqlServerNode) : NodeAc
         createSqlDatabaseForm.show()
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getAction(): AzureActionEnum = AzureActionEnum.CREATE
 }

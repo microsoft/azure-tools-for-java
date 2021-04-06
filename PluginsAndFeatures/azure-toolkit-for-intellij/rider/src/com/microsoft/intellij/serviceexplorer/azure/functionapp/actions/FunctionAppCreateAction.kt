@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,10 +25,10 @@ package com.microsoft.intellij.serviceexplorer.azure.functionapp.actions
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.intellij.actions.AzureSignInAction
+import com.microsoft.intellij.serviceexplorer.azure.database.actions.runWhenSignedIn
 import com.microsoft.intellij.ui.forms.appservice.functionapp.CreateFunctionAppDialog
 import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule
@@ -47,19 +47,15 @@ class FunctionAppCreateAction(private val functionModule: FunctionModule) : Node
             return
         }
 
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-
-        signInFuture.doOnSuccess {
+        runWhenSignedIn(project) {
             val createWebAppForm = CreateFunctionAppDialog(
                     lifetimeDef = project.defineNestedLifetime(),
                     project = project,
                     onCreate = { functionModule.load(true) })
 
             createWebAppForm.show()
-        }.doOnError {
-            logger.error("Failed to create Function App. User is not signed in: $it")
         }
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getAction(): AzureActionEnum = AzureActionEnum.CREATE
 }

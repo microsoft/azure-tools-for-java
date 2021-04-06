@@ -26,7 +26,7 @@ import java.util.List;
 public class ResourceManagementModule extends AzureRefreshableNode implements ResourceManagementModuleView {
 
     private static final String RESOURCE_MANAGEMENT_MODULE_ID = ResourceManagementModule.class.getName();
-    private static final String ICON_PATH = "AzureARM.svg";
+    private static final String ICON_PATH = "ResourceManagement/ResourceManagement.svg";
     public static final String MODULE_NAME = "Resource Management";
     private final ResourceManagementModulePresenter<ResourceManagementModule> rmModulePresenter;
     public static final Object listenerObj = new Object();

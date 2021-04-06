@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -21,7 +22,7 @@ import java.util.List;
 
 public class FunctionModule extends AzureRefreshableNode implements FunctionModuleView {
     private static final String FUNCTION_SERVICE_MODULE_ID = FunctionModule.class.getName();
-    private static final String ICON_PATH = "FunctionApp.svg";
+    private static final String ICON_PATH = "FunctionApp/FunctionApp.svg";
     private static final String BASE_MODULE_NAME = "Function Apps";
     private static final String FUNCTION_MODULE = "FunctionModule";
     private static final String FAILED_TO_DELETE_FUNCTION_APP = "Failed to delete Function App %s";

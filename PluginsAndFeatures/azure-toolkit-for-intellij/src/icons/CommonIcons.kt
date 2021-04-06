@@ -27,57 +27,57 @@ import javax.swing.Icon
 
 object CommonIcons {
 
-    @JvmField val Azure = load("Azure.svg")
-    @JvmField val AzureExplorer = load("AzureExplorer.svg")
-    @JvmField val Subscriptions = load("Subscriptions.svg")
-    @JvmField val Database = load("Database.svg")
-    @JvmField val WebApp = load("WebApp.svg")
-    @JvmField val Firewall = load("Firewall.svg")
+    @JvmField val Azure = load("Common/Azure.svg")
+    @JvmField val AzureExplorer = load("AzureExplorer/AzureExplorer.svg")
+    @JvmField val Subscriptions = load("Common/Subscriptions.svg")
+    @JvmField val Database = load("SQLDatabase/Database.svg")
+    @JvmField val WebApp = load("WebApp/WebApp.svg")
+    @JvmField val Firewall = load("Common/Firewall.svg")
 
-    @JvmField val Warning = load("AzureWarning.svg")
+    @JvmField val Warning = load("Common/Warning.svg")
 
-    @JvmField val Search = load("Search.svg")
-    @JvmField val Refresh = load("refresh.svg")
-    @JvmField val OpenParent = load("AzureOpenParent.svg")
-    @JvmField val Discard = load("Discard.svg")
-    @JvmField val SaveChanges = load("SaveChanges.svg")
-    @JvmField val Open = load("AzureOpen.svg")
-    @JvmField val Upload = load("AzureUpload.svg")
+    @JvmField val Search = load("Common/Search.svg")
+    @JvmField val Refresh = load("Common/Refresh.svg")
+    @JvmField val OpenParent = load("Common/OpenParent.svg")
+    @JvmField val Discard = load("Common/Delete.svg")
+    @JvmField val SaveChanges = load("Common/SaveChanges.svg")
+    @JvmField val Open = load("Common/Open.svg")
+    @JvmField val Upload = load("Common/Upload.svg")
 
-    @JvmField val PublishAzure = load("publishAzure.svg")
-    @JvmField val CodeSamples = load("CodeSamples.svg")
+    @JvmField val PublishAzure = load("Common/PublishAzure.svg")
+    @JvmField val CodeSamples = load("Common/CodeSamples.svg")
 
-    @JvmField val Azurite = load("AzureStorageEmulator.svg")
+    @JvmField val Azurite = load("StorageAccount/AzureStorageEmulator.svg")
 
-    @JvmField val AzureActiveDirectory = load("AzureActiveDirectory.svg")
+    @JvmField val AzureActiveDirectory = load("ActiveDirectory/ActiveDirectory.svg")
 
     object OS {
-        @JvmField val Windows = load("OSWindows.svg")
-        @JvmField val Linux = load("OSLinux.svg")
+        @JvmField val Windows = load("Common/OSWindows.svg")
+        @JvmField val Linux = load("Common/OSLinux.svg")
     }
 
     object CloudShell {
-        @JvmField val AzureOpenCloudShell = load("AzureOpenCloudShell.svg")
+        @JvmField val AzureOpenCloudShell = load("CloudShell/OpenCloudShell.svg")
     }
 
     object ToolWindow {
-        @JvmField val Azure = load("toolWindowAzure.svg")
-        @JvmField val AzureLog = load("toolWindowAzureLog.svg")
-        @JvmField val AzureStreamingLog = load("toolWindowAzureStreamingLog.svg")
+        @JvmField val Azure = load("ToolWindow/AzureToolWindow.svg")
+        @JvmField val AzureLog = load("ToolWindow/ActivityLog.svg")
+        @JvmField val AzureStreamingLog = load("ToolWindow/StreamingLog.svg")
     }
 
     object AzureFunctions {
-        @JvmField val FunctionApp = load("FunctionApp.svg")
-        @JvmField val FunctionAppRunConfiguration = load("FunctionAppRunConfiguration.svg")
-        @JvmField val FunctionAppConfigurationType = load("FunctionApp.svg")
-        @JvmField val TemplateAzureFunc = load("TemplateAzureFunc.svg")
+        @JvmField val FunctionApp = load("FunctionApp/FunctionApp.svg")
+        @JvmField val FunctionAppRunConfiguration = load("FunctionApp/FunctionAppRunConfiguration.svg")
+        @JvmField val FunctionAppConfigurationType = load("FunctionApp/FunctionApp.svg")
+        @JvmField val TemplateAzureFunc = load("FunctionApp/TemplateAzureFunc.svg")
     }
 
     @Suppress("unused")
     object ResourceManagement {
-        @JvmField val ResourceManagement = load("AzureARM.svg")
-        @JvmField val ResourceGroup = load("AzureARMResourceGroup.svg")
-        @JvmField val Deployment = load("AzureARMDeployment.svg")
+        @JvmField val ResourceManagement = load("ResourceManagement/ResourceManagement.svg")
+        @JvmField val ResourceGroup = load("ResourceManagement/ResourceManagementResourceGroup.svg")
+        @JvmField val Deployment = load("ResourceManagement/ResourceManagementDeployment.svg")
     }
 
     private fun load(path: String): Icon = IconLoader.getIcon("/icons/$path", this::class.java)

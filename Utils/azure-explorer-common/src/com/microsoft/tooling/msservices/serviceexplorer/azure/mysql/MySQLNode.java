@@ -36,6 +36,10 @@ public class MySQLNode extends Node implements TelemetryProperties {
     public static final int SHOW_PROPERTIES_PRIORITY = Sortable.DEFAULT_PRIORITY + 1;
     public static final int CONNECT_TO_SERVER_PRIORITY = Sortable.DEFAULT_PRIORITY + 2;
 
+    private NodeAction startAction;
+    private NodeAction restartAction;
+    private NodeAction stopAction;
+
     @Getter
     private final String subscriptionId;
     @Getter
@@ -76,13 +80,44 @@ public class MySQLNode extends Node implements TelemetryProperties {
 
     @Override
     public List<NodeAction> getNodeActions() {
+        if (startAction == null)
+            startAction = getNodeActionByName(AzureActionEnum.START.getName());
+
+        if (restartAction == null)
+            restartAction = getNodeActionByName(AzureActionEnum.RESTART.getName());
+
+        if (stopAction == null)
+            stopAction = getNodeActionByName(AzureActionEnum.STOP.getName());
+
+        List<NodeAction> nodeActions = super.getNodeActions();
+
         boolean updating = SERVER_UPDATING.equals(serverState);
         boolean running = ServerState.READY.equals(serverState);
-        getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(!updating && !running);
-        getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(!updating && running);
-        getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(!updating && running);
+
+        if (stopAction != null)
+            stopAction.setEnabled(!updating && running);
+
+        if (startAction != null)
+            startAction.setEnabled(!updating && !running);
+
+        if (restartAction != null)
+            restartAction.setEnabled(!updating && running);
+
+        if (running) {
+            int startIndex = nodeActions.indexOf(startAction);
+            nodeActions.remove(startAction);
+            if (!nodeActions.contains(stopAction))
+                nodeActions.add(startIndex, stopAction);
+        } else {
+            int stopIndex = nodeActions.indexOf(stopAction);
+            nodeActions.remove(stopAction);
+            if (!nodeActions.contains(startAction))
+                nodeActions.add(stopIndex, startAction);
+        }
+
         getNodeActionByName(AzureActionEnum.DELETE.getName()).setEnabled(!updating);
-        return super.getNodeActions();
+
+        return nodeActions;
     }
 
     private void refreshNode() {

@@ -25,6 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.database.actions
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -43,5 +44,6 @@ abstract class OpenInPortalAction(private val subscriptionId: String, private va
         }
     }
 
-    override fun getIconPath(): String = "OpenInBrowser.svg"
+    override fun getIconSymbol(): AzureIconSymbol =
+            AzureIconSymbol.Common.OPEN_IN_PORTAL
 }

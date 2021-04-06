@@ -91,7 +91,7 @@ public class TableNode extends RefreshableNode implements TelemetryProperties {
     }
 
     private static final String TABLE_MODULE_ID = TableNode.class.getName();
-    private static final String ICON_PATH = "container.svg";
+    private static final String ICON_PATH = "StorageAccount/container.svg";
     private final Table table;
     private final StorageAccount storageAccount;
 
@@ -109,7 +109,7 @@ public class TableNode extends RefreshableNode implements TelemetryProperties {
         final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), table);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "container.svg");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, table, " [Table]", "Table", "StorageAccount/container.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

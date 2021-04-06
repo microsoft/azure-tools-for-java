@@ -73,4 +73,9 @@ public class DeploymentSlotModule extends DeploymentSlotModuleBase<DeploymentSlo
                         this, slot.name(), slot.state(), slot.operatingSystem().toString(),
                         this.getSubscriptionId(), slot.defaultHostName())));
     }
+
+    @Override
+    public int getPriority() {
+        return HIGH_PRIORITY;
+    }
 }

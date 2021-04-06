@@ -14,69 +14,64 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
+import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import org.apache.commons.lang3.EnumUtils;
-import com.microsoft.tooling.msservices.serviceexplorer.*;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNCTION;
-
 public class FunctionNode extends Node {
 
-    private static final String ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg";
-    private static final String ICON_FUNCTION_APP_STOPPED = "FunctionAppStopped.svg";
+    private static final String ICON_FUNCTION_APP_RUNNING = "FunctionApp/FunctionAppRunning.svg";
+    private static final String ICON_FUNCTION_APP_STOPPED = "FunctionApp/FunctionAppStopped.svg";
 
-    private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
+    private static final String SUB_FUNCTION_ICON_PATH = "FunctionApp/Function.svg";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
     private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
-    private FunctionsNode functionNode;
+    private FunctionAppNode functionAppNode;
 
     public FunctionNode(FunctionEnvelope functionEnvelope, FunctionsNode parent) {
         super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
         this.functionEnvelope = functionEnvelope;
         this.functionApp = parent.getFunctionApp();
-        this.functionNode = parent;
+    }
+
+    public FunctionNode(FunctionEnvelope functionEnvelope, FunctionAppNode parent) {
+        super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
+        this.functionEnvelope = functionEnvelope;
+        this.functionApp = parent.getFunctionApp();
+        this.functionAppNode = parent;
+    }
+
+    private BasicActionBuilder initActionBuilder(Runnable runnable) {
+        return new BasicActionBuilder(runnable)
+                .withModuleName(FunctionModule.MODULE_NAME)
+                .withInstanceName(name);
     }
 
     @Override
     protected void loadActions() {
-        addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
-            @Override
-            @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
-            protected void actionPerformed(NodeActionEvent e) {
-                final IAzureOperationTitle title = AzureOperationBundle.title("function|trigger.start");
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> trigger()));
-            }
-        }));
+        addAction("Trigger Function", initActionBuilder(this::triggerFunction).withAction(AzureActionEnum.START).build());
         // todo: find whether there is sdk to enable/disable trigger
+    }
+
+    @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
+    private void triggerFunction() {
+        final IAzureOperationTitle title = AzureOperationBundle.title("function|trigger.start");
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), title, false, () -> trigger()));
     }
 
     @AzureOperation(

@@ -31,7 +31,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-@Name("Create")
+@Name("New MySQL Database...")
 public class CreateMySQLAction extends NodeActionListener {
 
     private final MySQLModule model;

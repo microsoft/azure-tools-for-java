@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -26,5 +26,7 @@ import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 
 @Name("Add Firewall Rule for my IP")
-class SqlDatabaseAddCurrentIpAddressToFirewallAction(private val sqlDatabaseNode: SqlDatabaseNode)
-    : AddCurrentIpAddressToFirewallAction(sqlDatabaseNode)
+class SqlDatabaseAddCurrentIpAddressToFirewallAction(sqlDatabaseNode: SqlDatabaseNode) : AddCurrentIpAddressToFirewallAction(sqlDatabaseNode) {
+
+    override fun getPriority(): Int = super.getPriority() + 1
+}

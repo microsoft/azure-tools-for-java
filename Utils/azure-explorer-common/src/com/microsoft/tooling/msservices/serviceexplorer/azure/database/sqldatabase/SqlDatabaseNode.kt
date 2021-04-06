@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -39,7 +39,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
 
     companion object {
         private const val ACTION_DELETE = "Delete"
-        private const val SQL_DATABASE_ICON = "Database.svg"
+        private const val SQL_DATABASE_ICON = "SQLDatabase/Database.svg"
         private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database '%s'..."
 
         private val deleteSqlDatabasePromptMessage = StringBuilder()
@@ -51,6 +51,9 @@ class SqlDatabaseNode(parent: SqlServerNode,
     init {
         loadActions()
     }
+
+    override fun getIconSymbol(): AzureIconSymbol =
+        AzureIconSymbol.SQLDatabase.DATABASE
 
     override fun loadActions() {
         addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY)

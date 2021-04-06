@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2021 JetBrains s.r.o.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
@@ -29,11 +30,12 @@ public class AzureIconLoader {
         return ICON_MAP.computeIfAbsent(iconSymbol, k -> IconLoader.getIcon(iconSymbol.getPath()));
     }
 
+    // We use our own icons for each action
     private static void loadIDEIcons() {
-        loadIcon(AzureIconSymbol.Common.REFRESH, AllIcons.Actions.Refresh);
-        loadIcon(AzureIconSymbol.Common.CREATE, AllIcons.Welcome.CreateNewProject);
-        loadIcon(AzureIconSymbol.Common.DELETE, AllIcons.Actions.GC);
-        loadIcon(AzureIconSymbol.Common.RESTART, AllIcons.Actions.Restart);
+//        loadIcon(AzureIconSymbol.Common.REFRESH, AllIcons.Actions.Refresh);
+//        loadIcon(AzureIconSymbol.Common.CREATE, AllIcons.Welcome.CreateNewProject);
+//        loadIcon(AzureIconSymbol.Common.DELETE, AllIcons.Actions.GC);
+//        loadIcon(AzureIconSymbol.Common.RESTART, AllIcons.Actions.Restart);
         loadIcon(AzureIconSymbol.Common.SHOW_PROPERTIES, AllIcons.Actions.Properties);
     }
 

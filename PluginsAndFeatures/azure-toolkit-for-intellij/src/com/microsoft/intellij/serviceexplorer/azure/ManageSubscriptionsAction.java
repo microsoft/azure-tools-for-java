@@ -18,8 +18,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class ManageSubscriptionsAction extends NodeAction {
-    private static final String ICON_DARK = "ConnectAccountsDark.svg";
-    private static final String ICON_LIGHT = "ConnectAccountsLight.svg";
+    private static final String ICON_DARK = "Common/ConnectAccountsDark.svg";
+    private static final String ICON_LIGHT = "Common/ConnectAccountsLight.svg";
 
     public ManageSubscriptionsAction(AzureModule azureModule) {
         super(azureModule, "Select Subscriptions");

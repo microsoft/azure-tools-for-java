@@ -25,10 +25,10 @@ package com.microsoft.intellij.serviceexplorer.azure.functionapp.actions
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.intellij.actions.AzureSignInAction
+import com.microsoft.intellij.serviceexplorer.azure.database.actions.runWhenSignedIn
 import com.microsoft.intellij.ui.forms.appservice.functionapp.slot.FunctionAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode
@@ -49,12 +49,11 @@ class FunctionAppCreateDeploymentSlotAction(private val node: FunctionDeployment
             return
         }
 
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-        signInFuture.doOnSuccess {
+        runWhenSignedIn(project) {
             val functionAppNode = node.parent as? FunctionAppNode
             if (functionAppNode == null) {
                 logger.error("Cannot find Web App node for Deployment Slot module '${node.name}'")
-                return@doOnSuccess
+                return@runWhenSignedIn
             }
 
             val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
@@ -64,10 +63,8 @@ class FunctionAppCreateDeploymentSlotAction(private val node: FunctionDeployment
                     onCreate = { node.load(true) })
 
             createSlotForm.show()
-        }.doOnError {
-            logger.error("Failed to create Deployment Slot. User is not signed in: $it")
         }
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getAction(): AzureActionEnum = AzureActionEnum.CREATE
 }

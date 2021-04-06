@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,18 +24,15 @@ package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.forms.CreateBlobContainerForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 
-@Name("New Blob container")
+@Name("New Blob container...")
 public class CreateBlobContainer extends NodeActionListener {
     private RefreshableNode parent;
 
@@ -63,19 +60,16 @@ public class CreateBlobContainer extends NodeActionListener {
             form.setSubscription(new SubscriptionDetail(((StorageNode)parent).getSubscriptionId(), null, null, true));
         }
 
-        form.setOnCreate(new Runnable() {
-            @Override
-            public void run() {
-                parent.removeAllChildNodes();
-                parent.load(false);
-            }
+        form.setOnCreate(() -> {
+            parent.removeAllChildNodes();
+            parent.load(false);
         });
 
         form.show();
     }
 
     @Override
-    protected @Nullable String getIconPath() {
-        return "AddEntity.svg";
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 }

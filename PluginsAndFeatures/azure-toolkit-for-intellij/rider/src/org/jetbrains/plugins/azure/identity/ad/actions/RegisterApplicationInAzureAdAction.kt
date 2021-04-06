@@ -57,6 +57,7 @@ import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.intellij.actions.AzureSignInAction
+import com.microsoft.intellij.serviceexplorer.azure.database.actions.runWhenSignedIn
 import icons.CommonIcons
 import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.RiderAzureBundle
@@ -99,16 +100,15 @@ class RegisterApplicationInAzureAdAction
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-        signInFuture.doOnSuccess {
+        runWhenSignedIn(project) {
             val projectModelNode = tryGetProjectModelEntityFromFile(project, e.dataContext.PsiFile?.virtualFile)
-                    ?: return@doOnSuccess
+                    ?: return@runWhenSignedIn
 
-            val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return@doOnSuccess
-            if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return@doOnSuccess
+            val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return@runWhenSignedIn
+            if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return@runWhenSignedIn
 
             val application = ApplicationManager.getApplication()
-            val azureManager = AuthMethodManager.getInstance().azureManager ?: return@doOnSuccess
+            val azureManager = AuthMethodManager.getInstance().azureManager ?: return@runWhenSignedIn
 
             // Read local settings
             val azureAdSettings = AppSettingsAzureAdSectionManager()

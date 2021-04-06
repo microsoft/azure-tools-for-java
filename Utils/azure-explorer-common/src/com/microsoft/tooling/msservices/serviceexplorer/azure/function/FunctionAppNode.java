@@ -15,9 +15,11 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,9 +50,17 @@ public class FunctionAppNode extends WebAppBaseNode implements FunctionAppNodeVi
 
     @Override
     public void renderSubModules() {
-        addChildNode(new FunctionsNode(this, this.functionApp));
+        boolean isDeploymentSlotSupported = isDeploymentSlotSupported(this.subscriptionId, this.functionApp);
+        addChildNode(new FunctionDeploymentSlotModule(this, this.subscriptionId, this.functionApp, isDeploymentSlotSupported));
+
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.functionApp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.functionApp));
+
+        AzureFunctionMvpModel.getInstance()
+                .listFunctionEnvelopeInFunctionApp(subscriptionId, this.functionApp.id())
+                .stream()
+                .map(envelope -> new FunctionNode(envelope, this))
+                .forEach(this::addChildNode);
     }
 
     @Override

@@ -7,9 +7,9 @@
 package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.forms.CreateQueueForm;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
@@ -36,7 +36,7 @@ public class CreateQueueAction extends NodeActionListener {
     }
 
     @Override
-    protected @Nullable String getIconPath() {
-        return "AddEntity.svg";
+    public AzureActionEnum getAction() {
+        return AzureActionEnum.CREATE;
     }
 }

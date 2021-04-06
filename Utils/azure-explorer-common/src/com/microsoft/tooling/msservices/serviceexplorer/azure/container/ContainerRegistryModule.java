@@ -15,7 +15,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 public class ContainerRegistryModule extends AzureRefreshableNode {
 
     private static final String ACR_MODULE_ID = ContainerRegistryModule.class.getName();
-    private static final String ICON_PATH = "acr.svg";
     private static final String BASE_MODULE_NAME = "Container Registries";
     public static final String MODULE_NAME = "Container Registry";
     private final ContainerRegistryModulePresenter<ContainerRegistryModule> containerRegistryPresenter;
@@ -24,7 +23,7 @@ public class ContainerRegistryModule extends AzureRefreshableNode {
      * The root node for ACR resource.
      */
     public ContainerRegistryModule(Node parent) {
-        super(ACR_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+        super(ACR_MODULE_ID, BASE_MODULE_NAME, parent);
         containerRegistryPresenter = new ContainerRegistryModulePresenter<>();
         containerRegistryPresenter.onAttachView(ContainerRegistryModule.this);
     }

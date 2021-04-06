@@ -59,9 +59,9 @@ public final class AzureIconSymbol {
 
         AzureIconSymbol MODULE = fillInPath("WebApp/WebApp.svg");
 
-        AzureIconSymbol RUNNING = fillInPath("WebApp/WebAppRunning.svg");
-        AzureIconSymbol STOPPED = fillInPath("WebApp/WebAppStopped.svg");
-        AzureIconSymbol UPDATING = fillInPath("WebApp/WebAppUpdating.svg");
+        AzureIconSymbol RUNNING = fillInPath("WebApp/WebAppRunningOnWindows.svg");
+        AzureIconSymbol STOPPED = fillInPath("WebApp/WebAppStoppedOnWindows.svg");
+        AzureIconSymbol UPDATING = fillInPath("WebApp/WebAppUpdatingOnWindows.svg");
         AzureIconSymbol RUNNING_ON_LINUX = fillInPath("WebApp/WebAppRunningOnLinux.svg");
         AzureIconSymbol STOPPED_ON_LINUX = fillInPath("WebApp/WebAppStoppedOnLinux.svg");
         AzureIconSymbol UPDATING_ON_LINUX = fillInPath("WebApp/WebAppUpdatingOnLinux.svg");
@@ -154,6 +154,12 @@ public final class AzureIconSymbol {
     public interface SQLServerBigDataCluster {
 
         AzureIconSymbol MODULE = fillInPath("SQLServerBigDataCluster/SqlServerBigDataCluster.svg");
+    }
+
+    public interface SQLDatabase {
+        AzureIconSymbol DATABASE = fillInPath("SQLDatabase/Database.svg");
+        AzureIconSymbol DATABASE_SERVER = fillInPath("SQLDatabase/DatabaseServer.svg");
+        AzureIconSymbol SQL_SERVER = fillInPath("SQLDatabase/SqlServer.svg");
     }
 
     public static AzureIconSymbol fromPath(String path) {

@@ -66,4 +66,9 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     public @Nullable Icon getIcon() {
         return DefaultLoader.getIdeHelper().getFileTypeIcon("/", true);
     }
+
+    @Override
+    public int getPriority() {
+        return HIGH_PRIORITY;
+    }
 }

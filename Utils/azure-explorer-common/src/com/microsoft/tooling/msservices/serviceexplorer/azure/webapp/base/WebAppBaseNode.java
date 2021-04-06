@@ -65,8 +65,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     @Override
     protected void loadActions() {
         addAction(ACTION_START, CommonIcons.ACTION_START, getStartActionListener());
-        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, getRestartActionListener());
         addAction(ACTION_STOP, CommonIcons.ACTION_STOP, getStopActionListener());
+        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, getRestartActionListener());
         addAction(ACTION_SHOW_PROPERTY, CommonIcons.ACTION_OPEN_PREFERENCES, getShowPropertiesActionListener());
         addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, getOpenInBrowserActionListener());
         addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
@@ -97,13 +97,15 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         List<NodeAction> nodeActions = super.getNodeActions();
 
         if (running) {
+            int startIndex = nodeActions.indexOf(startAction);
             nodeActions.remove(startAction);
             if (!nodeActions.contains(stopAction))
-                nodeActions.add(stopAction);
+                nodeActions.add(startIndex, stopAction);
         } else {
+            int stopIndex = nodeActions.indexOf(stopAction);
             nodeActions.remove(stopAction);
             if (!nodeActions.contains(startAction))
-                nodeActions.add(startAction);
+                nodeActions.add(stopIndex, startAction);
         }
 
         restartAction.setEnabled(running);
@@ -116,14 +118,16 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
             stopStreamingLogsAction = getNodeActionByName("Stop Streaming Logs");
 
         if (isStreamingLogStarted()) {
+            int startIndex = nodeActions.indexOf(startStreamingLogsAction);
             nodeActions.remove(startStreamingLogsAction);
             if (!nodeActions.contains(stopStreamingLogsAction))
-                nodeActions.add(stopStreamingLogsAction);
+                nodeActions.add(startIndex, stopStreamingLogsAction);
 
         } else {
+            int stopIndex = nodeActions.indexOf(stopStreamingLogsAction);
             nodeActions.remove(stopStreamingLogsAction);
             if (!nodeActions.contains(startStreamingLogsAction))
-                nodeActions.add(startStreamingLogsAction);
+                nodeActions.add(stopIndex, startStreamingLogsAction);
         }
 
         return nodeActions;

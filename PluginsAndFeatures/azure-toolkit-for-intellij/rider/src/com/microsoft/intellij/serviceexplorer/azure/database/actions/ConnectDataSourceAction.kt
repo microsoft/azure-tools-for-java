@@ -24,6 +24,7 @@ package com.microsoft.intellij.serviceexplorer.azure.database.actions
 import com.intellij.database.autoconfig.DataSourceDetector
 import com.intellij.database.autoconfig.DataSourceRegistry
 import com.intellij.openapi.project.Project
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -44,6 +45,8 @@ abstract class ConnectDataSourceAction(protected val node: Node) : NodeActionLis
             }
         }
     }
+
+    override fun getIconSymbol(): AzureIconSymbol? = AzureIconSymbol.MySQL.CONNECT_TO_SERVER
 
     abstract fun populateConnectionBuilder(builder: DataSourceDetector.Builder): DataSourceDetector.Builder?
 

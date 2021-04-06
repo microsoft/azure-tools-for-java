@@ -27,10 +27,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     private static final String CLICK_ACTION = "click";
@@ -314,11 +311,14 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
             try {
                 for (Class<? extends NodeActionListener> actionClazz : actions) {
                     NodeActionListener actionListener = createNodeActionListener(actionClazz);
+                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (Objects.nonNull(actionListener.getAction())) {
-                        addAction(new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction()));
+                        DelegateActionListener.BasicActionListener listener = new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction());
+                        if (nameAnnotation != null) addAction(nameAnnotation.value(), listener);
+                        else addAction(listener);
+
                         continue;
                     }
-                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
                         addAction(nameAnnotation.value(), actionListener);
                     }

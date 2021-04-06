@@ -100,7 +100,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     }
 
     private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
-    private static final String ICON_PATH = "queue.svg";
+    private static final String ICON_PATH = "StorageAccount/queue.svg";
     private final Queue queue;
     private final ClientStorageAccount storageAccount;
 
@@ -118,7 +118,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.getName(), queue);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "queue.svg");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "StorageAccount/queue.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

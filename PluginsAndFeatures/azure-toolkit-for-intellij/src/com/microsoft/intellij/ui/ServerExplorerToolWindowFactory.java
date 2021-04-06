@@ -20,6 +20,7 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.EmptyIcon;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -219,7 +220,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final JPopupMenu menu = new JPopupMenu();
         final LinkedHashMap<Integer, List<NodeAction>> sortedNodeActionsGroupMap =
             node.getNodeActions().stream()
-                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparing(NodeAction::getPriority).thenComparing(NodeAction::getName))
+                // Ignore comparing by name since we have all elements sorted by meaning inside one property group
+                .sorted(Comparator.comparing(NodeAction::getGroup).thenComparingInt(NodeAction::getPriority)/*.thenComparing(NodeAction::getName)*/)
                 .collect(Collectors.groupingBy(NodeAction::getGroup, LinkedHashMap::new, Collectors.toList()));
         // Convert node actions map to menu items, as linked hash map keeps ordered, no need to sort again
         sortedNodeActionsGroupMap.forEach((groupNumber, actions) -> {
@@ -239,6 +241,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             menuItem.setIcon(AzureIconLoader.loadIcon(iconSymbol));
         } else if (StringUtils.isNotBlank(nodeAction.getIconPath())) {
             menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
+        } else {
+            menuItem.setIcon(EmptyIcon.ICON_16);
         }
         // delegate the menu item click to the node action's listeners
         menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());

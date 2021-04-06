@@ -72,6 +72,8 @@ class EmulatorStorageNode(parent: StorageModule) : ExternalStorageNode(parent, e
         super.refreshItems()
     }
 
+    override fun getPriority(): Int = HIGH_PRIORITY
+
     private fun isUrlAccessible(url: String): Boolean =
             WebAppUtils.isUrlAccessible(url, arrayOf(200, 400))
 }

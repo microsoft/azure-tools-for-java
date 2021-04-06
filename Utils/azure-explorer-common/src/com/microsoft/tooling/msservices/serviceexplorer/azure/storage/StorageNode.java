@@ -27,10 +27,7 @@ import java.util.Map;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
 
-    private static final String ACTION_DELETE = "Delete";
-    private static final String ACTION_OPEN_IN_PORTAL = "Open in Portal";
-
-    private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount.svg";
+    private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount/StorageAccount.svg";
 
     private final StorageAccount storageAccount;
     private String subscriptionId;

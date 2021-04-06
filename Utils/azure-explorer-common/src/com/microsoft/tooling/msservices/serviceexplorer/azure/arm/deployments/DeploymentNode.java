@@ -22,7 +22,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_DEPLOYM
 
 public class DeploymentNode extends Node implements DeploymentNodeView {
 
-    public static final String ICON_PATH = "AzureARMDeployment.svg";
+    public static final String ICON_PATH = "ResourceManagement/ResourceManagementDeployment.svg";
     private static final String EXPORT_TEMPLATE_SUCCESS = "Export successfully.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
     private final Deployment deployment;

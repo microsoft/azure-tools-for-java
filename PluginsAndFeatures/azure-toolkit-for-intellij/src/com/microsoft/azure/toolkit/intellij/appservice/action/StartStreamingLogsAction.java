@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2021 JetBrains s.r.o.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
@@ -7,18 +8,19 @@ package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceStreamingLogManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceStreamingLogManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.Sortable;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
@@ -82,7 +84,12 @@ public class StartStreamingLogsAction extends NodeActionListener {
     }
 
     @Override
-    public int getGroup() {
-        return Groupable.DIAGNOSTIC_GROUP;
+    public AzureIconSymbol getIconSymbol() {
+        return AzureIconSymbol.fromPath("/icons/Common/StartStreamingLog.svg");
+    }
+
+    @Override
+    public int getPriority() {
+        return Sortable.DEFAULT_PRIORITY + 20;
     }
 }

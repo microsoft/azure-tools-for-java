@@ -26,7 +26,7 @@ import java.util.Map;
 public class RedisCacheNode extends Node implements TelemetryProperties {
 
     public static final String TYPE = "Microsoft.Cache/Redis";
-    public static final String REDISCACHE_ICON_PATH = "RedisCache.svg";
+    public static final String REDISCACHE_ICON_PATH = "RedisCache/RedisCache.svg";
 
     private final String name;
     private final String resourceId;

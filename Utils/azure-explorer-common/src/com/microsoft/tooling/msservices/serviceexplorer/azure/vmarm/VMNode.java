@@ -156,18 +156,25 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
 
 //        // enable/disable menu items according to VM status
         boolean started = isRunning();
-        getNodeActionByName(AzureActionEnum.STOP.getName()).setEnabled(started);
-        getNodeActionByName(AzureActionEnum.START.getName()).setEnabled(!started);
-        getNodeActionByName(AzureActionEnum.RESTART.getName()).setEnabled(started);
+        if (stopAction != null)
+            stopAction.setEnabled(started);
+
+        if (startAction != null)
+            startAction.setEnabled(!started);
+
+        if (restartAction != null)
+            restartAction.setEnabled(started);
 
         if (started) {
+            int startIndex = nodeActions.indexOf(startAction);
             nodeActions.remove(startAction);
             if (!nodeActions.contains(stopAction))
-                nodeActions.add(stopAction);
+                nodeActions.add(startIndex, stopAction);
         } else {
+            int stopIndex = nodeActions.indexOf(stopAction);
             nodeActions.remove(stopAction);
             if (!nodeActions.contains(startAction))
-                nodeActions.add(startAction);
+                nodeActions.add(stopIndex, startAction);
         }
 
         restartAction.setEnabled(started);

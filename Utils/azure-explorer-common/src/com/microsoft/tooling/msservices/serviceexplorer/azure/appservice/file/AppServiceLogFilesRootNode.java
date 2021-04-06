@@ -24,4 +24,9 @@ public class AppServiceLogFilesRootNode extends AppServiceUserFilesRootNode {
     protected String getRootPath() {
         return ROOT_PATH;
     }
+
+    @Override
+    public int getPriority() {
+        return HIGH_PRIORITY;
+    }
 }

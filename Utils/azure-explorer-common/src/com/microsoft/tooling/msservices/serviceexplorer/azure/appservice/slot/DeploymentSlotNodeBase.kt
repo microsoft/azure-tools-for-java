@@ -1,4 +1,4 @@
-/**s
+/**
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Copyright (c) 2020-2021 JetBrains s.r.o.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -12,6 +12,7 @@ import com.microsoft.azuretools.ActionConstants
 import com.microsoft.azuretools.azurecommons.helpers.Nullable
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.*
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule
@@ -32,6 +33,11 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
     companion object {
         private const val SLOT_LABEL = "Slot"
         private const val ACTION_SWAP_WITH_PRODUCTION_NAME = "Swap with production"
+
+        private const val DELETE_SLOT_PROMPT_MESSAGE =
+            "This operation will delete the Deployment Slot: %s.\nAre you sure you want to continue?"
+
+        private const val DELETE_SLOT_PROGRESS_MESSAGE = "Deleting Deployment Slot"
     }
 
     abstract val presenter: DeploymentSlotNodePresenterBase<TSlot, DeploymentSlotNodeView>
@@ -86,11 +92,7 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
     }
 
     override fun getDeleteActionListener(): NodeActionListener {
-        return initActionBuilder(Runnable { delete() })
-            .withAction(AzureActionEnum.DELETE)
-            .withBackgroudable(true)
-            .withPromptable(true)
-            .build(AzureActionEnum.DELETE.doingName)
+        return DeleteDeploymentSlotAction(subscriptionId, this, name)
     }
 
     @AzureOperation(name = "webapp|deployment.refresh", params = ["@slotName", "@webAppName"], type = AzureOperation.Type.ACTION)
@@ -122,10 +124,8 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
 
     override fun loadActions() {
         super.loadActions()
-        addAction(ACTION_SWAP_WITH_PRODUCTION_NAME,
-            initActionBuilder(Runnable { swap() }).withBackgroudable(true)
-                .build("Swapping")
-        )
+        addAction(ACTION_SWAP_WITH_PRODUCTION_NAME, initActionBuilder { swap() }.withBackgroudable(true)
+            .build("Swapping deployment slot"))
     }
 
     private fun initActionBuilder(runnable: Runnable): BasicActionBuilder {
@@ -170,5 +170,17 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
     private fun showProperties() {
         openDeploymentSlotPropertyAction()
+    }
+
+    private class DeleteDeploymentSlotAction(private val subscriptionId: String, private val node: Node, private val name: String) : AzureNodeActionPromptListener(
+        node,
+        String.format(DELETE_SLOT_PROMPT_MESSAGE, name),
+        DELETE_SLOT_PROGRESS_MESSAGE) {
+
+        override fun azureNodeAction(e: NodeActionEvent) {
+            node.parent.removeNode(subscriptionId, name, node)
+        }
+
+        override fun onSubscriptionsChanged(e: NodeActionEvent?) { }
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,8 +27,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.intellij.actions.AzureSignInAction
+import com.microsoft.intellij.serviceexplorer.azure.database.actions.runWhenSignedIn
 import com.microsoft.intellij.ui.forms.appservice.webapp.slot.WebAppCreateDeploymentSlotDialog
 import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
@@ -48,8 +50,7 @@ class WebAppCreateDeploymentSlotAction(private val node: DeploymentSlotModule) :
             return
         }
 
-        val signInFuture = AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-        signInFuture.doOnSuccess {
+        runWhenSignedIn(project) {
             val webAppNode = node.parent as? WebAppNode
             if (webAppNode == null) {
                 val message = "Cannot find Web App node for Deployment Slot module '${node.name}'"
@@ -64,10 +65,8 @@ class WebAppCreateDeploymentSlotAction(private val node: DeploymentSlotModule) :
                     onCreate = { node.load(true) })
 
             createSlotForm.show()
-        }.doOnError {
-            logger.error("Failed to create Deployment Slot. User is not signed in: $it")
         }
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getAction(): AzureActionEnum = AzureActionEnum.CREATE
 }

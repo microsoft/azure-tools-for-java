@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
-    public static final String ICON_PATH = "acr.svg";
+    public static final String ICON_PATH = "ContainerRegistry/ContainerRegistry.svg";
 
     private final String subscriptionId;
     private final String resourceId;

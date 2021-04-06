@@ -1,5 +1,7 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M12 1H7.2L4 8.5L7.188 9L4.8 15H5.6L11 7.5L7.2 7L12 1Z" fill="#F4AF3D" fill-opacity="0.7"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M4.2 4.9L3 4L0 8L3 12L4.2 11.099L1.875 8L4.2 4.9Z" fill="#40B6E0" fill-opacity="0.8"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M13 4L11.8 4.9L14.125 8L11.8 11.1L13 12L16 8L13 4Z" fill="#40B6E0" fill-opacity="0.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <g id="AzureFunctionApp" fill="none" fill-rule="evenodd" opacity=".8">
+    <polygon id="Fill-3" fill="#9AA7B0" points="4.2 4.9 3 4 0 8 3 12 4.2 11.099 1.875 8"/>
+    <polygon id="Fill-6" fill="#9AA7B0" points="13 4 11.8 4.9 14.125 8 11.8 11.1 13 12 16 8"/>
+    <polygon id="Fill-8" fill="#D9A343" points="12 1 7.2 1 4 8.5 7.188 9 4.8 15 5.6 15 11 7.5 7.2 7"/>
+  </g>
 </svg>

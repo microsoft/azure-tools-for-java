@@ -157,6 +157,7 @@ public final class ActionConstants {
         String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-storage-in-portal";
         String DETACH = OPERATION_PREFIX + "detach-storage-account";
         String DELETE_STORAGE_TABLE = OPERATION_PREFIX + "delete-storage-table";
+        String DELETE_BLOB_CONTAINER = OPERATION_PREFIX + "delete-blob-container";
     }
 
     public interface ResourceManagement {
@@ -178,6 +179,14 @@ public final class ActionConstants {
         String OPEN_IN_PORTAL = OPERATION_PREFIX + "open-inbrowser-acr";
         String SHOW_PROPERTIES = OPERATION_PREFIX + "open-explorer-acr";
 
+    }
+
+    public interface SQLDatabase {
+        String MODULE = "sql-database";
+        String OPERATION_PREFIX = MODULE + SEPARATOR;
+
+        String DELETE_DATABASE = OPERATION_PREFIX + "database-delete";
+        String DELETE_SERVER = OPERATION_PREFIX + "server-delete";
     }
 
     @AllArgsConstructor

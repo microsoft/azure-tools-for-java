@@ -75,7 +75,7 @@ public class StorageNode extends ClientStorageNode implements TelemetryPropertie
         }
     }
 
-    private static final String WAIT_ICON_PATH = "StorageAccount.svg";
+    private static final String WAIT_ICON_PATH = "StorageAccount/StorageAccount.svg";
     private static final String DEFAULT_STORAGE_FLAG = "(default)";
     private final ClientStorageAccount storageAccount;
 

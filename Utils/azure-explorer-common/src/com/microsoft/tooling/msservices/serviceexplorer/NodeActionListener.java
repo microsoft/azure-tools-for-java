@@ -28,10 +28,6 @@ import java.util.Map;
 public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
     protected int priority = Sortable.DEFAULT_PRIORITY;
     protected int group = Groupable.DEFAULT_GROUP;
-
-    @Nullable
-    private String iconPath;
-
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
@@ -109,14 +105,6 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             operation.complete();
         }
     }
-
-    public void setIconPath(String path) {
-        iconPath = path;
-    }
-
-    @Nullable
-    protected String getIconPath() { return iconPath; }
-
     /**
      * If nodeName contains spark and hdinsight, we just think it is a spark node.
      * So set the service name to hdinsight
