@@ -49,6 +49,7 @@
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider"/>
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
     <lang.syntaxHighlighterFactory key="arm"

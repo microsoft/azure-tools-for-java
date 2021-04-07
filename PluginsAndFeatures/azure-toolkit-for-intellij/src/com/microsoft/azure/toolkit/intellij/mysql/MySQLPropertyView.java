@@ -19,6 +19,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLProperty;
@@ -76,6 +77,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         connectionStringsSpring.getOutputTextArea().setText(getConnectionString(MYSQL_OUTPUT_TEXT_PATTERN_SPRING, null, null, null));
         init();
         initListeners();
+
+        if (AzurePlugin.IS_RIDER) {
+            connectionStringsSeparator.setVisible(false);
+        }
     }
 
     private String getConnectionString(final String pattern, final String hostname, final String database, final String username) {
@@ -266,6 +271,10 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
             connectionSecuritySeparator.setEnabled(false);
             connectionStringsSeparator.collapse();
             connectionStringsSeparator.setEnabled(false);
+        }
+
+        if (AzurePlugin.IS_RIDER) {
+            connectionStringsSeparator.setVisible(false);
         }
     }
 }
