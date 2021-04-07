@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id "org.jetbrains.intellij"
+}
+
+group 'com.microsoft.azuretools'
+
+intellij {
+    version = intellij_version
+    downloadSources = Boolean.valueOf(true)
+    plugins = ['java', "properties"]
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.jetbrains:annotations:20.1.0'
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
+    compile "com.microsoft.azure:azure-toolkit-common-lib:0.5.0-SNAPSHOT"
+
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-resource-connector-lib')
+}

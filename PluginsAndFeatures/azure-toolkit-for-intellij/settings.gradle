@@ -1,4 +1,6 @@
 rootProject.name = 'azure-toolkit-for-intellij'
-include 'azure-sdk-reference-book'
 include 'azure-intellij-plugin-lib'
+include 'azure-intellij-resource-connector-lib'
+include 'azure-sdk-reference-book'
+include 'azure-intellij-resource-connector-mysql'
 
