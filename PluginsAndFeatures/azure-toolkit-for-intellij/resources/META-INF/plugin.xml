@@ -314,6 +314,8 @@
     </action>
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/Common/Azure.svg" popup="true" class="com.microsoft.intellij.actions.AzurePopupGroup">
+      <reference ref="AzureToolkit.ConnectToAzureResource"/>
+      <separator/>
       <reference ref="Actions.RunFunction"/>
       <reference ref="Actions.DeployFunction"/>
       <separator/>

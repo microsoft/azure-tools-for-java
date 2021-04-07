@@ -10,4 +10,12 @@
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ResourceManager"
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
     </extensions>
+    <actions>
+        <action
+            id="AzureToolkit.ConnectToAzureResource"
+            class="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectorAction"
+            text="Connect to Azure resource"
+            icon="/icons/Connector/connect.svg"
+            description="to consume Azure resources in your project"/>
+    </actions>
 </idea-plugin>
