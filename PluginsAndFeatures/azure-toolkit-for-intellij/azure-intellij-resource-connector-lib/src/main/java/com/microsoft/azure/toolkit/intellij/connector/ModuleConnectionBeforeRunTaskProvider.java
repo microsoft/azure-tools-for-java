@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Log
-public class ConnectionBeforeRunTaskProvider extends BeforeRunTaskProvider<ConnectionBeforeRunTaskProvider.BeforeRunTask> {
+public class ModuleConnectionBeforeRunTaskProvider extends BeforeRunTaskProvider<ModuleConnectionBeforeRunTaskProvider.BeforeRunTask> {
     public static final Key<Map<String, String>> CONNECT_AZURE_RESOURCE_ENV_VARS = Key.create("ConnectAzureResourceEnvVars");
 
     @Getter
@@ -52,13 +52,13 @@ public class ConnectionBeforeRunTaskProvider extends BeforeRunTaskProvider<Conne
 
     @Nullable
     @Override
-    public ConnectionBeforeRunTaskProvider.BeforeRunTask createTask(@NotNull RunConfiguration configuration) {
+    public ModuleConnectionBeforeRunTaskProvider.BeforeRunTask createTask(@NotNull RunConfiguration configuration) {
         return new BeforeRunTask(getId(), configuration);
     }
 
     @Override
     public boolean executeTask(@NotNull DataContext dataContext, @NotNull RunConfiguration configuration,
-                               @NotNull ExecutionEnvironment executionEnvironment, @NotNull ConnectionBeforeRunTaskProvider.BeforeRunTask beforeRunTask) {
+                               @NotNull ExecutionEnvironment executionEnvironment, @NotNull ModuleConnectionBeforeRunTaskProvider.BeforeRunTask beforeRunTask) {
         final Project project = configuration.getProject();
         final Module module = this.getTargetModule(configuration);
         if (Objects.nonNull(module)) {

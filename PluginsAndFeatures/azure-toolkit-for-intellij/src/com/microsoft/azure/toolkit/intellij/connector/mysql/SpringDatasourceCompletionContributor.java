@@ -78,7 +78,7 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
                 final Project project = module.getProject();
                 project.getService(ConnectionManager.class)
                     .getConnectionsByConsumerId(module.getName()).stream()
-                    .filter(c -> MySQLDatabaseResource.Definition.AZURE_MYSQL == c.getConsumer().getDefinition())
+                    .filter(c -> MySQLDatabaseResource.TYPE.equals(c.getConsumer().getType()))
                     .map(c -> ((Connection<MySQLDatabaseResource, ModuleResource>) c)).findAny()
                     .or(() -> createConnection(insertionContext, module).toSingle().toBlocking().value()) // TODO: might be blocked.
                     .ifPresentOrElse(c -> WriteCommandAction.runWriteCommandAction(insertionContext.getProject(), () -> {

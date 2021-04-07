@@ -26,32 +26,25 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public interface ConnectionManager extends PersistentStateComponent<Element> {
+    private static String typeOf(String resourceType, String consumerType) {
+        return String.format("%s:%s", resourceType, consumerType);
+    }
 
     @Nullable
     @SuppressWarnings({"unchecked"})
-    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinition(String type) {
+    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinition(String resourceType, String consumerType) {
+        final String type = typeOf(resourceType, consumerType);
         return ((ConnectionDefinition<R, C>) Impl.definitions.get(type));
     }
 
-    @Nullable
-    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinitionOrDefault(String type) {
-        final ConnectionDefinition<R, C> definition = getDefinition(type);
-        return Optional.ofNullable(definition).orElse(new DefaultConnection.Definition<>(type));
-    }
-
-    @Nullable
-    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinition(R resource, C consumer) {
-        final String type = Connection.typeOf(resource, consumer);
-        return getDefinition(type);
-    }
-
     @Nonnull
-    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinitionOrDefault(R resource, C consumer) {
-        final String type = Connection.typeOf(resource, consumer);
-        return Optional.ofNullable(ConnectionManager.getDefinition(resource, consumer)).orElse(new DefaultConnection.Definition<>(type));
+    static <R extends Resource, C extends Resource> ConnectionDefinition<R, C> getDefinitionOrDefault(String resourceType, String consumerType) {
+        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(resourceType, consumerType);
+        return Optional.ofNullable(definition).orElse(new DefaultConnection.Definition<>());
     }
 
-    static <R extends Resource, C extends Resource> void registerDefinition(String type, ConnectionDefinition<R, C> definition) {
+    static <R extends Resource, C extends Resource> void registerDefinition(String resourceType, String consumerType, ConnectionDefinition<R, C> definition) {
+        final String type = typeOf(resourceType, consumerType);
         Impl.definitions.put(type, definition);
     }
 
@@ -89,15 +82,16 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         public Element getState() {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection connection : this.connections) {
-                final var definition = (ConnectionDefinition<? extends Resource, ? extends Resource>) ConnectionManager.getDefinition(connection.getType());
-                assert definition != null : String.format("definition for connection of type \"%s\" is not found", connection.getType());
+                final String connectionType = ConnectionManager.typeOf(connection.getResource().getType(), connection.getConsumer().getType());
+                final var definition = definitions.get(connectionType);
+                assert definition != null : String.format("definition for connection of type \"%s\" is not found", connectionType);
                 final Element connectionEle = new Element(ELEMENT_NAME_CONNECTION);
                 try {
                     definition.write(connectionEle, connection);
-                    connectionEle.setAttribute(Connection.FIELD_TYPE, connection.getType());
+                    connectionEle.setAttribute(Connection.FIELD_TYPE, connectionType);
                     connectionsEle.addContent(connectionEle);
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when persist a resource connection of type '%s'", connection.getType()), e);
+                    log.log(Level.WARNING, String.format("error occurs when persist a resource connection of type '%s'", connectionType), e);
                 }
             }
             return connectionsEle;
@@ -106,12 +100,11 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String connectionType = connectionEle.getAttributeValue(Connection.FIELD_TYPE);
-                final ConnectionDefinition<Resource, Resource> definition = ConnectionManager.getDefinition(connectionType);
+                final ConnectionDefinition<? extends Resource, ? extends Resource> definition = definitions.get(connectionType);
                 assert definition != null : String.format("definition for connection of type \"%s\" is not found", connectionType);
                 try {
                     final var connection = definition.read(connectionEle);
                     if (Objects.nonNull(connection)) {
-                        connection.setType(connectionType);
                         this.addConnection(connection);
                     }
                 } catch (final Exception e) {

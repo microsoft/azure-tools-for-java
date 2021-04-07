@@ -34,9 +34,9 @@ public interface ResourceManager {
         return new ArrayList<>(Impl.definitions.values());
     }
 
-    static List<ResourceDefinition<? extends Resource>> getDefinitions(int flagConsumerOrResource) {
+    static List<ResourceDefinition<? extends Resource>> getDefinitions(int role) {
         return Impl.definitions.values().stream()
-                .filter(d -> (d.isResourceOrConsumer() & flagConsumerOrResource) == flagConsumerOrResource)
+                .filter(d -> (d.getRole() & role) == role)
                 .collect(Collectors.toList());
     }
 
@@ -81,11 +81,11 @@ public interface ResourceManager {
         public Element getState() {
             final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
             for (final Resource resource : this.resources) {
-                final ResourceDefinition<Resource> definition = (ResourceDefinition<Resource>) resource.getDefinition();
+                final ResourceDefinition<Resource> definition = (ResourceDefinition<Resource>) ResourceManager.getDefinition(resource.getType());
                 final Element resourceEle = new Element(ELEMENT_NAME_RESOURCE);
                 try {
                     if (definition.write(resourceEle, resource)) {
-                        resourceEle.setAttribute(Resource.FIELD_TYPE, definition.getType());
+                        resourceEle.setAttribute(Resource.FIELD_TYPE, resource.getType());
                         resourcesEle.addContent(resourceEle);
                     }
                 } catch (final Exception e) {
@@ -103,7 +103,6 @@ public interface ResourceManager {
                 try {
                     final Resource resource = definition.read(resourceEle);
                     if (Objects.nonNull(resource)) {
-                        resource.setType(resourceType);
                         this.addResource(resource);
                     }
                 } catch (final Exception e) {

@@ -33,7 +33,8 @@ import javax.annotation.Nullable;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class MySQLDatabaseResource implements Resource {
-    private final Definition definition = Definition.AZURE_MYSQL;
+    public static final String TYPE = Definition.AZURE_MYSQL.type;
+    private final String type = TYPE;
     private final String databaseName;
     private final ResourceId serverId;
 
@@ -68,7 +69,7 @@ public final class MySQLDatabaseResource implements Resource {
     public enum Definition implements ResourceDefinition<MySQLDatabaseResource> {
         AZURE_MYSQL("Microsoft.DBforMySQL", "Azure Database for MySQL");
         private final String type;
-        private final String name;
+        private final String title;
 
         @Override
         public AzureFormJPanel<MySQLDatabaseResource> getResourcesPanel(String type, final Project project) {
@@ -102,7 +103,7 @@ public final class MySQLDatabaseResource implements Resource {
         }
 
         public String toString() {
-            return this.getName();
+            return this.getTitle();
         }
     }
 }

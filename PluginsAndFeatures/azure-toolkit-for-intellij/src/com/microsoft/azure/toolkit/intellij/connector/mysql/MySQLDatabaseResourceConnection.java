@@ -12,8 +12,8 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolder;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.ModuleConnectionBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
@@ -49,9 +49,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabaseResource, ModuleResource> {
-
-    public static final Definition DEFINITION = Definition.INSTANCE;
-    private final String type = DEFINITION.getType();
     @EqualsAndHashCode.Include
     private final MySQLDatabaseResource resource;
     @EqualsAndHashCode.Include
@@ -73,8 +70,8 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
                 final WebAppConfiguration webAppConfiguration = (WebAppConfiguration) configuration;
                 webAppConfiguration.setApplicationSettings(environmentVariables);
             }
-            if (ConnectionBeforeRunTaskProvider.BeforeRunTask.isApplicableFor(configuration) && configuration instanceof UserDataHolder) {
-                ((UserDataHolder) configuration).putUserData(ConnectionBeforeRunTaskProvider.CONNECT_AZURE_RESOURCE_ENV_VARS, environmentVariables);
+            if (ModuleConnectionBeforeRunTaskProvider.BeforeRunTask.isApplicableFor(configuration) && configuration instanceof UserDataHolder) {
+                ((UserDataHolder) configuration).putUserData(ModuleConnectionBeforeRunTaskProvider.CONNECT_AZURE_RESOURCE_ENV_VARS, environmentVariables);
             }
         }
     }
@@ -109,31 +106,29 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
         return Optional.ofNullable(passwordConfigReference.get()).map(c -> String.valueOf(c.password()));
     }
 
-    @Getter
     @RequiredArgsConstructor
     public enum Definition implements ConnectionDefinition<MySQLDatabaseResource, ModuleResource> {
-        INSTANCE(Connection.typeOf(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), ModuleResource.Definition.IJ_MODULE.getType()));
+        MODULE_MYSQL;
 
         private static final String PROMPT_TITLE = "Azure Resource Connector";
         private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
         private static final String MESSAGE_TO_OVERRIDE = "This resource already existed in your local environment. Do you want to override it?";
 
-        private final String type;
-
         @Override
-        public MySQLDatabaseResourceConnection create(String type, MySQLDatabaseResource resource, ModuleResource consumer) {
+        public MySQLDatabaseResourceConnection create(MySQLDatabaseResource resource, ModuleResource consumer) {
             return new MySQLDatabaseResourceConnection(resource, consumer);
         }
 
         @Override
-        public void write(@Nonnull Element connectionEle, @Nonnull Connection<? extends MySQLDatabaseResource, ? extends ModuleResource> connection) {
+        public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends MySQLDatabaseResource, ? extends ModuleResource> connection) {
             final MySQLDatabaseResource resource = connection.getResource();
             final ModuleResource consumer = connection.getConsumer();
             if (StringUtils.isNotBlank(resource.getEnvPrefix())) {
                 connectionEle.setAttribute("envPrefix", resource.getEnvPrefix());
             }
-            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getDefinition().getType()).setText(resource.getId()));
-            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getDefinition().getType()).setText(consumer.getId()));
+            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getType()).setText(resource.getId()));
+            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getType()).setText(consumer.getId()));
+            return true;
         }
 
         @Nonnull

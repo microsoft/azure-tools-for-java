@@ -177,8 +177,8 @@
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
-    <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionBeforeRunTaskProvider" id="LinkAzureServiceBeforeRunProviderId"/>
-    <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionBeforeRunTaskProvider$RunConfigurationExtension"/>
+    <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectionBeforeRunTaskProvider" id="LinkAzureServiceBeforeRunProviderId"/>
+    <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectionBeforeRunTaskProvider$RunConfigurationExtension"/>
     <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceCompletionContributor"/>
     <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceLineMarkerProvider"/>
   </extensions>

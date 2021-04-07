@@ -27,14 +27,9 @@ public class DefaultConnection<R extends Resource, C extends Resource> implement
 
     @Getter
     public static class Definition<R extends Resource, C extends Resource> implements ConnectionDefinition<R, C> {
-        private final String type;
-
-        public Definition(String type) {
-            this.type = type;
-        }
 
         @Override
-        public Connection<R, C> create(String type, R resource, C consumer) {
+        public Connection<R, C> create(R resource, C consumer) {
             return new DefaultConnection<>(resource, consumer);
         }
 
@@ -44,7 +39,7 @@ public class DefaultConnection<R extends Resource, C extends Resource> implement
             final R resource = (R) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
             final Element consumerEle = connectionEle.getChild("consumer");
             final C consumer;
-            if (ModuleResource.Definition.IJ_MODULE.getType().equals(consumerEle.getAttributeValue("type"))) {
+            if (ModuleResource.TYPE.equals(consumerEle.getAttributeValue("type"))) {
                 consumer = (C) new ModuleResource(consumerEle.getTextTrim());
             } else {
                 consumer = (C) manager.getResourceById(connectionEle.getChildTextTrim("consumer"));
@@ -53,11 +48,12 @@ public class DefaultConnection<R extends Resource, C extends Resource> implement
         }
 
         @Override
-        public void write(Element connectionEle, Connection<? extends R, ? extends C> connection) {
+        public boolean write(Element connectionEle, Connection<? extends R, ? extends C> connection) {
             final R resource = connection.getResource();
             final C consumer = connection.getConsumer();
-            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getDefinition().getType()).setText(resource.getId()));
-            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getDefinition().getType()).setText(consumer.getId()));
+            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getType()).setText(resource.getId()));
+            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getType()).setText(consumer.getId()));
+            return true;
         }
 
         @Override

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.components.ServiceManager;
@@ -69,8 +74,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
             final ResourceDefinition<? extends Resource> consumerDefinition = this.consumerTypeSelector.getValue();
             final ResourceDefinition<? extends Resource> resourceDefinition = this.resourceTypeSelector.getValue();
             if (Objects.nonNull(consumerDefinition) && Objects.nonNull(resourceDefinition)) {
-                final String connectionType = Connection.typeOf(resourceDefinition.getType(), consumerDefinition.getType());
-                final ConnectionDefinition<Resource, Resource> connectionDefinition = ConnectionManager.getDefinition(connectionType);
+                final ConnectionDefinition<Resource, Resource> connectionDefinition = ConnectionManager.getDefinition(resourceDefinition.getType(), consumerDefinition.getType());
                 final AzureDialog<Connection<Resource, Resource>> dialog = Optional.ofNullable(connectionDefinition)
                         .map(ConnectionDefinition::getConnectorDialog).orElse(null);
                 if (Objects.nonNull(dialog)) {
@@ -108,7 +112,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
             final C consumer = connection.getConsumer();
             final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinitionOrDefault(resource, consumer);
+            final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinitionOrDefault(resource.getType(), consumer.getType());
             if (definition.validate(connection, this.project)) {
                 resourceManager.addResource(resource);
                 resourceManager.addResource(consumer);
@@ -132,10 +136,9 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     public Connection<R, C> getData() {
         final R resource = this.resourcePanel.getData();
         final C consumer = this.consumerPanel.getData();
-        final String type = Connection.typeOf(resource, consumer);
-        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(resource, consumer);
+        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(resource.getType(), consumer.getType());
         if (Objects.nonNull(definition)) {
-            return definition.create(type, resource, consumer);
+            return definition.create(resource, consumer);
         }
         return new DefaultConnection<>(resource, consumer);
     }
@@ -156,22 +159,22 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     public void setResource(final R resource) {
         this.resource = resource;
-        this.resourceTypeSelector.setValue(new ItemReference<>(resource.getDefinition(), d -> d), true);
+        this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
     }
 
     public void setConsumer(final C consumer) {
         this.consumer = consumer;
-        this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getDefinition(), d -> d), true);
+        this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
     }
 
     private void fixResourceType(ResourceDefinition<? extends Resource> definition) {
-        this.resourceTitle.setText(definition.getName());
+        this.resourceTitle.setText(definition.getTitle());
         this.resourceTypeLabel.setVisible(false);
         this.resourceTypeSelector.setVisible(false);
     }
 
     private void fixConsumerType(ResourceDefinition<? extends Resource> definition) {
-        this.consumerTitle.setText(String.format("Consumer (%s)", definition.getName()));
+        this.consumerTitle.setText(String.format("Consumer (%s)", definition.getTitle()));
         this.consumerTypeLabel.setVisible(false);
         this.consumerTypeSelector.setVisible(false);
     }

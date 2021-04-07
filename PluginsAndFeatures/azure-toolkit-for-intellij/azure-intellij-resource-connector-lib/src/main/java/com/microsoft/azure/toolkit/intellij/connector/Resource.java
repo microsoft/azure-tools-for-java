@@ -10,21 +10,26 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 
+/**
+ * the <b>{@code resource}</b> in <b>{@code resource connection}</b><br>
+ * it's usually An Azure resource or an intellij module
+ */
 public interface Resource {
     String FIELD_TYPE = "type";
     String FIELD_BIZ_ID = "bizId";
     String FIELD_ID = "id";
 
+    /**
+     * get business id of the resource
+     *
+     * @return Azure resource id if this is an Azure resource or module name if this is a Intellij Module
+     */
     @Nonnull
     String getBizId();
 
-    default void setType(String type) {
-        assert StringUtils.equals(getDefinition().getType(), type) : String.format("incompatible resource type \"%s\":\"%s\"", getDefinition().getType(), type);
-    }
+    String getType();
 
     default String getId() {
         return DigestUtils.md5Hex(this.getBizId());
     }
-
-    ResourceDefinition<? extends Resource> getDefinition();
 }
