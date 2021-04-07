@@ -54,8 +54,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private boolean required;
     private Object value;
     private boolean valueNotSet = true;
-    @Setter
-    private boolean forceDisable;
+    private boolean valueFixed;
     private String label;
 
     public AzureComboBox() {
@@ -106,12 +105,24 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public void setValue(final T val) {
+        this.setValue(val, false);
+    }
+
+    public void setValue(final T val, final boolean fixed) {
+        this.valueFixed = fixed;
+        this.setEditable(!this.valueFixed);
         this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
     }
 
     public void setValue(final ItemReference<T> val) {
+        this.setValue(val, false);
+    }
+
+    public void setValue(final ItemReference<T> val, final boolean fixed) {
+        this.valueFixed = fixed;
+        this.setEditable(!this.valueFixed);
         this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
@@ -192,7 +203,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 this.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
             } else {
-                this.setEnabled(!forceDisable);
+                this.setEnabled(!valueFixed);
                 this.setEditor(this.inputEditor);
             }
         }, AzureTask.Modality.ANY);
