@@ -19,6 +19,7 @@ dependencies {
 }
 
 configurations {
+    compile.exclude module:'stax-api'
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
