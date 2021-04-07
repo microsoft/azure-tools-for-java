@@ -3,12 +3,15 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.JdbcUrl;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -29,7 +32,7 @@ import java.awt.event.KeyListener;
 import java.util.Arrays;
 import java.util.List;
 
-public class PasswordDialog extends AzureDialog<PasswordConfig> implements AzureForm<PasswordConfig> {
+public class PasswordDialog extends AzureDialog<Password> implements AzureForm<Password> {
 
     private static final String TITLE = "Credential for Azure Database for MySQL";
     private static final String HEADER_PATTERN = "Please provide credential for user (%s) to access database (%s) on server (%s).";
@@ -43,23 +46,20 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
-    private Project project;
-    private String username;
-    private String url;
+    private final String username;
+    private final JdbcUrl jdbcUrl;
 
-    public PasswordDialog(Project project, String username, String url) {
+    public PasswordDialog(Project project, String username, JdbcUrl url) {
         super(project);
-        this.project = project;
         this.username = username;
-        this.url = url;
+        this.jdbcUrl = url;
         setTitle(TITLE);
-        JdbcUrl jdbcUrl = JdbcUrl.from(url);
-        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHostname()));
+        headerTextPane.setText(String.format(HEADER_PATTERN, username, jdbcUrl.getDatabase(), jdbcUrl.getHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testResultTextPane.setText(StringUtils.EMPTY);
-        Dimension lastColumnSize = new Dimension(106, 30);
+        final Dimension lastColumnSize = new Dimension(106, 30);
         passwordSaveComboBox.setPreferredSize(lastColumnSize);
         passwordSaveComboBox.setMaximumSize(lastColumnSize);
         passwordSaveComboBox.setSize(lastColumnSize);
@@ -75,41 +75,35 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     }
 
     private KeyListener onInputPasswordFieldChanged() {
-        KeyListener listener = new KeyAdapter() {
-
+        return new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 testConnectionButton.setEnabled(ArrayUtils.isNotEmpty(passwordField.getPassword()));
             }
-
         };
-        return listener;
     }
 
     private void onTestConnectionButtonClicked(ActionEvent e) {
         testConnectionButton.setEnabled(false);
         testConnectionButton.setIcon(new AnimatedIcon.Default());
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
-        String password = String.valueOf(passwordField.getPassword());
-        Runnable runnable = () -> {
-            MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(url, username, password);
+        final String password = String.valueOf(passwordField.getPassword());
+        final Runnable runnable = () -> {
+            final MySQLConnectionUtils.ConnectResult connectResult = MySQLConnectionUtils.connectWithPing(jdbcUrl, username, password);
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
-            if (connectResult.isConnected()) {
-                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.InspectionsOK);
-            } else {
-                testConnectionActionPanel.getIconLabel().setIcon(AllIcons.General.BalloonError);
-            }
+            final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
+            testConnectionActionPanel.getIconLabel().setIcon(icon);
             testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
-        JdbcUrl jdbcUrl = JdbcUrl.from(url);
-        AzureTask task = new AzureTask(null, AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHostname()), false, runnable);
+        final String title = AzureBundle.message("azure.mysql.link.connection.title", jdbcUrl.getHost());
+        final AzureTask<Void> task = new AzureTask<>(null, title, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
 
     private String getConnectResultMessage(MySQLConnectionUtils.ConnectResult result) {
-        StringBuilder messageBuilder = new StringBuilder();
+        final StringBuilder messageBuilder = new StringBuilder();
         if (result.isConnected()) {
             messageBuilder.append("Connected successfully.").append(System.lineSeparator());
             messageBuilder.append("MySQL version: ").append(result.getServerVersion()).append(System.lineSeparator());
@@ -124,15 +118,15 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     private void onCopyButtonClicked(ActionEvent e) {
         try {
             Utils.copyToSystemClipboard(testResultTextPane.getText());
-        } catch (Exception exception) {
-            String error = "copy test result error";
-            String action = "try again later.";
+        } catch (final Exception exception) {
+            final String error = "copy test result error";
+            final String action = "try again later.";
             throw new AzureToolkitRuntimeException(error, action);
         }
     }
 
     @Override
-    public AzureForm<PasswordConfig> getForm() {
+    public AzureForm<Password> getForm() {
         return this;
     }
 
@@ -147,16 +141,16 @@ public class PasswordDialog extends AzureDialog<PasswordConfig> implements Azure
     }
 
     @Override
-    public PasswordConfig getData() {
-        PasswordConfig config = PasswordConfig.getDefaultConfig();
-        config.setPasswordSaveType(passwordSaveComboBox.getValue());
-        config.setPassword(passwordField.getPassword());
+    public Password getData() {
+        final Password config = new Password();
+        config.saveType(passwordSaveComboBox.getValue());
+        config.password(passwordField.getPassword());
         return config;
     }
 
     @Override
-    public void setData(PasswordConfig data) {
-        passwordSaveComboBox.setValue(data.getPasswordSaveType());
+    public void setData(Password data) {
+        passwordSaveComboBox.setValue(data.saveType());
     }
 
     @Override

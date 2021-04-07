@@ -77,6 +77,7 @@
   <depends optional="true">com.intellij.database</depends>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-resource-connector-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -94,12 +95,8 @@
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"
                          dynamic="true"/>
-    <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
-                    serviceImplementation="com.microsoft.intellij.AzureSettings"/>
-    <projectService serviceImplementation="com.microsoft.intellij.AzureLinkStorage$Prj"/>
-    <applicationService serviceImplementation="com.microsoft.intellij.AzureMySQLStorage$App"/>
-    <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
-                        serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
+    <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
+    <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
@@ -173,16 +170,17 @@
     <completion.contributor language="JSON" order="first"
       implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
+    <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResourceConnectionStartupActivity"/>
     <facetType implementation="com.microsoft.azure.toolkit.intellij.function.wizard.facet.FunctionsFacetType"/>
     <moduleBuilder builderClass="com.microsoft.azure.toolkit.intellij.function.wizard.module.FunctionsModuleBuilder"/>
     <runConfigurationProducer implementation="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
-    <stepsBeforeRunProvider implementation="com.microsoft.intellij.runner.LinkAzureServiceBeforeRunProvider" id="LinkAzureServiceBeforeRunProviderId"/>
-    <runConfigurationExtension implementation="com.microsoft.intellij.runner.LinkAzureServiceRunConfigurationExtension"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.intellij.runner.SpringDatasourceCompletionContributor"/>
-    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.intellij.runner.SpringDatasourceLineMarkerProvider"/>
+    <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionBeforeRunTaskProvider" id="LinkAzureServiceBeforeRunProviderId"/>
+    <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionBeforeRunTaskProvider$RunConfigurationExtension"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceCompletionContributor"/>
+    <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.SpringDatasourceLineMarkerProvider"/>
   </extensions>
 
   <applicationListeners>
