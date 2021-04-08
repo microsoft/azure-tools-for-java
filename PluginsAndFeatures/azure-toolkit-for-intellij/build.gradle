@@ -106,6 +106,7 @@ apply plugin: 'java'
 dependencies {
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
+    compile project(':azure-intellij-resource-connector-lib')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.7'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'

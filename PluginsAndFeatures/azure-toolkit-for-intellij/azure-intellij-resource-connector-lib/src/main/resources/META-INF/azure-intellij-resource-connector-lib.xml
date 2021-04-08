@@ -1,0 +1,13 @@
+<idea-plugin>
+    <extensionPoints>
+    </extensionPoints>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorStartupActivity"/>
+        <projectService
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />
+        <applicationService
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ResourceManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
+    </extensions>
+</idea-plugin>
