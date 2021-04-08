@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -39,7 +39,7 @@ public class UsernameComboBox extends AzureComboBox<String> {
         if (server == null) {
             return new ArrayList<>();
         }
-        List<String> usernames = new ArrayList<>();
+        final List<String> usernames = new ArrayList<>();
         usernames.add(server.administratorLogin() + SEPARATOR + server.name());
         return usernames;
     }

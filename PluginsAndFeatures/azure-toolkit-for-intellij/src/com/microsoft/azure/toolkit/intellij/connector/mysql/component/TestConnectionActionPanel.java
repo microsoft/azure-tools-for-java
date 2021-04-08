@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import lombok.Getter;
 
@@ -18,8 +18,8 @@ public class TestConnectionActionPanel extends JPanel {
     private JLabel iconLabel;
     private JPanel root;
 
-    private Border rolloverBorder;
-    private Border emptyBorder;
+    private final Border rolloverBorder;
+    private final Border emptyBorder;
 
     public TestConnectionActionPanel() {
         super();

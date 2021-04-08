@@ -3,14 +3,15 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class PasswordSaveComboBox extends AzureComboBox<PasswordSaveType> {
+public class PasswordSaveComboBox extends AzureComboBox<Password.SaveType> {
 
     public PasswordSaveComboBox() {
         super(false);
@@ -18,14 +19,14 @@ public class PasswordSaveComboBox extends AzureComboBox<PasswordSaveType> {
     }
 
     @Override
-    protected List<? extends PasswordSaveType> loadItems() {
-        return Arrays.asList(PasswordSaveType.values());
+    protected List<? extends Password.SaveType> loadItems() {
+        return Arrays.asList(Password.SaveType.values());
     }
 
     @Override
     protected String getItemText(Object item) {
-        if (item instanceof PasswordSaveType) {
-            return ((PasswordSaveType) item).getName();
+        if (item instanceof Password.SaveType) {
+            return ((Password.SaveType) item).title();
         }
         return super.getItemText(item);
     }

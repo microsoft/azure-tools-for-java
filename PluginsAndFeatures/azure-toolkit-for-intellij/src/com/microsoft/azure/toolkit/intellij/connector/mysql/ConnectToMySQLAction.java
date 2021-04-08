@@ -3,10 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.mysql.action;
+package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.link.LinkMySQLToModuleDialog;
+import com.microsoft.azure.management.mysql.v2020_01_01.Server;
+import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
+import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -14,15 +16,15 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 
-@Name(LinkMySQLAction.ACTION_NAME)
-public class LinkMySQLAction extends NodeActionListener {
+@Name(ConnectToMySQLAction.ACTION_NAME)
+public class ConnectToMySQLAction extends NodeActionListener {
 
     public static final String ACTION_NAME = "Connect to Project";
 
     private final MySQLNode node;
     private final Project project;
 
-    public LinkMySQLAction(MySQLNode node) {
+    public ConnectToMySQLAction(MySQLNode node) {
         super();
         this.node = node;
         this.project = (Project) node.getProject();
@@ -35,7 +37,9 @@ public class LinkMySQLAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        final LinkMySQLToModuleDialog dialog = new LinkMySQLToModuleDialog(project, node, null);
+        final ConnectorDialog<MySQLDatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
+        final Server server = this.node.getServer();
+        dialog.setResource(new MySQLDatabaseResource(server.id(), null));
         dialog.show();
     }
 

@@ -3,40 +3,27 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import lombok.Setter;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
-
-    private Subscription subscription;
+    @Getter
     private Server server;
 
     public DatabaseComboBox() {
         super(false);
-    }
-
-    public void setSubscription(Subscription subscription) {
-        if (Objects.equals(subscription, this.subscription)) {
-            return;
-        }
-        this.subscription = subscription;
-        if (subscription == null || server == null) {
-            this.clear();
-            return;
-        }
-        this.refreshItems();
     }
 
     public void setServer(Server server) {
@@ -44,7 +31,7 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
             return;
         }
         this.server = server;
-        if (subscription == null || server == null) {
+        if (server == null) {
             this.clear();
             return;
         }
@@ -61,14 +48,12 @@ public class DatabaseComboBox extends AzureComboBox<DatabaseInner> {
 
     @Override
     protected List<? extends DatabaseInner> loadItems() {
-        if (Objects.isNull(subscription)) {
+        final AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
+        if (Objects.isNull(server) || Objects.isNull(manager)) {
             return new ArrayList<>();
         }
-        AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
-        if (Objects.isNull(manager)) {
-            return new ArrayList<>();
-        }
-        final MySQLManager mySQLManager = manager.getMySQLManager(subscription.subscriptionId());
+        final String sid = ResourceId.fromString(server.id()).subscriptionId();
+        final MySQLManager mySQLManager = manager.getMySQLManager(sid);
         return mySQLManager.databases().inner().listByServer(server.resourceGroupName(), server.name());
     }
 

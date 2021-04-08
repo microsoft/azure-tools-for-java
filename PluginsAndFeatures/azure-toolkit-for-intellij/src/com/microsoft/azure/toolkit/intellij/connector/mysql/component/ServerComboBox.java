@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.link.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
@@ -11,8 +11,6 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ public class ServerComboBox extends AzureComboBox<Server> {
         if (Objects.isNull(subscription)) {
             return new ArrayList<>();
         }
-        AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
+        final AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
         if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
