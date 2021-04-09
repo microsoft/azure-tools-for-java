@@ -10,6 +10,7 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentInstance
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -57,7 +58,7 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
         final ResourceId appId = ResourceId.fromString(this.appId);
         final String subscriptionId = appId.subscriptionId();
         final String clusterName = appId.parent().name();
-        this.app = AzureSpringCloud.az(getSpringManager(subscriptionId)).cluster(clusterName).app(appId.name());
+        this.app = Azure.az(AzureSpringCloud.class).cluster(clusterName).app(appId.name());
     }
 
     @Override
