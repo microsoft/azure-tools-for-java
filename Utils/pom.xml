@@ -275,6 +275,11 @@
                 <artifactId>azure-toolkit-common-lib</artifactId>
                 <version>${azure.toolkit-lib.version}</version>
             </dependency>
+	    <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-auth-lib</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-appservice-lib</artifactId>

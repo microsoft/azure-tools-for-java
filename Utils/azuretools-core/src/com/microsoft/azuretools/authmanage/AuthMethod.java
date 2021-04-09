@@ -15,7 +15,8 @@ public enum AuthMethod {
     AD(new AccessTokenAzureManager.AccessTokenAzureManagerFactory(AdAuthManager.getInstance())),
     DC(new AccessTokenAzureManager.AccessTokenAzureManagerFactory(DCAuthManager.getInstance())),
     SP(new ServicePrincipalAzureManager.ServicePrincipalAzureManagerFactory()),
-    AZ(new AzureCliAzureManager.AzureCliAzureManagerFactory());
+    AZ(new AzureCliAzureManager.AzureCliAzureManagerFactory()),
+    IDENTITY(null);
 
     private final AzureManagerFactory azureManagerFactory;
 

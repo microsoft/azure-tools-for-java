@@ -5,7 +5,10 @@
 
 package com.microsoft.azuretools.authmanage.models;
 
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azuretools.authmanage.AuthMethod;
+import lombok.Getter;
+import lombok.Setter;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -16,55 +19,53 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class AuthMethodDetails {
 
     @JsonProperty
+    @Setter
+    @Getter
     private String accountEmail;
 
     @JsonProperty
+    @Setter
+    @Getter
+    private String tenantId;
+
+    @JsonProperty
+    @Setter
+    @Getter
+    private String clientId;
+
+    @JsonProperty
+    @Setter
+    @Getter
     private String credFilePath;
 
     @JsonProperty
+    @Setter
+    @Getter
     private AuthMethod authMethod;
 
     @JsonProperty
+    @Setter
+    @Getter
     private String azureEnv;
+
+    /**
+     * new attributes: auth type
+     */
+    @JsonProperty
+    @Setter
+    @Getter
+    private AuthType authType;
 
     // for jackson json
     public AuthMethodDetails() {
     }
 
-    public AuthMethod getAuthMethod() {
-        return authMethod;
-    }
-
-    public void setAuthMethod(AuthMethod authMethod) {
-        this.authMethod = authMethod;
-    }
-
-    public String getAccountEmail() {
-        return accountEmail;
-    }
-
-    public void setAccountEmail(String accountEmail) {
-        this.accountEmail = accountEmail;
-    }
-
-    public String getCredFilePath() {
-        return credFilePath;
-    }
-
-    public void setCredFilePath(String credFilePath) {
-        this.credFilePath = credFilePath;
-    }
-
-    public String getAzureEnv() {
-        return azureEnv;
-    }
-
-    public void setAzureEnv(String azureEnv) {
-        this.azureEnv = azureEnv;
-    }
-
     @Override
     public String toString() {
+        if (getAuthMethod() == AuthMethod.IDENTITY) {
+            return String.format("{ accountEmail: %s, credFilePath: %s, authType: %s, azureEnv: %s }",
+                    getAccountEmail(), getCredFilePath(), getAuthType(), getAzureEnv());
+        }
         return String.format("{ accountEmail: %s, credFilePath: %s, authMethod: %s, azureEnv: %s }",
                 getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
     }

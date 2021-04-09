@@ -31,6 +31,10 @@ public interface AzureManager {
 
     List<Subscription> getSubscriptions();
 
+    default List<String> getSelectedSubscriptionIds() {
+        return null;
+    }
+
     List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant();
 
     Settings getSettings();

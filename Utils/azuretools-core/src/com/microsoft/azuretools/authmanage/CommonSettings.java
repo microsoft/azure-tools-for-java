@@ -31,7 +31,7 @@ import static com.microsoft.azuretools.Constants.*;
 
 public class CommonSettings {
 
-    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CommonSettings.class.getName());
     private static final String ENV_NAME_KEY = "EnvironmentName";
     private static final String MOVE_RESOURCE_FILE_FAIL = "Fail to move Azure Toolkit resource file %s to %s";
     private static final String CLEAN_DEPRECATED_FOLDER_FAIL = "Fail to clean deprecated folder %s";

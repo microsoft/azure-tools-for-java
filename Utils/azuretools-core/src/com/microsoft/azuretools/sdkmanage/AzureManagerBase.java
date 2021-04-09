@@ -267,7 +267,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
-    private List<Tenant> getTenants(Azure.Authenticated authentication) {
+    protected List<Tenant> getTenants(Azure.Authenticated authentication) {
         return authentication.tenants().listAsync()
                 .toList()
                 .toBlocking()
