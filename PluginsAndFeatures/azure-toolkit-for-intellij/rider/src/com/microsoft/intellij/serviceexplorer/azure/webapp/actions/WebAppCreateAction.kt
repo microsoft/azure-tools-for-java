@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,10 +25,10 @@ package com.microsoft.intellij.serviceexplorer.azure.webapp.actions
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.serviceexplorer.azure.database.actions.runWhenSignedIn
 import com.microsoft.intellij.ui.forms.appservice.webapp.CreateWebAppDialog
 import com.microsoft.tooling.msservices.helpers.Name
+import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
@@ -47,18 +47,15 @@ class WebAppCreateAction(private val webAppModule: WebAppModule) : NodeActionLis
             return
         }
 
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-            logger.error("Failed to create Web App. User is not signed in.")
-            return
+        runWhenSignedIn(project) {
+            val createWebAppForm = CreateWebAppDialog(
+                    lifetimeDef = project.defineNestedLifetime(),
+                    project = project,
+                    onCreate = { webAppModule.load(true) })
+
+            createWebAppForm.show()
         }
-
-        val createWebAppForm = CreateWebAppDialog(
-                lifetimeDef = project.defineNestedLifetime(),
-                project = project,
-                onCreate = { webAppModule.load(true) })
-
-        createWebAppForm.show()
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getAction(): AzureActionEnum = AzureActionEnum.CREATE
 }

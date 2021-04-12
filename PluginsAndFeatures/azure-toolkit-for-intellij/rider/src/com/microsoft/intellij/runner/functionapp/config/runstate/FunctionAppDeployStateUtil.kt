@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -33,9 +33,9 @@ import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.deploy.KuduClient
-import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.appStart
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.appStop
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.collectProjectArtifacts

@@ -1,32 +1,19 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.authmanage;
 
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
+import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
@@ -38,17 +25,11 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class AuthMethodManager {
     private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
@@ -66,13 +47,10 @@ public class AuthMethodManager {
 
     private AuthMethodManager(AuthMethodDetails authMethodDetails) {
         this.authMethodDetails = authMethodDetails;
+        final AzureManager manager = getAzureManager();
         // initialize subscription manager when restore authentication
-        if (this.authMethodDetails.getAuthMethod() != null) {
-            try {
-                getAzureManager().getSubscriptionManager().updateSubscriptionDetailsIfNull();
-            } catch (IOException e) {
-                // swallow exception
-            }
+        if (this.authMethodDetails.getAuthMethod() != null && Objects.nonNull(manager)) {
+            manager.getSubscriptionManager().updateSubscriptionDetailsIfNull();
         }
     }
 
@@ -80,22 +58,54 @@ public class AuthMethodManager {
         return LazyHolder.INSTANCE;
     }
 
-    public Azure getAzureClient(String sid) throws IOException {
-        if (getAzureManager() == null) {
-            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+    @NotNull
+    @AzureOperation(
+        name = "common|rest_client.create",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
+    public Azure getAzureClient(String sid) {
+        final AzureManager manager = getAzureManager();
+        if (manager != null) {
+            final Azure azure = manager.getAzure(sid);
+            if (azure != null) {
+                return azure;
+            }
         }
-        Azure azure = getAzureManager().getAzure(sid);
-        if (azure == null) {
-            throw new IOException(String.format(CANNOT_GET_AZURE_BY_SID, sid));
-        }
-        return azure;
+        final String error = "Failed to connect Azure service with current account";
+        final String action = "Confirm you have already signed in with subscription: " + sid;
+        final String errorCode = "001";
+        throw new AzureToolkitRuntimeException(error, null, action, errorCode);
     }
 
-    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
-        if (getAzureManager() == null) {
-            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+    @AzureOperation(
+        name = "common|rest_client.create_asc",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
+    public AppPlatformManager getAzureSpringCloudClient(String sid) {
+        final AzureManager manager = getAzureManager();
+        if (manager != null) {
+            return getAzureManager().getAzureSpringCloudClient(sid);
         }
-        return getAzureManager().getAzureSpringCloudClient(sid);
+        final String error = "Failed to connect Azure service with current account";
+        final String action = "Confirm you have already signed in with subscription: " + sid;
+        throw new AzureToolkitRuntimeException(error, action);
+    }
+
+    @AzureOperation(
+        name = "common|rest_client.create_mysql",
+        params = {"$sid"},
+        type = AzureOperation.Type.TASK
+    )
+    public MySQLManager getMySQLManager(String sid) {
+        final AzureManager manager = getAzureManager();
+        if (manager != null) {
+            return manager.getMySQLManager(sid);
+        }
+        final String error = "Failed to get manager of Azure Database for MySQL with current account";
+        final String action = "Confirm you have already signed in with subscription: " + sid;
+        throw new AzureToolkitRuntimeException(error, action);
     }
 
     public void addSignInEventListener(Runnable l) {
@@ -133,21 +143,18 @@ public class AuthMethodManager {
     }
 
     @Nullable
-    public AzureManager getAzureManager() throws IOException {
+    public AzureManager getAzureManager() {
         return getAzureManager(getAuthMethod());
     }
 
-    public void signOut() throws IOException {
+    @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
+    public void signOut() {
         cleanAll();
         notifySignOutEventListener();
     }
 
     public boolean isSignedIn() {
-        try {
-            return getAzureManager() != null;
-        } catch (IOException e) {
-            return false;
-        }
+        return azureManager != null;
     }
 
     public AuthMethod getAuthMethod() {
@@ -158,13 +165,20 @@ public class AuthMethodManager {
         return this.authMethodDetails;
     }
 
-    public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) throws IOException {
+    @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
+    public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
         cleanAll();
         this.authMethodDetails = authMethodDetails;
-        saveSettings();
+        try {
+            persistAuthMethodDetails();
+        } catch (final IOException e) {
+            final String error = "Failed to persist auth method settings while updating";
+            final String action = "Retry later";
+            throw new AzureToolkitRuntimeException(error, e, action);
+        }
     }
 
-    private synchronized AzureManager getAzureManager(final AuthMethod authMethod) throws IOException {
+    private synchronized @Nullable AzureManager getAzureManager(final AuthMethod authMethod) {
         if (authMethod == null) {
             return null;
         }
@@ -179,7 +193,7 @@ public class AuthMethodManager {
         return azureManager;
     }
 
-    private synchronized void cleanAll() throws IOException {
+    private synchronized void cleanAll() {
         if (azureManager != null) {
             azureManager.drop();
             azureManager.getSubscriptionManager().cleanSubscriptions();
@@ -190,10 +204,17 @@ public class AuthMethodManager {
         authMethodDetails.setAzureEnv(null);
         authMethodDetails.setAuthMethod(null);
         authMethodDetails.setCredFilePath(null);
-        saveSettings();
+        try {
+            persistAuthMethodDetails();
+        } catch (final IOException e) {
+            final String error = "Failed to persist local auth method settings while cleaning";
+            final String action = "Retry later";
+            throw new AzureToolkitRuntimeException(error, e, action);
+        }
     }
 
-    private void saveSettings() throws IOException {
+    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
+    private void persistAuthMethodDetails() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
         FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
@@ -224,6 +245,7 @@ public class AuthMethodManager {
         });
     }
 
+    @AzureOperation(name = "account|auth_setting.load", type = AzureOperation.Type.TASK)
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {

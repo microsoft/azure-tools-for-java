@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

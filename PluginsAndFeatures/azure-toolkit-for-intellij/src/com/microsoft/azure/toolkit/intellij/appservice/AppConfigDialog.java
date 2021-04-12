@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.appservice;
@@ -31,10 +14,11 @@ import lombok.extern.java.Log;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Log
 public abstract class AppConfigDialog<T extends AppServiceConfig>
     extends AzureDialog<T> {
-    public static final String LABEL_ADVANCED_MODE = "More settings";
     protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
@@ -74,7 +58,7 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     @Override
     protected JComponent createDoNotAskCheckbox() {
-        this.checkboxMode = new JCheckBox(LABEL_ADVANCED_MODE);
+        this.checkboxMode = new JCheckBox(message("appService.appConfig.advancedMode"));
         this.checkboxMode.setVisible(true);
         this.checkboxMode.setSelected(false);
         this.checkboxMode.addActionListener(e -> this.toggleAdvancedMode(this.checkboxMode.isSelected()));

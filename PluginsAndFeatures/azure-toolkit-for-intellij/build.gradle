@@ -1,5 +1,3 @@
-import org.jetbrains.intellij.IntelliJPluginExtension
-
 buildscript {
     repositories {
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
@@ -12,11 +10,12 @@ plugins {
     id "org.jetbrains.intellij" version "${gradle_plugin_version}"
     id "org.jetbrains.kotlin.jvm" version "${kotlin_version}"
     id "de.undercouch.download" version "${undercouch_version}"
+    id "io.freefair.aspectj.post-compile-weaving" version "${aspectj_version}"
 }
 
 configurations {
-    compile.exclude module: 'slf4j-api'
-    compile.exclude module: 'log4j'
+    compile.exclude module:'slf4j-api'
+    compile.exclude module:'log4j'
 }
 
 dependencies {
@@ -27,23 +26,32 @@ dependencies {
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.46.0', {
+    aspect 'com.microsoft.azure:azure-toolkit-common-lib:0.3.0'
+    compile 'com.microsoft.azuretools:azuretools-core:3.50.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.46.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.50.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.46.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.50.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.6.0'
     compile 'com.microsoft.azure:azure-tools-common:0.10.0'
+    compile group: 'com.microsoft.azure.appplatform.v2020_07_01', name: 'azure-mgmt-appplatform', version: '1.0.0-beta'
+    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3', {
+        exclude group: "javax.xml.stream", module: "stax-api"
+        exclude group: "xpp3", module: "xpp3"
+        exclude group: "pull-parser", module: "pull-parser"
+        exclude group: "net.java.dev.msv", module: "xsdlib"
+    }
+    compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
     compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
@@ -52,6 +60,7 @@ dependencies {
 
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.9'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.23'
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly "org.projectlombok:lombok:${lombok_version}"
@@ -147,8 +156,13 @@ configure(mainProjects) {
         }
         testLogging.exceptionFormat "full"
     }
+
+    buildSearchableOptions.onlyIf { false }
 }
 
 defaultTasks 'buildPlugin'
 
-buildSearchableOptions.onlyIf { false }
+wrapper() {
+    gradleVersion = '6.5'
+    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}

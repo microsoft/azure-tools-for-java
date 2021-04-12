@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -28,7 +28,7 @@ import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
-@Name("Connect to Database")
+@Name("Open in Database Tools")
 class SqlDatabaseConnectDataSourceAction(private val databaseNode: SqlDatabaseNode)
     : ConnectDataSourceAction(databaseNode) {
 

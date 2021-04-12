@@ -1,35 +1,20 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
 import com.microsoft.azure.CommonIcons;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.SkuDescription;
+import com.microsoft.azure.management.appservice.SkuName;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,6 +31,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected static final String ACTION_SHOW_PROPERTY = "Show Properties";
     protected static final String ICON_RUNNING_POSTFIX = "Running.svg";
     protected static final String ICON_STOPPED_POSTFIX = "Stopped.svg";
+    protected static final String OS_LINUX = "Linux";
 
     protected final String subscriptionId;
     protected final String hostName;
@@ -61,8 +47,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
 
     public WebAppBaseNode(final String id, final String name, final String label, final AzureRefreshableNode parent,
                           final String subscriptionId, final String hostName, final String os, final String state) {
-        super(id, name, parent, null, true);
-        this.iconPath = getIcon(os, label, WebAppBaseState.fromString(state));
+        super(id, name, parent, getIcon(os, label, WebAppBaseState.fromString(state)), true);
         this.state = WebAppBaseState.fromString(state);
         this.label = label;
         this.subscriptionId = subscriptionId;
@@ -80,17 +65,17 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     @Override
     protected void loadActions() {
         addAction(ACTION_START, CommonIcons.ACTION_START, getStartActionListener());
-        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, getRestartActionListener());
         addAction(ACTION_STOP, CommonIcons.ACTION_STOP, getStopActionListener());
+        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, getRestartActionListener());
         addAction(ACTION_SHOW_PROPERTY, CommonIcons.ACTION_OPEN_PREFERENCES, getShowPropertiesActionListener());
         addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, getOpenInBrowserActionListener());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), NodeActionPosition.BOTTOM);
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY);
 
         super.loadActions();
     }
 
     // Remove static to provide ability to override IconPath logic for [FunctionAppNode].
-    protected String getIcon(final String os, final String label, final WebAppBaseState state) {
+    protected static String getIcon(final String os, final String label, final WebAppBaseState state) {
         return StringUtils.capitalize(os.toLowerCase())
             + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
@@ -112,13 +97,15 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         List<NodeAction> nodeActions = super.getNodeActions();
 
         if (running) {
+            int startIndex = nodeActions.indexOf(startAction);
             nodeActions.remove(startAction);
             if (!nodeActions.contains(stopAction))
-                nodeActions.add(stopAction);
+                nodeActions.add(startIndex, stopAction);
         } else {
+            int stopIndex = nodeActions.indexOf(stopAction);
             nodeActions.remove(stopAction);
             if (!nodeActions.contains(startAction))
-                nodeActions.add(startAction);
+                nodeActions.add(stopIndex, startAction);
         }
 
         restartAction.setEnabled(running);
@@ -131,27 +118,19 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
             stopStreamingLogsAction = getNodeActionByName("Stop Streaming Logs");
 
         if (isStreamingLogStarted()) {
+            int startIndex = nodeActions.indexOf(startStreamingLogsAction);
             nodeActions.remove(startStreamingLogsAction);
             if (!nodeActions.contains(stopStreamingLogsAction))
-                nodeActions.add(stopStreamingLogsAction);
+                nodeActions.add(startIndex, stopStreamingLogsAction);
 
         } else {
+            int stopIndex = nodeActions.indexOf(stopStreamingLogsAction);
             nodeActions.remove(stopStreamingLogsAction);
             if (!nodeActions.contains(startStreamingLogsAction))
-                nodeActions.add(startStreamingLogsAction);
+                nodeActions.add(stopIndex, startStreamingLogsAction);
         }
 
         return nodeActions;
-    }
-
-    protected NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
-        return new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(getProject(), actionName, false,
-                    true, String.format("%s...", actionName), runnable);
-            }
-        };
     }
 
     @Override

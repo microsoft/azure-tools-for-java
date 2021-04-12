@@ -1,41 +1,20 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.Pair;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -58,41 +37,45 @@ public class SubscriptionManager {
         this.azureManager = azureManager;
     }
 
-    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() throws IOException {
+    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionDetailsMap()");
         updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionDetailMap;
     }
 
-    public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionMap() throws IOException {
+    public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionMap()");
         updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionMap;
     }
 
-    public synchronized List<SubscriptionDetail> getSubscriptionDetails() throws IOException {
+    @AzureOperation(name = "account|subscription.get_details", type = AzureOperation.Type.TASK)
+    public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return subscriptionDetails;
     }
 
-    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() throws IOException {
+    @AzureOperation(name = "account|subscription.get_detail.selected", type = AzureOperation.Type.TASK)
+    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
 
         return getAccountSidList().stream()
                 .map(sid -> subscriptionIdToSubscriptionDetailMap.get(sid))
+                .filter(s -> Objects.nonNull(s) && s.isSelected())
                 .collect(Collectors.toList());
     }
 
-    public void updateSubscriptionDetailsIfNull() throws IOException {
+    public void updateSubscriptionDetailsIfNull() {
         if (subscriptionDetails == null) {
             List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
             doSetSubscriptionDetails(sdl);
         }
     }
 
-    protected List<SubscriptionDetail> updateAccountSubscriptionList() throws IOException {
+    @AzureOperation(name = "account|subscription.flush_cache", type = AzureOperation.Type.SERVICE)
+    protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.updateAccountSubscriptionList()");
 
         if (azureManager == null) {
@@ -115,7 +98,7 @@ public class SubscriptionManager {
         return sdl;
     }
 
-    private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
+    private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.doSetSubscriptionDetails()");
         this.subscriptionDetails = subscriptionDetails;
         updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map
@@ -123,7 +106,7 @@ public class SubscriptionManager {
     }
 
     // WORKAROUND: private helper to construct SubscriptionId->SubscriptionDetail map
-    private void updateMapAccordingToList() throws IOException {
+    private void updateMapAccordingToList() {
         Map<String, SubscriptionDetail> sid2sd = new ConcurrentHashMap<>();
         for (SubscriptionDetail sd : this.subscriptionDetails) {
             sid2sd.put(sd.getSubscriptionId(),
@@ -136,7 +119,7 @@ public class SubscriptionManager {
         this.subscriptionIdToSubscriptionDetailMap = sid2sd;
     }
 
-    public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
+    public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
         System.out.println("SubscriptionManager.setSubscriptionDetails() " + Thread.currentThread().getId());
         doSetSubscriptionDetails(subscriptionDetails);
         notifyAllListeners();
@@ -171,7 +154,7 @@ public class SubscriptionManager {
         return sidToTid.keySet();
     }
 
-    public void cleanSubscriptions() throws IOException {
+    public void cleanSubscriptions() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.cleanSubscriptions()");
         synchronized (this) {
             if (subscriptionDetails != null) {

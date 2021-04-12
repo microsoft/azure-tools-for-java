@@ -24,11 +24,11 @@ package com.microsoft.azure;
 
 public class CommonIcons {
 
-    public static final String ACTION_OPEN_PREFERENCES = "gearPlain.svg";
-    public static final String ACTION_DISCARD = "Discard.svg";
-    public static final String ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg";
+    public static final String ACTION_OPEN_PREFERENCES = "Common/GearPlain.svg";
+    public static final String ACTION_DISCARD = "Common/Delete.svg";
+    public static final String ACTION_OPEN_IN_BROWSER = "Common/OpenInPortal.svg";
 
-    public static final String ACTION_START = "AzureStart.svg";
-    public static final String ACTION_STOP = "AzureStop.svg";
-    public static final String ACTION_RESTART = "AzureRestart.svg";
+    public static final String ACTION_START = "Common/Start.svg";
+    public static final String ACTION_STOP = "Common/Stop.svg";
+    public static final String ACTION_RESTART = "Common/Restart.svg";
 }

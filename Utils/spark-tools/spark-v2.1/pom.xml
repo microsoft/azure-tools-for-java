@@ -26,12 +26,12 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>spark-tools</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-tools</artifactId>
-    <version>0.1.1_2.1</version>
+    <version>0.1.2_2.1</version>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
         <spark.version>2.1.0</spark.version>

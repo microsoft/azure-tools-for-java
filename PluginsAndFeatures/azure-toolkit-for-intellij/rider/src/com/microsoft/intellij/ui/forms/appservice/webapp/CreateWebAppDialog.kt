@@ -37,8 +37,8 @@ import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.UpdateProgressIndicator
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
@@ -49,8 +49,8 @@ import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.forms.base.AzureCreateDialogBase
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import java.util.Date
 import java.time.Duration
+import java.util.*
 import javax.swing.JComponent
 import javax.swing.JPanel
 

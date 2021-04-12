@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * Copyright (c) 2018-2021 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.helpers;
@@ -45,8 +28,21 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.CloudError;
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
+import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
+import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
+import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -57,34 +53,25 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
-import com.microsoft.intellij.helpers.arm.DeploymentPropertyView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
-import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
-import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
-import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
-import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
-import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
-import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NotImplementedException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -92,6 +79,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,9 +88,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
-import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
-import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
 
 
 public class UIHelperImpl implements UIHelper {
@@ -123,8 +109,8 @@ public class UIHelperImpl implements UIHelper {
                         Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
-    private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
-    private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
+    protected static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
+    protected static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
 
     @Override
     public void showException(@NotNull final String message,
@@ -193,12 +179,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showError(Component component, String message, String title) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Messages.showErrorDialog(component, message, title);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> Messages.showErrorDialog(component, message, title));
     }
 
     @Override
@@ -277,7 +258,7 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(STORAGE_KEY, storageAccount);
 
-        itemVirtualFile.setFileType(getFileType(itemName, iconName));
+        itemVirtualFile.setFileType(new AzureFileType(itemName, UIHelperImpl.loadIcon(iconName)));
 
         openItem(projectObject, itemVirtualFile);
     }
@@ -292,102 +273,89 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData((Key<T>) name2Key.get(item.getClass()), item);
         itemVirtualFile.putUserData(CLIENT_STORAGE_KEY, clientStorageAccount);
 
-        itemVirtualFile.setFileType(getFileType(itemName, iconName));
+        itemVirtualFile.setFileType(new AzureFileType(itemName, UIHelperImpl.loadIcon(iconName)));
 
         openItem(projectObject, itemVirtualFile);
     }
 
     @Override
     public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
-            }
-        });
+        AzureTaskManager
+            .getInstance()
+            .runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
-    @org.jetbrains.annotations.NotNull
-    private FileType getFileType(@NotNull final String itemName, @Nullable final String iconName) {
-        return new FileType() {
-            @NotNull
-            @Override
-            public String getName() {
-                return itemName;
-            }
+    protected class AzureFileType implements FileType {
+        private String itemName;
+        private Icon icon;
 
-            @NotNull
-            @Override
-            public String getDescription() {
-                return itemName;
-            }
+        AzureFileType(String itemName, Icon icon) {
+            this.itemName = itemName;
+            this.icon = icon;
+        }
 
-            @NotNull
-            @Override
-            public String getDefaultExtension() {
-                return "";
-            }
+        @NotNull
+        @Override
+        public String getName() {
+            return itemName;
+        }
 
-            @Nullable
-            @Override
-            public Icon getIcon() {
-                return UIHelperImpl.loadIcon(iconName);
-            }
+        @NotNull
+        @Override
+        public String getDescription() {
+            return itemName;
+        }
 
-            @Override
-            public boolean isBinary() {
-                return true;
-            }
+        @NotNull
+        @Override
+        public String getDefaultExtension() {
+            return "";
+        }
 
-            @Override
-            public boolean isReadOnly() {
-                return false;
-            }
+        @Nullable
+        @Override
+        public Icon getIcon() {
+            // UIHelperImpl.loadIcon(iconName);
+            return icon;
+        }
 
-            @Override
-            public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
-                return "UTF8";
-            }
-        };
+        @Override
+        public boolean isBinary() {
+            return true;
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return false;
+        }
+
+        @Override
+        public String getCharset(@NotNull VirtualFile virtualFile, @NotNull byte[] bytes) {
+            return StandardCharsets.UTF_8.name();
+        }
     }
 
     @Override
     public void refreshQueue(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
                              @NotNull final Queue queue) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.getName(), queue);
-                if (file != null) {
-                    final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            queueFileEditor.fillGrid();
-                        }
-                    });
-                }
+        AzureTaskManager.getInstance().read(() -> {
+            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.getName(), queue);
+            if (file != null) {
+                final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                AzureTaskManager.getInstance().runLater(() -> queueFileEditor.fillGrid());
             }
         });
     }
 
     @Override
     public void refreshBlobs(@NotNull final Object projectObject, @NotNull final String accountName, @NotNull final BlobContainer container) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
-                if (file != null) {
-                    final BlobExplorerFileEditor containerFileEditor =
-                        (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
-                                                                  .getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            containerFileEditor.fillGrid();
-                        }
-                    });
-                }
+        AzureTaskManager.getInstance().read(() -> {
+            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
+            if (file != null) {
+                final BlobExplorerFileEditor containerFileEditor =
+                    (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
+                                                              .getEditors(file)[0];
+                AzureTaskManager.getInstance().runLater(() -> containerFileEditor.fillGrid());
             }
         });
     }
@@ -395,19 +363,11 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshTable(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Table table) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
-                if (file != null) {
-                    final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            tableFileEditor.fillGrid();
-                        }
-                    });
-                }
+        AzureTaskManager.getInstance().read(() -> {
+            final VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
+            if (file != null) {
+                final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                AzureTaskManager.getInstance().runLater(tableFileEditor::fillGrid);
             }
         });
     }
@@ -440,8 +400,9 @@ public class UIHelperImpl implements UIHelper {
             LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
                                                                   RedisCachePropertyViewProvider.TYPE, resId);
             if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
-                                                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                itemVirtualFile = createVirtualFile(redisName, sid, resId);
+                itemVirtualFile.setFileType(
+                        new AzureFileType(RedisCachePropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -469,8 +430,9 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
-                                                RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+            itemVirtualFile = createVirtualFile(redisName, sid, resId);
+            itemVirtualFile.setFileType(new AzureFileType(RedisCacheExplorerProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
+
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
@@ -485,8 +447,8 @@ public class UIHelperImpl implements UIHelper {
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), TYPE,
-                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
+            itemVirtualFile.setFileType(new AzureFileType(TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -494,27 +456,6 @@ public class UIHelperImpl implements UIHelper {
                 ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
             }
         }
-    }
-
-    @Override
-    public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
-        Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        final String id = node.getAppId();
-        final String subscription = getSubscriptionId(id);
-        final String appName = node.getAppName();
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
-                                                DeploymentNode.ICON_PATH, subscription, id);
-        }
-        itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
-        itemVirtualFile.putUserData(APP_ID, id);
-        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Override
@@ -528,8 +469,8 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
                                                               node.getId());
         if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), ResourceTemplateViewProvider.TYPE,
-                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
+            itemVirtualFile.setFileType(new AzureFileType(ResourceTemplateViewProvider.TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -550,31 +491,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
-        String registryName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
-        String sid = node.getSubscriptionId();
-        String resId = node.getResourceId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
-        }
-        Project project = (Project) node.getProject();
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                                                              ContainerRegistryPropertyViewProvider.TYPE, resId);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
-                                                ContainerRegistryNode.ICON_PATH, sid, resId);
-        }
-        FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-        for (FileEditor editor: editors) {
-            if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
-                editor instanceof ContainerRegistryPropertyView) {
-                ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
-            }
-        }
+        throw new NotImplementedException("Must be defined by inheritors");
     }
 
     protected FileEditorManager getFileEditorManager(@NotNull final String sid, @NotNull final String webAppId,
@@ -601,9 +518,9 @@ public class UIHelperImpl implements UIHelper {
         final String type = WebAppPropertyViewProvider.TYPE;
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
-            final String iconPath = node.getParent() == null ? node.getIconPath()
-                                                             : node.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(node.getWebAppName(), type, iconPath, sid, webAppId);
+            itemVirtualFile = createVirtualFile(node.getWebAppName(), sid, webAppId);
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.WebApp.MODULE)));
+
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -627,8 +544,8 @@ public class UIHelperImpl implements UIHelper {
             userData.put(RESOURCE_ID, resourceId);
             userData.put(WEBAPP_ID, node.getAppId());
             userData.put(SLOT_NAME, node.getName());
-            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(),
-                                                type, iconPath, userData);
+            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(), userData);
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.DeploymentSlot.MODULE)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -658,14 +575,13 @@ public class UIHelperImpl implements UIHelper {
             userData.put(RESOURCE_ID, resourceId);
             userData.put(FUNCTIONAPP_ID, node.getAppId());
             userData.put(SLOT_NAME, node.getName());
-            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(),
-                                                type, iconPath, userData);
+            itemVirtualFile = createVirtualFile(node.getAppName() + "-" + node.getName(), userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Override
-    public void openFunctionAppPropertyView(FunctionNode functionNode) {
+    public void openFunctionAppPropertyView(FunctionAppNode functionNode) {
         final String subscriptionId = functionNode.getSubscriptionId();
         final String functionApId = functionNode.getFunctionAppId();
         final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, functionApId, (Project) functionNode.getProject());
@@ -677,9 +593,34 @@ public class UIHelperImpl implements UIHelper {
         if (itemVirtualFile == null) {
             final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
                                                                      : functionNode.getParent().getIconPath();
-            itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
+            itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), subscriptionId, functionApId);
+            itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE)));
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    @Override
+    public void openMySQLPropertyView(@NotNull MySQLNode node) {
+        EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
+            String name = node.getName();
+            String subscriptionId = node.getSubscriptionId();
+            String nodeId = node.getId();
+            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            if (fileEditorManager == null) {
+                return;
+            }
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, nodeId);
+            if (itemVirtualFile == null) {
+                itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
+                itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE)));
+            }
+            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
+            for (FileEditor editor : editors) {
+                if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
+                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().resourceGroupName(), node.getServer().name());
+                }
+            }
+        });
     }
 
     @Nullable
@@ -707,14 +648,6 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean isDarkTheme() {
         return UIUtil.isUnderDarcula();
-    }
-
-    public void closeSpringCloudAppPropertyView(@NotNull Object projectObject, String appId) {
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
-        LightVirtualFile file = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, appId);
-        if (file != null) {
-            ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.closeFile(file));
-        }
     }
 
     @NotNull
@@ -762,7 +695,7 @@ public class UIHelperImpl implements UIHelper {
         return IconLoader.getIcon("/icons/" + name);
     }
 
-    private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
+    protected LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {
         LightVirtualFile virtualFile = null;
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             String fileResourceId = editedFile.getUserData(RESOURCE_ID);
@@ -775,24 +708,22 @@ public class UIHelperImpl implements UIHelper {
         return virtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String type, String icon, Map<Key, String> userData) {
+    private LightVirtualFile createVirtualFile(String name, Map<Key, String> userData) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
-        itemVirtualFile.setFileType(getFileType(type, icon));
         for (final Map.Entry<Key, String> data : userData.entrySet()) {
             itemVirtualFile.putUserData(data.getKey(), data.getValue());
         }
         return itemVirtualFile;
     }
 
-    private LightVirtualFile createVirtualFile(String name, String type, String icon, String sid, String resId) {
+    protected LightVirtualFile createVirtualFile(String name, String sid, String resId) {
         LightVirtualFile itemVirtualFile = new LightVirtualFile(name);
-        itemVirtualFile.setFileType(getFileType(type, icon));
         itemVirtualFile.putUserData(SUBSCRIPTION_ID, sid);
         itemVirtualFile.putUserData(RESOURCE_ID, resId);
         return itemVirtualFile;
     }
 
-    private boolean isSubscriptionIdAndResourceIdEmpty(String sid, String resId) {
+    protected boolean isSubscriptionIdAndResourceIdEmpty(String sid, String resId) {
         if (Utils.isEmptyString(sid)) {
             showError("Cannot get Subscription ID", UNABLE_TO_OPEN_EDITOR_WINDOW);
             return true;
@@ -831,8 +762,10 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
-        return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
-            == Messages.YES);
+        return runFromDispatchThread(() -> {
+            return component == null ? Messages.showYesNoDialog(message, title, icon) == Messages.YES :
+                   Messages.showYesNoDialog(component, message, title, icon) == Messages.YES;
+        });
     }
 
     @Override
@@ -860,7 +793,7 @@ public class UIHelperImpl implements UIHelper {
             return supplier.get();
         }
         RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
-        ApplicationManager.getApplication().invokeLater(runnableFuture);
+        AzureTaskManager.getInstance().runLater(runnableFuture);
         try {
             return runnableFuture.get();
         } catch (InterruptedException | ExecutionException e) {

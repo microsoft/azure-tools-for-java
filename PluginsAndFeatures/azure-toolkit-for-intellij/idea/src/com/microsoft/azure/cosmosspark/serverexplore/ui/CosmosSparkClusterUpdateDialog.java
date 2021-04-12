@@ -1,45 +1,32 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.cosmosspark.serverexplore.ui;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterUpdateCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkADLAccountNode;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import rx.functions.Action1;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog implements ILogger {
+
     @NotNull
     private CosmosSparkClusterUpdateCtrlProvider ctrlProvider;
-    private static final String AU_WARNING_TIP = "Currently, there are not enough available AU for your serverless cluster Updating. Please adjust your cluster configuration or the updating request will be submitted into the queue with PENDING status.";
+    private static final String AU_WARNING_TIP = "Currently, there are not enough available AU for your serverless cluster Updating. "
+        + "Please adjust your cluster configuration or the updating request will be submitted into the queue with PENDING status.";
 
     public CosmosSparkClusterUpdateDialog(@NotNull CosmosSparkClusterNode clusterNode,
                                           @NotNull AzureSparkCosmosCluster cluster) {
@@ -51,14 +38,14 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
         // Hide extended properties field
         extendedPropertiesLabel.setVisible(false);
         extendedPropertiesField.setVisible(false);
-
-        ctrlProvider = new CosmosSparkClusterUpdateCtrlProvider(
-                this, new IdeaSchedulers((Project)clusterNode.getProject()), cluster);
+        ctrlProvider = new CosmosSparkClusterUpdateCtrlProvider(this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                ctrlProvider.initialize()
-                        .subscribe(complete -> {}, err -> log().warn("Error initialize update dialog. " + err.toString()));
+                final Action1<CosmosSparkClusterProvisionSettingsModel> onNext = complete -> {
+                };
+                final Action1<Throwable> onError = err -> log().warn("Error initialize update dialog. " + err.toString());
+                ctrlProvider.initialize().subscribe(onNext, onError);
                 super.windowOpened(e);
             }
         });
@@ -92,12 +79,12 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
         }
 
         getOKAction().setEnabled(false);
+        final Action1<CosmosSparkClusterProvisionSettingsModel> onNext =
+            toUpdate -> AzureTaskManager.getInstance().runAndWait(() -> close(OK_EXIT_CODE), AzureTask.Modality.ANY);
+        final Action1<Throwable> onError = err -> log().warn("Error update a cluster. " + err.toString());
         ctrlProvider
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
-                .subscribe(
-                        toUpdate -> ApplicationManager.getApplication().invokeAndWait(()->close(OK_EXIT_CODE) , ModalityState.any()),
-                        err -> log().warn("Error update a cluster. " + err.toString())
-                );
+                .subscribe(onNext, onError);
     }
 }

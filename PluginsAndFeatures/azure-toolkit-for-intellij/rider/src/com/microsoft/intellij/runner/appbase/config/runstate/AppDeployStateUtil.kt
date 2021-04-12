@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -40,8 +40,8 @@ import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.plugins.azure.RiderAzureBundle.message

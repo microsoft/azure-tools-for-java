@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * Copyright (c) 2020-2021 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.helpers.storage;
@@ -26,25 +9,17 @@ package com.microsoft.intellij.helpers.storage;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
-import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.QueueMessage;
@@ -60,7 +35,6 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class QueueFileEditor implements FileEditor {
@@ -236,31 +210,13 @@ public class QueueFileEditor implements FileEditor {
         node.addAction(CLEAR_QUEUE, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(
-                        mainPanel, "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
-                        "Clear Queue", null);
-
-                if (isConfirm) {
-                    ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator progressIndicator) {
-                           try {
-                               StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
-
-                               ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                   @Override
-                                   public void run() {
-                                       fillGrid();
-                                   }
-                               });
-                            } catch (AzureCmdException e) {
-                               String msg = "An error occurred while attempting to clear queue messages." + "\n" +
-                                       String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
-                               PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
-                            }
-                        }
-                    });
-                }
+                int optionDialog = DefaultLoader.getUIHelper().showConfirmDialog(
+                        null,
+                        "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
+                        "Azure Explorer",
+                        new String[]{"Yes", "No"},
+                        null,
+                        null);
             }
         });
         node.addAction(OPEN, new NodeActionListener() {
@@ -273,46 +229,6 @@ public class QueueFileEditor implements FileEditor {
     }
 
     public void fillGrid() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading queue messages", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                try {
-                    queueMessages = StorageClientSDKManager.getManager().getQueueMessages(storageAccount, queue);
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            DefaultTableModel model = (DefaultTableModel) queueTable.getModel();
-
-                            while (model.getRowCount() > 0) {
-                                model.removeRow(0);
-                            }
-
-                            for (QueueMessage queueMessage : queueMessages) {
-                                String[] values = {
-                                        queueMessage.getId(),
-                                        queueMessage.getContent(),
-                                        UIHelperImpl.readableFileSize(queueMessage.getContent().length()),
-                                        new SimpleDateFormat().format(queueMessage.getInsertionTime().getTime()),
-                                        new SimpleDateFormat().format(queueMessage.getExpirationTime().getTime()),
-                                        String.valueOf(queueMessage.getDequeueCount()),
-                                        };
-
-                                model.addRow(values);
-                            }
-
-                            clearQueueButton.setEnabled(queueMessages.size() != 0);
-                            dequeueMessageButton.setEnabled(queueMessages.size() != 0);
-                        }
-                    });
-
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to get queue messages." + "\n"
-                            + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
-                }
-            }
-        });
     }
 
     private JPopupMenu createTablePopUp(boolean isFirstRow) {
@@ -326,29 +242,6 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void dequeueFirstMessage() {
-        final boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(
-                mainPanel, "Are you sure you want to dequeue the first message in the queue?", "Azure Explorer", null);
-        if (isConfirm) {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    try {
-                        StorageClientSDKManager.getManager().dequeueFirstQueueMessage(storageAccount, queue);
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                fillGrid();
-                            }
-                        });
-                    } catch (AzureCmdException e) {
-                        String msg = "An error occurred while attempting to dequeue messages." + "\n"
-                                + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
-                        PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
-                    }
-                }
-            });
-        }
     }
 
     private QueueMessage getSelectedQueueMessage() {

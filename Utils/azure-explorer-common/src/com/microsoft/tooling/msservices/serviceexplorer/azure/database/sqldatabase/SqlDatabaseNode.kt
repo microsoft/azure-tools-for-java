@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,10 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatab
 import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.Node
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
+import com.microsoft.tooling.msservices.serviceexplorer.*
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 
@@ -42,7 +39,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
 
     companion object {
         private const val ACTION_DELETE = "Delete"
-        private const val SQL_DATABASE_ICON = "Database.svg"
+        private const val SQL_DATABASE_ICON = "SQLDatabase/Database.svg"
         private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database '%s'..."
 
         private val deleteSqlDatabasePromptMessage = StringBuilder()
@@ -55,8 +52,11 @@ class SqlDatabaseNode(parent: SqlServerNode,
         loadActions()
     }
 
+    override fun getIconSymbol(): AzureIconSymbol =
+        AzureIconSymbol.SQLDatabase.DATABASE
+
     override fun loadActions() {
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), NodeActionPosition.BOTTOM)
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), Groupable.DEFAULT_GROUP, Sortable.LOW_PRIORITY)
         super.loadActions()
     }
 

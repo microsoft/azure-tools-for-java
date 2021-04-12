@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.toolkit.intellij.common;
@@ -31,11 +14,9 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.ui.components.AzureArtifact;
-import com.microsoft.intellij.ui.components.AzureArtifactManager;
-import com.microsoft.intellij.ui.components.AzureArtifactType;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
@@ -46,10 +27,10 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
-    private static final String ARTIFACT_NOT_SUPPORTED = "The selected platform does not support this type of artifact.";
     private final Project project;
     private final boolean fileArtifactOnly;
     private Condition<? super VirtualFile> fileFilter;
@@ -73,20 +54,25 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         unsubscribeSubscription(subscription);
         this.setLoading(true);
         subscription = this.loadItemsAsync()
-                           .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               this.setItems(items);
-                               this.setLoading(false);
-                               this.resetDefaultValue(defaultArtifact);
-                           }), this::handleLoadingError);
+            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                this.setItems(items);
+                this.setLoading(false);
+                this.resetDefaultValue(defaultArtifact);
+            }), this::handleLoadingError);
     }
 
     @NotNull
     @Override
+    @AzureOperation(
+        name = "common|artifact.list.project",
+        params = {"@project.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     protected List<? extends AzureArtifact> loadItems() throws Exception {
         return AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts()
-                                   .stream()
-                                   .filter(azureArtifact -> !fileArtifactOnly || azureArtifact.getType() == AzureArtifactType.File)
-                                   .collect(Collectors.toList());
+            .stream()
+            .filter(azureArtifact -> !fileArtifactOnly || azureArtifact.getType() == AzureArtifactType.File)
+            .collect(Collectors.toList());
     }
 
     @Nullable
@@ -115,9 +101,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         final AzureArtifact artifact = this.getValue();
         if (info == AzureValidationInfo.OK && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
             final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
-            if (!this.fileFilter.value(referencedObject)) {
+            if (Objects.nonNull(this.fileFilter) && !this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                return builder.input(this).message(ARTIFACT_NOT_SUPPORTED).type(AzureValidationInfo.Type.ERROR).build();
+                return builder.input(this).message(message("common.artifact.artifactNotSupport")).type(AzureValidationInfo.Type.ERROR).build();
             }
         }
         return info;
@@ -128,7 +114,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         if (fileFilter != null) {
             fileDescriptor.withFileFilter(fileFilter);
         }
-        fileDescriptor.withTitle("Select Artifact to Deploy");
+        fileDescriptor.withTitle(message("common.artifact.selector.title"));
         final VirtualFile file = FileChooser.chooseFile(fileDescriptor, null, null);
         if (file != null && file.exists()) {
             addOrSelectExistingVirtualFile(file);

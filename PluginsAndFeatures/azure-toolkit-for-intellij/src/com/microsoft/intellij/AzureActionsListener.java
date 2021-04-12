@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij;
@@ -30,6 +13,12 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
+import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
+import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
@@ -37,23 +26,21 @@ import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.ijidea.ui.UIFactory;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
@@ -86,6 +73,10 @@ public abstract class AzureActionsListener implements AppLifecycleListener, Plug
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
+        AzureTaskManager.register(new IntellijAzureTaskManager());
+        AzureRxTaskManager.register();
+        AzureExceptionHandler.register(IntelliJAzureExceptionHandler.getInstance());
+        IntellijAzureOperationTitleProvider.register();
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
@@ -159,7 +150,7 @@ public abstract class AzureActionsListener implements AppLifecycleListener, Plug
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");
             logFileHandler.setFormatter(new SimpleFormatter());
             l.addHandler(logFileHandler);
-            // FIXME: use environment variable to set level
+            // TODO: use environment variable to set level
             l.setLevel(Level.INFO);
             l.info("=== Log session started ===");
         } catch (IOException e) {

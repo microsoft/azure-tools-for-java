@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -32,12 +32,12 @@ import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.helpers.UiConstants
-import com.microsoft.intellij.runner.AzureRunProfileState
-import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.getAppUrl
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.openAppInBrowser
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.projectAssemblyRelativePath
@@ -175,7 +175,7 @@ class RiderWebAppRunState(project: Project,
         }
     }
 
-    override fun onFail(errMsg: String, processHandler: RunProcessHandler) {
+    override fun onFail(error: Throwable, processHandler: RunProcessHandler) {
         if (processHandler.isProcessTerminated || processHandler.isProcessTerminating) return
 
         if (isWebAppCreated)
@@ -186,7 +186,7 @@ class RiderWebAppRunState(project: Project,
 
         showPublishNotification(message("notification.publish.publish_failed"), NotificationType.ERROR)
 
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR)
+        processHandler.println(error.message, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()
     }
 

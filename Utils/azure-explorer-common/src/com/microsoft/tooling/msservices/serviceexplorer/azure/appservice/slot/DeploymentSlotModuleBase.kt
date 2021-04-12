@@ -41,7 +41,7 @@ abstract class DeploymentSlotModuleBase<TSlot : DeploymentSlotBase<TSlot>>(
 
     companion object {
         private const val MODULE_NAME = "Deployment Slots"
-        private const val SLOT_ICON_PATH = "Slot.svg"
+        private const val SLOT_ICON_PATH = "DeploymentSlot/DeploymentSlot.svg"
     }
 
     abstract val presenter: DeploymentSlotModulePresenterBase<TSlot, DeploymentSlotModuleView<TSlot>>

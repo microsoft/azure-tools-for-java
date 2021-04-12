@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,19 +24,23 @@
 package com.microsoft.intellij.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.*;
-import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StartStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.appservice.action.StopStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.arm.action.*;
+import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
+import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
+import com.microsoft.azure.toolkit.intellij.redis.action.CreateRedisCacheAction;
+import com.microsoft.azure.toolkit.intellij.vm.CreateVMAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.*;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
-import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.deploymentslot.FunctionDeploymentSlotNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
@@ -52,35 +56,41 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
 
     static {
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateVMAction.class).build());
+            .add(CreateVMAction.class).build());
 
         node2Actions.put(QueueModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateQueueAction.class).build());
+            .add(CreateQueueAction.class).build());
 
         node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateTableAction.class).build());
+            .add(CreateTableAction.class).build());
 
         node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
+            .add(CreateBlobContainer.class).build());
 
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateStorageAccountAction.class)
-                .add(AttachExternalStorageAccountAction.class).build());
+            .add(CreateStorageAccountAction.class)
+            .add(AttachExternalStorageAccountAction.class).build());
 
         node2Actions.put(ClientBlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
+            .add(CreateBlobContainer.class).build());
 
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
+            .add(CreateBlobContainer.class).build());
 
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateRedisCacheAction.class).build());
+            .add(CreateRedisCacheAction.class).build());
+
+        node2Actions.put(MySQLModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateMySQLAction.class).build());
+
+        node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(MySQLConnectToServerAction.class)
+            .build());
 
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
-        node2Actions.put(ExternalStorageNode.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
+        node2Actions.put(ExternalStorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
 
         final List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>(Arrays.asList(
                 EditDeploymentAction.class,
@@ -88,27 +98,22 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
                 ExportTemplateAction.class,
                 ExportParameterAction.class));
 
-        node2Actions.put(DeploymentNode.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .addAll(deploymentNodeList).build());
+        node2Actions.put(DeploymentNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .addAll(deploymentNodeList).build());
 
-        node2Actions.put(ResourceManagementModule.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateDeploymentAction.class).build());
+        node2Actions.put(ResourceManagementModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
 
-        node2Actions.put(ResourceManagementNode.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateDeploymentAction.class).build());
+        node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
 
-        node2Actions.put(DeploymentSlotNode.class,
-               new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                       .add(StartStreamingLogsAction.class)
-                       .add(StopStreamingLogsAction.class).build());
+        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(StartStreamingLogsAction.class)
+            .add(StopStreamingLogsAction.class).build());
 
-        node2Actions.put(FunctionDeploymentSlotNode.class,
-               new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                       .add(StartStreamingLogsAction.class)
-                       .add(StopStreamingLogsAction.class).build());
+        node2Actions.put(FunctionDeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(StartStreamingLogsAction.class)
+            .add(StopStreamingLogsAction.class).build());
     }
 
     @Override

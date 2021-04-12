@@ -33,12 +33,15 @@ tc_open "Initializing build script"
 
     INJECT_INTELLIJ_VERSION=false
 
-    IJ_VERSION_MAJOR_BUILD=202
-    IJ_VERSION_MAJOR=2020.2
+    IJ_VERSION_MAJOR_BUILD=211
+    IJ_VERSION_MAJOR=2021.1
     IJ_VERSION_MINOR=
     IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
                       && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
-    IJ_SCALA_VERSION_LATEST=2020.2.17
+    IJ_SCALA_VERSION_LATEST=2021.1.15
+
+    BUILD_NUMBER="3.50.0.$BUILD_COUNTER-2021.1"
+    BUILD_CONFIGURATION=Release
 
     while getopts ":hqvBC:e:" option; do
         case $option in
@@ -127,17 +130,8 @@ fi
 if $BUILD_INTELLIJ; then
     tc_open "Building IDEA plugin"
     {
-        PATCH_PLUGIN_XML_ARGS="" \
-          && [ $INJECT_INTELLIJ_VERSION == "true" ] && \
-            PATCH_PLUGIN_XML_ARGS="-PpatchPluginXmlSinceBuild=$IJ_VERSION_MAJOR_BUILD"
-
-        GRADLE_TASKS="clean buildPlugin bundleBuildIdeaZip"
-        GRADLE_ARGS="-s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST $PATCH_PLUGIN_XML_ARGS"
-
-        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew $GRADLE_TASKS $GRADLE_ARGS)
-
         (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
-        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea --console=plain)
+        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew && ./gradlew --info --rerun-tasks :idea:buildPlugin -s -Pbuild_common_code_with=idea -PBuildNumber=$BUILD_NUMBER -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
         rm -rf "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/
         df -h
     }
@@ -145,9 +139,6 @@ if $BUILD_INTELLIJ; then
 fi
 
 if $BUILD_RIDER; then
-    BUILD_NUMBER="3.46.0.$BUILD_COUNTER-2021.1"
-    BUILD_CONFIGURATION=Release
-
     tc_open "Building Rider plugin"
     {
         (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)

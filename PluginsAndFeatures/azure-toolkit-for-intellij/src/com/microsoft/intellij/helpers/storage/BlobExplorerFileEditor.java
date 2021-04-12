@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
+ * Copyright (c) Microsoft Corporation. All rights reserved.
  * Copyright (c) 2018-2021 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.helpers.storage;
@@ -36,12 +19,15 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -59,10 +45,10 @@ import com.microsoft.tooling.msservices.model.storage.BlobFile;
 import com.microsoft.tooling.msservices.model.storage.BlobItem;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import org.apache.commons.io.IOUtils;
 import icons.CommonIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -79,8 +65,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -334,38 +320,36 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     public void fillGrid() {
         setUIState(true);
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading blobs...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
+        final IAzureOperationTitle title = AzureOperationBundle.title("blob.list", blobContainer.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            try {
+                progressIndicator.setIndeterminate(true);
 
-                    if (directoryQueue.peekLast() == null) {
-                        directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
-                    }
+                if (directoryQueue.peekLast() == null) {
+                    directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
+                }
 
-                    blobItems = StorageClientSDKManager.getManager().getBlobItems(connectionString, directoryQueue.peekLast());
+                blobItems = StorageClientSDKManager.getManager().getBlobItems(connectionString, directoryQueue.peekLast());
 
-                    if (!queryTextField.getText().isEmpty()) {
-                        for (int i = blobItems.size() - 1; i >= 0; i--) {
-                            BlobItem blobItem = blobItems.get(i);
+                if (!queryTextField.getText().isEmpty()) {
+                    for (int i = blobItems.size() - 1; i >= 0; i--) {
+                        BlobItem blobItem = blobItems.get(i);
 
-                            if (blobItem instanceof BlobFile && !blobItem.getName().startsWith(queryTextField.getText())) {
-                                blobItems.remove(i);
-                            }
+                        if (blobItem instanceof BlobFile && !blobItem.getName().startsWith(queryTextField.getText())) {
+                            blobItems.remove(i);
                         }
                     }
+                }
 
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
+                AzureTaskManager.getInstance().runLater(() -> {
 
-                            pathLabel.setText(directoryQueue.peekLast().getPath());
-                            DefaultTableModel model = (DefaultTableModel) blobListTable.getModel();
+                    pathLabel.setText(directoryQueue.peekLast().getPath());
+                    DefaultTableModel model = (DefaultTableModel) blobListTable.getModel();
 
-                            while (model.getRowCount() > 0) {
-                                model.removeRow(0);
-                            }
+                    while (model.getRowCount() > 0) {
+                        model.removeRow(0);
+                    }
 
                             for (BlobItem blobItem : blobItems) {
                                 if (blobItem instanceof BlobDirectory) {
@@ -380,28 +364,26 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                 } else {
                                     BlobFile blobFile = (BlobFile) blobItem;
 
-                                    model.addRow(new Object[]{
-                                        AllIcons.FileTypes.Any_type,
-                                        blobFile.getName(),
-                                        UIHelperImpl.readableFileSize(blobFile.getSize()),
-                                        new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
-                                        blobFile.getContentType(),
-                                        blobFile.getUri()
-                                    });
-                                }
-                            }
-
-                            setUIState(false);
-
-                            blobListTable.clearSelection();
+                            model.addRow(new Object[]{
+                                AllIcons.FileTypes.Any_type,
+                                blobFile.getName(),
+                                UIHelperImpl.readableFileSize(blobFile.getSize()),
+                                new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
+                                blobFile.getContentType(),
+                                blobFile.getUri()
+                            });
                         }
-                    });
-                } catch (AzureCmdException ex) {
-                    String msg = "An error occurred while attempting to query blob list." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
-                }
+                    }
+
+                    setUIState(false);
+
+                    blobListTable.clearSelection();
+                });
+            } catch (AzureCmdException ex) {
+                String msg = "An error occurred while attempting to query blob list." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
+                PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
             }
-        });
+        }));
     }
 
     private void setUIState(boolean loading) {
@@ -543,32 +525,26 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             if (isConfirm) {
                 setUIState(true);
 
-                ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting blob...", false) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator progressIndicator) {
-                        progressIndicator.setIndeterminate(true);
-                        try {
-                            StorageClientSDKManager.getManager().deleteBlobFile(connectionString, blobItem);
+                final IAzureOperationTitle title = AzureOperationBundle.title("blob.delete", blobItem.getName());
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+                    final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                    progressIndicator.setIndeterminate(true);
+                    try {
+                        StorageClientSDKManager.getManager().deleteBlobFile(connectionString, blobItem);
 
-                            if (blobItems.size() <= 1) {
-                                directoryQueue.clear();
-                                directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
+                        if (blobItems.size() <= 1) {
+                            directoryQueue.clear();
+                            directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
 
-                                queryTextField.setText("");
-                            }
-
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fillGrid();
-                                }
-                            });
-                        } catch (AzureCmdException ex) {
-                            String msg = "An error occurred while attempting to delete blob." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
-                            PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
+                            queryTextField.setText("");
                         }
+
+                        AzureTaskManager.getInstance().runLater(this::fillGrid);
+                    } catch (AzureCmdException ex) {
+                        String msg = "An error occurred while attempting to delete blob." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
+                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                     }
-                });
+                }));
             }
         }
     }
@@ -612,87 +588,86 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Downloading blob...", true) {
-                @Override
-                public void run(@NotNull final ProgressIndicator progressIndicator) {
-                    try {
-                        progressIndicator.setIndeterminate(false);
+            final IAzureOperationTitle title = AzureOperationBundle.title("blob.download", targetFile, blobContainer.getName());
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+                final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                try {
+                    progressIndicator.setIndeterminate(false);
 
-                        if (!targetFile.exists()) {
-                            if (!targetFile.createNewFile()) {
-                                throw new IOException("File not created");
-                            }
+                    if (!targetFile.exists()) {
+                        if (!targetFile.createNewFile()) {
+                            throw new IOException("File not created");
                         }
+                    }
 
-                        final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile), 65536) {
-                            private long runningCount = 0;
+                    final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(targetFile), 65536) {
+                        private long runningCount = 0;
 
+                        @Override
+                        public synchronized void write(@NotNull byte[] bytes, int i, int i1) throws IOException {
+                            super.write(bytes, i, i1);
+
+                            runningCount += i1;
+
+                            double progress = (double) runningCount / fileSelection.getSize();
+                            progressIndicator.setFraction(progress);
+                            progressIndicator.setText2(String.format("%s%% downloaded", (int) (progress * 100)));
+                        }
+                    };
+
+                    try {
+                        Future<?> future = ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
                             @Override
-                            public synchronized void write(@NotNull byte[] bytes, int i, int i1) throws IOException {
-                                super.write(bytes, i, i1);
+                            public void run() {
+                                try {
+                                    StorageClientSDKManager.getManager().downloadBlobFileContent(connectionString, fileSelection, bufferedOutputStream);
 
-                                runningCount += i1;
+                                    if (open && targetFile.exists()) {
+                                        Desktop.getDesktop().open(targetFile);
+                                    }
+                                } catch (AzureCmdException e) {
+                                    Throwable connectionFault = e.getCause().getCause();
 
-                                double progress = (double) runningCount / fileSelection.getSize();
-                                progressIndicator.setFraction(progress);
-                                progressIndicator.setText2(String.format("%s%% downloaded", (int) (progress * 100)));
-                            }
-                        };
-
-                        try {
-                            Future<?> future = ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                                @Override
-                                public void run() {
+                                    progressIndicator.setText("Error downloading Blob");
+                                    progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ?
+                                                               "Connection timed out" : connectionFault.getMessage());
+                                } catch (IOException ex) {
                                     try {
-                                        StorageClientSDKManager.getManager().downloadBlobFileContent(connectionString, fileSelection, bufferedOutputStream);
+                                        final Process p;
+                                        Runtime runtime = Runtime.getRuntime();
+                                        p = runtime.exec(
+                                            new String[]{"open", "-R", targetFile.getName()},
+                                            null,
+                                            targetFile.getParentFile());
 
-                                        if (open && targetFile.exists()) {
-                                            Desktop.getDesktop().open(targetFile);
+                                        InputStream errorStream = p.getErrorStream();
+                                        String errResponse = new String(IOUtils.readFully(errorStream, -1));
+
+                                        if (p.waitFor() != 0) {
+                                            throw new Exception(errResponse);
                                         }
-                                    } catch (AzureCmdException e) {
-                                        Throwable connectionFault = e.getCause().getCause();
-
-                                        progressIndicator.setText("Error downloading Blob");
-                                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ?
-                                                                   "Connection timed out" : connectionFault.getMessage());
-                                    } catch (IOException ex) {
-                                        try {
-                                            final Process p;
-                                            Runtime runtime = Runtime.getRuntime();
-                                            p = runtime.exec(
-                                                    new String[]{"open", "-R", targetFile.getName()},
-                                                    null,
-                                                    targetFile.getParentFile());
-
-                                            InputStream errorStream = p.getErrorStream();
-                                            String errResponse = new String(IOUtils.readFully(errorStream, -1));
-
-                                            if (p.waitFor() != 0) {
-                                                throw new Exception(errResponse);
-                                            }
-                                        } catch (Exception e) {
-                                            progressIndicator.setText("Error openning file");
-                                            progressIndicator.setText2(ex.getMessage());
-                                        }
+                                    } catch (Exception e) {
+                                        progressIndicator.setText("Error openning file");
+                                        progressIndicator.setText2(ex.getMessage());
                                     }
                                 }
-                            });
-
-                            while (!future.isDone()) {
-                                progressIndicator.checkCanceled();
-
-                                if (progressIndicator.isCanceled()) {
-                                    future.cancel(true);
-                                }
                             }
-                        } finally {
-                            bufferedOutputStream.close();
+                        });
+
+                        while (!future.isDone()) {
+                            progressIndicator.checkCanceled();
+
+                            if (progressIndicator.isCanceled()) {
+                                future.cancel(true);
+                            }
                         }
-                    } catch (IOException e) {
-                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), "An error occurred while attempting to download Blob.", e);
+                    } finally {
+                        bufferedOutputStream.close();
                     }
+                } catch (IOException e) {
+                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), "An error occurred while attempting to download Blob.", e);
                 }
-            });
+            }));
         }
     }
 
@@ -722,114 +697,108 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     }
 
     private void uploadFile(final String path, final File selectedFile) {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Uploading blob...", true) {
-            @Override
-            public void run(@NotNull final ProgressIndicator progressIndicator) {
+        final IAzureOperationTitle title = AzureOperationBundle.title("blob.upload", selectedFile, blobContainer.getName());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            try {
+                final BlobDirectory blobDirectory = directoryQueue.peekLast();
+
+                final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
+
+                progressIndicator.setIndeterminate(false);
+                progressIndicator.setText("Uploading blob...");
+                progressIndicator.setText2("0% uploaded");
+
                 try {
-                    final BlobDirectory blobDirectory = directoryQueue.peekLast();
+                    final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
+                        @Override
+                        public Void call(Long uploadedBytes) throws Exception {
+                            double progress = ((double) uploadedBytes) / selectedFile.length();
 
-                    final BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(selectedFile));
+                            progressIndicator.setFraction(progress);
+                            progressIndicator.setText2(String.format("%s%% uploaded", (int) (progress * 100)));
 
-                    progressIndicator.setIndeterminate(false);
-                    progressIndicator.setText("Uploading blob...");
-                    progressIndicator.setText2("0% uploaded");
+                            return null;
+                        }
+                    };
+
+                    Future<Void> future = ApplicationManager.getApplication().executeOnPooledThread(new Callable<Void>() {
+                        @Override
+                        public Void call() throws AzureCmdException {
+                            try {
+                                StorageClientSDKManager.getManager().uploadBlobFileContent(
+                                    connectionString,
+                                    blobContainer,
+                                    path,
+                                    bufferedInputStream,
+                                    callable,
+                                    1024 * 1024,
+                                    selectedFile.length());
+                            } finally {
+                                try {
+                                    bufferedInputStream.close();
+                                } catch (IOException ignored) {
+                                }
+                            }
+
+                            return null;
+                        }
+                    });
+
+                    while (!future.isDone()) {
+                        Thread.sleep(500);
+                        progressIndicator.checkCanceled();
+
+                        if (progressIndicator.isCanceled()) {
+                            future.cancel(true);
+                            bufferedInputStream.close();
+
+                            for (BlobItem blobItem : StorageClientSDKManager.getManager().getBlobItems(connectionString, blobDirectory)) {
+                                if (blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
+                                    StorageClientSDKManager.getManager().deleteBlobFile(connectionString, (BlobFile) blobItem);
+                                }
+                            }
+                        }
+                    }
 
                     try {
-                        final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
-                            @Override
-                            public Void call(Long uploadedBytes) throws Exception {
-                                double progress = ((double) uploadedBytes) / selectedFile.length();
+                        directoryQueue.clear();
+                        directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
 
-                                progressIndicator.setFraction(progress);
-                                progressIndicator.setText2(String.format("%s%% uploaded", (int) (progress * 100)));
-
-                                return null;
-                            }
-                        };
-
-                        Future<Void> future = ApplicationManager.getApplication().executeOnPooledThread(new Callable<Void>() {
-                            @Override
-                            public Void call() throws AzureCmdException {
-                                try {
-                                    StorageClientSDKManager.getManager().uploadBlobFileContent(
-                                            connectionString,
-                                            blobContainer,
-                                            path,
-                                            bufferedInputStream,
-                                            callable,
-                                            1024 * 1024,
-                                            selectedFile.length());
-                                } finally {
-                                    try {
-                                        bufferedInputStream.close();
-                                    } catch (IOException ignored) {
-                                    }
-                                }
-
-                                return null;
-                            }
-                        });
-
-                        while (!future.isDone()) {
-                            Thread.sleep(500);
-                            progressIndicator.checkCanceled();
-
-                            if (progressIndicator.isCanceled()) {
-                                future.cancel(true);
-                                bufferedInputStream.close();
-
-                                for (BlobItem blobItem : StorageClientSDKManager.getManager().getBlobItems(connectionString, blobDirectory)) {
-                                    if (blobItem instanceof BlobFile && blobItem.getPath().equals(path)) {
-                                        StorageClientSDKManager.getManager().deleteBlobFile(connectionString, (BlobFile) blobItem);
-                                    }
+                        for (String pathDir : path.split("/")) {
+                            for (BlobItem blobItem : StorageClientSDKManager.getManager().getBlobItems(connectionString, directoryQueue.getLast())) {
+                                if (blobItem instanceof BlobDirectory && blobItem.getName().equals(pathDir)) {
+                                    directoryQueue.addLast((BlobDirectory) blobItem);
                                 }
                             }
                         }
-
-                        try {
-                            directoryQueue.clear();
-                            directoryQueue.addLast(StorageClientSDKManager.getManager().getRootDirectory(connectionString, blobContainer));
-
-                            for (String pathDir : path.split("/")) {
-                                for (BlobItem blobItem : StorageClientSDKManager.getManager().getBlobItems(connectionString, directoryQueue.getLast())) {
-                                    if (blobItem instanceof BlobDirectory && blobItem.getName().equals(pathDir)) {
-                                        directoryQueue.addLast((BlobDirectory) blobItem);
-                                    }
-                                }
-                            }
-                        } catch (AzureCmdException e) {
-                            String msg = "An error occurred while attempting to show new blob." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                            PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                        }
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                fillGrid();
-                            }
-                        });
-                    } catch (Exception e) {
-                        Throwable connectionFault = e.getCause();
-                        Throwable realFault = null;
-
-                        if (connectionFault != null) {
-                            realFault = connectionFault.getCause();
-                        }
-
-                        progressIndicator.setText("Error uploading Blob");
-                        String message = realFault == null ? null : realFault.getMessage();
-
-                        if (connectionFault != null && message == null) {
-                            message = "Error type " + connectionFault.getClass().getName();
-                        }
-
-                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
+                    } catch (AzureCmdException e) {
+                        String msg = "An error occurred while attempting to show new blob." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
+                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
                     }
-                } catch (IOException e) {
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), "An error occurred while attempting to upload Blob.", e);
+
+                    AzureTaskManager.getInstance().runLater(() -> fillGrid());
+                } catch (Exception e) {
+                    Throwable connectionFault = e.getCause();
+                    Throwable realFault = null;
+
+                    if (connectionFault != null) {
+                        realFault = connectionFault.getCause();
+                    }
+
+                    progressIndicator.setText("Error uploading Blob");
+                    String message = realFault == null ? null : realFault.getMessage();
+
+                    if (connectionFault != null && message == null) {
+                        message = "Error type " + connectionFault.getClass().getName();
+                    }
+
+                    progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : message);
                 }
+            } catch (IOException e) {
+                PluginUtil.displayErrorDialogAndLog(message("errTtl"), "An error occurred while attempting to upload Blob.", e);
             }
-        });
+        }));
     }
 
     @NotNull

@@ -1,54 +1,58 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.*;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NodeActionListener implements EventListener {
-
-    @Nullable
-    private String iconPath;
-
+// TODO(Qianjin): remove implementations of Sortable and Groupable
+public abstract class NodeActionListener implements EventListener, Sortable, Groupable {
+    protected int priority = Sortable.DEFAULT_PRIORITY;
+    protected int group = Groupable.DEFAULT_GROUP;
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
     }
 
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getGroup() {
+        return group;
+    }
+
+    public void setGroup(int group) {
+        this.group = group;
+    }
+
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
-//        e.getAction().getNode().setLoading(true);
         sendTelemetry(e);
     }
 
@@ -58,7 +62,7 @@ public abstract class NodeActionListener implements EventListener {
             nodeActionEvent.getAction().getName(), buildProp(node));
     }
 
-    private Map<String, String> buildProp(Node node) {
+    protected Map<String, String> buildProp(Node node) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Node", node.getId());
         properties.put("Name", node.getName());
@@ -75,6 +79,14 @@ public abstract class NodeActionListener implements EventListener {
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
+    public AzureIconSymbol getIconSymbol() {
+        return null;
+    }
+
+    public AzureActionEnum getAction() {
+        return null;
+    }
+
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
@@ -85,21 +97,14 @@ public abstract class NodeActionListener implements EventListener {
             EventUtil.logEvent(EventType.info, operation, buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
-        } catch (AzureCmdException ex) {
+        } catch (AzureCmdException | RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            AzureExceptionHandler.getInstance().handleException(ex, false);
             return Futures.immediateFailedFuture(ex);
         } finally {
             operation.complete();
         }
     }
-
-    public void setIconPath(String path) {
-        iconPath = path;
-    }
-
-    @Nullable
-    protected String getIconPath() { return iconPath; }
-
     /**
      * If nodeName contains spark and hdinsight, we just think it is a spark node.
      * So set the service name to hdinsight
@@ -144,6 +149,6 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
-//        e.getAction().getNode().setLoading(false);
     }
+
 }

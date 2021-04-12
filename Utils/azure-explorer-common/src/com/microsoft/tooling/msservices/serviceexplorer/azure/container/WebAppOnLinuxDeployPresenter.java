@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
@@ -59,7 +42,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
-                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+                }));
     }
 
     /**
@@ -73,7 +56,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderWebAppOnLinuxList(webAppList);
-                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
+                }));
     }
 
     /**
@@ -87,20 +70,12 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderSubscriptionList(subscriptions);
-                }), e -> errorHandler(CANNOT_LIST_SUBSCRIPTION, (Exception) e));
-    }
-
-    private void errorHandler(String msg, Exception e) {
-        DefaultLoader.getIdeHelper().invokeLater(() -> {
-            if (isViewDetached()) {
-                return;
-            }
-            getMvpView().onErrorWithException(msg, e);
-        });
+                }));
     }
 
     /**
      * Load List of Resource Group by subscription id.
+     *
      * @param sid Subscription Id.
      */
     public void onLoadResourceGroup(String sid) {
@@ -111,11 +86,12 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderResourceGroupList(resourceGroupList);
-                }), e -> errorHandler(CANNOT_LIST_RESOURCE_GROUP, (Exception) e));
+                }));
     }
 
     /**
      * Load List of Location by subscription id.
+     *
      * @param sid Subscription Id.
      */
     public void onLoadLocationList(String sid) {
@@ -126,7 +102,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderLocationList(locationList);
-                }), e -> errorHandler(CANNOT_LIST_LOCATION, (Exception) e));
+                }));
 
     }
 
@@ -143,18 +119,19 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                     getMvpView().renderPricingTierList(pricingTierList.stream()
                             .filter(item -> !item.equals(PricingTier.FREE_F1) && !item.equals(PricingTier.SHARED_D1))
                             .collect(Collectors.toList()));
-                }), e -> errorHandler(CANNOT_LIST_PRICING_TIER, (Exception) e));
+                }));
     }
 
     /**
      * Load list of App Service Plan by Subscription and Resource Group.
+     *
      * @param sid Subscription Id.
-     * @param rg Resource group name.
+     * @param rg  Resource group name.
      */
     public void onLoadAppServicePlan(String sid, String rg) {
         Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
                 .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, rg).stream()
-                .filter(asp-> OperatingSystem.LINUX.equals(asp.operatingSystem()))
+                .filter(asp -> OperatingSystem.LINUX.equals(asp.operatingSystem()))
                 .collect(Collectors.toList()))
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
@@ -162,12 +139,13 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderAppServicePlanList(appServicePlans);
-                }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
+                }));
     }
 
     /**
      * Load list of App Service Plan by Subscription.
      * TODO: Blocked by SDK, it can only list Windows ASP now.
+     *
      * @param sid Subscription Id.
      */
     public void onLoadAppServicePlan(String sid) {
@@ -179,6 +157,6 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
                         return;
                     }
                     getMvpView().renderAppServicePlanList(appServicePlans);
-                }), e -> errorHandler(CANNOT_LIST_APP_SERVICE_PLAN, (Exception) e));
+                }));
     }
 }

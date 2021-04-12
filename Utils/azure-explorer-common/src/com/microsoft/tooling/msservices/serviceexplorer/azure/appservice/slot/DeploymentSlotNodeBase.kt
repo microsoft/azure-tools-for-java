@@ -1,38 +1,21 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.slot
 
 import com.microsoft.azure.management.appservice.DeploymentSlotBase
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation
+import com.microsoft.azuretools.ActionConstants
+import com.microsoft.azuretools.azurecommons.helpers.Nullable
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.Node
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
+import com.microsoft.tooling.msservices.serviceexplorer.*
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
-import java.io.IOException
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule
 
 abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
     val appId: String,
@@ -49,7 +32,6 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
 
     companion object {
         private const val SLOT_LABEL = "Slot"
-
         private const val ACTION_SWAP_WITH_PRODUCTION_NAME = "Swap with production"
 
         private const val DELETE_SLOT_PROMPT_MESSAGE =
@@ -72,41 +54,48 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
         return super.getNodeActions()
     }
 
-    override fun getStartActionListener(): NodeActionListener =
-        createBackgroundActionListener("Starting Deployment Slot") { start() }
-
-    override fun getRestartActionListener(): NodeActionListener =
-        createBackgroundActionListener("Restarting Deployment Slot") { restart() }
-
-    override fun getStopActionListener(): NodeActionListener =
-        createBackgroundActionListener("Stopping Deployment Slot") { stop() }
-
     abstract fun openDeploymentSlotPropertyAction()
 
-    override fun getShowPropertiesActionListener(): NodeActionListener =
-        object : NodeActionListener() {
-            @Throws(AzureCmdException::class)
-            override fun actionPerformed(e: NodeActionEvent) {
-                openDeploymentSlotPropertyAction()
-            }
-        }
+    override fun getShowPropertiesActionListener(): NodeActionListener {
+        return initActionBuilder { openDeploymentSlotPropertyAction() }
+            .withAction(AzureActionEnum.SHOW_PROPERTIES)
+            .withBackgroudable(true)
+            .build(AzureActionEnum.SHOW_PROPERTIES.doingName)
+    }
 
-    override fun getOpenInBrowserActionListener(): NodeActionListener =
-        object : NodeActionListener() {
-            override fun actionPerformed(e: NodeActionEvent) {
-                DefaultLoader.getUIHelper().openInBrowser("http://$hostName")
-            }
-        }
+    override fun getOpenInBrowserActionListener(): NodeActionListener {
+        return initActionBuilder { openInBrowser() }
+            .withAction(AzureActionEnum.OPEN_IN_BROWSER)
+            .withBackgroudable(true)
+            .build(AzureActionEnum.OPEN_IN_BROWSER.doingName)
+    }
 
-    override fun getDeleteActionListener(): NodeActionListener? {
+    override fun getStartActionListener(): NodeActionListener {
+        return initActionBuilder { this.start() }
+            .withAction(AzureActionEnum.START)
+            .withBackgroudable(true)
+            .build(AzureActionEnum.START.doingName)
+    }
+
+    override fun getRestartActionListener(): NodeActionListener {
+        return initActionBuilder { this.restart() }
+            .withAction(AzureActionEnum.RESTART)
+            .withBackgroudable(true)
+            .build(AzureActionEnum.RESTART.doingName)
+    }
+
+    override fun getStopActionListener(): NodeActionListener {
+        return initActionBuilder { this.stop() }
+            .withAction(AzureActionEnum.STOP)
+            .withBackgroudable(true)
+            .build(AzureActionEnum.STOP.doingName)
+    }
+
+    override fun getDeleteActionListener(): NodeActionListener {
         return DeleteDeploymentSlotAction(subscriptionId, this, name)
     }
 
-    override fun loadActions() {
-        addAction(ACTION_SWAP_WITH_PRODUCTION_NAME, createBackgroundActionListener("Swapping with Production") { swapWithProduction() })
-        super.loadActions()
-    }
-
+    @AzureOperation(name = "webapp|deployment.refresh", params = ["@slotName", "@webAppName"], type = AzureOperation.Type.ACTION)
     override fun refreshItems() {
         try {
             presenter.onRefreshNode(subscriptionId, appId, slotName)
@@ -122,42 +111,65 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
         // Override the function to do noting to disable the auto refresh functionality.
     }
 
-    //region Actions
+    override fun getIconSymbol(): @Nullable AzureIconSymbol? {
+        val isLinux = OS_LINUX.equals(os, ignoreCase = true)
+        val running = WebAppBaseState.RUNNING == state
+        val updating = WebAppBaseState.UPDATING == state
+        return if (isLinux) {
+            if (running) AzureIconSymbol.DeploymentSlot.RUNNING_ON_LINUX else if (updating) AzureIconSymbol.DeploymentSlot.UPDATING_ON_LINUX else AzureIconSymbol.DeploymentSlot.STOPPED_ON_LINUX
+        } else {
+            if (running) AzureIconSymbol.DeploymentSlot.RUNNING else if (updating) AzureIconSymbol.DeploymentSlot.UPDATING else AzureIconSymbol.DeploymentSlot.STOPPED
+        }
+    }
 
+    override fun loadActions() {
+        super.loadActions()
+        addAction(ACTION_SWAP_WITH_PRODUCTION_NAME, initActionBuilder { swap() }.withBackgroudable(true)
+            .build("Swapping deployment slot"))
+    }
+
+    private fun initActionBuilder(runnable: Runnable): BasicActionBuilder {
+        return BasicActionBuilder(runnable)
+            .withModuleName(DeploymentSlotModule.MODULE_NAME)
+            .withInstanceName(name)
+    }
+
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.START, type = AzureOperation.Type.ACTION)
     private fun start() {
-        try {
-            presenter.onStartDeploymentSlot(subscriptionId, appId, slotName)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            DefaultLoader.getUIHelper().logError("Error while starting Deployment Slot '$slotName'", e)
-        }
+        presenter.onStartDeploymentSlot(subscriptionId, appId, slotName)
+        renderNode(WebAppBaseState.RUNNING)
     }
 
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.STOP, type = AzureOperation.Type.ACTION)
     private fun stop() {
-        try {
-            presenter.onStopDeploymentSlot(subscriptionId, appId, slotName)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            DefaultLoader.getUIHelper().logError("Error while stopping Deployment Slot '$slotName'", e)
-        }
+        presenter.onStopDeploymentSlot(subscriptionId, appId, slotName)
+        renderNode(WebAppBaseState.STOPPED)
     }
 
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.RESTART, type = AzureOperation.Type.ACTION)
     private fun restart() {
-        try {
-            presenter.onRestartDeploymentSlot(subscriptionId, appId, slotName)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            DefaultLoader.getUIHelper().logError("Error while restarting Deployment Slot '$slotName'", e)
-        }
+        presenter.onRestartDeploymentSlot(subscriptionId, appId, slotName)
+        renderNode(WebAppBaseState.RUNNING)
     }
 
-    private fun swapWithProduction() {
-        try {
-            presenter.onSwapWithProduction(subscriptionId, appId, slotName)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            DefaultLoader.getUIHelper().logError("Error while swapping Deployment Slot '$slotName' with production", e)
-        }
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.DELETE, type = AzureOperation.Type.ACTION)
+    private fun delete() {
+        getParent().removeNode(getSubscriptionId(), getName(), this)
+    }
+
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SWAP, type = AzureOperation.Type.ACTION)
+    private fun swap() {
+        presenter.onSwapWithProduction(subscriptionId, appId, slotName)
+    }
+
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
+    private fun openInBrowser() {
+        DefaultLoader.getUIHelper().openInBrowser("https://$hostName")
+    }
+
+    @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.SHOW_PROPERTIES, type = AzureOperation.Type.ACTION)
+    private fun showProperties() {
+        openDeploymentSlotPropertyAction()
     }
 
     private class DeleteDeploymentSlotAction(private val subscriptionId: String, private val node: Node, private val name: String) : AzureNodeActionPromptListener(
@@ -171,6 +183,4 @@ abstract class DeploymentSlotNodeBase<TSlot : DeploymentSlotBase<TSlot>>(
 
         override fun onSubscriptionsChanged(e: NodeActionEvent?) { }
     }
-
-    //endregion Actions
 }

@@ -1,23 +1,6 @@
 /*
- * Copyright (c) Microsoft Corporation
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.hdinsight.spark.run;
@@ -38,6 +21,7 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.WasbUri;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
@@ -59,6 +43,7 @@ import rx.subjects.PublishSubject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UnknownFormatConversionException;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission.getClusterSubmission;
@@ -85,19 +70,45 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                : url;
     }
 
-    // If we use virtual file system to select referenced jars or files on ADLS Gen2 storage, the selected file path will
-    // be of URI schema which starts with "https://". Then job submission will fail with error like
-    // "Server returned HTTP response code: 401 for URL: https://accountName.dfs.core.windows.net/fs0/Reference.jar"
-    // Therefore, we need to transform the Gen2 "https" URI to "abfs" url to avoid the error.
-    protected SparkSubmissionParameter prepareSubmissionParameterWithTransformedGen2Uri(SparkSubmissionParameter parameter) {
-        final SparkSubmissionParameter newParameter = SparkSubmissionParameter.copyOf(parameter);
-        newParameter.setReferencedJars(newParameter.getReferencedJars().stream()
+    protected SparkSubmissionParameter updateStorageConfigForSubmissionParameter(SparkSubmitModel submitModel) throws ExecutionException {
+        // If we use virtual file system to select referenced jars or files on ADLS Gen2 storage, the selected file path will
+        // be of URI schema which starts with "https://". Then job submission will fail with error like
+        // "Server returned HTTP response code: 401 for URL: https://accountName.dfs.core.windows.net/fs0/Reference.jar"
+        // Therefore, we need to transform the Gen2 "https" URI to "abfs" url to avoid the error.
+        final SparkSubmissionParameter submissionParameter = submitModel.getSubmissionParameter();
+        submissionParameter.setReferencedJars(submissionParameter.getReferencedJars().stream()
                                                    .map(this::transformToGen2Uri)
                                                    .collect(Collectors.toList()));
-        newParameter.setReferencedFiles(newParameter.getReferencedFiles().stream()
+        submissionParameter.setReferencedFiles(submissionParameter.getReferencedFiles().stream()
                                                     .map(this::transformToGen2Uri)
                                                     .collect(Collectors.toList()));
-        return newParameter;
+
+        // If job upload storage type is Azure Blob storage, we need to put blob storage credential into livy configuration
+        if (submitModel.getJobUploadStorageModel().getStorageAccountType() == SparkSubmitStorageType.BLOB) {
+            try {
+                final WasbUri fsRoot = WasbUri.parse(submitModel.getJobUploadStorageModel().getUploadPath());
+                final String storageKey = submitModel.getJobUploadStorageModel().getStorageKey();
+                final Object existingConfigEntry = submissionParameter.getJobConfig().get(SparkSubmissionParameter.Conf);
+                final SparkConfigures wrappedConfig = existingConfigEntry instanceof Map
+                                                      ? new SparkConfigures(existingConfigEntry)
+                                                      : new SparkConfigures();
+                wrappedConfig.put("spark.hadoop." + fsRoot.getHadoopBlobFsPropertyKey(), storageKey);
+                submissionParameter.getJobConfig().put(SparkSubmissionParameter.Conf, wrappedConfig);
+            } catch (final UnknownFormatConversionException error) {
+                final String errorHint = "Azure blob storage uploading path is not in correct format";
+                log().warn(String.format("%s. Uploading Path: %s. Error message: %s. Stacktrace:\n%s",
+                                         errorHint, submitModel.getJobUploadStorageModel().getUploadPath(), error.getMessage(),
+                                         ExceptionUtils.getStackTrace(error)));
+                throw new ExecutionException(errorHint);
+            } catch (final Exception error) {
+                final String errorHint = "Failed to update config for linked Azure Blob storage";
+                log().warn(String.format("%s. Error message: %s. Stacktrace:\n%s",
+                                         errorHint, error.getMessage(), ExceptionUtils.getStackTrace(error)));
+                throw new ExecutionException(errorHint);
+            }
+        }
+
+        return submissionParameter;
     }
 
     @Override
@@ -123,8 +134,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             final Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
                     submitModel, clusterDetail);
 
-            final SparkSubmissionParameter submissionParameter =
-                    prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
+            final SparkSubmissionParameter submissionParameter = updateStorageConfigForSubmissionParameter(submitModel);
 
             updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
                 progressIndicator.setFraction(1.0f);

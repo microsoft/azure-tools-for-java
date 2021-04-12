@@ -27,7 +27,7 @@
             </constraints>
             <properties>
               <borderPainted value="false"/>
-              <icon value="icons/refresh_queue.svg"/>
+              <icon value="icons/StorageAccount/refresh_queue.svg"/>
               <text value=""/>
             </properties>
           </component>

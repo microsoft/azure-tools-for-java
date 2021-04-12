@@ -37,7 +37,7 @@
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
-        <sparkTools.version>0.1.1_${spark.version.major}</sparkTools.version>
+        <sparkTools.version>0.1.2_${spark.version.major}</sparkTools.version>
     </properties>
 
     <dependencies>

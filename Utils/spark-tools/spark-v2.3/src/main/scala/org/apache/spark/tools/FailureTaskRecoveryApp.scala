@@ -22,7 +22,8 @@
 
 package org.apache.spark.tools
 
-import org.apache.spark.{FailureTask, SparkConf, SparkContext, TaskRecovery}
+import org.apache.spark.failure.{FailureTask, TaskRecovery}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.json4s.jackson.Serialization.read
 
 object FailureTaskRecoveryApp {

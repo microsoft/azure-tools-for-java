@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2019 JetBrains s.r.o.
- * <p/>
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.intellij.util;
@@ -32,7 +15,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
@@ -45,9 +27,10 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
-import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.CommonConst;
 
 import javax.swing.Icon;
 
@@ -130,12 +113,7 @@ public class PluginUtil {
 
     public static void displayErrorDialogInAWTAndLog(final String title, final String message, Throwable e) {
         LOG.error(message, e);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                PluginUtil.displayErrorDialog(title, message);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
     }
 
     public static void displayInfoDialog(String title, String message) {
@@ -147,12 +125,7 @@ public class PluginUtil {
     }
 
     public static void displayWarningDialogInAWT(final String title, final String message) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                displayWarningDialog(title, message);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> displayWarningDialog(title, message));
     }
 
     /**

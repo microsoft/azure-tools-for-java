@@ -27,7 +27,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
-import com.microsoft.intellij.runner.AzureRunConfigurationBase
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase
 import com.microsoft.intellij.runner.functionapp.config.validator.FunctionAppConfigValidator
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
 import com.microsoft.intellij.runner.validator.ConfigurationValidator

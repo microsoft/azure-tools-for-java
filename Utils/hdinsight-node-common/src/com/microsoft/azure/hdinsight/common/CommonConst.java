@@ -1,24 +1,7 @@
 /*
- * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018-2020 JetBrains s.r.o.
- *
- * All rights reserved.
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 package com.microsoft.azure.hdinsight.common;
@@ -30,22 +13,22 @@ import java.net.URI;
 public class CommonConst {
     public static final String ProductIconName = "Product";
     public static final String ProductIConPath = "/icons/Product.png";
-    public static final String RefreshIConPath = "/icons/refresh.svg";
+    public static final String RefreshIConPath = "/icons/Common/Refresh.svg";
     public static final String REFRESH_DARK_ICON_PATH = "icons/RefreshDark_16.png";
-    public static final String BlobFileIConPath = "/icons/BlobFile.svg";
+    public static final String BlobFileIConPath = "/icons/StorageAccount/BlobFile.svg";
     public static final String HDExplorerIconName = "HdExplorer";
     public static final String HDExplorerIcon_16x_Path = "HdExplorer_16x.png";
     public static final String HDExplorerIcon_13x_Path = "HdExplorer.png";
     public static final String HDInsightIConPath = "HdInsight.png";
     public static final String HDInsightGrayIconPath = "HdInsight_gray.png";
     public static final String ClusterIConPath = "Cluster.png";
-    public static final String StorageAccountIConPath = "StorageAccount.svg";
+    public static final String StorageAccountIConPath = "StorageAccount/StorageAccount.svg";
     public static final String ADLS_STORAGE_ACCOUNT_ICON_PATH = "adls_storageaccount.png";
-    public static final String StorageAccountFoldIConPath = "StorageAccountFolder.svg";
-    public static final String BlobContainerIConPath = "BlobFile.svg";
+    public static final String StorageAccountFoldIConPath = "StorageAccount/StorageAccountFolder.svg";
+    public static final String BlobContainerIConPath = "StorageAccount/BlobFile.svg";
     public static final String JavaProjectIconPath = "/icons/Spark-Java.png";
     public static final String ScalaProjectIconPath = "/icons/Spark-Scala.png";
-    public static final String StopIconPath = "/icons/AzureStop.svg";
+    public static final String StopIconPath = "/icons/Common/Stop.svg";
     public static final String StopDisableIconPath = "/icons/Stop-Disable.png";
     public static final String OpenSparkUIIconName = "OpenSparkUI";
     public static final String OpenSparkUIIconPath = "/icons/OpenSparkUI.png";

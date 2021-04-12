@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase
 import javax.swing.JPanel
 
 abstract class AzureRiderSettingPanel<T : AzureRunConfigurationBase<*>>(protected val project: Project) {

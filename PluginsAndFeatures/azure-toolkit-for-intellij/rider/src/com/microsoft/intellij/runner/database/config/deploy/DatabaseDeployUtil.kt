@@ -26,8 +26,8 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.util.*

@@ -96,14 +96,13 @@ public class JavaIDEHelper extends IDEHelperImpl {
     }
 
     @NotNull
-    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull
-            IDEHelper.ArtifactDescriptor artifactDescriptor)
-            throws AzureCmdException {
+    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
+        throws AzureCmdException {
         Artifact artifact = null;
 
-        for (Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            if (artifactDescriptor.getName().equals(projectArtifact.getName())
-                    && artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
+        for (final Artifact projectArtifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
+            if (artifactDescriptor.getName().equals(projectArtifact.getName()) &&
+                artifactDescriptor.getArtifactType().equals(projectArtifact.getArtifactType().getId())) {
                 artifact = projectArtifact;
                 break;
             }

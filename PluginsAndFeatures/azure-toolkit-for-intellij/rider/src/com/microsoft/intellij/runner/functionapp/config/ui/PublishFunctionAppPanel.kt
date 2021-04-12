@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -44,8 +44,8 @@ import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
-import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.UpdateProgressIndicator
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfiguration
