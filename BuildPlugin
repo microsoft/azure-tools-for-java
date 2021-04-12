@@ -40,9 +40,6 @@ tc_open "Initializing build script"
                       && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
     IJ_SCALA_VERSION_LATEST=2021.1.15
 
-    BUILD_NUMBER="3.50.0.$BUILD_COUNTER-2021.1"
-    BUILD_CONFIGURATION=Release
-
     while getopts ":hqvBC:e:" option; do
         case $option in
             h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter] [-e eclipse/intellij/rider]"; exit ;;
@@ -60,6 +57,9 @@ tc_open "Initializing build script"
             ?) echo "error: option -$OPTARG is not implemented"; exit ;;
         esac
     done
+
+    BUILD_NUMBER="3.50.0.$BUILD_COUNTER-2021.1"
+    BUILD_CONFIGURATION=Release
 
     MAVEN_LOCAL_DIR="$SCRIPTPATH"/.repository
     if [ -d "$MAVEN_LOCAL_DIR" ]; then
