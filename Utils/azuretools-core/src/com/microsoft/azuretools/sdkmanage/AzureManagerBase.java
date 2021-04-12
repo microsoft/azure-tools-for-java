@@ -16,6 +16,7 @@ import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLMana
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationException;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
@@ -137,6 +138,13 @@ public abstract class AzureManagerBase implements AzureManager {
                     Throwables.getCausalChain(e).stream().anyMatch(tenantError)) {
                     // TODO: @wangmi better to notify user
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
+                } else if (e instanceof AzureOperationException) {
+                    // TODO: @maartenba/@sdubov
+                    // This is where upstream issue happens:
+                    // https://github.com/microsoft/azure-tools-for-java/issues/5053
+                    // https://github.com/microsoft/azure-tools-for-java/issues/4977
+                    // Next merge, see if upstream has been updated.
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 } else {
                     throw e;
                 }
