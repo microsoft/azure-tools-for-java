@@ -4,15 +4,23 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Added:</h4>
-      <ul>
-        <li>Compatibility with Rider 2021.1 EAP4</li>
-        <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
-      </ul>
-      <h4>Bug fixes:</h4>
-      <ul>
-        <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
-      </ul>
+        <h4>Added:</h4>
+        <ul>
+          <li>Compatibility with Rider 2021.1</li>
+	  <li>Explore Database for MySQL in Service Explorer</li>
+          <li>Allow publishing to App Service with kind "API" (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/149">#149</a>)</li>
+          <li>Enable build-throttling and support compound run configurations (<a href="https://youtrack.jetbrains.com/issue/RIDER-57482">RIDER-57482</a>)</li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+          <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
+          <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
+          <li>Device login - Subscription lookup improvements (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/452">#452</a>)</li>
+          <li>Better error messages when auth fails (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/438">#438</a>)</li>
+          <li>Don't output error message when not needed (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/461">#461</a>)</li>
+          <li>Exception in FileEditors - implement getFile (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/463">#463</a>)</li>
+          <li>Ensure Azurite process has environment variables loaded, if present (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/468">#468</a>)</li>
+        </ul>
     </html>
     ]]>
   </change-notes>
