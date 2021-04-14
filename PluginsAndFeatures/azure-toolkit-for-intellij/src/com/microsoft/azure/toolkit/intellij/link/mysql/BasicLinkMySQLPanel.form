@@ -161,14 +161,6 @@
           <text value="Env prefix:"/>
         </properties>
       </component>
-      <component id="5f3cd" class="javax.swing.JTextPane" binding="testResultTextPane">
-        <constraints>
-          <grid row="9" column="1" row-span="2" col-span="3" vsize-policy="6" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="50"/>
-          </grid>
-        </constraints>
-        <properties/>
-      </component>
       <component id="4b6c5" class="javax.swing.JTextField" binding="envPrefixTextField">
         <constraints>
           <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
@@ -192,6 +184,22 @@
           <grid row="9" column="0" row-span="2" col-span="1" vsize-policy="0" hsize-policy="0" anchor="5" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
       </nested-form>
+      <scrollpane id="4a8b8">
+        <constraints>
+          <grid row="9" column="1" row-span="2" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalScrollBarPolicy value="31"/>
+          <verticalScrollBarPolicy value="20"/>
+        </properties>
+        <border type="empty"/>
+        <children>
+          <component id="5f3cd" class="javax.swing.JTextPane" binding="testResultTextPane">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>

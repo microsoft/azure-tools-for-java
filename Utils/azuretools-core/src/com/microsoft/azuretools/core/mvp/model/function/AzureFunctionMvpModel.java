@@ -73,7 +73,7 @@ public class AzureFunctionMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public void restartFunction(String sid, String appId) {
-        getFunctionAppsClient(sid).getById(appId).restart();
+        getFunctionById(sid, appId).restart();
     }
 
     @AzureOperation(
@@ -82,7 +82,7 @@ public class AzureFunctionMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public void startFunction(String sid, String appId) {
-        getFunctionAppsClient(sid).getById(appId).start();
+        getFunctionById(sid, appId).start();
     }
 
     @AzureOperation(
@@ -91,7 +91,7 @@ public class AzureFunctionMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public void stopFunction(String sid, String appId) {
-        getFunctionAppsClient(sid).getById(appId).stop();
+        getFunctionById(sid, appId).stop();
     }
 
     /**

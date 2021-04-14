@@ -96,7 +96,7 @@
     "Response" : {
       "StatusCode" : "201",
       "content-type" : "application/json; charset=utf-8",
-      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc337214258395ff15cf\",\"location\":\"Central US\",\"name\":\"rc337214258395ff15cf\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":2},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"15000\",\"maxmemory-reserved\":\"500\",\"maxmemory-delta\":\"500\"},\"accessKeys\":{\"primaryKey\":\"tieLEjQqDC8sNaSv+zNrGxDBOTopY2pkcUQRS88f6uE=\",\"secondaryKey\":\"nM5AuPS9AenHMoE3dK2cWtBV9yQ6XIN5BzGgwEdSgyQ=\"},\"hostName\":\"rc337214258395ff15cf.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380,\"shardCount\":3}}",
+      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc337214258395ff15cf\",\"location\":\"Central US\",\"name\":\"rc337214258395ff15cf\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":2},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"15000\",\"maxmemory-reserved\":\"500\",\"maxmemory-delta\":\"500\"},\"accessKeys\":{\"primaryKey\":\"tieLEjQqDC8sNaSv+zNrGxDBOTopY2pkcUQRS88f6uE=\",\"secondaryKey\":\"nM5AuPS9AenHMoE3dK2cWtBV9yQ6XIN5BzGgwEdSgyQ=\"},\"hostName\":\"rc337214258395ff15cf.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380,\"shardCount\":3}}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
       "x-ms-ratelimit-remaining-subscription-writes" : "1198",
       "location" : "http://localhost:2124/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc337214258395ff15cf?api-version=2016-04-01",
       "x-ms-routing-request-id" : "WESTUS2:20170124T232849Z:80911149-9cfd-4fa0-bd40-5947cf50b156",
@@ -122,7 +122,7 @@
     "Response" : {
       "StatusCode" : "201",
       "content-type" : "application/json; charset=utf-8",
-      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc1d5545496207615809\",\"location\":\"Central US\",\"name\":\"rc1d5545496207615809\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Basic\",\"family\":\"C\",\"capacity\":0},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"256\",\"maxmemory-reserved\":\"2\",\"maxmemory-delta\":\"2\"},\"accessKeys\":{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"9kFj0G+MO+WWmk80FlIjuIOvVXeDj8KLklx7PW5wQWE=\"},\"hostName\":\"rc1d5545496207615809.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc1d5545496207615809\",\"location\":\"Central US\",\"name\":\"rc1d5545496207615809\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Basic\",\"family\":\"C\",\"capacity\":0},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"256\",\"maxmemory-reserved\":\"2\",\"maxmemory-delta\":\"2\"},\"accessKeys\":{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"9kFj0G+MO+WWmk80FlIjuIOvVXeDj8KLklx7PW5wQWE=\"},\"hostName\":\"rc1d5545496207615809.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
       "x-ms-ratelimit-remaining-subscription-writes" : "1191",
       "location" : "http://localhost:2124/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc1d5545496207615809?api-version=2016-04-01",
       "x-ms-routing-request-id" : "WESTUS2:20170124T232849Z:c29c9aae-7217-4b6a-be40-c33366f838aa",
@@ -148,7 +148,7 @@
     "Response" : {
       "StatusCode" : "201",
       "content-type" : "application/json; charset=utf-8",
-      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc297d32943246018fa6\",\"location\":\"Central US\",\"name\":\"rc297d32943246018fa6\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxmemory-delta\":\"200\"},\"accessKeys\":{\"primaryKey\":\"tlt2DcQ5H01IiKRgArK7siBbNuttvE3W+zsJiUVXIrs=\",\"secondaryKey\":\"0eEQti0GV54hMlfycd4t82at4cwGPbDMIK89OKy4kK0=\"},\"hostName\":\"rc297d32943246018fa6.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380,\"shardCount\":3}}",
+      "Body" : "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc297d32943246018fa6\",\"location\":\"Central US\",\"name\":\"rc297d32943246018fa6\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":1},\"enableNonSslPort\":false,\"redisConfiguration\":{\"maxclients\":\"7500\",\"maxmemory-reserved\":\"200\",\"maxmemory-delta\":\"200\"},\"accessKeys\":{\"primaryKey\":\"tlt2DcQ5H01IiKRgArK7siBbNuttvE3W+zsJiUVXIrs=\",\"secondaryKey\":\"0eEQti0GV54hMlfycd4t82at4cwGPbDMIK89OKy4kK0=\"},\"hostName\":\"rc297d32943246018fa6.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380,\"shardCount\":3}}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
       "x-ms-ratelimit-remaining-subscription-writes" : "1179",
       "location" : "http://localhost:2124/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgrcmc610761619a996e91/providers/Microsoft.Cache/Redis/rc297d32943246018fa6?api-version=2016-04-01",
       "x-ms-routing-request-id" : "WESTUS2:20170124T232849Z:850f8163-ee48-4b0a-8497-d76071665571",
@@ -2798,7 +2798,7 @@
     "Response" : {
       "StatusCode" : "200",
       "content-type" : "application/json; charset=utf-8",
-      "Body" : "{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"9kFj0G+MO+WWmk80FlIjuIOvVXeDj8KLklx7PW5wQWE=\"}",
+      "Body" : "{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"9kFj0G+MO+WWmk80FlIjuIOvVXeDj8KLklx7PW5wQWE=\"}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
       "x-ms-ratelimit-remaining-subscription-writes" : "1190",
       "transfer-encoding" : "chunked",
       "x-ms-routing-request-id" : "WESTUS2:20170124T234923Z:c4d753d8-4f55-47c3-8b30-171ccec9bbd4",
@@ -2825,7 +2825,7 @@
     "Response" : {
       "StatusCode" : "200",
       "content-type" : "application/json; charset=utf-8",
-      "Body" : "{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"2PZXyxMIYQPVtTHdkU7CgaePGmBcA9ec0sMEdy7VV8k=\"}",
+      "Body" : "{\"primaryKey\":\"P98ZBb3Ee1DjoIZbIfmYmL2Vrt7iPy9LDp2gJfk4cPw=\",\"secondaryKey\":\"2PZXyxMIYQPVtTHdkU7CgaePGmBcA9ec0sMEdy7VV8k=\"}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
       "x-ms-ratelimit-remaining-subscription-writes" : "1189",
       "transfer-encoding" : "chunked",
       "x-ms-routing-request-id" : "WESTUS2:20170124T234924Z:b1e3599d-bf3e-42a2-aa03-8b17e067de3c",

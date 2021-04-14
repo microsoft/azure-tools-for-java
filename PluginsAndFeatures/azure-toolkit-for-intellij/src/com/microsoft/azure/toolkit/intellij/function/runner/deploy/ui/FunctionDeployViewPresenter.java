@@ -7,8 +7,6 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy.ui;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
@@ -33,17 +31,15 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
             return;
         }
         unsubscribeSubscription(loadAppSettingsSubscription);
-        loadAppSettingsSubscription = Observable.fromCallable(() -> {
-            AzureTaskManager.getInstance().runAndWait(() -> getMvpView().beforeFillAppSettings(), AzureTask.Modality.ANY);
-            return functionApp.getAppSettings();
-        }).subscribeOn(getSchedulerProvider().io())
-                .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    final Map<String, String> result = new HashMap<>();
-                    appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
-                    getMvpView().fillAppSettings(result);
-                }));
+        loadAppSettingsSubscription =
+            Observable.fromCallable(functionApp::getAppSettings).subscribeOn(getSchedulerProvider().io())
+                      .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                          if (isViewDetached()) {
+                              return;
+                          }
+                          final Map<String, String> result = new HashMap<>();
+                          appSettings.forEach((key, value) -> result.put(key, value.value()));
+                          getMvpView().fillAppSettings(result);
+                      }));
     }
 }

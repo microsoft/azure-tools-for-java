@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.toolkit.intellij.common.AzureArtifactType.File;
 
 public class AzureArtifactManager {
-    private static Map<Project, AzureArtifactManager> projectAzureArtifactManagerMap = new HashMap<>();
+    private static final Map<Project, AzureArtifactManager> projectAzureArtifactManagerMap = new HashMap<>();
     private final Project project;
 
     private AzureArtifactManager(Project project) {
@@ -116,9 +116,14 @@ public class AzureArtifactManager {
         }
     }
 
-    public boolean equalsAzureArtifactIdentifier(AzureArtifact artifact1, AzureArtifact artifact2) {
+    public boolean equalsAzureArtifact(AzureArtifact artifact1, AzureArtifact artifact2) {
         if (Objects.isNull(artifact1) || Objects.isNull(artifact2)) {
             return artifact1 == artifact2;
+        }
+        if (artifact1.getType() != artifact2.getType()) {
+            // Artifact with different type may have same identifier, for instance, File and Artifact, both of them use file path as identifier
+            // todo: re-design identifier, make it include the artifact type info
+            return false;
         }
         return StringUtils.equals(getArtifactIdentifier(artifact1), getArtifactIdentifier(artifact2));
     }
@@ -146,34 +151,28 @@ public class AzureArtifactManager {
     }
 
     private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {
-        ExternalProject externalProject = getRelatedExternalProject(gradleProjectPojo);
+        final ExternalProject externalProject = getRelatedExternalProject(gradleProjectPojo);
         return Objects.nonNull(externalProject) ? externalProject.getQName() : null;
     }
 
     private ExternalProject getRelatedExternalProject(ExternalProjectPojo gradleProjectPojo) {
-        ExternalProject externalProject =
-                ExternalProjectDataCache.getInstance(project).getRootExternalProject(gradleProjectPojo.getPath());
-        return externalProject;
+        return ExternalProjectDataCache.getInstance(project).getRootExternalProject(gradleProjectPojo.getPath());
     }
 
     private List<AzureArtifact> prepareAzureArtifacts(Predicate<String> packagingFilter) {
-        List<AzureArtifact> azureArtifacts = new ArrayList<>();
-        List<ExternalProjectPojo> gradleProjects = GradleUtils.listGradleProjects(project);
+        final List<AzureArtifact> azureArtifacts = new ArrayList<>();
+        final List<ExternalProjectPojo> gradleProjects = GradleUtils.listGradleProjects(project);
         if (Objects.nonNull(gradleProjects)) {
             azureArtifacts.addAll(gradleProjects.stream()
                                                 .map(AzureArtifact::createFromGradleProject)
                                                 .collect(Collectors.toList()));
         }
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        if (Objects.nonNull(mavenProjects)) {
-            azureArtifacts.addAll(
-                    mavenProjects.stream().map(AzureArtifact::createFromMavenProject).collect(Collectors.toList()));
-        }
-        List<Artifact> artifactList = MavenRunTaskUtil.collectProjectArtifact(project);
-        if (Objects.nonNull(artifactList)) {
-            azureArtifacts.addAll(
-                    artifactList.stream().map(AzureArtifact::createFromArtifact).collect(Collectors.toList()));
-        }
+        final List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+        azureArtifacts.addAll(mavenProjects.stream().map(AzureArtifact::createFromMavenProject).collect(Collectors.toList()));
+
+        final List<Artifact> artifactList = MavenRunTaskUtil.collectProjectArtifact(project);
+        azureArtifacts.addAll(artifactList.stream().map(AzureArtifact::createFromArtifact).collect(Collectors.toList()));
+
         if (packagingFilter == null) {
             return azureArtifacts;
         }

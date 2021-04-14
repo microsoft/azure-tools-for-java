@@ -324,7 +324,6 @@ public class WAEclipseHelperMethods {
 
     /**
      * Method checks whether text is valid storage account access key or not.
-     * "SK3d/vC2dIl3eaVGRs8W61FW43bO1ubDOAHD3s9TysDsq3qSBF4grpz0K2mg0pUKPx87wJwS5A8oaaXpR1VhVg=="
      * may contain upper lower case characters, numbers and punctuation marks and 88 characters long.
      * @param text
      * @return

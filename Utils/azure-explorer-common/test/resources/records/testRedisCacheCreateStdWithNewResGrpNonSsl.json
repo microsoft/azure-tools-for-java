@@ -340,7 +340,7 @@
         "x-ms-routing-request-id": "WESTUS:20170726T022058Z:3feba9af-f76c-4182-941b-8c1bdb2c8edc",
         "Expires": "-1",
         "Content-Length": "737",
-        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaC4StdNewNonSslRg/providers/Microsoft.Cache/Redis/MonaC4StdNewNonSsl\",\"location\":\"East US\",\"name\":\"MonaC4StdNewNonSsl\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Standard\",\"family\":\"C\",\"capacity\":4},\"enableNonSslPort\":true,\"redisConfiguration\":{\"maxclients\":\"10000\",\"maxmemory-reserved\":\"500\",\"maxfragmentationmemory-reserved\":\"650\",\"maxmemory-delta\":\"500\"},\"accessKeys\":{\"primaryKey\":\"9gXK6ikND8WI4O3tPv2VJY7CM62s6H5sw4z+I5b06uY=\",\"secondaryKey\":\"Te/poQ2cTGjQf3n/lpEPZxzVfZpgZ6FNIHHn/f/Q3xU=\"},\"hostName\":\"MonaC4StdNewNonSsl.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaC4StdNewNonSslRg/providers/Microsoft.Cache/Redis/MonaC4StdNewNonSsl\",\"location\":\"East US\",\"name\":\"MonaC4StdNewNonSsl\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Standard\",\"family\":\"C\",\"capacity\":4},\"enableNonSslPort\":true,\"redisConfiguration\":{\"maxclients\":\"10000\",\"maxmemory-reserved\":\"500\",\"maxfragmentationmemory-reserved\":\"650\",\"maxmemory-delta\":\"500\"},\"accessKeys\":{\"primaryKey\":\"9gXK6ikND8WI4O3tPv2VJY7CM62s6H5sw4z+I5b06uY=\",\"secondaryKey\":\"Te/poQ2cTGjQf3n/lpEPZxzVfZpgZ6FNIHHn/f/Q3xU=\"},\"hostName\":\"MonaC4StdNewNonSsl.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
         "x-ms-request-id": "6546dda0-e952-4eb3-89d2-69ecb198e87a",
         "Content-Type": "application/json; charset=utf-8",
         "Location": "http://localhost:3428/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaC4StdNewNonSslRg/providers/Microsoft.Cache/redis/MonaC4StdNewNonSsl?api-version=2016-04-01"
@@ -462,7 +462,7 @@
         "x-ms-routing-request-id": "WESTUS:20170726T023234Z:92924cee-08d1-4152-8442-a4b834a27639",
         "Vary": "Accept-Encoding",
         "Expires": "-1",
-        "Body": "{\"primaryKey\":\"9gXK6ikND8WI4O3tPv2VJY7CM62s6H5sw4z+I5b06uY=\",\"secondaryKey\":\"Te/poQ2cTGjQf3n/lpEPZxzVfZpgZ6FNIHHn/f/Q3xU=\"}",
+        "Body": "{\"primaryKey\":\"9gXK6ikND8WI4O3tPv2VJY7CM62s6H5sw4z+I5b06uY=\",\"secondaryKey\":\"Te/poQ2cTGjQf3n/lpEPZxzVfZpgZ6FNIHHn/f/Q3xU=\"}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
         "x-ms-request-id": "3b69f8c2-2efe-4528-8e1f-feb5c4fbcdf0",
         "Content-Type": "application/json; charset=utf-8"
       }

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -19,8 +18,8 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -67,7 +66,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         return functionDeployModel.getFunctionId();
     }
 
-    public Map getAppSettings() {
+    public Map<String, String> getAppSettings() {
         return functionDeployModel.getAppSettings();
     }
 
@@ -140,8 +139,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
-            throws ExecutionException {
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
         return new FunctionDeploymentState(getProject(), this);
     }
 
@@ -227,7 +225,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public void saveModel(FunctionAppComboBoxModel functionAppComboBoxModel) {
         if (functionAppComboBoxModel.getFunctionDeployModel() != null) {
             setFunctionDeployModel(functionAppComboBoxModel.getFunctionDeployModel());
-            return;
         } else {
             functionDeployModel.saveModel(functionAppComboBoxModel);
         }

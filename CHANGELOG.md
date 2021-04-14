@@ -69,7 +69,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ## 3.51.0
 ### Added
 - Add support for IntelliJ 2021.1 EAP
-- Add Azure SDK reference book for spring
+- Add Azure SDK reference book for Spring
 
 ### Changed
 - Improve resource list performance with cache and preload
@@ -78,6 +78,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Remove preview label for function and spring cloud
 
 ### Fixed
+- [#5002](https://github.com/microsoft/azure-tools-for-java/issues/5002) Failed to run Spark application with filled-in default Azure Blob storage account credential
 - [#5008](https://github.com/microsoft/azure-tools-for-java/issues/5008) IndexOutOfBoundsException while create MySQL connection
 - [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) InvalidParameterException occurs when close a streaming log
 - [PR #4987](https://github.com/microsoft/azure-tools-for-java/pull/4987) Failed when select file to deploy to Azure Web App 

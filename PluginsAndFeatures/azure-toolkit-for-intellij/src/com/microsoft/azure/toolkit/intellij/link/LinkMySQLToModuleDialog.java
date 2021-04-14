@@ -32,7 +32,7 @@ import java.util.Objects;
 
 public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourceConfig, ModuleResourceConfig>> {
 
-    private static final String PROMPT_TITLE = "Azure Explorer";
+    private static final String PROMPT_TITLE = "Connect Azure Database for MySQL(Preview)";
     private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
     private static final String PROMPT_MESSAGE = "This resource already existed in your local environment. Do you want to override it?";
     private JPanel rootPanel;
@@ -64,7 +64,7 @@ public class LinkMySQLToModuleDialog extends AzureDialog<LinkConfig<MySQLResourc
 
     @Override
     protected String getDialogTitle() {
-        return "Connect Azure Database for MySQL";
+        return "Connect Azure Database for MySQL(Preview)";
     }
 
     @Override

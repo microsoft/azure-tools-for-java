@@ -37,13 +37,6 @@ compileJava {
     targetCompatibility = javaVersion
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-
 javafx {
     version = '11'
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web',  'javafx.swing']
@@ -65,6 +58,53 @@ intellij {
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']
 	downloadSources = Boolean.valueOf(sources)
+}
+
+
+// disable runIde tasks in subprojects to prevent starting-up multiple ide.
+gradle.taskGraph.whenReady { graph ->
+    def hasRootRunTask = graph.hasTask(':runIde')
+
+    if (hasRootRunTask) {
+        graph.getAllTasks().each { task ->
+            // look for *:runIde
+            def subRunTask = (task.path =~ /:.+:runIde/)
+            if (subRunTask) {
+                println "TRACER skipping ${task.path} because ':runIde' was specified"
+                task.enabled = false
+            }
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+    group = 'com.microsoft.azuretools'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: 'org.jetbrains.intellij'
+    intellij {
+        version = intellij_version
+        updateSinceUntilBuild = false
+        downloadSources = Boolean.valueOf(sources)
+    }
+
+    dependencies {
+        compileOnly 'org.jetbrains:annotations:20.1.0'
+        // https://mvnrepository.com/artifact/org.projectlombok/lombok
+        compileOnly 'org.projectlombok:lombok:1.18.8'
+        annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
+        compile "com.microsoft.azure:azure-toolkit-common-lib:0.5.0"
+    }
 }
 
 sourceSets {

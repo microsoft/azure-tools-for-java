@@ -29,7 +29,7 @@
     <h4>Added</h4>
     <ul>
         <li>Add support for IntelliJ 2021.1 EAP</li>
-        <li>Add Azure SDK reference book for spring</li>
+        <li>Add Azure SDK reference book for Spring</li>
     </ul>
     <h4>Changed</h4>
     <ul>
@@ -40,6 +40,8 @@
     </ul>
     <h4>Fixed</h4>
     <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5002">#5002</a> Failed to run Spark application 
+                with filled-in default Azure Blob storage account credential</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/5008">#5008</a> IndexOutOfBoundsException
             while create MySQL connection</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4987">PR #4987</a> InvalidParameterException

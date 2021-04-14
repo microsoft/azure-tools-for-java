@@ -176,6 +176,7 @@ public class AppInsightsClient {
     private static void initTelemetryManager() {
         try {
             final Map<String, String> properties = buildProperties("", new HashMap<>());
+            TelemetryClientSingleton.setConfiguration(configuration);
             final TelemetryClient client = TelemetryClientSingleton.getTelemetry();
             final String eventNamePrefix = configuration.eventName();
             TelemetryManager.getInstance().setTelemetryClient(client);
@@ -188,5 +189,4 @@ public class AppInsightsClient {
         } catch (Exception ignore) {
         }
     }
-
 }

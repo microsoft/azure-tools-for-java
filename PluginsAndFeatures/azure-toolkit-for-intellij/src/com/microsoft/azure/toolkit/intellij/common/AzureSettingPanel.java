@@ -160,7 +160,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void syncBeforeRunTasks(AzureArtifact azureArtifact, @NotNull final RunConfiguration configuration) {
-        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifactIdentifier(lastSelectedAzureArtifact, azureArtifact)) {
+        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifact(lastSelectedAzureArtifact, azureArtifact)) {
             final JPanel pnlRoot = getMainPanel();
             final DataContext context = DataManager.getInstance().getDataContext(pnlRoot);
             final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);

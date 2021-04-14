@@ -126,7 +126,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         final List<AzureArtifact> artifacts = this.getItems();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
         final AzureArtifact existingArtifact =
-            artifacts.stream().filter(artifact -> manager.equalsAzureArtifactIdentifier(artifact, selectArtifact)).findFirst().orElse(null);
+            artifacts.stream().filter(artifact -> manager.equalsAzureArtifact(artifact, selectArtifact)).findFirst().orElse(null);
         if (existingArtifact == null) {
             this.addItem(selectArtifact);
             this.setSelectedItem(selectArtifact);
@@ -141,7 +141,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         }
         final List<AzureArtifact> artifacts = this.getItems();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
-        final Predicate<AzureArtifact> predicate = artifact -> manager.equalsAzureArtifactIdentifier(defaultArtifact, artifact);
+        final Predicate<AzureArtifact> predicate = artifact -> manager.equalsAzureArtifact(defaultArtifact, artifact);
         final AzureArtifact toSelect = artifacts.stream().filter(predicate).findFirst().orElse(null);
         if (toSelect != null) {
             this.setSelectedItem(toSelect);

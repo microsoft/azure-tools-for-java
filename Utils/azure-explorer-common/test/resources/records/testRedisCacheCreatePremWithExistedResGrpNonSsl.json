@@ -286,7 +286,7 @@
         "x-ms-routing-request-id": "WESTUS:20170726T012809Z:b1697cb3-e5e9-45b7-9974-60da85487dba",
         "Expires": "-1",
         "Content-Length": "725",
-        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaP4ExistNonSsl\",\"location\":\"East US\",\"name\":\"MonaP4ExistNonSsl\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":4},\"enableNonSslPort\":true,\"redisConfiguration\":{\"maxclients\":\"40000\",\"maxmemory-reserved\":\"5000\",\"maxfragmentationmemory-reserved\":\"2650\",\"maxmemory-delta\":\"5000\"},\"accessKeys\":{\"primaryKey\":\"Vi2LG5F0FGy/XpgmWBnk3/AkjIF3Yeby3mH+q22DZZI=\",\"secondaryKey\":\"dNch5h7YZgRauvrdp3OQRxOu1h1fcdKxeg3kkpsX9f0=\"},\"hostName\":\"MonaP4ExistNonSsl.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}",
+        "Body": "{\"id\":\"/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/Redis/MonaP4ExistNonSsl\",\"location\":\"East US\",\"name\":\"MonaP4ExistNonSsl\",\"type\":\"Microsoft.Cache/Redis\",\"tags\":{},\"properties\":{\"provisioningState\":\"Creating\",\"redisVersion\":\"3.2.7\",\"sku\":{\"name\":\"Premium\",\"family\":\"P\",\"capacity\":4},\"enableNonSslPort\":true,\"redisConfiguration\":{\"maxclients\":\"40000\",\"maxmemory-reserved\":\"5000\",\"maxfragmentationmemory-reserved\":\"2650\",\"maxmemory-delta\":\"5000\"},\"accessKeys\":{\"primaryKey\":\"Vi2LG5F0FGy/XpgmWBnk3/AkjIF3Yeby3mH+q22DZZI=\",\"secondaryKey\":\"dNch5h7YZgRauvrdp3OQRxOu1h1fcdKxeg3kkpsX9f0=\"},\"hostName\":\"MonaP4ExistNonSsl.redis.cache.windows.net\",\"port\":6379,\"sslPort\":6380}}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
         "x-ms-request-id": "01fd235f-b7e3-4786-85cf-1acd0a5de87c",
         "Content-Type": "application/json; charset=utf-8",
         "Location": "http://localhost:3428/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MonaExist/providers/Microsoft.Cache/redis/MonaP4ExistNonSsl?api-version=2016-04-01"
@@ -408,7 +408,7 @@
         "x-ms-routing-request-id": "WESTUS:20170726T014445Z:5d8d87d2-37d5-4c82-af73-4e354250e012",
         "Vary": "Accept-Encoding",
         "Expires": "-1",
-        "Body": "{\"primaryKey\":\"Vi2LG5F0FGy/XpgmWBnk3/AkjIF3Yeby3mH+q22DZZI=\",\"secondaryKey\":\"dNch5h7YZgRauvrdp3OQRxOu1h1fcdKxeg3kkpsX9f0=\"}",
+        "Body": "{\"primaryKey\":\"Vi2LG5F0FGy/XpgmWBnk3/AkjIF3Yeby3mH+q22DZZI=\",\"secondaryKey\":\"dNch5h7YZgRauvrdp3OQRxOu1h1fcdKxeg3kkpsX9f0=\"}", // [SuppressMessage("Microsoft.Security", "CS001:SecretInline", Justification="fake credential for test case")]
         "x-ms-request-id": "84281b05-7af5-4ac8-9545-cf0dfa601aed",
         "Content-Type": "application/json; charset=utf-8"
       }

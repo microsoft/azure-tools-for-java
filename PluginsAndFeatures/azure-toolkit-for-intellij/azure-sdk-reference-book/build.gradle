@@ -1,28 +1,10 @@
-plugins {
-    id 'java'
-    id "org.jetbrains.intellij"
-    id "io.freefair.aspectj.post-compile-weaving"
-}
-
-group 'com.microsoft.azuretools'
+apply plugin: "io.freefair.aspectj.post-compile-weaving"
 
 intellij {
-    version = intellij_version
-    downloadSources = Boolean.valueOf(true)
     plugins = ['java', 'maven', 'gradle']
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
 dependencies {
-    // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
-
-    compileOnly 'org.jetbrains:annotations:20.1.0'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.11.2', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }

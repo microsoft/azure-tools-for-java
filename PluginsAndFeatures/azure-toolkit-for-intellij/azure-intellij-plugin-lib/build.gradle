@@ -1,24 +1,2 @@
-plugins {
-    id 'java'
-    id "org.jetbrains.intellij"
-}
+intellij{}
 
-group 'com.microsoft.azuretools'
-
-intellij {
-    version = intellij_version
-    downloadSources = Boolean.valueOf(true)
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-dependencies {
-    // https://mvnrepository.com/artifact/org.projectlombok/lombok
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
-
-    implementation "com.microsoft.azure:azure-toolkit-common-lib:0.5.0"
-}

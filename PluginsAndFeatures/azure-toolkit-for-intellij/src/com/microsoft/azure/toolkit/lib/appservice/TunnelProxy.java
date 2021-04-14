@@ -24,6 +24,8 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class TunnelProxy {
     public static final String DEFAULT_SSH_USERNAME = "root";
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Public credential for app service, refers https://docs.microsoft.com/en-us/azure/app-service/configure-linux-open-ssh-session")]
     public static final String DEFAULT_SSH_PASSWORD = "Docker!";
     private static final Logger logger = Logger.getLogger(TunnelProxy.class.getName());
     private static final String LOCALHOST = "localhost";

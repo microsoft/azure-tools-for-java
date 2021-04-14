@@ -8,14 +8,14 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy.ui;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
@@ -39,7 +39,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
 
-    private FunctionDeployViewPresenter presenter = null;
+    private final FunctionDeployViewPresenter<FunctionDeploymentPanel> presenter;
 
     private JPanel pnlRoot;
     private HyperlinkLabel lblCreateFunctionApp;
@@ -53,10 +53,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
-        this.presenter = new FunctionDeployViewPresenter();
+        this.presenter = new FunctionDeployViewPresenter<>();
         this.presenter.onAttachView(this);
 
-        cbFunctionModule.setRenderer(new ListCellRendererWrapper<Module>() {
+        cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
             @Override
             public void customize(JList list, Module module, int i, boolean b, boolean b1) {
                 if (module != null) {
@@ -101,7 +101,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @NotNull
     @Override
     protected JComboBox<Artifact> getCbArtifact() {
-        return new JComboBox<Artifact>();
+        return new ComboBox<>();
     }
 
     @NotNull
@@ -113,7 +113,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @NotNull
     @Override
     protected JComboBox<MavenProject> getCbMavenProject() {
-        return new JComboBox<MavenProject>();
+        return new ComboBox<>();
     }
 
     @NotNull
@@ -183,6 +183,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         } else { // For existing Functions
             if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
                 // Do not refresh if selected function app is not changed except create run configuration from azure explorer
+                this.beforeFillAppSettings();
                 presenter.loadAppSettings(model.getResource());
             }
         }
