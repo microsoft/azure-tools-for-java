@@ -81,8 +81,10 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                 projectOutputs.Add(new ProjectOutput(
                     tfm: tfm.ToRdTargetFrameworkInfo(),
                     exePath: projectOutputPath.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
-                    defaultArguments: new List<string>(),
-                    workingDirectory: projectOutputPath.Directory.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix),
+                    defaultArguments: new List<string> { "host", "start", "--pause-on-error" },
+                    
+                    // Azure Functions host needs the tfm folder, not the bin folder
+                    workingDirectory: projectOutputPath.Directory.NormalizeSeparators(FileSystemPathEx.SeparatorStyle.Unix).TrimFromEnd("/bin"),
                     dotNetCorePlatformRoot: string.Empty,
                     configuration: null));
             }

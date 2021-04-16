@@ -1,14 +1,13 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace FunctionApp
+namespace FunctionAppIsolated
 {
-    public static class TimerTrigger
+    public static class Function
     {
-        [FunctionName("TimerTrigger")]
+        [Function("TimerTrigger")]
         public static async Task RunAsync([TimerTrigger("<caret>")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");

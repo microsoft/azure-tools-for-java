@@ -126,19 +126,16 @@ class AzureFunctionsHostConfigurationViewModel(
                     exePathSelector.defaultValue.set(projectOutput.exePath)
 
                     // Ensure we have the defaults if needed...
-                    val patchedProjectOutput = AzureFunctionsRunnableProjectUtil.patchProjectOutput(projectOutput)
-
-                    // ...but keep the previous value if it's not empty
                     if (programParametersEditor.parametersString.value.isEmpty()) {
-                        if (patchedProjectOutput.defaultArguments.isNotEmpty()) {
-                            programParametersEditor.parametersString.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
-                            programParametersEditor.defaultValue.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
+                        if (projectOutput.defaultArguments.isNotEmpty()) {
+                            programParametersEditor.parametersString.set(ParametersListUtil.join(projectOutput.defaultArguments))
+                            programParametersEditor.defaultValue.set(ParametersListUtil.join(projectOutput.defaultArguments))
                         } else {
                             programParametersEditor.parametersString.set("")
                             programParametersEditor.defaultValue.set("")
                         }
                     }
-                    workingDirectorySelector.defaultValue.set(patchedProjectOutput.workingDirectory)
+                    workingDirectorySelector.defaultValue.set(projectOutput.workingDirectory)
                 }
     }
 
@@ -153,7 +150,8 @@ class AzureFunctionsHostConfigurationViewModel(
             trackProjectExePath = exePathSelector.path.value == projectOutput.exePath
 
             val defaultArguments = projectOutput.defaultArguments
-            trackProjectArguments = (defaultArguments.isEmpty() || ParametersListUtil.parse(programParameters).containsAll(defaultArguments))
+            trackProjectArguments = (defaultArguments.isEmpty() ||
+                    ParametersListUtil.parse(programParameters).let { params -> params.containsAll(defaultArguments) && params.size == defaultArguments.size })
 
             trackProjectWorkingDirectory = workingDirectorySelector.path.value == projectOutput.workingDirectory
         }
@@ -190,7 +188,7 @@ class AzureFunctionsHostConfigurationViewModel(
                             myBrowser = dotNetBrowserSettingsEditor.settings.value.myBrowser))
         }
 
-        environmentVariablesEditor.envs.set(runnableProject.environmentVariables.map { it.key to it.value }.toMap())
+        environmentVariablesEditor.envs.set(runnableProject.environmentVariables.associate { it.key to it.value })
     }
 
     private fun reloadTfmSelector(runnableProject: RunnableProject) {

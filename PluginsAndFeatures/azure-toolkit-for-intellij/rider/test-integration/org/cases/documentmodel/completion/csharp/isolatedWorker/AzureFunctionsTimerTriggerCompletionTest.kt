@@ -20,15 +20,13 @@
  * SOFTWARE.
  */
 
-package org.cases.runconfig.functionapp.isolatedWorker
+package org.cases.documentmodel.completion.csharp.isolatedWorker
 
 import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.enums.CoreVersion
-import org.cases.runconfig.functionapp.FunctionHostConfigurationParametersTestCore
+import org.cases.documentmodel.completion.csharp.AzureFunctionsTimerTriggerCompletionTestCore
 
-@TestEnvironment(coreVersion = CoreVersion.DOT_NET_5)
-class FunctionHostConfigurationParametersTest : FunctionHostConfigurationParametersTestCore(
-        solutionDirectoryName = "FunctionAppIsolated",
-        projectName = "FunctionAppIsolated",
-        projectTfm = "net5.0"
+@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+class AzureFunctionsTimerTriggerCompletionTest : AzureFunctionsTimerTriggerCompletionTestCore(
+        solutionDirectoryName = "FunctionAppIsolated"
 )

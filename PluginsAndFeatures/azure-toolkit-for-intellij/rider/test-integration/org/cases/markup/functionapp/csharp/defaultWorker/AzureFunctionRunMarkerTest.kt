@@ -22,56 +22,22 @@
 
 package org.cases.markup.functionapp.csharp.defaultWorker
 
-import com.jetbrains.rdclient.daemon.util.attributeId
-import com.jetbrains.rdclient.testFramework.waitForDaemon
 import com.jetbrains.rider.test.annotations.TestEnvironment
-import com.jetbrains.rider.test.base.BaseTestWithMarkup
 import com.jetbrains.rider.test.enums.CoreVersion
+import org.cases.markup.functionapp.csharp.AzureFunctionRunMarkerTestCore
 import org.testng.annotations.Test
 
 @TestEnvironment(coreVersion = CoreVersion.DEFAULT)
-class AzureFunctionRunMarkerTest : BaseTestWithMarkup() {
-
-    companion object {
-        private const val FUNCTION_APP_RUN_MARKER_ATTRIBUTE_ID = "Azure Function App Run Method Gutter Mark"
-    }
-
-    override fun getSolutionDirectoryName(): String = "FunctionApp"
-
-    @Test(description = "Check function app gutter mark is shown on a default Http Trigger Function App from item template.")
-    fun testFunctionApp_HttpTriggerFromItemTemplate_Detected() = verifyLambdaGutterMark()
-
-    @Test(description = "Check Http Trigger function app that miss required attribute is not marked with Function App gutter mark.")
-    fun testFunctionApp_HttpTriggerMissingAttribute_NotDetected() = verifyLambdaGutterMark()
-
-    @Test(description = "Check any function having required attribute is shown with Function App gutter mark.")
-    fun testFunctionApp_MethodWithAttribute_Detected() = verifyLambdaGutterMark()
-
-    @Test(description = "Check Timer Trigger function with required attribute is shown with Function App gutter mark.")
-    fun testFunctionApp_TimerTriggerFromItemTemplate_Detected() = verifyLambdaGutterMark()
-
-    @Test(description = "Check Http Trigger function having an attribute, but not a correct one is shown without Function App gutter mark.")
-    fun testFunctionApp_HttpTriggerWithIncorrectAttribute_NotDetected() = verifyLambdaGutterMark()
+class AzureFunctionRunMarkerTest : AzureFunctionRunMarkerTestCore(
+        solutionDirectoryName = "FunctionApp",
+        testFilePath = "FunctionApp/Function.cs",
+        sourceFileName = "Function.cs",
+        goldFileName = "Function.gold"
+) {
 
     @Test(description = "Check Http Trigger function having multiple attribute including required [FunctionName] is shown with Function App gutter mark.")
     fun testFunctionApp_HttpTriggerWithMultipleAttributes_Detected() = verifyLambdaGutterMark()
 
-    @Test(description = "Check Http Trigger function having a required attribute, but on namespace level is shown without Function App gutter mark.")
-    fun testFunctionApp_HttpTriggerWithNamespaceAttribute_NotDetected() = verifyLambdaGutterMark()
-
     @Test(description = "Check multiple functions inside one class with [FunctionName] required attribute are shown with gutter mark.")
     fun testFunctionApp_MultipleFunctionApps_Detected() = verifyLambdaGutterMark()
-
-    private fun verifyLambdaGutterMark() {
-        doTestWithMarkupModel(
-                testFilePath = "FunctionApp/Function.cs",
-                sourceFileName = "Function.cs",
-                goldFileName = "Function.gold"
-        ) {
-            waitForDaemon()
-            dumpHighlightersTree(
-                    valueFilter = { it.attributeId.contains(FUNCTION_APP_RUN_MARKER_ATTRIBUTE_ID) }
-            )
-        }
-    }
 }

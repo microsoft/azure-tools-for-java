@@ -22,17 +22,16 @@
 
 package org.cases.documentmodel.completion.csharp
 
-import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.base.CompletionTestBase
-import com.jetbrains.rider.test.enums.CoreVersion
 import com.jetbrains.rider.test.scriptingApi.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
-class AzureFunctionsTimerTriggerCompletionTest : CompletionTestBase() {
+abstract class AzureFunctionsTimerTriggerCompletionTestCore(
+        private val solutionDirectoryName: String
+) : CompletionTestBase() {
 
-    override fun getSolutionDirectoryName(): String = "FunctionApp"
+    override fun getSolutionDirectoryName(): String = solutionDirectoryName
 
     override val restoreNuGetPackages: Boolean? = true
 

@@ -44,7 +44,6 @@ import org.jetbrains.plugins.azure.functions.actions.TriggerAzureFunctionAction
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfiguration
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationFactory
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType
-import org.jetbrains.plugins.azure.functions.run.AzureFunctionsRunnableProjectUtil
 
 @Suppress("ComponentNotRegistered")
 class FunctionAppDaemonHost(project: Project) : LifetimedProjectComponent(project) {
@@ -152,14 +151,13 @@ class FunctionAppDaemonHost(project: Project) : LifetimedProjectComponent(projec
             runnableProject: RunnableProject,
             functionName: String
     ) {
-        val prjToConfigure = AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(runnableProject)
-        val projectOutput = prjToConfigure.projectOutputs.singleOrNull()
+        val projectOutput = runnableProject.projectOutputs.singleOrNull()
 
-        configuration.name = "$functionName (${prjToConfigure.fullName})"
+        configuration.name = "$functionName (${runnableProject.fullName})"
         configuration.parameters.functionNames = functionName
 
-        configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
-        configuration.parameters.projectKind = prjToConfigure.kind
+        configuration.parameters.projectFilePath = runnableProject.projectFilePath
+        configuration.parameters.projectKind = runnableProject.kind
         configuration.parameters.projectTfm = projectOutput?.tfm?.presentableName ?: ""
         configuration.parameters.exePath = projectOutput?.exePath ?: ""
         configuration.parameters.programParameters = ParametersListUtil.join(projectOutput?.defaultArguments

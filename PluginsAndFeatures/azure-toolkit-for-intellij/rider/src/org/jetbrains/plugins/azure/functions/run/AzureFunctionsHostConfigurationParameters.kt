@@ -166,12 +166,7 @@ open class AzureFunctionsHostConfigurationParameters(
             logger.warn("Multiple applicable runnable projects detected for .NET Project configuration ($projectFilePath): ${applicableProjects.joinToString("; ")}")
         }
 
-        val applicableProject = applicableProjects.firstOrNull()
-
-        if (applicableProject != null)
-            return AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(applicableProject)
-
-        return null
+        return applicableProjects.firstOrNull()
     }
 
     private fun tryGetProjectOutput(runnableProject: RunnableProject): ProjectOutput? {

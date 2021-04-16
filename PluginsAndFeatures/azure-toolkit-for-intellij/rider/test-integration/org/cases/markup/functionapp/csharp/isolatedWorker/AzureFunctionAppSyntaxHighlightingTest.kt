@@ -22,49 +22,14 @@
 
 package org.cases.markup.functionapp.csharp.isolatedWorker
 
-import com.intellij.lang.annotation.HighlightSeverity
-import com.jetbrains.rdclient.testFramework.waitForDaemon
 import com.jetbrains.rider.test.annotations.TestEnvironment
-import com.jetbrains.rider.test.base.BaseTestWithMarkup
 import com.jetbrains.rider.test.enums.CoreVersion
-import org.testng.annotations.Test
+import org.cases.markup.functionapp.csharp.AzureFunctionAppSyntaxHighlightingTestCore
 
 @TestEnvironment(coreVersion = CoreVersion.DOT_NET_5)
-class AzureFunctionAppSyntaxHighlightingTest : BaseTestWithMarkup() {
-
-    override fun getSolutionDirectoryName(): String = "FunctionAppIsolated"
-
-    @Test
-    fun testTimerTrigger_CronExpression_ValidNCrontabExpression() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_IncompleteNCrontabExpression() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_ValidTimeSpanExpression() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_IncompleteTimeSpanExpression() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_EmptyString() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_SpaceString() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_ValidSettingsVariable() = verifySyntaxHighlighting()
-
-    @Test
-    fun testTimerTrigger_CronExpression_InvalidSettingsVariable() = verifySyntaxHighlighting()
-
-    private fun verifySyntaxHighlighting() =
-            doTestWithMarkupModel(
-                    testFilePath = "FunctionAppIsolated/Function.cs",
-                    sourceFileName = "Function.cs",
-                    goldFileName = "Function.gold"
-            ) {
-                waitForDaemon()
-                dumpHighlightersTree(HighlightSeverity.ERROR)
-            }
-}
+class AzureFunctionAppSyntaxHighlightingTest : AzureFunctionAppSyntaxHighlightingTestCore(
+        solutionDirectoryName = "FunctionAppIsolated",
+        testFilePath = "FunctionAppIsolated/Function.cs",
+        sourceFileName = "Function.cs",
+        goldFileName = "Function.gold"
+)
