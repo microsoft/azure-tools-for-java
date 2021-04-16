@@ -51,6 +51,12 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
             if (FunctionAppProjectDetector.IsAzureFunctionsProject(project)) 
             {
                 yield return new InAzureFunctionsProject();
+                
+                if (FunctionAppProjectDetector.DefaultWorker.HasFunctionsPackageReference(project, null))
+                    yield return new InAzureFunctionsProjectWithDefaultWorker();
+                
+                if (FunctionAppProjectDetector.IsolatedWorker.HasFunctionsPackageReference(project, null))
+                    yield return new InAzureFunctionsProjectWithIsolatedWorker();
         
                 foreach (var scope in GetLanguageSpecificScopePoints(project)) 
                     yield return scope;
@@ -61,5 +67,21 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         {
             yield break;
         }
+    }
+    
+    public class InAzureFunctionsProjectWithDefaultWorker : InAzureFunctionsProject
+    {
+        private static readonly Guid ourDefaultGuid = new Guid("1E429A05-3577-4B43-86FD-8EC8AF9C877F");
+
+        public override Guid GetDefaultUID() => ourDefaultGuid;
+        public override string PresentableShortName => "Azure Functions with Default Worker";
+    }  
+    
+    public class InAzureFunctionsProjectWithIsolatedWorker : InAzureFunctionsProject
+    {
+        private static readonly Guid ourDefaultGuid = new Guid("081BD100-484A-4FB2-AD24-B2EC16E68547");
+
+        public override Guid GetDefaultUID() => ourDefaultGuid;
+        public override string PresentableShortName => "Azure Functions with Isolated Worker (.NET 5+)";
     }
 }

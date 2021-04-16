@@ -34,23 +34,23 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
 {
     public static class FunctionAppProjectDetector
     {
-        static class DefaultWorker
+        public static class DefaultWorker
         {
-            public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.NET.Sdk.Functions");
+            public static readonly NugetId ExpectedFunctionsNuGetPackageId = new NugetId("Microsoft.NET.Sdk.Functions");
             
-            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            public static bool HasFunctionsPackageReference(IProject project, [CanBeNull] TargetFrameworkId targetFrameworkId)
             {
-                return project.GetPackagesReference(DefaultWorker.ExpectedPackage, targetFrameworkId) != null;
+                return project.GetPackagesReference(ExpectedFunctionsNuGetPackageId, targetFrameworkId) != null;
             }
         }
         
-        static class IsolatedWorker
+        public static class IsolatedWorker
         {
-            public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.Azure.Functions.Worker");
+            public static readonly NugetId ExpectedFunctionsNuGetPackageId = new NugetId("Microsoft.Azure.Functions.Worker");
             
-            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            public static bool HasFunctionsPackageReference(IProject project, [CanBeNull] TargetFrameworkId targetFrameworkId)
             {
-                return project.GetPackagesReference(IsolatedWorker.ExpectedPackage, targetFrameworkId) != null;
+                return project.GetPackagesReference(ExpectedFunctionsNuGetPackageId, targetFrameworkId) != null;
             }
         }
         
@@ -129,8 +129,16 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                 .FirstNotNull());
 
             // 2) Check expected package reference.
-            var hasExpectedPackageReference = DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
-                                              IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
+            //
+            //    Azure Functions has two types of runtimes for .NET:
+            //    * Default worker, which has a package reference to Microsoft.NET.Sdk.Functions
+            //    * Isolated worker, which has a package reference to Microsoft.Azure.Functions.Worker
+            //
+            //    The isolated worker is the way forward (.NET 5+), but the default worker will remain
+            //    for projects using .NET 3.1.
+            var hasExpectedPackageReference = 
+                DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
+                IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
 
             // 3) Check existence of host.json in the project
             var hasHostJsonFile = project
