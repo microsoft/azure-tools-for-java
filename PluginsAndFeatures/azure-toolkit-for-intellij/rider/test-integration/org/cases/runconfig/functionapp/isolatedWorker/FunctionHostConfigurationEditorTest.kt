@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.cases.runconfig.functionapp
+package org.cases.runconfig.functionapp.isolatedWorker
 
 import com.intellij.openapi.util.Disposer
 import com.jetbrains.rider.model.RunnableProjectKind
@@ -43,10 +43,10 @@ import org.testng.annotations.AfterMethod
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.DOT_NET_5)
 class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
 
-    override fun getSolutionDirectoryName(): String = "FunctionApp"
+    override fun getSolutionDirectoryName(): String = "FunctionAppIsolated"
 
     override val waitForCaches: Boolean = true
 
@@ -65,7 +65,7 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
     @Test(description = "Read default parameters for function host run configuration.")
     fun testFunctionHost_DefaultParameters() {
         val configuration = createRunConfiguration(
-                name = "Run FunctionApp",
+                name = "Run FunctionAppIsolated",
                 configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
 
@@ -74,15 +74,15 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
         editor.applyTo(configuration)
 
         val runnableProject =
-                project.solution.runnableProjectsModel.projects.valueOrNull?.find { it.name == "FunctionApp" }.shouldNotBeNull()
+                project.solution.runnableProjectsModel.projects.valueOrNull?.find { it.name == "FunctionAppIsolated" }.shouldNotBeNull()
 
         val parameters = configuration.parameters
-        parameters.project.name.shouldBe("FunctionApp")
+        parameters.project.name.shouldBe("FunctionAppIsolated")
         parameters.projectFilePath.shouldBe(runnableProject.projectFilePath)
         parameters.functionNames.shouldBeEmpty()
         parameters.isUnloadedProject.shouldBeFalse()
         parameters.projectKind.shouldBe(RunnableProjectKind.AzureFunctions)
-        parameters.projectTfm.shouldBe(".NETCoreApp,Version=v3.1")
+        parameters.projectTfm.shouldBe("net5.0")
 
         val projectOutput = runnableProject.projectOutputs.first()
         parameters.workingDirectory.shouldBe(projectOutput.workingDirectory)
@@ -106,7 +106,7 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
     @Test(description = "Read port from command arguments first and use it in URL text field.")
     fun testFunctionHost_PortInCommandlineArguments() {
         val configuration = createRunConfiguration(
-            name = "Run FunctionApp",
+            name = "Run FunctionAppIsolated",
             configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
 
@@ -133,7 +133,7 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
         prepareLocalSettingsFile()
 
         val configuration = createRunConfiguration(
-            name = "Run FunctionApp",
+            name = "Run FunctionAppIsolated",
             configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
 
@@ -154,7 +154,7 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
         prepareLocalSettingsFile()
 
         val configuration = createRunConfiguration(
-                name = "Run FunctionApp",
+                name = "Run FunctionAppIsolated",
                 configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
 
@@ -178,7 +178,7 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
         if (!source.exists()) return
 
         val localSettingFile =
-                project.solutionDirectory.resolve("FunctionApp").resolve("local.settings.json")
+                project.solutionDirectory.resolve("FunctionAppIsolated").resolve("local.settings.json")
 
         changeFileContent(project, localSettingFile) {
             source.readText()

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.cases.markup.functionapp.csharp
+package org.cases.markup.functionapp.csharp.defaultWorker
 
 import com.jetbrains.rdclient.daemon.util.attributeId
 import com.jetbrains.rdclient.testFramework.waitForDaemon

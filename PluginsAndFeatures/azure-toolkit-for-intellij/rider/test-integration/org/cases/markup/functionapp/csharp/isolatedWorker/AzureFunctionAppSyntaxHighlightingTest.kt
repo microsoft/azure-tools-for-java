@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.cases.markup.functionapp.csharp
+package org.cases.markup.functionapp.csharp.isolatedWorker
 
 import com.intellij.lang.annotation.HighlightSeverity
 import com.jetbrains.rdclient.testFramework.waitForDaemon
@@ -29,10 +29,10 @@ import com.jetbrains.rider.test.base.BaseTestWithMarkup
 import com.jetbrains.rider.test.enums.CoreVersion
 import org.testng.annotations.Test
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.DOT_NET_5)
 class AzureFunctionAppSyntaxHighlightingTest : BaseTestWithMarkup() {
 
-    override fun getSolutionDirectoryName(): String = "FunctionApp"
+    override fun getSolutionDirectoryName(): String = "FunctionAppIsolated"
 
     @Test
     fun testTimerTrigger_CronExpression_ValidNCrontabExpression() = verifySyntaxHighlighting()
@@ -60,7 +60,7 @@ class AzureFunctionAppSyntaxHighlightingTest : BaseTestWithMarkup() {
 
     private fun verifySyntaxHighlighting() =
             doTestWithMarkupModel(
-                    testFilePath = "FunctionApp/Function.cs",
+                    testFilePath = "FunctionAppIsolated/Function.cs",
                     sourceFileName = "Function.cs",
                     goldFileName = "Function.gold"
             ) {

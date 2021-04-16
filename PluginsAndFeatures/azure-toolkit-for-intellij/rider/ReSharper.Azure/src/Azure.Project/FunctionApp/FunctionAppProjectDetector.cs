@@ -1,4 +1,4 @@
-// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -34,8 +34,25 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
 {
     public static class FunctionAppProjectDetector
     {
-        private static readonly NugetId ExpectedPackageForNet50 = new NugetId("Microsoft.Azure.Functions.Worker");
-        private static readonly NugetId ExpectedPackageForOlder = new NugetId("Microsoft.NET.Sdk.Functions");
+        static class DefaultWorker
+        {
+            public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.NET.Sdk.Functions");
+            
+            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            {
+                return project.GetPackagesReference(DefaultWorker.ExpectedPackage, targetFrameworkId) != null;
+            }
+        }
+        
+        static class IsolatedWorker
+        {
+            public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.Azure.Functions.Worker");
+            
+            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            {
+                return project.GetPackagesReference(IsolatedWorker.ExpectedPackage, targetFrameworkId) != null;
+            }
+        }
         
         public static List<ProjectOutput> GetAzureFunctionsCompatibleProjectOutputs(
             [NotNull] IProject project, 
@@ -110,7 +127,8 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                 .FirstNotNull());
 
             // 2) Check expected package reference.
-            var hasExpectedPackageReference = HasFunctionsPackageReference(project, targetFrameworkId);
+            var hasExpectedPackageReference = DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
+                                              IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
 
             // 3) Check existence of host.json in the project
             var hasHostJsonFile = project
@@ -129,16 +147,6 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
             }
 
             return hasMsBuildProperty || hasExpectedPackageReference || hasHostJsonFile;
-        }
-        
-        private static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
-        {
-            // .NET 5+ requires Microsoft.Azure.Functions.Worker
-            if (targetFrameworkId.Version.Major >= 5)
-                return project.GetPackagesReference(ExpectedPackageForNet50, targetFrameworkId) != null;
-      
-            // Other frameworks need Microsoft.NET.Sdk.Functions
-            return project.GetPackagesReference(ExpectedPackageForOlder, targetFrameworkId) != null;
         }
     }
 }

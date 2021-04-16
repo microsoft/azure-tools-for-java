@@ -32,12 +32,24 @@ namespace JetBrains.ReSharper.Azure.Psi.FunctionApp
     public static class FunctionAppFinder
     {
         private static ILogger ourLogger = Logger.GetLogger(typeof(FunctionAppFinder));
-        
-        static readonly IClrTypeName FunctionNameAttributeTypeName =
-            new ClrTypeName("Microsoft.Azure.WebJobs.FunctionNameAttribute");
 
-        static readonly IClrTypeName TimerTriggerAttributeTypeName =
-            new ClrTypeName("Microsoft.Azure.WebJobs.TimerTriggerAttribute");
+        static class DefaultWorker
+        {
+            public static readonly IClrTypeName FunctionNameAttributeTypeName =
+                new ClrTypeName("Microsoft.Azure.WebJobs.FunctionNameAttribute");
+
+            public static readonly IClrTypeName TimerTriggerAttributeTypeName =
+                new ClrTypeName("Microsoft.Azure.WebJobs.TimerTriggerAttribute");
+        }
+        
+        static class IsolatedWorker
+        {
+            public static readonly IClrTypeName FunctionAttributeTypeName =
+                new ClrTypeName("Microsoft.Azure.Functions.Worker.FunctionAttribute");
+
+            public static readonly IClrTypeName TimerTriggerAttributeTypeName =
+                new ClrTypeName("Microsoft.Azure.Functions.Worker.TimerTriggerAttribute");
+        }
 
         /// <summary>
         /// Get Function Name from Attribute for a provided method or null if attribute is missing
@@ -93,13 +105,16 @@ namespace JetBrains.ReSharper.Azure.Psi.FunctionApp
         /// <returns>Flag whether type element match Function App Timer Trigger attribute type.</returns>
         public static bool IsTimerTriggerAttribute([NotNull] ITypeElement typeElement)
         {
-            return typeElement.GetClrName().Equals(TimerTriggerAttributeTypeName);
+            return typeElement.GetClrName().Equals(DefaultWorker.TimerTriggerAttributeTypeName) ||
+                   typeElement.GetClrName().Equals(IsolatedWorker.TimerTriggerAttributeTypeName);
         }
 
         [CanBeNull]
         private static IAttributeInstance GetFunctionNameAttribute([NotNull] IMethod method)
         {
-            var functionAttributes = method.GetAttributeInstances(FunctionNameAttributeTypeName, false);
+            var functionAttributes = method.GetAttributeInstances(DefaultWorker.FunctionNameAttributeTypeName, false)
+                .Union(method.GetAttributeInstances(IsolatedWorker.FunctionAttributeTypeName, false))
+                .ToList();
 
             if (functionAttributes.IsEmpty())
             {

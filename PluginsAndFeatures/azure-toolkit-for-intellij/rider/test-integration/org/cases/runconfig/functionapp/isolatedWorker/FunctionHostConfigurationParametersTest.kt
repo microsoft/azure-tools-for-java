@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.cases.runconfig.functionapp
+package org.cases.runconfig.functionapp.isolatedWorker
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.ide.util.PropertiesComponent
@@ -41,10 +41,10 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.DOT_NET_5)
 class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
-    override fun getSolutionDirectoryName(): String = "FunctionApp"
+    override fun getSolutionDirectoryName(): String = "FunctionAppIsolated"
 
     override val waitForCaches: Boolean = true
 
@@ -216,7 +216,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
     fun testValidate_TrackProjectWorkingDirectory_NotADirectory() {
         val projectFilePath = File("/project/file/path").absolutePath
 
-        val workingDirectoryFile = tempTestDirectory.resolve("FunctionApp.dll")
+        val workingDirectoryFile = tempTestDirectory.resolve("FunctionAppIsolated.dll")
         workingDirectoryFile.createNewFile()
 
         val parameters = createParameters(
