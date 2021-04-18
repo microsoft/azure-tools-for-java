@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dotnet-sdk-3.1
+# Install dotnet-sdk-5.0
 RUN wget -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg \
     && mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/ \
     && wget https://packages.microsoft.com/config/debian/9/prod.list \
@@ -26,7 +26,7 @@ RUN wget -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
     
 RUN apt-get update \
     && apt-get update \
-    && apt-get install -y dotnet-sdk-3.1
+    && apt-get install -y dotnet-sdk-5.0
 
 # Install Mono
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
