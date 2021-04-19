@@ -26,6 +26,7 @@ RUN wget -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
     
 RUN apt-get update \
     && apt-get update \
+    && apt-get install -y dotnet-sdk-3.1 \
     && apt-get install -y dotnet-sdk-5.0
 
 # Install Mono
