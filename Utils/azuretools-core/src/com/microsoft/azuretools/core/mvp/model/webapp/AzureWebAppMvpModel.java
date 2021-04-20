@@ -30,6 +30,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
@@ -1000,14 +1001,21 @@ public class AzureWebAppMvpModel {
                 .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
                 .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1])).build();
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
-        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
+        final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
+                .enableApplicationLog(model.isEnableApplicationLog())
+                .applicationLogLevel(com.microsoft.azure.toolkit.lib.appservice.model.LogLevel.fromString(model.getApplicationLogLevel()))
+                .enableWebServerLogging(model.isEnableWebServerLogging())
+                .webServerLogQuota(model.getWebServerLogQuota())
+                .webServerRetentionPeriod(model.getWebServerRetentionPeriod())
+                .enableDetailedErrorMessage(model.isEnableDetailedErrorMessage())
+                .enableFailedRequestTracing(model.isEnableFailedRequestTracing()).build();
+        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
                 .withRuntime(model.getRuntime())
+                .withDiagnosticConfig(diagnosticConfig)
                 .commit();
-        updateWebAppDiagnosticConfiguration(result, model);
-        return result;
     }
 
     // todo: Move duplicated codes to azure common library
@@ -1035,31 +1043,6 @@ public class AzureWebAppMvpModel {
                 .withPricingTier(servicePlanEntity.getPricingTier())
                 .withOperatingSystem(servicePlanEntity.getOperatingSystem())
                 .commit();
-    }
-
-    /**
-     * Update web app diagnostic settings with track2 SDK
-     * todo: move to app service library
-     */
-    public void updateWebAppDiagnosticConfiguration(@NotNull IWebApp webApp, @NotNull WebAppSettingModel model) {
-        final AzureResourceManager azureResourceManager =
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
-        com.azure.resourcemanager.appservice.models.WebApp.Update update = azureResourceManager.webApps().getById(webApp.id()).update();
-        if (model.isEnableApplicationLog()) {
-            update = (com.azure.resourcemanager.appservice.models.WebApp.Update) update.updateDiagnosticLogsConfiguration()
-                    .withApplicationLogging()
-                    .withLogLevel(com.azure.resourcemanager.appservice.models.LogLevel.fromString(model.getApplicationLogLevel().toString()))
-                    .withApplicationLogsStoredOnFileSystem().parent();
-        }
-        if (model.isEnableWebServerLogging()) {
-            update = (com.azure.resourcemanager.appservice.models.WebApp.Update) update.updateDiagnosticLogsConfiguration().withWebServerLogging()
-                    .withWebServerLogsStoredOnFileSystem()
-                    .withWebServerFileSystemQuotaInMB(model.getWebServerLogQuota())
-                    .withLogRetentionDays(model.getWebServerRetentionPeriod())
-                    .withDetailedErrorMessages(model.isEnableDetailedErrorMessage())
-                    .withFailedRequestTracing(model.isEnableFailedRequestTracing()).parent();
-        }
-        update.apply();
     }
 
     /**
