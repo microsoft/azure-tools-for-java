@@ -448,7 +448,8 @@ public class AzureWebAppMvpModel {
                 .image(pr.getImageTagWithServerUrl())
                 .registryUrl(pr.getServerUrl())
                 .userName(pr.getUsername())
-                .password(pr.getPassword()).build();
+                .password(pr.getPassword())
+                .startUpCommand(pr.getStartupFile()).build();
         return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
@@ -509,7 +510,8 @@ public class AzureWebAppMvpModel {
                     .image(pr.getImageTagWithServerUrl())
                     .registryUrl(pr.getServerUrl())
                     .userName(pr.getUsername())
-                    .password(pr.getPassword()).build();
+                    .password(pr.getPassword())
+                    .startUpCommand(pr.getStartupFile()).build();
             app.update().withDockerConfiguration(dockerConfiguration).commit();
         }
         // status-free restart.
