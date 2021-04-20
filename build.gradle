@@ -50,14 +50,16 @@ ext.maven = { Closure mavenClosure ->
 }
 
 task buildToolkitsLib {
-    def tempDir = File.createTempDir()
-    tempDir.deleteOnExit()
+    doLast {
+        logger.info('Building Toolkits Lib ...')
+        def tempDir = File.createTempDir()
+        tempDir.deleteOnExit()
+        Grgit.clone(dir: file(tempDir), uri: 'https://github.com/microsoft/azure-maven-plugins.git')
 
-    Grgit.clone(dir: file(tempDir), uri: 'https://github.com/microsoft/azure-maven-plugins.git')
-
-    maven {
-        goals = "install"
-        pom = file("${tempDir}/azure-toolkit-libs/pom.xml")
+        maven {
+            goals = "install"
+            pom = file("${tempDir}/azure-toolkit-libs/pom.xml")
+        }
     }
 }
 

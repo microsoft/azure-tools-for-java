@@ -56,24 +56,26 @@ public enum WhatsNewManager {
             final DefaultArtifactVersion shownVersion = getLastWhatsNewVersion();
             if (force || !isDocumentShownBefore(whatsNewVersion, shownVersion)) {
                 saveWhatsNewVersion(whatsNewVersion);
-                createAndShowWhatsNew(project, fileEditorManager, content);
+                createAndShowWhatsNew(fileEditorManager, content);
             }
         }
     }
 
-    private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content) {
+    private void createAndShowWhatsNew(FileEditorManager fileEditorManager, String content) {
         final LightVirtualFile virtualFile = new LightVirtualFile(AZURE_TOOLKIT_FOR_JAVA);
         virtualFile.setLanguage(Language.findLanguageByID("Markdown"));
         virtualFile.setContent(null, content, true);
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
         virtualFile.setWritable(false);
         AzureTaskManager.getInstance().runAndWait(() -> {
+            if (fileEditorManager.getProject().isDisposed()) {
+                return;
+            }
             final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
             for (FileEditor fileEditor : fileEditors) {
                 if (fileEditor instanceof MarkdownSplitEditor) {
                     // Switch to markdown preview panel
-                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND,
-                                                                           true);
+                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND, true);
                 }
             }
         });
