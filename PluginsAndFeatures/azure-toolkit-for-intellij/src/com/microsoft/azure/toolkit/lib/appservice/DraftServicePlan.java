@@ -12,6 +12,7 @@ import com.microsoft.azure.management.appservice.implementation.AppServiceManage
 import com.microsoft.azure.management.appservice.implementation.AppServicePlanInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import lombok.Builder;

@@ -1,0 +1,23 @@
+<idea-plugin>
+    <extensionPoints>
+    </extensionPoints>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorStartupActivity"/>
+        <projectService
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />
+        <applicationService
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ResourceManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
+        <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration" id="ConnectionRunnerForConfigurationId"/>
+        <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$MyRunConfigurationExtension"/>
+    </extensions>
+    <actions>
+        <action
+            id="AzureToolkit.ConnectToAzureResource"
+            class="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectorAction"
+            text="Connect to Azure Resource"
+            icon="/icons/Connector/connect.svg"
+            description="To consume azure resources in your project"/>
+    </actions>
+</idea-plugin>
