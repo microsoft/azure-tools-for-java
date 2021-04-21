@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021 JetBrains s.r.o.
+﻿// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -35,7 +35,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         public override IEnumerable<ITemplateScopePoint> BuildAllPoints()
         {
             yield return new InAzureFunctionsFSharpProject();
-            yield return new InAzureFunctionsProjectWithDefaultWorker();
+            yield return new MustUseAzureFunctionsDefaultWorker();
         }
 
         public override string CategoryCaption => "Azure (F#)";

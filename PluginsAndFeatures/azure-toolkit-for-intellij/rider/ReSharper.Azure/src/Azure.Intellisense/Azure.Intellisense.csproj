@@ -8,12 +8,26 @@
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Rider.SDK" Version="$(RiderSDKVersion)" />
+        <PackageReference Include="CitizenMatt.ReSharper.LiveTemplateCompiler" Version="3.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Azure.Project\Azure.Project.csproj" />
       <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="Live templates">
+        <LiveTemplate Include="Templates\**\*.md">
+            <OutputFile>Templates\templates.generated.dotSettings</OutputFile>
+            <ReadmeFile>Templates\README.md</ReadmeFile>
+        </LiveTemplate>
+        <EmbeddedResource Include="Templates\templates.generated.dotSettings">
+            <LogicalName>JetBrains.ReSharper.Azure.Templates.templates.dotSettings</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

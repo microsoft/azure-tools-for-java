@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020-2021 JetBrains s.r.o.
+﻿// Copyright (c) 2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -18,28 +18,26 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections.Generic;
-using JetBrains.Application.UI.Icons.CommonThemedIcons;
-using JetBrains.ReSharper.Feature.Services.LiveTemplates.Scope;
+using System.IO;
+using System.Reflection;
+using JetBrains.Application;
+using JetBrains.Application.Settings;
+using JetBrains.Diagnostics;
+using JetBrains.Lifetimes;
 
-namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
+namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Settings
 {
-    // ReSharper disable once InconsistentNaming
-    [ScopeCategoryUIProvider(Priority = -40, ScopeFilter = ScopeFilter.Project)]
-    public class AzureCSharpProjectScopeCategoryUIProvider : ScopeCategoryUIProvider
+    [ShellComponent]
+    public class AzureTemplatesDefaultSettings : IHaveDefaultSettingsStream
     {
-        public AzureCSharpProjectScopeCategoryUIProvider(): base(CommonThemedIcons.DotNet.Id)
+        public Stream GetDefaultSettingsStream(Lifetime lifetime)
         {
-            MainPoint = new InAzureFunctionsCSharpProject();
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("JetBrains.ReSharper.Azure.Templates.templates.dotSettings");
+            Assertion.AssertNotNull(stream, "stream should not be null");
+            lifetime.AddDispose(stream);
+            return stream;
         }
 
-        public override IEnumerable<ITemplateScopePoint> BuildAllPoints()
-        {
-            yield return new InAzureFunctionsCSharpProject();
-            yield return new MustUseAzureFunctionsDefaultWorker();
-            yield return new MustUseAzureFunctionsIsolatedWorker();
-        }
-
-        public override string CategoryCaption => "Azure (C#)";
+        public string Name => "Azure default templates";
     }
 }

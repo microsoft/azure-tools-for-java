@@ -37,6 +37,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.jetbrains.rd.platform.util.application
+import com.jetbrains.rd.util.firstOrNull
 import com.jetbrains.rider.nuget.RiderNuGetHost
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getId
@@ -62,19 +63,30 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
             else -> false
         }
 
-        private val knownMarkerWords = listOf(
-                "FunctionName",
-                "Microsoft.Azure.WebJobs")
+        private val markerToTriggerMap = mapOf(
+                // Default worker
+                "Microsoft.Azure.WebJobs" to mapOf(
+                        "BlobTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4"),
+                        "QueueTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4"),
+                        "CosmosDBTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.5"),
+                        "OrchestrationTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "2.1.1"),
+                        "EventGridTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "2.1.0"),
+                        "EventHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1"),
+                        "IoTHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1"),
+                        "ServiceBusTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "4.1.0")
+                ),
 
-        private val triggerMap = mapOf(
-            Pair("BlobTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4")),
-            Pair("QueueTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4")),
-            Pair("CosmosDBTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.5")),
-            Pair("OrchestrationTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "2.1.1")),
-            Pair("EventGridTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "2.1.0")),
-            Pair("EventHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1")),
-            Pair("IoTHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1")),
-            Pair("ServiceBusTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "4.1.0"))
+                // Isolated worker
+                "Microsoft.Azure.Functions.Worker" to mapOf(
+                        "BlobTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage", "4.0.4"),
+                        "QueueTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage", "4.0.4"),
+                        "CosmosDBTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.CosmosDB", "3.0.9"),
+                        "EventGridTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.EventGrid", "2.1.0"),
+                        "EventHubTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.EventHubs", "4.2.0"),
+                        "HttpTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Http", "3.0.12"),
+                        "ServiceBusTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.ServiceBus", "4.2.1"),
+                        "TimerTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Timer", "4.0.1")
+                )
         )
     }
 
@@ -103,10 +115,11 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                         application.invokeLater {
                             application.runReadAction {
                                 var keepMarker = false
-                                val text = LoadTextUtil.loadText(file, 4096)
+                                val fileContent = LoadTextUtil.loadText(file, 4096)
 
                                 // Check for known marker words
-                                if (knownMarkerWords.any { text.contains(it, true) }) {
+                                val knownMarker = markerToTriggerMap.filter { fileContent.contains(it.key, true) }.firstOrNull()
+                                if (knownMarker != null) {
                                     // Determine project(s) to install into
                                     val installableProjects = WorkspaceModel.getInstance(project)
                                             .getProjectModelEntities(file, project)
@@ -117,8 +130,8 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                                     }
 
                                     // For every known trigger name, verify required dependencies are installed
-                                    for ((triggerName, dependency) in triggerMap) {
-                                        if (text.contains(triggerName, true)) {
+                                    for ((triggerName, dependency) in knownMarker.value) {
+                                        if (fileContent.contains(triggerName, true)) {
                                             for (installableProject in installableProjects) {
                                                 val riderNuGetFacade = RiderNuGetHost.getInstance(project)
                                                         .facade
