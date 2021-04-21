@@ -129,7 +129,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     private void swap() {
         // todo: add swap method to app service library
         final AzureResourceManager resourceManager = Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
-        resourceManager.webApps().getById(webApp.id()).swap(slot.hostName());
+        resourceManager.webApps().getById(webApp.id()).swap(slot.name());
     }
 
     @AzureOperation(name = ActionConstants.WebApp.DeploymentSlot.OPEN_IN_BROWSER, type = AzureOperation.Type.ACTION)
