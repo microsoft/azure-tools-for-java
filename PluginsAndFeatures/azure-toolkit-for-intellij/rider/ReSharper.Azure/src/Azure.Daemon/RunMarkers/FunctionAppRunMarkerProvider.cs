@@ -40,7 +40,10 @@ namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
         public void CollectRunMarkers(IFile file, IContextBoundSettingsStore settings, IHighlightingConsumer consumer)
         {
             if (!(file is ICSharpFile csharpFile)) return;
-            if (!FunctionAppProjectDetector.IsAzureFunctionsProject(file.GetProject())) return;
+
+            var project = file.GetProject();
+            if (project == null || !project.IsValid()) return;
+            if (!FunctionAppProjectDetector.IsAzureFunctionsProject(project)) return;
 
             foreach (var declaration in CachedDeclarationsCollector.Run<IMethodDeclaration>(csharpFile))
             {
@@ -52,7 +55,8 @@ namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
                 var highlighting = new RunMarkerHighlighting(
                     method: declaration.DeclaredElement,
                     declaration: declaration,
-                    attributeId: FunctionAppRunMarkerAttributeIds.FUNCTION_APP_RUN_METHOD_MARKER_ID, range: range,
+                    attributeId: FunctionAppRunMarkerAttributeIds.FUNCTION_APP_RUN_METHOD_MARKER_ID,
+                    range: range,
                     targetFrameworkId: file.GetPsiModule().TargetFrameworkId);
 
                 consumer.AddHighlighting(highlighting, range);
