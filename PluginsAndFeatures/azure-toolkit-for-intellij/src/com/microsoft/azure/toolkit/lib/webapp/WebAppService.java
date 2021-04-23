@@ -5,10 +5,6 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.toolkit.lib.appservice.Draft;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
@@ -19,11 +15,12 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.telemetrywrapper.*;
-import org.apache.commons.compress.utils.FileNameUtils;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
