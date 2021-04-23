@@ -144,11 +144,12 @@ configurations {
 apply plugin: 'java'
 
 dependencies {
+    compile 'com.nimbusds:oauth2-oidc-sdk:7.1.1', { force = true }
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
     compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.3.3.RELEASE'
-    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.4.0'
     compile "com.github.akarnokd:rxjava3-interop:3.0.2"
+    compile project(':azure-intellij-resource-connector-lib')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.7'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
@@ -157,6 +158,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
     compile 'com.microsoft.azure:azure-toolkit-springcloud-lib:0.6.0-SNAPSHOT', { force = true }
+    aspect "com.microsoft.azure:azure-toolkit-auth-lib:0.6.0-SNAPSHOT"
     aspect "com.microsoft.azure:azure-toolkit-common-lib:0.6.0-SNAPSHOT"
     compile 'com.microsoft.azuretools:azuretools-core:3.52.0-SNAPSHOT', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
@@ -173,7 +175,6 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.6.0'
     compile 'com.microsoft.azure:azure-tools-common:0.10.2'
     compile group: 'com.microsoft.azure.appplatform.v2020_07_01', name: 'azure-mgmt-appplatform', version: '1.0.0-beta'
     compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3', {

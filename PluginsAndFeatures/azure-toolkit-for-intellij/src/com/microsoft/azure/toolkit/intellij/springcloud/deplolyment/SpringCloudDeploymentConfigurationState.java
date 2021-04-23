@@ -25,7 +25,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.Spring
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -51,7 +50,6 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<AppRe
         this.config = configuration;
     }
 
-    @Nullable
     @Override
     public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         // TODO: https://dev.azure.com/mseng/VSJava/_workitems/edit/1812811

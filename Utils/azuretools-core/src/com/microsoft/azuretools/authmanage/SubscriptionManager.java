@@ -13,6 +13,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.Pair;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,7 @@ public class SubscriptionManager {
     private final Set<ISubscriptionSelectionListener> listeners = new HashSet<>();
     protected final AzureManager azureManager;
 
-    // for user to select subscr to work with
+    // for user to select subscription to work with
     private List<SubscriptionDetail> subscriptionDetails; // NOTE: This one should be retired in future.
     private Map<String, SubscriptionDetail> subscriptionIdToSubscriptionDetailMap;
     protected Map<String, Subscription> subscriptionIdToSubscriptionMap = new ConcurrentHashMap<>();
@@ -85,13 +86,14 @@ public class SubscriptionManager {
         System.out.println("Getting subscription list from Azure");
         subscriptionIdToSubscriptionMap.clear();
         List<SubscriptionDetail> sdl = new ArrayList<>();
+        List<String> selectedSubscriptionIds = azureManager.getSelectedSubscriptionIds();
         List<Pair<Subscription, Tenant>> stpl = azureManager.getSubscriptionsWithTenant();
         for (Pair<Subscription, Tenant> stp : stpl) {
             sdl.add(new SubscriptionDetail(
                     stp.first().subscriptionId(),
                     stp.first().displayName(),
                     stp.second().tenantId(),
-                    true));
+                    selectedSubscriptionIds.contains(stp.first().subscriptionId()) || CollectionUtils.isEmpty(selectedSubscriptionIds)));
             // WORKAROUND: update sid->subscription map at the same time
             subscriptionIdToSubscriptionMap.put(stp.first().subscriptionId(), stp.first());
         }

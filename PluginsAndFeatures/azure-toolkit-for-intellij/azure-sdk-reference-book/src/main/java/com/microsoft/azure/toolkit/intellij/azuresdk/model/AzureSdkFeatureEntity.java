@@ -6,24 +6,38 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureSdkFeatureEntity {
+    @Nullable
     private String id;
+    @Nonnull
     private String name;
-    private String description;
+    @Builder.Default
+    private String description = "";
+    @Nullable
     private String msdocs;
-    private List<AzureSdkArtifactEntity> artifacts;
+    @Nullable
+    private ArtifactRef clientSource;
+    @Builder.Default
+    private List<AzureSdkArtifactEntity> artifacts = new ArrayList<>();
 
     public String toString() {
         return this.name;
@@ -31,5 +45,13 @@ public class AzureSdkFeatureEntity {
 
     public List<AzureSdkArtifactEntity> getArtifacts(String type) {
         return this.artifacts.stream().filter(a -> Objects.equals(a.getType(), type)).collect(Collectors.toList());
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ArtifactRef {
+        private String groupId;
+        private String artifactId;
     }
 }

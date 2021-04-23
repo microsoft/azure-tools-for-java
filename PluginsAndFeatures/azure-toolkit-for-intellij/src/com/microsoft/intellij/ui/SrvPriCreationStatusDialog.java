@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.srvpri.SrvPriManager;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
-import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +42,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     private String selectedAuthFilePath;
     private Project project;
-    private final AccessTokenAzureManager preAccessTokenAzureManager;
+    private final IdentityAzureManager preAccessTokenAzureManager;
 
     public String getSelectedAuthFilePath() {
         return selectedAuthFilePath;
@@ -54,7 +54,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     DefaultListModel<String> filesListModel = new DefaultListModel<String>();
 
-    public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
+    public static SrvPriCreationStatusDialog go(IdentityAzureManager preAccessTokenAzureManager,
                                                 Map<String, List<String>> tidSidsMap,
                                                 String destinationFolder,
                                                 Project project) {
@@ -69,7 +69,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         return null;
     }
 
-    private SrvPriCreationStatusDialog(AccessTokenAzureManager preAccessTokenAzureManager, Project project) {
+    private SrvPriCreationStatusDialog(IdentityAzureManager preAccessTokenAzureManager, Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.preAccessTokenAzureManager = preAccessTokenAzureManager;
         this.project = project;
@@ -87,7 +87,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         statusTableModel.addColumn("Details");
 
         statusTable.setModel(statusTableModel);
-        statusTable.setAutoResizeMode( JTable.AUTO_RESIZE_LAST_COLUMN );
+        statusTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         TableColumn column = statusTable.getColumnModel().getColumn(0);
         column = statusTable.getColumnModel().getColumn(1);
         column.setMinWidth(110);
@@ -154,7 +154,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                             statusTableModel.fireTableDataChanged();
                         });
                         Date now = new Date();
-                        String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(now);;
+                        String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(now);
                         final String authFilepath = SrvPriManager.createSp(
                                 preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
                         if (authFilepath != null) {
@@ -221,4 +221,3 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         super.show();
     }
 }
-
