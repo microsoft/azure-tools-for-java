@@ -5,7 +5,6 @@
 
 package com.microsoft.intellij.ui;
 
-import com.azure.core.management.AzureEnvironment;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -22,7 +21,6 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.core.devicecode.DeviceCodeAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
@@ -314,8 +312,6 @@ public class SignInWindow extends AzureDialogWrapper {
             }
             final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
             final AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-            AzureEnvironment env = AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName());
-            com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class).set(env);
             final Account account = az.loginAsync(AuthType.DEVICE_CODE, true).block();
             Disposable subscribe = account.continueLogin().doOnCancel(() -> {
                 deviceCodeLoginFuture.completeExceptionally(new IllegalStateException("user cancel"));

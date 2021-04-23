@@ -10,7 +10,9 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -59,6 +61,10 @@ public class AuthMethodManager {
             Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
             HttpClientProviders.createInstance();
             com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+            if (CommonSettings.getEnvironment() != null) {
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class)
+                                                     .set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(current);
         }
@@ -237,7 +243,6 @@ public class AuthMethodManager {
                     targetAuthMethodDetails = new AuthMethodDetails();
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 } else {
-                    targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                     // convert old auth method to new ones
                     switch (targetAuthMethodDetails.getAuthMethod()) {
                         case AZ: {
@@ -258,6 +263,7 @@ public class AuthMethodManager {
                         default:
                             break;
                     }
+                    targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
                 List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()

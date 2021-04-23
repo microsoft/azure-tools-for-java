@@ -13,7 +13,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.intellij.ui.SignInWindow;
@@ -30,7 +29,6 @@ import rx.Single;
 
 import javax.swing.*;
 
-import static com.microsoft.azuretools.authmanage.AuthMethod.AZ;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 
@@ -105,7 +103,7 @@ public class AzureSignInAction extends AzureAnAction {
                 break;
         }
         return String.format("%s\nDo you really want to sign out? %s",
-                warningMessage, authType== AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "");
+                warningMessage, authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "");
     }
 
     public static void onAzureSignIn(Project project) {
