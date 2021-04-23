@@ -20,6 +20,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -103,11 +104,9 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
 
     @Override
     public void renderChildren(@NotNull final List<IWebApp> resourceExes) {
-        for (final IWebApp webApp : resourceExes) {
-            final String subscriptionId = Utils.getSubscriptionId(webApp.id());
-            final WebAppNode node = new WebAppNode(this, subscriptionId, webApp);
-
-            addChildNode(node);
-        }
+        resourceExes.parallelStream()
+                .filter(webApp -> StringUtils.isNotEmpty(webApp.id()))
+                .map(webApp -> new WebAppNode(this, Utils.getSubscriptionId(webApp.id()), webApp))
+                .forEach(this::addChildNode);
     }
 }
