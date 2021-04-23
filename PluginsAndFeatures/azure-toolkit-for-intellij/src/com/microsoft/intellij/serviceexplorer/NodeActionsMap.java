@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAct
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.MySQLConnectToServerAction;
+import com.microsoft.azure.toolkit.intellij.connector.mysql.ConnectToMySQLAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.azure.toolkit.intellij.appservice.action.ProfileFlightRecordAction;
@@ -25,7 +26,6 @@ import com.microsoft.azure.toolkit.intellij.arm.action.ExportParameterAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.ExportTemplateAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.action.PushToContainerRegistryAction;
-import com.microsoft.azure.toolkit.intellij.mysql.action.LinkMySQLAction;
 import com.microsoft.azure.toolkit.intellij.redis.action.CreateRedisCacheAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
@@ -118,7 +118,7 @@ public class NodeActionsMap {
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
 
         node2Actions.put(MySQLNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(MySQLConnectToServerAction.class).add(LinkMySQLAction.class).build());
+                .add(MySQLConnectToServerAction.class).add(ConnectToMySQLAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)

@@ -19,5 +19,6 @@ public class Constants {
     public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AT = "subscriptionsDetails-at.json";
     public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_SP = "subscriptionsDetails-sp.json";
     public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ = "subscriptionsDetails-az.json";
+    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_IDENTITY = "subscriptionsDetails-identity.json";
     public static final String FILE_NAME_SURVEY_CONFIG = "SurveyConfig.json";
 }

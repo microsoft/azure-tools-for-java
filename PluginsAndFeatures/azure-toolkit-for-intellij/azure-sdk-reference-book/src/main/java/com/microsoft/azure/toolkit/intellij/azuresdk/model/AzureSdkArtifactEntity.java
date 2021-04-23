@@ -29,7 +29,7 @@ public class AzureSdkArtifactEntity {
     public String getDependencySnippet(DependencyType type, String version) {
         final String strType = type.getName().toLowerCase();
         if (Objects.nonNull(dependencyPattern) && dependencyPattern.containsKey(strType)) {
-            return dependencyPattern.get(strType);
+            return dependencyPattern.get(strType).replace("${azure.version}", version);
         }
         return getDefaultDependencySnippet(type, version);
     }

@@ -5,52 +5,34 @@
 
 package com.microsoft.intellij.ui;
 
+import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.microsoft.aad.adal4j.AdalErrorCode;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationException;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Toolkit;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private static final String TITLE = "Azure Device Login";
     private JPanel panel;
     private JEditorPane editorPanel;
-    private AuthenticationResult authenticationResult = null;
-    private Future<?> authExecutor;
-    private final DeviceCode deviceCode;
+    private DeviceCodeInfo deviceCode;
+    private IDeviceLoginUI deviceLoginUI;
 
-    public AuthenticationResult getAuthenticationResult() {
-        return authenticationResult;
-    }
 
-    public DeviceLoginWindow(final AuthenticationContext ctx, final DeviceCode deviceCode,
-                             final AuthenticationCallback<AuthenticationResult> callBack) {
+    public DeviceLoginWindow(DeviceCodeInfo deviceCode, IDeviceLoginUI deviceLoginUI) {
         super(null, false, IdeModalityType.PROJECT);
         super.setOKButtonText("Copy&&Open");
         this.deviceCode = deviceCode;
+        this.deviceLoginUI = deviceLoginUI;
         setModal(true);
         setTitle(TITLE);
         editorPanel.setBackground(panel.getBackground());
@@ -70,40 +52,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
             editorPanel.setForeground(foregroundColor);
         }
 
-        authExecutor = ApplicationManager.getApplication()
-            .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
         init();
-    }
-
-    private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
-                                          final AuthenticationCallback<AuthenticationResult> callback) {
-        final long interval = deviceCode.getInterval();
-        long remaining = deviceCode.getExpiresIn();
-        // Close adal logger for it will write useless error log
-        // for issue #2368 https://github.com/Microsoft/azure-tools-for-java/issues/2368
-        Logger authLogger = Logger.getLogger(AuthenticationContext.class);
-        Level authLoggerLevel = authLogger.getLevel();
-        authLogger.setLevel(Level.OFF);
-        try {
-            while (remaining > 0 && authenticationResult == null) {
-                try {
-                    remaining -= interval;
-                    Thread.sleep(interval * 1000);
-                    authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
-                } catch (ExecutionException | InterruptedException e) {
-                    if (e.getCause() instanceof AuthenticationException &&
-                        ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
-                        // swallow the pending exception
-                    } else {
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            }
-        } finally {
-            authLogger.setLevel(authLoggerLevel);
-        }
-        closeDialog();
     }
 
     private String createHtmlFormatMessage() {
@@ -115,12 +64,6 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     }
 
     @Override
-    public void doCancelAction() {
-        authExecutor.cancel(true);
-        super.doCancelAction();
-    }
-
-    @Override
     protected void doOKAction() {
         final StringSelection selection = new StringSelection(deviceCode.getUserCode());
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -128,7 +71,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         BrowserUtil.open(deviceCode.getVerificationUrl());
     }
 
-    private void closeDialog() {
+    @Override
+    public void doCancelAction() {
+        deviceLoginUI.cancel();
+        super.doCancelAction();
+    }
+    public void closeDialog() {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));

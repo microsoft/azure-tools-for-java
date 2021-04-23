@@ -11,6 +11,7 @@ import com.microsoft.azure.management.resources.ResourceGroupExportTemplateOptio
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.implementation.ResourceGroupInner;
+import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.rest.ServiceCallback;

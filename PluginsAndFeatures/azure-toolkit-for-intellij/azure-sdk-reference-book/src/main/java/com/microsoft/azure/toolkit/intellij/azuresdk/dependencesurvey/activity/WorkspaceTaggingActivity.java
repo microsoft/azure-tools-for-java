@@ -11,7 +11,7 @@ import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.WorkspaceTaggingService;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
-import com.microsoft.azure.toolkit.lib.common.telemetry.Telemetry;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,6 +68,6 @@ public class WorkspaceTaggingActivity implements StartupActivity.DumbAware {
         properties.put(SERVICE_NAME, SYSTEM);
         properties.put(OPERATION_NAME, WORKSPACE_TAGGING);
         properties.put(TAG, StringUtils.join(tagSet, ","));
-        AzureTelemeter.log(Telemetry.Type.INFO, properties);
+        AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
     }
 }

@@ -5,65 +5,89 @@
 
 package com.microsoft.azuretools.authmanage;
 
-
+import com.azure.core.implementation.http.HttpClientProviders;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class AuthMethodManager {
     private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
-    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. " +
-            "Please check if you have already signed in.";
-    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. " +
-            "Please check if you have already signed in with this Subscription.";
-    private static final String FAILED_TO_GET_AZURE_MANAGER_INSTANCE = "Failed to get an AzureManager instance " +
-            "for AuthMethodDetails: %s with error %s";
-
     private AuthMethodDetails authMethodDetails;
-    private volatile AzureManager azureManager;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
+    private final CompletableFuture<Boolean> initFuture = new CompletableFuture();
+    private final IdentityAzureManager identityAzureManager = IdentityAzureManager.getInstance();
 
-    private AuthMethodManager(AuthMethodDetails authMethodDetails) {
-        this.authMethodDetails = authMethodDetails;
-        final AzureManager manager = getAzureManager();
-        // initialize subscription manager when restore authentication
-        if (this.authMethodDetails.getAuthMethod() != null && Objects.nonNull(manager)) {
-            manager.getSubscriptionManager().updateSubscriptionDetailsIfNull();
+    static {
+        // fix the class load problem for intellij plugin
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
+            HttpClientProviders.createInstance();
+            com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
+    }
+
+    private static class LazyHolder {
+        static final AuthMethodManager INSTANCE = new AuthMethodManager();
     }
 
     public static AuthMethodManager getInstance() {
         return LazyHolder.INSTANCE;
     }
 
+    private AuthMethodManager() {
+        Mono.fromCallable(() -> {
+            try {
+                initAuthMethodManagerFromSettings();
+            } catch (Throwable ex) {
+                LOGGER.warning("Cannot restore login due to error: " + ex.getMessage());
+            }
+            return true;
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
+    }
+
     @NotNull
     @AzureOperation(
-        name = "common|rest_client.create",
-        params = {"sid"},
-        type = AzureOperation.Type.TASK
+            name = "common|rest_client.create",
+            params = {"sid"},
+            type = AzureOperation.Type.TASK
     )
     public Azure getAzureClient(String sid) {
         final AzureManager manager = getAzureManager();
@@ -145,18 +169,25 @@ public class AuthMethodManager {
 
     @Nullable
     public AzureManager getAzureManager() {
-        return getAzureManager(getAuthMethod());
+        waitInitFinish();
+        if (!this.isSignedIn()) {
+            return null;
+        }
+        return identityAzureManager;
     }
 
     @AzureOperation(name = "account.sign_out", type = AzureOperation.Type.TASK)
     @CacheEvict(CacheEvict.ALL) // evict all caches on signing out
     public void signOut() {
+        waitInitFinish();
+        identityAzureManager.drop();
         cleanAll();
         notifySignOutEventListener();
     }
 
     public boolean isSignedIn() {
-        return azureManager != null;
+        waitInitFinish();
+        return identityAzureManager != null && identityAzureManager.isSignedIn();
     }
 
     public AuthMethod getAuthMethod() {
@@ -169,10 +200,28 @@ public class AuthMethodManager {
 
     @AzureOperation(name = "account|auth_setting.update", type = AzureOperation.Type.TASK)
     public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) {
+        waitInitFinish();
         cleanAll();
         this.authMethodDetails = authMethodDetails;
+        persistAuthMethodDetails();
+
+    }
+
+    private synchronized void cleanAll() {
+        waitInitFinish();
+        identityAzureManager.getSubscriptionManager().cleanSubscriptions();
+        authMethodDetails = new AuthMethodDetails();
+        persistAuthMethodDetails();
+    }
+
+    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
+    public void persistAuthMethodDetails() {
+        waitInitFinish();
         try {
-            persistAuthMethodDetails();
+            System.out.println("saving authMethodDetails...");
+            String sd = JsonHelper.serialize(authMethodDetails);
+            FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
+            fs.write(sd.getBytes(StandardCharsets.UTF_8));
         } catch (final IOException e) {
             final String error = "Failed to persist auth method settings while updating";
             final String action = "Retry later";
@@ -180,70 +229,56 @@ public class AuthMethodManager {
         }
     }
 
-    private synchronized @Nullable AzureManager getAzureManager(final AuthMethod authMethod) {
-        if (authMethod == null) {
-            return null;
-        }
-        if (azureManager == null) {
+    private void initAuthMethodManagerFromSettings() {
+        EventUtil.executeWithLog(ACCOUNT, RESIGNIN, operation -> {
             try {
-                azureManager = authMethod.createAzureManager(getAuthMethodDetails());
-            } catch (RuntimeException ex) {
-                LOGGER.info(String.format(FAILED_TO_GET_AZURE_MANAGER_INSTANCE, getAuthMethodDetails(), ex.getMessage()));
-                cleanAll();
-            }
-        }
-        return azureManager;
-    }
-
-    private synchronized void cleanAll() {
-        if (azureManager != null) {
-            azureManager.drop();
-            azureManager.getSubscriptionManager().cleanSubscriptions();
-            azureManager = null;
-        }
-        ServicePrincipalAzureManager.cleanPersist();
-        authMethodDetails.setAccountEmail(null);
-        authMethodDetails.setAzureEnv(null);
-        authMethodDetails.setAuthMethod(null);
-        authMethodDetails.setCredFilePath(null);
-        try {
-            persistAuthMethodDetails();
-        } catch (final IOException e) {
-            final String error = "Failed to persist local auth method settings while cleaning";
-            final String action = "Retry later";
-            throw new AzureToolkitRuntimeException(error, e, action);
-        }
-    }
-
-    @AzureOperation(name = "account|auth_setting.persist", type = AzureOperation.Type.TASK)
-    private void persistAuthMethodDetails() throws IOException {
-        System.out.println("saving authMethodDetails...");
-        String sd = JsonHelper.serialize(authMethodDetails);
-        FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
-        fs.write(sd.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private static class LazyHolder {
-        static final AuthMethodManager INSTANCE = initAuthMethodManagerFromSettings();
-    }
-
-    private static AuthMethodManager initAuthMethodManagerFromSettings() {
-        return EventUtil.executeWithLog(ACCOUNT, RESIGNIN, operation -> {
-            try {
-                final AuthMethodDetails savedAuthMethodDetails = loadSettings();
-                final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
-                        new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
+                AuthMethodDetails targetAuthMethodDetails = loadSettings();
+                if (targetAuthMethodDetails == null || targetAuthMethodDetails.getAuthMethod() == null) {
+                    targetAuthMethodDetails = new AuthMethodDetails();
+                    targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                } else {
+                    targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
+                    // convert old auth method to new ones
+                    switch (targetAuthMethodDetails.getAuthMethod()) {
+                        case AZ: {
+                            targetAuthMethodDetails.setAuthType(AuthType.AZURE_CLI);
+                            break;
+                        }
+                        case DC: {
+                            targetAuthMethodDetails.setAuthType(AuthType.DEVICE_CODE);
+                            break;
+                        }
+                        case AD:
+                            // we don't support it now
+                            LOGGER.warning("The AD auth method is not supported now, ignore the credential.");
+                            break;
+                        case SP:
+                            targetAuthMethodDetails.setAuthType(AuthType.SERVICE_PRINCIPAL);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
+                List<String> allSubscriptionIds = identityAzureManager.getSubscriptionDetails().stream()
+                        .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+                identityAzureManager.selectSubscriptionByIds(allSubscriptionIds);
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
-                final Map<String, String> telemetryProperties = new HashMap<String, String>() {{
+                final Map<String, String> telemetryProperties = new HashMap<String, String>() {
+                    {
                         put(SIGNIN_METHOD, authMethod);
                         put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
-                    }};
+                    }
+                };
+                initFuture.complete(true);
                 EventUtil.logEvent(EventType.info, operation, telemetryProperties);
-                return new AuthMethodManager(authMethodDetails);
-            } catch (RuntimeException ignore) {
-                EventUtil.logError(operation, ErrorType.systemError, ignore, null, null);
-                return new AuthMethodManager(new AuthMethodDetails());
+            } catch (RuntimeException exception) {
+                initFuture.complete(true);
+                EventUtil.logError(operation, ErrorType.systemError, exception, null, null);
+                this.authMethodDetails = new AuthMethodDetails();
+                this.authMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
             }
+            return this;
         });
     }
 
@@ -262,6 +297,13 @@ public class AuthMethodManager {
         } catch (IOException ignored) {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");
             return new AuthMethodDetails();
+        }
+    }
+
+    private void waitInitFinish() {
+        try {
+            this.initFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
         }
     }
 }
