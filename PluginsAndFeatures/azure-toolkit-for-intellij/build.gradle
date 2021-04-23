@@ -147,6 +147,8 @@ dependencies {
     compile 'com.nimbusds:oauth2-oidc-sdk:7.1.1', { force = true }
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-sdk-reference-book')
+    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.3.3.RELEASE'
+    compile "com.github.akarnokd:rxjava3-interop:3.0.2"
     compile project(':azure-intellij-resource-connector-lib')
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.7'
