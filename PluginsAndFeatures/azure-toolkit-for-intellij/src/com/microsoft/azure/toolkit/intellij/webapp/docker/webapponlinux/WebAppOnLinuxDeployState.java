@@ -7,11 +7,12 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerProgressHandler;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -34,7 +35,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
+public class WebAppOnLinuxDeployState extends AzureRunProfileState<IAppService> {
     private final WebAppOnLinuxDeployModel deployModel;
 
     public WebAppOnLinuxDeployState(Project project, WebAppOnLinuxDeployModel webAppOnLinuxDeployModel) {
@@ -44,19 +45,19 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
 
     @Override
     @AzureOperation(name = "docker.deploy_image.state", type = AzureOperation.Type.ACTION)
-    public WebApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    public IAppService executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         processHandler.setText("Starting job ...  ");
-        String basePath = project.getBasePath();
+        final String basePath = project.getBasePath();
         if (basePath == null) {
             processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
             throw new FileNotFoundException("Project base path is null.");
         }
         // locate artifact to specified location
-        String targetFilePath = deployModel.getTargetPath();
+        final String targetFilePath = deployModel.getTargetPath();
         processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
 
         // validate dockerfile
-        Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
+        final Path targetDockerfile = Paths.get(deployModel.getDockerFilePath());
         processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
         if (!targetDockerfile.toFile().exists()) {
             throw new FileNotFoundException("Dockerfile not found.");
@@ -69,10 +70,10 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         Files.write(targetDockerfile, content.getBytes());
 
         // build image
-        PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
+        final PrivateRegistryImageSetting acrInfo = deployModel.getPrivateRegistryImageSetting();
         processHandler.setText(String.format("Building image ...  [%s]",
                 acrInfo.getImageTagWithServerUrl()));
-        DockerClient docker = DefaultDockerClient.fromEnv().build();
+        final DockerClient docker = DefaultDockerClient.fromEnv().build();
         DockerUtil.ping(docker);
         DockerUtil.buildImage(docker,
                 acrInfo.getImageTagWithServerUrl(),
@@ -89,27 +90,25 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         // deploy
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             // create new WebApp
-            processHandler.setText(String.format("Creating new WebApp ... [%s]",
-                    deployModel.getWebAppName()));
-            WebApp app = AzureWebAppMvpModel.getInstance().createWebAppWithPrivateRegistryImage(deployModel);
+            processHandler.setText(String.format("Creating new WebApp ... [%s]", deployModel.getWebAppName()));
+            final IWebApp app = AzureWebAppMvpModel.getInstance().createAzureWebAppWithPrivateRegistryImage(deployModel);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
                 updateConfigurationDataModel(app);
 
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                        null));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }
+            return app;
         } else {
             // update WebApp
             processHandler.setText(String.format("Updating WebApp ... [%s]",
                     deployModel.getWebAppName()));
-            WebApp app = AzureWebAppMvpModel.getInstance()
-                    .updateWebAppOnDocker(deployModel.getSubscriptionId(), deployModel.getWebAppId(), acrInfo);
+            final IWebApp app = AzureWebAppMvpModel.getInstance().updateWebAppOnDocker(deployModel.getWebAppId(), acrInfo);
             if (app != null && app.name() != null) {
                 processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
             }
+            return app;
         }
-        return null;
     }
 
     @Override
@@ -123,7 +122,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         params = {"this.deployModel.getWebAppName()"},
         type = AzureOperation.Type.TASK
     )
-    protected void onSuccess(WebApp result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(IAppService result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("Updating cache ... ");
         AzureWebAppMvpModel.getInstance().listAllWebAppsOnLinux(true);
         processHandler.setText("Job done");
@@ -147,9 +146,9 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         return telemetryMap;
     }
 
-    private void updateConfigurationDataModel(WebApp app) {
+    private void updateConfigurationDataModel(IWebApp app) {
         deployModel.setCreatingNewWebAppOnLinux(false);
         deployModel.setWebAppId(app.id());
-        deployModel.setResourceGroupName(app.resourceGroupName());
+        deployModel.setResourceGroupName(app.entity().getResourceGroup());
     }
 }

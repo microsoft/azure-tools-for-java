@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.slimui;
 
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -24,8 +25,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
             return;
         }
         unsubscribeSubscription(loadSlotsSubscription);
-        loadSlotsSubscription = Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getDeploymentSlots(
-                selectedWebApp.getSubscriptionId(), selectedWebApp.getResourceId()))
+        loadSlotsSubscription = Observable.fromCallable(() -> Azure.az(AzureAppService.class).webapp(selectedWebApp.getResourceId()).deploymentSlots())
                   .subscribeOn(getSchedulerProvider().io())
                   .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                       if (slots == null || isViewDetached()) {

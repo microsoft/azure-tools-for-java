@@ -5,13 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.slimui;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
 import java.util.List;
 
 public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+    void fillDeploymentSlots(@NotNull List<IWebAppDeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
 }

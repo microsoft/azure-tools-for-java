@@ -28,8 +28,10 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.appservice.entity.WebAppEntity;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
+import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
@@ -67,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,8 +81,6 @@ public class AzureWebAppMvpModel {
     private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
     public static final String DO_NOT_CLONE_SLOT_CONFIGURATION = "Don't clone configuration from an existing slot";
-    public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
-    private final Map<String, List<IWebApp>> webappsCache;
 
     private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS =
         Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
@@ -93,7 +92,6 @@ public class AzureWebAppMvpModel {
     private static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
 
     private AzureWebAppMvpModel() {
-        webappsCache = new ConcurrentHashMap<>();
     }
     public static final String CACHE_SUBSCRIPTION_WEBAPPS = "subscription-webapps";
 
@@ -231,8 +229,7 @@ public class AzureWebAppMvpModel {
 
     private WebApp.DefinitionStages.WithCreate applyDiagnosticConfig(WebApp.DefinitionStages.WithCreate withCreate,
                                                                      WebAppSettingModel settingModel) {
-        final WebAppDiagnosticLogs.DefinitionStages.Blank diagnosticLogs =
-            withCreate.defineDiagnosticLogsConfiguration();
+        final WebAppDiagnosticLogs.DefinitionStages.Blank diagnosticLogs = withCreate.defineDiagnosticLogsConfiguration();
         WebAppDiagnosticLogs.DefinitionStages.WithAttach withAttach = null;
         if (settingModel.isEnableApplicationLog()) {
             withAttach = diagnosticLogs.withApplicationLogging()
@@ -332,10 +329,6 @@ public class AzureWebAppMvpModel {
         return withGroup.withExistingResourceGroup(model.getResourceGroup());
     }
 
-    public void deployWebApp() {
-        // TODO
-    }
-
     @CacheEvict(cacheName = CACHE_SUBSCRIPTION_WEBAPPS, key = "$sid")
     public void deleteWebApp(String sid, String appId) {
         com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(sid).webapp(appId).delete();
@@ -349,13 +342,13 @@ public class AzureWebAppMvpModel {
      * @throws IOException IOExceptions
      */
     @AzureOperation(
-        name = "docker.create_from_private_image",
-        params = {
-            "model.getWebAppName()",
-            "model.getSubscriptionId()",
-            "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
-        },
-        type = AzureOperation.Type.SERVICE
+            name = "docker.create_from_private_image",
+            params = {
+                "model.getWebAppName()",
+                "model.getSubscriptionId()",
+                "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            },
+            type = AzureOperation.Type.SERVICE
     )
     public WebApp createWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
         final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
@@ -370,33 +363,33 @@ public class AzureWebAppMvpModel {
             if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 asp = azure.appServices().appServicePlans()
-                           .define(model.getAppServicePlanName())
-                           .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                           .withNewResourceGroup(model.getResourceGroupName())
-                           .withPricingTier(pricingTier)
-                           .withOperatingSystem(OperatingSystem.LINUX);
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                    .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                    .withNewResourceGroup(model.getResourceGroupName())
-                    .withNewLinuxPlan(asp)
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withNewLinuxPlan(asp)
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
             } else {
                 // old rg
                 asp = azure.appServices().appServicePlans()
-                           .define(model.getAppServicePlanName())
-                           .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                           .withExistingResourceGroup(model.getResourceGroupName())
-                           .withPricingTier(pricingTier)
-                           .withOperatingSystem(OperatingSystem.LINUX);
+                        .define(model.getAppServicePlanName())
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withPricingTier(pricingTier)
+                        .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                    .withRegion(Region.findByLabelOrName(model.getLocationName()))
-                    .withExistingResourceGroup(model.getResourceGroupName())
-                    .withNewLinuxPlan(asp)
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
+                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withNewLinuxPlan(asp)
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
             }
         } else {
             // old asp
@@ -404,23 +397,64 @@ public class AzureWebAppMvpModel {
             if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 app = webAppDefinition
-                    .withExistingLinuxPlan(asp)
-                    .withNewResourceGroup(model.getResourceGroupName())
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
+                        .withExistingLinuxPlan(asp)
+                        .withNewResourceGroup(model.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
             } else {
                 // old rg
                 app = webAppDefinition
-                    .withExistingLinuxPlan(asp)
-                    .withExistingResourceGroup(model.getResourceGroupName())
-                    .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-                    .withCredentials(pr.getUsername(), pr.getPassword())
-                    .withStartUpCommand(pr.getStartupFile()).create();
+                        .withExistingLinuxPlan(asp)
+                        .withExistingResourceGroup(model.getResourceGroupName())
+                        .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
+                        .withCredentials(pr.getUsername(), pr.getPassword())
+                        .withStartUpCommand(pr.getStartupFile()).create();
             }
         }
         return app;
         // TODO: update cache
+    }
+
+    /**
+     * API to create Web App on Docker.
+     *
+     * @param model parameters
+     * @return instance of created WebApp
+     */
+    @AzureOperation(
+            name = "docker.create_from_private_image",
+            params = {
+                "model.getWebAppName()",
+                "model.getSubscriptionId()",
+                "model.getPrivateRegistryImageSetting().getImageNameWithTag()"
+            },
+            type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp createAzureWebAppWithPrivateRegistryImage(@NotNull WebAppOnLinuxDeployModel model) {
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroupName(), model.getLocationName());
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroupName())
+                .region(model.getLocationName())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.DOCKER)
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricingSkuSize())).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final PrivateRegistryImageSetting pr = model.getPrivateRegistryImageSetting();
+        // todo: support start up file in docker configuration
+        final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                .image(pr.getImageTagWithServerUrl())
+                .registryUrl(pr.getServerUrl())
+                .userName(pr.getUsername())
+                .password(pr.getPassword()).build();
+        return getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroupName(), model.getWebAppName()).create()
+                .withName(model.getWebAppName())
+                .withResourceGroup(resourceGroup.name())
+                .withPlan(appServicePlan.id())
+                .withRuntime(Runtime.DOCKER)
+                .withDockerConfiguration(dockerConfiguration)
+                .commit();
     }
 
     /**
@@ -432,9 +466,9 @@ public class AzureWebAppMvpModel {
      * @return instance of the updated Web App on Linux
      */
     @AzureOperation(
-        name = "docker|image.update",
-        params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
-        type = AzureOperation.Type.SERVICE
+            name = "docker|image.update",
+            params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
+            type = AzureOperation.Type.SERVICE
     )
     public WebApp updateWebAppOnDocker(String sid, String webAppId, ImageSetting imageSetting) {
         final WebApp app = getWebAppById(sid, webAppId);
@@ -442,14 +476,43 @@ public class AzureWebAppMvpModel {
         if (imageSetting instanceof PrivateRegistryImageSetting) {
             final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
             app.update().withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
-               .withCredentials(pr.getUsername(), pr.getPassword())
-               .withStartUpCommand(pr.getStartupFile()).apply();
+                    .withCredentials(pr.getUsername(), pr.getPassword())
+                    .withStartUpCommand(pr.getStartupFile()).apply();
         } else {
             // TODO: other types of ImageSetting, e.g. Docker Hub
         }
         // status-free restart.
         stopWebApp(sid, webAppId);
         startWebApp(sid, webAppId);
+        return app;
+    }
+
+    /**
+     * Update container settings for existing Web App on Linux.
+     *
+     * @param webAppId     id of Web App on Linux instance
+     * @param imageSetting new container settings
+     * @return instance of the updated Web App on Linux
+     */
+    @AzureOperation(
+        name = "docker|image.update",
+        params = {"nameFromResourceId(webAppId)", "imageSetting.getImageNameWithTag()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    public IWebApp updateWebAppOnDocker(String webAppId, ImageSetting imageSetting) {
+        final IWebApp app = com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).webapp(webAppId);
+        // clearTags(app);
+        if (imageSetting instanceof PrivateRegistryImageSetting) {
+            final PrivateRegistryImageSetting pr = (PrivateRegistryImageSetting) imageSetting;
+            final DockerConfiguration dockerConfiguration = DockerConfiguration.builder()
+                    .image(pr.getImageTagWithServerUrl())
+                    .registryUrl(pr.getServerUrl())
+                    .userName(pr.getUsername())
+                    .password(pr.getPassword()).build();
+            app.update().withDockerConfiguration(dockerConfiguration).commit();
+        }
+        // status-free restart.
+        app.restart();
         return app;
     }
 
@@ -874,14 +937,6 @@ public class AzureWebAppMvpModel {
     }
 
     @AzureOperation(
-        name = "webapp.clear_cache",
-        type = AzureOperation.Type.TASK
-    )
-    public void clearWebAppsCache() {
-        webappsCache.clear();
-    }
-
-    @AzureOperation(
         name = "common|region.list.subscription|tier",
         params = {"pricingTier", "subscriptionId"},
         type = AzureOperation.Type.SERVICE
@@ -922,7 +977,7 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     @Cacheable(cacheName = "subscription-webapps-track2", key = "$subscriptionId", condition = "!(force&&force[0])")
-    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean force) {
+    public List<IWebApp> listAzureWebAppsBySubscription(final String subscriptionId, final boolean... force) {
         return com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).subscription(subscriptionId).webapps();
     }
 
@@ -931,14 +986,21 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp.create_detail",
-            params = {"$model.getWebAppName()"},
+            params = {"model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
     public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
-        final WebAppEntity webAppEntity = WebAppEntity.builder().name(model.getWebAppName()).resourceGroup(model.getResourceGroup()).build();
-        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model);
-        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(model);
-        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(webAppEntity).create()
+        final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
+        final String[] tierSize = model.getPricing().split("_");
+        final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
+                .subscriptionId(model.getSubscriptionId())
+                .name(model.getAppServicePlanName())
+                .resourceGroup(model.getResourceGroup())
+                .region(model.getRegion())
+                .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1])).build();
+        final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
+        final IWebApp result = getAzureAppServiceClient(model.getSubscriptionId()).webapp(model.getResourceGroup(), model.getWebAppName()).create()
                 .withName(model.getWebAppName())
                 .withResourceGroup(resourceGroup.name())
                 .withPlan(appServicePlan.id())
@@ -949,30 +1011,29 @@ public class AzureWebAppMvpModel {
     }
 
     // todo: Move duplicated codes to azure common library
-    private ResourceGroup getOrCreateResourceGroup(@NotNull WebAppSettingModel model) {
+    private ResourceGroup getOrCreateResourceGroup(String subscriptionId, String resourceGroup, String region) {
         final AzureResourceManager az =
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(model.getSubscriptionId());
+                com.microsoft.azure.toolkit.lib.Azure.az(AzureAppService.class).getAzureResourceManager(subscriptionId);
         try {
-            return az.resourceGroups().getByName(model.getResourceGroup());
+            return az.resourceGroups().getByName(resourceGroup);
         } catch (ManagementException e) {
-            return az.resourceGroups().define(model.getResourceGroup()).withRegion(model.getRegion()).create();
+            return az.resourceGroups().define(resourceGroup).withRegion(region).create();
         }
     }
 
-    private IAppServicePlan getOrCreateAppServicePlan(@NotNull WebAppSettingModel model) {
-        final AzureAppService az = getAzureAppServiceClient(model.getSubscriptionId());
-        if (!model.isCreatingAppServicePlan()) {
-            return az.appServicePlan(model.getAppServicePlanId());
+    private IAppServicePlan getOrCreateAppServicePlan(AppServicePlanEntity servicePlanEntity) {
+        final AzureAppService az = getAzureAppServiceClient(servicePlanEntity.getSubscriptionId());
+        final IAppServicePlan appServicePlan = az.appServicePlan(servicePlanEntity);
+        if (appServicePlan.exists()) {
+            return appServicePlan;
         }
-        final IAppServicePlan appServicePlan = az.appServicePlan(model.getResourceGroup(), model.getAppServicePlanName());
-        final String[] tierSize = model.getPricing().split("_");
         return appServicePlan.create()
                 // todo: remove duplicated parameters declared in service plan entity
-                .withName(model.getAppServicePlanName())
-                .withResourceGroup(model.getResourceGroup())
-                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(model.getRegion()))
-                .withPricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1]))
-                .withOperatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOS().name()))
+                .withName(servicePlanEntity.getName())
+                .withResourceGroup(servicePlanEntity.getResourceGroup())
+                .withRegion(com.microsoft.azure.toolkit.lib.common.model.Region.fromName(servicePlanEntity.getRegion()))
+                .withPricingTier(servicePlanEntity.getPricingTier())
+                .withOperatingSystem(servicePlanEntity.getOperatingSystem())
                 .commit();
     }
 
@@ -1006,7 +1067,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp|deployment.create",
-            params = {"$model.getNewSlotName()", "$model.getWebAppName()"},
+            params = {"model.getNewSlotName()", "model.getWebAppName()"},
             type = AzureOperation.Type.SERVICE
     )
     public IWebAppDeploymentSlot createDeploymentSlotFromSettingModel(@NotNull final IWebApp webApp, @NotNull final WebAppSettingModel model) {
@@ -1028,7 +1089,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
             name = "webapp|artifact.upload",
-            params = {"file.getName()", "$deployTarget.name()"},
+            params = {"file.getName()", "deployTarget.name()"},
             type = AzureOperation.Type.SERVICE
     )
     public void deployArtifactsToWebApp(@NotNull final IAppService deployTarget, @NotNull final File file,
@@ -1073,7 +1134,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
             name = "webapp|deployment.update_settings",
-            params = {"$slot.entity().getName()", "$slot.entity().getWebappName()"},
+            params = {"slot.entity().getName()", "slot.entity().getWebappName()"},
             type = AzureOperation.Type.SERVICE
     )
     public void updateDeploymentSlotAppSettings(final IWebAppDeploymentSlot slot, final Map<String, String> toUpdate) {
