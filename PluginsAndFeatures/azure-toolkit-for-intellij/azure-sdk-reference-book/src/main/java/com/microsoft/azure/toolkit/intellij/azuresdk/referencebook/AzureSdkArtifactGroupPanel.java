@@ -48,7 +48,7 @@ public class AzureSdkArtifactGroupPanel {
     private final List<AzureSdkArtifactDetailPanel> artifactPnls = new ArrayList<>();
     private AzureSdkArtifactEntity pkg;
     private String version;
-    private DependencyType type = MAVEN;
+    private static DependencyType type = MAVEN;
 
     public void setData(@Nonnull final List<? extends AzureSdkArtifactEntity> artifacts) {
         this.clear();
@@ -76,7 +76,7 @@ public class AzureSdkArtifactGroupPanel {
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
-        this.type = type;
+        AzureSdkArtifactGroupPanel.type = type;
         final FileType fileType = FileTypeManagerEx.getInstance().getFileTypeByExtension(type.getFileExt());
         this.viewer.setNewDocumentAndFileType(fileType, new DocumentImpl(pkg.getDependencySnippet(type, version)));
     }
@@ -101,7 +101,7 @@ public class AzureSdkArtifactGroupPanel {
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
         });
-        group.add(new DependencyTypeSelector(this::onDependencyTypeSelected));
+        group.add(new DependencyTypeSelector(this::onDependencyTypeSelected, AzureSdkArtifactGroupPanel.type));
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, false);
     }
 
@@ -140,10 +140,11 @@ public class AzureSdkArtifactGroupPanel {
         private final Consumer<? super DependencyType> onTypeSelected;
         private DependencyType selectedType;
 
-        private DependencyTypeSelector(Consumer<? super DependencyType> onTypeSelected) {
+        private DependencyTypeSelector(Consumer<? super DependencyType> onTypeSelected, DependencyType type) {
             super();
             setPopup(true);
             this.onTypeSelected = onTypeSelected;
+            this.selectedType = type;
             final AnAction maven = createAction(MAVEN.getName(), OpenapiIcons.RepositoryLibraryLogo, () -> this.setSelectedType(MAVEN));
             final AnAction gradle = createAction(GRADLE.getName(), GradleIcons.Gradle, () -> this.setSelectedType(GRADLE));
             this.addAll(maven, gradle);

@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -83,17 +84,20 @@ public class AzureSignInAction extends AzureAnAction {
 
     private static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
         final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
-        final AuthMethod authMethod = authMethodManager.getAuthMethod();
+        if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
+            return String.format("Do you really want to sign out?");
+        }
+        final AuthType authType = authMethodManager.getAuthMethodDetails().getAuthType();
         final String warningMessage;
-        switch (authMethod) {
-            case SP:
+        switch (authType) {
+            case SERVICE_PRINCIPAL:
                 warningMessage = String.format("Signed in using file \"%s\"", authMethodDetails.getCredFilePath());
                 break;
-            case AD:
-            case DC:
-                warningMessage = String.format("Signed in as %s", authMethodDetails.getAccountEmail());
+            case OAUTH2:
+            case DEVICE_CODE:
+                warningMessage = String.format("Signed in as %s(%s)", authMethodDetails.getAccountEmail(), authType.toString());
                 break;
-            case AZ:
+            case AZURE_CLI:
                 warningMessage = "Signed in with Azure CLI";
                 break;
             default:
@@ -101,7 +105,7 @@ public class AzureSignInAction extends AzureAnAction {
                 break;
         }
         return String.format("%s\nDo you really want to sign out? %s",
-                             warningMessage, authMethod == AZ ? "(This will not sign you out from Azure CLI)" : "");
+                warningMessage, authType== AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "");
     }
 
     public static void onAzureSignIn(Project project) {

@@ -34,10 +34,10 @@ public class AzureSdkFeatureDetailPanel {
 
     public void setData(final AzureSdkFeatureEntity feature) {
         this.titleLabel.setText(feature.getName());
-        SwingUtils.setTextAndEnableAutoWrap(this.descLabel, feature.getDescription());
+        SwingUtils.setTextAndEnableAutoWrap(this.descLabel, Optional.ofNullable(feature.getDescription()).orElse(""));
 
         this.featureDocLink.setVisible(false);
-        Optional.ofNullable(feature.getMsdocs()).ifPresent(link -> {
+        Optional.ofNullable(feature.getMsdocs()).filter(l -> l.startsWith("http")).ifPresent(link -> {
             this.featureDocLink.setHyperlinkText("Product documentation");
             this.featureDocLink.setHyperlinkTarget(link);
             this.featureDocLink.setVisible(true);
