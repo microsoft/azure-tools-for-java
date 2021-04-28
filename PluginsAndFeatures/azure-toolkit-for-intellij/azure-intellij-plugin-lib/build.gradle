@@ -1,1 +1,10 @@
+dependencies {
+    // as in the azure-toolkit-for-intellij module
+    compile 'com.microsoft.azuretools:azuretools-core:3.53.0-SNAPSHOT', {
+        exclude group: "com.microsoft.azure", module: "azure-client-authentication"
+        exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
+    }
+}
+
 intellij{}
