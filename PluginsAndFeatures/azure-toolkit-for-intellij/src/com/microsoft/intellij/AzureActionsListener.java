@@ -105,7 +105,7 @@ public abstract class AzureActionsListener implements AppLifecycleListener, Plug
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
 //            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
 //            popupGroup.add(am.getAction("AzurePopupGroup"));
-            loadWebApps();
+            DefaultLoader.getIdeHelper().executeOnPooledThread(this::loadWebApps);
         }
         try {
             PlatformDependent.isAndroid();
