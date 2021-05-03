@@ -4,9 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h4>Fixed bugs:</h4>
+        <h4>Added:</h4>
         <ul>
-          <li>Initialize web applications list on a pooled thread (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/485">#485</a>)</li>
+	      <li>Support for Azure Functions Isolated Worker runtime</li>
         </ul>
     </html>
     ]]>
