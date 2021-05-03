@@ -42,8 +42,7 @@ import com.jetbrains.rider.runtime.DotNetExecutable
 class AzureFunctionsDotNetCoreDebugProfile(
         private val dotNetExecutable: DotNetExecutable,
         executionEnvironment: ExecutionEnvironment,
-        private val coreToolsExecutablePath: String,
-        private val funcCoreToolsPath: String)
+        private val coreToolsExecutablePath: String)
     : DebugProfileStateBase(executionEnvironment) {
 
     override suspend fun createWorkerRunInfo(lifetime: Lifetime, helper: DebuggerHelperHost, port: Int): WorkerRunInfo {

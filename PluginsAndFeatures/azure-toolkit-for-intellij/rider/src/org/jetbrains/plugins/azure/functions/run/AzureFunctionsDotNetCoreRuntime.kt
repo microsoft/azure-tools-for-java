@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -34,12 +34,16 @@ import com.jetbrains.rider.runtime.RunningAssemblyInfo
 import com.jetbrains.rider.runtime.SuspendedAttachableDotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntimeType
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionsWorkerRuntime
 
-class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo)
+class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo, val workerRuntime: FunctionsWorkerRuntime)
     : DotNetRuntime(DotNetCoreRuntimeType), SuspendedAttachableDotNetRuntime {
 
     override fun createDebugState(dotNetExecutable: DotNetExecutable, executionEnvironment: ExecutionEnvironment) : IDotNetDebugProfileState {
-        return AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
+        return when (workerRuntime) {
+            FunctionsWorkerRuntime.DotNetDefault -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable)
+            FunctionsWorkerRuntime.DotNetIsolated -> AzureFunctionsDotNetCoreIsolatedDebugProfile(dotNetExecutable, executionEnvironment)
+        }
     }
 
     override fun createRunState(dotNetExecutable: DotNetExecutable, executionEnvironment: ExecutionEnvironment): RunProfileState {

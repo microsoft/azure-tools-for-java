@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -29,10 +29,15 @@ data class FunctionLocalSettings(
         val connectionStrings: Map<String, String>?)
 
 data class FunctionValuesModel(
-        val workerRuntime: String?,
+        val workerRuntime: FunctionsWorkerRuntime?,
         val webJobsStorage: String?,
         val webJobsDashboard: String?,
         val webJobsHttpExampleDisabled: Boolean?,
         val bindingConnection: String?)
 
 data class FunctionHostModel(val localHttpPort: Int?, val cors: String?, val corsCredentials: Boolean?)
+
+enum class FunctionsWorkerRuntime(val value: String) {
+    DotNetDefault("dotnet"),
+    DotNetIsolated("dotnet-isolated")
+}
