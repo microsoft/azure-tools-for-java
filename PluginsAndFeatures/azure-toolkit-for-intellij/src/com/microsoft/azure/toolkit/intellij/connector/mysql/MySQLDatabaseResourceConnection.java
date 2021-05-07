@@ -25,7 +25,7 @@ import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
-import com.microsoft.azure.toolkit.lib.common.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
@@ -128,7 +128,7 @@ public class MySQLDatabaseResourceConnection implements Connection<MySQLDatabase
             return Optional.of(saved);
         }
         if (result.getErrorCode() != ACCESS_DENIED_ERROR_CODE) {
-            AzureMessager.getInstance().warning("Azure Resource Connector", result.getMessage());
+            AzureMessager.getMessager().warning(result.getMessage(), "Azure Resource Connector");
         }
         return Optional.empty();
     }

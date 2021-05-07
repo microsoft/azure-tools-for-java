@@ -15,9 +15,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
-import com.microsoft.azure.toolkit.lib.common.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -120,7 +120,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
                 connectionManager.addConnection(connection);
                 final String message = String.format("The connection between %s and %s has been successfully created.",
                         resource.toString(), consumer.toString());
-                AzureMessager.getInstance().success(message);
+                AzureMessager.getMessager().success(message);
             }
         });
     }
