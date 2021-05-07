@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * Component for the client ID text input.
  */
-public class AzureClientIdInput extends AzureTextInput {
+class AzureClientIdInput extends AzureTextInput {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {

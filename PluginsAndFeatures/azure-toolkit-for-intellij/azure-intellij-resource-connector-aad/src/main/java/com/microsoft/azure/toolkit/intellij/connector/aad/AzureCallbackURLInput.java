@@ -14,7 +14,7 @@ import java.net.URI;
 /**
  * Component for the callback URL text input. It expects a valid URL with scheme and hostname.
  */
-public class AzureCallbackURLInput extends AzureTextInput {
+class AzureCallbackURLInput extends AzureTextInput {
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {

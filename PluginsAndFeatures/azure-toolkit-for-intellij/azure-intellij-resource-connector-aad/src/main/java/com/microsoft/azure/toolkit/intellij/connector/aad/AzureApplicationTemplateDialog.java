@@ -20,19 +20,19 @@ import java.util.Collections;
 /**
  * Dialog which displays code templates for a list of Azure AD applications.
  */
-public class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner> {
+class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner> {
     @NotNull
     private final ApplicationTemplateForm form;
 
-    public AzureApplicationTemplateDialog(@NotNull Project project,
-                                          @NotNull GraphRbacManagementClient graphClient,
-                                          @NotNull Subscription subscription) {
+    AzureApplicationTemplateDialog(@NotNull Project project,
+                                   @NotNull GraphRbacManagementClient graphClient,
+                                   @NotNull Subscription subscription) {
         this(project, graphClient, null, subscription);
     }
 
-    public AzureApplicationTemplateDialog(@NotNull Project project,
-                                          @NotNull ApplicationInner application,
-                                          @NotNull Subscription subscription) {
+    AzureApplicationTemplateDialog(@NotNull Project project,
+                                   @NotNull ApplicationInner application,
+                                   @NotNull Subscription subscription) {
         this(project, null, application, subscription);
     }
 
@@ -45,8 +45,6 @@ public class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner
 
         var predefinedItems = application == null ? null : Collections.singletonList(application);
         form = new ApplicationTemplateForm(project, subscription, graphClient, predefinedItems);
-        form.init();
-
         init();
     }
 
@@ -64,6 +62,11 @@ public class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner
     @Nullable
     protected JComponent createCenterPanel() {
         return form.getContentPanel();
+    }
+
+    @Override
+    protected Action @NotNull [] createActions() {
+        return new Action[]{getOKAction()};
     }
 
     @Override

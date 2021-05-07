@@ -18,9 +18,8 @@ class RegisterApplicationInAzureAdDialog extends AzureDialog<ApplicationRegistra
 
     public RegisterApplicationInAzureAdDialog(@NotNull Project project, @NotNull ApplicationRegistrationModel data) {
         super(project);
-        init();
-        form.init();
         form.setData(data);
+        init();
     }
 
     @Override

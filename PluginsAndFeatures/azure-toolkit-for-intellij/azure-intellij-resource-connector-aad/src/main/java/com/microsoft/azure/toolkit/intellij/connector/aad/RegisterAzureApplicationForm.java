@@ -13,7 +13,7 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 
-public class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistrationModel> {
+class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistrationModel> {
     private JPanel contentPanel;
 
     private AzureTextInput displayNameInput;
@@ -26,9 +26,8 @@ public class RegisterAzureApplicationForm implements AzureFormJPanel<Application
     private TitledSeparator advancedSettingsSeparator;
     private JComponent noteComponent;
 
-    // called by the managing component
-    void init() {
-        AzureHideableTitledSeparator separator = (AzureHideableTitledSeparator) advancedSettingsSeparator;
+    RegisterAzureApplicationForm() {
+        var separator = (AzureHideableTitledSeparator) advancedSettingsSeparator;
         separator.addContentComponent(advancedSettingsContentPanel);
         separator.collapse();
     }
@@ -66,7 +65,7 @@ public class RegisterAzureApplicationForm implements AzureFormJPanel<Application
         domainInput.setText(data.getDomain());
         multiTenantInput.setSelected(data.isMultiTenant());
         clientIdInput.setText(data.getClientId());
-        allowOverwriteInput.setSelected(data.getAllowOverwrite());
+        allowOverwriteInput.setSelected(data.isAllowOverwrite());
     }
 
     private void createUIComponents() {

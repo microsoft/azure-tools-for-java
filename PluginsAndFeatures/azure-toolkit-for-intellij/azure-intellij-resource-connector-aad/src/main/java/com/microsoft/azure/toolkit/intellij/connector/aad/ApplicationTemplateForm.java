@@ -11,6 +11,7 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.fileTypes.UnknownFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.EditorTextField;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
+class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
     private final Subscription subscription;
     @Nullable
     private final GraphRbacManagementClient graphClient;
@@ -39,20 +40,16 @@ public class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
     private AzureApplicationComboBox applicationsBox;
     private EditorTextField templateEditor;
 
-    public ApplicationTemplateForm(@NotNull Project project,
-                                   @NotNull Subscription subscription,
-                                   @Nullable GraphRbacManagementClient graphClient,
-                                   @Nullable List<ApplicationInner> predefinedItems) {
+    ApplicationTemplateForm(@NotNull Project project,
+                            @NotNull Subscription subscription,
+                            @Nullable GraphRbacManagementClient graphClient,
+                            @Nullable List<ApplicationInner> predefinedItems) {
         this.project = project;
         this.subscription = subscription;
         this.graphClient = graphClient;
         this.predefinedItems = predefinedItems;
-
         assert graphClient != null || predefinedItems != null;
-    }
 
-    // has to be called after creating this form
-    public void init() {
         applicationsBox.refreshItems();
     }
 
@@ -140,6 +137,7 @@ public class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
         };
         editor.setOneLineMode(false);
         editor.setViewer(true);
+        editor.setPreferredSize(JBUI.size(650, 450));
         return editor;
     }
 }
