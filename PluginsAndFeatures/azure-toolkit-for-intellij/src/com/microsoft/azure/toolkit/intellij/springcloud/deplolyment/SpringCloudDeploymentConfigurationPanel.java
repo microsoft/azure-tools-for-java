@@ -11,7 +11,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
@@ -22,12 +21,12 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
+import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import lombok.Getter;
@@ -136,7 +135,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
             .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
-        final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString());
+        final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
         this.useJava11.setSelected(useJava11);
         this.useJava8.setSelected(!useJava11);
         final boolean enableStorage = deploymentConfig.isEnablePersistentStorage();
@@ -162,12 +161,12 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
 
     public SpringCloudAppConfig getData(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        final RuntimeVersion javaVersion = this.useJava11.isSelected() ? RuntimeVersion.JAVA_11 : RuntimeVersion.JAVA_8;
+        final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
         appConfig.setSubscriptionId(this.selectorSubscription.getValue().subscriptionId());
         appConfig.setClusterName(this.selectorCluster.getValue().name());
         appConfig.setAppName(this.selectorApp.getValue().name());
         appConfig.setIsPublic(enablePublic.isSelected());
-        appConfig.setRuntimeVersion(javaVersion.toString());
+        appConfig.setRuntimeVersion(javaVersion);
         deploymentConfig.setCpu(Optional.ofNullable(this.cbCPU.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
         deploymentConfig.setMemoryInGB(Optional.ofNullable(this.cbMemory.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
         deploymentConfig.setInstanceCount(Optional.ofNullable(this.cbInstanceCount.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));

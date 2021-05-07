@@ -24,7 +24,6 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
@@ -105,7 +104,6 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
     public static final Key<String> APP_ID = new Key<>("appId");
     public static final Key<String> CLUSTER_ID = new Key<>("clusterId");
-    public static final Key<AppResourceInner> SPRING_CLOUD_APP = new Key<>("springCloudApp");
 
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
