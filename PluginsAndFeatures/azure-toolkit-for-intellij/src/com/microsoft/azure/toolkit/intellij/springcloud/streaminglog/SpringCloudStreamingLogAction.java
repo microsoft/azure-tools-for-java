@@ -6,8 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentInstance;
-import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -17,8 +15,9 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
@@ -32,6 +31,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
@@ -58,7 +58,8 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
         final ResourceId appId = ResourceId.fromString(this.appId);
         final String subscriptionId = appId.subscriptionId();
         final String clusterName = appId.parent().name();
-        this.app = Azure.az(AzureSpringCloud.class).subscription(subscriptionId).cluster(clusterName).app(appId.name());
+        final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).subscription(subscriptionId).cluster(clusterName);
+        this.app = Objects.requireNonNull(cluster, String.format("cluster(%s) not exist", clusterName)).app(appId.name());
     }
 
     @Override
@@ -74,7 +75,7 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
                             PluginUtil.displayWarningDialog(FAILED_TO_START_LOG_STREAMING, NO_ACTIVE_DEPLOYMENT));
                         return;
                     }
-                    final List<DeploymentInstance> instances = deployment.entity().getInstances();
+                    final List<SpringCloudDeploymentInstanceEntity> instances = deployment.entity().getInstances();
                     if (CollectionUtils.isEmpty(instances)) {
                         DefaultLoader.getIdeHelper().invokeLater(() ->
                             PluginUtil.displayWarningDialog(FAILED_TO_START_LOG_STREAMING, NO_AVAILABLE_INSTANCES));
@@ -90,12 +91,12 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
         });
     }
 
-    private void showLogStreamingDialog(List<DeploymentInstance> instances) {
+    private void showLogStreamingDialog(List<? extends SpringCloudDeploymentInstanceEntity> instances) {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
             if (dialog.showAndGet()) {
-                final DeploymentInstance target = dialog.getInstance();
-                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, target.name());
+                final SpringCloudDeploymentInstanceEntity target = dialog.getInstance();
+                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, target.getName());
             }
         });
     }
@@ -113,9 +114,5 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
     @Override
     public int getGroup() {
         return Groupable.DIAGNOSTIC_GROUP;
-    }
-
-    private static AppPlatformManager getSpringManager(String sid) {
-        return AuthMethodManager.getInstance().getAzureSpringCloudClient(sid);
     }
 }

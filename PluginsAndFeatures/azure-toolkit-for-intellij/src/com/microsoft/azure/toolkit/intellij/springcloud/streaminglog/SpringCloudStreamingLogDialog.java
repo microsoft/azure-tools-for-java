@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWithRightAlignedComponent;
-import com.microsoft.azure.management.appplatform.v2020_07_01.DeploymentInstance;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,31 +17,31 @@ import java.util.List;
 public class SpringCloudStreamingLogDialog extends AzureDialogWrapper {
 
     private JPanel pnlRoot;
-    private JComboBox<DeploymentInstance> cbInstances;
+    private JComboBox<SpringCloudDeploymentInstanceEntity> cbInstances;
 
-    private DeploymentInstance instance;
+    private SpringCloudDeploymentInstanceEntity instance;
 
-    public SpringCloudStreamingLogDialog(@Nullable final Project project, List<DeploymentInstance> instances) {
+    public SpringCloudStreamingLogDialog(@Nullable final Project project, List<? extends SpringCloudDeploymentInstanceEntity> instances) {
         super(project, false);
-        setTitle("Select instance");
+        setTitle("Select Instance");
         instances.forEach(instance -> cbInstances.addItem(instance));
-        cbInstances.setRenderer(new ListCellRendererWithRightAlignedComponent<DeploymentInstance>() {
+        cbInstances.setRenderer(new ListCellRendererWithRightAlignedComponent<>() {
             @Override
-            protected void customize(final DeploymentInstance deploymentInstance) {
-                setLeftText(deploymentInstance.name());
+            protected void customize(final SpringCloudDeploymentInstanceEntity deploymentInstance) {
+                setLeftText(deploymentInstance.getName());
             }
         });
 
         init();
     }
 
-    public DeploymentInstance getInstance() {
+    public SpringCloudDeploymentInstanceEntity getInstance() {
         return instance;
     }
 
     @Override
     protected void doOKAction() {
-        instance = (DeploymentInstance) cbInstances.getSelectedItem();
+        instance = (SpringCloudDeploymentInstanceEntity) cbInstances.getSelectedItem();
         super.doOKAction();
     }
 
