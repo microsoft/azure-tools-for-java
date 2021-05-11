@@ -34,7 +34,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
@@ -47,7 +46,7 @@ import rx.Observable;
 import java.util.Collections;
 import java.util.UUID;
 
-public class RegisterApplicationAction extends AnAction implements DumbAware {
+public class RegisterApplicationAction extends AnAction {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
     @Override

@@ -29,7 +29,6 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -37,7 +36,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
-public class ShowApplicationTemplatesAction extends AnAction implements DumbAware {
+public class ShowApplicationTemplatesAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         var project = e.getProject();
