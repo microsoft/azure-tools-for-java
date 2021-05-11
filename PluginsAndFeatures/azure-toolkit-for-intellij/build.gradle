@@ -96,9 +96,7 @@ allprojects {
         test {
             java.srcDirs = [ 'test/java', 'Test/java' ]
             kotlin.srcDirs = [ 'test/kotlin', 'Test/java' ]
-            resources {
-                srcDir 'test/resources'
-            }
+            resources.srcDirs = [ 'test/resources', 'Test/resources' ]
         }
     }
 }

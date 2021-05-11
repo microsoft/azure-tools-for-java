@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -21,8 +21,6 @@
  */
 
 package com.microsoft.intellij.deploy
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.project.Project
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs
 import com.microsoft.intellij.AzurePlugin
 import java.net.MalformedURLException

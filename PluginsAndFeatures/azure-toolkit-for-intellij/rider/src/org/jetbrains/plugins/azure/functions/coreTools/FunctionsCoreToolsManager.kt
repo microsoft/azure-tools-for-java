@@ -239,9 +239,9 @@ object FunctionsCoreToolsManager {
                 for (gitHubRelease in gitHubReleases
                         .filter { !it.tagName.isNullOrEmpty() }
                         .filter { allowPrerelease || !it.prerelease }
-                        .sortedWith(Comparator { o1, o2 ->
+                        .sortedWith { o1, o2 ->
                             VersionComparatorUtil.compare(o2.tagName!!.trimStart('v'), o1.tagName!!.trimStart('v')) // latest versions on top
-                        })) {
+                        }) {
                     val latestReleaseVersion = gitHubRelease.tagName!!.trimStart('v')
 
                     val latestAsset = gitHubRelease.assets.firstOrNull {

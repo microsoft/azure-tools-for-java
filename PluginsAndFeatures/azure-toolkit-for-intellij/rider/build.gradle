@@ -12,8 +12,8 @@ sourceSets {
 
 dependencies {
     compile rootProject
-    compile "org.java-websocket:Java-WebSocket:$web_socket_version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation "org.java-websocket:Java-WebSocket:$web_socket_version"
 
     testImplementation rootProject
 }
@@ -82,9 +82,10 @@ task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 
+    jvmArgs '--illegal-access=warn'
+
     testLogging {
         showStandardStreams = true
-        exceptionFormat "full"
     }
 
     doFirst {

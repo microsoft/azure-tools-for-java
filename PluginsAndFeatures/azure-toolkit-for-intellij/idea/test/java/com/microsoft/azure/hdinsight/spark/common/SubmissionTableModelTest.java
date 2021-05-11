@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 public class SubmissionTableModelTest extends TestCase{
     private SubmissionTableModel tableModel;
