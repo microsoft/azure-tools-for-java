@@ -33,7 +33,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -43,12 +42,6 @@ public class ShowApplicationTemplatesAction extends AnAction implements DumbAwar
     public void actionPerformed(@NotNull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;
-
-        // fixme this is temporary until AzureSignInAction is available to this gradle module
-        if (AzureUtils.isLoggedOut()) {
-            AzureMessager.getInstance().warning("Login Required", "Please sign in to create a new Azure AD application.");
-            return;
-        }
 
         var subscriptions = Azure.az(AzureAccount.class).getSubscriptions();
         if (subscriptions.size() == 1) {

@@ -11,7 +11,6 @@ import com.azure.resourcemanager.authorization.implementation.GraphRbacManagemen
 import com.azure.resourcemanager.resources.fluentcore.utils.HttpPipelineProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.exception.AzureToolkitAuthenticationException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,14 +29,5 @@ final class AzureUtils {
                 .tenantId(subscription.getTenantId())
                 .pipeline(HttpPipelineProvider.buildHttpPipeline(credentials, new AzureProfile(account.getEnvironment())))
                 .buildClient();
-    }
-
-    static boolean isLoggedOut() {
-        try {
-            Azure.az(AzureAccount.class).account();
-            return false;
-        } catch (AzureToolkitAuthenticationException ignored) {
-            return true;
-        }
     }
 }
