@@ -32,6 +32,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +57,17 @@ public class ShowApplicationTemplatesAction extends AnAction {
 
     private void showDialog(@NotNull Project project, @NotNull Subscription subscription) {
         var client = AzureUtils.createGraphClient(subscription);
-        var dialog = new AzureApplicationTemplateDialog(project, client, subscription);
-        dialog.show();
+        client.getApplications().listAsync().count().subscribe(applicationCount -> {
+            AzureTaskManager.getInstance().runLater(() -> {
+                if (applicationCount == 0L) {
+                    AzureMessager.getInstance().warning(
+                            MessageBundle.message("templateDialog.noApplicationsWarnings.title"),
+                            MessageBundle.message("templateDialog.noApplicationsWarnings.text"));
+                } else {
+                    var dialog = new AzureApplicationTemplateDialog(project, client, subscription);
+                    dialog.show();
+                }
+            });
+        });
     }
 }
