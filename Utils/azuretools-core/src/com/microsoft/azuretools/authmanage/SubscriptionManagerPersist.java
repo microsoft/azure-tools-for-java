@@ -5,9 +5,9 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -67,14 +67,14 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
         subscriptionIdToSubscriptionMap.clear();
         List<Pair<Subscription, Tenant>> stpl = azureManager.getSubscriptionsWithTenant();
         for (Pair<Subscription, Tenant> stp : stpl) {
-            String sid = stp.first().subscriptionId();
+            String sid = stp.first().getId();
             boolean isSelected = (sdmap.get(sid) != null && sdmap.get(sid).isSelected());
             ret.add(new SubscriptionDetail(
-                    stp.first().subscriptionId(),
-                    stp.first().displayName(),
+                    stp.first().getId(),
+                    stp.first().getName(),
                     stp.second().tenantId(),
                     isSelected));
-            subscriptionIdToSubscriptionMap.put(stp.first().subscriptionId(), stp.first());
+            subscriptionIdToSubscriptionMap.put(stp.first().getId(), stp.first());
         }
         return ret;
     }

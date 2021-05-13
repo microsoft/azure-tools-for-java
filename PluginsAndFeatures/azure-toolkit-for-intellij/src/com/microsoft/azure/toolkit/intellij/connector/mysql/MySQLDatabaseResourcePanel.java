@@ -10,7 +10,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
@@ -22,6 +21,7 @@ import com.microsoft.azure.toolkit.intellij.connector.mysql.component.TestConnec
 import com.microsoft.azure.toolkit.intellij.connector.mysql.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import lombok.Getter;
@@ -195,7 +195,7 @@ public class MySQLDatabaseResourcePanel implements AzureFormJPanel<MySQLDatabase
     @Override
     public void setData(MySQLDatabaseResource resource) {
         Optional.ofNullable(resource.getServerId()).ifPresent((serverId -> {
-            this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::subscriptionId), true);
+            this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::getId), true);
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), Server::name), true);
         }));
         Optional.ofNullable(resource.getPassword()).ifPresent(config -> {

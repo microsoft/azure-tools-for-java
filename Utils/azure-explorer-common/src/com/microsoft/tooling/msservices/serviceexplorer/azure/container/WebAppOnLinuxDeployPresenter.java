@@ -8,6 +8,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import rx.Observable;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> extends MvpPresenter<V> {
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
@@ -63,7 +66,7 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * Load list of Subscriptions.
      */
     public void onLoadSubscriptionList() {
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
+        Observable.fromCallable(() -> az(AzureAccount.class).account().getSelectedSubscriptions())
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(subscriptions -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {

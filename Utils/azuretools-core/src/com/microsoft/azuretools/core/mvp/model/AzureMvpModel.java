@@ -10,7 +10,7 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -99,7 +99,7 @@ public class AzureMvpModel {
                 }
             }
         }
-        Collections.sort(ret, getComparator(Subscription::displayName));
+        Collections.sort(ret, getComparator(Subscription::getName));
         return ret;
     }
 
@@ -198,7 +198,7 @@ public class AzureMvpModel {
         List<Subscription> subs = getSelectedSubscriptions();
         Observable.from(subs).flatMap((sub) ->
             Observable.create((subscriber) -> {
-                List<Deployment> sidDeployments = listDeploymentsBySid(sub.subscriptionId());
+                List<Deployment> sidDeployments = listDeploymentsBySid(sub.getId());
                 synchronized (deployments) {
                     deployments.addAll(sidDeployments);
                 }

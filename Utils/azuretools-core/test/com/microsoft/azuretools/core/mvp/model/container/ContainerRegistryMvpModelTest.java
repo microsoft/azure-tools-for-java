@@ -14,7 +14,7 @@ import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryCredentials;
 import com.microsoft.azure.management.containerregistry.implementation.RegistryInner;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -98,7 +98,7 @@ public class ContainerRegistryMvpModelTest {
         PowerMockito.mockStatic(AuthMethodManager.class);
         PowerMockito.mockStatic(AzureMvpModel.class);
         when(azureMockWithoutRegistries.containerRegistries()).thenReturn(null);
-        when(subscriptionWithoutRegistries.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES);
+        when(subscriptionWithoutRegistries.getId()).thenReturn(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES);
         when(AuthMethodManager.getInstance()).thenReturn(authMethodManagerMock);
         when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION_ID)).thenReturn(azureMock);
         when(authMethodManagerMock.getAzureClient(MOCK_SUBSCRIPTION_ID_WITHOUT_REGISTRIES)).thenReturn(azureMockWithoutRegistries);
@@ -149,9 +149,9 @@ public class ContainerRegistryMvpModelTest {
     @Test
     public void testListContainerRegistries() throws IOException {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
-        Subscription sub1 = mock(Subscription.class); when(sub1.subscriptionId()).thenReturn("1");
-        Subscription sub2 = mock(Subscription.class); when(sub2.subscriptionId()).thenReturn("2");
-        Subscription sub3 = mock(Subscription.class); when(sub3.subscriptionId()).thenReturn("3");
+        Subscription sub1 = mock(Subscription.class); when(sub1.getId()).thenReturn("1");
+        Subscription sub2 = mock(Subscription.class); when(sub2.getId()).thenReturn("2");
+        Subscription sub3 = mock(Subscription.class); when(sub3.getId()).thenReturn("3");
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
 
         ContainerRegistryMvpModel mockModel = spy(containerRegistryMvpModel);

@@ -20,8 +20,9 @@ import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLMana
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.NameAvailabilityInner;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.RegionType;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,6 +34,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySQLMvpModel {
 
@@ -48,13 +51,13 @@ public class MySQLMvpModel {
 
     public static List<Server> listMySQLServers() {
         final List<Server> servers = new ArrayList<>();
-        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        final List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         if (CollectionUtils.isEmpty(subscriptions)) {
             return servers;
         }
         subscriptions.parallelStream().forEach(subscription -> {
             try {
-                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.subscriptionId());
+                List<Server> subServers = MySQLMvpModel.listMySQLServersBySubscriptionId(subscription.getId());
                 synchronized (servers) {
                     servers.addAll(subServers);
                 }

@@ -5,9 +5,9 @@
 package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +58,7 @@ public class ServerNameTextField extends ValidationDebouncedTextInput {
                     .type(AzureValidationInfo.Type.ERROR).build();
         }
         // validate availability
-        if (!MySQLMvpModel.checkNameAvailabilitys(subscription.subscriptionId(), value)) {
+        if (!MySQLMvpModel.checkNameAvailabilitys(subscription.getId(), value)) {
             return AzureValidationInfo.builder().input(this).message(this.getValue() + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
         }
         return AzureValidationInfo.OK;

@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.ui;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -26,7 +28,6 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -55,6 +56,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfiguration> implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
@@ -153,7 +156,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             public void customize(JList jlist, Subscription subscription, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (subscription != null) {
-                    setText(String.format("%s (%s)", subscription.displayName(), subscription.subscriptionId()));
+                    setText(String.format("%s (%s)", subscription.getName(), subscription.getId()));
                 }
             }
         });
@@ -298,7 +301,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             Subscription sub = (Subscription) comboSubscription.getSelectedItem();
             ResourceGroup rg = (ResourceGroup) comboResourceGroup.getSelectedItem();
             if (sub != null && rg != null) {
-                updateAppServicePlanList(sub.subscriptionId(), rg.name());
+                updateAppServicePlanList(sub.getId(), rg.name());
             }
         }
     }
@@ -328,8 +331,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         cbLocation.removeAllItems();
         Subscription sb = (Subscription) comboSubscription.getSelectedItem();
         if (sb != null) {
-            updateResourceGroupList(sb.subscriptionId());
-            updateLocationList(sb.subscriptionId());
+            updateResourceGroupList(sb.getId());
+            updateLocationList(sb.getId());
         }
     }
 
@@ -382,7 +385,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             webAppOnLinuxDeployConfiguration.setAppName(textAppName.getText());
             Subscription selectedSubscription = (Subscription) comboSubscription.getSelectedItem();
             if (selectedSubscription != null) {
-                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedSubscription.subscriptionId());
+                webAppOnLinuxDeployConfiguration.setSubscriptionId(selectedSubscription.getId());
             }
 
             // resource group
@@ -600,7 +603,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (subscriptions != null && subscriptions.size() > 0) {
             subscriptions.forEach((item) -> {
                 comboSubscription.addItem(item);
-                if (Comparing.equal(item.subscriptionId(), defaultSubscriptionId)) {
+                if (Comparing.equal(item.getId(), defaultSubscriptionId)) {
                     comboSubscription.setSelectedItem(item);
                     defaultSubscriptionId = null;
                 }

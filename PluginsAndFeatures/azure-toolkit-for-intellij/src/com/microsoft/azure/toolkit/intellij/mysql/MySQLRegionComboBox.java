@@ -7,15 +7,14 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +77,7 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
         if (!AzureValidationInfo.OK.equals(info)) {
             return info;
         }
-        MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.subscriptionId());
+        MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.getId());
         List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().name());
         // 'Basic' performance tier represents the service is available in this location for your subscription
         if (propertiesInnerList.stream().anyMatch(e -> DEFAULT_MYSQL_PERFORMANCE_TIER_ID.equals(e.id()))) {

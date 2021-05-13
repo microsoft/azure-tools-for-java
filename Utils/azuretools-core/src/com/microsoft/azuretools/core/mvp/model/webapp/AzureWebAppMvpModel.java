@@ -24,7 +24,6 @@ import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
@@ -38,10 +37,12 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -74,6 +75,8 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 @Deprecated
 @Log
@@ -689,8 +692,8 @@ public class AzureWebAppMvpModel {
     )
     public List<ResourceEx<WebApp>> listAllWebAppsOnWindows(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
+        for (final Subscription sub : az(AzureAccount.class).account().getSelectedSubscriptions()) {
+            final String sid = sub.getId();
             webApps.addAll(listWebAppsOnWindows(sid, force));
         }
         return webApps;
@@ -719,8 +722,8 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<WebApp>> listAllWebApps(final boolean... force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
-            .flatMap((sd) -> listWebApps(sd.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listWebApps(sd.getId(), force).stream())
             .collect(Collectors.toList());
     }
 
@@ -863,8 +866,8 @@ public class AzureWebAppMvpModel {
     )
     public List<ResourceEx<WebApp>> listAllWebAppsOnLinux(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        for (final Subscription sub : AzureMvpModel.getInstance().getSelectedSubscriptions()) {
-            final String sid = sub.subscriptionId();
+        for (final Subscription sub : az(AzureAccount.class).account().getSelectedSubscriptions()) {
+            final String sid = sub.getId();
             webApps.addAll(listWebAppsOnLinux(sid, force));
         }
         return webApps;
@@ -968,8 +971,8 @@ public class AzureWebAppMvpModel {
             type = AzureOperation.Type.SERVICE
     )
     public List<IWebApp> listAzureWebApps(final boolean force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().stream()
-                .flatMap(sub -> listAzureWebAppsBySubscription(sub.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().stream()
+                .flatMap(sub -> listAzureWebAppsBySubscription(sub.getId(), force).stream())
                 .collect(Collectors.toList());
     }
 

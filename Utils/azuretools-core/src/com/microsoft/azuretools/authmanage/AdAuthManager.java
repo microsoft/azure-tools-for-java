@@ -7,8 +7,8 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.*;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
@@ -193,7 +193,7 @@ class AdAuthManager extends BaseADAuthManager {
             // ac1.acquireToken(Constants.resourceVault, false, userId, isDisplayable);
             List<String> sids = new LinkedList<>();
             for (Subscription s : accessTokenAzureManager.getSubscriptions(tid)) {
-                sids.add(s.subscriptionId());
+                sids.add(s.getId());
             }
             tidToSidsMap.put(t.tenantId(), sids);
         }

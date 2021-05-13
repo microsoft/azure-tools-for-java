@@ -4,9 +4,9 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
@@ -27,7 +27,7 @@ public class AppNameInput extends ValidationDebouncedTextInput {
         final AzureValidationInfo info = super.doValidateValue();
         if (info == AzureValidationInfo.OK) {
             try {
-                ValidationUtils.validateAppServiceName(subscription != null ? subscription.subscriptionId() : null, this.getValue());
+                ValidationUtils.validateAppServiceName(subscription != null ? subscription.getId() : null, this.getValue());
             } catch (final IllegalArgumentException e) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();

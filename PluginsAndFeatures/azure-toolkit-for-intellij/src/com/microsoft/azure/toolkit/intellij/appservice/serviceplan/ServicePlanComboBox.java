@@ -10,11 +10,11 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -110,7 +110,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             }
             final List<AppServicePlan> remotePlans = AzureWebAppMvpModel
                 .getInstance()
-                .listAppServicePlanBySubscriptionId(subscription.subscriptionId());
+                .listAppServicePlanBySubscriptionId(subscription.getId());
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {

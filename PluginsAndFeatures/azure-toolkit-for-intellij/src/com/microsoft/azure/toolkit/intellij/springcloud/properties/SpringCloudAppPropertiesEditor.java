@@ -22,12 +22,13 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.PersistentDisk;
 import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogManager;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
@@ -68,6 +69,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private static final LineBorder HIGH_LIGHT_BORDER = new LineBorder(Color.decode("0x8a2da5"), 1);
@@ -740,8 +743,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 targetViewModel.setEnablePersistentStorage(false);
             }
 
-            Subscription subs = AzureMvpModel.getInstance().getSubscriptionById(SpringCloudIdHelper.getSubscriptionId(this.appId));
-            targetViewModel.setSubscriptionName(subs == null ? null : subs.displayName());
+            Subscription subs = az(AzureAccount.class).account().getSubscription(SpringCloudIdHelper.getSubscriptionId(this.appId));
+            targetViewModel.setSubscriptionName(subs == null ? null : subs.getName());
             targetViewModel.setResourceGroup(SpringCloudIdHelper.getResourceGroup(this.appId));
             if (deploy != null) {
                 DeploymentSettings settings = deploy.properties().deploymentSettings();

@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.intellij.connector.mysql.component;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
@@ -53,7 +53,7 @@ public class ServerComboBox extends AzureComboBox<Server> {
         if (Objects.isNull(manager)) {
             return new ArrayList<>();
         }
-        final MySQLManager mySQLManager = manager.getMySQLManager(subscription.subscriptionId());
+        final MySQLManager mySQLManager = manager.getMySQLManager(subscription.getId());
         return mySQLManager.servers().list();
     }
 

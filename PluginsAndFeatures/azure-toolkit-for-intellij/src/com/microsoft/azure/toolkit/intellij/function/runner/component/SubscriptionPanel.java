@@ -6,20 +6,23 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.component;
 
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.List;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 public class SubscriptionPanel extends JPanel {
-    private JComboBox cbSubscription;
+    private JComboBox<Object> cbSubscription;
     private JPanel pnlSubscription;
 
     private Window window;
@@ -34,7 +37,7 @@ public class SubscriptionPanel extends JPanel {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof Subscription) {
-                    setText(((Subscription) object).displayName());
+                    setText(((Subscription) object).getName());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -46,9 +49,10 @@ public class SubscriptionPanel extends JPanel {
         label.setLabelFor(cbSubscription);
     }
 
+    @Nullable
     public String getSubscriptionId() {
         final Object selectedObject = cbSubscription.getSelectedItem();
-        return selectedObject instanceof Subscription ? ((Subscription) selectedObject).subscriptionId() : null;
+        return selectedObject instanceof Subscription ? ((Subscription) selectedObject).getId() : null;
     }
 
     @AzureOperation(
@@ -57,7 +61,7 @@ public class SubscriptionPanel extends JPanel {
     )
     public void loadSubscription() {
         beforeLoadSubscription();
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
+        Observable.fromCallable(() -> az(AzureAccount.class).account().getSelectedSubscriptions())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(this::fillSubscription);
     }
@@ -75,7 +79,7 @@ public class SubscriptionPanel extends JPanel {
     private void fillSubscription(List<Subscription> subscriptions) {
         cbSubscription.removeAllItems();
         cbSubscription.setEnabled(true);
-        subscriptions.stream().forEach(subscription -> cbSubscription.addItem(subscription));
+        subscriptions.forEach(subscription -> cbSubscription.addItem(subscription));
         cbSubscription.setSelectedItem(cbSubscription.getItemAt(0));
         if (window != null) {
             window.pack();

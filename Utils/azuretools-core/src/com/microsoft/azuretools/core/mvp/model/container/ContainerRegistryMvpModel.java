@@ -10,7 +10,8 @@ import com.microsoft.azure.management.containerregistry.AccessKeyType;
 import com.microsoft.azure.management.containerregistry.Registries;
 import com.microsoft.azure.management.containerregistry.Registry;
 import com.microsoft.azure.management.containerregistry.RegistryCredentials;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class ContainerRegistryMvpModel {
 
@@ -49,9 +52,9 @@ public class ContainerRegistryMvpModel {
      */
     public List<ResourceEx<Registry>> listContainerRegistries(boolean force) {
         List<ResourceEx<Registry>> registryList = new ArrayList<>();
-        List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         for (Subscription sub : subscriptions) {
-            registryList.addAll(listRegistryBySubscriptionId(sub.subscriptionId(), force));
+            registryList.addAll(listRegistryBySubscriptionId(sub.getId(), force));
         }
         return registryList;
     }

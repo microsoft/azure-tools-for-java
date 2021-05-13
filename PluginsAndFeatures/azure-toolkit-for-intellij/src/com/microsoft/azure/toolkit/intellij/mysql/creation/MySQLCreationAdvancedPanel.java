@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerVersion;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -19,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.mysql.MySQLRegionComboBox;
 import com.microsoft.azure.toolkit.intellij.mysql.ServerNameTextField;
 import com.microsoft.azure.toolkit.intellij.mysql.VersionComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLConfig;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

@@ -10,7 +10,7 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -290,7 +290,7 @@ public class AzureWebAppMvpModelTest {
 
         final List<Subscription> subscriptions = new ArrayList<Subscription>();
         final Subscription sub = mock(Subscription.class);
-        when(sub.subscriptionId()).thenReturn("1");
+        when(sub.getId()).thenReturn("1");
         subscriptions.add(sub);
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
 
@@ -342,7 +342,7 @@ public class AzureWebAppMvpModelTest {
         assertEquals(resultList.size(), 0);
 
         final Subscription sub = mock(Subscription.class);
-        when(sub.subscriptionId()).thenReturn("1");
+        when(sub.getId()).thenReturn("1");
         subscriptions.add(sub);
 
         final List<WebApp> webAppList = prepareMockWebAppList();
@@ -393,7 +393,7 @@ public class AzureWebAppMvpModelTest {
         assertEquals(resultList.size(), 0);
 
         final Subscription sub = mock(Subscription.class);
-        when(sub.subscriptionId()).thenReturn("1");
+        when(sub.getId()).thenReturn("1");
         subscriptions.add(sub);
 
         final List<WebApp> webAppList = prepareMockWebAppList();

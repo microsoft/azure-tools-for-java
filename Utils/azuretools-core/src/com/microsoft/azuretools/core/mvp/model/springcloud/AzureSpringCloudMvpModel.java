@@ -16,9 +16,10 @@ import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.App
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.ServiceResourceInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.CloudFile;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -37,6 +38,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.*;
 
 
@@ -47,13 +49,13 @@ public class AzureSpringCloudMvpModel {
 
     public static List<ServiceResourceInner> listAllSpringCloudClusters() {
         final List<ServiceResourceInner> clusters = new ArrayList<>();
-        List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        List<Subscription> subs = az(AzureAccount.class).account().getSelectedSubscriptions();
         if (subs.size() == 0) {
             return clusters;
         }
         Observable.from(subs).flatMap((sd) -> Observable.create((subscriber) -> {
             final List<ServiceResourceInner> clustersInSubs = listAllSpringCloudClustersBySubscription(
-                sd.subscriptionId());
+                sd.getId());
             synchronized (clusters) {
                 clusters.addAll(clustersInSubs);
             }

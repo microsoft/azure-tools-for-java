@@ -20,8 +20,9 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHub;
 import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -39,6 +40,8 @@ import javax.swing.event.PopupMenuEvent;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class CreateFunctionForm extends DialogWrapper implements TelemetryProperties {
 
@@ -334,9 +337,9 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private List<EventHubNamespace> getEventHubNameSpaces() {
         if (eventHubNamespaces == null) {
             eventHubNamespaces = new ArrayList<>();
-            final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+            final List<Subscription> subs = az(AzureAccount.class).account().getSelectedSubscriptions();
             for (final Subscription subscriptionId : subs) {
-                final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.subscriptionId());
+                final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.getId());
                 final PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
                 pagedList.loadAll();
                 eventHubNamespaces.addAll(pagedList);

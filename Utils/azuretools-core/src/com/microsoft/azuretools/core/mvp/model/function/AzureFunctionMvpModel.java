@@ -9,6 +9,7 @@ import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
@@ -23,6 +24,8 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class AzureFunctionMvpModel {
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
@@ -134,8 +137,8 @@ public class AzureFunctionMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<ResourceEx<FunctionApp>> listAllFunctions(final boolean... force) {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions().parallelStream()
-            .flatMap((sd) -> listFunctionsInSubscription(sd.subscriptionId(), force).stream())
+        return az(AzureAccount.class).account().getSelectedSubscriptions().parallelStream()
+            .flatMap((sd) -> listFunctionsInSubscription(sd.getId(), force).stream())
             .collect(Collectors.toList());
     }
 

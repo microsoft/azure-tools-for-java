@@ -5,20 +5,22 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.subscription;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import java.util.List;
 import java.util.Objects;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SubscriptionComboBox extends AzureComboBox<Subscription> {
 
     public SubscriptionComboBox() {
         super();
-        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        final List<Subscription> items = az(AzureAccount.class).account().getSelectedSubscriptions();
         this.setValue(items.get(0)); // select the first subscription
     }
 
@@ -29,7 +31,7 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
         type = AzureOperation.Type.SERVICE
     )
     protected List<Subscription> loadItems() throws Exception {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions();
+        return az(AzureAccount.class).account().getSelectedSubscriptions();
     }
 
     @Override
@@ -37,6 +39,6 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
-        return ((Subscription) item).displayName();
+        return ((Subscription) item).getName();
     }
 }

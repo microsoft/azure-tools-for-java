@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.management.appplatform.v2020_07_01.RuntimeVersion;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
@@ -22,8 +21,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
@@ -131,7 +130,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
                 manager::getArtifactIdentifier
             ))));
         Optional.ofNullable(appConfig.getSubscriptionId())
-            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::subscriptionId))));
+            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(appConfig.getClusterName())
             .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
@@ -163,7 +162,7 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     public SpringCloudAppConfig getData(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final RuntimeVersion javaVersion = this.useJava11.isSelected() ? RuntimeVersion.JAVA_11 : RuntimeVersion.JAVA_8;
-        appConfig.setSubscriptionId(this.selectorSubscription.getValue().subscriptionId());
+        appConfig.setSubscriptionId(this.selectorSubscription.getValue().getId());
         appConfig.setClusterName(this.selectorCluster.getValue().name());
         appConfig.setAppName(this.selectorApp.getValue().name());
         appConfig.setIsPublic(enablePublic.isSelected());

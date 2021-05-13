@@ -8,10 +8,10 @@ package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -67,7 +67,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
                     .filter(i -> this.subscription.equals(i.getSubscription()))
                     .collect(Collectors.toList()));
             }
-            final String sid = subscription.subscriptionId();
+            final String sid = subscription.getId();
             final List<ResourceGroup> remoteGroups = AzureMvpModel
                 .getInstance()
                 .getResourceGroupsBySubscriptionId(sid);

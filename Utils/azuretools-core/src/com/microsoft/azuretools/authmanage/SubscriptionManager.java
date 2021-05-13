@@ -5,8 +5,8 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -90,12 +90,12 @@ public class SubscriptionManager {
         List<Pair<Subscription, Tenant>> stpl = azureManager.getSubscriptionsWithTenant();
         for (Pair<Subscription, Tenant> stp : stpl) {
             sdl.add(new SubscriptionDetail(
-                    stp.first().subscriptionId(),
-                    stp.first().displayName(),
+                    stp.first().getId(),
+                    stp.first().getName(),
                     stp.second().tenantId(),
-                    selectedSubscriptionIds.contains(stp.first().subscriptionId()) || CollectionUtils.isEmpty(selectedSubscriptionIds)));
+                    selectedSubscriptionIds.contains(stp.first().getId()) || CollectionUtils.isEmpty(selectedSubscriptionIds)));
             // WORKAROUND: update sid->subscription map at the same time
-            subscriptionIdToSubscriptionMap.put(stp.first().subscriptionId(), stp.first());
+            subscriptionIdToSubscriptionMap.put(stp.first().getId(), stp.first());
         }
         return sdl;
     }

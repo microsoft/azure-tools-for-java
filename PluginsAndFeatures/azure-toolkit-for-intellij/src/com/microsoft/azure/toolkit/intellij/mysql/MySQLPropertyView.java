@@ -9,9 +9,10 @@ import com.microsoft.azure.management.mysql.v2020_01_01.Server;
 import com.microsoft.azure.management.mysql.v2020_01_01.ServerState;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.FirewallRuleInner;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySQLService;
@@ -36,6 +37,8 @@ import java.awt.event.ItemEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpView {
 
@@ -252,9 +255,9 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     public void showProperty(MySQLProperty property) {
         Server server = property.getServer();
         final String sid = AzureMvpModel.getSegment(server.id(), "subscriptions");
-        Subscription subscription = AzureMvpModel.getInstance().getSubscriptionById(sid);
+        Subscription subscription = az(AzureAccount.class).account().getSubscription(sid);
         if (subscription != null) {
-            overview.getSubscriptionTextField().setText(subscription.displayName());
+            overview.getSubscriptionTextField().setText(subscription.getName());
             databaseComboBox.setSubscription(subscription);
             databaseComboBox.setServer(server);
         }

@@ -10,7 +10,7 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
@@ -132,7 +132,7 @@ public class AzureModelController {
                 System.out.println("Updating subscription locations");
                 Subscription subscription = sidToSubscriptionMap.get(sd.getSubscriptionId());
                 if (progressIndicator != null) {
-                    progressIndicator.setText(String.format("Updating subscription '%s' locations...", subscription.displayName()));
+                    progressIndicator.setText(String.format("Updating subscription '%s' locations...", subscription.getName()));
                 }
                 List<Location> locl = subscription.listLocations();
                 Collections.sort(locl, new Comparator<Location>() {
@@ -237,7 +237,7 @@ public class AzureModelController {
         // convert to map to easier find by sid
         Map<String, Subscription> sidToSubscriptionMap = azureModel.createSidToSubscriptionMap();
         for (Subscription s : sl) {
-            sidToSubscriptionMap.put(s.subscriptionId(), s);
+            sidToSubscriptionMap.put(s.getId(), s);
         }
         azureModel.setSidToSubscriptionMap(sidToSubscriptionMap);
         Map<SubscriptionDetail, List<Location>> sdlocMap = azureModel.createSubscriptionToRegionMap();
