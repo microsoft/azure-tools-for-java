@@ -32,7 +32,6 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Map;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,12 +55,14 @@ public class AzureMySQLService {
         final Operation operation = TelemetryManager.createOperation(ActionConstants.MySQL.CREATE);
         try {
             operation.start();
-            final String subscriptionId = config.getSubscription().subscriptionId();
+            final String subscriptionId = config.getSubscription().getId();
             EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(TelemetryConstants.SUBSCRIPTIONID, subscriptionId));
             // create resource group if necessary.
             if (config.getResourceGroup() instanceof Draft) {
                 Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-                ResourceGroup newResourceGroup = azure.resourceGroups().define(config.getResourceGroup().name()).withRegion(config.getRegion()).create();
+                final com.microsoft.azure.management.resources.fluentcore.arm.Region region =
+                    com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(config.getRegion().getName());
+                ResourceGroup newResourceGroup = azure.resourceGroups().define(config.getResourceGroup().name()).withRegion(region).create();
                 config.setResourceGroup(newResourceGroup);
             }
             // create mysql server

@@ -8,8 +8,9 @@ package com.microsoft.azuretools.utils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -35,6 +36,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 /**
  * Created by vlashch on 1/9/17.
@@ -134,15 +137,15 @@ public class AzureModelController {
                 if (progressIndicator != null) {
                     progressIndicator.setText(String.format("Updating subscription '%s' locations...", subscription.getName()));
                 }
-                List<Location> locl = subscription.listLocations();
-                Collections.sort(locl, new Comparator<Location>() {
+                List<Region> locl = az(AzureAccount.class).listRegions(subscription.getId());
+                Collections.sort(locl, new Comparator<Region>() {
                     @Override
-                    public int compare(Location lhs, Location rhs) {
-                        return lhs.displayName().compareTo(rhs.displayName());
+                    public int compare(Region lhs, Region rhs) {
+                        return lhs.getName().compareTo(rhs.getName());
                     }
                 });
 
-                Map<SubscriptionDetail, List<Location>> sdlocMap = azureModel.getSubscriptionToLocationMap();
+                Map<SubscriptionDetail, List<Region>> sdlocMap = azureModel.getSubscriptionToLocationMap();
                 sdlocMap.put(sd, locl);
 
                 // resource group maps
@@ -240,7 +243,7 @@ public class AzureModelController {
             sidToSubscriptionMap.put(s.getId(), s);
         }
         azureModel.setSidToSubscriptionMap(sidToSubscriptionMap);
-        Map<SubscriptionDetail, List<Location>> sdlocMap = azureModel.createSubscriptionToRegionMap();
+        Map<SubscriptionDetail, List<Region>> sdlocMap = azureModel.createSubscriptionToRegionMap();
         Map<SubscriptionDetail, List<ResourceGroup>> sdrgMap = azureModel.createSubscriptionToResourceGroupMap();
 
         SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
@@ -265,8 +268,8 @@ public class AzureModelController {
                                 sdrgMap.put(sd, rgList);
 
                                 if (sidToSubscriptionMap.containsKey(sd.getSubscriptionId())) {
-                                    final List<Location> locations = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
-                                    Collections.sort(locations, Comparator.comparing(Location::displayName));
+                                    final List<Region> locations = az(AzureAccount.class).listRegions(sd.getSubscriptionId());
+                                    Collections.sort(locations, Comparator.comparing(Region::getName));
                                     sdlocMap.put(sd, locations);
                                 }
                             }

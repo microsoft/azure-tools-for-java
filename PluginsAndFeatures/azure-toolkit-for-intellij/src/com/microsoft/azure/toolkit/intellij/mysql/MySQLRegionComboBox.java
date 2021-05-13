@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.PerformanceTierPropertiesInner;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -55,12 +55,12 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
     protected String getItemText(Object item) {
         if (item instanceof Region) {
             // TODO: remove - This is only for test
-            if ("centraluseuap".equals(((Region) item).label())) {
+            if ("centraluseuap".equals(((Region) item).getLabel())) {
                 return "Central US EUAP";
-            } else if ("eastus2euap".equals(((Region) item).label())) {
+            } else if ("eastus2euap".equals(((Region) item).getLabel())) {
                 return "East US 2 EUAP";
             }
-            return ((Region) item).label();
+            return ((Region) item).getLabel();
         }
         return super.getItemText(item);
     }
@@ -78,7 +78,7 @@ public class MySQLRegionComboBox extends AzureComboBox<Region> {
             return info;
         }
         MySQLManager manager = AuthMethodManager.getInstance().getMySQLManager(subscription.getId());
-        List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().name());
+        List<PerformanceTierPropertiesInner> propertiesInnerList = manager.locationBasedPerformanceTiers().inner().list(getValue().getName());
         // 'Basic' performance tier represents the service is available in this location for your subscription
         if (propertiesInnerList.stream().anyMatch(e -> DEFAULT_MYSQL_PERFORMANCE_TIER_ID.equals(e.id()))) {
             final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();

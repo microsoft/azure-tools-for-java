@@ -41,7 +41,7 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
             setAppServicePlanName(functionAppConfig.getServicePlan().name());
             setAppServicePlanResourceGroup(functionAppConfig.getServicePlan().resourceGroupName());
             setPricingTier(functionAppConfig.getServicePlan().pricingTier().toSkuDescription().size());
-            setRegion(functionAppConfig.getRegion().name());
+            setRegion(functionAppConfig.getRegion().getName());
             setOs(functionAppConfig.getPlatform().getOs().name());
             setJavaVersion(functionAppConfig.getPlatform().getStackVersionOrJavaVersion());
             final MonitorConfig monitorConfig = functionAppConfig.getMonitorConfig();

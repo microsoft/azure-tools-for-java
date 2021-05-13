@@ -12,7 +12,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
-import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -100,8 +100,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
             @Override
             public void customize(JList list, Object o, int i, boolean b, boolean b1) {
-                if (o != null && (o instanceof Location)) {
-                    setText("  " + ((Location) o).displayName());
+                if (o != null && (o instanceof Region)) {
+                    setText("  " + ((Region) o).getName());
                 }
             }
         });
@@ -234,7 +234,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
 
         // will set to null if selected subscription changes
         if (model.getRegion() == null) {
-            Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+            Map<SubscriptionDetail, List<Region>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
             if (subscription2Location == null || subscription2Location.get(model.getSubscription()) == null) {
                 final DefaultComboBoxModel<String> loadingModel = new DefaultComboBoxModel<>(new String[]{"<Loading...>"});
                 regionComboBox.setModel(loadingModel);
@@ -279,8 +279,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     }
 
     private void fillRegions() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
-                .stream().filter(e -> SUPPORTED_REGION_LIST.contains(e.region().name())).sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        List<Region> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
+                .stream().filter(e -> SUPPORTED_REGION_LIST.contains(e.getName())).sorted(Comparator.comparing(Region::getName)).collect(Collectors.toList());
         regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
         if (locations.size() > 0) {
             selectRegion();
@@ -292,7 +292,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         if (customImageBtn.isSelected()) {
             fillPublishers();
         }
-        model.setRegion((Location) regionComboBox.getSelectedItem());
+        model.setRegion((Region) regionComboBox.getSelectedItem());
     }
 
     private void fillPublishers() {
@@ -305,14 +305,14 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 progressIndicator.setIndeterminate(true);
 
                 final Object selectedItem = regionComboBox.getSelectedItem();
-                final Location location = selectedItem instanceof Location ? (Location) selectedItem : null;
+                final Region location = selectedItem instanceof Region ? (Region) selectedItem : null;
                 if (location == null) {
                     return;
                 }
                 clearSelection(publisherComboBox, offerComboBox, skuComboBox, imageLabelList);
                 RxJavaUtils.unsubscribeSubscription(fillPublisherSubscription);
                 fillPublisherSubscription =
-                    Observable.fromCallable(() -> azure.virtualMachineImages().publishers().listByRegion(location.name()))
+                    Observable.fromCallable(() -> azure.virtualMachineImages().publishers().listByRegion(location.getName()))
                               .subscribeOn(Schedulers.io())
                               .subscribe(publisherList -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                                              publisherComboBox.setModel(new DefaultComboBoxModel(publisherList.toArray()));

@@ -8,8 +8,9 @@ package com.microsoft.azuretools.core.mvp.model;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Deployment;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -26,6 +27,8 @@ import rx.schedulers.Schedulers;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class AzureMvpModel {
 
@@ -251,15 +254,15 @@ public class AzureMvpModel {
         params = {"sid"},
         type = AzureOperation.Type.SERVICE
     )
-    public List<Location> listLocationsBySubscriptionId(String sid) {
-        List<Location> locations = new ArrayList<>();
+    public List<Region> listLocationsBySubscriptionId(String sid) {
+        List<Region> locations = new ArrayList<>();
         Subscription subscription = getSubscriptionById(sid);
         try {
-            locations.addAll(subscription.listLocations());
+            locations.addAll(az(AzureAccount.class).listRegions(subscription.getId()));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Collections.sort(locations, getComparator(Location::name));
+        Collections.sort(locations, getComparator(Region::getName));
         return locations;
     }
 

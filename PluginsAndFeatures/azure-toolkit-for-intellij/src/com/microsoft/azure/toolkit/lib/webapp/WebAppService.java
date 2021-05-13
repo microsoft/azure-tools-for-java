@@ -57,12 +57,12 @@ public class WebAppService {
     )
     public static WebAppSettingModel convertConfig2Settings(final WebAppConfig config) {
         final WebAppSettingModel settings = new WebAppSettingModel();
-        settings.setSubscriptionId(config.getSubscription().subscriptionId());
+        settings.setSubscriptionId(config.getSubscription().getId());
         // creating if id is empty
         settings.setCreatingResGrp(config.getResourceGroup() instanceof Draft || StringUtils.isEmpty(config.getResourceGroup().id()));
         settings.setResourceGroup(config.getResourceGroup().name());
         settings.setWebAppName(config.getName());
-        settings.setRegion(config.getRegion().name());
+        settings.setRegion(config.getRegion().getName());
         settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
         // creating if id is empty
         settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));

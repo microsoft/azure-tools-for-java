@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
@@ -17,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.ValidationUtils;
@@ -85,7 +85,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         builder.subscription(this.subscription)
                .name(this.textName.getValue())
                .os(this.os)
-               .region(this.region)
+               .region(com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(this.region.getName()))
                .tier(this.comboBoxPricingTier.getValue());
         return builder.build();
     }
@@ -94,7 +94,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     public void setData(final DraftServicePlan data) {
         this.subscription = data.getSubscription();
         this.os = data.operatingSystem();
-        this.region = data.region();
+        this.region = Region.fromName(data.region().name());
         this.textName.setValue(data.name());
     }
 

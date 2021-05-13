@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -106,7 +107,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         final DraftServicePlan plan = DraftServicePlan.builder().build();
         plan.setSubscription(subscription);
         plan.setName(StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH));
-        plan.setRegion(result.getRegion());
+        plan.setRegion(Region.fromName(result.getRegion().getName()));
         plan.setOs(result.getPlatform().getOs());
         plan.setTier(result.getPricingTier());
         result.setName(appName);

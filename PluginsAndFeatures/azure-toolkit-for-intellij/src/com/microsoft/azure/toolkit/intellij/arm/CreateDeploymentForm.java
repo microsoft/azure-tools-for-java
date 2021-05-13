@@ -17,9 +17,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Deployment.DefinitionStages.WithTemplate;
 import com.microsoft.azure.management.resources.DeploymentMode;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -132,10 +131,11 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                 WithTemplate template;
                 if (createNewRgButton.isSelected()) {
                     rgName = rgNameTextFiled.getText();
+                    final Region region = ((ElementWrapper<Region>) regionCb.getSelectedItem()).getValue();
                     template = azure
                         .deployments().define(deploymentName)
                         .withNewResourceGroup(rgNameTextFiled.getText(),
-                                              ((ElementWrapper<Region>) regionCb.getSelectedItem()).getValue());
+                            com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(region.getName()));
                 } else {
                     ResourceGroup rg = ((ElementWrapper<ResourceGroup>) rgNameCb.getSelectedItem()).getValue();
                     List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
@@ -203,7 +203,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     }
 
     private void initCache() {
-        Map<SubscriptionDetail, List<Location>> subscription2Location =
+        Map<SubscriptionDetail, List<Region>> subscription2Location =
                 AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
             final IAzureOperationTitle title = AzureOperationBundle.title("account|subscription.flush_cache");
@@ -218,15 +218,14 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     }
 
     private void fillRegion() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap()
-            .get(subscriptionCb.getSelectedItem()).stream().sorted(Comparator.comparing(Location::displayName)).
+        List<Region> locations = AzureModel.getInstance().getSubscriptionToLocationMap()
+            .get(subscriptionCb.getSelectedItem()).stream().sorted(Comparator.comparing(Region::getName)).
                 collect(Collectors.toList());
         regionCb.removeAllItems();
-        for (Location location : locations) {
-            Region region = location.region();
-            ElementWrapper<Region> item = new ElementWrapper<>(region.label(), region);
+        for (Region location : locations) {
+            ElementWrapper<Region> item = new ElementWrapper<>(location.getLabel(), location);
             regionCb.addItem(item);
-            if (region == Region.EUROPE_WEST) {
+            if (location == Region.EUROPE_WEST) {
                 regionCb.setSelectedItem(item);
             }
         }

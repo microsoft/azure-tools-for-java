@@ -302,7 +302,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         List<Network> filteredNetworks = new ArrayList<>();
 
         for (Network network : virtualNetworks) {
-            if (network.regionName() != null && network.regionName().equals(model.getRegion().name())) {
+            if (network.regionName() != null && network.regionName().equals(model.getRegion().getName())) {
                 filteredNetworks.add(network);
             }
         }
@@ -477,7 +477,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         for (PublicIPAddress publicIpAddress : publicIpAddresses) {
 
             // VM and public ip address need to be in the same region
-            if (publicIpAddress.regionName() != null && publicIpAddress.regionName().equals(model.getRegion().name())) {
+            if (publicIpAddress.regionName() != null && publicIpAddress.regionName().equals(model.getRegion().getName())) {
                 filteredPips.add(publicIpAddress);
             }
         }
@@ -546,7 +546,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
         for (NetworkSecurityGroup nsg : networkSecurityGroups) {
             // VM and network security group
-            if (model.getRegion().name().equals(nsg.regionName())) {
+            if (model.getRegion().getName().equals(nsg.regionName())) {
                 filteredNsgs.add(nsg);
             }
         }
@@ -701,7 +701,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                                           resourceGroupName,
                                           createNewRadioButton.isSelected(),
                                           model.getSize(),
-                                          model.getRegion().name(),
+                                          model.getRegion().getName(),
                                           model.getVirtualMachineImage(),
                                           model.getKnownMachineImage(),
                                           model.isKnownMachineImage(),

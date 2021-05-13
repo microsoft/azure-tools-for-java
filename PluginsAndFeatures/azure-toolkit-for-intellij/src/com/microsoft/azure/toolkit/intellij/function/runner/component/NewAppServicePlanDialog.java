@@ -9,7 +9,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.SkuName;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -56,7 +56,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof Region) {
-                    setText(((Region) object).label());
+                    setText(((Region) object).getLabel());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -139,7 +139,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
         regionList.stream().forEach(region -> cbRegion.addItem(region));
         final Region defaultLocation =
                 regionList.stream()
-                          .filter(region -> StringUtils.equalsAnyIgnoreCase(region.name(), DEFAULT_REGION))
+                          .filter(region -> StringUtils.equalsAnyIgnoreCase(region.getName(), DEFAULT_REGION))
                           .findFirst().orElse(regionList.get(0));
         cbRegion.setSelectedItem(defaultLocation);
     }

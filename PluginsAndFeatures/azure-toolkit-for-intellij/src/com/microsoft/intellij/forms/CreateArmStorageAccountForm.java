@@ -11,11 +11,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -56,7 +56,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     private JPanel contentPane;
     private JComboBox<SubscriptionDetail> subscriptionComboBox;
     private JTextField nameTextField;
-    private JComboBox<Location> regionComboBox;
+    private JComboBox<Region> regionComboBox;
     private JComboBox replicationComboBox;
     private JLabel pricingLabel;
     private JLabel userInfoLabel;
@@ -110,8 +110,8 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 
             @Override
             public void customize(JList list, Object o, int i, boolean b, boolean b1) {
-                if (o != null && (o instanceof Location)) {
-                    setText("  " + ((Location) o).displayName());
+                if (o != null && (o instanceof Region)) {
+                    setText("  " + ((Region) o).getName());
                 }
             }
         });
@@ -221,7 +221,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             newStorageAccount.setResourceGroupName(resourceGroupName);
             newStorageAccount.setNewResourceGroup(isNewResourceGroup);
             newStorageAccount.setType(replicationComboBox.getSelectedItem().toString());
-            newStorageAccount.setLocation(((Location) regionComboBox.getSelectedItem()).name());
+            newStorageAccount.setLocation(((Region) regionComboBox.getSelectedItem()).getName());
             newStorageAccount.setKind((Kind) accountKindCombo.getSelectedItem());
             newStorageAccount.setAccessTier((AccessTier) accessTeirComboBox.getSelectedItem());
 
@@ -254,7 +254,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
             AzureSDKManager.createStorageAccount(((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId(),
                                                  nameTextField.getText(),
-                                                 ((Location) regionComboBox.getSelectedItem()).name(),
+                                                 ((Region) regionComboBox.getSelectedItem()).getName(),
                                                  isNewResourceGroup,
                                                  resourceGroupName,
                                                  (Kind) accountKindCombo.getSelectedItem(),
@@ -295,7 +295,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         return false;
     }
 
-    public void fillFields(final SubscriptionDetail subscription, Location region) {
+    public void fillFields(final SubscriptionDetail subscription, Region region) {
         if (subscription == null) {
             accountKindCombo.setModel(new DefaultComboBoxModel(Kind.values().toArray()));
             accountKindCombo.addItemListener(new ItemListener() {
@@ -421,7 +421,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     }
 
     public void loadRegions() {
-        Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+        Map<SubscriptionDetail, List<Region>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null || subscription2Location.get(subscriptionComboBox.getSelectedItem()) == null) {
             final IAzureOperationTitle title = AzureOperationBundle.title("common.list_regions");
             AzureTaskManager.getInstance().runInModal(new AzureTask(project, title, false, () -> {
@@ -438,8 +438,8 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     }
 
     private void fillRegions() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(subscriptionComboBox.getSelectedItem())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        List<Region> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(subscriptionComboBox.getSelectedItem())
+                .stream().sorted(Comparator.comparing(Region::getName)).collect(Collectors.toList());
         regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
         loadGroups();
     }

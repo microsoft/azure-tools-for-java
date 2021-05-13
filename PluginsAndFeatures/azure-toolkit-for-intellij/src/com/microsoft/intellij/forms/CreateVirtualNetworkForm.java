@@ -7,7 +7,7 @@ package com.microsoft.intellij.forms;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
@@ -30,7 +30,7 @@ public class CreateVirtualNetworkForm extends AzureDialogWrapper {
     private String subscriptionId;
     private Project project;
 
-    public CreateVirtualNetworkForm(Project project, String subscriptionId, Location region, String vmName) {
+    public CreateVirtualNetworkForm(Project project, String subscriptionId, Region region, String vmName) {
         super(project, true);
 
         this.project = project;

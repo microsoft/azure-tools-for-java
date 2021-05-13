@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.ui;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import icons.MavenIcons;
 
@@ -26,7 +26,6 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -83,7 +82,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private JRadioButton rdoUseExist;
     private JRadioButton rdoCreateNew;
     private JPanel pnlCreate;
-    private JComboBox<Location> cbLocation;
+    private JComboBox<Region> cbLocation;
     private JComboBox<PricingTier> cbPricing;
     private JRadioButton rdoCreateResGrp;
     private JTextField txtNewResGrp;
@@ -179,11 +178,11 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         rdoUseExistAppServicePlan.addActionListener(e -> updateAppServicePlanEnabled());
 
         // location combo
-        cbLocation.setRenderer(new ListCellRendererWrapper<Location>() {
+        cbLocation.setRenderer(new ListCellRendererWrapper<Region>() {
             @Override
-            public void customize(JList jlist, Location location, int index, boolean isSelected, boolean cellHasFocus) {
+            public void customize(JList jlist, Region location, int index, boolean isSelected, boolean cellHasFocus) {
                 if (location != null) {
-                    setText(location.displayName());
+                    setText(location.getName());
                 }
             }
         });
@@ -408,9 +407,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             if (rdoCreateAppServicePlan.isSelected()) {
                 webAppOnLinuxDeployConfiguration.setCreatingNewAppServicePlan(true);
                 webAppOnLinuxDeployConfiguration.setAppServicePlanName(txtCreateAppServicePlan.getText());
-                Location selectedLocation = (Location) cbLocation.getSelectedItem();
+                Region selectedLocation = (Region) cbLocation.getSelectedItem();
                 if (selectedLocation != null) {
-                    webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.name());
+                    webAppOnLinuxDeployConfiguration.setLocationName(selectedLocation.getName());
                 } else {
                     webAppOnLinuxDeployConfiguration.setLocationName(null);
                 }
@@ -469,7 +468,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         loadWebAppList();
 
         // pnlCreateNew
-        webAppOnLinuxDeployPresenter.onLoadSubscriptionList(); // including related RG & Location
+        webAppOnLinuxDeployPresenter.onLoadSubscriptionList(); // including related RG & Region
         webAppOnLinuxDeployPresenter.onLoadPricingTierList();
 
         boolean creatingRg = conf.isCreatingNewResourceGroup();
@@ -626,12 +625,12 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     }
 
     @Override
-    public void renderLocationList(List<Location> locationList) {
+    public void renderLocationList(List<Region> locationList) {
         cbLocation.removeAllItems();
         if (locationList != null && locationList.size() > 0) {
             locationList.forEach((item) -> {
                 cbLocation.addItem(item);
-                if (Comparing.equal(item.name(), defaultLocationName)) {
+                if (Comparing.equal(item.getName(), defaultLocationName)) {
                     cbLocation.setSelectedItem(item);
                     // defaultLocationName = null;
                 }

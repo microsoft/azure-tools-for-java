@@ -24,7 +24,6 @@ import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
@@ -42,6 +41,7 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -364,16 +364,18 @@ public class AzureWebAppMvpModel {
         if (model.isCreatingNewAppServicePlan()) {
             // new asp
             final AppServicePlan.DefinitionStages.WithCreate asp;
+            final com.microsoft.azure.management.resources.fluentcore.arm.Region region =
+                com.microsoft.azure.management.resources.fluentcore.arm.Region.findByLabelOrName(model.getLocationName());
             if (model.isCreatingNewResourceGroup()) {
                 // new rg
                 asp = azure.appServices().appServicePlans()
                         .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withNewResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())
@@ -383,12 +385,12 @@ public class AzureWebAppMvpModel {
                 // old rg
                 asp = azure.appServices().appServicePlans()
                         .define(model.getAppServicePlanName())
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withPricingTier(pricingTier)
                         .withOperatingSystem(OperatingSystem.LINUX);
                 app = webAppDefinition
-                        .withRegion(Region.findByLabelOrName(model.getLocationName()))
+                        .withRegion(region)
                         .withExistingResourceGroup(model.getResourceGroupName())
                         .withNewLinuxPlan(asp)
                         .withPrivateRegistryImage(pr.getImageTagWithServerUrl(), pr.getServerUrl())

@@ -7,8 +7,8 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AzureModel {
     private Map<SubscriptionDetail, List<ResourceGroup>> subscriptionToResourceGroupMap = null;
-    private Map<SubscriptionDetail, List<Location>> subscriptionToLocationMap = null;
+    private Map<SubscriptionDetail, List<Region>> subscriptionToLocationMap = null;
     private Map<ResourceGroup, List<WebApp>> resourceGroupToWebAppMap = null;
     private Map<ResourceGroup, List<AppServicePlan>> resourceGroupToAppServicePlanMap = null;
     private Map<String, Subscription> sidToSubscriptionMap = null;
@@ -53,15 +53,15 @@ public class AzureModel {
 
     // == subscriptionToLocationMap
 
-    public Map<SubscriptionDetail, List<Location>> getSubscriptionToLocationMap() {
+    public Map<SubscriptionDetail, List<Region>> getSubscriptionToLocationMap() {
         return subscriptionToLocationMap;
     }
 
-    public Map<SubscriptionDetail, List<Location>> createSubscriptionToRegionMap() {
+    public Map<SubscriptionDetail, List<Region>> createSubscriptionToRegionMap() {
         return new ConcurrentHashMap<>();
     }
 
-    public void setSubscriptionToLocationMap(Map<SubscriptionDetail, List<Location>> subscriptionToLocationMap) {
+    public void setSubscriptionToLocationMap(Map<SubscriptionDetail, List<Region>> subscriptionToLocationMap) {
         this.subscriptionToLocationMap = subscriptionToLocationMap;
     }
 

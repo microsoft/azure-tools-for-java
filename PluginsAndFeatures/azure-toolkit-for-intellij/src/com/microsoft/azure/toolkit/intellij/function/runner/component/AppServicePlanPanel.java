@@ -10,7 +10,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
@@ -88,7 +88,7 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     public String getAppServicePlanRegion() {
-        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getRegion().name();
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getRegion().getName();
     }
 
     public String getAppServicePlanPricingTier() {
@@ -165,7 +165,7 @@ public class AppServicePlanPanel extends JPanel {
             lblLocation.setText("N/A");
             lblPricingTier.setText("N/A");
         } else {
-            lblLocation.setText(appServicePlanWrapper.getRegion().name());
+            lblLocation.setText(appServicePlanWrapper.getRegion().getName());
             final PricingTier pricingTier = appServicePlanWrapper.getPricingTier();
             lblPricingTier.setText(pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString());
         }
@@ -216,7 +216,7 @@ public class AppServicePlanPanel extends JPanel {
         public AppServicePlanWrapper(AppServicePlan appServicePlan) {
             this.isNewCreate = false;
             this.name = appServicePlan.name();
-            this.region = appServicePlan.region();
+            this.region = Region.fromName(appServicePlan.region().name());
             this.pricingTier = appServicePlan.pricingTier();
             this.operatingSystem = appServicePlan.operatingSystem();
             this.resourceGroup = appServicePlan.resourceGroupName();
