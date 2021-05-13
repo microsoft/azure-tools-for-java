@@ -41,7 +41,7 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionAp
         this.isNewCreateResource = true;
         this.appName = functionAppConfig.getName();
         this.resourceGroup = functionAppConfig.getResourceGroup().name();
-        this.subscriptionId = functionAppConfig.getSubscription().subscriptionId();
+        this.subscriptionId = functionAppConfig.getSubscription().getId();
         this.runtime = functionAppConfig.getPlatform().toString();
         this.functionAppConfig = functionAppConfig;
     }

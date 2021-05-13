@@ -13,6 +13,7 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.appplatform.v2020_07_01.implementation.AppPlatformManager;
 import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -41,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.authmanage.Environment.CHINA;
 import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
 import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
@@ -260,10 +262,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     @AzureOperation(name = "account|subscription.list.tenant", params = {"authentication.tenantId()"}, type = AzureOperation.Type.TASK)
     private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
-        return authentication.subscriptions().listAsync()
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+        return az(AzureAccount.class).account().getSubscriptions();
     }
 
     @AzureOperation(name = "account|tenant.list.authorized", type = AzureOperation.Type.TASK)
