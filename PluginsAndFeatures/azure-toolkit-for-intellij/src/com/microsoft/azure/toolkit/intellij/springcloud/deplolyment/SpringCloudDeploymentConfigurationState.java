@@ -7,6 +7,10 @@ package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -17,12 +21,14 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.RunProcessHandler;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<SpringCloudDeployment> {
     private static final int GET_URL_TIMEOUT = 60;
@@ -40,8 +46,10 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<Sprin
     }
 
     @Override
+    @AzureOperation(name = "springcloud|app.create_update", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
     public SpringCloudDeployment executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
-        // TODO: setup action messager
+        final MyMessager messager = new MyMessager(msg -> this.setText(processHandler, msg));
+        AzureMessager.getContext().setMessager(messager);
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
@@ -49,7 +57,7 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<Sprin
         final SpringCloudApp app = deployment.app();
         final SpringCloudCluster cluster = app.getCluster();
         if (!deployment.waitUntilReady(GET_STATUS_TIMEOUT)) {
-            DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, GET_DEPLOYMENT_STATUS_TIMEOUT);
+            AzureMessager.getDefaultMessager().warning(GET_DEPLOYMENT_STATUS_TIMEOUT, NOTIFICATION_TITLE);
         }
         printPublicUrl(app, processHandler);
         return deployment;
@@ -81,18 +89,41 @@ class SpringCloudDeploymentConfigurationState extends AzureRunProfileState<Sprin
     }
 
     private void printPublicUrl(final SpringCloudApp app, @NotNull RunProcessHandler processHandler) {
+        final IAzureMessager messager = AzureMessager.getMessager();
         if (!app.entity().isPublic()) {
             return;
         }
-        setText(processHandler, String.format("Getting public url of app(%s)...", app.name()));
+        messager.info(String.format("Getting public url of app(%s)...", app.name()));
         String publicUrl = app.entity().getApplicationUrl();
         if (StringUtils.isEmpty(publicUrl)) {
             publicUrl = Utils.pollUntil(() -> app.refresh().entity().getApplicationUrl(), StringUtils::isNotBlank, GET_URL_TIMEOUT);
         }
         if (StringUtils.isEmpty(publicUrl)) {
-            DefaultLoader.getUIHelper().showWarningNotification(NOTIFICATION_TITLE, "Failed to get application url");
+            messager.warning("Failed to get application url", NOTIFICATION_TITLE);
         } else {
-            setText(processHandler, String.format("Application url: %s", publicUrl));
+            messager.info(String.format("Application url: %s", publicUrl));
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class MyMessager extends IntellijAzureMessager {
+        private final Consumer<String> out;
+
+        @Override
+        public void info(@Nonnull String message, String title) {
+            out.accept(message);
+        }
+
+        @Override
+        public void success(@Nonnull String message, String title) {
+            out.accept(message);
+            super.success(message, title);
+        }
+
+        @Override
+        public void error(@Nonnull String message, String title) {
+            out.accept(message);
+            super.error(message, title);
         }
     }
 }
