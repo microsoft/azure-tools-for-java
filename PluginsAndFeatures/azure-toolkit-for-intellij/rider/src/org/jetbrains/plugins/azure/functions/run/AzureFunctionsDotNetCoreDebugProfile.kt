@@ -22,12 +22,14 @@
 
 package org.jetbrains.plugins.azure.functions.run
 
+import com.intellij.execution.CantRunException
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.debugger.DebuggerWorkerPlatform
@@ -38,6 +40,7 @@ import com.jetbrains.rider.model.debuggerWorker.DotNetCoreExeStartInfo
 import com.jetbrains.rider.model.debuggerWorker.DotNetCoreInfo
 import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
+import com.jetbrains.rider.util.idea.syncFromBackendWithoutGateway
 
 class AzureFunctionsDotNetCoreDebugProfile(
         private val dotNetExecutable: DotNetExecutable,
@@ -47,10 +50,22 @@ class AzureFunctionsDotNetCoreDebugProfile(
 
     override suspend fun createWorkerRunInfo(lifetime: Lifetime, helper: DebuggerHelperHost, port: Int): WorkerRunInfo {
         val runInfo = WorkerRunInfo(
-                createWorkerCmdFor(consoleKind, port, DebuggerWorkerPlatform.AnyCpu).apply {
+                createWorkerCmdFor(consoleKind, port, getWorkerPlatform(lifetime)).apply {
                     withWorkDirectory(dotNetExecutable.workingDirectoryOrExeFolder)
                 })
         return patchCommandLineInPlugins(lifetime, executionEnvironment.project, runInfo)
+    }
+
+    private fun getWorkerPlatform(lifetime: Lifetime): DebuggerWorkerPlatform {
+        if (!SystemInfo.isWindows) return DebuggerWorkerPlatform.AnyCpu
+
+        // TODO: ClassCastException occurs with this line of code.
+        // Try again once Kotlin is upgraded in RD and the Azure Toolkit.
+        // val isFuncX64 = DebuggerHelperHost.getInstance(executionEnvironment.project).willExeRunAs64Bit(lifetime, coreToolsExecutablePath)
+        val isFuncX64 = DebuggerHelperHost.getInstance(executionEnvironment.project)
+                .model.isExeWillRunAs64Bit
+                .syncFromBackendWithoutGateway(coreToolsExecutablePath, executionEnvironment.project, lifetime) ?: throw CantRunException("Execution was cancelled")
+        return if (isFuncX64) DebuggerWorkerPlatform.X64 else DebuggerWorkerPlatform.X86
     }
 
     override fun startDebuggerWorker(

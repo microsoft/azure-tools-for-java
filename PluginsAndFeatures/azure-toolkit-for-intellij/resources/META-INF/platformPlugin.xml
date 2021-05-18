@@ -11,6 +11,7 @@
         <h4>Fixed bugs:</h4>
         <ul>
           <li>host.json should not be patched when function names are empty (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/488">#488</a>)</li>
+          <li>Cannot debug on Windows 10 when Azure Core Tools are installed with Chocolatey (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/478">#478</a>)</li>
         </ul>
     </html>
     ]]>
