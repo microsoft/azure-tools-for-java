@@ -72,7 +72,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
 
     public void onAppStatusChanged(SpringCloudApp app) {
         if (this.app.name().equals(app.name())) {
-            this.app.refresh();
+            this.refreshNode();
             this.fillData(this.app, this.app.activeDeployment());
         }
     }

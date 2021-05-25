@@ -114,10 +114,12 @@ public class CustomerSurveyManager {
         if (response == CustomerSurveyResponse.NEVER_SHOW_AGAIN) {
             customerSurveyConfiguration.setAcceptSurvey(false);
         } else {
-            final int delay = response == CustomerSurveyResponse.ACCEPT ? TAKE_SURVEY_DELAY_BY_DAY : PUT_OFF_DELAY_BY_DAY;
             final CustomerSurveyConfiguration.CustomerSurveyStatus surveyStatus = getSurveyStatus(survey);
-            surveyStatus.setSurveyTimes(surveyStatus.getSurveyTimes() + 1);
-            surveyStatus.setLastSurveyDate(LocalDateTime.now());
+            if (response == CustomerSurveyResponse.ACCEPT) {
+                surveyStatus.setSurveyTimes(surveyStatus.getSurveyTimes() + 1);
+                surveyStatus.setLastSurveyDate(LocalDateTime.now());
+            }
+            final int delay = response == CustomerSurveyResponse.ACCEPT ? TAKE_SURVEY_DELAY_BY_DAY : PUT_OFF_DELAY_BY_DAY;
             surveyStatus.setNextSurveyDate(LocalDateTime.now().plusDays(delay * 2));
             customerSurveyConfiguration.getSurveyStatus().stream()
                     .filter(status -> !StringUtils.equalsIgnoreCase(status.getType(), survey.getType()))

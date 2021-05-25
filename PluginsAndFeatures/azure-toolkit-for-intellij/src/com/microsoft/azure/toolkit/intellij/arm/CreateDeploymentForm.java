@@ -148,7 +148,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                         .withNewResourceGroup(rgNameTextFiled.getText(),
                             com.microsoft.azure.management.resources.fluentcore.arm.Region.fromName(region.getName()));
                 } else {
-                    ResourceGroup rg = ((ResourceEx<ResourceGroup>) rgNameCb.getSelectedItem()).getResource();
+                    ResourceGroup rg = (ResourceGroup) rgNameCb.getSelectedItem();
                     List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
                                                                             .getDeploymentByRgName(subs.getId(), rg.getName());
                     boolean isExist = deployments.parallelStream()

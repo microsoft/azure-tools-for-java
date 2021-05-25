@@ -5,8 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
@@ -27,10 +30,12 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.RunProcessHandler;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,6 +62,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @Override
     @AzureOperation(name = "function.deploy.state", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+        final FunctionDeploymentMessenger messenger = new FunctionDeploymentMessenger(processHandler);
+        AzureMessager.getContext().setMessager(messenger);
         // Update run time information by function app
         final FunctionApp functionApp;
         if (deployModel.isNewResource()) {
@@ -73,11 +80,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         stagingFolder = FunctionUtils.getTempStagingFolder();
         deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
         prepareStagingFolder(stagingFolder, processHandler, operation);
-        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, message -> {
-            if (processHandler.isProcessRunning()) {
-                processHandler.setText(message);
-            }
-        }, operation);
+        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, operation);
         return deployFunctionHandler.execute();
     }
 
@@ -150,5 +153,33 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @Override
     protected Map<String, String> getTelemetryMap() {
         return functionDeployConfiguration.getModel().getTelemetryProperties();
+    }
+
+    // todo: create shared run state messenger for all run states
+    @RequiredArgsConstructor
+    private static class FunctionDeploymentMessenger extends IntellijAzureMessager {
+        private final RunProcessHandler processHandler;
+
+        @Override
+        public void info(@Nonnull String message, String title) {
+            processHandler.setText(message);
+        }
+
+        @Override
+        public void success(@Nonnull String message, String title) {
+            processHandler.println(message, ProcessOutputTypes.SYSTEM);
+            super.success(message, title);
+        }
+
+        @Override
+        public void error(@Nonnull String message, String title) {
+            processHandler.println(message, ProcessOutputTypes.STDERR);
+            super.error(message, title);
+        }
+
+        @Override
+        public void warning(@Nonnull String message, String title) {
+            processHandler.setText(message);
+        }
     }
 }

@@ -517,7 +517,7 @@ public class IDEHelperImpl implements IDEHelper {
             }
             if (toSave) {
                 appService.uploadFileToPath(content, appServiceFile.getPath());
-                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile));
+                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile.getName()));
             }
         }));
     }
@@ -545,7 +545,7 @@ public class IDEHelperImpl implements IDEHelper {
             }
             if (toSave) {
                 fileService.uploadFileToPath(content, appServiceFile.getPath());
-                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile));
+                PluginUtil.showInfoNotification(APP_SERVICE_FILE_EDITING, String.format(FILE_HAS_BEEN_SAVED, appServiceFile.getName()));
             }
         }));
     }

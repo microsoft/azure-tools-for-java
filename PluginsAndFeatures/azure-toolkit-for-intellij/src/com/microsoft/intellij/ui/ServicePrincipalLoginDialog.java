@@ -179,7 +179,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     private void createUIComponents() {
         this.jsonDataEditor = this.buildCodeViewer();
-        this.comment = new AzureCommentLabel("You can copy the JSON output of 'az sp create ...' and paste it here");
+        this.comment = new AzureCommentLabel("You can copy the JSON output of 'az ad sp create-for-rbac ...' and paste it here");
     }
 
     private EditorTextField buildCodeViewer() {

@@ -5,16 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.function.action;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler.AzureExceptionAction;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -22,10 +21,11 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
@@ -92,13 +92,20 @@ public class CreateFunctionAppAction extends NodeActionListener {
     @AzureOperation(name = "function.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<FunctionApp> createFunctionApp(final FunctionAppConfig config) {
         final IAzureOperationTitle title = title("function.create_detail", config.getName());
+        final IntellijAzureMessager actionMessenger = new IntellijAzureMessager() {
+            @Override
+            public void info(@NotNull String message, String title) {
+                // swallow info notification for action
+            }
+        };
         final AzureTask<FunctionApp> task = new AzureTask<>(null, title, false, () -> {
+            AzureMessager.getContext().setMessager(actionMessenger);
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
             return functionAppService.createFunctionApp(config);
         });
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle().doOnSuccess(app -> {
-            this.notifyCreationSuccess(app);
+            AzureMessager.getMessager().success(message("function.create.success.message", app.name()), message("function.create.success.title"));
             this.refreshAzureExplorer(app);
         });
     }
@@ -110,12 +117,5 @@ public class CreateFunctionAppAction extends NodeActionListener {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
             }
         });
-    }
-
-    private void notifyCreationSuccess(final FunctionApp app) {
-        final String title = message("function.create.success.title");
-        final String message = message("function.create.success.message", app.name());
-        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
-        Notifications.Bus.notify(notification);
     }
 }

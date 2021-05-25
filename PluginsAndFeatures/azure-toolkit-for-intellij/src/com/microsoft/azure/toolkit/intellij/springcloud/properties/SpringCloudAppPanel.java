@@ -42,6 +42,7 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import java.util.Arrays;
@@ -122,6 +123,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         tableInstances.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tableInstances.getEmptyText().setText("Loading instances");
 
+        this.txtStorage.setBorder(new EmptyBorder(0, 2, 0, 2));
         this.useJava8.addChangeListener((e) -> debouncer.debounce());
         this.useJava11.addChangeListener((e) -> debouncer.debounce());
         this.txtJvmOptions.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -182,7 +184,6 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         numCpuModel.addAll(IntStream.range(1, 1 + (basic ? 1 : 4)).boxed().collect(Collectors.toList()));
         numMemoryModel.removeAllElements();
         numMemoryModel.addAll(IntStream.range(1, 1 + (basic ? 2 : 8)).boxed().collect(Collectors.toList()));
-        this.numInstance.prepare();
         this.numInstance.setMaximum(basic ? 25 : 500);
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
