@@ -31,16 +31,17 @@ class AzureNotifications {
     companion object {
         private const val notificationGroupName = "Azure"
 
-        fun notify(project: Project, title: String?, subtitle: String?, content: String?, type: NotificationType, listener: NotificationListener? = null) {
+        fun notify(project: Project, title: String, subtitle: String, content: String, type: NotificationType, listener: NotificationListener? = null) {
             val notification = NotificationGroupManager.getInstance()
                     .getNotificationGroup(notificationGroupName)
                     .createNotification(
                             title = title,
-                            subtitle = subtitle,
                             content = content,
-                            type = type,
-                            listener = listener
-                    )
+                            type = type
+                    ).apply {
+                        setSubtitle(subtitle)
+                        listener?.let { setListener(it) }
+                    }
 
             Notifications.Bus.notify(notification, project)
         }

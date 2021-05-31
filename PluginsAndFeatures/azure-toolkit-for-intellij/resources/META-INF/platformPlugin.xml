@@ -4,9 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-        <h4>Fixed bugs:</h4>
+        <h4>Added:</h4>
         <ul>
-          <li>Cannot view queues via Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/495">#495</a>)</li>
+          <li>Compatibility with Rider 2021.2 EAP</li>
         </ul>
     </html>
     ]]>

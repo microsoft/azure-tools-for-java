@@ -1,4 +1,4 @@
-// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -26,8 +26,8 @@ using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Azure.Daemon.FunctionApp;
 using JetBrains.ReSharper.Azure.Localization;
 using JetBrains.ReSharper.Azure.Psi.FunctionApp;
-using JetBrains.ReSharper.Host.Features.RunMarkers;
 using JetBrains.ReSharper.Resources.Shell;
+using JetBrains.Rider.Backend.Features.RunMarkers;
 using JetBrains.TextControl.DocumentMarkup;
 using JetBrains.UI.Icons;
 using JetBrains.UI.RichText;

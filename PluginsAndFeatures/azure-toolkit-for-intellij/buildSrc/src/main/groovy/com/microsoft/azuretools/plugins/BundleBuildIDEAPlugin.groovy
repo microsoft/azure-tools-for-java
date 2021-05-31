@@ -76,8 +76,8 @@ class BundleBuildIDEAPlugin implements Plugin<Project> {
         project.with {
             tasks.create(BUNDLE_BUILD_IDEA_ZIP_TASK_NAME, Zip)  {
                 from fileTree(dir: bundleBuildConfig.bundleBuildDir)
-                archiveName "idea${project.intellij.type}-bundle-win-x64.zip"
-                destinationDir file("$buildDir/distributions")
+                archiveFileName.set("idea${project.intellij.type}-bundle-win-x64.zip")
+                destinationDirectory.set(file("$buildDir/distributions"))
                 exclude "bin/mac/**", "bin/linux/**", "MacOS/**", "plugins/android/**"
                 entryCompression ZipEntryCompression.STORED
                 dependsOn INSTALL_BUNDLE_PLUGINS_TASKK_NAME, COPY_TEMPLATE_FILES_TASK_NAME, UNZIP_OPT_TASK_NAME, INSTALL_IDEA_TASK_NAME, INSTALL_JBR_TASK_NAME
@@ -88,7 +88,7 @@ class BundleBuildIDEAPlugin implements Plugin<Project> {
     private static void configInstallBundlePluginsTask(Project project, BundleBuildIDEAConfig bundleBuildConfig) {
         project.with {
             tasks.create(INSTALL_BUNDLE_PLUGINS_TASKK_NAME, Copy) {
-                from new File(intellij.sandboxDirectory, "plugins")
+                from new File(intellij.sandboxDir.get(), "plugins")
                 into new File(bundleBuildConfig.bundleBuildDir, "config/plugins")
                 dependsOn INSTALL_IDEA_TASK_NAME
             }

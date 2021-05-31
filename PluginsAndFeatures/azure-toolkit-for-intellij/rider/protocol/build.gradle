@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-ext.rdLibDirectory = new File(intellij.ideaDependency.classes, 'lib/rd')
+ext.rdLibDirectory = new File(intellij.getIdeaDependency(project.parent).classes, 'lib/rd')
 
 // Add RD SDK and rd-gen into a classpath.
 repositories {

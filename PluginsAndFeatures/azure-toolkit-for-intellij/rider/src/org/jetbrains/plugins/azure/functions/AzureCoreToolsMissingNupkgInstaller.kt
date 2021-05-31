@@ -42,7 +42,7 @@ import com.jetbrains.rider.nuget.RiderNuGetHost
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
 import com.jetbrains.rider.projectView.workspace.getId
 import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
-import com.jetbrains.rider.projectView.workspace.impl.WorkspaceProjectRootsTracker
+import com.jetbrains.rider.projectView.workspace.WorkspaceProjectRootsTracker
 
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {

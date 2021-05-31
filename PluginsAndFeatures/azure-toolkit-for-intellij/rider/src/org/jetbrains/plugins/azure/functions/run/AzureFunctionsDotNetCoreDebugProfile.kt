@@ -108,8 +108,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
                 dotNetExecutable.environmentVariables.toModelMap,
                 dotNetExecutable.runtimeArguments,
                 dotNetExecutable.executeAsIs,
-                dotNetExecutable.useExternalConsole,
-                false)
+                dotNetExecutable.useExternalConsole)
     }
 
     override val attached: Boolean = false

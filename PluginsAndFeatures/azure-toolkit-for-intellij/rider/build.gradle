@@ -39,7 +39,7 @@ println "##teamcity[buildNumber '$version']"
 def extensionsFrom = 'resources/dotnet'
 
 intellij {
-    pluginName = 'azure-toolkit-for-rider'
+    pluginName = rider_pluginname
     version = rider_version
 
     // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
@@ -53,8 +53,14 @@ intellij {
 tasks.withType(PrepareSandboxTask).configureEach {
     dependsOn buildReSharperPlugin
 
-    from(extensionsFrom, { into "${intellij.pluginName}/dotnet" })
-    from(buildReSharperPlugin.outputs, { into "${intellij.pluginName}/dotnet" })
+    from(extensionsFrom, {
+        into "$rider_pluginname/dotnet"
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    })
+    from(buildReSharperPlugin.outputs, {
+        into "$rider_pluginname/dotnet"
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    })
 }
 
 buildSearchableOptions.onlyIf { false }

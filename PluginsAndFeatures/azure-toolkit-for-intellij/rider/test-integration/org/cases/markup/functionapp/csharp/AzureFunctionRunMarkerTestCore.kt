@@ -22,7 +22,6 @@
 
 package org.cases.markup.functionapp.csharp
 
-import com.jetbrains.rdclient.daemon.util.attributeId
 import com.jetbrains.rdclient.testFramework.waitForDaemon
 import com.jetbrains.rider.test.base.BaseTestWithMarkup
 import org.testng.annotations.Test
@@ -65,9 +64,7 @@ abstract class AzureFunctionRunMarkerTestCore(
                 goldFileName = goldFileName
         ) {
             waitForDaemon()
-            dumpHighlightersTree(
-                    valueFilter = { it.attributeId.contains(FUNCTION_APP_RUN_MARKER_ATTRIBUTE_ID) }
-            )
+            dumpHighlightersTree(FUNCTION_APP_RUN_MARKER_ATTRIBUTE_ID)
         }
     }
 }

@@ -22,10 +22,7 @@
 
 package org.cases.markup.functionapp.csharp.isolatedWorker
 
-import com.jetbrains.rdclient.daemon.util.attributeId
-import com.jetbrains.rdclient.testFramework.waitForDaemon
 import com.jetbrains.rider.test.annotations.TestEnvironment
-import com.jetbrains.rider.test.base.BaseTestWithMarkup
 import com.jetbrains.rider.test.enums.CoreVersion
 import org.cases.markup.functionapp.csharp.AzureFunctionRunMarkerTestCore
 import org.testng.annotations.Test

@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
-import org.apache.xmlbeans.impl.util.Base64;
 
 import java.io.*;
 import java.util.*;
@@ -45,7 +44,7 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
     public void loadAppInsights() {
         try {
             if (myState.appInsights != null) {
-                byte[] data = Base64.decode(myState.appInsights.getBytes());
+                byte[] data = Base64.getDecoder().decode(myState.appInsights.getBytes());
                 ByteArrayInputStream buffer = new ByteArrayInputStream(data);
                 ObjectInput input = new ObjectInputStream(buffer);
                 try {
@@ -81,7 +80,7 @@ public class AzureSettings implements PersistentStateComponent<AzureSettings.Sta
             } finally {
                 output.close();
             }
-            myState.appInsights = new String(Base64.encode(buffer.toByteArray()));
+            myState.appInsights = new String(Base64.getEncoder().encode(buffer.toByteArray()));
         } catch (IOException e) {
             log(message("err"), e);
         }

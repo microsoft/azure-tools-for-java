@@ -59,6 +59,7 @@ class AzureFunctionsHostExecutorFactory(
                 project = parameters.project,
                 basePath = File(parameters.projectFilePath).parent)
         val workerRuntime = functionLocalSettings?.values?.workerRuntime ?: FunctionsWorkerRuntime.DotNetDefault
+        logger.info("Worker runtime: $workerRuntime")
 
         val dotNetExecutable = parameters.toDotNetExecutable()
         val runtimeToExecute = AzureFunctionsDotNetCoreRuntime(coreToolsInfo!!, workerRuntime)

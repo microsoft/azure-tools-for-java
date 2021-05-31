@@ -34,13 +34,6 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     }
 
     public void updateSbtVersions() {
-        final String[][] versions = new String[1][1];
-        ProgressManager.getInstance().runProcess(() -> {
-            versions[0] = Versions.SBT$.MODULE$.apply().versions();
-        }, null);
-
-        for (String version : versions[0]) {
-            this.sbtVersionComboBox.addItem(version);
-        }
+        // TODO MERGE UPSTREAM METHOD HERE, COMMENTED FOR RIDER NOW
     }
 }

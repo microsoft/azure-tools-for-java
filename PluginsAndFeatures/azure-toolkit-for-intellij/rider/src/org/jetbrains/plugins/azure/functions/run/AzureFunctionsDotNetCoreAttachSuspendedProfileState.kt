@@ -46,7 +46,6 @@ class AzureFunctionsDotNetCoreAttachSuspendedProfileState(
                 dotNetCoreRuntimeExecutable = runtime.coreToolsInfo.coreToolsExecutable,
                 processId = processInfo.pid,
                 threadId = runningAssemblyInfo.threadId,
-                assemblyPath = runningAssemblyInfo.executableAssemblyPath,
-                needToBeInitializedImmediately = false
+                assemblyPath = runningAssemblyInfo.executableAssemblyPath
         )
 }

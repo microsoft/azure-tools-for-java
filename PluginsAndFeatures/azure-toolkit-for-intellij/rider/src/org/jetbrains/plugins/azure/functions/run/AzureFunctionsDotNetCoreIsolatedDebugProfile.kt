@@ -199,5 +199,5 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
     }
 
     override suspend fun createModelStartInfo(lifetime: Lifetime): DebuggerStartInfoBase
-        = DotNetCoreAttachStartInfo(processId, false)
+        = DotNetCoreAttachStartInfo(processId)
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 JetBrains s.r.o.
+﻿// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -20,8 +20,8 @@
 
 using System.Collections.Generic;
 using JetBrains.ProjectModel;
+using JetBrains.RdBackend.Common.Features.ProjectModel.RunnableProjectsHost.RunnableProjectProviders;
 using JetBrains.ReSharper.Azure.Project.FunctionApp;
-using JetBrains.ReSharper.Host.Features.ProjectModel.RunnableProjectsHost.RunnableProjectProviders;
 using JetBrains.Rider.Model;
 using JetBrains.Util;
 

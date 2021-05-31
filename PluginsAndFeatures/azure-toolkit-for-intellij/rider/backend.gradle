@@ -116,9 +116,9 @@ task buildReSharperPlugin {
     dependsOn restoreReSharperPluginPackages, ':rider:protocol:generateModel'
 
     def libFiles = [
-            "**/bin/$BuildConfiguration/net461/JetBrains.ReSharper.Azure*.dll",
-            "**/bin/$BuildConfiguration/net461/JetBrains.ReSharper.Azure*.pdb",
-            "Azure.Daemon/bin/$BuildConfiguration/net461/NCrontab.Signed.dll",
+            "**/bin/$BuildConfiguration/net472/JetBrains.ReSharper.Azure*.dll",
+            "**/bin/$BuildConfiguration/net472/JetBrains.ReSharper.Azure*.pdb",
+            "Azure.Daemon/bin/$BuildConfiguration/net472/NCrontab.Signed.dll",
     ]
 
     def srcPath = "${resharperPluginPath.absolutePath}/src"
@@ -153,7 +153,7 @@ task buildReSharperPlugin {
 project.tasks.clean.dependsOn(project.tasks.cleanBackend)
 
 private File getNugetPackagesPath() {
-    def sdkPath = intellij.ideaDependency.classes
+    def sdkPath = intellij.getIdeaDependency(project.parent).classes
     println("SDK path: $sdkPath")
 
     def riderSdk = new File(sdkPath, 'lib/DotNetSdkForRdPlugins')

@@ -1,4 +1,4 @@
-// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -22,12 +22,12 @@ using JetBrains.Application.Settings;
 using JetBrains.ReSharper.Azure.Project.FunctionApp;
 using JetBrains.ReSharper.Azure.Psi.FunctionApp;
 using JetBrains.ReSharper.Feature.Services.Daemon;
-using JetBrains.ReSharper.Host.Features.RunMarkers;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Caches.SymbolCache;
 using JetBrains.ReSharper.Psi.CSharp;
 using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
+using JetBrains.Rider.Backend.Features.RunMarkers;
 using IMethodDeclaration = JetBrains.ReSharper.Psi.CSharp.Tree.IMethodDeclaration;
 
 namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers

@@ -34,11 +34,11 @@ tc_open "Initializing build script"
     INJECT_INTELLIJ_VERSION=false
 
     IJ_VERSION_MAJOR_BUILD=211
-    IJ_VERSION_MAJOR=2021.1
+    IJ_VERSION_MAJOR=2021.2
     IJ_VERSION_MINOR=
     IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
                       && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
-    IJ_SCALA_VERSION_LATEST=2021.1.15
+    IJ_SCALA_VERSION_LATEST=2021.2.9
 
     while getopts ":hqvBC:e:" option; do
         case $option in
@@ -58,7 +58,7 @@ tc_open "Initializing build script"
         esac
     done
 
-    BUILD_NUMBER="3.50.0.$BUILD_COUNTER-2021.1"
+    BUILD_NUMBER="3.50.0.$BUILD_COUNTER-2021.2"
     BUILD_CONFIGURATION=Release
 
     MAVEN_LOCAL_DIR="$SCRIPTPATH"/.repository

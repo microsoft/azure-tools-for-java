@@ -19,9 +19,8 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using JetBrains.Application;
-using JetBrains.ReSharper.Host.Features.ProjectModel.ProjectTemplates.DotNetExtensions;
+using JetBrains.Rider.Backend.Features.ProjectModel.ProjectTemplates.DotNetExtensions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.ProjectTemplates.DotNetExtensions.Groups

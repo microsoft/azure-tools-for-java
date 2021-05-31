@@ -43,7 +43,7 @@ checkstyle {
 //}
 
 intellij {
-    pluginName = 'azure-toolkit-for-intellij'
+    pluginName = intellij_pluginname
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']

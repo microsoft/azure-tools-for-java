@@ -1,4 +1,4 @@
-// Copyright (c) 2020 JetBrains s.r.o.
+// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 using JetBrains.ProjectModel;
-using JetBrains.ReSharper.Host.Features;
+using JetBrains.RdBackend.Common.Features;
 using JetBrains.Rider.Azure.Model;
 
 namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp
