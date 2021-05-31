@@ -55,7 +55,7 @@ public class AzureSdkLibraryService {
                     final AzureSdkServiceEntity service = getOrCreateService(services, raw);
                     for (final AzureSdkFeatureEntity feature : service.getContent()) {
                         final boolean specified = Optional.ofNullable(feature.getClientSource())
-                                .filter(s -> s.getGroupId().equals(raw.getGroupId()) && s.getArtifactId().equals(raw.getPackageName()))
+                                .filter(s -> s.getGroupId().equals(raw.getGroupId()) && s.getArtifactId().equals(raw.getArtifactId()))
                                 .isPresent();
                         final boolean sameFeatureName = trim(feature.getName()).equals(trim(raw.getDisplayName()));
                         if (specified || sameFeatureName) {
@@ -107,7 +107,7 @@ public class AzureSdkLibraryService {
     private static AzureSdkArtifactEntity toSdkArtifactEntity(@Nonnull AzureJavaSdkEntity entity) {
         final AzureSdkArtifactEntity artifact = new AzureSdkArtifactEntity();
         artifact.setGroupId(entity.getGroupId());
-        artifact.setArtifactId(entity.getPackageName());
+        artifact.setArtifactId(entity.getArtifactId());
         artifact.setType(entity.getType());
         artifact.setVersionGA(entity.getVersionGA());
         artifact.setVersionPreview(entity.getVersionPreview());
@@ -131,7 +131,7 @@ public class AzureSdkLibraryService {
      * repopath: https://search.maven.org/artifact/com.azure/azure-security-keyvault-jca
      */
     private static String buildMavenArtifactUrl(AzureJavaSdkEntity entity) {
-        return String.format("https://search.maven.org/artifact/%s/%s/", entity.getGroupId(), entity.getPackageName());
+        return String.format("https://search.maven.org/artifact/%s/%s/", entity.getGroupId(), entity.getArtifactId());
     }
 
     /**
@@ -145,7 +145,7 @@ public class AzureSdkLibraryService {
         } else if (url.startsWith("http")) {
             return url;
         }
-        final String trimmed = entity.getPackageName().replace("azure-", "");
+        final String trimmed = entity.getArtifactId().replace("azure-", "");
         return String.format("https://docs.microsoft.com/java/api/overview/azure/%s-readme", trimmed);
     }
 
@@ -160,7 +160,7 @@ public class AzureSdkLibraryService {
         } else if (url.startsWith("http")) {
             return url;
         }
-        return String.format("https://azuresdkdocs.blob.core.windows.net/$web/java/%s/${azure.version}/index.html", entity.getPackageName());
+        return String.format("https://azuresdkdocs.blob.core.windows.net/$web/java/%s/${azure.version}/index.html", entity.getArtifactId());
     }
 
     /**
@@ -174,8 +174,8 @@ public class AzureSdkLibraryService {
         } else if (url.startsWith("http")) {
             return url;
         }
-        return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_${azure.version}/sdk/%s/%s/", entity.getPackageName(), url,
-                entity.getPackageName());
+        return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_${azure.version}/sdk/%s/%s/", entity.getArtifactId(), url,
+                entity.getArtifactId());
     }
 
     @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)
@@ -191,7 +191,7 @@ public class AzureSdkLibraryService {
         }
     }
 
-    @Cacheable(value = "workspace-tag-azure")
+    @Cacheable(value = "azure-sdk-entities")
     @AzureOperation(name = "sdk.load_meta_data", type = AzureOperation.Type.TASK)
     public static List<AzureJavaSdkEntity> getAzureSDKEntities() {
         try {

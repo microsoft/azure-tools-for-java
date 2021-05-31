@@ -41,7 +41,7 @@ public class WorkspaceTaggingService {
             .stream()
             .filter(entity -> StringUtils.isNotEmpty(entity.getType())
                 && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)
-                && StringUtils.equalsIgnoreCase(entity.getPackageName(), artifactId))
+                && StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId))
             .map(AzureJavaSdkEntity::getType)
             .findFirst().orElse(null);
     }
