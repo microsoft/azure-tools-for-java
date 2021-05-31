@@ -110,6 +110,31 @@ public class QueueMessageForm extends AzureDialogWrapper {
         final String message = messageTextArea.getText();
         final int expireSeconds = getExpireSeconds();
 
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Adding queue message", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                try {
+                    QueueMessage queueMessage = new QueueMessage(
+                        "",
+                        queue.getName(),
+                        message,
+                        new GregorianCalendar(),
+                        new GregorianCalendar(),
+                        0);
+
+                    StorageClientSDKManager.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
+
+                    if (onAddedMessage != null) {
+                        ApplicationManager.getApplication().invokeLater(onAddedMessage);
+                    }
+                } catch (AzureCmdException e) {
+                    String msg = "An error occurred while attempting to add queue message." + "\n"
+                        + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
+                    PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
+                }
+            }
+        });
+
         sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
     }

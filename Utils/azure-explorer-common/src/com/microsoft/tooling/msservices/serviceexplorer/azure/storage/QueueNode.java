@@ -7,12 +7,10 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.microsoft.azure.CommonIcons;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
@@ -31,11 +29,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        StorageAccount account = (StorageAccount) this.storageAccount;
-        if (account != null) {
-            properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(account.id()).subscriptionId());
-            properties.put(AppInsightsConstants.Region, account.regionName());
-        }
+        properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
         return properties;
     }
 

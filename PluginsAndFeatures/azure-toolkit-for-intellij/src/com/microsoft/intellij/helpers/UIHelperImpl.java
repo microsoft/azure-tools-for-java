@@ -338,7 +338,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshQueue(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
                              @NotNull final Queue queue) {
-        AzureTaskManager.getInstance().read(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.getName(), queue);
             if (file != null) {
                 final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
@@ -349,7 +349,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void refreshBlobs(@NotNull final Object projectObject, @NotNull final String accountName, @NotNull final BlobContainer container) {
-        AzureTaskManager.getInstance().read(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
             if (file != null) {
                 final BlobExplorerFileEditor containerFileEditor =
@@ -363,7 +363,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshTable(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Table table) {
-        AzureTaskManager.getInstance().read(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             final VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
             if (file != null) {
                 final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
