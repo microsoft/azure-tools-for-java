@@ -32,9 +32,13 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.Key
 import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.debugger.DebuggerWorkerPlatform
@@ -43,6 +47,9 @@ import com.jetbrains.rider.model.debuggerWorker.DebuggerStartInfoBase
 import com.jetbrains.rider.model.debuggerWorker.DotNetCoreAttachStartInfo
 import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
+import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
+import com.microsoft.azuretools.utils.AzureModelController
+import com.microsoft.intellij.UpdateProgressIndicator
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang.StringUtils
 import org.jetbrains.plugins.azure.RiderAzureBundle
@@ -55,6 +62,7 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
 
     companion object {
         private val logger = Logger.getInstance(AzureFunctionsDotNetCoreIsolatedDebugProfile::class.java)
+        private val waitDuration = Duration.ofMinutes(1)
         private const val DOTNET_ISOLATED_DEBUG_ARGUMENT = "--dotnet-isolated-debug"
     }
 
@@ -66,26 +74,30 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         // Launch Azure Functions host process
         launchAzureFunctionsHost()
 
+        // Show progress bar
+        ProgressManager.getInstance().run(
+                object : Task.Backgroundable(executionEnvironment.project, RiderAzureBundle.message("run_config.run_function_app.debug.progress.starting_debugger"), false) {
+                    override fun run(indicator: ProgressIndicator) {
+                        indicator.isIndeterminate = true
+
+                        SpinWait.spinUntil(lifetime, waitDuration) {
+                            processId != 0 || targetProcessHandler.isProcessTerminated
+                        }
+                    }
+                })
+
         // Wait until we get a process ID (or the process terminates)
-        pumpMessages(Duration.ofMinutes(2)) {
+        pumpMessages(waitDuration) {
             processId != 0 || targetProcessHandler.isProcessTerminated
         }
         if (processId == 0) {
-            logger.error("Azure Functions host did not return isolated worker process id.")
-
-            // If we do not get pid from the isolated worker process, destroy the process here
-            if (!targetProcessHandler.isProcessTerminating && !targetProcessHandler.isProcessTerminated) {
-                targetProcessHandler.destroyProcess()
-            }
+            logger.warn("Azure Functions host did not return isolated worker process id.")
 
             // Notify user
             PluginUtil.showErrorNotificationProject(
                     executionEnvironment.project,
                     RiderAzureBundle.message("run_config.run_function_app.debug.notification.title"),
                     RiderAzureBundle.message("run_config.run_function_app.debug.notification.isolated_worker_pid_unspecified"))
-
-            // Throw and bail out early
-            throw RuntimeException(RiderAzureBundle.message("run_config.run_function_app.debug.notification.isolated_worker_pid_unspecified"))
         }
 
         // Create debugger worker info
@@ -160,6 +172,19 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
     }
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>, workerProcessHandler: DebuggerWorkerProcessHandler, lifetime: Lifetime): ExecutionResult {
+
+        if (processId == 0) {
+            // If we do not get pid from the isolated worker process, destroy the process here
+            if (!targetProcessHandler.isProcessTerminating && !targetProcessHandler.isProcessTerminated) {
+                logger.debug("Destroying Azure Functions host process.")
+                targetProcessHandler.destroyProcess()
+            }
+
+            // Return console output
+            return DefaultExecutionResult(console, targetProcessHandler)
+        }
+
+        // Proceed with attaching debugger
         workerProcessHandler.attachTargetProcess(targetProcessHandler)
         return DefaultExecutionResult(console, workerProcessHandler)
     }
