@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -146,10 +147,28 @@ public class AzureSdkLibraryService {
             final URL destination = new URL(CLIENT_MGMT_SDK_METADATA_URL);
             final ObjectReader reader = CSV_MAPPER.readerFor(AzureJavaSdkEntity.class).with(CsvSchema.emptySchema().withHeader());
             final MappingIterator<AzureJavaSdkEntity> data = reader.readValues(destination);
-            return data.readAll();
+            return data.readAll().stream()
+                    .filter(e -> StringUtils.isNotBlank(e.getArtifactId()) && StringUtils.isNotBlank(e.getGroupId()))
+                    .collect(Collectors.toList());
         } catch (final IOException e) {
             final String message = String.format("failed to load Azure SDK list from \"%s\"", CLIENT_MGMT_SDK_METADATA_URL);
             throw new AzureToolkitRuntimeException(message, e);
         }
+    }
+
+    /**
+     * get deprecated Azure SDK libs.
+     * refer https://github.com/Azure/azure-sdk/blob/master/eng/README.md
+     */
+    @Cacheable(value = "deprecated-azure-sdk-entities")
+    public static List<AzureJavaSdkEntity> getDeprecatedAzureSDKEntities() {
+        final List<AzureJavaSdkEntity> entities = getAzureSDKEntities();
+        // refer https://github.com/Azure/azure-sdk/blob/master/eng/README.md
+        // > Hide - This field will determine whether we hide this package from various places like the package index, docs, as well as automated updates.
+        // > The value is either true to hide or empty to not hide. This is useful to filter older packages that are still on the package managers,
+        // > but we don't want to promote or display anywhere.
+        return entities.stream()
+                .filter(e -> e.getIsHide() == Boolean.TRUE || (StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport())))
+                .collect(Collectors.toList());
     }
 }
