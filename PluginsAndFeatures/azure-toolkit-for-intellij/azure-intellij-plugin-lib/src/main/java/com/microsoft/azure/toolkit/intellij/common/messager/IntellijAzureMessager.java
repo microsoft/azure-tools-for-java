@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.ui.MessageDialogBuilder;
@@ -21,7 +22,7 @@ public class IntellijAzureMessager implements IAzureMessager {
     private static final String DEFAULT_MESSAGE_TITLE = "Azure";
 
     private void showNotification(@Nonnull String title, @Nonnull String message, NotificationType type) {
-        Notifications.Bus.notify(new Notification(NOTIFICATION_GROUP_ID, title, message, type));
+        Notifications.Bus.notify(new Notification(NOTIFICATION_GROUP_ID, title, message, type, new NotificationListener.UrlOpeningListener(true)));
     }
 
     private String getTitle(String... title) {
