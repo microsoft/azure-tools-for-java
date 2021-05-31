@@ -98,4 +98,8 @@ public class AzureJavaSdkEntity {
         return String.format("https://github.com/Azure/azure-sdk-for-java/tree/%s_${azure.version}/sdk/%s/%s/", this.getArtifactId(), url,
                 this.getArtifactId());
     }
+
+    public String getPackageName() {
+        return String.format("%s/%s", groupId, artifactId);
+    }
 }

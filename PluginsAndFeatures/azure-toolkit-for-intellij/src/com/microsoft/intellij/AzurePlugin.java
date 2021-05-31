@@ -27,6 +27,7 @@ import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
+import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
@@ -120,7 +121,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings(project);
-                runWorkspaceTaggingActivity(project);
+                afterInitialization(project);
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
@@ -141,12 +142,13 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             });
     }
 
-    private void runWorkspaceTaggingActivity(Project myProject) {
+    private void afterInitialization(Project myProject) {
         Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.newThread())
                 .take(1)
                 .subscribe(next -> {
                     WorkspaceTaggingActivity.runActivity(myProject);
+                    AzureSdkEnforcer.enforce(myProject);
                 });
     }
 
