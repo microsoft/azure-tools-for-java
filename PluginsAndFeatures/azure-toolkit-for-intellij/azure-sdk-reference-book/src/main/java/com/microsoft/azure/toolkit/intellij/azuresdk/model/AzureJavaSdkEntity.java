@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class AzureJavaSdkEntity {
     @JsonProperty("Package")
-    private String packageName;
+    private String artifactId;
     @JsonProperty("GroupId")
     private String groupId;
     @JsonProperty("VersionGA")
@@ -42,4 +42,8 @@ public class AzureJavaSdkEntity {
     private Boolean isHide;
     @JsonProperty("Notes")
     private String notes;
+    @JsonProperty("Support")
+    private String support;
+    @JsonProperty("Replace")
+    private String replace;
 }
