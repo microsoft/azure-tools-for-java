@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 
 public class OpenReferenceBookAction extends AnAction {
+    public static final String ID = "AzureToolkit.OpenSdkReferenceBook";
+
     @Override
     public void actionPerformed(@Nonnull final AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
