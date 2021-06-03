@@ -13,10 +13,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
+/**
+ * UI used by {@code com.microsoft.azure.toolkit.intellij.connector.aad.RegisterApplicationAction}.
+ */
 class RegisterApplicationInAzureAdDialog extends AzureDialog<ApplicationRegistrationModel> {
     private final RegisterAzureApplicationForm form = new RegisterAzureApplicationForm();
 
-    public RegisterApplicationInAzureAdDialog(@NotNull Project project, @NotNull ApplicationRegistrationModel data) {
+    RegisterApplicationInAzureAdDialog(@NotNull Project project, @NotNull ApplicationRegistrationModel data) {
         super(project);
         form.setData(data);
         init();

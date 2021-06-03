@@ -32,11 +32,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Displays UI to display the code templates for the registered Azure AD applications.
+ * <p>
+ * ComponentNotRegistered is suppressed, because IntelliJ isn't finding the reference in resources/META-INF.
+ */
+@SuppressWarnings("ComponentNotRegistered")
 public class ShowApplicationTemplatesAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -57,10 +63,10 @@ public class ShowApplicationTemplatesAction extends AnAction {
 
     private void showDialog(@NotNull Project project, @NotNull Subscription subscription) {
         var client = AzureUtils.createGraphClient(subscription);
-        client.getApplications().listAsync().count().subscribe(applicationCount -> {
+        client.applications().buildRequest().getAsync().thenAccept(page -> {
             AzureTaskManager.getInstance().runLater(() -> {
-                if (applicationCount == 0L) {
-                    AzureMessager.getInstance().warning(
+                if (page.getCurrentPage().isEmpty()) {
+                    AzureMessager.getMessager().warning(
                             MessageBundle.message("templateDialog.noApplicationsWarnings.title"),
                             MessageBundle.message("templateDialog.noApplicationsWarnings.text"));
                 } else {

@@ -9,6 +9,9 @@ import com.intellij.AbstractBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.PropertyKey;
 
+/**
+ * Message bundle for the AAD features.
+ */
 public final class MessageBundle extends AbstractBundle {
     private static final MessageBundle ourInstance = new MessageBundle();
     private static final String BUNDLE = "messages.aadBundle";

@@ -1,7 +1,5 @@
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.azure.resourcemanager.authorization.fluent.GraphRbacManagementClient;
-import com.azure.resourcemanager.authorization.fluent.models.ApplicationInner;
 import com.intellij.openapi.editor.actions.IncrementalFindAction;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -10,11 +8,15 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.fileTypes.UnknownFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.graph.models.Application;
+import com.microsoft.graph.requests.GraphServiceClient;
+import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,12 +28,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
+class ApplicationTemplateForm implements AzureForm<Application> {
     private final Subscription subscription;
     @Nullable
-    private final GraphRbacManagementClient graphClient;
+    private final GraphServiceClient<Request> graphClient;
     @Nullable
-    private final List<ApplicationInner> predefinedItems;
+    private final List<Application> predefinedItems;
     @NotNull
     private final Project project;
 
@@ -42,8 +44,8 @@ class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
 
     ApplicationTemplateForm(@NotNull Project project,
                             @NotNull Subscription subscription,
-                            @Nullable GraphRbacManagementClient graphClient,
-                            @Nullable List<ApplicationInner> predefinedItems) {
+                            @Nullable GraphServiceClient<Request> graphClient,
+                            List<Application> predefinedItems) {
         this.project = project;
         this.subscription = subscription;
         this.graphClient = graphClient;
@@ -53,7 +55,7 @@ class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
         applicationsBox.refreshItems();
     }
 
-    private void applyTemplate(@NotNull ApplicationInner app) {
+    private void applyTemplate(@NotNull Application app) {
         var template = String.format("# Specifies your Active Directory ID:\n" +
                         "azure.activedirectory.tenant-id=%s\n" +
                         "# Specifies your App Registration's Application ID:\n" +
@@ -63,17 +65,18 @@ class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
                         "# Specifies the list of Active Directory groups to use for authorization:\n" +
                         "azure.activedirectory.user-group.allowed-groups=%s",
                 subscription.getTenantId(),
-                app.appId(),
+                app.appId,
                 "client-secret",
                 "groups");
         templateEditor.setText(template);
     }
 
     private void createUIComponents() {
-        Supplier<List<ApplicationInner>> supplier;
+        Supplier<List<Application>> supplier;
         if (graphClient != null) {
-            supplier = () -> graphClient.getApplications().list().stream()
-                    .sorted(Comparator.comparing(ApplicationInner::displayName))
+            supplier = () -> AzureUtils.loadApplications(graphClient)
+                    .stream()
+                    .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
                     .collect(Collectors.toList());
         } else {
             supplier = () -> predefinedItems;
@@ -82,7 +85,7 @@ class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
         applicationsBox = new AzureApplicationComboBox(supplier);
         applicationsBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                applyTemplate((ApplicationInner) e.getItem());
+                applyTemplate((Application) e.getItem());
             }
         });
 
@@ -90,12 +93,12 @@ class ApplicationTemplateForm implements AzureForm<ApplicationInner> {
     }
 
     @Override
-    public ApplicationInner getData() {
+    public Application getData() {
         return applicationsBox.getValue();
     }
 
     @Override
-    public void setData(ApplicationInner applicationInner) {
+    public void setData(Application applicationInner) {
         applicationsBox.setSelectedItem(applicationInner);
     }
 

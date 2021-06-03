@@ -27,9 +27,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.azure.resourcemanager.authorization.fluent.GraphRbacManagementClient;
-import com.azure.resourcemanager.authorization.fluent.models.DomainInner;
-import com.azure.resourcemanager.authorization.models.ApplicationCreateParameters;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -40,12 +37,22 @@ import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.graph.models.Application;
+import com.microsoft.graph.models.WebApplication;
+import com.microsoft.graph.requests.GraphServiceClient;
+import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import java.util.Collections;
 import java.util.UUID;
 
+/**
+ * Displays UI to create a new Azure AD application.
+ * <p>
+ * ComponentNotRegistered is suppressed, because IntelliJ isn't finding the reference in resources/META-INF.
+ */
+@SuppressWarnings("ComponentNotRegistered")
 public class RegisterApplicationAction extends AnAction {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
@@ -73,16 +80,15 @@ public class RegisterApplicationAction extends AnAction {
     }
 
     private static Observable<ApplicationRegistrationModel> buildRegistrationModel(@NotNull Project project,
-                                                                                   @NotNull GraphRbacManagementClient client) {
+                                                                                   @NotNull GraphServiceClient<Request> client) {
         var title = MessageBundle.message("action.azure.aad.registerApp.loadDefaultDomain");
         return AzureTaskManager.getInstance().runInBackgroundAsObservable(new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
 
-            var domain = client.getDomains()
-                    .list()
+            var domain = AzureUtils.loadDomains(client)
                     .stream()
-                    .filter(DomainInner::isDefault)
-                    .map(DomainInner::name)
+                    .filter(d -> d.isDefault)
+                    .map(d -> d.id)
                     .findFirst()
                     .orElse("");
 
@@ -126,12 +132,12 @@ public class RegisterApplicationAction extends AnAction {
         @NotNull
         private final ApplicationRegistrationModel model;
         @NotNull
-        private final GraphRbacManagementClient graphClient;
+        private final GraphServiceClient<Request> graphClient;
         private final Subscription subscription;
 
         public RegisterApplicationTask(@NotNull Project project,
                                        @NotNull ApplicationRegistrationModel model,
-                                       @NotNull GraphRbacManagementClient graphClient,
+                                       @NotNull GraphServiceClient<Request> graphClient,
                                        @NotNull Subscription subscription) {
             this.project = project;
             this.model = model;
@@ -142,20 +148,21 @@ public class RegisterApplicationAction extends AnAction {
         @Override
         public void run() {
             // create new application
-            StringBuilder validSuffix = new StringBuilder();
+            var validSuffix = new StringBuilder();
             for (char c : (model.getDisplayName() + UUID.randomUUID().toString().substring(0, 6)).toCharArray()) {
                 if (Character.isLetterOrDigit(c)) {
                     validSuffix.append(c);
                 }
             }
 
-            var params = new ApplicationCreateParameters();
-            params.withDisplayName(model.getDisplayName());
-            params.withIdentifierUris(Collections.singletonList("https://" + model.getDomain() + "/" + validSuffix));
-            params.withReplyUrls(Collections.singletonList(model.getCallbackUrl()));
-            params.withAvailableToOtherTenants(model.isMultiTenant());
+            var params = new Application();
+            params.displayName = model.getDisplayName();
+            params.identifierUris = Collections.singletonList("https://" + model.getDomain() + "/" + validSuffix);
+            params.web = new WebApplication();
+            params.web.redirectUris = Collections.singletonList(model.getCallbackUrl());
+            // fixme set clientId, isMultiTenant, allowOverwrite
 
-            var application = graphClient.getApplications().create(params);
+            var application = graphClient.applications().buildRequest().post(params);
 
             // now display the new application in the "Application templates dialog"
             AzureTaskManager.getInstance().runLater(() -> {

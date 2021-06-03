@@ -5,12 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.azure.resourcemanager.authorization.fluent.GraphRbacManagementClient;
-import com.azure.resourcemanager.authorization.fluent.models.ApplicationInner;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.graph.models.Application;
+import com.microsoft.graph.requests.GraphServiceClient;
+import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,25 +21,25 @@ import java.util.Collections;
 /**
  * Dialog which displays code templates for a list of Azure AD applications.
  */
-class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner> {
+class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     @NotNull
     private final ApplicationTemplateForm form;
 
     AzureApplicationTemplateDialog(@NotNull Project project,
-                                   @NotNull GraphRbacManagementClient graphClient,
+                                   @NotNull GraphServiceClient<Request> graphClient,
                                    @NotNull Subscription subscription) {
         this(project, graphClient, null, subscription);
     }
 
     AzureApplicationTemplateDialog(@NotNull Project project,
-                                   @NotNull ApplicationInner application,
+                                   @NotNull Application application,
                                    @NotNull Subscription subscription) {
         this(project, null, application, subscription);
     }
 
     private AzureApplicationTemplateDialog(@NotNull Project project,
-                                           @Nullable GraphRbacManagementClient graphClient,
-                                           @Nullable ApplicationInner application,
+                                           @Nullable GraphServiceClient<Request> graphClient,
+                                           @Nullable Application application,
                                            @NotNull Subscription subscription) {
         super(project);
         assert graphClient != null || application != null;
@@ -49,7 +50,7 @@ class AzureApplicationTemplateDialog extends AzureDialog<ApplicationInner> {
     }
 
     @Override
-    public AzureForm<ApplicationInner> getForm() {
+    public AzureForm<Application> getForm() {
         return form;
     }
 
