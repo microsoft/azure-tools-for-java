@@ -15,9 +15,11 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijSimpleMessage;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -95,6 +97,10 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                                     String.format("Failed to %s", error.getMessage()) : error.getMessage();
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
-        IntelliJAzureExceptionHandler.getInstance().handleException(project, new AzureToolkitRuntimeException("execute run configuration", error), true);
+        final IntellijSimpleMessage message = new IntellijSimpleMessage(IAzureMessage.Type.ERROR, "failed to execute run configuration");
+        message.setProject(project);
+        message.setBackgrounded(true);
+        message.setPayload(error);
+        AzureMessager.getMessager().show(message);
     }
 }
