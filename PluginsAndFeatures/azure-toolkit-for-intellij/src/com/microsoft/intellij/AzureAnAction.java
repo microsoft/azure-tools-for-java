@@ -7,7 +7,9 @@ package com.microsoft.intellij;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijSimpleMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -48,18 +50,22 @@ public abstract class AzureAnAction extends AnAction {
     @Override
     public final void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
-        String serviceName = transformHDInsight(getServiceName(anActionEvent), anActionEvent);
-        String operationName = getOperationName(anActionEvent);
+        final String serviceName = transformHDInsight(getServiceName(anActionEvent), anActionEvent);
+        final String operationName = getOperationName(anActionEvent);
 
-        Operation operation = TelemetryManager.createOperation(serviceName, operationName);
+        final Operation operation = TelemetryManager.createOperation(serviceName, operationName);
         boolean actionReturnVal = true;
         try {
             operation.start();
             EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
             actionReturnVal = onActionPerformed(anActionEvent, operation);
-        } catch (RuntimeException ex) {
+        } catch (final RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
-            IntelliJAzureExceptionHandler.getInstance().handleException(getEventProject(anActionEvent), ex, false);
+            final IntellijSimpleMessage message = new IntellijSimpleMessage(IAzureMessage.Type.ERROR, "failed to " + operationName);
+            message.setProject(getEventProject(anActionEvent));
+            message.setBackgrounded(false);
+            message.setPayload(ex);
+            AzureMessager.getMessager().show(message);
         } finally {
             if (actionReturnVal) {
                 operation.complete();
