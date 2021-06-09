@@ -11,9 +11,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler.AzureExceptionAction;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.SimpleMessageAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -81,9 +81,9 @@ public class CreateFunctionAppAction extends NodeActionListener {
                 .subscribe(functionApp -> {
                 }, (error) -> {
                     final String title = String.format("Reopen dialog \"%s\"", dialog.getTitle());
-                    final Consumer<Throwable> act = t -> AzureTaskManager.getInstance().runLater("open dialog", () -> this.openDialog(project, config));
-                    final AzureExceptionAction action = AzureExceptionAction.simple(title, act);
-                    AzureExceptionHandler.notify(error, action);
+                    final Consumer<IAzureMessage> act = t -> AzureTaskManager.getInstance().runLater("open dialog", () -> this.openDialog(project, config));
+                    final SimpleMessageAction action = new SimpleMessageAction(title, act);
+                    AzureMessager.getMessager().error(error, null, action);
                 });
         });
         dialog.show();

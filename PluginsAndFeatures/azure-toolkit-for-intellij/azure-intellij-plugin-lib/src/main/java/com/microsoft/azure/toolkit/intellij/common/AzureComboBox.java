@@ -12,7 +12,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -279,7 +279,12 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void handleLoadingError(Throwable e) {
-        AzureExceptionHandler.onRxException(e);
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
+        AzureMessager.getMessager().error(e);
     }
 
     protected boolean isFilterable() {

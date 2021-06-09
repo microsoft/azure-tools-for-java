@@ -48,8 +48,8 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFileLegacy;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
@@ -67,6 +67,7 @@ import lombok.SneakyThrows;
 import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.swing.*;
 import java.io.ByteArrayOutputStream;
@@ -74,6 +75,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -407,7 +409,7 @@ public class IDEHelperImpl implements IDEHelper {
                             final String action = "try later or downloading it first";
                             throw new AzureToolkitRuntimeException(error, e, action);
                         }
-                    }, AzureExceptionHandler::onRxException);
+                    }, IDEHelperImpl::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
@@ -453,7 +455,7 @@ public class IDEHelperImpl implements IDEHelper {
                             final String action = "try later or downloading it first";
                             throw new AzureToolkitRuntimeException(error, e, action);
                         }
-                    }, AzureExceptionHandler::onRxException);
+                    }, IDEHelperImpl::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
@@ -480,7 +482,7 @@ public class IDEHelperImpl implements IDEHelper {
                                 }
                             }
                         } catch (final RuntimeException e) {
-                            AzureExceptionHandler.getInstance().handleException(e);
+                            AzureMessager.getMessager().error(e);
                         } finally {
                             messageBusConnection.disconnect();
                         }
@@ -582,7 +584,7 @@ public class IDEHelperImpl implements IDEHelper {
                         final String action = "try later";
                         throw new AzureToolkitRuntimeException(error, e, action);
                     }
-                }, AzureExceptionHandler::onRxException);
+                }, IDEHelperImpl::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
@@ -611,9 +613,18 @@ public class IDEHelperImpl implements IDEHelper {
                             final String action = "try later";
                             throw new AzureToolkitRuntimeException(error, e, action);
                         }
-                    }, AzureExceptionHandler::onRxException);
+                    }, IDEHelperImpl::onRxException);
         });
         AzureTaskManager.getInstance().runInModal(task);
+    }
+
+    private static void onRxException(Throwable e) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
+        AzureMessager.getMessager().error(e);
     }
 
     private void notifyDownloadSuccess(final String name, final File dest, final Project project) {

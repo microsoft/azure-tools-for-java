@@ -10,7 +10,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExceptionHandler;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -148,7 +148,7 @@ public abstract class RefreshableNode extends Node {
                 node.setName(name);
 
                 if (throwable != null) {
-                    AzureExceptionHandler.getInstance().handleException(throwable, true);
+                    AzureMessager.getMessager().error(throwable);
                 }
             }
         }));
