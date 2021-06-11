@@ -5,7 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -27,5 +27,5 @@ public interface WebAppOnLinuxDeployView extends MvpView {
 
     void renderPricingTierList(List<PricingTier> pricingTierList);
 
-    void renderAppServicePlanList(List<AppServicePlan> appServicePlans);
+    void renderAppServicePlanList(List<IAppServicePlan> appServicePlans);
 }

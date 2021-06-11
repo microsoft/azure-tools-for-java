@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
 import com.intellij.ui.components.JBLabel;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
@@ -81,21 +81,19 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
 
     @Override
     public DraftServicePlan getData() {
-        final DraftServicePlan.DraftServicePlanBuilder builder = DraftServicePlan.builder();
-        builder.subscription(this.subscription)
-               .name(this.textName.getValue())
-               .os(this.os)
-               .region(this.region)
-               .tier(this.comboBoxPricingTier.getValue());
-        return builder.build();
+        return new DraftServicePlan(this.subscription,
+               this.textName.getValue(),
+               this.region,
+               this.os,
+               this.comboBoxPricingTier.getValue());
     }
 
     @Override
     public void setData(final DraftServicePlan data) {
         this.subscription = data.getSubscription();
-        this.os = data.operatingSystem();
-        this.region = Region.fromName(data.region().name());
-        this.textName.setValue(data.name());
+        this.os = data.getOperatingSystem();
+        this.region = Region.fromName(data.getRegion());
+        this.textName.setValue(data.getName());
     }
 
     @Override

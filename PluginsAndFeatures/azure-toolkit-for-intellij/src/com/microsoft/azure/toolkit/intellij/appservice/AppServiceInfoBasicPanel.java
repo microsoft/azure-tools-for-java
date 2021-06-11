@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
@@ -102,12 +101,8 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         final DraftResourceGroup group = new DraftResourceGroup(subscription, StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
         group.setSubscription(subscription);
         T result = supplier.get(); // need platform region pricing
-        final DraftServicePlan plan = DraftServicePlan.builder().build();
-        plan.setSubscription(subscription);
-        plan.setName(StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH));
-        plan.setRegion(Region.fromName(result.getRegion().getName()));
-        plan.setOs(result.getPlatform().getOs());
-        plan.setTier(result.getPricingTier());
+        String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
+        final DraftServicePlan plan = new DraftServicePlan(subscription, planName, result.getRegion(), result.getPlatform().getOs(), result.getPricingTier());
         result.setName(appName);
         result.setResourceGroup(group);
         result.setSubscription(subscription);

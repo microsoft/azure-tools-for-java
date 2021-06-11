@@ -5,7 +5,6 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -22,7 +21,7 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionAp
     public FunctionAppComboBoxModel(final ResourceEx<FunctionApp> resourceEx) {
         super(resourceEx);
         final FunctionApp functionApp = resourceEx.getResource();
-        this.runtime = functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
+        this.runtime = functionApp.operatingSystem() == com.microsoft.azure.management.appservice.OperatingSystem.WINDOWS ?
                        String.format("%s-Java %s", "Windows", functionApp.javaVersion()) :
                        String.format("%s-%s", "Linux", functionApp.linuxFxVersion().replace("|", " "));
     }

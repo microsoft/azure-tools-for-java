@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;

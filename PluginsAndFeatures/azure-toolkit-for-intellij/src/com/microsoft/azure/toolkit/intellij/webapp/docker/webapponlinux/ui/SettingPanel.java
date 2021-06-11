@@ -5,9 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp.docker.webapponlinux.ui;
 
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.Constant;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -17,14 +20,11 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
-import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.azurecommons.util.Utils;
@@ -88,7 +88,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     private JRadioButton rdoCreateAppServicePlan;
     private JTextField txtCreateAppServicePlan;
     private JRadioButton rdoUseExistAppServicePlan;
-    private JComboBox<AppServicePlan> cbExistAppServicePlan;
+    private JComboBox<IAppServicePlan> cbExistAppServicePlan;
     private JLabel lblLocation;
     private JLabel lblPricing;
     private JPanel pnlAcr;
@@ -133,7 +133,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         rdoUseExist.addActionListener(e -> updatePanelVisibility());
 
         // resource group
-        comboResourceGroup.setRenderer(new ListCellRendererWrapper<ResourceGroup>() {
+        comboResourceGroup.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList jlist, ResourceGroup resourceGroup, int index, boolean isSelected, boolean
                     cellHasFocus) {
@@ -148,7 +148,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         rdoUseExistResGrp.addActionListener(e -> updateResourceGroupEnabled());
 
         // subscription combo
-        comboSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
+        comboSubscription.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList jlist, Subscription subscription, int index, boolean isSelected, boolean
                     cellHasFocus) {
@@ -161,9 +161,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         comboSubscription.addItemListener(this::onComboSubscriptionSelection);
 
         // app service plan
-        cbExistAppServicePlan.setRenderer(new ListCellRendererWrapper<AppServicePlan>() {
+        cbExistAppServicePlan.setRenderer(new SimpleListCellRenderer<>() {
             @Override
-            public void customize(JList jlist, AppServicePlan asp, int index, boolean isSelected, boolean
+            public void customize(JList jlist, IAppServicePlan asp, int index, boolean isSelected, boolean
                     cellHasFocus) {
                 if (asp != null) {
                     setText(asp.name());
@@ -176,7 +176,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         rdoUseExistAppServicePlan.addActionListener(e -> updateAppServicePlanEnabled());
 
         // location combo
-        cbLocation.setRenderer(new ListCellRendererWrapper<Region>() {
+        cbLocation.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList jlist, Region location, int index, boolean isSelected, boolean cellHasFocus) {
                 if (location != null) {
@@ -186,7 +186,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         });
 
         // pricing tier combo
-        cbPricing.setRenderer(new ListCellRendererWrapper<PricingTier>() {
+        cbPricing.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList jlist, PricingTier pricingTier, int index, boolean isSelected, boolean
                     cellHasFocus) {
@@ -200,7 +200,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             artifactActionPerformed((Artifact) cbArtifact.getSelectedItem());
         });
 
-        cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
+        cbArtifact.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList jlist, Artifact artifact, int i, boolean b, boolean b1) {
                 if (artifact != null) {
@@ -219,7 +219,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
             }
         });
 
-        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
+        cbMavenProject.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
@@ -307,8 +307,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (event.getStateChange() == ItemEvent.SELECTED) {
             AppServicePlan asp = (AppServicePlan) cbExistAppServicePlan.getSelectedItem();
             if (asp != null) {
-                lblLocation.setText(asp.regionName());
-                lblPricing.setText(asp.pricingTier().toString());
+                lblLocation.setText(asp.entity().getRegion());
+                // TODO(andxu): change to toString
+                lblPricing.setText(asp.entity().getPricingTier().getSize());
             }
         }
     }
@@ -586,7 +587,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
 
         // select active web app
         for (int index = 0; index < cachedWebAppList.size(); index++) {
-            if (Comparing.equal(cachedWebAppList.get(index).getResource().id(), defaultWebAppId)) {
+            if (StringUtils.equals(cachedWebAppList.get(index).getResource().id(), defaultWebAppId)) {
                 webAppTable.setRowSelectionInterval(index, index);
                 // defaultWebAppId = null; // clear to select nothing in future refreshing
                 break;
@@ -600,7 +601,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (subscriptions != null && subscriptions.size() > 0) {
             subscriptions.forEach((item) -> {
                 comboSubscription.addItem(item);
-                if (Comparing.equal(item.getId(), defaultSubscriptionId)) {
+                if (StringUtils.equals(item.getId(), defaultSubscriptionId)) {
                     comboSubscription.setSelectedItem(item);
                     defaultSubscriptionId = null;
                 }
@@ -614,7 +615,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (resourceGroupList != null && resourceGroupList.size() > 0) {
             resourceGroupList.forEach((item) -> {
                 comboResourceGroup.addItem(item);
-                if (Comparing.equal(item.getName(), defaultResourceGroup)) {
+                if (StringUtils.equals(item.getName(), defaultResourceGroup)) {
                     comboResourceGroup.setSelectedItem(item);
                     // defaultResourceGroup = null;
                 }
@@ -628,7 +629,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (locationList != null && locationList.size() > 0) {
             locationList.forEach((item) -> {
                 cbLocation.addItem(item);
-                if (Comparing.equal(item.getName(), defaultLocationName)) {
+                if (StringUtils.equals(item.getName(), defaultLocationName)) {
                     cbLocation.setSelectedItem(item);
                     // defaultLocationName = null;
                 }
@@ -637,14 +638,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     }
 
     @Override
-    public void renderAppServicePlanList(List<AppServicePlan> appServicePlans) {
+    public void renderAppServicePlanList(List<IAppServicePlan> appServicePlans) {
         cbExistAppServicePlan.removeAllItems();
         lblLocation.setText(NOT_APPLICABLE);
         lblPricing.setText(NOT_APPLICABLE);
         if (appServicePlans != null && appServicePlans.size() > 0) {
             appServicePlans.forEach((item) -> {
                 cbExistAppServicePlan.addItem(item);
-                if (Comparing.equal(item.id(), defaultAppServicePlanId)) {
+                if (StringUtils.equals(item.id(), defaultAppServicePlanId)) {
                     cbExistAppServicePlan.setSelectedItem(item);
                     // defaultAppServicePlanId = null;
                 }
@@ -658,7 +659,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         if (pricingTierList != null && pricingTierList.size() > 0) {
             pricingTierList.forEach((item) -> {
                 cbPricing.addItem(item);
-                if (Comparing.equal(item.toString(), defaultPricingTier)) {
+                if (StringUtils.equals(item.toString(), defaultPricingTier)) {
                     cbPricing.setSelectedItem(item);
                 }
             });

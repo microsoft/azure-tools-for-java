@@ -6,19 +6,23 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import rx.Observable;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import rx.Observable;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -132,12 +136,11 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param rg  Resource group name.
      */
     public void onLoadAppServicePlan(String sid, String rg) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionIdAndResourceGroupName(sid, rg).stream()
-                .filter(asp -> OperatingSystem.LINUX.equals(asp.operatingSystem()))
-                .collect(Collectors.toList()))
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+        Mono.fromCallable(() -> Azure.az(AzureAppService.class)
+            .subscription(sid).appServicePlansByResourceGroup(rg)).flatMapMany(Flux::fromIterable)
+                .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
+                .subscribeOn(Schedulers.boundedElastic())
+                .collectList().subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
@@ -152,14 +155,15 @@ public class WebAppOnLinuxDeployPresenter<V extends WebAppOnLinuxDeployView> ext
      * @param sid Subscription Id.
      */
     public void onLoadAppServicePlan(String sid) {
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance()
-                .listAppServicePlanBySubscriptionId(sid))
-                .subscribeOn(getSchedulerProvider().io())
-                .subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (isViewDetached()) {
-                        return;
-                    }
-                    getMvpView().renderAppServicePlanList(appServicePlans);
-                }));
+        Mono.fromCallable(() -> Azure.az(AzureAppService.class)
+            .subscription(sid).appServicePlans()).flatMapMany(Flux::fromIterable)
+            .filter(asp -> OperatingSystem.LINUX.equals(asp.entity().getOperatingSystem()))
+            .subscribeOn(Schedulers.boundedElastic())
+            .collectList().subscribe(appServicePlans -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                if (isViewDetached()) {
+                    return;
+                }
+                getMvpView().renderAppServicePlanList(appServicePlans);
+            }));
     }
 }

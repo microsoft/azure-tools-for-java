@@ -7,8 +7,9 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.intellij.util.ui.JBUI;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
@@ -23,14 +24,12 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.event.ItemEvent;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -76,7 +75,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
         final Region region = this.selectorRegion.getValue();
-        final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
+        final AppServicePlanEntity servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T config = supplier.get();
@@ -150,7 +149,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final String date = DATE_FORMAT.format(new Date());
         final String defaultWebAppName = String.format("app-%s-%s", this.project.getName(), date);
         this.textName.setValue(defaultWebAppName);
-        this.textSku.setBorder(new EmptyBorder(0, 5, 0, 0));
+        this.textSku.setBorder(JBUI.Borders.emptyLeft(5));
         this.textSku.setText(NOT_APPLICABLE);
         this.selectorServicePlan.addItemListener(this::onServicePlanChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
@@ -197,12 +196,12 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            final AppServicePlan plan = (AppServicePlan) e.getItem();
-            if (plan.pricingTier() == null) {
+            final AppServicePlanEntity plan = (AppServicePlanEntity) e.getItem();
+            if (plan == null || plan.getPricingTier() == null) {
                 return;
             }
-            final String pricing = StringUtils.equals(plan.pricingTier().toSkuDescription().tier(), AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER.getTier()) ?
-                                   "Consumption" : plan.pricingTier().toString();
+            final String pricing = Objects.equals(plan.getPricingTier(), PricingTier.CONSUMPTION) ?
+                                   "Consumption" : plan.getPricingTier().toString();
             this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);

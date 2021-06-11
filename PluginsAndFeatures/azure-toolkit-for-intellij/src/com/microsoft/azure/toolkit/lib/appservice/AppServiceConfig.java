@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -28,7 +28,7 @@ public class AppServiceConfig {
     private Path application;
     private Subscription subscription;
     private ResourceGroup resourceGroup;
-    private AppServicePlan servicePlan;
+    private AppServicePlanEntity servicePlan;
     private Region region;
     private PricingTier pricingTier;
     @Builder.Default

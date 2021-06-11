@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -166,4 +166,3 @@ public interface Platform {
         }
     }
 }
-

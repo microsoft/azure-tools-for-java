@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
@@ -17,9 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.OperatingSystemEnum;
-import com.microsoft.azure.toolkit.lib.legacy.function.configurations.ElasticPremiumPricingTier;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.toolkit.lib.legacy.function.handlers.runtime.FunctionRuntimeHandler;
@@ -161,7 +160,7 @@ public class CreateFunctionHandler {
                       .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
                       .functionExtensionVersion(getFunctionExtensionVersion())
                       .azure(this.ctx.getAzureClient())
-                      .javaVersion(FunctionUtils.parseJavaVersion(ctx.getJavaVersion()))
+                      .javaVersion(JavaVersion.fromString(ctx.getJavaVersion()))
                       .build();
     }
 
@@ -195,14 +194,13 @@ public class CreateFunctionHandler {
         result.put(settingName, settingValue);
     }
 
-    public PricingTier getPricingTier() {
+    public com.microsoft.azure.management.appservice.PricingTier getPricingTier() {
         if (StringUtils.isEmpty(ctx.getPricingTier())) {
             return null;
         }
-        final String pricingTier = ctx.getPricingTier();
-        final ElasticPremiumPricingTier elasticPremiumPricingTier = ElasticPremiumPricingTier.fromString(pricingTier);
-        return elasticPremiumPricingTier != null ? elasticPremiumPricingTier.toPricingTier()
-                : AppServiceUtils.getPricingTierFromString(pricingTier);
+
+        //TODO(hanli): replace track1 PricingTier to track2
+        return PricingTier.BASIC_B2;
     }
 
     @AzureOperation(

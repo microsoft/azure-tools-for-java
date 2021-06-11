@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
+import com.microsoft.azure.arm.resources.ResourceId;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
@@ -13,7 +14,6 @@ import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.function.runner.IntelliJFunctionContext;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,9 +38,9 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
         if (functionAppComboBoxModel.isNewCreateResource() && functionAppComboBoxModel.getFunctionAppConfig() != null) {
             setNewResource(true);
             final FunctionAppConfig functionAppConfig = functionAppComboBoxModel.getFunctionAppConfig();
-            setAppServicePlanName(functionAppConfig.getServicePlan().name());
-            setAppServicePlanResourceGroup(functionAppConfig.getServicePlan().resourceGroupName());
-            setPricingTier(functionAppConfig.getServicePlan().pricingTier().toSkuDescription().size());
+            setAppServicePlanName(functionAppConfig.getServicePlan().getName());
+            setAppServicePlanResourceGroup(ResourceId.fromString(functionAppConfig.getServicePlan().getId()).resourceGroupName());
+            setPricingTier(functionAppConfig.getServicePlan().getPricingTier().toString());
             setRegion(functionAppConfig.getRegion().getName());
             setOs(functionAppConfig.getPlatform().getOs().name());
             setJavaVersion(functionAppConfig.getPlatform().getStackVersionOrJavaVersion());

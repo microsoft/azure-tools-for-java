@@ -7,30 +7,37 @@ package com.microsoft.azure.toolkit.intellij.function.runner.component;
 
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.arm.resources.ResourceId;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.swing.*;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.*;
+import java.awt.Window;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.microsoft.intellij.CommonConst.NEW_CREATED_RESOURCE;
 import static com.microsoft.azure.toolkit.intellij.function.runner.component.NewAppServicePlanDialog.CONSUMPTION;
 import static com.microsoft.azure.toolkit.intellij.function.runner.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
+import static com.microsoft.intellij.CommonConst.NEW_CREATED_RESOURCE;
 
 public class AppServicePlanPanel extends JPanel {
     private static final String CREATE_APP_SERVICE_PLAN = "Create app service plan...";
@@ -109,14 +116,14 @@ public class AppServicePlanPanel extends JPanel {
             this.subscriptionId = subscriptionId;
             this.operatingSystem = operatingSystem;
             beforeLoadAppServicePlan();
+
             if (rxDisposable != null && !rxDisposable.isDisposed()) {
                 rxDisposable.dispose();
             }
             rxDisposable = Observable
-                .fromCallable(() -> AzureFunctionMvpModel
-                    .getInstance()
-                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                    .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
+                .fromCallable(() -> Azure.az(AzureAppService.class)
+                    .subscription(subscriptionId).appServicePlans().stream().map(IAppServicePlan::entity)
+                    .sorted((first, second) -> StringUtils.compare(first.getName(), second.getName()))
                     .collect(Collectors.toList()))
                 .subscribeOn(Schedulers.io())
                 .doOnError((e) -> fillAppServicePlan(Collections.emptyList()))
@@ -178,9 +185,9 @@ public class AppServicePlanPanel extends JPanel {
         cbAppServicePlan.addItem("Loading...");
     }
 
-    private void fillAppServicePlan(List<AppServicePlan> appServicePlans) {
+    private void fillAppServicePlan(List<AppServicePlanEntity> appServicePlans) {
         appServicePlanWrapperList = appServicePlans.stream()
-                .map(appServicePlan -> new AppServicePlanWrapper(appServicePlan))
+                .map(AppServicePlanWrapper::new)
                 .collect(Collectors.toCollection(ArrayList::new));
         reloadAppServicePlan();
     }
@@ -204,6 +211,9 @@ public class AppServicePlanPanel extends JPanel {
         }
     }
 
+    /**
+     * TODO: replace it with DraftServicePlan
+     */
     static class AppServicePlanWrapper {
 
         private boolean isNewCreate;
@@ -213,13 +223,13 @@ public class AppServicePlanPanel extends JPanel {
         private PricingTier pricingTier;
         private OperatingSystem operatingSystem;
 
-        public AppServicePlanWrapper(AppServicePlan appServicePlan) {
+        public AppServicePlanWrapper(AppServicePlanEntity appServicePlan) {
             this.isNewCreate = false;
-            this.name = appServicePlan.name();
-            this.region = Region.fromName(appServicePlan.region().name());
-            this.pricingTier = fromPricingTier(appServicePlan.pricingTier());
-            this.operatingSystem = appServicePlan.operatingSystem();
-            this.resourceGroup = appServicePlan.resourceGroupName();
+            this.name = appServicePlan.getName();
+            this.region = Region.fromName(appServicePlan.getRegion());
+            this.pricingTier = appServicePlan.getPricingTier();
+            this.operatingSystem = appServicePlan.getOperatingSystem();
+            this.resourceGroup = ResourceId.fromString(appServicePlan.getId()).resourceGroupName();
         }
 
         public AppServicePlanWrapper(String name, Region region, PricingTier pricingTier) {
@@ -259,10 +269,4 @@ public class AppServicePlanPanel extends JPanel {
         }
     }
 
-    static PricingTier fromPricingTier(com.microsoft.azure.management.appservice.PricingTier pricingTier) {
-        return PricingTier.values().stream()
-            .filter(value -> StringUtils.equals(value.getSize(), pricingTier.toSkuDescription().size()) &&
-                StringUtils.equals(value.getTier(), pricingTier.toSkuDescription().tier()))
-            .findFirst().orElse(null);
-    }
 }

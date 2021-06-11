@@ -65,13 +65,13 @@ public class WebAppService {
         settings.setRegion(config.getRegion().getName());
         settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
         // creating if id is empty
-        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().id()));
+        settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().getId()));
         if (settings.isCreatingAppServicePlan()) {
-            settings.setAppServicePlanName(config.getServicePlan().name());
+            settings.setAppServicePlanName(config.getServicePlan().getName());
         } else {
-            settings.setAppServicePlanId(config.getServicePlan().id());
+            settings.setAppServicePlanId(config.getServicePlan().getId());
         }
-        settings.setPricing(config.getServicePlan().pricingTier().toString());
+        settings.setPricing(config.getServicePlan().getPricingTier().toString());
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
             settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());

@@ -8,21 +8,22 @@ package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
-import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.function.CreateFunctionHandler;
 import com.microsoft.azure.toolkit.intellij.function.runner.library.function.DeployFunctionHandler;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.AppServiceUtils;
+import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -73,9 +74,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
             functionApp = AzureFunctionMvpModel.getInstance()
                                                .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
         }
-        final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(functionApp);
-        functionDeployConfiguration.setOs(appServicePlan.operatingSystem().name());
-        functionDeployConfiguration.setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
+        final IAppServicePlan appServicePlan = Azure.az(AzureAppService.class).appServicePlan(functionApp.appServicePlanId());
+        functionDeployConfiguration.setOs(appServicePlan.entity().getOperatingSystem().toString());
+        functionDeployConfiguration.setPricingTier(appServicePlan.entity().getPricingTier().getSize());
         // Deploy function to Azure
         stagingFolder = FunctionUtils.getTempStagingFolder();
         deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());

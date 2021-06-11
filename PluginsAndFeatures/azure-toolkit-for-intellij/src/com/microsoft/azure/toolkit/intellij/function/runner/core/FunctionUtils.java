@@ -33,7 +33,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -107,7 +106,7 @@ public class FunctionUtils {
         if (!WebAppUtils.isJavaWebApp(functionApp)) {
             return null;
         }
-        return functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
+        return functionApp.operatingSystem() == com.microsoft.azure.management.appservice.OperatingSystem.WINDOWS ?
                functionApp.javaVersion().toString() :
                functionApp.linuxFxVersion().split("|")[1];
     }
