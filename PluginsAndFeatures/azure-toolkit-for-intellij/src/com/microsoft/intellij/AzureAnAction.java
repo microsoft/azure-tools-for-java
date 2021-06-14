@@ -7,7 +7,7 @@ package com.microsoft.intellij;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijSimpleMessage;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -61,7 +61,7 @@ public abstract class AzureAnAction extends AnAction {
             actionReturnVal = onActionPerformed(anActionEvent, operation);
         } catch (final RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
-            final IntellijSimpleMessage message = new IntellijSimpleMessage(IAzureMessage.Type.ERROR, "failed to " + operationName);
+            final IntellijAzureMessage message = new IntellijAzureMessage(IAzureMessage.Type.ERROR, "failed to " + operationName);
             message.setProject(getEventProject(anActionEvent));
             message.setBackgrounded(false);
             message.setPayload(ex);

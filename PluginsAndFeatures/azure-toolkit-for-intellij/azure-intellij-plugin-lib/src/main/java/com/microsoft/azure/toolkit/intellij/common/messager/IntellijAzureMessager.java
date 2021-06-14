@@ -9,79 +9,48 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class IntellijAzureMessager implements IAzureMessager {
-    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
-    private static final String DEFAULT_MESSAGE_TITLE = "Azure";
+    static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
+    private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
+            Map.entry(IAzureMessage.Type.INFO, NotificationType.INFORMATION),
+            Map.entry(IAzureMessage.Type.SUCCESS, NotificationType.INFORMATION),
+            Map.entry(IAzureMessage.Type.WARNING, NotificationType.WARNING),
+            Map.entry(IAzureMessage.Type.ERROR, NotificationType.ERROR)
+    );
 
-    private Notification createNotification(@Nonnull String title, @Nonnull String message, NotificationType type) {
-        return new Notification(NOTIFICATION_GROUP_ID, title, message, type, new NotificationListener.UrlOpeningListener(true));
-    }
-
-    private String getTitle(String title) {
-        if (StringUtils.isEmpty(title)) {
-            return DEFAULT_MESSAGE_TITLE;
-        }
-        return title;
-    }
-
-    public String value(String val) {
-        return val;
+    private Notification createNotification(@Nonnull String title, @Nonnull String content, NotificationType type) {
+        return new Notification(NOTIFICATION_GROUP_ID, title, content, type, new NotificationListener.UrlOpeningListener(true));
     }
 
     @Override
-    public boolean show(IAzureMessage message) {
-        final NotificationType type;
-        switch (message.getType()) {
+    public boolean show(IAzureMessage raw) {
+        final IntellijAzureMessage message = IntellijAzureMessage.from(raw);
+        switch (raw.getType()) {
             case ALERT:
-                return MessageDialogBuilder.okCancel(getTitle(message.getTitle()), message.getMessage()).guessWindowAndAsk();
             case CONFIRM:
-                return MessageDialogBuilder.yesNo(getTitle(message.getTitle()), message.getMessage()).guessWindowAndAsk();
-            case ERROR:
-                if (Objects.nonNull(message.getPayload())) {
-                    return true;
-                }
-                type = NotificationType.ERROR;
-                break;
-            case WARNING:
-                type = NotificationType.WARNING;
-                break;
-            case INFO:
-            case SUCCESS:
-            default:
-                type = NotificationType.INFORMATION;
+                return MessageDialogBuilder.yesNo(message.getTitle(), message.getMessage()).guessWindowAndAsk();
         }
-        final Notification notification = this.createNotification(getTitle(message.getTitle()), message.getMessage(), type);
-        final IAzureMessage.Action[] actions = message.getActions();
-        if (actions != null) {
-            notification.addActions(Arrays.stream(actions).map(a -> toAction(a, message)).collect(Collectors.toList()));
+        if (Objects.equals(message.getBackgrounded(), Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
+            new IntellijErrorDialog(message).show();
+        } else {
+            this.showNotification(message);
         }
-        Notifications.Bus.notify(notification);
         return true;
     }
 
-    private static AnAction toAction(IAzureMessage.Action a, IAzureMessage message) {
-        if (a instanceof IntellijActionMessageAction) {
-            return ActionManager.getInstance().getAction(((IntellijActionMessageAction) a).getActionId());
-        }
-        return new AnAction(a.name()) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                a.actionPerformed(message);
-            }
-        };
+    private void showNotification(@Nonnull IntellijAzureMessage message) {
+        final NotificationType type = types.get(message.getType());
+        final String content = message.getContent(true);
+        final Notification notification = this.createNotification(message.getTitle(), content, type);
+        notification.addActions(message.getAnActions());
+        Notifications.Bus.notify(notification, message.getProject());
     }
 }
