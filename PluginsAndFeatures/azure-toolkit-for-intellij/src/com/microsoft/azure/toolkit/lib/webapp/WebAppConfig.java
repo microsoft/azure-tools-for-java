@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.lib.webapp;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,14 +17,14 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder(toBuilder = true)
 public class WebAppConfig extends AppServiceConfig {
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
+    public static final Runtime DEFAULT_RUNTIME = Runtime.LINUX_JAVA8_TOMCAT9;
     public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     @Builder.Default
-    protected Platform platform = DEFAULT_PLATFORM;
+    protected Runtime runtime = DEFAULT_RUNTIME;
 
     public static WebAppConfig getWebAppDefaultConfig() {
         return WebAppConfig.builder()
-                           .platform(WebAppConfig.DEFAULT_PLATFORM)
+                           .runtime(WebAppConfig.DEFAULT_RUNTIME)
                            .pricingTier(WebAppConfig.DEFAULT_PRICING_TIER)
                            .region(AppServiceConfig.DEFAULT_REGION).build();
     }

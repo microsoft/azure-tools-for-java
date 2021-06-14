@@ -6,13 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -76,9 +76,9 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
         appServiceMonitorPanel.setApplicationInsightsVisible(false);
         appServiceMonitorPanel.setData(MonitorConfig.builder().build());
 
-        appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
-            final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
-            appServiceMonitorPanel.setApplicationLogVisible(platform != null && platform.getOs() == OperatingSystem.WINDOWS);
+        appServiceConfigPanelAdvanced.getSelectorRuntime().addActionListener(event -> {
+            final Runtime runtime = appServiceConfigPanelAdvanced.getSelectorRuntime().getValue();
+            appServiceMonitorPanel.setApplicationLogVisible(runtime != null && runtime.getOperatingSystem() == OperatingSystem.WINDOWS);
         });
     }
 }

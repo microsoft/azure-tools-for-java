@@ -16,6 +16,7 @@ import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -75,6 +76,19 @@ public class WebAppUtils {
             " %s, retrying immediately (%d/%d)";
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
     public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
+
+    // todo: move to app service library utils
+    public static boolean isSupportedArtifactType(Runtime runtime, String ext) {
+        final String container = runtime.getWebContainer().getValue();
+        if (StringUtils.startsWithIgnoreCase(container, "java")) {
+            return "jar".equalsIgnoreCase(ext);
+        } else if (StringUtils.startsWithIgnoreCase(container, "tomcat")) {
+            return "war".equalsIgnoreCase(ext);
+        } else if (StringUtils.startsWithIgnoreCase(container, "jboss")) {
+            return StringUtils.equalsAnyIgnoreCase(ext, "war", "ear");
+        }
+        return true;
+    }
 
     @NotNull
     @AzureOperation(

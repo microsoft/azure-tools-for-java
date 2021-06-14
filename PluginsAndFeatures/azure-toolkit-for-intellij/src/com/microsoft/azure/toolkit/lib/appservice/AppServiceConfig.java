@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -34,5 +35,5 @@ public class AppServiceConfig {
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
 
-    protected Platform platform;
+    protected Runtime runtime;
 }

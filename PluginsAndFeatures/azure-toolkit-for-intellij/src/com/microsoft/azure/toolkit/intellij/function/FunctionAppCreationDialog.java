@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.*;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -64,7 +65,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
                 return config;
             }
         };
-        basicPanel.getSelectorPlatform().setPlatformList(Arrays.asList(Platform.AzureFunction.values()));
+        basicPanel.getSelectorRuntime().setPlatformList(Runtime.FUNCTION_APP_RUNTIME);
         advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }

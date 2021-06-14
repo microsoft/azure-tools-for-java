@@ -7,13 +7,9 @@ package com.microsoft.azure.toolkit.lib.webapp;
 
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -64,7 +60,7 @@ public class WebAppService {
         settings.setResourceGroup(config.getResourceGroup().getName());
         settings.setWebAppName(config.getName());
         settings.setRegion(config.getRegion().getName());
-        settings.saveRuntime(getRuntimeFromWebAppConfig(config.getPlatform()));
+        settings.saveRuntime(config.getRuntime());
         // creating if id is empty
         settings.setCreatingAppServicePlan(config.getServicePlan() instanceof Draft || StringUtils.isEmpty(config.getServicePlan().getId()));
         if (settings.isCreatingAppServicePlan()) {
@@ -88,17 +84,5 @@ public class WebAppService {
         settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
         settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
         return settings;
-    }
-
-    private static Runtime getRuntimeFromWebAppConfig(@NotNull final Platform platform) {
-        final com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem operatingSystem =
-            com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(platform.getOs().name());
-        if (operatingSystem == com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.LINUX) {
-            return Runtime.getRuntimeFromLinuxFxVersion(String.join(" ", platform.getStackOrWebContainer(), platform.getStackVersionOrJavaVersion()));
-        }
-        final WebContainer webContainer = WebContainer.fromString(platform.getStackOrWebContainer());
-        final com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion javaVersion =
-            com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion.fromString(platform.getStackVersionOrJavaVersion());
-        return Runtime.getRuntime(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.WINDOWS, webContainer, javaVersion);
     }
 }

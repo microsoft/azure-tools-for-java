@@ -7,18 +7,18 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
-import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
+import com.microsoft.azure.toolkit.intellij.appservice.platform.RuntimeComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,26 +33,27 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
+import static com.microsoft.azuretools.utils.WebAppUtils.isSupportedArtifactType;
 
 public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final int RG_NAME_MAX_LENGTH = 90;
     private static final int SP_NAME_MAX_LENGTH = 40;
     private final Project project;
-    private final Supplier<T> supplier;
+    private final Supplier<? extends T> supplier;
     private T config;
 
     private JPanel contentPanel;
 
     private AppNameInput textName;
-    private PlatformComboBox selectorPlatform;
+    private RuntimeComboBox selectorRuntime;
     private AzureArtifactComboBox selectorApplication;
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
     private Subscription subscription;
 
-    public AppServiceInfoBasicPanel(final Project project, final Supplier<T> defaultConfigSupplier) {
+    public AppServiceInfoBasicPanel(final Project project, final Supplier<? extends T> defaultConfigSupplier) {
         super();
         this.project = project;
         this.supplier = defaultConfigSupplier;
@@ -64,12 +65,12 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         this.subscription = az(AzureAccount.class).account().getSelectedSubscriptions().get(0);
         this.textName.setRequired(true);
         this.textName.setSubscription(subscription);
-        this.selectorPlatform.setRequired(true);
+        this.selectorRuntime.setRequired(true);
 
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
-            final Platform platform = this.selectorPlatform.getValue();
-            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
+            final Runtime platform = this.selectorRuntime.getValue();
+            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && isSupportedArtifactType(platform, ext);
         });
         this.setDeploymentVisible(false);
         this.config = initConfig();
@@ -80,12 +81,12 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     @Override
     public T getData() {
         final String name = this.textName.getValue();
-        final Platform platform = this.selectorPlatform.getValue();
+        final Runtime platform = this.selectorRuntime.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final T result = (T) (this.config == null ? initConfig() : this.config).toBuilder().build();
         result.setName(name);
-        result.setPlatform(platform);
+        result.setRuntime(platform);
 
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
@@ -100,9 +101,10 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         final String appName = String.format("app-%s-%s", this.project.getName(), DATE_FORMAT.format(new Date()));
         final DraftResourceGroup group = new DraftResourceGroup(subscription, StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
         group.setSubscription(subscription);
-        T result = supplier.get(); // need platform region pricing
-        String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
-        final DraftServicePlan plan = new DraftServicePlan(subscription, planName, result.getRegion(), result.getPlatform().getOs(), result.getPricingTier());
+        final T result = supplier.get(); // need platform region pricing
+        final String planName = StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH);
+        final DraftServicePlan plan = new DraftServicePlan(subscription, planName, result.getRegion(), result.getRuntime().getOperatingSystem(),
+                result.getPricingTier());
         result.setName(appName);
         result.setResourceGroup(group);
         result.setSubscription(subscription);
@@ -114,14 +116,14 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     @Override
     public void setData(final T config) {
         this.textName.setValue(config.getName());
-        this.selectorPlatform.setValue(config.getPlatform());
+        this.selectorRuntime.setValue(config.getRuntime());
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
             this.textName,
-            this.selectorPlatform,
+            this.selectorRuntime,
             this.selectorApplication
         };
         return Arrays.asList(inputs);
@@ -133,8 +135,8 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         super.setVisible(visible);
     }
 
-    public PlatformComboBox getSelectorPlatform() {
-        return selectorPlatform;
+    public RuntimeComboBox getSelectorRuntime() {
+        return selectorRuntime;
     }
 
     private void createUIComponents() {

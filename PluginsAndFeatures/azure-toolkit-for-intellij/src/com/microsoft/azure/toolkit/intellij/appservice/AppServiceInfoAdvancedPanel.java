@@ -8,26 +8,26 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.util.ui.JBUI;
-import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
-import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
+import com.microsoft.azure.toolkit.intellij.appservice.platform.RuntimeComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.entity.AppServicePlanEntity;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -39,11 +39,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import static com.microsoft.azuretools.utils.WebAppUtils.isSupportedArtifactType;
+
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
     private final Project project;
-    private final Supplier<T> supplier;
+    private final Supplier<? extends T> supplier;
 
     private JPanel contentPanel;
 
@@ -51,7 +53,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private ResourceGroupComboBox selectorGroup;
 
     private AppNameInput textName;
-    private PlatformComboBox selectorPlatform;
+    private RuntimeComboBox selectorRuntime;
     private RegionComboBox selectorRegion;
 
     private JLabel textSku;
@@ -60,7 +62,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public AppServiceInfoAdvancedPanel(final Project project, final Supplier<T> supplier) {
+    public AppServiceInfoAdvancedPanel(final Project project, final Supplier<? extends T> supplier) {
         super();
         this.project = project;
         this.supplier = supplier;
@@ -73,7 +75,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         final Subscription subscription = this.selectorSubscription.getValue();
         final ResourceGroup resourceGroup = this.selectorGroup.getValue();
         final String name = this.textName.getValue();
-        final Platform platform = this.selectorPlatform.getValue();
+        final Runtime runtime = this.selectorRuntime.getValue();
         final Region region = this.selectorRegion.getValue();
         final AppServicePlanEntity servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
@@ -82,7 +84,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
         config.setName(name);
-        config.setPlatform(platform);
+        config.setRuntime(runtime);
         config.setRegion(region);
         config.setServicePlan(servicePlan);
         if (Objects.nonNull(artifact)) {
@@ -98,7 +100,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.selectorSubscription.setValue(config.getSubscription());
         this.selectorGroup.setValue(config.getResourceGroup());
         this.textName.setValue(config.getName());
-        this.selectorPlatform.setValue(config.getPlatform());
+        this.selectorRuntime.setValue(config.getRuntime());
         this.selectorRegion.setValue(config.getRegion());
         this.selectorServicePlan.setValue(config.getServicePlan());
     }
@@ -109,7 +111,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
             this.selectorSubscription,
             this.selectorGroup,
             this.textName,
-            this.selectorPlatform,
+            this.selectorRuntime,
             this.selectorRegion,
             this.selectorApplication,
             this.selectorServicePlan
@@ -133,8 +135,8 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         return selectorSubscription;
     }
 
-    public PlatformComboBox getSelectorPlatform() {
-        return selectorPlatform;
+    public RuntimeComboBox getSelectorRuntime() {
+        return selectorRuntime;
     }
 
     public ServicePlanComboBox getSelectorServicePlan() {
@@ -153,18 +155,18 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.textSku.setText(NOT_APPLICABLE);
         this.selectorServicePlan.addItemListener(this::onServicePlanChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
-        this.selectorPlatform.addItemListener(this::onPlatformChanged);
+        this.selectorRuntime.addItemListener(this::onRuntimeChanged);
         this.selectorRegion.addItemListener(this::onRegionChanged);
         this.textName.setRequired(true);
         this.selectorServicePlan.setRequired(true);
         this.selectorSubscription.setRequired(true);
-        this.selectorPlatform.setRequired(true);
+        this.selectorRuntime.setRequired(true);
         this.selectorRegion.setRequired(true);
 
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
-            final Platform platform = this.selectorPlatform.getValue();
-            return StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
+            final Runtime runtime = this.selectorRuntime.getValue();
+            return StringUtils.isNotBlank(ext) && isSupportedArtifactType(runtime, ext);
         });
     }
 
@@ -175,10 +177,10 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         }
     }
 
-    private void onPlatformChanged(final ItemEvent e) {
+    private void onRuntimeChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Platform platform = (Platform) e.getItem();
-            final OperatingSystem operatingSystem = Objects.isNull(platform) ? null : platform.getOs();
+            final Runtime runtime = (Runtime) e.getItem();
+            final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null : runtime.getOperatingSystem();
             this.selectorServicePlan.setOperatingSystem(operatingSystem);
         }
     }
@@ -201,7 +203,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
                 return;
             }
             final String pricing = Objects.equals(plan.getPricingTier(), PricingTier.CONSUMPTION) ?
-                                   "Consumption" : plan.getPricingTier().toString();
+                    "Consumption" : String.format("%s_%s", plan.getPricingTier().getTier(), plan.getPricingTier().getSize());
             this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
@@ -218,7 +220,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         selectorServicePlan.setValidPricingTierList(pricingTier, defaultPricingTier);
     }
 
-    public void setValidPlatform(List<Platform> platform) {
-        selectorPlatform.setPlatformList(platform);
+    public void setValidRuntime(List<Runtime> runtimes) {
+        selectorRuntime.setPlatformList(runtimes);
     }
 }
