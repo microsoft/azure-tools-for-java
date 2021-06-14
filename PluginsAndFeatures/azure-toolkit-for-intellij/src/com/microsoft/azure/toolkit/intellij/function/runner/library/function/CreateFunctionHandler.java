@@ -105,7 +105,7 @@ public class CreateFunctionHandler {
         if (ctx.isEnableApplicationLog()) {
             return (WithCreate) withCreate.defineDiagnosticLogsConfiguration()
                                           .withApplicationLogging()
-                                          .withLogLevel(ctx.getApplicationLogLevel())
+                                          .withLogLevel(null)
                                           .withApplicationLogsStoredOnFileSystem().attach();
         }
         return withCreate;

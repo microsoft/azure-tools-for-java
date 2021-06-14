@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.IntegerTextField;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 import javax.swing.*;
@@ -90,18 +91,17 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
 
     @Override
     public MonitorConfig getData() {
-        MonitorConfig config = MonitorConfig.builder().build();
-        final ApplicationInsightsConfig insightsConfig =
-                (rdoEnableApplicationInsights.isSelected() && titleApplicationInsights.isVisible()) ? applicationInsightsComboBox.getValue() : null;
-        config.setApplicationInsightsConfig(insightsConfig);
-        config.setEnableWebServerLogging(rdoEnableWebServerLog.isSelected() && lblWebServerLog.isVisible());
-        config.setWebServerLogQuota(txtQuota.getValue());
-        config.setWebServerRetentionPeriod(txtRetention.getValue());
-        config.setEnableDetailedErrorMessage(rdoEnableDetailError.isSelected());
-        config.setEnableFailedRequestTracing(rdoEnableFailedRequest.isSelected());
-        config.setEnableApplicationLog(rdoEnableApplicationLog.isSelected() && lblApplicationLog.isVisible());
-        config.setApplicationLogLevel(cbLogLevel.getValue());
-        return config;
+        final ApplicationInsightsConfig insightsConfig = (rdoEnableApplicationInsights.isSelected() && titleApplicationInsights.isVisible()) ?
+                applicationInsightsComboBox.getValue() : null;
+        final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
+                .enableWebServerLogging(rdoEnableWebServerLog.isSelected() && lblWebServerLog.isVisible())
+                .webServerLogQuota(txtQuota.getValue())
+                .webServerRetentionPeriod(txtRetention.getValue())
+                .enableDetailedErrorMessage(rdoEnableDetailError.isSelected())
+                .enableFailedRequestTracing(rdoEnableFailedRequest.isSelected())
+                .enableApplicationLog(rdoEnableApplicationLog.isSelected() && lblApplicationLog.isVisible())
+                .applicationLogLevel(cbLogLevel.getValue()).build();
+        return MonitorConfig.builder().applicationInsightsConfig(insightsConfig).diagnosticConfig(diagnosticConfig).build();
     }
 
     @Override
@@ -116,16 +116,17 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
             }
         }
         if (titleAppServiceLog.isVisible()) {
+            final DiagnosticConfig diagnosticConfig = data.getDiagnosticConfig();
             if (lblWebServerLog.isVisible()) {
-                rdoEnableWebServerLog.setSelected(data.isEnableWebServerLogging());
-                txtQuota.setValue(data.getWebServerLogQuota());
-                txtRetention.setValue(data.getWebServerRetentionPeriod());
-                rdoEnableDetailError.setSelected(data.isEnableDetailedErrorMessage());
-                rdoEnableFailedRequest.setSelected(data.isEnableFailedRequestTracing());
+                rdoEnableWebServerLog.setSelected(diagnosticConfig.isEnableWebServerLogging());
+                txtQuota.setValue(diagnosticConfig.getWebServerLogQuota());
+                txtRetention.setValue(diagnosticConfig.getWebServerRetentionPeriod());
+                rdoEnableDetailError.setSelected(diagnosticConfig.isEnableDetailedErrorMessage());
+                rdoEnableFailedRequest.setSelected(diagnosticConfig.isEnableFailedRequestTracing());
             }
             if (lblApplicationInsights.isVisible()) {
-                rdoEnableApplicationLog.setSelected(data.isEnableApplicationLog());
-                cbLogLevel.setSelectedItem(data.getApplicationLogLevel());
+                rdoEnableApplicationLog.setSelected(diagnosticConfig.isEnableApplicationLog());
+                cbLogLevel.setSelectedItem(diagnosticConfig.getApplicationLogLevel());
             }
         }
         this.repaint();

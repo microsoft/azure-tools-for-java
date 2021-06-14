@@ -5,15 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy;
 
-import com.microsoft.azure.arm.resources.ResourceId;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.LogLevel;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.function.runner.IntelliJFunctionContext;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -53,14 +53,14 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
                 setInsightsName(null);
                 setInstrumentationKey(null);
             }
-            setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
-            setApplicationLogLevel(monitorConfig.getApplicationLogLevel());
+            setEnableApplicationLog(monitorConfig.getDiagnosticConfig().isEnableApplicationLog());
+            setApplicationLogLevel(monitorConfig.getDiagnosticConfig().getApplicationLogLevel());
         } else {
             setNewResource(false);
-            final FunctionApp functionApp = functionAppComboBoxModel.getResource();
+            final IFunctionApp functionApp = functionAppComboBoxModel.getResource();
             if (functionApp != null) {
-                setRegion(functionApp.regionName());
-                setOs(functionApp.operatingSystem().name());
+                setRegion(functionApp.entity().getRegion().getName());
+                setOs(functionApp.getRuntime().getOperatingSystem().getValue());
                 setJavaVersion(FunctionUtils.getFunctionJavaVersion(functionApp));
             }
         }

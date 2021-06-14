@@ -5,29 +5,13 @@
 
 package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.microsoft.azure.management.appservice.LogLevel;
-import lombok.Builder;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class MonitorConfig {
     ApplicationInsightsConfig applicationInsightsConfig;
-    // web server log
-    @Builder.Default
-    boolean enableWebServerLogging = true;
-    @Builder.Default
-    Integer webServerLogQuota = 35;
-    @Builder.Default
-    Integer webServerRetentionPeriod = 0;
-    @Builder.Default
-    boolean enableDetailedErrorMessage = false;
-    @Builder.Default
-    boolean enableFailedRequestTracing = false;
-    // application log
-    @Builder.Default
-    boolean enableApplicationLog = true;
-    @Builder.Default
-    LogLevel applicationLogLevel = LogLevel.ERROR;
+    DiagnosticConfig diagnosticConfig;
 }

@@ -5,8 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.util.Arrays;

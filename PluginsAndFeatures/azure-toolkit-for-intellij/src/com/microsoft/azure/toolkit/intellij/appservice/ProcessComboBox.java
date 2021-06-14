@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;

@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.lib.webapp;
 import com.microsoft.azure.toolkit.intellij.common.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
@@ -74,14 +75,15 @@ public class WebAppService {
         settings.setPricing(config.getServicePlan().getPricingTier().toString());
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
-            settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
-            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel() == null ? null :
-                                            monitorConfig.getApplicationLogLevel().toString());
-            settings.setEnableWebServerLogging(monitorConfig.isEnableWebServerLogging());
-            settings.setWebServerLogQuota(monitorConfig.getWebServerLogQuota());
-            settings.setWebServerRetentionPeriod(monitorConfig.getWebServerRetentionPeriod());
-            settings.setEnableDetailedErrorMessage(monitorConfig.isEnableDetailedErrorMessage());
-            settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
+            final DiagnosticConfig diagnosticConfig = monitorConfig.getDiagnosticConfig();
+            settings.setEnableApplicationLog(diagnosticConfig.isEnableApplicationLog());
+            settings.setApplicationLogLevel(diagnosticConfig.getApplicationLogLevel() == null ? null :
+                    diagnosticConfig.getApplicationLogLevel().toString());
+            settings.setEnableWebServerLogging(diagnosticConfig.isEnableWebServerLogging());
+            settings.setWebServerLogQuota(diagnosticConfig.getWebServerLogQuota());
+            settings.setWebServerRetentionPeriod(diagnosticConfig.getWebServerRetentionPeriod());
+            settings.setEnableDetailedErrorMessage(diagnosticConfig.isEnableDetailedErrorMessage());
+            settings.setEnableFailedRequestTracing(diagnosticConfig.isEnableFailedRequestTracing());
         }
         settings.setTargetName(config.getApplication() == null ? null : config.getApplication().toFile().getName());
         settings.setTargetPath(config.getApplication() == null ? null : config.getApplication().toString());
