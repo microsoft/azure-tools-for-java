@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.intellij.common.operation;
 
 import com.intellij.CommonBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -23,17 +23,21 @@ public class IntellijAzureOperationTitleProvider implements AzureOperationBundle
     private static final Map<String, Optional<ResourceBundle>> libBundles = new ConcurrentHashMap<>();
     private static final Map<String, Optional<ResourceBundle>> intellijBundles = new ConcurrentHashMap<>();
     private static final IntellijAzureOperationTitleProvider INSTANCE = new IntellijAzureOperationTitleProvider();
+    public static final String ALL = "<ALL>";
 
     @Override
-    public @NotNull String getMessage(@NotNull final String key, final Object @NotNull ... params) {
+    @Nonnull
+    public String getMessage(@Nonnull final String key, final Object... params) {
         final String notFound = String.format("!%s!", key);
         final String subGroup = key.split("\\.")[0].replaceAll("\\|", "_");
         final String supGroup = key.split("[|.]")[0];
         final ArrayList<Supplier<String>> suppliers = new ArrayList<>();
-        suppliers.add(() -> this.getIjOperationTitle(supGroup, key, params));
         suppliers.add(() -> this.getIjOperationTitle(subGroup, key, params));
-        suppliers.add(() -> this.getLibOperationTitle(supGroup, key, params));
+        suppliers.add(() -> this.getIjOperationTitle(supGroup, key, params));
+        suppliers.add(() -> this.getIjOperationTitle(ALL, key, params));
         suppliers.add(() -> this.getLibOperationTitle(subGroup, key, params));
+        suppliers.add(() -> this.getLibOperationTitle(supGroup, key, params));
+        suppliers.add(() -> this.getLibOperationTitle(ALL, key, params));
         for (final Supplier<String> supplier : suppliers) {
             final String title = supplier.get();
             if (Objects.nonNull(title)) {
@@ -43,18 +47,31 @@ public class IntellijAzureOperationTitleProvider implements AzureOperationBundle
         return notFound;
     }
 
-    public String getLibOperationTitle(@Nonnull final String group, @NotNull final String key, final Object @NotNull ... params) {
+    public String getLibOperationTitle(@Nonnull final String group, @Nonnull final String key, final Object... params) {
         return libBundles.computeIfAbsent(group, k -> {
-            final String bundleName = String.format("com.microsoft.azure.toolkit.operation.titles_%s", group);
-            return Optional.ofNullable(ResourceBundle.getBundle(bundleName));
+            final String bundleName = ALL.equals(group) ?
+                    "com.microsoft.azure.toolkit.operation.titles" :
+                    String.format("com.microsoft.azure.toolkit.operation.titles_%s", group);
+            return Optional.ofNullable(getBundle(bundleName));
         }).map(b -> CommonBundle.messageOrNull(b, key, params)).orElse(null);
     }
 
-    public String getIjOperationTitle(@Nonnull final String group, @NotNull final String key, final Object @NotNull ... params) {
+    public String getIjOperationTitle(@Nonnull final String group, @Nonnull final String key, final Object... params) {
         return libBundles.computeIfAbsent(group, k -> {
-            final String bundleName = String.format("com.microsoft.azure.toolkit.operation.titles_%s_intellij", group);
-            return Optional.ofNullable(ResourceBundle.getBundle(bundleName));
+            final String bundleName = ALL.equals(group) ?
+                    "com.microsoft.azure.toolkit.operation.titles_intellij" :
+                    String.format("com.microsoft.azure.toolkit.operation.titles_%s_intellij", group);
+            return Optional.ofNullable(getBundle(bundleName));
         }).map(b -> CommonBundle.messageOrNull(b, key, params)).orElse(null);
+    }
+
+    @Nullable
+    private ResourceBundle getBundle(String bundleName) {
+        try {
+            return ResourceBundle.getBundle(bundleName);
+        } catch (final Exception e) {
+            return null;
+        }
     }
 
     public static void register() {
