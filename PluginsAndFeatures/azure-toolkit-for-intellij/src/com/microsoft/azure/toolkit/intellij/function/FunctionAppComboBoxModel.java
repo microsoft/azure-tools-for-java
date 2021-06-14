@@ -4,26 +4,24 @@
  */
 package com.microsoft.azure.toolkit.intellij.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azure.toolkit.intellij.function.runner.deploy.FunctionDeployModel;
 import lombok.Getter;
 
 @Getter
-public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionApp> {
+public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionApp> {
     private String runtime;
     private FunctionDeployModel functionDeployModel;
     private FunctionAppConfig functionAppConfig;
 
-    public FunctionAppComboBoxModel(final ResourceEx<FunctionApp> resourceEx) {
-        super(resourceEx);
-        final FunctionApp functionApp = resourceEx.getResource();
-        this.runtime = functionApp.operatingSystem() == com.microsoft.azure.management.appservice.OperatingSystem.WINDOWS ?
-                       String.format("%s-Java %s", "Windows", functionApp.javaVersion()) :
-                       String.format("%s-%s", "Linux", functionApp.linuxFxVersion().replace("|", " "));
+    public FunctionAppComboBoxModel(IFunctionApp functionApp) {
+        super(functionApp);
+        final Runtime runtimeConfig = functionApp.getRuntime();
+        this.runtime = String.format("%s-Java %s", runtimeConfig.getOperatingSystem().getValue(), runtimeConfig.getJavaVersion());
     }
 
     public FunctionAppComboBoxModel(FunctionDeployModel functionDeployModel) {

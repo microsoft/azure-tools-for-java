@@ -6,17 +6,12 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,9 +42,9 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
         type = AzureOperation.Type.SERVICE
     )
     protected List<FunctionAppComboBoxModel> loadAppServiceModels() {
-        return AzureFunctionMvpModel.getInstance().listJavaFunctionApps(false).parallelStream()
-            .map(FunctionAppComboBoxModel::new)
-            .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
-            .collect(Collectors.toList());
+        return Azure.az(AzureAppService.class).functionApps().parallelStream()
+                .map(FunctionAppComboBoxModel::new)
+                .sorted((app1, app2) -> app1.getAppName().compareToIgnoreCase(app2.getAppName()))
+                .collect(Collectors.toList());
     }
 }

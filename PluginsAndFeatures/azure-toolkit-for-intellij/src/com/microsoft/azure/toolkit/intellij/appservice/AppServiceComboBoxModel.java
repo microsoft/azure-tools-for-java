@@ -5,8 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 
 @Getter
-public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
+public abstract class AppServiceComboBoxModel<T extends IAppService> {
     @Setter
     protected boolean isNewCreateResource;
     protected String subscriptionId;
@@ -28,13 +27,13 @@ public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
 
     }
 
-    public AppServiceComboBoxModel(ResourceEx<T> resourceEx) {
-        this.resource = resourceEx.getResource();
-        this.resourceId = resource.id();
-        this.appName = resource.name();
-        this.resourceGroup = resource.resourceGroupName();
-        this.os = StringUtils.capitalize(resource.operatingSystem().toString());
-        this.subscriptionId = resourceEx.getSubscriptionId();
+    public AppServiceComboBoxModel(T appService) {
+        this.resource = appService;
+        this.resourceId = appService.id();
+        this.appName = appService.name();
+        this.resourceGroup = appService.resourceGroup();
+        this.os = appService.getRuntime().getOperatingSystem().getValue();
+        this.subscriptionId = appService.subscriptionId();
         this.isNewCreateResource = false;
     }
 
