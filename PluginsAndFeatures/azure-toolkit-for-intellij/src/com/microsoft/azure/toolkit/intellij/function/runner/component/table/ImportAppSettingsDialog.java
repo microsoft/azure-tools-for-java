@@ -9,25 +9,14 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionsConstants;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.intellij.CommonConst;
 import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.azure.toolkit.intellij.function.runner.AzureFunctionsConstants;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -48,12 +37,12 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     private JPanel pnlAppSettings;
     private JCheckBox chkErase;
 
-    private Path localSettingsPath;
     private boolean eraseExistingSettings;
     private Map<String, String> appSettings = null;
-    private AppSettingsDialogPresenter<ImportAppSettingsDialog> presenter = new AppSettingsDialogPresenter<>();
+    private final AppSettingsDialogPresenter<ImportAppSettingsDialog> presenter = new AppSettingsDialogPresenter<>();
 
     public ImportAppSettingsDialog(Path localSettingsPath) {
+        super();
         setContentPane(contentPanel);
         setModal(true);
         setTitle(message("function.appSettings.import.title"));
@@ -61,27 +50,18 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
         setAlwaysOnTop(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        this.localSettingsPath = localSettingsPath;
         this.presenter.onAttachView(this);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         cbAppSettingsSource.setRenderer(new ListCellRendererWrapper() {
             @Override
             public void customize(JList list, Object object, int index, boolean isSelected, boolean cellHasFocus) {
-                if (object instanceof ResourceEx) {
+                if (object instanceof IFunctionApp) {
                     setIcon(UIHelperImpl.loadIcon(AzureFunctionsConstants.AZURE_FUNCTIONS_ICON));
-                    setText(((ResourceEx<FunctionApp>) object).getResource().name());
+                    setText(((IFunctionApp) object).name());
                 } else if (LOCAL_SETTINGS_JSON.equals(object)) {
                     setText(object.toString());
                     setIcon(AllIcons.FileTypes.Json);
@@ -95,9 +75,8 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 final Object selectedItem = cbAppSettingsSource.getSelectedItem();
-                if (selectedItem instanceof ResourceEx) {
-                    final ResourceEx<FunctionApp> app = ((ResourceEx<FunctionApp>) selectedItem);
-                    presenter.onLoadFunctionAppSettings(app.getSubscriptionId(), app.getResource().id());
+                if (selectedItem instanceof IFunctionApp) {
+                    presenter.onLoadFunctionAppSettings((IFunctionApp) selectedItem);
                 } else if (LOCAL_SETTINGS_JSON.equals(selectedItem)) {
                     presenter.onLoadLocalSettings(localSettingsPath);
                 }
@@ -113,11 +92,8 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             }
         });
 
-        contentPanel.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPanel.registerKeyboardAction(e -> onCancel(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         cbAppSettingsSource.addItem(LOCAL_SETTINGS_JSON);
         presenter.onLoadLocalSettings(localSettingsPath);
@@ -127,8 +103,8 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     }
 
     @Override
-    public void fillFunctionApps(List<ResourceEx<FunctionApp>> functionApps) {
-        functionApps.stream().forEach(functionAppResourceEx -> cbAppSettingsSource.addItem(functionAppResourceEx));
+    public void fillFunctionApps(List<IFunctionApp> functionApps) {
+        functionApps.forEach(functionAppResourceEx -> cbAppSettingsSource.addItem(functionAppResourceEx));
         pack();
     }
 

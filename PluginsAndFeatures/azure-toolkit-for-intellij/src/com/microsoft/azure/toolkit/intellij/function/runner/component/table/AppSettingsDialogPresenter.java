@@ -5,19 +5,18 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.component.table;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends MvpPresenter<V> {
     public void onLoadFunctionApps() {
-        Observable.fromCallable(() -> AzureFunctionMvpModel.getInstance().listAllFunctions(false))
+        Observable.fromCallable(() -> Azure.az(AzureAppService.class).functionApps())
                 .subscribeOn(getSchedulerProvider().io())
                 .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
@@ -27,19 +26,16 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                 }));
     }
 
-    public void onLoadFunctionAppSettings(String subscriptionId, String functionId) {
+    public void onLoadFunctionAppSettings(IFunctionApp functionApp) {
         Observable.fromCallable(() -> {
             getMvpView().beforeFillAppSettings();
-            final FunctionApp functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionId);
-            return functionApp.getAppSettings();
+            return functionApp.entity().getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
-                    final Map<String, String> result = new HashMap<>();
-                    appSettings.forEach((key, value) -> result.put(key, value.value()));
-                    getMvpView().fillFunctionAppSettings(result);
+                    getMvpView().fillFunctionAppSettings(appSettings);
                 }));
     }
 
