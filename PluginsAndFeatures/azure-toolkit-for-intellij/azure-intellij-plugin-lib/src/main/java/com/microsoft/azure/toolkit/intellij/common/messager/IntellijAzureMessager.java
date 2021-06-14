@@ -13,7 +13,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.MessageDialogBuilder;
-import com.microsoft.azure.toolkit.intellij.common.handler.IntelliJAzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +52,6 @@ public class IntellijAzureMessager implements IAzureMessager {
                 return MessageDialogBuilder.yesNo(getTitle(message.getTitle()), message.getMessage()).guessWindowAndAsk();
             case ERROR:
                 if (Objects.nonNull(message.getPayload())) {
-                    IntelliJAzureExceptionHandler.getInstance().handleException((Throwable) message.getPayload());
                     return true;
                 }
                 type = NotificationType.ERROR;
