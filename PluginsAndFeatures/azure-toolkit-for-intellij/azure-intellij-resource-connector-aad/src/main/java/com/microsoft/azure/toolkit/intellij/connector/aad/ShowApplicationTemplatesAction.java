@@ -34,6 +34,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("ComponentNotRegistered")
 public class ShowApplicationTemplatesAction extends AnAction {
     @Override
+    @AzureOperation(name = "connector|aad.show_application_templates", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@NotNull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;

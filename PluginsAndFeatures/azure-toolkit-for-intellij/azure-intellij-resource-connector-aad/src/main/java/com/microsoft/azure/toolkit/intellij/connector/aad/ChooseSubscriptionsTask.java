@@ -33,6 +33,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupStep;
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,6 +59,7 @@ class ChooseSubscriptionsTask implements Runnable {
     }
 
     @Override
+    @AzureOperation(name = "connector|aad.choose_subscription", type = AzureOperation.Type.TASK)
     public void run() {
         if (project.isDisposed()) {
             return;

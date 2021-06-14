@@ -35,6 +35,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
@@ -57,6 +58,7 @@ public class RegisterApplicationAction extends AnAction {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
     @Override
+    @AzureOperation(name = "connector|aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@NotNull AnActionEvent e) {
         var project = e.getProject();
         assert project != null;
@@ -146,6 +148,7 @@ public class RegisterApplicationAction extends AnAction {
         }
 
         @Override
+        @AzureOperation(name = "connector|aad.create_aad_application", type = AzureOperation.Type.TASK)
         public void run() {
             // create new application
             var validSuffix = new StringBuilder();
@@ -165,6 +168,11 @@ public class RegisterApplicationAction extends AnAction {
             var application = graphClient.applications().buildRequest().post(params);
 
             // now display the new application in the "Application templates dialog"
+            showApplicationTemplateDialog(application);
+        }
+
+        @AzureOperation(name = "connector|aad.show_aad_template", type = AzureOperation.Type.TASK)
+        private void showApplicationTemplateDialog(Application application) {
             AzureTaskManager.getInstance().runLater(() -> {
                 new AzureApplicationTemplateDialog(project, application, subscription).show();
             });
