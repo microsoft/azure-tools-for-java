@@ -68,13 +68,13 @@ public class WebAppService {
         } else {
             settings.setAppServicePlanId(config.getServicePlan().getId());
         }
-        settings.setPricing(config.getServicePlan().getPricingTier().toString());
+        settings.setPricing(config.getServicePlan().getPricingTier().getSize());
         final MonitorConfig monitorConfig = config.getMonitorConfig();
         if (monitorConfig != null) {
             final DiagnosticConfig diagnosticConfig = monitorConfig.getDiagnosticConfig();
             settings.setEnableApplicationLog(diagnosticConfig.isEnableApplicationLog());
             settings.setApplicationLogLevel(diagnosticConfig.getApplicationLogLevel() == null ? null :
-                    diagnosticConfig.getApplicationLogLevel().toString());
+                    diagnosticConfig.getApplicationLogLevel().getValue());
             settings.setEnableWebServerLogging(diagnosticConfig.isEnableWebServerLogging());
             settings.setWebServerLogQuota(diagnosticConfig.getWebServerLogQuota());
             settings.setWebServerRetentionPeriod(diagnosticConfig.getWebServerRetentionPeriod());

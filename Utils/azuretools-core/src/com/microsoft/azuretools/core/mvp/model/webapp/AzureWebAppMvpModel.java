@@ -1001,7 +1001,6 @@ public class AzureWebAppMvpModel {
     )
     public IWebApp createWebAppFromSettingModel(@NotNull WebAppSettingModel model) {
         final ResourceGroup resourceGroup = getOrCreateResourceGroup(model.getSubscriptionId(), model.getResourceGroup(), model.getRegion());
-        final String[] tierSize = model.getPricing().split("_");
         final AppServicePlanEntity servicePlanEntity = AppServicePlanEntity.builder()
                 .id(model.getAppServicePlanId())
                 .subscriptionId(model.getSubscriptionId())
@@ -1009,7 +1008,7 @@ public class AzureWebAppMvpModel {
                 .resourceGroup(model.getResourceGroup())
                 .region(model.getRegion())
                 .operatingSystem(com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem.fromString(model.getOperatingSystem()))
-                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(tierSize[1])).build();
+                .pricingTier(com.microsoft.azure.toolkit.lib.appservice.model.PricingTier.fromString(model.getPricing())).build();
         final IAppServicePlan appServicePlan = getOrCreateAppServicePlan(servicePlanEntity);
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
                 .enableApplicationLog(model.isEnableApplicationLog())
