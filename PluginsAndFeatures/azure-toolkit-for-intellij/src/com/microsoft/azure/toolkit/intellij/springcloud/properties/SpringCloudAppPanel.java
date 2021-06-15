@@ -188,6 +188,7 @@ public class SpringCloudAppPanel extends JPanel implements AzureFormPanel<Spring
         this.numInstance.setMajorTickSpacing(basic ? 5 : 50);
         this.numInstance.setMinorTickSpacing(basic ? 1 : 10);
         this.numInstance.setMinimum(0);
+        this.numInstance.updateLabels();
         final SpringCloudDeploymentEntity deploymentEntity = Optional.ofNullable(app.activeDeployment()).stream().findAny()
             .or(() -> app.deployments().stream().findAny())
             .map(SpringCloudDeployment::entity)

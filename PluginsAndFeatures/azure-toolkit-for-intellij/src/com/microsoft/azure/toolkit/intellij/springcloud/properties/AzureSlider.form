@@ -17,7 +17,7 @@
           <maximum value="25"/>
           <minimum value="0"/>
           <minorTickSpacing value="1"/>
-          <paintLabels value="false"/>
+          <paintLabels value="true"/>
           <paintTicks value="true"/>
           <paintTrack value="true"/>
           <snapToTicks value="false"/>

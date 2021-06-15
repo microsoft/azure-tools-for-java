@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import java.util.Hashtable;
 
 public class AzureSlider {
     @Getter
@@ -62,8 +63,10 @@ public class AzureSlider {
         return (int) this.numValue.getValue();
     }
 
-    public void prepare() {
-        this.numSlider.setLabelTable(null);
+    public void updateLabels() {
+        final int majorTickSpacing = this.numSlider.getMajorTickSpacing();
+        final Hashtable<Integer, JComponent> labels = this.numSlider.createStandardLabels(majorTickSpacing);
+        this.numSlider.setLabelTable(labels);
     }
 
     private void createUIComponents() {
