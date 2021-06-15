@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,10 +13,13 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.JBColor;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
@@ -26,7 +30,7 @@ public class IntellijErrorDialog extends DialogWrapper {
     private JPanel contentPanel;
     private JPanel detailsContainer;
     private JLabel iconLabel;
-    private JTextPane detailsPane;
+    private JEditorPane detailsPane;
     private JEditorPane contentPane;
     private JScrollPane detailsScrollPane;
 
@@ -43,14 +47,27 @@ public class IntellijErrorDialog extends DialogWrapper {
     @Override
     protected void init() {
         super.init();
-        final HideableDecorator slotDecorator = new HideableDecorator(detailsContainer, "Details", true);
-        slotDecorator.setContentComponent(detailsScrollPane);
-        slotDecorator.setOn(false);
+        this.iconLabel.setIcon(Messages.getErrorIcon());
         this.contentPane.setText(message.getContent(false));
-        this.detailsPane.setText(message.getDetails());
-        iconLabel.setIcon(Messages.getErrorIcon());
-        contentPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
-        detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        this.contentPane.setBackground(JBColor.WHITE);
+        this.contentPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        this.contentPane.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                BrowserUtil.browse(e.getURL());
+            }
+        });
+        final String details = message.getDetails();
+        if (StringUtils.isNotBlank(details)) {
+            final HideableDecorator slotDecorator = new HideableDecorator(detailsContainer, "Call Stack", false);
+            slotDecorator.setContentComponent(detailsScrollPane);
+            slotDecorator.setOn(false);
+            final String style = "margin:0;margin-top:2px;padding-left:1px;list-style-type:none;";
+            this.detailsPane.setText(String.format("<html><ul style='%s'>%s</ul></html>", style, details));
+            this.detailsPane.setBackground(JBColor.WHITE);
+            this.detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        } else {
+            this.detailsContainer.setVisible(false);
+        }
     }
 
     @Override
@@ -71,7 +88,7 @@ public class IntellijErrorDialog extends DialogWrapper {
                 }
             };
         }).toArray(Action[]::new);
-        return ArrayUtils.addAll(new Action[]{getOKAction()}, actions);
+        return ArrayUtils.addAll(actions, getOKAction());
     }
 
     @Nullable

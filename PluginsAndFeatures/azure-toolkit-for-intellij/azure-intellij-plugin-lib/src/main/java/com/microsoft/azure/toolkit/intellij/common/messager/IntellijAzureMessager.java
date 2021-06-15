@@ -9,11 +9,15 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.MessageDialogBuilder;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,7 +43,12 @@ public class IntellijAzureMessager implements IAzureMessager {
                 return MessageDialogBuilder.yesNo(message.getTitle(), message.getMessage()).guessWindowAndAsk();
         }
         if (Objects.equals(message.getBackgrounded(), Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
-            new IntellijErrorDialog(message).show();
+            UIUtil.invokeLaterIfNeeded(() -> {
+                final IntellijErrorDialog errorDialog = new IntellijErrorDialog(message);
+                final Window window = errorDialog.getWindow();
+                final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
+                ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
+            });
         } else {
             this.showNotification(message);
         }

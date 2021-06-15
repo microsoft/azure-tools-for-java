@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
@@ -35,11 +36,15 @@ public abstract class AzureDialog<T> extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        if (Objects.nonNull(this.okActionListener)) {
-            final T data = this.getForm().getData();
-            this.okActionListener.onOk(data);
-        } else {
-            super.doOKAction();
+        try {
+            if (Objects.nonNull(this.okActionListener)) {
+                final T data = this.getForm().getData();
+                this.okActionListener.onOk(data);
+            } else {
+                super.doOKAction();
+            }
+        } catch (final Exception e) {
+            AzureMessager.getMessager().error(e);
         }
     }
 
