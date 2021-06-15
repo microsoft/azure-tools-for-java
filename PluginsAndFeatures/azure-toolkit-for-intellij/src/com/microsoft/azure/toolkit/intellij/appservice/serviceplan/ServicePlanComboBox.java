@@ -82,7 +82,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlanEntity> {
     public void setValidPricingTierList(@NotNull final List<PricingTier> pricingTierList, @NotNull final PricingTier defaultPricingTier) {
         this.pricingTierList = pricingTierList;
         this.defaultPricingTier = defaultPricingTier;
-        this.servicePlanFilter = appServicePlan -> pricingTierList.contains(defaultPricingTier);
+        this.servicePlanFilter = appServicePlan -> pricingTierList.contains(appServicePlan.getPricingTier());
     }
 
     @Override
