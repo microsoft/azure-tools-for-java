@@ -6,12 +6,14 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder(toBuilder = true)
 public class MonitorConfig {
-    ApplicationInsightsConfig applicationInsightsConfig;
-    DiagnosticConfig diagnosticConfig;
+    private ApplicationInsightsConfig applicationInsightsConfig;
+    @Builder.Default
+    private DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder().build();
 }
