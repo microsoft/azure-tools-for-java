@@ -39,7 +39,8 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionA
         this.appName = functionAppConfig.getName();
         this.resourceGroup = functionAppConfig.getResourceGroup().getName();
         this.subscriptionId = functionAppConfig.getSubscription().getId();
-        this.runtime = functionAppConfig.getRuntime().toString();
         this.functionAppConfig = functionAppConfig;
+        final Runtime runtime = functionAppConfig.getRuntime();
+        this.runtime =  String.format("%s-Java %s", runtime.getOperatingSystem().getValue(), runtime.getJavaVersion().getValue());
     }
 }
