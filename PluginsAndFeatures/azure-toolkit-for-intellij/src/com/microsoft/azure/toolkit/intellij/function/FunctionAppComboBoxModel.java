@@ -21,7 +21,7 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionA
     public FunctionAppComboBoxModel(IFunctionApp functionApp) {
         super(functionApp);
         final Runtime runtimeConfig = functionApp.getRuntime();
-        this.runtime = String.format("%s-Java %s", runtimeConfig.getOperatingSystem().getValue(), runtimeConfig.getJavaVersion());
+        this.runtime = String.format("%s-Java %s", runtimeConfig.getOperatingSystem().getValue(), runtimeConfig.getJavaVersion().getValue());
     }
 
     public FunctionAppComboBoxModel(FunctionDeployModel functionDeployModel) {
@@ -39,7 +39,7 @@ public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<IFunctionA
         this.appName = functionAppConfig.getName();
         this.resourceGroup = functionAppConfig.getResourceGroup().getName();
         this.subscriptionId = functionAppConfig.getSubscription().getId();
-        this.runtime = functionAppConfig.getPlatform().toString();
+        this.runtime = functionAppConfig.getRuntime().toString();
         this.functionAppConfig = functionAppConfig;
     }
 }

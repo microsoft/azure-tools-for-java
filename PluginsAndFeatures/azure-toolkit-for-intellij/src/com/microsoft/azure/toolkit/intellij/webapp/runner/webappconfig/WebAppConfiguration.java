@@ -372,7 +372,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
         } else {
             setCreatingNew(false);
-            final IWebApp webApp = webAppComboBoxModel.getWebApp();
+            final IWebApp webApp = webAppComboBoxModel.getResource();
             if (webApp != null) {
                 saveRuntime(webApp.getRuntime());
                 setAppServicePlanId(webApp.entity().getAppServicePlanId());

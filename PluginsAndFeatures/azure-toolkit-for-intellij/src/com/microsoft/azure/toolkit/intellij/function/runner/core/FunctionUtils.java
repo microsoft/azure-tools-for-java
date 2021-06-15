@@ -27,6 +27,8 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
+import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.Binding;
 import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
@@ -102,13 +104,11 @@ public class FunctionUtils {
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
-    public static String getFunctionJavaVersion(FunctionApp functionApp) {
-        if (!WebAppUtils.isJavaWebApp(functionApp)) {
+    public static String getFunctionJavaVersion(IFunctionApp functionApp) {
+        if (functionApp.getRuntime().getJavaVersion() == JavaVersion.OFF) {
             return null;
         }
-        return functionApp.operatingSystem() == com.microsoft.azure.management.appservice.OperatingSystem.WINDOWS ?
-               functionApp.javaVersion().toString() :
-               functionApp.linuxFxVersion().split("|")[1];
+        return functionApp.getRuntime().getJavaVersion().getValue();
     }
 
     public static File getTempStagingFolder() {

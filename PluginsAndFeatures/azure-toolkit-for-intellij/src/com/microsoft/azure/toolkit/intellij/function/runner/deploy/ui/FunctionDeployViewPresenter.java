@@ -5,15 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.function.runner.deploy.ui;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 import rx.Subscription;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
@@ -26,20 +23,18 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
         params = {"functionApp.name()"},
         type = AzureOperation.Type.SERVICE
     )
-    public void loadAppSettings(FunctionApp functionApp) {
+    public void loadAppSettings(IFunctionApp functionApp) {
         if (functionApp == null) {
             return;
         }
         unsubscribeSubscription(loadAppSettingsSubscription);
         loadAppSettingsSubscription =
-            Observable.fromCallable(functionApp::getAppSettings).subscribeOn(getSchedulerProvider().io())
+            Observable.fromCallable(() -> functionApp.entity().getAppSettings()).subscribeOn(getSchedulerProvider().io())
                       .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                           if (isViewDetached()) {
                               return;
                           }
-                          final Map<String, String> result = new HashMap<>();
-                          appSettings.forEach((key, value) -> result.put(key, value.value()));
-                          getMvpView().fillAppSettings(result);
+                          getMvpView().fillAppSettings(appSettings);
                       }));
     }
 }
