@@ -33,11 +33,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Setter
 @RequiredArgsConstructor
 public class IntellijAzureMessage implements IAzureMessage {
+    static final Pattern URL_PATTERN = Pattern.compile("(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
     static final String DEFAULT_MESSAGE_TITLE = "Azure";
     @Nullable
     private String title;
@@ -89,36 +92,39 @@ public class IntellijAzureMessage implements IAzureMessage {
 
     public String getContent(boolean includingDetails) {
         if (original.getType() != IAzureMessage.Type.ERROR || !(original.getPayload() instanceof Throwable)) {
-            return original.getMessage();
+            return IntellijAzureMessage.transformURLIntoLinks(original.getMessage());
         }
         final Throwable throwable = (Throwable) original.getPayload();
         final List<IAzureOperation> operations = this.getOperations();
-        final String failure = "Failed to " + operations.get(0).getTitle();
+        final String failure = operations.isEmpty() ? "Failed to proceed" : "Failed to " + operations.get(0).getTitle();
         final String cause = Optional.ofNullable(IntellijAzureMessage.getCause(throwable))
-                .map(c -> String.format(", because<br><code>%s</code>", c))
+                .map(IntellijAzureMessage::transformURLIntoLinks)
+                .map(c -> String.format(", because <span style='font-style: italic;'>%s</span>", c))
                 .orElse("");
         final String action = Optional.of(throwable)
                 .filter(t -> t instanceof AzureToolkitRuntimeException)
                 .map(t -> ((AzureToolkitRuntimeException) t).getAction())
+                .map(IntellijAzureMessage::transformURLIntoLinks)
                 .map(c -> String.format("<p>%s</p>", c))
                 .orElse("");
         if (includingDetails) {
             final String details = this.getDetails(operations);
-            final String detailsMsg = StringUtils.isNotBlank(details) ? "<div>callstack:</div>" + details : "";
-            return "<html>" + failure + cause + action + details + "</html>";
+            final String style = "margin:0;margin-top:2px;padding-left:0;list-style-type:none;";
+            final String detailsMsg = StringUtils.isNotBlank(details) ? String.format("<div>Call Stack:</div><ul style='%s'>%s</ul>", style, details) : "";
+            return "<html>" + failure + cause + action + detailsMsg + "</html>";
         }
         return "<html>" + failure + cause + action + "</html>";
     }
 
     public String getDetails() {
-        return "<html>" + this.getDetails(this.getOperations()) + "</html>";
+        return this.getDetails(this.getOperations());
     }
 
     private String getDetails(List<? extends IAzureOperation> operations) {
         return operations.size() < 2 ? "" : operations.stream()
                 .map(IAzureOperation::getTitle)
-                .map(title -> String.format("<li>%s</li>", StringUtils.capitalize(title.toString())))
-                .collect(Collectors.joining("", "<ul style='margin-top:2px'>", "</ul>"));
+                .map(title -> String.format("<li>&#9679; %s</li>", StringUtils.capitalize(title.toString())))
+                .collect(Collectors.joining(""));
     }
 
     @Nonnull
@@ -213,6 +219,17 @@ public class IntellijAzureMessage implements IAzureMessage {
                 a.actionPerformed(message);
             }
         };
+    }
+
+    private static String transformURLIntoLinks(String text) {
+        final Matcher m = URL_PATTERN.matcher(text);
+        final StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            final String found = m.group(0);
+            m.appendReplacement(sb, "<a href='" + found + "'>" + found + "</a>");
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     public static IntellijAzureMessage from(IAzureMessage raw) {
