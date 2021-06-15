@@ -14,25 +14,31 @@
     <children>
       <component id="f556c" class="com.microsoft.azure.toolkit.intellij.connector.aad.AzureApplicationComboBox" binding="applicationsBox" custom-create="true">
         <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
       <component id="dbbdd" class="com.intellij.ui.components.JBLabel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="220" height="19"/>
+          </grid>
         </constraints>
         <properties>
           <labelFor value="f556c"/>
           <text resource-bundle="messages/aadBundle" key="templateDialog.applications.label"/>
         </properties>
       </component>
-      <component id="4f758" class="com.intellij.ui.EditorTextField" binding="templateEditor" custom-create="true">
+      <tabbedpane id="25794" class="com.intellij.ui.components.JBTabbedPane" binding="templatesPane" custom-create="true">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="1" use-parent-layout="false"/>
         </constraints>
-        <properties/>
-      </component>
+        <properties>
+          <tabComponentInsets top="0" left="0" bottom="0" right="0"/>
+        </properties>
+        <border type="none"/>
+        <children/>
+      </tabbedpane>
     </children>
   </grid>
 </form>
