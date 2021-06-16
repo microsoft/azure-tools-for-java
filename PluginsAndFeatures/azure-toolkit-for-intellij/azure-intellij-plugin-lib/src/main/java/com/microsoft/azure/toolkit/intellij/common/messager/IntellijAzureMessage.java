@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Setter
 @RequiredArgsConstructor
 public class IntellijAzureMessage implements IAzureMessage {
-    static final Pattern URL_PATTERN = Pattern.compile("(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
+    static final Pattern URL_PATTERN = Pattern.compile("\\s+(https?|ftp)://(www\\d?|[a-zA-Z0-9]+)?.[a-zA-Z0-9-]+(:|.)([a-zA-Z0-9.]+|(\\d+)?)([/?:].*)?");
     static final String DEFAULT_MESSAGE_TITLE = "Azure";
     @Nullable
     private String title;
@@ -123,7 +123,7 @@ public class IntellijAzureMessage implements IAzureMessage {
     private String getDetails(List<? extends IAzureOperation> operations) {
         return operations.size() < 2 ? "" : operations.stream()
                 .map(IAzureOperation::getTitle)
-                .map(title -> String.format("<li>&#9679; %s</li>", StringUtils.capitalize(title.toString())))
+                .map(title -> String.format("<li>● %s</li>", StringUtils.capitalize(title.toString())))
                 .collect(Collectors.joining(""));
     }
 

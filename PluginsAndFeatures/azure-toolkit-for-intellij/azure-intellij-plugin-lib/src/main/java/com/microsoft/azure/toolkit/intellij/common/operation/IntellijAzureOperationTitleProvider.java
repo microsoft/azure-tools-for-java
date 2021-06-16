@@ -57,7 +57,7 @@ public class IntellijAzureOperationTitleProvider implements AzureOperationBundle
     }
 
     public String getIjOperationTitle(@Nonnull final String group, @Nonnull final String key, final Object... params) {
-        return libBundles.computeIfAbsent(group, k -> {
+        return intellijBundles.computeIfAbsent(group, k -> {
             final String bundleName = ALL.equals(group) ?
                     "com.microsoft.azure.toolkit.operation.titles_intellij" :
                     String.format("com.microsoft.azure.toolkit.operation.titles_%s_intellij", group);

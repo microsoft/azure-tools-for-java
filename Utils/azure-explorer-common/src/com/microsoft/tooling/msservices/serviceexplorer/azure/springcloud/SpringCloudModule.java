@@ -30,7 +30,7 @@ public class SpringCloudModule extends AzureRefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        Azure.az(AzureSpringCloud.class).clusters().stream().forEach(cluster -> {
+        Azure.az(AzureSpringCloud.class).clusters(true).forEach(cluster -> {
             final SpringCloudNode node = new SpringCloudNode(this, cluster);
             addChildNode(node);
         });

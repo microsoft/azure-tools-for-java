@@ -77,7 +77,7 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
     }
 
     private String refreshStatus() {
-        return Optional.ofNullable(this.app.activeDeployment())
+        return Optional.ofNullable(this.app.refresh().activeDeployment())
                 .map(d -> d.entity().getStatus())
                 .orElse(SpringCloudDeploymentStatus.UNKNOWN).getLabel();
     }
