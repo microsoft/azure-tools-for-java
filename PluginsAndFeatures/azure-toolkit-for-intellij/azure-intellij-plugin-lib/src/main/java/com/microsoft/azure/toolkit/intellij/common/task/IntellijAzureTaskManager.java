@@ -38,6 +38,10 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         ApplicationManager.getApplication().invokeLater(runnable, state);
     }
 
+    protected void doRunOnPooledThread(final Runnable runnable, final AzureTask<?> task) {
+        ApplicationManager.getApplication().executeOnPooledThread(runnable);
+    }
+
     @Override
     protected void doRunAndWait(final Runnable runnable, final AzureTask<?> task) {
         final ModalityState state = toIntellijModality(task);
