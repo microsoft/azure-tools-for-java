@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.SimpleMessage;
@@ -101,9 +102,7 @@ public class IntellijAzureMessage implements IAzureMessage {
                 .map(IntellijAzureMessage::transformURLIntoLinks)
                 .map(c -> String.format(", because <span style='font-style: italic;'>%s</span>", c))
                 .orElse("");
-        final String action = Optional.of(throwable)
-                .filter(t -> t instanceof AzureToolkitRuntimeException)
-                .map(t -> ((AzureToolkitRuntimeException) t).getAction())
+        final String errorAction = Optional.ofNullable(getErrorAction(throwable))
                 .map(IntellijAzureMessage::transformURLIntoLinks)
                 .map(c -> String.format("<p>%s</p>", c))
                 .orElse("");
@@ -111,9 +110,9 @@ public class IntellijAzureMessage implements IAzureMessage {
             final String details = this.getDetails(operations);
             final String style = "margin:0;margin-top:2px;padding-left:0;list-style-type:none;";
             final String detailsMsg = StringUtils.isNotBlank(details) ? String.format("<div>Call Stack:</div><ul style='%s'>%s</ul>", style, details) : "";
-            return "<html>" + failure + cause + action + detailsMsg + "</html>";
+            return "<html>" + failure + cause + errorAction + detailsMsg + "</html>";
         }
-        return "<html>" + failure + cause + action + "</html>";
+        return "<html>" + failure + cause + errorAction + "</html>";
     }
 
     public String getDetails() {
@@ -168,6 +167,15 @@ public class IntellijAzureMessage implements IAzureMessage {
             }
         }
         return null;
+    }
+
+    @Nullable
+    private static String getErrorAction(@Nonnull Throwable throwable) {
+        return ExceptionUtils.getThrowableList(throwable).stream()
+                .filter(t -> t instanceof AzureToolkitRuntimeException || t instanceof AzureToolkitException)
+                .map(t -> t instanceof AzureToolkitRuntimeException ? ((AzureToolkitRuntimeException) t).getAction() : ((AzureToolkitException) t).getAction())
+                .findFirst()
+                .orElse(null);
     }
 
     @Nonnull
