@@ -11,6 +11,8 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.EditorTextField;
+import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.PathUtil;
 import com.intellij.util.ui.JBUI;
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,13 +46,15 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     private JPanel contentPanel;
     private AzureApplicationComboBox applicationsBox;
     private JBTabbedPane templatesPane;
+    private JBLabel credentialsWarning;
 
     ApplicationTemplateForm(@NotNull Project project,
                             @NotNull Subscription subscription,
-                            @Nullable GraphServiceClient<Request> graphClient,
-                            List<Application> predefinedItems) {
+                            @NotNull GraphServiceClient<Request> graphClient,
+                            @Nullable List<Application> predefinedItems) {
         this.subscription = subscription;
-        assert graphClient != null || predefinedItems != null;
+        credentialsWarning.setForeground(JBColor.RED);
+        credentialsWarning.setAllowAutoWrapping(true);
 
         // init after createUIComponents, which is called as first in the generated constructor
         for (var type : ApplicationTemplateType.values()) {
@@ -58,7 +63,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             templateEditors.put(type, editor);
         }
 
-        if (graphClient != null) {
+        if (predefinedItems == null) {
             applicationsBox.setItemsLoader(() -> AzureUtils.loadApplications(graphClient)
                     .stream()
                     .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
@@ -69,13 +74,33 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         applicationsBox.refreshItems();
     }
 
+    void refreshSelectedApplication() {
+        applyTemplate(getData());
+    }
+
     private void applyTemplate(@NotNull Application app) {
+        var now = OffsetDateTime.now();
+
+        // locate the first valid client secret
+        String clientSecret = "";
+        if (app.passwordCredentials != null) {
+            clientSecret = app.passwordCredentials
+                    .stream()
+                    .filter(pwd -> (pwd.startDateTime == null || pwd.startDateTime.isBefore(now))
+                            && (pwd.endDateTime == null || pwd.endDateTime.isAfter(now)))
+                    .map(pwd -> StringUtil.defaultIfEmpty(pwd.secretText, ""))
+                    .findFirst()
+                    .orElse("");
+        }
+
+        credentialsWarning.setVisible(!clientSecret.isEmpty());
+
         for (var entry : templateEditors.entrySet()) {
             var template = new ApplicationTemplate(
                     entry.getKey().getResourcePath(),
                     subscription.getTenantId(),
-                    app.appId,
-                    "client-secret",
+                    app.appId != null ? app.appId : "",
+                    clientSecret,
                     "group-names");
             try {
                 entry.getValue().setText(template.content());

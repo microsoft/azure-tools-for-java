@@ -129,7 +129,7 @@ public class RegisterApplicationAction extends AnAction {
         });
     }
 
-    private static class RegisterApplicationTask implements Runnable {
+    static class RegisterApplicationTask implements Runnable {
         private final Project project;
         @NotNull
         private final ApplicationRegistrationModel model;
@@ -137,10 +137,10 @@ public class RegisterApplicationAction extends AnAction {
         private final GraphServiceClient<Request> graphClient;
         private final Subscription subscription;
 
-        public RegisterApplicationTask(@NotNull Project project,
-                                       @NotNull ApplicationRegistrationModel model,
-                                       @NotNull GraphServiceClient<Request> graphClient,
-                                       @NotNull Subscription subscription) {
+        RegisterApplicationTask(@NotNull Project project,
+                                @NotNull ApplicationRegistrationModel model,
+                                @NotNull GraphServiceClient<Request> graphClient,
+                                @NotNull Subscription subscription) {
             this.project = project;
             this.model = model;
             this.graphClient = graphClient;
@@ -166,6 +166,14 @@ public class RegisterApplicationAction extends AnAction {
             // fixme set clientId, isMultiTenant, allowOverwrite
 
             var application = graphClient.applications().buildRequest().post(params);
+            assert application.id != null;
+
+            var newCredentials = AzureUtils.createApplicationClientSecret(graphClient, application);
+            if (application.passwordCredentials == null) {
+                application.passwordCredentials = Collections.singletonList(newCredentials);
+            } else {
+                application.passwordCredentials.add(newCredentials);
+            }
 
             // now display the new application in the "Application templates dialog"
             showApplicationTemplateDialog(application);
@@ -174,7 +182,7 @@ public class RegisterApplicationAction extends AnAction {
         @AzureOperation(name = "connector|aad.show_aad_template", type = AzureOperation.Type.TASK)
         private void showApplicationTemplateDialog(Application application) {
             AzureTaskManager.getInstance().runLater(() -> {
-                new AzureApplicationTemplateDialog(project, application, subscription).show();
+                new AzureApplicationTemplateDialog(project, graphClient, subscription, application).show();
             });
         }
     }

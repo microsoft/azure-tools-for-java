@@ -5,12 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.models.Application;
+import com.microsoft.graph.models.ApplicationAddPasswordParameterSet;
 import com.microsoft.graph.models.Domain;
+import com.microsoft.graph.models.PasswordCredential;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +23,27 @@ import java.util.List;
 
 final class AzureUtils {
     private AzureUtils() {
+    }
+
+    /**
+     * Creates a new client password credential for the given application.
+     *
+     * @param client      The Microsoft Graph client
+     * @param application The application to associate with the new credentials.
+     * @return The new credentials.
+     * @throws com.microsoft.graph.core.ClientException If the credentials could not be created
+     */
+    @NotNull
+    static PasswordCredential createApplicationClientSecret(@NotNull GraphServiceClient<Request> client,
+                                                            @NotNull Application application) {
+        assert application.id != null;
+
+        var credential = new PasswordCredential();
+        var secret = ApplicationAddPasswordParameterSet.newBuilder().withPasswordCredential(credential).build();
+        return client.applications(application.id)
+                .addPassword(secret)
+                .buildRequest()
+                .post();
     }
 
     /**

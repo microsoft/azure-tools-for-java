@@ -72,7 +72,7 @@ public class ShowApplicationTemplatesAction extends AnAction {
                             MessageBundle.message("templateDialog.noApplicationsWarnings.title"),
                             MessageBundle.message("templateDialog.noApplicationsWarnings.text"));
                 } else {
-                    var dialog = new AzureApplicationTemplateDialog(project, client, subscription);
+                    var dialog = new AzureApplicationTemplateDialog(project, client, subscription, null);
                     dialog.show();
                 }
             });
