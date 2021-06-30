@@ -227,7 +227,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-tools-common</artifactId>
-            <version>0.2.0</version>
+            <version>0.14.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
