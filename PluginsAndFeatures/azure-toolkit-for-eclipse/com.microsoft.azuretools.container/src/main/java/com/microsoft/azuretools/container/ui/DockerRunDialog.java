@@ -37,11 +37,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -56,6 +61,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azuretools.azurecommons.exceptions.InvalidFormDataException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.ConsoleLogger;
@@ -104,6 +110,11 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
     private static final String SELECT_DOCKER_FILE = "Browse...";
+    private static final String WAR = "war";
+    private static final String DEFAULT_TOMCAT_SERVICE_PORT = "80";
+    private static final String DEFAULT_SPRING_BOOT_SERVICE_PORT = "8080";
+
+    private static final Pattern PORT_PATTERN = Pattern.compile("EXPOSE\\s+(\\d+).*");
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -350,9 +361,10 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
                     targetDockerfile.getFileName().toString(), new DockerProgressHandler());
 
             // create a container
+            final String containerServerPort = StringUtils.firstNonEmpty(getPortFromDockerfile(content), getPortByArtifact(targetFilePath));
             ConsoleLogger.info(Constant.MESSAGE_CREATING_CONTAINER);
             String containerId = DockerUtil.createContainer(docker,
-                    String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()));
+                    String.format("%s:%s", dataModel.getImageName(), dataModel.getTagName()), containerServerPort);
             ConsoleLogger.info(String.format(Constant.MESSAGE_CONTAINER_INFO, containerId));
 
             // start container
@@ -366,7 +378,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             String publicPort = null;
             if (ports != null) {
                 for (Container.PortMapping portMapping : ports) {
-                    if (Constant.TOMCAT_SERVICE_PORT.equals(String.valueOf(portMapping.privatePort()))) {
+                    if (StringUtils.equalsIgnoreCase(containerServerPort, String.valueOf(portMapping.privatePort()))) {
                         publicPort = String.valueOf(portMapping.publicPort());
                     }
                 }
@@ -408,5 +420,18 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
 
     private void showErrorMessage(String title, String message) {
         MessageDialog.openError(this.getShell(), title, message);
+    }
+
+    private String getPortFromDockerfile(@NotNull String dockerFileContent) {
+        final Matcher result = Arrays.stream(dockerFileContent.split("\\R+"))
+                                     .map(value -> PORT_PATTERN.matcher(value))
+                                     .filter(Matcher::matches)
+                                     .findFirst().orElse(null);
+        return Optional.ofNullable(result).map(matcher -> matcher.group(1)).orElse(null);
+    }
+
+    private String getPortByArtifact(@NotNull String targetFilePath) {
+        final String fileExtension = FilenameUtils.getExtension(targetFilePath);
+        return StringUtils.equalsIgnoreCase(fileExtension, WAR) ? DEFAULT_TOMCAT_SERVICE_PORT : DEFAULT_SPRING_BOOT_SERVICE_PORT;
     }
 }
