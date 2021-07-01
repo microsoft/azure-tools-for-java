@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.springcloud.properties;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.intellij.ui.JBIntSpinner;
 import lombok.Getter;
