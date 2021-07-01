@@ -7,19 +7,27 @@ package com.microsoft.azure.toolkit.intellij.springcloud.properties;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
+import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudDeploymentStatus;
 import com.microsoft.azure.toolkit.lib.springcloud.task.DeploySpringCloudAppTask;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -31,8 +39,12 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private JButton deleteButton;
     private JPanel contentPanel;
     private JButton saveButton;
-    private SpringCloudAppPanel appPanel;
     private ActionLink reset;
+    private SubscriptionComboBox selectorSubscription;
+    private SpringCloudClusterComboBox selectorCluster;
+    private SpringCloudAppComboBox selectorApp;
+    private SpringCloudAppConfigPanel formConfig;
+    private SpringCloudAppInstancesPanel panelInstances;
 
     @Nonnull
     private final Project project;
@@ -50,15 +62,25 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.resetToolbar();
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
-        this.appPanel.setValueChangedListener((changedFromOrigin, data) -> {
-            this.reset.setVisible(changedFromOrigin);
-            this.saveButton.setEnabled(changedFromOrigin);
-        });
+        this.selectorSubscription.setValueFixed(true);
+        this.selectorSubscription.setRequired(true);
+        this.selectorSubscription.setLabel("Subscription");
+        this.selectorSubscription.setValue(new AzureComboBox.ItemReference<>(this.app.getCluster().subscriptionId(), Subscription::getId));
+        this.selectorCluster.setValueFixed(true);
+        this.selectorCluster.setRequired(true);
+        this.selectorCluster.setLabel("Spring Cloud");
+        this.selectorCluster.setItemsLoader(() -> Collections.singletonList(this.app.getCluster()));
+        this.selectorApp.setValueFixed(true);
+        this.selectorApp.setRequired(true);
+        this.selectorApp.setLabel("App");
+        this.selectorApp.setItemsLoader(() -> Collections.singletonList(this.app));
+        this.formConfig.setApp(this.app);
+        this.panelInstances.setApp(this.app);
         initListeners();
     }
 
     private void initListeners() {
-        this.reset.addActionListener(e -> this.appPanel.reset());
+        this.reset.addActionListener(e -> this.formConfig.reset());
         this.refreshButton.addActionListener(e -> refresh());
         final String deleteTitle = String.format("Deleting app(%s)", this.app.name());
         this.deleteButton.addActionListener(e -> {
@@ -66,8 +88,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             if (AzureMessager.getMessager().confirm(message, "Delete Spring Cloud App")) {
                 AzureTaskManager.getInstance().runInModal(deleteTitle, () -> {
                     this.setEnabled(false);
-                    this.app.remove();
                     this.closeEditor();
+                    this.app.remove();
                 });
             }
         });
@@ -93,11 +115,16 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.saveButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(saveTitle, () -> {
             this.setEnabled(false);
             this.reset.setVisible(false);
-            new DeploySpringCloudAppTask(this.appPanel.getData()).execute();
+            this.save();
             this.refresh();
         }));
+        this.formConfig.setDataChangedListener((changedFromOrigin, data) -> {
+            this.reset.setVisible(changedFromOrigin);
+            this.saveButton.setEnabled(changedFromOrigin);
+        });
         AzureEventBus.after("springcloud|app.remove", (SpringCloudApp app) -> {
             if (this.app.name().equals(app.name())) {
+                AzureMessager.getMessager().info(String.format("Spring Cloud App(%s) is deleted", this.app.name()), "");
                 this.closeEditor();
             }
         });
@@ -108,13 +135,26 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         });
     }
 
+    private void save() {
+        final SpringCloudAppConfig config = this.formConfig.getData();
+        config.setSubscriptionId(this.app.subscriptionId());
+        config.setClusterName(this.app.getCluster().name());
+        config.setAppName(this.app.name());
+        new DeploySpringCloudAppTask(config).execute();
+    }
+
     private void refresh() {
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
         AzureTaskManager.getInstance().runLater(() -> {
             final String refreshTitle = String.format("Refreshing app(%s)...", Objects.requireNonNull(this.app).name());
             AzureTaskManager.getInstance().runInBackground(refreshTitle, () -> {
-                this.appPanel.refresh();
+                this.app.refresh();
+                Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
+                AzureTaskManager.getInstance().runLater(() -> {
+                    this.formConfig.setApp(this.app, true);
+                    this.panelInstances.setApp(this.app);
+                });
                 this.resetToolbar();
             });
         });
@@ -126,7 +166,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.stopButton.setEnabled(enabled);
         this.restartButton.setEnabled(enabled);
         this.deleteButton.setEnabled(enabled);
-        this.appPanel.setEnabled(enabled);
+        this.formConfig.setEnabled(enabled);
+        this.panelInstances.setEnabled(enabled);
     }
 
     private void resetToolbar() {
@@ -180,11 +221,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
 
     private void closeEditor() {
         DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, this.app.entity().getId());
-        PluginUtil.showInfoNotificationProject(project,
-                String.format("The editor for app %s is closed.", this.app.name()), "The app " + this.app.name() + " is deleted.");
     }
 
     private void createUIComponents() {
-        this.appPanel = new SpringCloudAppPanel(this.app, this.project);
     }
 }
