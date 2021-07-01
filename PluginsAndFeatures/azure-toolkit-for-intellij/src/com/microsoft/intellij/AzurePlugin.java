@@ -34,7 +34,10 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.*;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -56,7 +59,13 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import javax.swing.event.EventListenerList;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +75,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -100,6 +114,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull Project project) {
+        ProxyUtils.initProxy();
+
         this.azureSettings = AzureSettings.getSafeInstance(project);
         String hasMac = InstallationIdUtils.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : InstallationIdUtils.hash(PermanentInstallationID.get());
