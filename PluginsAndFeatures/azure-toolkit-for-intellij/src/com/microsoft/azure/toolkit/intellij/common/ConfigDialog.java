@@ -3,15 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
@@ -19,13 +15,12 @@ import javax.swing.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 @Log
-public abstract class AppConfigDialog<T extends AppServiceConfig>
-    extends AzureDialog<T> {
+public abstract class ConfigDialog<T> extends AzureDialog<T> {
     protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
 
-    public AppConfigDialog(Project project) {
+    public ConfigDialog(Project project) {
         super(project);
         this.project = project;
     }
@@ -39,7 +34,7 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
     }
 
 
-    @AzureOperation(name = "appservice.toggle_mode.ui", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "common.toggle_config_mode.ui", type = AzureOperation.Type.TASK)
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
