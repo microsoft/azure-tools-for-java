@@ -7,16 +7,12 @@ package com.microsoft.azure.toolkit.intellij.springcloud.properties;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
-import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
-import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
@@ -27,7 +23,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,9 +35,9 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
     private JPanel contentPanel;
     private JButton saveButton;
     private ActionLink reset;
-    private SubscriptionComboBox selectorSubscription;
-    private SpringCloudClusterComboBox selectorCluster;
-    private SpringCloudAppComboBox selectorApp;
+    private JBLabel lblSubscription;
+    private JBLabel lblCluster;
+    private JBLabel lblApp;
     private SpringCloudAppConfigPanel formConfig;
     private SpringCloudAppInstancesPanel panelInstances;
 
@@ -62,19 +57,11 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.resetToolbar();
         this.reset.setVisible(false);
         this.saveButton.setEnabled(false);
-        this.selectorSubscription.setValueFixed(true);
-        this.selectorSubscription.setRequired(true);
-        this.selectorSubscription.setLabel("Subscription");
-        this.selectorSubscription.setValue(new AzureComboBox.ItemReference<>(this.app.getCluster().subscriptionId(), Subscription::getId));
-        this.selectorCluster.setValueFixed(true);
-        this.selectorCluster.setRequired(true);
-        this.selectorCluster.setLabel("Spring Cloud");
-        this.selectorCluster.setItemsLoader(() -> Collections.singletonList(this.app.getCluster()));
-        this.selectorApp.setValueFixed(true);
-        this.selectorApp.setRequired(true);
-        this.selectorApp.setLabel("App");
-        this.selectorApp.setItemsLoader(() -> Collections.singletonList(this.app));
-        this.formConfig.setApp(this.app);
+        this.lblSubscription.setText(this.app.subscription().getName());
+        this.lblCluster.setText(this.app.getCluster().name());
+        this.lblApp.setText(this.app.name());
+        this.formConfig.updateForm(this.app);
+        this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app));
         this.panelInstances.setApp(this.app);
         initListeners();
     }
@@ -115,10 +102,11 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         this.saveButton.addActionListener(e -> AzureTaskManager.getInstance().runInBackground(saveTitle, () -> {
             this.setEnabled(false);
             this.reset.setVisible(false);
-            this.save();
+            new DeploySpringCloudAppTask(getConfig()).execute();
             this.refresh();
         }));
-        this.formConfig.setDataChangedListener((changedFromOrigin, data) -> {
+        this.formConfig.setDataChangedListener((data) -> {
+            final boolean changedFromOrigin = !Objects.equals(this.getConfig(), SpringCloudAppConfig.fromApp(this.app));
             this.reset.setVisible(changedFromOrigin);
             this.saveButton.setEnabled(changedFromOrigin);
         });
@@ -135,12 +123,13 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
         });
     }
 
-    private void save() {
+    @Nonnull
+    private SpringCloudAppConfig getConfig() {
         final SpringCloudAppConfig config = this.formConfig.getData();
         config.setSubscriptionId(this.app.subscriptionId());
         config.setClusterName(this.app.getCluster().name());
         config.setAppName(this.app.name());
-        new DeploySpringCloudAppTask(config).execute();
+        return config;
     }
 
     private void refresh() {
@@ -152,7 +141,8 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
                 this.app.refresh();
                 Optional.ofNullable(this.app.activeDeployment()).ifPresent(d -> d.refresh());
                 AzureTaskManager.getInstance().runLater(() -> {
-                    this.formConfig.setApp(this.app, true);
+                    this.formConfig.updateForm(this.app);
+                    this.formConfig.setData(SpringCloudAppConfig.fromApp(this.app));
                     this.panelInstances.setApp(this.app);
                 });
                 this.resetToolbar();
