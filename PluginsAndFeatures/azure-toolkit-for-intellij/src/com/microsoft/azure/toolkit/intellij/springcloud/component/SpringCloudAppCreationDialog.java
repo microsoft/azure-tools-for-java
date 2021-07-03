@@ -5,50 +5,37 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
-import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppEntity;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.util.ValidationUtils;
+import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.Collections;
-import java.util.List;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class SpringCloudAppCreationDialog extends AzureDialog<SpringCloudAppEntity>
-    implements AzureForm<SpringCloudAppEntity> {
+public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppConfig> {
     private final SpringCloudCluster cluster;
-    private JPanel contentPanel;
-    private ValidationDebouncedTextInput textName;
+    private JPanel panel;
+    private SpringCloudAppInfoBasicPanel basicForm;
+    private SpringCloudAppInfoAdvancedPanel advancedForm;
 
-    public SpringCloudAppCreationDialog(final SpringCloudCluster cluster) {
-        super();
+    public SpringCloudAppCreationDialog(@Nullable SpringCloudCluster cluster) {
+        super(null);
         this.init();
         this.cluster = cluster;
-        this.textName.setValidator(this::validateName);
-        this.pack();
-    }
-
-    private AzureValidationInfo validateName() {
-        try {
-            ValidationUtils.validateSpringCloudAppName(this.textName.getValue(), this.cluster);
-        } catch (final IllegalArgumentException e) {
-            final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-            return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
-        }
-        return AzureValidationInfo.OK;
+        setFrontPanel(basicForm);
     }
 
     @Override
-    public AzureForm<SpringCloudAppEntity> getForm() {
-        return this;
+    protected AzureFormPanel<SpringCloudAppConfig> getAdvancedFormPanel() {
+        return advancedForm;
+    }
+
+    @Override
+    protected AzureFormPanel<SpringCloudAppConfig> getBasicFormPanel() {
+        return basicForm;
     }
 
     @Override
@@ -59,21 +46,11 @@ public class SpringCloudAppCreationDialog extends AzureDialog<SpringCloudAppEnti
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return this.contentPanel;
+        return this.panel;
     }
 
-    @Override
-    public SpringCloudAppEntity getData() {
-        return new SpringCloudAppEntity(this.textName.getValue(), this.cluster.entity());
-    }
-
-    @Override
-    public void setData(final SpringCloudAppEntity data) {
-        this.textName.setValue(data.getName());
-    }
-
-    @Override
-    public List<AzureFormInput<?>> getInputs() {
-        return Collections.singletonList(this.textName);
+    private void createUIComponents() {
+        advancedForm = new SpringCloudAppInfoAdvancedPanel(this.cluster);
+        basicForm = new SpringCloudAppInfoBasicPanel(this.cluster);
     }
 }
