@@ -9,33 +9,30 @@ import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariableTable;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
@@ -54,20 +51,8 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private SubscriptionComboBox selectorSubscription;
     private SpringCloudClusterComboBox selectorCluster;
     private SpringCloudAppComboBox selectorApp;
-    private JComboBox<String> cbCPU;
-    private JComboBox<String> cbMemory;
-    private JComboBox<String> cbInstanceCount;
-    private JTextField textJvmOptions;
-    private JRadioButton useJava8;
-    private JRadioButton useJava11;
-    private JRadioButton enablePersistent;
-    private JRadioButton disablePersistent;
-    private JRadioButton enablePublic;
-    private JRadioButton disablePublic;
-    private JPanel pnlEnvironmentTable;
-    private EnvironmentVariableTable environmentVariableTable;
 
-    public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @NotNull final Project project) {
+    public SpringCloudDeploymentConfigurationPanel(SpringCloudDeploymentConfiguration config, @Nonnull final Project project) {
         super();
         this.project = project;
         this.configuration = config;
@@ -118,11 +103,11 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     public void setData(SpringCloudAppConfig appConfig) {
+        final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
+        if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
+            this.selectorApp.addLocalItem(cluster.app(appConfig));
+        }
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        this.cbCPU.setSelectedItem(Optional.ofNullable(deploymentConfig.getCpu()).map(String::valueOf).orElse("1"));
-        this.cbMemory.setSelectedItem(Optional.ofNullable(deploymentConfig.getMemoryInGB()).map(String::valueOf).orElse("1"));
-        this.cbInstanceCount.setSelectedItem(Optional.ofNullable(deploymentConfig.getInstanceCount()).map(String::valueOf).orElse("1"));
-        this.textJvmOptions.setText(deploymentConfig.getJvmOptions());
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         Optional.ofNullable(deploymentConfig.getArtifact()).map(a -> ((WrappedAzureArtifact) a))
             .ifPresent((a -> this.selectorArtifact.setValue(new ItemReference<>(
@@ -135,44 +120,25 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
             .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
             .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
-        final boolean useJava11 = StringUtils.equalsIgnoreCase(appConfig.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
-        this.useJava11.setSelected(useJava11);
-        this.useJava8.setSelected(!useJava11);
-        final boolean enableStorage = deploymentConfig.isEnablePersistentStorage();
-        this.enablePersistent.setSelected(enableStorage);
-        this.disablePersistent.setSelected(!enableStorage);
-        final boolean isPublic = appConfig.isPublic();
-        this.enablePublic.setSelected(isPublic);
-        this.disablePublic.setSelected(!isPublic);
-
-        if (MapUtils.isNotEmpty(deploymentConfig.getEnvironment())) {
-            environmentVariableTable.setEnv(deploymentConfig.getEnvironment());
-        }
     }
 
     @Nullable
     public SpringCloudAppConfig getData() {
-        final SpringCloudAppConfig appConfig = SpringCloudAppConfig.builder()
-            .deployment(SpringCloudDeploymentConfig.builder().build())
-            .build();
+        SpringCloudAppConfig appConfig = this.selectorApp.getValue().entity().getConfig();
+        if(Objects.isNull(appConfig)){
+            appConfig = SpringCloudAppConfig.builder()
+                .deployment(SpringCloudDeploymentConfig.builder().build())
+                .build();
+        }
         this.getData(appConfig);
         return appConfig;
     }
 
     public SpringCloudAppConfig getData(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-        final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
         appConfig.setSubscriptionId(this.selectorSubscription.getValue().getId());
         appConfig.setClusterName(this.selectorCluster.getValue().name());
         appConfig.setAppName(this.selectorApp.getValue().name());
-        appConfig.setIsPublic(enablePublic.isSelected());
-        appConfig.setRuntimeVersion(javaVersion);
-        deploymentConfig.setCpu(Optional.ofNullable(this.cbCPU.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
-        deploymentConfig.setMemoryInGB(Optional.ofNullable(this.cbMemory.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
-        deploymentConfig.setInstanceCount(Optional.ofNullable(this.cbInstanceCount.getSelectedItem()).map(o -> Integer.parseInt((String) o)).orElse(1));
-        deploymentConfig.setJvmOptions(Optional.ofNullable(this.textJvmOptions.getText()).map(String::trim).orElse(""));
-        deploymentConfig.setEnablePersistentStorage(this.enablePersistent.isSelected());
-        deploymentConfig.setEnvironment(environmentVariableTable.getEnv());
         final AzureArtifact artifact = this.selectorArtifact.getValue();
         deploymentConfig.setArtifact(new WrappedAzureArtifact(this.selectorArtifact.getValue(), this.project));
         return appConfig;
@@ -192,11 +158,5 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     private void createUIComponents() {
         this.selectorArtifact = new AzureArtifactComboBox(project);
         this.selectorArtifact.refreshItems();
-        pnlEnvironmentTable = new JPanel();
-        pnlEnvironmentTable.setLayout(new GridLayoutManager(1, 1));
-        environmentVariableTable = new EnvironmentVariableTable();
-        pnlEnvironmentTable.add(environmentVariableTable.getComponent(),
-            new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 7, 7, null, null, null));
-        pnlEnvironmentTable.setFocusable(false);
     }
 }

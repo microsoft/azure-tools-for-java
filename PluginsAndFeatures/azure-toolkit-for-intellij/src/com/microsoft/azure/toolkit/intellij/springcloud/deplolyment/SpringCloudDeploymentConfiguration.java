@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBase implements LocatableConfiguration {
+public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBase<Element> implements LocatableConfiguration {
     private static final String NEED_SPECIFY_ARTIFACT = "Please select an artifact";
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
     private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
@@ -145,7 +145,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
             }
-            this.panel.getData(config.appConfig);
+            config.appConfig = this.panel.getData();
         }
 
         @Override
