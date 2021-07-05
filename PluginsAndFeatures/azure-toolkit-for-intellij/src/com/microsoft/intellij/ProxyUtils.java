@@ -9,29 +9,23 @@ import com.azure.core.util.Configuration;
 import com.intellij.util.net.HttpConfigurable;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.proxy.ProxyManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TextUtils;
 
 import java.net.InetSocketAddress;
-import java.util.Objects;
 
 public class ProxyUtils {
     public static void initProxy() {
         final HttpConfigurable instance = HttpConfigurable.getInstance();
-        final ProxyManager proxyManager = ProxyManager.getInstance();
-        proxyManager.init();
-        String source = "system";
         if (instance != null && instance.USE_HTTP_PROXY) {
-            source = "intellij";
-        }
-        if (source != null && Objects.nonNull(proxyManager.getProxy())) {
-            AzureMessager.getMessager().info(String.format("Use %s proxy: %s:%s", source, TextUtils.cyan(proxyManager.getHttpProxyHost()),
-                TextUtils.cyan(Integer.toString(proxyManager.getHttpProxyPort()))));
+            String source = "intellij";
+            AzureMessager.getMessager().info(String.format("Use %s proxy: %s:%s", source, TextUtils.cyan(
+                instance.PROXY_HOST),
+                TextUtils.cyan(Integer.toString(instance.PROXY_PORT))));
 
             // set proxy for azure-identity according to https://docs.microsoft.com/en-us/azure/developer/java/sdk/proxying
-            Azure.az().config().setHttpProxy((InetSocketAddress) proxyManager.getProxy().address());
+            Azure.az().config().setHttpProxy(new InetSocketAddress(instance.PROXY_HOST, instance.PROXY_PORT));
             Configuration.getGlobalConfiguration().put(Configuration.PROPERTY_HTTP_PROXY,
-                String.format("http://%s:%s", proxyManager.getHttpProxyHost(), proxyManager.getHttpProxyPort()));
+                String.format("http://%s:%s", instance.PROXY_HOST, instance.PROXY_PORT));
         }
     }
 }
