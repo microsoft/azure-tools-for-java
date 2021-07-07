@@ -3,12 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.springcloud.component;
+package com.microsoft.azure.toolkit.intellij.springcloud.creation;
 
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureEntityManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
@@ -64,8 +65,8 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             return AzureValidationInfo.OK;
         });
         if (Objects.nonNull(this.cluster)) {
-            selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId), true);
-            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), IAzureEntityManager::name), true);
+            selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
+            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), IAzureEntityManager::name));
         }
     }
 
