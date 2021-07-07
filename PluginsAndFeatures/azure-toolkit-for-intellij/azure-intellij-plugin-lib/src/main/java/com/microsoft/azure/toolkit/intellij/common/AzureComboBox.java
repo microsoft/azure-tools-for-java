@@ -57,9 +57,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private Object value;
     private boolean valueNotSet = true;
     private String label;
-    @Nullable
-    @Setter
-    protected Boolean valueFixed;
+    protected boolean enabled = true;
     @Getter
     @Setter
     private Supplier<? extends List<? extends T>> itemsLoader;
@@ -132,7 +130,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     public void setValue(final T val, final Boolean fixed) {
         Optional.ofNullable(fixed).ifPresent(f -> {
-            this.valueFixed = fixed;
+            this.setEnabled(!fixed);;
             this.setEditable(!f);
         });
         this.valueNotSet = false;
@@ -146,7 +144,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     public void setValue(final ItemReference<T> val, final Boolean fixed) {
         Optional.ofNullable(fixed).ifPresent(f -> {
-            this.valueFixed = fixed;
+            this.setEnabled(!fixed);;
             this.setEditable(!f);
         });
         this.valueNotSet = false;
@@ -229,13 +227,24 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void setLoading(final boolean loading) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (loading) {
-                this.setEnabled(false);
+                super.setEnabled(false);
                 this.setEditor(this.loadingSpinner);
             } else {
-                this.setEnabled(!Objects.equals(valueFixed, true));
+                super.setEnabled(this.enabled);
                 this.setEditor(this.inputEditor);
             }
         }, AzureTask.Modality.ANY);
+    }
+
+    @Override
+    public void setEnabled(boolean b) {
+        this.enabled = b;
+        super.setEnabled(b);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled || super.isEnabled();
     }
 
     protected String getItemText(Object item) {

@@ -72,7 +72,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @Nullable
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
-        if (!Objects.equals(this.valueFixed, true)) {
+        if (!this.isEnabled()) {
             return ExtendableTextComponent.Extension.create(
                 AllIcons.General.Add, message("springCloud.app.create.tooltip"), this::showAppCreationPopup);
         }
