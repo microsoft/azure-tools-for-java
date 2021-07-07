@@ -23,8 +23,8 @@ public class SpringCloudAppCreationDialog extends ConfigDialog<SpringCloudAppCon
 
     public SpringCloudAppCreationDialog(@Nullable SpringCloudCluster cluster) {
         super(null);
-        this.init();
         this.cluster = cluster;
+        this.init();
         setFrontPanel(basicForm);
     }
 

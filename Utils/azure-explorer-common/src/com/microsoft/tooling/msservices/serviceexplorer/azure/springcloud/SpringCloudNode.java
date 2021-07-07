@@ -18,6 +18,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class SpringCloudNode extends RefreshableNode implements TelemetryProperties {
     private static final String EMPTY_POSTFIX = " (Empty)";
 
+    @Getter
     private final SpringCloudCluster cluster;
 
     public SpringCloudNode(AzureRefreshableNode parent, SpringCloudCluster cluster) {
