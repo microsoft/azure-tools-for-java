@@ -31,6 +31,7 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -47,9 +48,8 @@ import com.jetbrains.rider.model.debuggerWorker.DebuggerStartInfoBase
 import com.jetbrains.rider.model.debuggerWorker.DotNetCoreAttachStartInfo
 import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
-import com.microsoft.azuretools.utils.AzureModelController
-import com.microsoft.intellij.UpdateProgressIndicator
+import com.jetbrains.rider.runtime.DotNetRuntime
+import com.jetbrains.rider.runtime.apply
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang.StringUtils
 import org.jetbrains.plugins.azure.RiderAzureBundle
@@ -57,6 +57,7 @@ import java.time.Duration
 
 class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         private val dotNetExecutable: DotNetExecutable,
+        private val dotNetRuntime: DotNetRuntime,
         executionEnvironment: ExecutionEnvironment)
     : DebugProfileStateBase(executionEnvironment) {
 
@@ -105,29 +106,30 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
     }
 
     private fun launchAzureFunctionsHost() {
-        val useExternalConsole = dotNetExecutable.useExternalConsole
 
         val programParameters = ParametersListUtil.parse(dotNetExecutable.programParameterString)
         if (!programParameters.contains(DOTNET_ISOLATED_DEBUG_ARGUMENT)) {
             programParameters.add(DOTNET_ISOLATED_DEBUG_ARGUMENT)
         }
 
-        val commandLine = createEmptyConsoleCommandLine(useExternalConsole)
-                .withExePath(dotNetExecutable.exePath)
-                .withWorkDirectory(dotNetExecutable.workingDirectory)
-                .withEnvironment(dotNetExecutable.environmentVariables)
-                .withRawParameters(ParametersListUtil.join(programParameters))
+        val commandLine = dotNetExecutable
+                .copy(
+                        useExternalConsole = false,
+                        programParameterString = ParametersListUtil.join(programParameters)
+                )
+                .createRunCommandLine()
+                .apply(dotNetRuntime, ParametersListUtil.parse(dotNetExecutable.runtimeArguments))
 
-        targetProcessHandler = if (useExternalConsole) {
-            ExternalConsoleMediator.createProcessHandler(commandLine)
-        } else {
-            TerminalProcessHandler(commandLine)
-        }
+        val processListeners = PatchCommandLineExtension.EP_NAME.getExtensions(executionEnvironment.project)
+                .map { it.patchRunCommandLine(commandLine, dotNetRuntime, executionEnvironment.project) }
 
         val commandLineString = commandLine.commandLineString
 
+        targetProcessHandler = TerminalProcessHandler(commandLine)
+
         logger.info("Starting functions host process with command line: $commandLineString")
         targetProcessHandler.addProcessListener(object : ProcessAdapter() {
+
             override fun processTerminated(event: ProcessEvent) = logger.info("Process terminated: $commandLineString")
 
             override fun startNotified(event: ProcessEvent) {
@@ -155,12 +157,19 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
             }
         })
 
+        processListeners.filterNotNull().forEach { targetProcessHandler.addProcessListener(it) }
+
         console = createConsole(
-                external = useExternalConsole,
+                external = false,
                 processHandler = targetProcessHandler,
                 commandLineString = commandLine.commandLineString,
                 project = executionEnvironment.project
         )
+        if (dotNetExecutable.useExternalConsole) {
+            logger.debug("Ignoring for isolated worker: dotNetExecutable.useExternalConsole=${dotNetExecutable.useExternalConsole}")
+            console.print(RiderAzureBundle.message("run_config.run_function_app.debug.ignore.externalconsole") + System.lineSeparator(),
+                    ConsoleViewContentType.SYSTEM_OUTPUT)
+        }
 
         console.attachToProcess(targetProcessHandler)
 

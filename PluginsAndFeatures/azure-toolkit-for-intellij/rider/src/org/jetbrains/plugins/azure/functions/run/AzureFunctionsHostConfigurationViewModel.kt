@@ -36,6 +36,7 @@ import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParamete
 import org.apache.http.client.utils.URIBuilder
 import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionLocalSettings
 import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionLocalSettingsUtil
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionsWorkerRuntime
 import java.io.File
 
 class AzureFunctionsHostConfigurationViewModel(
@@ -231,7 +232,7 @@ class AzureFunctionsHostConfigurationViewModel(
               useExternalConsole: Boolean,
               isUnloadedProject: Boolean,
               dotNetStartBrowserParameters: DotNetStartBrowserParameters) {
-        fun resetProperties(exePath: String, programParameters: String, workingDirectory: String) {
+        fun resetProperties(exePath: String, programParameters: String, workingDirectory: String, workerRuntimeSupportsExternalConsole: Boolean) {
             super.reset(
                     exePath,
                     programParameters,
@@ -240,7 +241,7 @@ class AzureFunctionsHostConfigurationViewModel(
                     passParentEnvs,
                     false,
                     "",
-                    useExternalConsole
+                    workerRuntimeSupportsExternalConsole && useExternalConsole
             )
         }
 
@@ -287,7 +288,11 @@ class AzureFunctionsHostConfigurationViewModel(
                     }
                     projectSelector.project.set(fakeProject)
                     reloadTfmSelector(fakeProject)
-                    resetProperties(exePath, programParameters, workingDirectory)
+                    resetProperties(
+                            exePath = exePath,
+                            programParameters = programParameters,
+                            workingDirectory = workingDirectory,
+                            workerRuntimeSupportsExternalConsole = true)
                 }
             } else {
                 projectList.singleOrNull {
@@ -321,7 +326,18 @@ class AzureFunctionsHostConfigurationViewModel(
                     val effectiveWorkingDirectory = if (trackProjectWorkingDirectory && projectOutput != null)
                         projectOutput.workingDirectory else workingDirectory
 
-                    resetProperties(effectiveExePath, effectiveProgramParameters, effectiveWorkingDirectory)
+
+                    // Disable "Use external console" for Isolated worker
+                    val workerRuntime = functionLocalSettings?.values?.workerRuntime ?: FunctionsWorkerRuntime.DotNetDefault
+                    val workerRuntimeSupportsExternalConsole = workerRuntime != FunctionsWorkerRuntime.DotNetIsolated
+                    useExternalConsoleEditor.isVisible.set(workerRuntimeSupportsExternalConsole)
+
+                    // Reset properties
+                    resetProperties(
+                            exePath = effectiveExePath,
+                            programParameters = effectiveProgramParameters,
+                            workingDirectory = effectiveWorkingDirectory,
+                            workerRuntimeSupportsExternalConsole = workerRuntimeSupportsExternalConsole)
 
                     // Set Browser info
                     composeUrlString(getPortValue())

@@ -27,6 +27,7 @@
         <ul>
           <li>Compatibility with Rider 2021.2</li>
           <li>Show editor warning about missing NuGet Packages instead of installing them automatically (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/445">#445</a>)</li>
+          <li>Azure Functions - Hide "Use external console for Isolated worker (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/504">#504</a>)</li>
         </ul>
         <p>[3.50.1-2021.1]</p>
         <ul>
