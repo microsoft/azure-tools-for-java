@@ -54,9 +54,9 @@ public class AzureSlider {
     }
 
     public void setValue(int value) {
-        value = Math.max(this.realMin, value);
-        this.numSlider.setValue(value);
-        this.numValue.setValue(value);
+        final int val = Math.max(this.realMin, value);
+        this.numSlider.setValue(val);
+        this.numValue.setValue(val);
     }
 
     public int getValue() {

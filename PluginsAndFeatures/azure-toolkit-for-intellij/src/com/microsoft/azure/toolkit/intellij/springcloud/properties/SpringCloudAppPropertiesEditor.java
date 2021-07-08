@@ -190,6 +190,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             case UNKNOWN:
                 this.setEnabled(false);
                 break;
+            default:
         }
     }
 

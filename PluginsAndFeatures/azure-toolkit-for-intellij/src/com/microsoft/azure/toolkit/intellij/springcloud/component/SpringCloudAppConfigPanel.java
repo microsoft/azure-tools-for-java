@@ -177,9 +177,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggleStorage(deployment.getEnablePersistentStorage());
         this.toggleEndpoint(config.getIsPublic());
-        final boolean useJava11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
-        this.useJava11.setSelected(useJava11);
-        this.useJava8.setSelected(!useJava11);
+        final boolean java11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
+        this.useJava11.setSelected(java11);
+        this.useJava8.setSelected(!java11);
 
         this.txtJvmOptions.setText(deployment.getJvmOptions());
         if (MapUtils.isNotEmpty(deployment.getEnvironment())) {
