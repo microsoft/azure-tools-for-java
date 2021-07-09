@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,55 +75,76 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     @Override
     protected Action @NotNull [] createLeftSideActions() {
         return new Action[]{
-                new AbstractAction(MessageBundle.message("templateDialog.applications.createClientSecret")) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        AzureTaskManager.getInstance().runInModal(MessageBundle.message("templateDialog.applications.creatingClientSecret"), false, () -> {
-                            try {
-                                var application = form.getData();
-                                var secret = AzureUtils.createApplicationClientSecret(graphClient, application);
-
-                                // update UI with the updated application
-                                AzureTaskManager.getInstance().runLater(() -> {
-                                    // the new credentials must be first
-                                    var credentials = new ArrayList<PasswordCredential>();
-                                    credentials.add(secret);
-                                    credentials.addAll(application.passwordCredentials);
-
-                                    // refresh application in-place
-                                    application.passwordCredentials = credentials;
-
-                                    form.refreshSelectedApplication();
-                                });
-                            } catch (ClientException ex) {
-                                // not using AzureMessanger, because it's unable to display an error message
-                                // on top of the application templates dialog.
-                                String details = null;
-                                if (ex instanceof GraphServiceException) {
-                                    var error = ((GraphServiceException) ex).getServiceError();
-                                    if (error != null) {
-                                        details = error.message;
-                                    }
-                                }
-
-                                var message = details == null
-                                        ? MessageBundle.message("templateDialog.createCredentialsError.textUnknown")
-                                        : MessageBundle.message("templateDialog.createCredentialsError.text", details);
-
-                                AzureTaskManager.getInstance().runLater(() -> {
-                                    Messages.showErrorDialog(project,
-                                            message,
-                                            MessageBundle.message("templateDialog.createCredentialsError.title"));
-                                });
-                            }
-                        });
-                    }
-                }
+                new NewClientSecretAction(),
+                new CopyEditorContentAction()
         };
     }
 
     @Override
     public @Nullable JComponent getPreferredFocusedComponent() {
         return form.getPreferredFocusedComponent();
+    }
+
+    private class CopyEditorContentAction extends AbstractAction {
+        public CopyEditorContentAction() {
+            super(MessageBundle.message("templateDialog.applications.copyEditorContent"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var editor = form.getCurrentEditor().getEditor();
+            if (editor != null) {
+                CopyPasteManager.getInstance().setContents(new StringSelection(editor.getDocument().getText()));
+            }
+        }
+    }
+
+    private class NewClientSecretAction extends AbstractAction {
+        public NewClientSecretAction() {
+            super(MessageBundle.message("templateDialog.applications.createClientSecret"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            AzureTaskManager.getInstance().runInModal(MessageBundle.message("templateDialog.applications.creatingClientSecret"), false, () -> {
+                try {
+                    var application = form.getData();
+                    var secret = AzureUtils.createApplicationClientSecret(graphClient, application);
+
+                    // update UI with the updated application
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        // the new credentials must be first
+                        var credentials = new ArrayList<PasswordCredential>();
+                        credentials.add(secret);
+                        credentials.addAll(application.passwordCredentials);
+
+                        // refresh application in-place
+                        application.passwordCredentials = credentials;
+
+                        form.refreshSelectedApplication();
+                    });
+                } catch (ClientException ex) {
+                    // not using AzureMessanger, because it's unable to display an error message
+                    // on top of the application templates dialog.
+                    String details = null;
+                    if (ex instanceof GraphServiceException) {
+                        var error = ((GraphServiceException) ex).getServiceError();
+                        if (error != null) {
+                            details = error.message;
+                        }
+                    }
+
+                    var message = details == null
+                            ? MessageBundle.message("templateDialog.createCredentialsError.textUnknown")
+                            : MessageBundle.message("templateDialog.createCredentialsError.text", details);
+
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        Messages.showErrorDialog(project,
+                                message,
+                                MessageBundle.message("templateDialog.createCredentialsError.title"));
+                    });
+                }
+            });
+        }
     }
 }

@@ -72,6 +72,11 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         applicationsBox.refreshItems();
     }
 
+    @NotNull
+    EditorTextField getCurrentEditor() {
+        return (EditorTextField) templatesPane.getSelectedComponent();
+    }
+
     void refreshSelectedApplication() {
         applyTemplate(getData());
     }
