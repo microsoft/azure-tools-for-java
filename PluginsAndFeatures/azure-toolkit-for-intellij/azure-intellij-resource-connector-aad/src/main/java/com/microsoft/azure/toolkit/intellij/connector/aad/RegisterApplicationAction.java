@@ -163,7 +163,12 @@ public class RegisterApplicationAction extends AnAction {
             params.identifierUris = Collections.singletonList("https://" + model.getDomain() + "/" + validSuffix);
             params.web = new WebApplication();
             params.web.redirectUris = Collections.singletonList(model.getCallbackUrl());
-            // fixme set clientId, isMultiTenant, allowOverwrite
+            if (model.isMultiTenant()) {
+                params.signInAudience = "AzureADMultipleOrgs";
+            } else {
+                params.signInAudience = "AzureADMyOrg";
+            }
+            // fixme set clientId, allowOverwrite
 
             var application = graphClient.applications().buildRequest().post(params);
             assert application.id != null;
