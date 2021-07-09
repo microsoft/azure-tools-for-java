@@ -3,14 +3,14 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 import com.intellij.openapi.editor.actions.IncrementalFindAction;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
-import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.FileTypes;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.EditorTextField;
+import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 class ApplicationTemplateForm implements AzureForm<Application> {
@@ -63,14 +64,11 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             templateEditors.put(type, editor);
         }
 
-        if (predefinedItems == null) {
-            applicationsBox.setItemsLoader(() -> AzureUtils.loadApplications(graphClient)
-                    .stream()
-                    .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
-                    .collect(Collectors.toList()));
-        } else {
-            applicationsBox.setItemsLoader(() -> predefinedItems);
-        }
+        applicationsBox.setItemsLoader(() -> Objects.requireNonNullElseGet(predefinedItems,
+                () -> AzureUtils.loadApplications(graphClient)
+                        .stream()
+                        .sorted(Comparator.comparing(a -> StringUtil.defaultIfEmpty(a.displayName, "")))
+                        .collect(Collectors.toList())));
         applicationsBox.refreshItems();
     }
 
@@ -145,32 +143,31 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     }
 
     private static EditorTextField createTextEditor(@NotNull final Project project, @NotNull String filename) {
-        FileType fileType = PlainTextFileType.INSTANCE;
+        LanguageFileType fileType = PlainTextFileType.INSTANCE;
         var extension = PathUtil.getFileExtension(filename);
         if (extension != null) {
             var extensionFileType = FileTypeManager.getInstance().getFileTypeByExtension(extension);
-            if (extensionFileType != FileTypes.UNKNOWN) {
-                fileType = extensionFileType;
+            if (extensionFileType != FileTypes.UNKNOWN && extensionFileType instanceof LanguageFileType) {
+                fileType = (LanguageFileType) extensionFileType;
             }
         }
+        var language = fileType.getLanguage();
+        var editor = EditorTextFieldProvider.getInstance().getEditorField(language, project, Collections.singleton(editorEx -> {
+            editorEx.putUserData(IncrementalFindAction.SEARCH_DISABLED, Boolean.TRUE);
 
-        var editor = new EditorTextField("", project, fileType) {
-            @Override
-            protected EditorEx createEditor() {
-                var editor = super.createEditor();
-                editor.putUserData(IncrementalFindAction.SEARCH_DISABLED, Boolean.TRUE);
-
-                var globalScheme = EditorColorsManager.getInstance().getGlobalScheme();
-                var c = globalScheme.getColor(EditorColors.READONLY_BACKGROUND_COLOR);
-                if (c == null) {
-                    c = globalScheme.getDefaultBackground();
-                }
-                editor.setBackgroundColor(c);
-                editor.setVerticalScrollbarVisible(true);
-                editor.setBorder(JBUI.Borders.empty(5));
-                return editor;
+            var globalScheme = EditorColorsManager.getInstance().getGlobalScheme();
+            var c = globalScheme.getColor(EditorColors.READONLY_BACKGROUND_COLOR);
+            if (c == null) {
+                c = globalScheme.getDefaultBackground();
             }
-        };
+            editorEx.setBackgroundColor(c);
+            editorEx.setVerticalScrollbarVisible(true);
+            editorEx.setHorizontalScrollbarVisible(true);
+            editorEx.setBorder(JBUI.Borders.empty(5));
+            editorEx.getSettings().setUseSoftWraps(true);
+            editorEx.setEmbeddedIntoDialogWrapper(true);
+        }));
+
         editor.setOneLineMode(false);
         editor.setViewer(true);
         editor.setPreferredSize(JBUI.size(650, 550));
