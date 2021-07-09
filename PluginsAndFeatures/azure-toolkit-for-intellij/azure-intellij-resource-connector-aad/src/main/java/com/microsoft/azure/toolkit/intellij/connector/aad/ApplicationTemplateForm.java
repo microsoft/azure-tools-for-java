@@ -94,16 +94,19 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         credentialsWarning.setVisible(!clientSecret.isEmpty());
 
         for (var entry : templateEditors.entrySet()) {
-            var template = new ApplicationTemplate(
-                    entry.getKey().getResourcePath(),
-                    subscription.getTenantId(),
-                    app.appId != null ? app.appId : "",
-                    clientSecret,
-                    "group-names");
+            var templateType = entry.getKey();
+            var editor = entry.getValue();
+
             try {
-                entry.getValue().setText(template.content());
+                var template = new ApplicationTemplate(
+                        templateType.getResourcePath(),
+                        subscription.getTenantId(),
+                        app.appId != null ? app.appId : "",
+                        clientSecret,
+                        "group-names");
+                editor.setText(template.content());
             } catch (IOException e) {
-                entry.getValue().setText("ERROR");
+                editor.setText(MessageBundle.message("templateDialog.editorInitFailed.text", e.getMessage()));
             }
         }
     }
