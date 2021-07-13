@@ -70,6 +70,7 @@
           id="Azure Activity Log"
           canCloseContents="true"
           icon="/icons/Common/AzureActivityLog.svg"/>
+    <applicationService serviceImplementation="com.microsoft.intellij.configuration.AzureConfigurations"/>
     <projectConfigurable groupId="root"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"

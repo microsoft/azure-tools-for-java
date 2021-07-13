@@ -39,6 +39,7 @@ public class TelemetryConstants {
     public static final String AZURECODE_SAMPLES = "azure-code-samples";
     public static final String LIB_CONFIGURATION = "libraries-configuration";
     public static final String PLUGIN_INSTALL = "install-plugin";
+    public static final String PLUGIN_TRANSFER_SETTINGS = "transfer-configuration";
     public static final String PLUGIN_LOAD = "load-plugin";
     public static final String PLUGIN_UPGRADE = "upgrade-plugin";
     public static final String PLUGIN_UNINSTALL = "uninstall-plugin";

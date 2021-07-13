@@ -19,28 +19,17 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.intellij.configuration.AzureConfigurations;
 import com.microsoft.intellij.ui.WarningMessageForm;
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
-
-    private static final String instID;
-    private static final boolean isOptIn;
-
-    static {
-        final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
-        instID = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
-        isOptIn = Boolean.parseBoolean(DataOperations.getProperty(dataFile, AzureBundle.message("prefVal")));
-    }
 
     @Override
     public void closeJobViewEditor(@NotNull final Object projectObject, @NotNull final String uuid) {
@@ -55,10 +44,15 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public String getInstallationId() {
         if (isOptIn()) {
-            return instID;
+            return AzureConfigurations.getInstance().getState().installationId();
         } else {
             return "";
         }
+    }
+
+    @Override
+    public boolean isOptIn() {
+        return AzureConfigurations.getInstance().getState().allowTelemetry();
     }
 
     public void openJobViewEditor(final Object projectObject, final String uuid) {
@@ -157,11 +151,6 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public boolean isIntelliJPlugin() {
         return true;
-    }
-
-    @Override
-    public boolean isOptIn() {
-        return isOptIn;
     }
 
     @NotNull
