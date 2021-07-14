@@ -121,6 +121,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             config.allowTelemetry() ? config.installationId() : StringUtils.EMPTY);
         Azure.az().config().setUserAgent(userAgent);
         CommonSettings.setUserAgent(userAgent);
+        Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(config.environment()));
         return true;
     }
 
