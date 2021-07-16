@@ -17,5 +17,4 @@ class ApplicationRegistrationModel {
     private String domain;
     private String callbackUrl;
     private boolean isMultiTenant;
-    private boolean allowOverwrite;
 }

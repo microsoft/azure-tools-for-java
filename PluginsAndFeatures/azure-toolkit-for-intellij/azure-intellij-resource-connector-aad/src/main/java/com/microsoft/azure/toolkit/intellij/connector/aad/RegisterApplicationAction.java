@@ -32,6 +32,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -150,7 +151,6 @@ public class RegisterApplicationAction extends AnAction {
         @Override
         @AzureOperation(name = "connector|aad.create_aad_application", type = AzureOperation.Type.TASK)
         public void run() {
-            // create new application
             var validSuffix = new StringBuilder();
             for (char c : (model.getDisplayName() + UUID.randomUUID().toString().substring(0, 6)).toCharArray()) {
                 if (Character.isLetterOrDigit(c)) {
@@ -168,7 +168,14 @@ public class RegisterApplicationAction extends AnAction {
             } else {
                 params.signInAudience = "AzureADMyOrg";
             }
-            // fixme set clientId, allowOverwrite
+
+            // read-only access if the client ID was defined by the user
+            var clientID = model.getClientId();
+            if (StringUtil.isNotEmpty(clientID)) {
+                params.appId = model.getClientId();
+                showApplicationTemplateDialog(params);
+                return;
+            }
 
             var application = graphClient.applications().buildRequest().post(params);
             assert application.id != null;

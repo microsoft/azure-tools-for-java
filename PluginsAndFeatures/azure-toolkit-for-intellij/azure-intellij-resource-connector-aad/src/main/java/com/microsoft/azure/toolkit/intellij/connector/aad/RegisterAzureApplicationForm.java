@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.ComponentsKt;
 import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
@@ -21,15 +22,17 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     private AzureTextInput domainInput;
     private JBCheckBox multiTenantInput;
     private AzureTextInput clientIdInput;
-    private JBCheckBox allowOverwriteInput;
     private JPanel advancedSettingsContentPanel;
     private TitledSeparator advancedSettingsSeparator;
     private JComponent noteComponent;
+    private JBLabel clientIdNote;
 
     RegisterAzureApplicationForm() {
         var separator = (AzureHideableTitledSeparator) advancedSettingsSeparator;
         separator.addContentComponent(advancedSettingsContentPanel);
         separator.collapse();
+
+        clientIdNote.setAllowAutoWrapping(true);
     }
 
     JComponent getPreferredFocusedComponent() {
@@ -49,7 +52,6 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
         data.setDomain(domainInput.getText());
         data.setMultiTenant(multiTenantInput.isSelected());
         data.setClientId(clientIdInput.getText());
-        data.setAllowOverwrite(allowOverwriteInput.isSelected());
         return data;
     }
 
@@ -65,7 +67,6 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
         domainInput.setText(data.getDomain());
         multiTenantInput.setSelected(data.isMultiTenant());
         clientIdInput.setText(data.getClientId());
-        allowOverwriteInput.setSelected(data.isAllowOverwrite());
     }
 
     private void createUIComponents() {

@@ -37,6 +37,7 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     private final Project project;
     @NotNull
     private final GraphServiceClient<Request> graphClient;
+    private final NewClientSecretAction clientSecretAction = new NewClientSecretAction();
 
     AzureApplicationTemplateDialog(@NotNull Project project,
                                    @NotNull GraphServiceClient<Request> graphClient,
@@ -49,6 +50,9 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
         var predefinedItems = application == null ? null : Collections.singletonList(application);
         form = new ApplicationTemplateForm(project, subscription, graphClient, predefinedItems);
         init();
+
+        // the predefined application may have no id if the user manually provided the appId
+        clientSecretAction.setEnabled(application == null || application.id != null);
     }
 
     @Override
@@ -75,7 +79,7 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
     @Override
     protected Action @NotNull [] createLeftSideActions() {
         return new Action[]{
-                new NewClientSecretAction(),
+                clientSecretAction,
                 new CopyEditorContentAction()
         };
     }
