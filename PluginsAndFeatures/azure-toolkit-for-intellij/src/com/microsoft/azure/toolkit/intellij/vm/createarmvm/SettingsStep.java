@@ -18,9 +18,9 @@ import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -201,7 +201,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveVirtualNetworks() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_virtual_networks");
+        final AzureText title = AzureOperationBundle.title("vm.list_virtual_networks");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -313,7 +313,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveStorageAccounts() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_storage_accounts");
+        final AzureText title = AzureOperationBundle.title("vm.list_storage_accounts");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -410,7 +410,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrievePublicIpAddresses() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_public_ips");
+        final AzureText title = AzureOperationBundle.title("vm.list_public_ips");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -488,7 +488,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveNetworkSecurityGroups() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_security_groups");
+        final AzureText title = AzureOperationBundle.title("vm.list_security_groups");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -557,7 +557,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveAvailabilitySets() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.list_availability_sets");
+        final AzureText title = AzureOperationBundle.title("vm.list_availability_sets");
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
@@ -676,7 +676,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final boolean isNewResourceGroup = createNewRadioButton.isSelected();
         final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        final IAzureOperationTitle title = AzureOperationBundle.title("vm.create", model.getName());
+        final AzureText title = AzureOperationBundle.title("vm.create", model.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);

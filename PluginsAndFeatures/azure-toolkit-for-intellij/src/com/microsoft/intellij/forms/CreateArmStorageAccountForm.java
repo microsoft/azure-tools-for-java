@@ -17,11 +17,11 @@ import com.microsoft.azure.management.storage.SkuTier;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
@@ -194,7 +194,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         // creating from Azure Explorer directly
         setSubscription((Subscription) subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
-            final IAzureOperationTitle title = AzureOperationBundle.title("storage.create_account", nameTextField.getText());
+            final AzureText title = AzureOperationBundle.title("storage.create_account", nameTextField.getText());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);

@@ -25,10 +25,10 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.EqualsAndHashCode;
@@ -143,7 +143,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     @Nonnull
     private static Optional<String> inputPassword(@Nonnull final Project project, @Nonnull final DatabaseResource resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
-        final IAzureOperationTitle title = AzureOperationBundle.title("mysql.update_password");
+        final AzureText title = AzureOperationBundle.title("mysql.update_password");
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(project, resource);
             if (dialog.showAndGet()) {
