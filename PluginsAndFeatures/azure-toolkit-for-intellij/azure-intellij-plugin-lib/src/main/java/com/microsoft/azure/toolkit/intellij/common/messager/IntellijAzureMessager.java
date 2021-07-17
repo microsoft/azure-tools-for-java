@@ -13,14 +13,18 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import lombok.extern.java.Log;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 
+@Log
 public class IntellijAzureMessager implements IAzureMessager {
     static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
@@ -36,28 +40,38 @@ public class IntellijAzureMessager implements IAzureMessager {
 
     @Override
     public boolean show(IAzureMessage raw) {
+        if (raw.getPayload() instanceof Throwable) {
+            log.log(Level.WARNING, "caught an error by messager", ((Throwable) raw.getPayload()));
+        }
+
         final IntellijAzureMessage message = IntellijAzureMessage.from(raw);
-        switch (raw.getType()) {
+        switch (message.getType()) {
             case ALERT:
             case CONFIRM:
                 return MessageDialogBuilder.yesNo(message.getTitle(), message.getMessage()).guessWindowAndAsk();
         }
         if (Objects.equals(message.getBackgrounded(), Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
-            UIUtil.invokeLaterIfNeeded(() -> {
-                final IntellijErrorDialog errorDialog = new IntellijErrorDialog(message);
-                final Window window = errorDialog.getWindow();
-                final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
-                ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
-            });
+            this.showErrorDialog(message);
         } else {
             this.showNotification(message);
         }
         return true;
     }
 
-    private void showNotification(@Nonnull IntellijAzureMessage message) {
+    private void showErrorDialog(@Nonnull AzureMessage message) {
+        UIUtil.invokeLaterIfNeeded(() -> {
+            final IntellijAzureMessage error = new DialogMessage(message);
+            final IntellijErrorDialog errorDialog = new IntellijErrorDialog(error);
+            final Window window = errorDialog.getWindow();
+            final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
+            ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
+        });
+    }
+
+    private void showNotification(@Nonnull AzureMessage raw) {
+        final IntellijAzureMessage message = new NotificationMessage(raw);
         final NotificationType type = types.get(message.getType());
-        final String content = message.getContent(true);
+        final String content = message.getMessage();
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         notification.addActions(message.getAnActions());
         Notifications.Bus.notify(notification, message.getProject());
