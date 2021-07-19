@@ -86,7 +86,7 @@ public class AzureSignInAction extends AzureAnAction {
         }
     }
 
-    private static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
+    public static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
         final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
         if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
             return String.format("Do you really want to sign out?");
