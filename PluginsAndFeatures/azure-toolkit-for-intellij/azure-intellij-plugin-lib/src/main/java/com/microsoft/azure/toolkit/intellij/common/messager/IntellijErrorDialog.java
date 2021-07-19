@@ -48,7 +48,7 @@ public class IntellijErrorDialog extends DialogWrapper {
     protected void init() {
         super.init();
         this.iconLabel.setIcon(Messages.getErrorIcon());
-        this.contentPane.setText(message.getMessage());
+        this.contentPane.setText(message.getContent());
         this.contentPane.setBackground(JBColor.WHITE);
         this.contentPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
         this.contentPane.addHyperlinkListener(e -> {
