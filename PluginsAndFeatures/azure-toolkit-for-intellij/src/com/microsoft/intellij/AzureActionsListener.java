@@ -16,9 +16,10 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
-import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -35,7 +36,6 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
-import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
@@ -73,7 +73,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());
-        IntellijAzureOperationTitleProvider.register();
+        AzureOperationBundle.register(new AzureBundle("com.microsoft.azure.toolkit.operation.title"));
         Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
@@ -82,8 +82,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         try {
             loadPluginSettings();
         } catch (IOException e) {
-            PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
-                    "An error occurred while attempting to load settings", e);
+            PluginUtil.displayErrorDialogAndLog("Error", "An error occurred while attempting to load settings", e);
         }
 
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
