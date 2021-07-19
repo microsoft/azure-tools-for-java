@@ -117,19 +117,23 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
     }
 
     private Map<String, String> initEnv(@Nonnull final Project project) {
-        final Map<String, String> env = new HashMap<>();
+        final Map<String, String> envMap = new HashMap<>();
         final DatabaseResource mysql = this.resource;
-        env.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
-        env.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
-        env.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(project, mysql)).orElse(""));
-        return env;
+        envMap.put(mysql.getEnvPrefix() + "URL", this.resource.getJdbcUrl().toString());
+        envMap.put(mysql.getEnvPrefix() + "USERNAME", this.resource.getUsername());
+        envMap.put(mysql.getEnvPrefix() + "PASSWORD", loadPassword(mysql).or(() -> inputPassword(project, mysql)).orElse(""));
+        return envMap;
     }
 
     private static Optional<String> loadPassword(@Nonnull final DatabaseResource resource) {
         if (Objects.nonNull(resource.getPassword()) && resource.getPassword().saveType() == Password.SaveType.NEVER) {
             return Optional.empty();
         }
-        final String saved = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.getPassword().saveType());
+        if (resource.getPassword().saveType() == Password.SaveType.FOREVER) {
+            PasswordStore.migratePassword(resource.getId(), resource.getUsername(),
+                resource.getType(), resource.getId(), resource.getUsername());
+        }
+        final String saved = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.getPassword().saveType());
         final DatabaseConnectionUtils.ConnectResult result = DatabaseConnectionUtils.connectWithPing(resource.getJdbcUrl(), resource.getUsername(), saved);
         if (StringUtils.isNotBlank(saved) && result.isConnected()) {
             return Optional.of(saved);
@@ -149,7 +153,7 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
                 resource.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(resource.getId(), resource.getUsername(), password.password(), password.saveType());
+                PasswordStore.savePassword(resource.getType(), resource.getId(), resource.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });
@@ -171,13 +175,13 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
 
         @Override
         public boolean write(@Nonnull Element connectionEle, @Nonnull Connection<? extends DatabaseResource, ? extends ModuleResource> connection) {
-            final DatabaseResource resource = connection.getResource();
-            final ModuleResource consumer = connection.getConsumer();
-            if (StringUtils.isNotBlank(resource.getEnvPrefix())) {
-                connectionEle.setAttribute("envPrefix", resource.getEnvPrefix());
+            final DatabaseResource databaseResource = connection.getResource();
+            final ModuleResource consumerForConnection = connection.getConsumer();
+            if (StringUtils.isNotBlank(databaseResource.getEnvPrefix())) {
+                connectionEle.setAttribute("envPrefix", databaseResource.getEnvPrefix());
             }
-            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getType()).setText(resource.getId()));
-            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getType()).setText(consumer.getId()));
+            connectionEle.addContent(new Element("resource").setAttribute("type", databaseResource.getType()).setText(databaseResource.getId()));
+            connectionEle.addContent(new Element("consumer").setAttribute("type", consumerForConnection.getType()).setText(consumerForConnection.getId()));
             return true;
         }
 
@@ -186,11 +190,11 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         public DatabaseResourceConnection read(@Nonnull Element connectionEle) {
             final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
             // TODO: check if module exists
-            final ModuleResource consumer = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
-            final DatabaseResource resource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
-            if (Objects.nonNull(resource)) {
-                resource.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
-                return new DatabaseResourceConnection(resource, consumer);
+            final ModuleResource consumerFromConnection = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
+            final DatabaseResource currentResource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
+            if (Objects.nonNull(currentResource)) {
+                currentResource.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
+                return new DatabaseResourceConnection(currentResource, consumerFromConnection);
             } else {
                 // TODO: alert user to create new resource
                 return null;

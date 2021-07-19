@@ -14,6 +14,8 @@ import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSettin
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
+import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azuretools.service.ServiceManager;
 import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +27,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
+    public static final String PRIVATE_DOCKER_REGISTRY = "Private Docker Registry";
     private JPanel rootPanel;
     private JComboBox<Artifact> cbArtifact;
     private JLabel lblArtifact;
@@ -127,7 +130,8 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
             containerSettingPanel.getImageTag(),
             ""
         ));
-        savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        secureStore.savePassword(PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword());
 
         // set target
@@ -148,7 +152,11 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         if (StringUtils.isEmpty(acrInfo.getPassword())) {
-            acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
+            final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+            secureStore.migratePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+                PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName());
+
+            acrInfo.setPassword(secureStore.loadPassword(PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername()));
         }
         containerSettingPanel.setTxtFields(acrInfo);
 

@@ -90,25 +90,6 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
     }
 
-    protected void savePassword(String serviceName, String userName, String password) {
-        if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)) {
-            return;
-        }
-        this.secureStore.savePassword(serviceName, userName, password);
-    }
-
-    protected String loadPassword(String serviceName, String userName) {
-        if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName)) {
-            return StringUtils.EMPTY;
-        }
-        try {
-            return this.secureStore.loadPassword(serviceName, userName);
-        } catch (java.lang.IllegalArgumentException e) {
-            // Return empty string if no such password
-            return StringUtils.EMPTY;
-        }
-    }
-
     protected boolean isMavenProject() {
         return MavenUtils.isMavenProject(project);
     }

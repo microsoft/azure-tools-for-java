@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 public class IdentityAzureManager extends AzureManagerBase {
 
+    private static final String SERVICE_PRINCIPAL_STORE_SERVICE = "Service Principal";
     private SecureStore secureStore;
 
     private static final String LEGACY_SECURE_STORE_SERVICE = "ADAuthManager";
@@ -46,7 +47,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         secureStore = ServiceManager.getServiceProvider(SecureStore.class);
         if (secureStore != null) {
             // forgot old password, since in new auth, refresh token will be stored through azure identity persistence layer
-            secureStore.forgetPassword(LEGACY_SECURE_STORE_SERVICE, LEGACY_SECURE_STORE_KEY);
+            secureStore.forgetPassword(LEGACY_SECURE_STORE_SERVICE, LEGACY_SECURE_STORE_KEY, null);
         }
     }
 
@@ -141,8 +142,14 @@ public class IdentityAzureManager extends AzureManagerBase {
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
-                    String key = secureStore == null ? null : secureStore.loadPassword("account",
-                        getSecureStoreKey(authMethodDetails.getClientId()));
+
+                    secureStore.migratePassword(
+                        "account|" + auth.getClient(),
+                        null,
+                        SERVICE_PRINCIPAL_STORE_SERVICE,
+                        auth.getClient(), null);
+                    String key = secureStore == null ? null : secureStore.loadPassword(SERVICE_PRINCIPAL_STORE_SERVICE,
+                        authMethodDetails.getClientId(), null);
                     if (StringUtils.isBlank(key)) {
                         throw new AzureToolkitRuntimeException(
                                 String.format("Cannot find SP security key for '%s' in intellij key pools.", authMethodDetails.getClientId()));
@@ -169,7 +176,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         } catch (Throwable e) {
             if (StringUtils.isNotBlank(authMethodDetails.getClientId())
                 && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL && secureStore != null) {
-                secureStore.forgetPassword("account", getSecureStoreKey(authMethodDetails.getClientId()));
+                secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, authMethodDetails.getClientId(), null);
             }
             return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
         }
@@ -179,10 +186,12 @@ public class IdentityAzureManager extends AzureManagerBase {
         return StringUtils.joinWith("|", "account", clientId);
     }
 
+
+
     public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
             if (secureStore != null && StringUtils.isNotBlank(auth.getKey())) {
-                secureStore.savePassword("account", getSecureStoreKey(auth.getClient()), auth.getKey());
+                secureStore.savePassword(SERVICE_PRINCIPAL_STORE_SERVICE, auth.getClient(), null, auth.getKey());
             }
             AuthMethodDetails authMethodDetails = fromAccountEntity(account.getEntity());
             // special handle for SP
@@ -226,7 +235,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         final AzureAccount az = Azure.az(AzureAccount.class);
         final AccountEntity account = az.account().getEntity();
         if (StringUtils.isNotBlank(account.getClientId()) && account.getType() == AuthType.SERVICE_PRINCIPAL && secureStore != null) {
-            secureStore.forgetPassword("account", getSecureStoreKey(account.getClientId()));
+            secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, account.getClientId(), null);
         }
         az.logout();
         super.drop();
