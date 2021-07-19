@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
@@ -41,7 +41,7 @@ public class IntellijAzureMessage extends AzureMessage {
     private Project project;
     private IAzureMessage original;
 
-    public IntellijAzureMessage(@Nonnull Type type, @Nonnull AzureText message) {
+    public IntellijAzureMessage(@Nonnull Type type, @Nonnull AzureString message) {
         super(type, message);
     }
 

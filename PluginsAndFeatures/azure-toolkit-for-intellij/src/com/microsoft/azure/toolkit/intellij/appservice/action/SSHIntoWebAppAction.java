@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -60,7 +60,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
-        final AzureText title = title("webapp|ssh.connect", webAppName);
+        final AzureString title = title("webapp|ssh.connect", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             // check these conditions to ssh into web app
             if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, runtime)) {
@@ -75,7 +75,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                final AzureText messageTitle = title("webapp|ssh.open", webAppName);
+                final AzureString messageTitle = title("webapp|ssh.open", webAppName);
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(project, messageTitle, false, () -> {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
