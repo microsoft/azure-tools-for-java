@@ -19,7 +19,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -193,7 +193,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         if (model.getRegion() != null && (vmSizeComboBox.getItemCount() == 0 || vmSizeComboBox.getItemAt(0).contains("<Loading...>"))) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
-            final AzureText title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().getName());
+            final AzureString title = AzureOperationBundle.title("vm.list_sizes.region", model.getRegion().getName());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
