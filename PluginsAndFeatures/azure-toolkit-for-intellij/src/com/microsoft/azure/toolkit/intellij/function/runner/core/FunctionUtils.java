@@ -78,6 +78,7 @@ public class FunctionUtils {
             "com.microsoft.azure.functions.annotation.CustomBinding";
     private static final Map<BindingEnum, List<String>> REQUIRED_ATTRIBUTE_MAP = new HashMap<>();
     private static final List<String> CUSTOM_BINDING_RESERVED_PROPERTIES = Arrays.asList("type", "name", "direction");
+    private static final String AZURE_FUNCTIONS_APP_SETTINGS = "Azure Functions App Settings";
 
     static {
         //initialize required attributes, which will be saved to function.json even if it equals to its default value
@@ -90,14 +91,14 @@ public class FunctionUtils {
             return;
         }
         final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
-        IdeaSecureStore.getInstance().savePassword(key, appSettingsJsonValue);
+        IdeaSecureStore.getInstance().savePassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null, appSettingsJsonValue);
     }
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
         if (StringUtils.isEmpty(key)) {
             return new HashMap<>();
         }
-        final String value = IdeaSecureStore.getInstance().loadPassword(key);
+        final String value = IdeaSecureStore.getInstance().loadPassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null);
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 

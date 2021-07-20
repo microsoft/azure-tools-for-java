@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azuretools.service.ServiceManager;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -54,6 +56,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+
+import static com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.ui.SettingPanel.PRIVATE_DOCKER_REGISTRY;
 
 public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfiguration> implements WebAppOnLinuxDeployView {
     private static final String NOT_APPLICABLE = "N/A";
@@ -347,7 +351,8 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 containerSettingPanel.getImageTag(),
                 containerSettingPanel.getStartupFile()
         ));
-        savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        secureStore.savePassword(PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
                 containerSettingPanel.getPassword());
 
         webAppOnLinuxDeployConfiguration.setTargetPath(getTargetPath());
@@ -447,7 +452,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         }
 
         final PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
+        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        secureStore.migratePassword(acrInfo.getServerUrl(), acrInfo.getUsername(), PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername());
+        acrInfo.setPassword(secureStore.loadPassword(PRIVATE_DOCKER_REGISTRY, acrInfo.getServerUrl(), acrInfo.getUsername()));
         containerSettingPanel.setTxtFields(acrInfo);
 
         // cache for table/combo selection

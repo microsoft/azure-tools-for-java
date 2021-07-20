@@ -98,7 +98,7 @@ public final class DatabaseResource implements Resource {
             resourceEle.addContent(new Element("username").setText(resource.username));
             resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
             if (ArrayUtils.isNotEmpty(resource.password.password())) {
-                PasswordStore.savePassword(resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
+                PasswordStore.savePassword(resource.getType(), resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
             }
             return true;
         }
@@ -109,9 +109,12 @@ public final class DatabaseResource implements Resource {
             resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
             resource.setUsername(resourceEle.getChildTextTrim("username"));
             resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
-            final String password = PasswordStore.loadPassword(resource.getId(), resource.getUsername(), resource.password.saveType());
-            if (StringUtils.isNotBlank(password)) {
-                resource.password.password(password.toCharArray());
+            if (resource.password.saveType() == Password.SaveType.FOREVER) {
+                PasswordStore.migratePassword(resource.getId(), resource.getUsername(), resource.getType(), resource.getId(), resource.getUsername());
+            }
+            final String savedPassword = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType());
+            if (StringUtils.isNotBlank(savedPassword)) {
+                resource.password.password(savedPassword.toCharArray());
             }
             return resource;
         }

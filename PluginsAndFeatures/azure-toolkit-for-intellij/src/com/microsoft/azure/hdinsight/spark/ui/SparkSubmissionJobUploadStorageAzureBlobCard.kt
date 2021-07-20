@@ -283,7 +283,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
         val credentialAccount = BLOB.getSecureStoreServiceOf(from.storageAccount)
         val storageKeyToSet =
                 if (StringUtils.isBlank(viewModel.errorMessage) && StringUtils.isEmpty(from.storageKey)) {
-                    credentialAccount?.let { secureStore?.loadPassword(credentialAccount, from.storageAccount) }
+                    credentialAccount?.let { secureStore?.loadPassword(credentialAccount, null, from.storageAccount) }
                 } else {
                     from.storageKey
                 }

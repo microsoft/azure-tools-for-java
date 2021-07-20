@@ -109,7 +109,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
                     val viewModel = viewModel as? ViewModel ?: return
                     val credentialAccount = ADLS_GEN2.getSecureStoreServiceOf(viewModel.rootUri?.accountName) ?: return
 
-                    Observable.just(secureStore?.loadPassword(credentialAccount, gen2Account) ?: "")
+                    Observable.just(secureStore?.loadPassword(credentialAccount, null, gen2Account) ?: "")
                             .observeOn(IdeaSchedulers().dispatchUIThread())
                             .subscribe { storageKeyField.text = it }
                 }
@@ -162,7 +162,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
         val credentialAccount = ADLS_GEN2.getSecureStoreServiceOf(from.gen2RootPath?.accountName)
         storageKeyField.text =
                 if (StringUtils.isBlank(from.accessKey)) {
-                    credentialAccount?.let { secureStore?.loadPassword(credentialAccount, from.gen2Account) ?: "" }
+                    credentialAccount?.let { secureStore?.loadPassword(credentialAccount, null, from.gen2Account) ?: "" }
                 } else {
                     from.accessKey
                 }
