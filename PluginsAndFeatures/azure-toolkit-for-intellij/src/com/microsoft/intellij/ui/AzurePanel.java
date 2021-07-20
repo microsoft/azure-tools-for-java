@@ -6,63 +6,98 @@
 package com.microsoft.intellij.ui;
 
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+import com.azure.core.management.AzureEnvironment;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.TextComponentAccessor;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.ui.SimpleListCellRenderer;
+import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.configuration.AzureConfigurations;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-
+import javax.annotation.Nonnull;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import java.io.IOException;
 
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.TelemetryUtils;
-import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.CommonConst;
-import com.microsoft.intellij.util.PluginHelper;
-import com.microsoft.intellij.util.PluginUtil;
-
-import org.w3c.dom.Document;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
+@Slf4j
 public class AzurePanel implements AzureAbstractConfigurablePanel {
     private static final String DISPLAY_NAME = "Azure";
-
-    private JCheckBox checkBox1;
-    private JTextPane textPane1;
     private JPanel contentPane;
-    String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
+    private JCheckBox allowTelemetryCheckBox;
+    private JTextPane allowTelemetryComment;
+    private JComboBox<AzureEnvironment> azureEnvironmentComboBox;
+    private JComboBox<String> savePasswordComboBox;
+    private TextFieldWithBrowseButton funcCoreToolsPath;
 
     public AzurePanel() {
     }
 
     public void init() {
-        if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            Messages.configureMessagePaneUi(textPane1, message("preferenceLinkMsg"));
-            if (new File(dataFile).exists()) {
-                String prefValue = DataOperations.getProperty(dataFile, message("prefVal"));
-                if (prefValue != null && !prefValue.isEmpty()) {
-                    if (prefValue.equals("true")) {
-                        checkBox1.setSelected(true);
-                    }
-                }
-            }
+        if (AzurePlugin.IS_ANDROID_STUDIO) {
+            return;
         }
+        Messages.configureMessagePaneUi(allowTelemetryComment, message("settings.root.telemetry.notice"));
+        allowTelemetryComment.setForeground(UIUtil.getContextHelpForeground());
+        final ComboBoxModel<AzureEnvironment> model = new DefaultComboBoxModel<>(Azure.az(AzureCloud.class).list().toArray(new AzureEnvironment[0]));
+        azureEnvironmentComboBox.setModel(model);
+        azureEnvironmentComboBox.setRenderer(new SimpleListCellRenderer<>() {
+            @Override
+            public void customize(@NotNull JList list, AzureEnvironment value, int index, boolean selected, boolean hasFocus) {
+                    setText(envToString(value));
+            }
+        });
+
+        savePasswordComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Until restart", "Forever", "Never"}));
+
+        funcCoreToolsPath.addBrowseFolderListener(null, "Path to Azure Functions Core Tools", null, FileChooserDescriptorFactory.createSingleFileDescriptor(),
+            TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
+
+        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
+        if (StringUtils.isBlank(state.functionCoreToolsPath())) {
+            try {
+                funcCoreToolsPath.setText(FunctionCliResolver.resolveFunc());
+            } catch (final IOException | InterruptedException ex) {
+                //ignore
+            }
+        } else {
+            funcCoreToolsPath.setText(state.functionCoreToolsPath());
+        }
+
+        allowTelemetryCheckBox.setSelected(state.allowTelemetry());
+
+        azureEnvironmentComboBox.setSelectedItem(ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(state.environment())
+            , AzureEnvironment.AZURE
+        ));
+
+        if (StringUtils.isNotBlank(state.passwordSaveType())) {
+            savePasswordComboBox.setSelectedItem(state.passwordSaveType());
+        }
+    }
+
+    private static String envToString(@Nonnull AzureEnvironment env) {
+        final String name = AzureEnvironmentUtils.getCloudNameForAzureCli(env);
+        return String.format("%s - %s", StringUtils.removeEnd(name, "Cloud"), env.getActiveDirectoryEndpoint());
     }
 
     public JComponent getPanel() {
@@ -75,57 +110,18 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     @Override
     public boolean doOKAction() {
-        try {
-            if (new File(dataFile).exists()) {
-                Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-                String oldPrefVal = DataOperations.getProperty(dataFile, message("prefVal"));
-                DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf(checkBox1.isSelected()));
-                String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
-                if (version == null || version.isEmpty()) {
-                    DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
-                } else if (!AzurePlugin.PLUGIN_VERSION.equalsIgnoreCase(version)) {
-                    DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
-                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
-                    EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
-                }
-                String instID = DataOperations.getProperty(dataFile, message("instID"));
-                if (instID == null || instID.isEmpty() || !InstallationIdUtils.isValidHashMac(instID)) {
-                    DataOperations.updatePropertyValue(doc, message("instID"), InstallationIdUtils.getHashMac());
-                    AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-                    EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
-                }
-                ParserXMLUtility.saveXMLFile(dataFile, doc);
-                // Its necessary to call application insights custom create event after saving data.xml
-                final boolean acceptTelemetry = checkBox1.isSelected();
-                if (StringUtils.isNullOrEmpty(oldPrefVal) || Boolean.valueOf(oldPrefVal) != acceptTelemetry) {
-                    // Boolean.valueOf(oldPrefVal) != acceptTelemetry means user changes his mind.
-                    // Either from Agree to Deny, or from Deny to Agree.
-                    final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
-                    AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
-                    EventUtil.logEvent(EventType.info, SYSTEM, acceptTelemetry ? TELEMETRY_ALLOW : TELEMETRY_DENY, null,
-                        null);
-                }
-            } else {
-                AzurePlugin.copyResourceFile(message("dataFileName"), dataFile);
-                setValues(dataFile);
-            }
-            String userAgent = String.format(AzurePlugin.USER_AGENT, CommonConst.PLUGIN_VERISON,
-                    TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID")));
-            CommonSettings.setUserAgent(userAgent);
-        } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
-            PluginUtil.displayErrorDialog(message("errTtl"), message("updateErrMsg"));
-            return false;
-        }
-        return true;
-    }
+        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
+        config.allowTelemetry(allowTelemetryCheckBox.isSelected());
+        config.functionCoreToolsPath(this.funcCoreToolsPath.getText());
+        config.environment(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
+        config.passwordSaveType((String) savePasswordComboBox.getSelectedItem());
+        AzureConfigurations.getInstance().loadState(config);
 
-    private void setValues(String dataFile) throws Exception {
-        Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-        DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
-        DataOperations.updatePropertyValue(doc, message("instID"), InstallationIdUtils.getHashMac());
-        DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf(checkBox1.isSelected()));
-        ParserXMLUtility.saveXMLFile(dataFile, doc);
+        final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
+            config.allowTelemetry() ? config.installationId() : StringUtils.EMPTY);
+        Azure.az().config().setUserAgent(userAgent);
+        CommonSettings.setUserAgent(userAgent);
+        return true;
     }
 
     @Override
