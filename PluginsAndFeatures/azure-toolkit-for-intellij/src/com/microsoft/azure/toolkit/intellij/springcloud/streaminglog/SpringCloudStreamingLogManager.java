@@ -7,8 +7,8 @@ package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.StreamingLogsToolWindowManager;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -39,7 +39,7 @@ public class SpringCloudStreamingLogManager {
     public void showStreamingLog(Project project, SpringCloudApp app, String instanceName) {
         final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
                 instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
-        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.start", instanceName);
+        final AzureString title = AzureOperationBundle.title("springcloud|log_stream.start", instanceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
                 consoleView.startLog(() -> {
@@ -58,7 +58,7 @@ public class SpringCloudStreamingLogManager {
     }
 
     public void closeStreamingLog(String instanceName) {
-        final IAzureOperationTitle title = AzureOperationBundle.title("springcloud|log_stream.close", instanceName);
+        final AzureString title = AzureOperationBundle.title("springcloud|log_stream.close", instanceName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, title, false, () -> {
             final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
             if (consoleView != null && consoleView.getStatus() == ACTIVE) {
