@@ -44,7 +44,8 @@ public class MavenUtils {
             final String xml = evaluateEffectivePom(ideaProject, mavenProject);
             if (StringUtils.isNotEmpty(xml) && xml.contains(SPRING_BOOT_MAVEN_PLUGIN)) {
                 final SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
-                finalName = manager.getPluginConfiguration("org.springframework.boot", SPRING_BOOT_MAVEN_PLUGIN, "finalName");
+                finalName = StringUtils.firstNonBlank(
+                    manager.getPluginConfiguration("org.springframework.boot", SPRING_BOOT_MAVEN_PLUGIN, "finalName"), finalName);
             }
         } catch (final Exception ex) {
             AzureMessager.getMessager().warning(String.format("Can not evaluate effective pom, fall back to final jar %s", finalName));
