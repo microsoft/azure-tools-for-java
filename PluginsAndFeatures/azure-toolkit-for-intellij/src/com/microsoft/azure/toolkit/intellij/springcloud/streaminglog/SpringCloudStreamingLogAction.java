@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceUtils;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -53,7 +53,7 @@ public class SpringCloudStreamingLogAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            final AzureText title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(this.app.id()));
+            final AzureString title = AzureOperationBundle.title("springcloud|log_stream.open", ResourceUtils.nameFromResourceId(this.app.id()));
             AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
                 try {
                     final SpringCloudDeployment deployment = this.app.activeDeployment();

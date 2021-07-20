@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -69,7 +69,7 @@ public enum AppServiceStreamingLogManager {
 
     @AzureOperation(name = "appservice|log_stream.close", params = {"nameFromResourceId(appId)"}, type = AzureOperation.Type.SERVICE)
     public void closeStreamingLog(Project project, String appId) {
-        final AzureText title = AzureOperationBundle.title("appservice|log_stream.close", ResourceUtils.nameFromResourceId(appId));
+        final AzureString title = AzureOperationBundle.title("appservice|log_stream.close", ResourceUtils.nameFromResourceId(appId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
@@ -82,7 +82,7 @@ public enum AppServiceStreamingLogManager {
 
     @AzureOperation(name = "appservice|log_stream.open", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.SERVICE)
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
-        final AzureText title = AzureOperationBundle.title("appservice|log_stream.open", ResourceUtils.nameFromResourceId(resourceId));
+        final AzureString title = AzureOperationBundle.title("appservice|log_stream.open", ResourceUtils.nameFromResourceId(resourceId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             try {
                 final String name = logStreaming.getTitle();

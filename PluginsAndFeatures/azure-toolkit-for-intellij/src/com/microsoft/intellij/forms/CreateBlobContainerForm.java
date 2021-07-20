@@ -9,7 +9,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -75,7 +75,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     protected void doOKAction() {
         final String name = nameTextField.getText();
         //Field outerFiele = onCreate.getClass().getDeclaredField("this$0");
-        final AzureText title = AzureOperationBundle.title("blob.create", name);
+        final AzureString title = AzureOperationBundle.title("blob.create", name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
                 ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);

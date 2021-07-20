@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -134,7 +134,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         deploymentName = deploymentNameTextField.getText();
-        final AzureText title = AzureOperationBundle.title("arm|deployment.deploy", deploymentName);
+        final AzureString title = AzureOperationBundle.title("arm|deployment.deploy", deploymentName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
                 Subscription subs = (Subscription) subscriptionCb.getSelectedItem();

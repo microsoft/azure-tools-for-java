@@ -21,7 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -304,7 +304,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     public void fillGrid() {
         setUIState(true);
 
-        final AzureText title = AzureOperationBundle.title("blob.list", blobContainer.getName());
+        final AzureString title = AzureOperationBundle.title("blob.list", blobContainer.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             try {
@@ -509,7 +509,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             if (isConfirm) {
                 setUIState(true);
 
-                final AzureText title = AzureOperationBundle.title("blob.delete", blobItem.getName());
+                final AzureString title = AzureOperationBundle.title("blob.delete", blobItem.getName());
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                     final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                     progressIndicator.setIndeterminate(true);
@@ -570,7 +570,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
-            final AzureText title = AzureOperationBundle.title("blob.download", targetFile, blobContainer.getName());
+            final AzureString title = AzureOperationBundle.title("blob.download", targetFile, blobContainer.getName());
             AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 try {
@@ -679,7 +679,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     }
 
     private void uploadFile(final String path, final File selectedFile) {
-        final AzureText title = AzureOperationBundle.title("blob.upload", selectedFile, blobContainer.getName());
+        final AzureString title = AzureOperationBundle.title("blob.upload", selectedFile, blobContainer.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             try {

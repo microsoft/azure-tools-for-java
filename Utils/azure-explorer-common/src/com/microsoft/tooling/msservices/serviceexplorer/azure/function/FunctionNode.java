@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -56,7 +56,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
             @Override
             @AzureOperation(name = "function|trigger.start", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
-                final AzureText title = AzureOperationBundle.title("function|trigger.start");
+                final AzureString title = AzureOperationBundle.title("function|trigger.start");
                 AzureTaskManager.getInstance().runInBackground(new AzureTask<>(getProject(), title, false, () -> trigger()));
             }
         }));

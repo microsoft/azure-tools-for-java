@@ -19,7 +19,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -455,7 +455,7 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     private void pullImage() {
-        final AzureText title = AzureOperationBundle.title("docker|image.pull", currentRepo);
+        final AzureString title = AzureOperationBundle.title("docker|image.pull", currentRepo);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
             try {
                 if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {

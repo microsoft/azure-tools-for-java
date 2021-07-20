@@ -17,7 +17,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.management.resources.DeploymentMode;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -133,7 +133,7 @@ public class ResourceTemplateView extends BaseEditor {
     private void updateDeployment() {
         String oldTemplate = this.originTemplate;
         String oldParameters = this.originParameters;
-        final AzureText title = AzureOperationBundle.title("arm|deployment.update", node.getDeployment().name());
+        final AzureString title = AzureOperationBundle.title("arm|deployment.update", node.getDeployment().name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
                 ResourceTemplateView.this.originTemplate = getTemplate();

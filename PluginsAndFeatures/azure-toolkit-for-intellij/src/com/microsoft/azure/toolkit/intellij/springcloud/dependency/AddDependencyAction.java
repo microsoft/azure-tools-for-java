@@ -24,7 +24,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.psi.PsiFile;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureText;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -71,7 +71,7 @@ public class AddDependencyAction extends AzureAnAction {
             return true;
         }
 
-        final AzureText title = AzureOperationBundle.title("springcloud.update_dependency", project.getName());
+        final AzureString title = AzureOperationBundle.title("springcloud.update_dependency", project.getName());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());
