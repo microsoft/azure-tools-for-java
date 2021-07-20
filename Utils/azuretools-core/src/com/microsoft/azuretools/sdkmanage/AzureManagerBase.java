@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -237,7 +238,7 @@ public abstract class AzureManagerBase implements AzureManager {
             .withInterceptor(new TelemetryInterceptor())
             .withInterceptor(new RestExceptionHandlerInterceptor())
             .withUserAgent(CommonSettings.USER_AGENT)
-            .withProxy(new Proxy(Proxy.Type.HTTP, com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()))
+            .withProxy(createProxyFromConfig())
             .authenticate(credentials);
     }
 
@@ -246,7 +247,11 @@ public abstract class AzureManagerBase implements AzureManager {
         return buildAzureManager(InsightsManager.configure())
                 .withInterceptor(new TelemetryInterceptor())
                 .withInterceptor(new RestExceptionHandlerInterceptor())
-                .withProxy(new Proxy(Proxy.Type.HTTP, com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()))
+                .withProxy(createProxyFromConfig())
                 .authenticate(credentials, subscriptionId);
+    }
+
+    private static Proxy createProxyFromConfig() {
+        return Optional.of(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy()).map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
     }
 }
