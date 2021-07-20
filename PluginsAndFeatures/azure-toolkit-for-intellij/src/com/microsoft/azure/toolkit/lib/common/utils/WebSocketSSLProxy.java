@@ -5,12 +5,14 @@
 
 package com.microsoft.azure.toolkit.lib.common.utils;
 
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.neovisionaries.ws.client.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -111,7 +113,14 @@ public class WebSocketSSLProxy {
     }
 
     private void createWebSocketToSocket(Socket client) throws IOException, WebSocketException {
-        this.webSocket = new WebSocketFactory().setConnectionTimeout(connectTimeout).createSocket(webSocketServerUri)
+        final WebSocketFactory webSocketFactory = new WebSocketFactory();
+        final ProxySettings proxySettings = webSocketFactory.getProxySettings();
+        final InetSocketAddress httpProxy = Azure.az().config().getHttpProxy();
+        if (httpProxy != null) {
+            proxySettings.setServer(httpProxy.getHostString());
+            proxySettings.setPort(httpProxy.getPort());
+        }
+        this.webSocket = webSocketFactory.setConnectionTimeout(connectTimeout).createSocket(webSocketServerUri)
                                                .setUserInfo(this.id, this.password)
                                                .addListener(new WebSocketAdapter() {
                                                    @Override
