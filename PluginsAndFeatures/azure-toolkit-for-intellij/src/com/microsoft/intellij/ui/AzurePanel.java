@@ -7,6 +7,7 @@ package com.microsoft.intellij.ui;
 
 
 import com.azure.core.management.AzureEnvironment;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
@@ -18,7 +19,9 @@ import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliReso
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.configuration.AzureConfigurations;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +35,17 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import java.awt.Dimension;
+import java.awt.event.ItemEvent;
 import java.io.IOException;
+import java.util.Objects;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -49,6 +58,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JComboBox<AzureEnvironment> azureEnvironmentComboBox;
     private JComboBox<String> savePasswordComboBox;
     private TextFieldWithBrowseButton funcCoreToolsPath;
+    private JLabel azureEnvDesc;
 
     public AzurePanel() {
     }
@@ -64,9 +74,18 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         azureEnvironmentComboBox.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(@NotNull JList list, AzureEnvironment value, int index, boolean selected, boolean hasFocus) {
-                    setText(envToString(value));
+                    setText(azureEnvironmentDisplayString(value));
             }
         });
+        azureEnvDesc.setForeground(UIUtil.getContextHelpForeground());
+        azureEnvDesc.setMaximumSize(new Dimension());
+        azureEnvironmentComboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                displayDescriptionForAzureEnv();
+            }
+        });
+
+        displayDescriptionForAzureEnv();
 
         savePasswordComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Until restart", "Forever", "Never"}));
 
@@ -95,9 +114,38 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         }
     }
 
-    private static String envToString(@Nonnull AzureEnvironment env) {
+    private void displayDescriptionForAzureEnv() {
+        final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
+        if (AuthMethodManager.getInstance().isSignedIn()) {
+
+            final AzureEnvironment currentEnv =
+                AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+            String currentEnvStr = azureEnvironmentToString(currentEnv);
+            if (Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
+                setTextToLabel(azureEnvDesc, "You are currently signed in with environment: " + currentEnvStr);
+                azureEnvDesc.setIcon(AllIcons.General.Information);
+            } else {
+                setTextToLabel(azureEnvDesc,
+                    String.format("You are currently signed in with environment: %s, your change will sign out your account.", currentEnvStr));
+                azureEnvDesc.setIcon(AllIcons.General.Warning);
+            }
+        } else {
+            setTextToLabel(azureEnvDesc, "You are currently not signed, the environment will be applied when you sign in next time.");
+            azureEnvDesc.setIcon(AllIcons.General.Warning);
+        }
+    }
+
+    private static void setTextToLabel(@Nonnull JLabel label, @Nonnull String text) {
+        label.setText("<html>" + text + "</html>");
+    }
+
+    private static String azureEnvironmentDisplayString(@Nonnull AzureEnvironment env) {
+        return String.format("%s - %s", azureEnvironmentToString(env), env.getActiveDirectoryEndpoint());
+    }
+
+    private static String azureEnvironmentToString(@Nonnull AzureEnvironment env) {
         final String name = AzureEnvironmentUtils.getCloudNameForAzureCli(env);
-        return String.format("%s - %s", StringUtils.removeEnd(name, "Cloud"), env.getActiveDirectoryEndpoint());
+        return StringUtils.removeEnd(name, "Cloud");
     }
 
     public JComponent getPanel() {
@@ -121,6 +169,19 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             config.allowTelemetry() ? config.installationId() : StringUtils.EMPTY);
         Azure.az().config().setUserAgent(userAgent);
         CommonSettings.setUserAgent(userAgent);
+
+        if (AuthMethodManager.getInstance().isSignedIn()) {
+            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+            final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
+            final AzureEnvironment currentEnv = AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+            if (!Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
+                EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
+                    authMethodManager.signOut();
+                });
+            }
+        }
+
+        Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(config.environment()));
         return true;
     }
 

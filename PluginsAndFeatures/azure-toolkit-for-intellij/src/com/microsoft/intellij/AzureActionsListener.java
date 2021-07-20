@@ -5,6 +5,7 @@
 
 package com.microsoft.intellij;
 
+import com.azure.core.implementation.http.HttpClientProviders;
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -18,6 +19,10 @@ import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -28,6 +33,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.intellij.configuration.AzureConfigurations;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
@@ -41,6 +47,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 import rx.internal.util.PlatformDependent;
@@ -65,8 +72,25 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     private PluginSettings settings;
 
+    static {
+        // fix the class load problem for intellij plugin
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
+            HttpClientProviders.createInstance();
+            Azure.az(AzureAccount.class);
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
+    }
+
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+        if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
+            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
+        } else if (CommonSettings.getEnvironment() != null) {
+            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
+        }
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
