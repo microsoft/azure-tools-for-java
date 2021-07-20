@@ -71,6 +71,7 @@
           canCloseContents="true"
           icon="/icons/Common/AzureActivityLog.svg"/>
     <applicationService serviceImplementation="com.microsoft.intellij.configuration.AzureConfigurations"/>
+    <applicationService serviceImplementation="com.microsoft.intellij.configuration.IdeaSecureStoreSettings"/>
     <projectConfigurable groupId="root"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"
