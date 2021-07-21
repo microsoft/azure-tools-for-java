@@ -43,7 +43,7 @@ checkstyle {
 //}
 
 intellij {
-    pluginName = intellij_pluginname
+    pluginName = intellij_plugin_name
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     plugins = ['java', 'maven', 'gradle', dep_plugins, "properties", 'markdown', 'terminal']

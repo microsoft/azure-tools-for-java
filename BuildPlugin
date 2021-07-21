@@ -33,12 +33,12 @@ tc_open "Initializing build script"
 
     INJECT_INTELLIJ_VERSION=false
 
-    IJ_VERSION_MAJOR_BUILD=211
+    IJ_VERSION_MAJOR_BUILD=212
     IJ_VERSION_MAJOR=2021.2
     IJ_VERSION_MINOR=
     IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
                       && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
-    IJ_SCALA_VERSION_LATEST=2021.2.9
+    IJ_SCALA_VERSION_LATEST=2021.2.13
 
     while getopts ":hqvBC:e:" option; do
         case $option in
