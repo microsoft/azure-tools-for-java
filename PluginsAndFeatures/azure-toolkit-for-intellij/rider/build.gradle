@@ -24,13 +24,15 @@ configurations {
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
-ext.resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
+ext {
+    resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
+
+    // Plugin version
+    if (!ext.has('BuildNumber'))
+        BuildNumber = buildNumber
+}
 
 apply from: 'backend.gradle'
-
-// Plugin version
-if (!ext.has('BuildNumber'))
-    ext.BuildNumber = buildNumber
 
 version "$BuildNumber"
 logger.lifecycle("version=$version")
@@ -66,7 +68,17 @@ tasks.withType(PrepareSandboxTask).configureEach {
 buildSearchableOptions.onlyIf { false }
 
 patchPluginXml {
+    println("Set since-build value: $patchPluginXmlSinceBuild")
     sinceBuild = patchPluginXmlSinceBuild
+
+    def untilBuildValue = null
+    if (patchPluginXmlSinceBuild.length() == 3)
+        untilBuildValue = "${patchPluginXmlSinceBuild}.*"
+    else if (patchPluginXmlSinceBuild.contains("."))
+        untilBuildValue = "${patchPluginXmlSinceBuild.split(".")[0]}.*"
+
+    println("Set until-build value: $untilBuildValue")
+    untilBuild = untilBuildValue
 }
 
 // Add Temporary workaround to call ':rider:prepareTestingSandbox' task - https://github.com/JetBrains/gradle-intellij-plugin/issues/743

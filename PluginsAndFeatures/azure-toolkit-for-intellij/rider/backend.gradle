@@ -2,14 +2,16 @@ import groovy.io.FileType
 
 def backendGroup = 'backend'
 
-ext.nugetConfigPath = new File(projectDir, 'NuGet.Config')
-ext.riderSdkVersionPropsPath = new File(resharperPluginPath, 'RiderSdkPackageVersion.props')
+ext {
+    nugetConfigPath = new File(projectDir, 'NuGet.Config')
+    riderSdkVersionPropsPath = new File(resharperPluginPath, 'RiderSdkPackageVersion.props')
 
-// https://www.nuget.org/packages/JetBrains.Rider.SDK/
-ext.riderNugetSdkVersion = rider_nuget_sdk_version
+    // https://www.nuget.org/packages/JetBrains.Rider.SDK/
+    riderNugetSdkVersion = rider_nuget_sdk_version
 
-if (!ext.has('BuildConfiguration'))
-    ext.BuildConfiguration = rider_backend_build_configuration
+    if (!ext.has('BuildConfiguration'))
+        BuildConfiguration = rider_backend_build_configuration
+}
 
 task prepareBuildProps {
     group = backendGroup
