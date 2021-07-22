@@ -92,6 +92,6 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         private static readonly Guid ourDefaultGuid = new Guid("081BD100-484A-4FB2-AD24-B2EC16E68547");
 
         public override Guid GetDefaultUID() => ourDefaultGuid;
-        public override string PresentableShortName => "Azure Functions with Isolated Worker (.NET 5+)";
+        public override string PresentableShortName => "Azure Functions with Isolated Worker";
     }
 }

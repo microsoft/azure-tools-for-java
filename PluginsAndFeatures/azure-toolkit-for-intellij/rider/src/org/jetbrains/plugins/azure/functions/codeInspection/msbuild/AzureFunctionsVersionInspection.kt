@@ -53,8 +53,9 @@ class AzureFunctionsVersionInspection : XmlSuppressableInspectionTool() {
                                     ProblemHighlightType.WARNING,
 
                                     // https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions
-                                    SetVersionQuickFix("v2"),
-                                    SetVersionQuickFix("v3"))
+                                    SetVersionQuickFix("v4"),
+                                    SetVersionQuickFix("v3"),
+                                    SetVersionQuickFix("v2"))
                         }
                     }
                 }

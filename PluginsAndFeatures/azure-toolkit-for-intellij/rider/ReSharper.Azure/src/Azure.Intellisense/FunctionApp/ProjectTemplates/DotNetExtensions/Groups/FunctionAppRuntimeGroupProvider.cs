@@ -53,7 +53,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.ProjectTemplates.Do
                     if (info.Identity == "Microsoft.AzureFunctions.ProjectTemplate.CSharp.Isolated.3.x" || 
                         info.Identity == "Microsoft.AzureFunctions.ProjectTemplate.FSharp.Isolated.3.x")
                     {
-                        return "Isolated worker (.NET 5+)";
+                        return "Isolated worker";
                     }
                     
                     // Default worker known template identities:

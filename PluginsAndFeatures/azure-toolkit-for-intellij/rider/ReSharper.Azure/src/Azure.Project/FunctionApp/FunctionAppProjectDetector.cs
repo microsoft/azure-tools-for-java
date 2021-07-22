@@ -134,8 +134,9 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
             //    * Default worker, which has a package reference to Microsoft.NET.Sdk.Functions
             //    * Isolated worker, which has a package reference to Microsoft.Azure.Functions.Worker
             //
-            //    The isolated worker is the way forward (.NET 5+), but the default worker will remain
-            //    for projects using .NET 3.1.
+            //    The default worker runs your application in the Azure Functions host process,
+            //    the isolated worker runs your application in a separate process that is spawned by
+            //    the Azure Functions host.
             var hasExpectedPackageReference = 
                 DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
                 IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
