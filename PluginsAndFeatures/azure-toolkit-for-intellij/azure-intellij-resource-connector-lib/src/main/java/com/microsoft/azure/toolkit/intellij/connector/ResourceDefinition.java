@@ -46,7 +46,7 @@ public interface ResourceDefinition<T extends Resource> {
      *
      * @return true if to persist, false otherwise
      */
-    boolean write(@Nonnull final Element element, @Nonnull final T resouce);
+    boolean write(@Nonnull final Element element, @Nonnull final T resource);
 
     /**
      * read/deserialize a instance of {@link T} from {@code element}

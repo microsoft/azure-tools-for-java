@@ -10,7 +10,6 @@ import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -79,6 +78,11 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         refreshItems();
     }
 
+    @AzureOperation(name = "vm.open_portal", params = {"this.virtualMachine.name()"}, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        this.openResourcesInPortal(ResourceId.fromString(this.virtualMachine.id()).subscriptionId(), this.virtualMachine.id());
+    }
+
     private static final String WAIT_ICON_PATH = "VirtualMachineUpdating_16.png";
     private static final String STOP_ICON_PATH = "VirtualMachineStopped_16.png";
     private static final String RUN_ICON_PATH = "VirtualMachineRunning_16.png";
@@ -132,6 +136,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
         addAction(initActionBuilder(this::stop).withAction(AzureActionEnum.STOP).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         super.loadActions();
     }
 

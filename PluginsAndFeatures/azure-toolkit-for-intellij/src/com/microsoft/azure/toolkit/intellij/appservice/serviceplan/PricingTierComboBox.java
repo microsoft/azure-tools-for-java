@@ -17,7 +17,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class PricingTierComboBox extends AzureComboBox<PricingTier> {
 
-    private List<PricingTier> pricingTierList = Collections.emptyList();
+    private List<? extends PricingTier> pricingTierList = Collections.emptyList();
 
     public PricingTierComboBox() {
         super();
@@ -27,7 +27,7 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
         setValue(defaultPricingTier);
     }
 
-    public void setPricingTierList(final List<PricingTier> pricingTierList) {
+    public void setPricingTierList(final List<? extends PricingTier> pricingTierList) {
         this.pricingTierList = pricingTierList;
     }
 
@@ -37,7 +37,8 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
             return EMPTY_ITEM;
         }
         final PricingTier pricingTier = (PricingTier) item;
-        return pricingTier == PricingTier.CONSUMPTION ? message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
+        return Objects.equals(pricingTier, PricingTier.CONSUMPTION) ?
+                message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
     }
 
     @NotNull

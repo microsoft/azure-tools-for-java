@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.jdom.Element;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Getter
@@ -30,6 +31,7 @@ public final class ModuleResource implements Resource {
         return moduleName;
     }
 
+    @Override
     public String toString() {
         return String.format("Module \"%s\"", this.moduleName);
     }
@@ -44,20 +46,22 @@ public final class ModuleResource implements Resource {
         private final int role = CONSUMER;
 
         @Override
-        public AzureFormJPanel<ModuleResource> getResourcesPanel(String type, final Project project) {
+        public AzureFormJPanel<ModuleResource> getResourcesPanel(@Nonnull String type, final Project project) {
             return new ModulePanel(project);
         }
 
         @Override
-        public boolean write(Element resourceEle, ModuleResource resource) {
+        public boolean write(@Nonnull Element resourceEle, @Nonnull ModuleResource resource) {
             return false;
         }
 
+        @Override
         @Nullable
-        public ModuleResource read(Element resourceEle) {
+        public ModuleResource read(@Nonnull Element resourceEle) {
             throw new AzureToolkitRuntimeException("loading a persisted module resource is not allowed");
         }
 
+        @Override
         public String toString() {
             return this.getTitle();
         }

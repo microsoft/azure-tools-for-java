@@ -9,13 +9,14 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.EventListener;
 import java.util.HashMap;
@@ -51,21 +52,16 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
 
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
-        sendTelemetry(e);
     }
 
-    protected void sendTelemetry(NodeActionEvent nodeActionEvent) {
-        Node node = nodeActionEvent.getAction().getNode();
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, node.getClass().getSimpleName(),
-            nodeActionEvent.getAction().getName(), buildProp(node));
-    }
-
-    protected Map<String, String> buildProp(Node node) {
-        final Map<String, String> properties = new HashMap<>();
-        if (node instanceof TelemetryProperties) {
-            properties.putAll(((TelemetryProperties) node).toProperties());
-        }
-        return properties;
+    protected Mono<Map<String, String>> buildProp(Node node) {
+        return Mono.fromCallable(() -> {
+            final Map<String, String> properties = new HashMap<>();
+            if (node instanceof TelemetryProperties) {
+                properties.putAll(((TelemetryProperties) node).toProperties());
+            }
+            return properties;
+        });
     }
 
     protected abstract void actionPerformed(NodeActionEvent e)
@@ -83,10 +79,10 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
         String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
         Operation operation = TelemetryManager.createOperation(serviceName, operationName);
+        Node node = e.getAction().getNode();
+        Mono<Map<String, String>> telemetryMono = buildProp(node);
         try {
             operation.start();
-            Node node = e.getAction().getNode();
-            operation.trackProperties(buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
         } catch (AzureCmdException | RuntimeException ex) {
@@ -94,7 +90,10 @@ public abstract class NodeActionListener implements EventListener, Sortable, Gro
             AzureMessager.getMessager().error(ex);
             return Futures.immediateFailedFuture(ex);
         } finally {
-            operation.complete();
+            telemetryMono.subscribeOn(Schedulers.boundedElastic()).subscribe(properties -> {
+                operation.trackProperties(properties);
+                operation.complete();
+            });
         }
     }
 

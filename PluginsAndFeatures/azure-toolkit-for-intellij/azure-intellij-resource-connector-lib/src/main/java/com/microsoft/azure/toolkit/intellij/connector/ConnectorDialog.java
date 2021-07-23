@@ -78,7 +78,8 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
             final ResourceDefinition<? extends Resource> consumerDefinition = this.consumerTypeSelector.getValue();
             final ResourceDefinition<? extends Resource> resourceDefinition = this.resourceTypeSelector.getValue();
             if (Objects.nonNull(consumerDefinition) && Objects.nonNull(resourceDefinition)) {
-                final ConnectionDefinition<Resource, Resource> connectionDefinition = ConnectionManager.getDefinition(resourceDefinition.getType(), consumerDefinition.getType());
+                final ConnectionDefinition<Resource, Resource> connectionDefinition =
+                        ConnectionManager.getDefinition(resourceDefinition.getType(), consumerDefinition.getType());
                 final AzureDialog<Connection<Resource, Resource>> dialog = Optional.ofNullable(connectionDefinition)
                         .map(ConnectionDefinition::getConnectorDialog).orElse(null);
                 if (Objects.nonNull(dialog)) {
@@ -101,18 +102,20 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     protected void saveConnection(Connection<R, C> connection) {
         AzureTaskManager.getInstance().runLater(() -> {
             this.close(0);
-            final R resource = connection.getResource();
-            final C consumer = connection.getConsumer();
+            final R connectionResource = connection.getResource();
+            final C connectionConsumer = connection.getConsumer();
             final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinitionOrDefault(resource.getType(), consumer.getType());
+            final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinitionOrDefault(connectionResource.getType(), connectionConsumer.getType());
             if (definition.validate(connection, this.project)) {
-                resourceManager.addResource(resource);
-                resourceManager.addResource(consumer);
+                resourceManager.addResource(connectionResource);
+                resourceManager.addResource(connectionConsumer);
                 connectionManager.addConnection(connection);
                 final String message = String.format("The connection between %s and %s has been successfully created.",
-                        resource.toString(), consumer.toString());
+                        connectionResource.toString(), connectionConsumer.toString());
                 AzureMessager.getMessager().success(message);
+                // send connect successful event.
+                project.getMessageBus().syncPublisher(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC).afterAction(connection);
             }
         });
     }
@@ -129,13 +132,13 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     @Override
     public Connection<R, C> getData() {
-        final R resource = this.resourcePanel.getData();
-        final C consumer = this.consumerPanel.getData();
-        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(resource.getType(), consumer.getType());
+        final R localResource = this.resourcePanel.getData();
+        final C localConsumer = this.consumerPanel.getData();
+        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(localResource.getType(), localConsumer.getType());
         if (Objects.nonNull(definition)) {
-            return definition.create(resource, consumer);
+            return definition.create(localResource, localConsumer);
         }
-        return new DefaultConnection<>(resource, consumer);
+        return new DefaultConnection<>(localResource, localConsumer);
     }
 
     @Override
@@ -184,11 +187,11 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
-        AzureFormJPanel resourcePanel = definition.getResourcesPanel(definition.getType(), this.project);
-        Optional.ofNullable(resource).ifPresent(resourcePanel::setData);
+        AzureFormJPanel newResourcePanel = definition.getResourcesPanel(definition.getType(), this.project);
+        Optional.ofNullable(resource).ifPresent(newResourcePanel::setData);
         resourcePanelContainer.removeAll();
-        resourcePanelContainer.add(resourcePanel.getContentPanel(), constraints);
-        return resourcePanel;
+        resourcePanelContainer.add(newResourcePanel.getContentPanel(), constraints);
+        return newResourcePanel;
     }
 
     private void fixResourceType(ResourceDefinition<? extends Resource> definition) {

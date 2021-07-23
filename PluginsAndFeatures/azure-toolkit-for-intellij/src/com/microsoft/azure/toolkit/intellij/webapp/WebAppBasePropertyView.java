@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,7 +23,10 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -30,9 +34,10 @@ import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
@@ -87,12 +92,20 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private AnActionButton btnRemove;
     private AnActionButton btnEdit;
 
-    protected WebAppBasePropertyView(@NotNull Project project, @NotNull String sid,
-                                     @NotNull String resId, @Nullable String slotName, @NotNull final VirtualFile virtualFile) {
+    private String resourceId;
+    private Project project;
+    private VirtualFile virtualFile;
+
+    protected WebAppBasePropertyView(@Nonnull Project project, @Nonnull String sid,
+                                     @Nonnull String resId, @Nullable String slotName, @Nonnull final VirtualFile virtualFile) {
         super(virtualFile);
         this.id = getId();
+        this.resourceId = resId;
+        this.virtualFile = virtualFile;
+        this.project = project;
         this.presenter = createPresenter();
         this.presenter.onAttachView(this);
+
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
         statusBar = WindowManager.getInstance().getStatusBar(project);
@@ -156,23 +169,40 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         setTextFieldStyle();
     }
 
+    protected void onAppServiceStatusChanged(IAppService app) {
+        if (StringUtils.equalsIgnoreCase(this.resourceId, app.id())) {
+            if (!app.exists()) {
+                closeEditor(app);
+                return;
+            }
+            presenter.onLoadWebAppProperty(app.subscription().getId(), this.resourceId, null);
+        }
+    }
+
+    private void closeEditor(IAppService app) {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
+        AzureMessager.getMessager().info(AzureString.format("The editor for app '%s' is closed.", app.name()),
+            String.format("The app with name '%s' is deleted.", app.name()));
+    }
+
     protected abstract String getId();
 
     protected abstract WebAppBasePropertyViewPresenter createPresenter();
 
     @Override
-    public void onLoadWebAppProperty(@NotNull final String sid, @NotNull final String webAppId,
+    public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String webAppId,
                                      @Nullable final String slotName) {
         this.presenter.onLoadWebAppProperty(sid, webAppId, slotName);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public JComponent getComponent() {
         return pnlMain;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return id;
@@ -290,6 +320,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         if (os != null && os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
                 case WINDOWS:
+                case LINUX:
                     txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
                             ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
                     txtContainer.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
@@ -299,7 +330,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                     lblJavaVersion.setVisible(true);
                     lblContainer.setVisible(true);
                     break;
-                case LINUX:
+                case DOCKER:
                     txtJavaVersion.setVisible(false);
                     txtContainer.setVisible(false);
                     lblJavaVersion.setVisible(false);

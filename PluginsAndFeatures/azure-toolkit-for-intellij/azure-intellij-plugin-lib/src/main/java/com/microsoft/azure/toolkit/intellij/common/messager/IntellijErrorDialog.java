@@ -37,7 +37,7 @@ public class IntellijErrorDialog extends DialogWrapper {
     private final IntellijAzureMessage message;
 
     public IntellijErrorDialog(final IntellijAzureMessage message) {
-        super(message.getProject(), true);
+        super(true);
         this.setTitle(message.getTitle());
         this.setModal(true);
         this.message = message;
@@ -48,7 +48,7 @@ public class IntellijErrorDialog extends DialogWrapper {
     protected void init() {
         super.init();
         this.iconLabel.setIcon(Messages.getErrorIcon());
-        this.contentPane.setText(message.getContent(false));
+        this.contentPane.setText(message.getContent());
         this.contentPane.setBackground(JBColor.WHITE);
         this.contentPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
         this.contentPane.addHyperlinkListener(e -> {
@@ -61,8 +61,7 @@ public class IntellijErrorDialog extends DialogWrapper {
             final HideableDecorator slotDecorator = new HideableDecorator(detailsContainer, "Call Stack", false);
             slotDecorator.setContentComponent(detailsScrollPane);
             slotDecorator.setOn(false);
-            final String style = "margin:0;margin-top:2px;padding-left:1px;list-style-type:none;";
-            this.detailsPane.setText(String.format("<html><ul style='%s'>%s</ul></html>", style, details));
+            this.detailsPane.setText(details);
             this.detailsPane.setBackground(JBColor.WHITE);
             this.detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
         } else {

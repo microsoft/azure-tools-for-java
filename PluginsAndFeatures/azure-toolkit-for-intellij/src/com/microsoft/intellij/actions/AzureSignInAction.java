@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -26,6 +27,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Single;
@@ -84,12 +86,12 @@ public class AzureSignInAction extends AzureAnAction {
         }
     }
 
-    private static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
+    public static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
         final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
         if (authMethodDetails == null || authMethodDetails.getAuthType() == null) {
             return String.format("Do you really want to sign out?");
         }
-        final AuthType authType = authMethodManager.getAuthMethodDetails().getAuthType();
+        final AuthType authType = authMethodDetails.getAuthType();
         final String warningMessage;
         switch (authType) {
             case SERVICE_PRINCIPAL:
@@ -115,10 +117,8 @@ public class AzureSignInAction extends AzureAnAction {
         AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
         boolean isSignIn = authMethodManager.isSignedIn();
         if (isSignIn) {
-            boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(),
-                                                                      getSignOutWarningMessage(authMethodManager),
-                                                                      "Azure Sign Out",
-                                                                      new ImageIcon("icons/azure.png"));
+            boolean res = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), getSignOutWarningMessage(authMethodManager),
+                    "Azure Sign Out", AzureIconLoader.loadIcon(AzureIconSymbol.Common.AZURE));
             if (res) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
                     authMethodManager.signOut();

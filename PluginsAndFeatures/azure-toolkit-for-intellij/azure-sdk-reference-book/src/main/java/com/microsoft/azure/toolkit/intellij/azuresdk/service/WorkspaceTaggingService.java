@@ -37,7 +37,7 @@ public class WorkspaceTaggingService {
     }
 
     private static String getAzureDependencyTag(final String groupId, final String artifactId) {
-        return AzureSdkLibraryService.getAzureSDKEntities()
+        return AzureSdkLibraryService.loadAzureSDKEntities()
             .stream()
             .filter(entity -> StringUtils.isNotEmpty(entity.getType())
                 && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)

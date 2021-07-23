@@ -69,6 +69,7 @@ public interface ResourceManager {
             return resources.stream().filter(e -> StringUtils.equals(e.getId(), id)).findFirst().orElse(null);
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public Element getState() {
             final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
@@ -87,6 +88,7 @@ public interface ResourceManager {
             return resourcesEle;
         }
 
+        @Override
         public void loadState(@NotNull Element resourcesEle) {
             for (final Element resourceEle : resourcesEle.getChildren()) {
                 final String resourceType = resourceEle.getAttributeValue(Resource.FIELD_TYPE);

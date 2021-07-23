@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.spark.job;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
  *
  * Based on Spark 2.1.0, refer to http://spark.apache.org/docs/latest/monitoring.html
  *
- *   http://<spark http address:port>/applications/[app-id]/jobs
+ *   http://[spark http address:port]/applications/[app-id]/jobs
  *
  * HTTP Operations Supported
  *   GET
@@ -23,6 +24,8 @@ import java.util.List;
  * Query Parameters Supported
  *   None
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Job implements IConvertible {
     private int jobId;
     private String name;

@@ -6,10 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.*;
+import com.microsoft.azure.toolkit.intellij.common.ConfigDialog;
+import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -18,7 +19,7 @@ import javax.swing.*;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
+public class FunctionAppCreationDialog extends ConfigDialog<FunctionAppConfig> {
 
     private JPanel contentPane;
     private AppServiceInfoBasicPanel<FunctionAppConfig> basicPanel;

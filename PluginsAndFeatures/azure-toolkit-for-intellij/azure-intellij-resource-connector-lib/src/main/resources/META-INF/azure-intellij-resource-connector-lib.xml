@@ -2,7 +2,7 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorStartupActivity"/>
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorConsumerDefinitionPreloadingActivity"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
             serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />

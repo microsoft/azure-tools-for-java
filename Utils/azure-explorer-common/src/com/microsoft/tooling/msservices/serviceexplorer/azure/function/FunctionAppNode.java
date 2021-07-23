@@ -32,7 +32,6 @@ public class FunctionAppNode extends WebAppBaseNode {
     public FunctionAppNode(@Nonnull AzureRefreshableNode parent, @Nonnull IFunctionApp functionApp) {
         super(parent, FUNCTION_LABEL, functionApp);
         this.functionApp = functionApp;
-        loadActions();
     }
 
     @Override
@@ -62,7 +61,7 @@ public class FunctionAppNode extends WebAppBaseNode {
         addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
         addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).withBackgroudable(true).build());
         super.loadActions();
     }
 
@@ -76,7 +75,7 @@ public class FunctionAppNode extends WebAppBaseNode {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, getRegion());
+        properties.put(AppInsightsConstants.Region, this.functionApp.entity().getRegion().getName());
         return properties;
     }
 

@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 
 public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewProvider {
-    public static final String TYPE ="DEPLOYMENT_SLOT_PROPERTY";
+    public static final String TYPE = "DEPLOYMENT_SLOT_PROPERTY";
 
     @NotNull
     @Override

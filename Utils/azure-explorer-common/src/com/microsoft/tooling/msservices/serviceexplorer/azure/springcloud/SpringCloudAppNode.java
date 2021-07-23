@@ -57,29 +57,35 @@ public class SpringCloudAppNode extends Node implements TelemetryProperties {
         AzureEventBus.before("springcloud|app.stop", this::onAppStatusChanging);
         AzureEventBus.before("springcloud|app.restart", this::onAppStatusChanging);
         AzureEventBus.before("springcloud|app.remove", this::onAppStatusChanging);
-        this.status = this.refreshStatus();
+        this.setName(this.app.name());
         this.loadActions();
-        this.rerender();
+        this.refreshStatus();
     }
 
     public void onAppStatusChanged(SpringCloudApp app) {
         if (this.app.name().equals(app.name())) {
-            this.status = this.refreshStatus();
-            this.rerender();
+            this.refreshStatus();
         }
     }
 
     public void onAppStatusChanging(SpringCloudApp app) {
         if (this.app.name().equals(app.name())) {
             this.status = STATUS_UPDATING;
+            this.rerender();
         }
     }
 
-    private String refreshStatus() {
-        return Optional.ofNullable(this.app.refresh().activeDeployment())
-                .map(d -> d.refresh())
-                .map(d -> d.entity().getStatus())
-                .orElse(SpringCloudDeploymentStatus.UNKNOWN).getLabel();
+    @AzureOperation(name = "springcloud|app.refresh", params = {"this.app.name()"}, type = AzureOperation.Type.ACTION)
+    private void refreshStatus() {
+        this.status = STATUS_UPDATING;
+        this.rerender();
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            this.status = Optional.ofNullable(this.app.refresh().activeDeployment())
+                    .map(d -> d.refresh())
+                    .map(d -> d.entity().getStatus())
+                    .orElse(SpringCloudDeploymentStatus.UNKNOWN).getLabel();
+            this.rerender();
+        });
     }
 
     private void rerender() {

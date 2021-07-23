@@ -7,7 +7,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver;
 
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -79,7 +78,7 @@ public class SqlServerNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = "sqlserver|server.show_properties", params = {"this.server.entity().getName()"}, type = AzureOperation.Type.ACTION)
     private void showProperties() {
-        DefaultLoader.getUIHelper().openSqlServerPropertyView(SqlServerNode.this);
+        DefaultLoader.getUIHelper().openSqlServerPropertyView(this.getId(), this.getProject());
     }
 
     @Override

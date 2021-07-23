@@ -29,6 +29,7 @@ public final class AzureIconSymbol {
 
         AzureIconSymbol AZURE = fillInPath("Common/Azure.svg");
         AzureIconSymbol AZURE_ACTIVE_LOG = fillInPath("Common/AzureActiveLog.svg");
+        AzureIconSymbol AZURE_RESOURCE_CONNECTOR = fillInPath("Common/AzureResourceConnector.svg");
 
         AzureIconSymbol REFRESH = fillInPath("Common/Refresh.svg");
         AzureIconSymbol CREATE = fillInPath("Common/Create.svg");

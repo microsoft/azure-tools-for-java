@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +24,9 @@ public class ProjectLibraryService {
 
     @Nonnull
     public static List<ProjectLibEntity> getProjectLibraries(@Nonnull Project project) {
+        if (project.isDisposed()) {
+            return Collections.emptyList();
+        }
         final List<String> libs = new ArrayList<>();
         OrderEnumerator.orderEntries(project).forEachLibrary(library -> libs.add(library.getName()));
         return libs.stream().filter(StringUtils::isNotBlank)

@@ -5,14 +5,9 @@
 
 package com.microsoft.azuretools.authmanage;
 
-import com.azure.core.implementation.http.HttpClientProviders;
-import com.microsoft.aad.msal4j.PublicClientApplication;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -28,14 +23,11 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import lombok.Lombok;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import rx.exceptions.Exceptions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -50,11 +42,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
 public class AuthMethodManager {
     private static final org.apache.log4j.Logger LOGGER =
-        org.apache.log4j.Logger.getLogger(PublicClientApplication.class);
+        org.apache.log4j.Logger.getLogger(AuthMethodManager.class);
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
@@ -67,26 +62,6 @@ public class AuthMethodManager {
         Logger.getLogger("com.microsoft.aad.adal4j.AuthenticationContext").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.PublicClientApplication").setLevel(Level.OFF);
         Logger.getLogger("com.microsoft.aad.msal4j.ConfidentialClientApplication").setLevel(Level.OFF);
-
-        try {
-            Thread.currentThread().setContextClassLoader(AuthMethodManager.class.getClassLoader());
-            HttpClientProviders.createInstance();
-            com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
-            if (CommonSettings.getEnvironment() != null) {
-                com.microsoft.azure.toolkit.lib.Azure.az(AzureCloud.class)
-                                                     .set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
-            }
-            Hooks.onErrorDropped(ex -> {
-                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
-                    LOGGER.info(ex.getMessage());
-                }
-                throw Lombok.sneakyThrow(ex);
-            });
-
-
-        } finally {
-            Thread.currentThread().setContextClassLoader(current);
-        }
     }
 
     private static class LazyHolder {
@@ -126,21 +101,6 @@ public class AuthMethodManager {
         final String action = "Confirm you have already signed in with subscription: " + sid;
         final String errorCode = "001";
         throw new AzureToolkitRuntimeException(error, null, action, errorCode);
-    }
-
-    @AzureOperation(
-        name = "common|rest_client.create_mysql",
-        params = {"sid"},
-        type = AzureOperation.Type.TASK
-    )
-    public MySQLManager getMySQLManager(String sid) {
-        final AzureManager manager = getAzureManager();
-        if (manager != null) {
-            return manager.getMySQLManager(sid);
-        }
-        final String error = "Failed to get manager of Azure Database for MySQL with current account";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
     }
 
     public void addSignInEventListener(Runnable l) {
@@ -272,7 +232,8 @@ public class AuthMethodManager {
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
                 List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
-                    List<String> savedSubscriptionList = persistSubscriptions.stream().filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                    List<String> savedSubscriptionList = persistSubscriptions.stream()
+                        .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
                 initFuture.complete(true);

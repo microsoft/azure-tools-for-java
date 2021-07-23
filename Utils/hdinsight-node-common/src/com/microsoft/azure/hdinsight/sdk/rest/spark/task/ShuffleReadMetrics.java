@@ -5,6 +5,9 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.spark.task;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ShuffleReadMetrics {
     private long recordsRead;
 
@@ -18,64 +21,51 @@ public class ShuffleReadMetrics {
 
     private long localBytesRead;
 
-    public long getRecordsRead ()
-    {
+    public long getRecordsRead() {
         return recordsRead;
     }
 
-    public void setRecordsRead (long recordsRead)
-    {
+    public void setRecordsRead(long recordsRead) {
         this.recordsRead = recordsRead;
     }
 
-    public long getRemoteBytesRead ()
-    {
+    public long getRemoteBytesRead() {
         return remoteBytesRead;
     }
 
-    public void setRemoteBytesRead (long remoteBytesRead)
-    {
+    public void setRemoteBytesRead(long remoteBytesRead) {
         this.remoteBytesRead = remoteBytesRead;
     }
 
-    public long getFetchWaitTime ()
-    {
+    public long getFetchWaitTime() {
         return fetchWaitTime;
     }
 
-    public void setFetchWaitTime (long fetchWaitTime)
-    {
+    public void setFetchWaitTime(long fetchWaitTime) {
         this.fetchWaitTime = fetchWaitTime;
     }
 
-    public long getRemoteBlocksFetched ()
-    {
+    public long getRemoteBlocksFetched() {
         return remoteBlocksFetched;
     }
 
-    public void setRemoteBlocksFetched (long remoteBlocksFetched)
-    {
+    public void setRemoteBlocksFetched(long remoteBlocksFetched) {
         this.remoteBlocksFetched = remoteBlocksFetched;
     }
 
-    public long getLocalBlocksFetched ()
-    {
+    public long getLocalBlocksFetched() {
         return localBlocksFetched;
     }
 
-    public void setLocalBlocksFetched (long localBlocksFetched)
-    {
+    public void setLocalBlocksFetched(long localBlocksFetched) {
         this.localBlocksFetched = localBlocksFetched;
     }
 
-    public long getLocalBytesRead ()
-    {
+    public long getLocalBytesRead() {
         return localBytesRead;
     }
 
-    public void setLocalBytesRead (long localBytesRead)
-    {
+    public void setLocalBytesRead(long localBytesRead) {
         this.localBytesRead = localBytesRead;
     }
-
 }

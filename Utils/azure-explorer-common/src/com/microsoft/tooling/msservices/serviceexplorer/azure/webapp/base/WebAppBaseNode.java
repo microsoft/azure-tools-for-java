@@ -5,12 +5,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -38,10 +37,13 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         super(appService.id(), appService.name(), parent, true);
         this.label = label;
         this.appService = appService;
-        this.subscriptionId = ResourceId.fromString(appService.id()).subscriptionId();
+        this.subscriptionId = appService.subscriptionId();
 
         renderNode(WebAppBaseState.UPDATING);
-        DefaultLoader.getIdeHelper().executeOnPooledThread(() -> refreshItems());
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            loadActions();
+            renderNode(WebAppBaseState.fromString(((IAppService) appService.refresh()).state()));
+        });
     }
 
     protected String getAppServiceIconPath(final WebAppBaseState state) {
@@ -60,7 +62,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(ACTION_START).setEnabled(!running);
+        boolean refreshing = this.state == WebAppBaseState.UPDATING;
+        getNodeActionByName(ACTION_START).setEnabled(!running && !refreshing);
         getNodeActionByName(ACTION_STOP).setEnabled(running);
         getNodeActionByName(ACTION_RESTART).setEnabled(running);
 

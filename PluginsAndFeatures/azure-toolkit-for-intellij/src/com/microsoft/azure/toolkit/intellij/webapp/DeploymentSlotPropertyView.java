@@ -12,21 +12,23 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 
+import javax.annotation.Nonnull;
+
 public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
 
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String resId, @NotNull final String slotName, @NotNull final VirtualFile virtualFile) {
+    public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
+                                                @Nonnull final String resId, @Nonnull final String slotName, @Nonnull final VirtualFile virtualFile) {
         DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName, virtualFile);
         view.onLoadWebAppProperty(sid, resId, slotName);
         return view;
     }
 
-    private DeploymentSlotPropertyView(@NotNull final Project project, @NotNull final String sid,
-                                       @NotNull final String webAppId, @NotNull final String slotName, @NotNull final VirtualFile virtualFile) {
+    private DeploymentSlotPropertyView(@Nonnull final Project project, @Nonnull final String sid,
+                                       @Nonnull final String webAppId, @Nonnull final String slotName, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, webAppId, slotName, virtualFile);
     }
 

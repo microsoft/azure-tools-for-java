@@ -10,7 +10,6 @@ import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.RestExceptionHandlerInterceptor;
@@ -28,11 +27,13 @@ import com.microsoft.azuretools.utils.Pair;
 import okhttp3.internal.http2.Settings;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +59,6 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
-    protected Map<String, MySQLManager> sidToMySQLManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
@@ -151,17 +151,6 @@ public abstract class AzureManagerBase implements AzureManager {
         return azure;
     }
 
-    @Override
-    public MySQLManager getMySQLManager(String sid) {
-        if (!isSignedIn()) {
-            return null;
-        }
-        return sidToMySQLManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
-            return authMySQL(sid, tid);
-        });
-    }
-
     public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
@@ -246,18 +235,11 @@ public abstract class AzureManagerBase implements AzureManager {
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(credentials);
-    }
-
-    protected MySQLManager authMySQL(String subscriptionId, String tenantId) {
-        final AzureTokenCredentials credentials = getCredentials(tenantId);
-        return buildAzureManager(MySQLManager.configure())
-                .withInterceptor(new TelemetryInterceptor())
-                .withInterceptor(new RestExceptionHandlerInterceptor())
-                .authenticate(credentials, subscriptionId);
+            .withInterceptor(new TelemetryInterceptor())
+            .withInterceptor(new RestExceptionHandlerInterceptor())
+            .withUserAgent(CommonSettings.USER_AGENT)
+            .withProxy(createProxyFromConfig())
+            .authenticate(credentials);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
@@ -265,6 +247,12 @@ public abstract class AzureManagerBase implements AzureManager {
         return buildAzureManager(InsightsManager.configure())
                 .withInterceptor(new TelemetryInterceptor())
                 .withInterceptor(new RestExceptionHandlerInterceptor())
+                .withProxy(createProxyFromConfig())
                 .authenticate(credentials, subscriptionId);
+    }
+
+    private static Proxy createProxyFromConfig() {
+        return Optional.ofNullable(com.microsoft.azure.toolkit.lib.Azure.az().config().getHttpProxy())
+            .map(proxy -> new Proxy(Proxy.Type.HTTP, proxy)).orElse(null);
     }
 }

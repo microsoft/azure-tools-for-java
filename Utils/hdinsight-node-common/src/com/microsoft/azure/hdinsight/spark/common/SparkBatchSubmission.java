@@ -13,6 +13,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.sdk.common.AuthType;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -38,6 +39,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -56,9 +58,9 @@ public class SparkBatchSubmission implements ILogger {
     private static SparkBatchSubmission instance = null;
 
     public static SparkBatchSubmission getInstance() {
-        if(instance == null){
-            synchronized (SparkBatchSubmission.class){
-                if(instance == null){
+        if (instance == null) {
+            synchronized (SparkBatchSubmission.class) {
+                if (instance == null) {
                     instance = new SparkBatchSubmission();
                 }
             }
@@ -72,11 +74,23 @@ public class SparkBatchSubmission implements ILogger {
             String id = ((MfaEspCluster) clusterDetail).getTenantId();
             return new SparkBatchEspMfaSubmission(id, clusterDetail.getName());
         } else {
-            return SparkBatchSubmission.getInstance();
+            final SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
+            try {
+                submission.setUsernamePasswordCredential(
+                        clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+            } catch (HDIException ex) {
+                LoggerFactory
+                    .getLogger(SparkBatchSubmission.class)
+                    .warn("Got exception when try to get cluster username and password: " +
+                            ex.getMessage() +
+                            ", keep no auth.");
+            }
+
+            return submission;
         }
     }
 
-    private CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
+    private CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
     private String authCode = null;
 
@@ -106,9 +120,9 @@ public class SparkBatchSubmission implements ILogger {
                         .build();
 
                 sslSocketFactory = new SSLConnectionSocketFactory(sslContext,
-                        HttpObservable.isSSLCertificateValidationDisabled()
-                                ? NoopHostnameVerifier.INSTANCE
-                                : new DefaultHostnameVerifier());
+                        HttpObservable.isSSLCertificateValidationDisabled() ?
+                                NoopHostnameVerifier.INSTANCE :
+                                new DefaultHostnameVerifier());
             } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
                 log().error("Prepare SSL Context for HTTPS failure. " + ExceptionUtils.getStackTrace(e));
             }
@@ -133,7 +147,6 @@ public class SparkBatchSubmission implements ILogger {
                           .build();
     }
 
-
     /**
      * Set http request credential using username and password
      * @param username : username
@@ -150,7 +163,6 @@ public class SparkBatchSubmission implements ILogger {
     public CredentialsProvider getCredentialsProvider() {
         return credentialsProvider;
     }
-
 
     @Nullable
     public String probeAuthRedirectUrl(String connectUrl) throws IOException {
@@ -183,7 +195,6 @@ public class SparkBatchSubmission implements ILogger {
         }
     }
 
-
     public AuthType probeAuthType(String connectUrl) throws IOException {
         HttpResponse resp = negotiateAuthMethodWithResp(connectUrl);
 
@@ -214,7 +225,7 @@ public class SparkBatchSubmission implements ILogger {
         return AuthType.NotSupported;
     }
 
-    public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException{
+    public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException {
         List<Header> additionHeader = new ArrayList<>();
         additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
         return getHttpResponseViaGet(connectUrl, getHttpClientWithoutCredentialAndRedirect(), additionHeader);
@@ -259,7 +270,7 @@ public class SparkBatchSubmission implements ILogger {
                         .setSocketTimeout(3 * 1000)
                         .build());
 
-        try(CloseableHttpResponse response = httpclient.execute(httpHead)) {
+        try (CloseableHttpResponse response = httpclient.execute(httpHead)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
     }
@@ -292,7 +303,7 @@ public class SparkBatchSubmission implements ILogger {
      * @return response result
      * @throws IOException
      */
-    public HttpResponse getAllBatchesSparkJobs(String connectUrl)throws IOException{
+    public HttpResponse getAllBatchesSparkJobs(String connectUrl)throws IOException {
         return getHttpResponseViaGet(connectUrl);
     }
 
@@ -302,15 +313,17 @@ public class SparkBatchSubmission implements ILogger {
      * @param submissionParameter : spark submission parameter
      * @return response result
      */
-    public HttpResponse createBatchSparkJob(String connectUrl, SparkSubmissionParameter submissionParameter)throws IOException{
+    public HttpResponse createBatchSparkJob(String connectUrl,
+                                            SparkSubmissionParameter submissionParameter)
+            throws IOException {
         CloseableHttpClient httpclient = getHttpClient();
         HttpPost httpPost = new HttpPost(connectUrl);
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpPost.addHeader("X-Requested-By", "ambari");
-        StringEntity postingString =new StringEntity(submissionParameter.serializeToJson());
+        StringEntity postingString = new StringEntity(submissionParameter.serializeToJson());
         httpPost.setEntity(postingString);
-        try(CloseableHttpResponse response = httpclient.execute(httpPost)) {
+        try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
     }
@@ -322,7 +335,7 @@ public class SparkBatchSubmission implements ILogger {
      * @return response result
      * @throws IOException
      */
-    public HttpResponse getBatchSparkJobStatus(String connectUrl, int batchId)throws IOException{
+    public HttpResponse getBatchSparkJobStatus(String connectUrl, int batchId) throws IOException {
         return getHttpResponseViaGet(connectUrl + "/" + batchId);
     }
 
@@ -335,12 +348,12 @@ public class SparkBatchSubmission implements ILogger {
      */
     public HttpResponse killBatchJob(String connectUrl, int batchId)throws IOException {
         CloseableHttpClient httpclient = getHttpClient();
-        HttpDelete httpDelete = new HttpDelete(connectUrl +  "/" + batchId);
+        HttpDelete httpDelete = new HttpDelete(connectUrl + "/" + batchId);
         httpDelete.addHeader("User-Agent", getUserAgentPerRequest(true));
         httpDelete.addHeader("Content-Type", "application/json");
         httpDelete.addHeader("X-Requested-By", "ambari");
 
-        try(CloseableHttpResponse response = httpclient.execute(httpDelete)) {
+        try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
     }

@@ -5,6 +5,7 @@
 
 package com.microsoft.intellij;
 
+import com.azure.core.implementation.http.HttpClientProviders;
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -16,8 +17,11 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
-import com.microsoft.azure.toolkit.intellij.common.operation.IntellijAzureOperationTitleProvider;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -26,23 +30,28 @@ import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
-import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.ui.UIFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import lombok.Lombok;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
+import reactor.core.publisher.Hooks;
+import rx.exceptions.Exceptions;
 import rx.internal.util.PlatformDependent;
 
 import java.io.BufferedReader;
@@ -56,6 +65,7 @@ import java.util.logging.SimpleFormatter;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
 
+@Slf4j
 public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsListener.class);
@@ -65,15 +75,39 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     private PluginSettings settings;
 
+    static {
+        // fix the class load problem for intellij plugin
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
+            HttpClientProviders.createInstance();
+            Azure.az(AzureAccount.class);
+
+            Hooks.onErrorDropped(ex -> {
+                if (Exceptions.getFinalCause(ex) instanceof InterruptedException) {
+                    log.info(ex.getMessage());
+                } else {
+                    throw Lombok.sneakyThrow(ex);
+                }
+            });
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
+    }
+
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+        if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
+            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
+        } else if (CommonSettings.getEnvironment() != null) {
+            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName()));
+        }
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());
-        IntellijAzureOperationTitleProvider.register();
         Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
@@ -82,8 +116,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         try {
             loadPluginSettings();
         } catch (IOException e) {
-            PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
-                    "An error occurred while attempting to load settings", e);
+            PluginUtil.displayErrorDialogAndLog("Error", "An error occurred while attempting to load settings", e);
         }
 
         if (!AzurePlugin.IS_ANDROID_STUDIO) {

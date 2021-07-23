@@ -6,14 +6,8 @@
 package com.microsoft.intellij.ui;
 
 import com.azure.identity.DeviceCodeInfo;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.Future;
 
@@ -23,14 +17,6 @@ public class DeviceLoginUI implements IDeviceLoginUI {
 
     @Setter
     private Future future;
-
-    @Nullable
-    @Override
-    public AuthenticationResult authenticate(@NotNull final AuthenticationContext ctx,
-                                             @NotNull final DeviceCode deviceCode,
-                                             final AuthenticationCallback<AuthenticationResult> callback) {
-        return null;
-    }
 
     public void promptDeviceCode(DeviceCodeInfo challenge) {
         deviceLoginWindow = new DeviceLoginWindow(challenge, this);

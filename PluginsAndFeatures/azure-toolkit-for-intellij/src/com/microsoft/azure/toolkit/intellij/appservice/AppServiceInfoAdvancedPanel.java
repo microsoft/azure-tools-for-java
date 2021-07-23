@@ -60,7 +60,14 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private AzureArtifactComboBox selectorApplication;
     private ServicePlanComboBox selectorServicePlan;
     private TitledSeparator deploymentTitle;
-    private JLabel deploymentLabel;
+    private JLabel lblArtifact;
+    private JLabel lblSubscription;
+    private JLabel lblResourceGroup;
+    private JLabel lblName;
+    private JLabel lblPlatform;
+    private JLabel lblRegion;
+    private JLabel lblAppServicePlan;
+    private JLabel lblSku;
 
     public AppServiceInfoAdvancedPanel(final Project project, final Supplier<? extends T> supplier) {
         super();
@@ -127,7 +134,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
-        this.deploymentLabel.setVisible(visible);
+        this.lblArtifact.setVisible(visible);
         this.selectorApplication.setVisible(visible);
     }
 
@@ -163,6 +170,13 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.selectorRuntime.setRequired(true);
         this.selectorRegion.setRequired(true);
 
+        this.lblSubscription.setLabelFor(selectorSubscription);
+        this.lblResourceGroup.setLabelFor(selectorGroup);
+        this.lblName.setLabelFor(textName);
+        this.lblPlatform.setLabelFor(selectorRuntime);
+        this.lblRegion.setLabelFor(selectorRegion);
+        this.lblAppServicePlan.setLabelFor(selectorServicePlan);
+        this.lblArtifact.setLabelFor(selectorApplication);
         this.selectorApplication.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             final Runtime runtime = this.selectorRuntime.getValue();

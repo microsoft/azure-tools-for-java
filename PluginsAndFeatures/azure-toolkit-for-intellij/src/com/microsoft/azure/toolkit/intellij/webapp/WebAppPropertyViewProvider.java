@@ -5,12 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.microsoft.intellij.helpers.UIHelperImpl;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 
 public class WebAppPropertyViewProvider extends WebAppBasePropertyViewProvider {
     public static final String TYPE = "WEB_APP_PROPERTY";

@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,7 +25,8 @@ public interface AzureFormPanel<T> extends AzureForm<T> {
 
     @Override
     default List<AzureFormInput<?>> getInputs() {
-        return Collections.emptyList();
+        Collections.emptyList().addAll(new ArrayList<>());
+        return new ArrayList<>();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

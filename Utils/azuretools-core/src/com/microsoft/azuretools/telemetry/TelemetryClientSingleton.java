@@ -5,18 +5,18 @@
 
 package com.microsoft.azuretools.telemetry;
 
-import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import org.apache.commons.lang3.StringUtils;
 
 public final class TelemetryClientSingleton {
-    private TelemetryClient telemetry = null;
+    private final AzureTelemetryClient telemetry;
     private AppInsightsConfiguration configuration = null;
 
     private static final class SingletonHolder {
         private static final TelemetryClientSingleton INSTANCE = new TelemetryClientSingleton();
     }
 
-    public static TelemetryClient getTelemetry() {
+    public static AzureTelemetryClient getTelemetry() {
         return SingletonHolder.INSTANCE.telemetry;
     }
 
@@ -25,13 +25,13 @@ public final class TelemetryClientSingleton {
     }
 
     private TelemetryClientSingleton() {
-        telemetry = new TelemetryClient() {
+        telemetry = new AzureTelemetryClient() {
             @Override
-            public boolean isDisabled() {
+            public boolean isEnabled() {
                 if (configuration == null) {
-                    return true;
+                    return false;
                 }
-                return (StringUtils.isNotEmpty(configuration.preferenceVal()) && !Boolean.valueOf(configuration.preferenceVal())) || super.isDisabled();
+                return (StringUtils.isEmpty(configuration.preferenceVal()) || Boolean.parseBoolean(configuration.preferenceVal())) && super.isEnabled();
             }
         };
     }

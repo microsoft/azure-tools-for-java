@@ -17,9 +17,12 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import lombok.Getter;
+import lombok.Setter;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBase implements LocatableConfiguration {
+public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBase<Element> implements LocatableConfiguration {
     private static final String NEED_SPECIFY_ARTIFACT = "Please select an artifact";
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
     private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
@@ -39,6 +42,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
     @Getter
+    @Setter
     private SpringCloudAppConfig appConfig;
 
     public SpringCloudDeploymentConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -132,8 +136,10 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         @Override
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
-            this.panel.setConfiguration(config);
-            this.panel.setData(config.appConfig);
+            AzureTaskManager.getInstance().runLater(() -> {
+                this.panel.setConfiguration(config);
+                this.panel.setData(config.appConfig);
+            }, AzureTask.Modality.ANY);
         }
 
         @Override
@@ -145,7 +151,7 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
             }
-            this.panel.getData(config.appConfig);
+            config.appConfig = this.panel.getData();
         }
 
         @Override

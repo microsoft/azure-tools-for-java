@@ -40,7 +40,7 @@ public class ConnectToMySQLAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
         final MySqlServer server = this.node.getServer();
-        dialog.setResource(new DatabaseResource(DatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
+        dialog.setResource(new DatabaseResource(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), server.id(), null));
         dialog.show();
     }
 

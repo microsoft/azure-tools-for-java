@@ -23,6 +23,7 @@ import org.apache.commons.collections.ListUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,7 +85,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         // TODO: place custom component creation code here
         appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel<>(project, () -> FunctionAppConfig.builder().build());
         appServiceConfigPanelAdvanced.setValidRuntime(Runtime.FUNCTION_APP_RUNTIME);
-        appServiceConfigPanelAdvanced.setValidPricingTier(PricingTier.FUNCTION_PRICING, PricingTier.CONSUMPTION);
+        appServiceConfigPanelAdvanced.setValidPricingTier(new ArrayList<>(PricingTier.FUNCTION_PRICING), PricingTier.CONSUMPTION);
         // Function does not support file deployment
         appServiceConfigPanelAdvanced.setDeploymentVisible(false);
         insightsConfig = ApplicationInsightsConfig.builder().newCreate(true)

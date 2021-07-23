@@ -6,8 +6,9 @@ package com.microsoft.azure.toolkit.intellij.mysql;
 
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.toolkit.intellij.database.ServerNameTextField;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
 
 import java.util.function.Function;
 
@@ -18,7 +19,7 @@ public class MySQLNameValidator implements Function<ServerNameTextField, AzureVa
         final String value = textField.getValue();
         // validate availability
         try {
-            if (!MySQLMvpModel.checkNameAvailabilitys(textField.getSubscriptionId(), value)) {
+            if (!Azure.az(AzureMySql.class).subscription(textField.getSubscriptionId()).checkNameAvailability(value)) {
                 return AzureValidationInfo.builder().input(textField).message(value + " already existed.").type(AzureValidationInfo.Type.ERROR).build();
             }
         } catch (CloudException e) {

@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,15 +56,14 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         return Optional.ofNullable(definition).orElse(new DefaultConnection.Definition<>());
     }
 
-    static <R extends Resource, C extends Resource> void registerDefinition(String resourceType, String consumerType, ConnectionDefinition<R, C> definition, Project project) {
+    static <R extends Resource, C extends Resource> void registerDefinition(String resourceType, String consumerType, ConnectionDefinition<R, C> definition) {
         final String type = typeOf(resourceType, consumerType);
         Impl.definitions.put(type, definition);
-        Optional.ofNullable(Impl.delayed.get(type))
-                .map(definition::read)
-                .ifPresent(c -> project.getService(ConnectionManager.class).addConnection(c));
     }
 
     void addConnection(Connection<? extends Resource, ? extends Resource> connection);
+
+    void removeConnection(String resourceId, String consumerId);
 
     List<Connection<? extends Resource, ? extends Resource>> getConnections();
 
@@ -82,7 +79,6 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         private static final String FIELD_TYPE = "type";
         private final Set<Connection<? extends Resource, ? extends Resource>> connections = new LinkedHashSet<>();
         private static final Map<String, ConnectionDefinition<? extends Resource, ? extends Resource>> definitions = new LinkedHashMap<>();
-        private static final Map<String, Element> delayed = new HashMap<>();
 
         static {
             definitions.put("default", new DefaultConnection.Definition<>());
@@ -90,8 +86,13 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
 
         @Override
         public synchronized void addConnection(Connection<? extends Resource, ? extends Resource> connection) {
-            connections.remove(connection); // always replace the old with the new one.
+            connections.removeIf(c -> Objects.equals(c, connection)); // always replace the old with the new one.
             connections.add(connection);
+        }
+
+        @Override
+        public synchronized void removeConnection(String resourceId, String consumerId) {
+            connections.removeIf(c -> StringUtils.equals(resourceId, c.getResource().getId()) && StringUtils.equals(consumerId, c.getConsumer().getId()));
         }
 
         @Override
@@ -109,6 +110,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             return connections.stream().filter(e -> StringUtils.equals(id, e.getConsumer().getId())).collect(Collectors.toList());
         }
 
+        @Override
         @SuppressWarnings({"rawtypes"})
         public Element getState() {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
@@ -120,6 +122,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             return connectionsEle;
         }
 
+        @Override
         public void loadState(@NotNull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String connectionType = connectionEle.getAttributeValue(FIELD_TYPE);
@@ -137,21 +140,18 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             connectionEle.setAttribute(FIELD_TYPE, connectionType);
         }
 
-
         private void readConnection(Element connectionEle, String connectionType) {
             final ConnectionDefinition<?, ?> definition = definitions.get(connectionType);
-            if (Objects.nonNull(definition)) {
-                try {
-                    final Connection<?, ?> connection = definition.read(connectionEle);
-                    if (Objects.nonNull(connection)) {
-                        this.addConnection(connection);
-                    }
-                } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", connectionType), e);
+            assert Objects.nonNull(definition) : String.format("Not found connection definition for %s", connectionType);
+            try {
+                final Connection<?, ?> connection = definition.read(connectionEle);
+                if (Objects.nonNull(connection)) {
+                    this.addConnection(connection);
                 }
-            } else {
-                delayed.put(connectionType, connectionEle);
+            } catch (final Exception e) {
+                log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", connectionType), e);
             }
+
         }
     }
 }

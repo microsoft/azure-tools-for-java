@@ -3,8 +3,14 @@
     <extensionPoints>
     </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.common.preload.AzurePreloadingActivity"/>
     </extensions>
     <actions>
+        <action id="AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain"
+                class="com.microsoft.azure.toolkit.intellij.common.messager.IntellijNeverShowAgainAction"
+                text="Never Show Again"
+                description="Never Show Again">
+        </action>
     </actions>
 </idea-plugin>

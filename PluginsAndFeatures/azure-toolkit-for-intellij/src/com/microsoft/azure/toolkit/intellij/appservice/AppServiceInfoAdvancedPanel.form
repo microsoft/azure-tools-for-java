@@ -19,7 +19,7 @@
           <titleFont style="1"/>
         </properties>
       </component>
-      <component id="c0640" class="javax.swing.JLabel">
+      <component id="c0640" class="javax.swing.JLabel" binding="lblName">
         <constraints>
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
@@ -35,7 +35,7 @@
           <required value="true"/>
         </properties>
       </component>
-      <component id="c6b66" class="javax.swing.JLabel">
+      <component id="c6b66" class="javax.swing.JLabel" binding="lblPlatform">
         <constraints>
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
@@ -43,7 +43,7 @@
           <text value="Platform:"/>
         </properties>
       </component>
-      <component id="928ea" class="javax.swing.JLabel">
+      <component id="928ea" class="javax.swing.JLabel" binding="lblRegion">
         <constraints>
           <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
@@ -72,7 +72,7 @@
           <toolTipText value="Select a subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources."/>
         </properties>
       </component>
-      <component id="4b4a6" class="javax.swing.JLabel">
+      <component id="4b4a6" class="javax.swing.JLabel" binding="lblSubscription">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
@@ -83,7 +83,7 @@
           <toolTipText value="All resources in an Azure subscription are billed together."/>
         </properties>
       </component>
-      <component id="2676b" class="javax.swing.JLabel">
+      <component id="2676b" class="javax.swing.JLabel" binding="lblResourceGroup">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
@@ -110,7 +110,7 @@
           <toolTipText value="App Service plan pricing tier determines the location, features, cost and compute resources associated with your app." noi18n="true"/>
         </properties>
       </component>
-      <component id="37aee" class="javax.swing.JLabel">
+      <component id="37aee" class="javax.swing.JLabel" binding="lblAppServicePlan">
         <constraints>
           <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
@@ -121,7 +121,7 @@
           <toolTipText value="App Service Plans are filtered based on your region and operating system selection."/>
         </properties>
       </component>
-      <component id="71269" class="javax.swing.JLabel">
+      <component id="71269" class="javax.swing.JLabel" binding="lblSku">
         <constraints>
           <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
@@ -149,7 +149,7 @@
           <titleFont style="1"/>
         </properties>
       </component>
-      <component id="ed0ca" class="javax.swing.JLabel" binding="deploymentLabel">
+      <component id="ed0ca" class="javax.swing.JLabel" binding="lblArtifact">
         <constraints>
           <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>

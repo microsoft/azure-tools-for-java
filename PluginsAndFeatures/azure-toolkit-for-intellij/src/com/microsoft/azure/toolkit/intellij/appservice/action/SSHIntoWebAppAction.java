@@ -6,14 +6,13 @@
 package com.microsoft.azure.toolkit.intellij.appservice.action;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
+import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.AzureCliUtils;
-import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.Groupable;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -40,30 +39,28 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private static final String RESOURCE_ELEMENT_PATTERN = "[^/]+";
 
     private final Project project;
-    private final String resourceId;
     private final String webAppName;
     private final String subscriptionId;
     private final String resourceGroupName;
-    private final Runtime runtime;
+    private final IWebApp webApp;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();
         this.project = (Project) webAppNode.getProject();
-        this.resourceId = webAppNode.getId();
-        this.webAppName = webAppNode.getWebAppName();
-        this.subscriptionId = webAppNode.getSubscriptionId();
-        this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOURCE_ELEMENT_PATTERN, RESOURCE_GROUP_PATH_PREFIX);
-        this.runtime = webAppNode.getWebAppRuntime();
+        this.webApp = webAppNode.getWebApp();
+        this.webAppName = webApp.name();
+        this.subscriptionId = webApp.subscriptionId();
+        this.resourceGroupName = webApp.resourceGroup();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
-        final IAzureOperationTitle title = title("webapp|ssh.connect", webAppName);
+        final AzureString title = title("webapp|ssh.connect", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             // check these conditions to ssh into web app
-            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, runtime)) {
+            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, webApp.getRuntime())) {
                 return;
             }
             // build proxy between remote and local
@@ -75,7 +72,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                final IAzureOperationTitle messageTitle = title("webapp|ssh.open", webAppName);
+                final AzureString messageTitle = title("webapp|ssh.open", webAppName);
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(project, messageTitle, false, () -> {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);

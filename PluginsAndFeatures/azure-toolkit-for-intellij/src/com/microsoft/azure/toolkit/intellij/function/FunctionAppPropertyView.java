@@ -12,25 +12,30 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppServiceUpdater;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Set;
 
 public class FunctionAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyView";
 
-    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String webAppId, @NotNull final VirtualFile virtualFile) {
+    public static WebAppBasePropertyView create(@Nonnull final Project project, @Nonnull final String sid,
+                                                @Nonnull final String webAppId, @Nonnull final VirtualFile virtualFile) {
         final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId, virtualFile);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;
     }
 
 
-    protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId, @NotNull final VirtualFile virtualFile) {
+    protected FunctionAppPropertyView(@Nonnull Project project, @Nonnull String sid, @Nonnull String resId, @Nonnull final VirtualFile virtualFile) {
         super(project, sid, resId, null, virtualFile);
+        AzureEventBus.after("function.start", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.stop", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.restart", this::onAppServiceStatusChanged);
+        AzureEventBus.after("function.delete", this::onAppServiceStatusChanged);
     }
 
     @Override

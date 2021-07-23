@@ -12,7 +12,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.AnimatedIcon;
-import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -21,20 +20,23 @@ import com.microsoft.azure.toolkit.lib.auth.model.AccountEntity;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
-import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.authmanage.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.*;
-import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Flux;
@@ -43,22 +45,31 @@ import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import rx.Single;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import java.awt.Component;
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
     private static final String SIGN_IN_ERROR = "Sign In Error";
-    private static final IdeaSecureStore secureStore = IdeaSecureStore.getInstance();
     private JPanel contentPane;
 
     private JRadioButton deviceLoginRadioButton;
@@ -71,7 +82,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private JLabel labelOAuthLogin;
 
     private AuthMethodDetails authMethodDetails;
-    private AuthMethodDetails authMethodDetailsResult;
 
     private String accountEmail;
 
@@ -112,10 +122,6 @@ public class SignInWindow extends AzureDialogWrapper {
         checkAccountAvailability();
     }
 
-    public AuthMethodDetails getAuthMethodDetails() {
-        return authMethodDetailsResult;
-    }
-
     @Nullable
     public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
         SignInWindow signInWindow = new SignInWindow(authMethodDetails, project);
@@ -125,12 +131,6 @@ public class SignInWindow extends AzureDialogWrapper {
         }
 
         return null;
-    }
-
-    @Override
-    public void doCancelAction() {
-        authMethodDetailsResult = authMethodDetails;
-        super.doCancelAction();
     }
 
     @Override
@@ -153,43 +153,54 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     public Single<AuthMethodDetails> login() {
-        final IAzureOperationTitle title = AzureOperationBundle.title("account.sign_in");
+        AuthConfiguration auth = new AuthConfiguration();
+        if (spRadioButton.isSelected()) {
+            final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
+            if (dialog.showAndGet()) {
+                auth = dialog.getData();
+            } else {
+                return Single.just(new AuthMethodDetails());
+            }
+        } else if (deviceLoginRadioButton.isSelected()) {
+            auth.setType(AuthType.DEVICE_CODE);
+        } else if (oauthLoginRadioButton.isSelected()) {
+            auth.setType(AuthType.OAUTH2);
+        } else if (azureCliRadioButton.isSelected()) {
+            auth.setType(AuthType.AZURE_CLI);
+        }
+        return loginAsync(auth);
+    }
+
+    private Single<AuthMethodDetails> loginAsync(AuthConfiguration auth) {
+        final AzureString title = AzureOperationBundle.title("account.sign_in");
         final AzureTask<AuthMethodDetails> task = new AzureTask<>(null, title, true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            return this.doLogin(indicator);
+            return doLogin(indicator, auth);
         });
         return AzureTaskManager.getInstance().runInModalAsObservable(task).toSingle();
     }
 
-    private @Nullable AuthMethodDetails doLogin(ProgressIndicator indicator) {
-        authMethodDetailsResult = new AuthMethodDetails();
-        if (spRadioButton.isSelected()) { // automated
-            final Map<String, String> properties = new HashMap<>();
-            properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
-            properties.putAll(signInSPProp);
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
-
-            UIUtil.invokeAndWaitIfNeeded(() -> call(this::doServicePrincipalLogin, "sp"));
-        } else if (deviceLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = call(this::doDeviceLogin, "dc");
-        } else if (azureCliRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), "az");
-        } else if (oauthLoginRadioButton.isSelected()) {
-            authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), "oauth");
+    public AuthMethodDetails doLogin(ProgressIndicator indicator, AuthConfiguration auth) {
+        AuthMethodDetails authMethodDetailsResult = new AuthMethodDetails();
+        if (AuthMethodManager.getInstance().isSignedIn()) {
+            doSignOut();
         }
-        return authMethodDetailsResult;
-    }
-
-    private AuthMethodDetails doServicePrincipalLogin() {
-        authMethodDetailsResult = new AuthMethodDetails();
-        final ServicePrincipalLoginDialog dialog = new ServicePrincipalLoginDialog(project);
-        if (dialog.showAndGet()) {
-            AuthConfiguration data = dialog.getData();
-            authMethodDetailsResult = doServicePrincipalLoginInternal(data);
-            if (StringUtils.isNotBlank(data.getKey())) {
-                secureStore.savePassword(StringUtils.joinWith("|", "account", data.getClient()), data.getKey());
-            }
+        switch (auth.getType()) {
+            case SERVICE_PRINCIPAL:
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInServicePrincipal(auth)), "sp");
+                break;
+            case DEVICE_CODE:
+                authMethodDetailsResult = call(this::doDeviceLogin, "dc");
+                break;
+            case AZURE_CLI:
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInAzureCli()), "az");
+                break;
+            case OAUTH2:
+                authMethodDetailsResult = call(() -> checkCanceled(indicator, IdentityAzureManager.getInstance().signInOAuth()), "oauth");
+                break;
+            default:
+                break;
         }
         return authMethodDetailsResult;
     }
@@ -264,27 +275,10 @@ public class SignInWindow extends AzureDialogWrapper {
         azureCliRadioButton.setText("Azure CLI (Not logged in)");
     }
 
-    private AuthMethodDetails doServicePrincipalLoginInternal(AuthConfiguration auth) {
-        try {
-            IdentityAzureManager authManager = IdentityAzureManager.getInstance();
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                doSignOut();
-            }
-            return authManager.signInServicePrincipal(auth).block();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
-        }
-        return new AuthMethodDetails();
-    }
-
     @Nullable
     private synchronized AuthMethodDetails doDeviceLogin() {
         CompletableFuture<AuthMethodDetails> deviceCodeLoginFuture = new CompletableFuture<>();
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                doSignOut();
-            }
             final IDeviceLoginUI deviceLoginUI = CommonSettings.getUiFactory().getDeviceLoginUI();
             final AzureAccount az = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class);
             final Account account = az.loginAsync(AuthType.DEVICE_CODE, true).block();

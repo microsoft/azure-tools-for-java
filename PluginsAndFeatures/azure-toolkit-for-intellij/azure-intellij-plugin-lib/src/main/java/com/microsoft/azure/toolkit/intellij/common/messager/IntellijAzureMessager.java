@@ -15,12 +15,19 @@ import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
+import lombok.extern.java.Log;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Level;
 
+@Log
 public class IntellijAzureMessager implements IAzureMessager {
     static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
@@ -36,28 +43,39 @@ public class IntellijAzureMessager implements IAzureMessager {
 
     @Override
     public boolean show(IAzureMessage raw) {
-        final IntellijAzureMessage message = IntellijAzureMessage.from(raw);
+        if (raw.getPayload() instanceof Throwable) {
+            log.log(Level.WARNING, "caught an error by messager", ((Throwable) raw.getPayload()));
+        }
         switch (raw.getType()) {
             case ALERT:
             case CONFIRM:
-                return MessageDialogBuilder.yesNo(message.getTitle(), message.getMessage()).guessWindowAndAsk();
+                final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
+                return MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
         }
-        if (Objects.equals(message.getBackgrounded(), Boolean.FALSE) && message.getType() == IAzureMessage.Type.ERROR) {
-            UIUtil.invokeLaterIfNeeded(() -> {
-                final IntellijErrorDialog errorDialog = new IntellijErrorDialog(message);
-                final Window window = errorDialog.getWindow();
-                final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
-                ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
-            });
+        final AzureTask<?> task = AzureTaskContext.current().getTask();
+        final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
+        if (Objects.equals(backgrounded, Boolean.FALSE) && raw.getType() == IAzureMessage.Type.ERROR) {
+            this.showErrorDialog(raw);
         } else {
-            this.showNotification(message);
+            this.showNotification(raw);
         }
         return true;
     }
 
-    private void showNotification(@Nonnull IntellijAzureMessage message) {
+    private void showErrorDialog(@Nonnull IAzureMessage message) {
+        UIUtil.invokeLaterIfNeeded(() -> {
+            final IntellijAzureMessage error = new DialogMessage(message);
+            final IntellijErrorDialog errorDialog = new IntellijErrorDialog(error);
+            final Window window = errorDialog.getWindow();
+            final Component modalityStateComponent = window.getParent() == null ? window : window.getParent();
+            ApplicationManager.getApplication().invokeLater(errorDialog::show, ModalityState.stateForComponent(modalityStateComponent));
+        });
+    }
+
+    private void showNotification(@Nonnull IAzureMessage raw) {
+        final IntellijAzureMessage message = new NotificationMessage(raw);
         final NotificationType type = types.get(message.getType());
-        final String content = message.getContent(true);
+        final String content = message.getContent();
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         notification.addActions(message.getAnActions());
         Notifications.Bus.notify(notification, message.getProject());

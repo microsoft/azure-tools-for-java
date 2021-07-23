@@ -40,7 +40,7 @@ public class ConnectToSQLAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
         final ISqlServer server = this.node.getServer();
-        dialog.setResource(new DatabaseResource(DatabaseResource.Definition.SQL_SERVER.getType(), server.entity().getId(), null));
+        dialog.setResource(new DatabaseResource(SqlServerDatabaseResource.Definition.SQL_SERVER.getType(), server.entity().getId(), null));
         dialog.show();
     }
 

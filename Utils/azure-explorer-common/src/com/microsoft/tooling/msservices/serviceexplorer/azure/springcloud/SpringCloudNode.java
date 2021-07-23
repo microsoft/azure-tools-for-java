@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -18,6 +19,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.BasicActionBuilder;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import java.util.Map;
 public class SpringCloudNode extends RefreshableNode implements TelemetryProperties {
     private static final String EMPTY_POSTFIX = " (Empty)";
 
+    @Getter
     private final SpringCloudCluster cluster;
 
     public SpringCloudNode(AzureRefreshableNode parent, SpringCloudCluster cluster) {
@@ -64,6 +67,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     }
 
     @Override
+    @AzureOperation(name = "springcloud|app.list.cluster", params = "this.cluster.name()", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         final List<SpringCloudApp> apps = cluster.refresh().apps();
         this.setName(CollectionUtils.isEmpty(apps) ? this.cluster.name() + EMPTY_POSTFIX : this.cluster.name());

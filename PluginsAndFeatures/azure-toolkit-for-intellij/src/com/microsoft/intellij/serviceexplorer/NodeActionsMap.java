@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAct
 import com.microsoft.azure.toolkit.intellij.mysql.action.CreateMySQLAction;
 import com.microsoft.azure.toolkit.intellij.mysql.action.OpenMySQLByToolsAction;
 import com.microsoft.azure.toolkit.intellij.connector.mysql.ConnectToMySQLAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringCloudAppAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.CreateSqlServerAction;
 import com.microsoft.azure.toolkit.intellij.sqlserver.OpenSqlServerByToolsAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
@@ -50,6 +52,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -97,7 +100,6 @@ public class NodeActionsMap {
         node2Actions.put(ExternalStorageNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
-        //noinspection unchecked
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(AddNewClusterAction.class).build());
@@ -105,9 +107,8 @@ public class NodeActionsMap {
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(LinkSqlServerBigDataClusterAction.class).build());
 
-        List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
-        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class,
-                UpdateDeploymentAction.class, EditDeploymentAction.class));
+        final List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>(
+                Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class, UpdateDeploymentAction.class, EditDeploymentAction.class));
 
         node2Actions.put(DeploymentNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .addAll(deploymentNodeList).build());
@@ -118,8 +119,14 @@ public class NodeActionsMap {
         node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(CreateDeploymentAction.class).build());
 
+        node2Actions.put(SpringCloudNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateSpringCloudAppAction.class)
+                .build());
+
         node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(SpringCloudStreamingLogAction.class).build());
+                .add(SpringCloudStreamingLogAction.class)
+                .add(DeploySpringCloudAppAction.class)
+                .build());
 
         node2Actions.put(FunctionAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());

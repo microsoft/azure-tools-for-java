@@ -6,12 +6,10 @@
 package com.microsoft.intellij;
 
 import com.intellij.openapi.application.ApplicationInfo;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsConfiguration;
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginHelper;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.UUID;
 
 public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
@@ -19,7 +17,6 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     // eventname for new telemetry
     static final String EVENT_NAME = "AzurePlugin.Intellij";
     static final String sessionId = UUID.randomUUID().toString();
-    static final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
     static final String ide = getIDE();
 
     private static final String getIDE() {
@@ -34,22 +31,22 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
 
     @Override
     public String pluginVersion() {
-        return DataOperations.getProperty(dataFile, AzureBundle.message("pluginVersion"));
+        return AzurePlugin.PLUGIN_VERSION;
     }
 
     @Override
     public String installationId() {
-        return DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
+        return AzureConfigurations.getInstance().getState().installationId();
     }
 
     @Override
     public String preferenceVal() {
-        return DataOperations.getProperty(dataFile, AzureBundle.message("prefVal"));
+        return String.valueOf(AzureConfigurations.getInstance().getState().allowTelemetry());
     }
 
     @Override
     public boolean validated() {
-        return new File(dataFile).exists();
+        return StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().installationId());
     }
 
     @Override

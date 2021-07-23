@@ -6,13 +6,17 @@
 package com.microsoft.azuretools.utils;
 
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.azure.toolkit.lib.Azure;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -93,7 +97,7 @@ public class AzureCliUtils {
      */
     public static CommandUtils.CommandExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
-        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
+        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters, getProxyEnvs());
         CommandUtils.CommandExecOutput commandExecOutput = new CommandUtils.CommandExecOutput();
         if (ArrayUtils.isEmpty(sucessKeyWords) && ArrayUtils.isEmpty(failedKeyWords)) {
             commandExecOutput.setSuccess(true);
@@ -129,7 +133,7 @@ public class AzureCliUtils {
     }
 
     private static boolean isCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
-        DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
+        DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters, getProxyEnvs());
         resultHandler.waitFor(CMD_EXEC_TIMEOUT);
         int exitValue = resultHandler.getExitValue();
         logger.info("exitCode: " + exitValue);
@@ -140,7 +144,7 @@ public class AzureCliUtils {
     }
 
     private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) throws IOException, InterruptedException {
-        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
+        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters, getProxyEnvs());
         executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
         int exitValue = executionOutput.getResultHandler().getExitValue();
         logger.info("exitCode: " + exitValue);
@@ -148,6 +152,17 @@ public class AzureCliUtils {
             return executionOutput.getOutputStream().toString();
         }
         return null;
+    }
+
+    private static Map<String, String> getProxyEnvs() {
+        final InetSocketAddress proxy = Azure.az().config().getHttpProxy();
+        Map<String, String> env = new HashMap<>();
+        if (proxy != null) {
+            String proxyStr = String.format("http://%s:%s", proxy.getHostString(), proxy.getPort());
+            env.put("HTTPS_PROXY", proxyStr);
+            env.put("HTTP_PROXY", proxyStr);
+        }
+        return env;
     }
 
     private static boolean checkCommendExecComplete(String outputMessage, String errorMessage, String[] completeKeyWords) {

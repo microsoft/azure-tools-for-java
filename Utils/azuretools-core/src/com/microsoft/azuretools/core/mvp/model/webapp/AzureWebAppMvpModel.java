@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Objects;
 
 // todo: Refactor to tasks in app service library
 @Deprecated
@@ -229,7 +230,8 @@ public class AzureWebAppMvpModel {
 
         final DeployType deployType = getDeployTypeByWebContainer(deployTarget.getRuntime().getWebContainer());
         // java se runtime will always deploy to root
-        if (isDeployToRoot || deployTarget.getRuntime().getWebContainer() == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE) {
+        if (isDeployToRoot ||
+                Objects.equals(deployTarget.getRuntime().getWebContainer(), com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
             deployTarget.deploy(deployType, file);
         } else {
             final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
@@ -241,11 +243,12 @@ public class AzureWebAppMvpModel {
         deployTarget.start();
     }
 
+    // todo: get deploy type with runtime&artifact
     private static DeployType getDeployTypeByWebContainer(com.microsoft.azure.toolkit.lib.appservice.model.WebContainer webContainer) {
-        if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE) {
+        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JAVA_SE)) {
             return DeployType.JAR;
         }
-        if (webContainer == com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72) {
+        if (Objects.equals(webContainer, com.microsoft.azure.toolkit.lib.appservice.model.WebContainer.JBOSS_72)) {
             return DeployType.EAR;
         }
         return DeployType.WAR;

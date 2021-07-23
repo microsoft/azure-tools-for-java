@@ -6,6 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -29,6 +30,7 @@ public class SpringCloudModule extends AzureRefreshableNode {
     }
 
     @Override
+    @AzureOperation(name = "springcloud|cluster.list.subscription|selected", type = AzureOperation.Type.ACTION)
     protected void refreshItems() throws AzureCmdException {
         Azure.az(AzureSpringCloud.class).clusters(true).forEach(cluster -> {
             final SpringCloudNode node = new SpringCloudNode(this, cluster);

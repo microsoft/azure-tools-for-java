@@ -28,8 +28,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.functions.annotation.StorageAccount;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionApp;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
@@ -39,6 +37,7 @@ import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -77,8 +76,9 @@ public class FunctionUtils {
     private static final String AZURE_FUNCTIONS = "azure-functions";
     private static final String AZURE_FUNCTION_CUSTOM_BINDING_CLASS =
             "com.microsoft.azure.functions.annotation.CustomBinding";
-    private static Map<BindingEnum, List<String>> REQUIRED_ATTRIBUTE_MAP = new HashMap<>();
+    private static final Map<BindingEnum, List<String>> REQUIRED_ATTRIBUTE_MAP = new HashMap<>();
     private static final List<String> CUSTOM_BINDING_RESERVED_PROPERTIES = Arrays.asList("type", "name", "direction");
+    private static final String AZURE_FUNCTIONS_APP_SETTINGS = "Azure Functions App Settings";
 
     static {
         //initialize required attributes, which will be saved to function.json even if it equals to its default value
@@ -91,22 +91,15 @@ public class FunctionUtils {
             return;
         }
         final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
-        IdeaSecureStore.getInstance().savePassword(key, appSettingsJsonValue);
+        IdeaSecureStore.getInstance().savePassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null, appSettingsJsonValue);
     }
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
         if (StringUtils.isEmpty(key)) {
             return new HashMap<>();
         }
-        final String value = IdeaSecureStore.getInstance().loadPassword(key);
+        final String value = IdeaSecureStore.getInstance().loadPassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null);
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
-    }
-
-    public static String getFunctionJavaVersion(IFunctionApp functionApp) {
-        if (functionApp.getRuntime().getJavaVersion() == JavaVersion.OFF) {
-            return null;
-        }
-        return functionApp.getRuntime().getJavaVersion().getValue();
     }
 
     public static File getTempStagingFolder() {
@@ -115,7 +108,7 @@ public class FunctionUtils {
             final File file = path.toFile();
             FileUtils.forceDeleteOnExit(file);
             return file;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new AzureToolkitRuntimeException("failed to get temp staging folder", e);
         }
     }
@@ -130,7 +123,7 @@ public class FunctionUtils {
             if (stagingFolder != null) {
                 FileUtils.deleteDirectory(stagingFolder);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             // swallow exceptions while clean up
         }
     }
@@ -195,7 +188,7 @@ public class FunctionUtils {
         return methods.toArray(new PsiMethod[0]);
     }
 
-    public static final Path getDefaultHostJson(Project project) {
+    public static Path getDefaultHostJson(Project project) {
         return new File(project.getBasePath(), "host.json").toPath();
     }
 
@@ -209,7 +202,7 @@ public class FunctionUtils {
             final File result = File.createTempFile("host", ".json");
             FileUtils.write(result, DEFAULT_HOST_JSON, Charset.defaultCharset());
             return result.toPath();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             return null;
         }
     }
@@ -290,7 +283,11 @@ public class FunctionUtils {
     }
 
     public static String getFuncPath() throws IOException, InterruptedException {
-        return FunctionCliResolver.resolveFunc();
+        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
+        if (StringUtils.isBlank(state.functionCoreToolsPath())) {
+            return FunctionCliResolver.resolveFunc();
+        }
+        return state.functionCoreToolsPath();
     }
 
     public static List<String> getFunctionBindingList(Map<String, FunctionConfiguration> configMap) {
@@ -340,7 +337,7 @@ public class FunctionUtils {
         for (final PsiMethod method : methods) {
             final PsiAnnotation annotation = AnnotationUtil.findAnnotation(method,
                                                                            FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS);
-            String functionName = AnnotationUtil.getDeclaredStringAttributeValue(annotation, "value");
+            final String functionName = AnnotationUtil.getDeclaredStringAttributeValue(annotation, "value");
             configMap.put(functionName, generateConfiguration(method));
         }
         return configMap;
@@ -402,11 +399,11 @@ public class FunctionUtils {
     }
 
     private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureExecutionException {
-        PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
+        final PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
         if (referenceElement == null) {
             return null;
         }
-        PsiAnnotation customBindingAnnotation =
+        final PsiAnnotation customBindingAnnotation =
                 AnnotationUtil.findAnnotation((PsiModifierListOwner) referenceElement.resolve(),
                                               AZURE_FUNCTION_CUSTOM_BINDING_CLASS);
         if (customBindingAnnotation == null) {
@@ -419,9 +416,9 @@ public class FunctionUtils {
                                                                                                           customBindingAnnotation,
                                                                                                           null);
 
-        Map<String, Object> mergedMap = new HashMap<>(annotationProperties);
+        final Map<String, Object> mergedMap = new HashMap<>(annotationProperties);
         customBindingProperties.forEach(mergedMap::putIfAbsent);
-        Binding extendBinding = new Binding(BindingEnum.CustomBinding) {
+        final Binding extendBinding = new Binding(BindingEnum.CustomBinding) {
 
             public String getName() {
                 return (String) mergedMap.get("name");
@@ -514,7 +511,7 @@ public class FunctionUtils {
         if (module == null) {
             return false;
         }
-        CompilerModuleExtension cme = CompilerModuleExtension.getInstance(module);
+        final CompilerModuleExtension cme = CompilerModuleExtension.getInstance(module);
         if (cme == null) {
             return false;
         }

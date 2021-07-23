@@ -235,7 +235,7 @@ class SparkScalaLocalConsoleRunConfiguration(private val scalaConsoleRunConfDele
             val libraryType = newLibConf.libraryType
             val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Apache Spark Console(auto-fix): $libraryCoord")
 
-            val editor = NewLibraryEditor(libraryType, newLibConf.properties)
+            val editor = NewLibraryEditor(libraryType, null)
             newLibConf.addRoots(editor)
             val model = library.modifiableModel
             editor.applyTo(model as LibraryEx.ModifiableModelEx)

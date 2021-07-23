@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceCompletionContributor;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -21,9 +20,9 @@ public class MySQLSpringDatasourceCompletionContributor extends SpringDatasource
     public List<LookupElement> generateLookupElements() {
         List<LookupElement> lookupElements = new ArrayList<>();
         lookupElements.add(LookupElementBuilder
-                .create(DatabaseResource.Definition.AZURE_MYSQL.getType(), "spring.datasource.url")
+                .create(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType(), "spring.datasource.url")
                 .withIcon(AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO))
-                .withInsertHandler(new SpringDatasourceCompletionContributor.MyInsertHandler(DatabaseResource.Definition.AZURE_MYSQL.getType()))
+                .withInsertHandler(new SpringDatasourceCompletionContributor.MyInsertHandler(MySQLDatabaseResource.Definition.AZURE_MYSQL.getType()))
                 .withBoldness(true)
                 .withTypeText("String")
                 .withTailText(" (Azure Database for MySQL)"));

@@ -5,28 +5,27 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.spark.task;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OutputMetrics {
     private long bytesWritten;
 
     private long recordsWritten;
 
-    public long getBytesWritten ()
-    {
+    public long getBytesWritten() {
         return bytesWritten;
     }
 
-    public void setBytesWritten (long bytesWritten)
-    {
+    public void setBytesWritten(long bytesWritten) {
         this.bytesWritten = bytesWritten;
     }
 
-    public long getRecordsWritten ()
-    {
+    public long getRecordsWritten() {
         return recordsWritten;
     }
 
-    public void setRecordsWritten (long recordsWritten)
-    {
+    public void setRecordsWritten(long recordsWritten) {
         this.recordsWritten = recordsWritten;
     }
 }

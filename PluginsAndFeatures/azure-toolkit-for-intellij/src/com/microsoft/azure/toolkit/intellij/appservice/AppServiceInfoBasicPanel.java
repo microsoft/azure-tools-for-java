@@ -49,7 +49,9 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     private RuntimeComboBox selectorRuntime;
     private AzureArtifactComboBox selectorApplication;
     private TitledSeparator deploymentTitle;
-    private JLabel deploymentLabel;
+    private JLabel lblArtifact;
+    private JLabel lblName;
+    private JLabel lblPlatform;
 
     private Subscription subscription;
 
@@ -75,6 +77,10 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         this.setDeploymentVisible(false);
         this.config = initConfig();
         setData(this.config);
+
+        this.lblName.setLabelFor(textName);
+        this.lblPlatform.setLabelFor(selectorRuntime);
+        this.lblArtifact.setLabelFor(selectorApplication);
     }
 
     @SneakyThrows
@@ -146,7 +152,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     public void setDeploymentVisible(boolean visible) {
         this.deploymentTitle.setVisible(visible);
-        this.deploymentLabel.setVisible(visible);
+        this.lblArtifact.setVisible(visible);
         this.selectorApplication.setVisible(visible);
     }
 }

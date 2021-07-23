@@ -31,28 +31,28 @@ public class WebAppNode extends WebAppBaseNode {
     public static final String SSH_INTO = "SSH into Web App (Preview)";
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
-    private final IWebApp webappManager;
+    private final IWebApp webApp;
 
-    public WebAppNode(WebAppModule parent, IWebApp webAppManager) {
-        super(parent, LABEL, webAppManager);
-        this.webappManager = webAppManager;
-        loadActions();
+    public WebAppNode(WebAppModule parent, IWebApp webApp) {
+        super(parent, LABEL, webApp);
+        this.webApp = webApp;
     }
 
-    public IWebApp getWebappManager() {
-        return webappManager;
+    public IWebApp getWebApp() {
+        return webApp;
     }
 
     @Override
     public @Nullable AzureIconSymbol getIconSymbol() {
-        boolean isLinux = webappManager.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
+        if (WebAppBaseState.UPDATING.equals(state)) {
+            return AzureIconSymbol.WebApp.UPDATING;
+        }
+        boolean isLinux = webApp.getRuntime().getOperatingSystem() != OperatingSystem.WINDOWS;
         boolean running = WebAppBaseState.RUNNING.equals(state);
-        boolean updating = WebAppBaseState.UPDATING.equals(state);
         if (isLinux) {
-            return running ? AzureIconSymbol.WebApp.RUNNING_ON_LINUX :
-                    updating ? AzureIconSymbol.WebApp.UPDATING_ON_LINUX : AzureIconSymbol.WebApp.STOPPED_ON_LINUX;
+            return running ? AzureIconSymbol.WebApp.RUNNING_ON_LINUX : AzureIconSymbol.WebApp.STOPPED_ON_LINUX;
         } else {
-            return running ? AzureIconSymbol.WebApp.RUNNING : updating ? AzureIconSymbol.WebApp.UPDATING : AzureIconSymbol.WebApp.STOPPED;
+            return running ? AzureIconSymbol.WebApp.RUNNING : AzureIconSymbol.WebApp.STOPPED;
         }
     }
 
@@ -64,9 +64,9 @@ public class WebAppNode extends WebAppBaseNode {
     }
 
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webappManager));
-        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webappManager));
-        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webappManager));
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webApp));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webApp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webApp));
     }
 
     @Override
@@ -75,8 +75,9 @@ public class WebAppNode extends WebAppBaseNode {
         addAction(initActionBuilder(this::start).withAction(AzureActionEnum.START).withBackgroudable(true).build());
         addAction(initActionBuilder(this::restart).withAction(AzureActionEnum.RESTART).withBackgroudable(true).build());
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         addAction(initActionBuilder(this::openInBrowser).withAction(AzureActionEnum.OPEN_IN_BROWSER).withBackgroudable(true).build());
-        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).build());
+        addAction(initActionBuilder(this::showProperties).withAction(AzureActionEnum.SHOW_PROPERTIES).withBackgroudable(true).build());
         super.loadActions();
     }
 
@@ -90,20 +91,20 @@ public class WebAppNode extends WebAppBaseNode {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.webappManager.entity().getRegion().getName());
+        properties.put(AppInsightsConstants.Region, this.webApp.entity().getRegion().getName());
         return properties;
     }
 
     public String getWebAppId() {
-        return this.webappManager.id();
+        return this.webApp.id();
     }
 
     public String getWebAppName() {
-        return this.webappManager.name();
+        return this.webApp.name();
     }
 
     public Runtime getWebAppRuntime() {
-        return this.webappManager.getRuntime();
+        return this.webApp.getRuntime();
     }
 
     @Override
@@ -121,25 +122,30 @@ public class WebAppNode extends WebAppBaseNode {
 
     @AzureOperation(name = "webapp.start", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void start() {
-        this.webappManager.start();
+        this.webApp.start();
         this.renderNode(WebAppBaseState.RUNNING);
     }
 
     @AzureOperation(name = "webapp.stop", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void stop() {
-        this.webappManager.stop();
+        this.webApp.stop();
         this.renderNode(WebAppBaseState.STOPPED);
     }
 
     @AzureOperation(name = "webapp.restart", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void restart() {
-        this.webappManager.restart();
+        this.webApp.restart();
         this.renderNode(WebAppBaseState.RUNNING);
+    }
+
+    @AzureOperation(name = "webapp.open_portal", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        this.openResourcesInPortal(this.webApp.subscriptionId(), this.webApp.id());
     }
 
     @AzureOperation(name = "webapp.open_browser", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
-        DefaultLoader.getUIHelper().openInBrowser("http://" + this.webappManager.hostName());
+        DefaultLoader.getUIHelper().openInBrowser("http://" + this.webApp.hostName());
     }
 
     @AzureOperation(name = "webapp.show_properties", params = {"this.webapp.name()"}, type = AzureOperation.Type.ACTION)

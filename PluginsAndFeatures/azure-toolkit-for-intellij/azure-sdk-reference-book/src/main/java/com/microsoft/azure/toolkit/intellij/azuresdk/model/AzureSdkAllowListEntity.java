@@ -20,4 +20,8 @@ public class AzureSdkAllowListEntity {
     @JsonProperty("GroupId")
     private String groupId;
 
+    public String getPackageName() {
+        return String.format("%s/%s", groupId, artifactId);
+    }
+
 }

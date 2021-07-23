@@ -25,7 +25,6 @@ import com.intellij.ui.EditorCustomization;
 import com.intellij.ui.EditorTextField;
 import com.intellij.ui.EditorTextFieldProvider;
 import com.intellij.ui.SoftWrapsEditorCustomization;
-import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
@@ -61,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -78,9 +78,8 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     private TextFieldWithBrowseButton certFileTextField;
     private AzureCommentLabel comment;
     private final Project project;
-    private boolean intermediateState = false;
     private AuthConfiguration auth = new AuthConfiguration();
-
+    private AtomicBoolean intermediateState = new AtomicBoolean(false);
 
     protected ServicePrincipalLoginDialog(@Nonnull Project project) {
         super(project);
@@ -256,24 +255,28 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     private void uiTextComponents2Json() {
-        if (intermediateState) {
+        if (!intermediateState.compareAndSet(false, true)) {
             return;
         }
-        Map<String, String> map = new LinkedHashMap<>();
-        AuthConfiguration data = getData();
+        try {
+            Map<String, String> map = new LinkedHashMap<>();
+            AuthConfiguration data = getData();
 
-        if (this.certificateRadioButton.isSelected()) {
-            map.put("fileWithCertAndPrivateKey", data.getCertificate());
-        } else {
-            String password = StringUtils.isNotBlank(data.getKey()) ? "<hidden>" : "<empty>";
-            map.put("password", password);
-        }
-        map.put("appId", data.getClient());
-        map.put("tenant", data.getTenant());
-        String text = JsonUtils.getGson().toJson(map);
-        if (!StringUtils.equals(jsonDataEditor.getText(), text)) {
-            this.jsonDataEditor.setText(text);
-            this.jsonDataEditor.setCaretPosition(0);
+            if (this.certificateRadioButton.isSelected()) {
+                map.put("fileWithCertAndPrivateKey", data.getCertificate());
+            } else {
+                String password = StringUtils.isNotBlank(data.getKey()) ? "<hidden>" : "<empty>";
+                map.put("password", password);
+            }
+            map.put("appId", data.getClient());
+            map.put("tenant", data.getTenant());
+            String text = JsonUtils.getGson().toJson(map);
+            if (!StringUtils.equals(jsonDataEditor.getText(), text)) {
+                this.jsonDataEditor.setText(text);
+                this.jsonDataEditor.setCaretPosition(0);
+            }
+        } finally {
+            intermediateState.set(false);
         }
     }
 
@@ -281,8 +284,11 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         try {
             Map<String, String> map = JsonUtils.fromJson(json, HashMap.class);
             if (map != null) {
-                UIUtil.invokeLaterIfNeeded(() -> {
-                    intermediateState = true;
+                ApplicationManager.getApplication().invokeAndWait(() -> {
+                    if (!intermediateState.compareAndSet(false, true)) {
+                        return;
+                    }
+
                     try {
                         if (map.containsKey("appId")) {
                             this.clientIdTextField.setText(StringUtils.defaultString(map.get("appId")));
@@ -302,7 +308,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                             this.certFileTextField.setText(StringUtils.defaultString(map.get("fileWithCertAndPrivateKey")));
                         }
                     } finally {
-                        intermediateState = false;
+                        intermediateState.set(false);
                     }
 
                 });

@@ -9,9 +9,9 @@ import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -88,7 +88,7 @@ public class AppServiceFileNode extends AzureRefreshableNode implements Telemetr
             return;
         }
         final Runnable runnable = () -> open(context);
-        final IAzureOperationTitle title = AzureOperationBundle.title("appservice|file.get_content", file.getName(), file.getApp().name());
+        final AzureString title = AzureOperationBundle.title("appservice|file.get_content", file.getName(), file.getApp().name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), title, false, runnable));
     }
 

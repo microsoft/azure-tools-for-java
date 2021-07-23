@@ -11,23 +11,24 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.RunProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import rx.Observable;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
 
@@ -46,26 +47,34 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
+
         final Operation operation = createOperation();
-        Observable.fromCallable(
-            () -> {
-                try {
-                    operation.start();
-                    return this.executeSteps(processHandler, operation);
-                } finally {
-                    // Once the operation done, whether success or not, `setText` should not throw new exception
-                    processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
-                }
-            }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-                (res) -> {
-                    this.sendTelemetry(operation, null);
-                    this.onSuccess(res, processHandler);
-                },
-                (err) -> {
-                    err.printStackTrace();
-                    this.sendTelemetry(operation, err);
-                    this.onFail(err, processHandler);
-                });
+        final Disposable subscribe = Mono.fromCallable(() -> {
+            try {
+                operation.start();
+                return this.executeSteps(processHandler, operation);
+            } finally {
+                // Once the operation done, whether success or not, `setText` should not throw new exception
+                processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
+            }
+        }).subscribeOn(Schedulers.boundedElastic()).subscribe(
+            (res) -> {
+                this.sendTelemetry(operation, null);
+                this.onSuccess(res, processHandler);
+            },
+            (err) -> {
+                err.printStackTrace();
+                this.sendTelemetry(operation, err);
+                this.onFail(err, processHandler);
+            });
+
+        processHandler.addProcessListener(new ProcessAdapter() {
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+                subscribe.dispose();
+            }
+        });
+
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
@@ -94,7 +103,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
         final String errorMessage = (error instanceof AzureToolkitRuntimeException || error instanceof AzureToolkitException) ?
-                                    String.format("Failed to %s", error.getMessage()) : error.getMessage();
+            String.format("Failed to %s", error.getMessage()) : error.getMessage();
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
         AzureMessager.getMessager().error(error);

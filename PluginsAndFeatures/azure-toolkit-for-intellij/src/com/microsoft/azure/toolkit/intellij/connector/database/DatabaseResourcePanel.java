@@ -8,32 +8,35 @@ package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.AnimatedIcon;
-import com.microsoft.azure.management.mysql.v2020_01_01.Server;
-import com.microsoft.azure.management.mysql.v2020_01_01.implementation.DatabaseInner;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.TestConnectionActionPanel;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.UsernameComboBox;
+import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.mysql.model.MySqlDatabaseEntity;
+import com.microsoft.azure.toolkit.lib.mysql.service.AzureMySql;
+import com.microsoft.azure.toolkit.lib.mysql.service.MySqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlDatabaseEntity;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.AzureSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.ISqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.service.impl.SqlServer;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,7 +56,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * TODO(Qianjin): refactor "if (DatabaseResource.Definition.SQL_SERVER == definition)" codes once we migrate MySQL to track2 into common-msql-lib.
+ * TODO(Qianjin): refactor "if (definition instanceof SqlServerDatabaseResource.Definition)" codes once we migrate MySQL to track2 into common-msql-lib.
  */
 public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> {
     @Getter
@@ -71,9 +74,9 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     private TestConnectionActionPanel testConnectionActionPanel;
 
     private JdbcUrl jdbcUrl = null;
-    private DatabaseResource.Definition definition;
+    private final ResourceDefinition definition;
 
-    public DatabaseResourcePanel(DatabaseResource.Definition definition) {
+    public DatabaseResourcePanel(ResourceDefinition definition) {
         super();
         this.definition = definition;
         init();
@@ -91,7 +94,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
-        envPrefixTextField.setText(DatabaseResource.Definition.SQL_SERVER == definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
+        envPrefixTextField.setText(definition instanceof SqlServerDatabaseResource.Definition ? "AZURE_SQL_" : "AZURE_MYSQL_");
     }
 
     protected void initListeners() {
@@ -157,13 +160,15 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
 
     private void onDatabaseChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            if (DatabaseResource.Definition.SQL_SERVER == definition) {
-                String server = Optional.ofNullable((SqlServer) this.databaseComboBox.getServer()).map(sql -> sql.entity().getFullyQualifiedDomainName()).orElse(null);
+            if (definition instanceof SqlServerDatabaseResource.Definition) {
+                String server = Optional.ofNullable((SqlServer) this.databaseComboBox.getServer())
+                        .map(sql -> sql.entity().getFullyQualifiedDomainName()).orElse(null);
                 String database = Optional.ofNullable((SqlDatabaseEntity) e.getItem()).map(SqlDatabaseEntity::getName).orElse(null);
                 this.jdbcUrl = Objects.isNull(this.jdbcUrl) ? JdbcUrl.sqlserver(server, database) : this.jdbcUrl.setServerHost(server).setDatabase(database);
             } else {
-                String server = Optional.ofNullable((Server) this.databaseComboBox.getServer()).map(Server::fullyQualifiedDomainName).orElse(null);
-                String database = Optional.ofNullable((DatabaseInner) e.getItem()).map(DatabaseInner::name).orElse(null);
+                String server = Optional.ofNullable((MySqlServer) this.databaseComboBox.getServer())
+                        .map(mysql -> mysql.entity().getFullyQualifiedDomainName()).orElse(null);
+                String database = Optional.ofNullable((MySqlDatabaseEntity) e.getItem()).map(MySqlDatabaseEntity::getName).orElse(null);
                 this.jdbcUrl = Objects.isNull(this.jdbcUrl) ? JdbcUrl.mysql(server, database) : this.jdbcUrl.setServerHost(server).setDatabase(database);
             }
             this.urlTextField.setText(this.jdbcUrl.toString());
@@ -174,12 +179,14 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     private void onUrlEdited(FocusEvent e) {
         try {
             this.jdbcUrl = JdbcUrl.from(this.urlTextField.getText());
-            if (DatabaseResource.Definition.SQL_SERVER == definition) {
-                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(), sql -> ((ISqlServer) sql).entity().getFullyQualifiedDomainName()));
+            if (definition instanceof SqlServerDatabaseResource.Definition) {
+                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(),
+                        server -> ((ISqlServer) server).entity().getFullyQualifiedDomainName()));
                 this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), SqlDatabaseEntity::getName));
             } else {
-                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(), Server::fullyQualifiedDomainName));
-                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), DatabaseInner::name));
+                this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getServerHost(),
+                        server -> ((MySqlServer) server).entity().getFullyQualifiedDomainName()));
+                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(this.jdbcUrl.getDatabase(), MySqlDatabaseEntity::getName));
             }
         } catch (final Exception exception) {
             // TODO: messager.warning(...)
@@ -214,8 +221,8 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
         password.saveType(passwordSaveComboBox.getValue());
 
         final DatabaseResource resource = new DatabaseResource(definition.getType(),
-                DatabaseResource.Definition.SQL_SERVER == definition ?
-                ((SqlDatabaseEntity) databaseComboBox.getValue()).getId() : ((DatabaseInner) databaseComboBox.getValue()).id());
+                definition instanceof SqlServerDatabaseResource.Definition ?
+                ((SqlDatabaseEntity) databaseComboBox.getValue()).getId() : ((MySqlDatabaseEntity) databaseComboBox.getValue()).getId());
         resource.setPassword(password);
         resource.setUsername((String) usernameComboBox.getValue());
         resource.setJdbcUrl(this.jdbcUrl);
@@ -230,20 +237,30 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
                 this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(subscriptionId, Subscription::getId), true);
             });
             Optional.ofNullable(serverId.name()).ifPresent(name -> {
-                if (DatabaseResource.Definition.SQL_SERVER == definition) {
+                if (definition instanceof SqlServerDatabaseResource.Definition) {
                     this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name, server -> ((ISqlServer) server).entity().getName()), true);
                 } else {
-                    this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name, Server::name), true);
+                    this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(name, server -> ((MySqlServer) server).entity().getName()), true);
                 }
             });
         }));
         Optional.ofNullable(resource.getPassword()).ifPresent(config -> {
-            this.inputPasswordField.setText(String.valueOf(config.password()));
-            this.passwordSaveComboBox.setValue(config.saveType());
+            Optional.ofNullable(config.password()).ifPresent(password -> this.inputPasswordField.setText(String.valueOf(password)));
         });
-        Optional.ofNullable(resource.getDatabaseName()).ifPresent((dbName -> {
-            this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, DatabaseInner::name), true);
-        }));
+        if (Objects.nonNull(resource.getPassword()) && Objects.nonNull(resource.getPassword().saveType())) {
+            this.passwordSaveComboBox.setValue(resource.getPassword().saveType());
+        } else {
+            this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
+                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .orElse(Password.SaveType.UNTIL_RESTART));
+        }
+        Optional.ofNullable(resource.getDatabaseName()).ifPresent(dbName -> {
+            if (definition instanceof SqlServerDatabaseResource.Definition) {
+                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, SqlDatabaseEntity::getName), true);
+            } else {
+                this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, MySqlDatabaseEntity::getName), true);
+            }
+        });
         Optional.ofNullable(resource.getUsername())
             .ifPresent((username -> this.usernameComboBox.setValue(username)));
         Optional.ofNullable(resource.getEnvPrefix())
@@ -262,41 +279,39 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     }
 
     private void createUIComponents() {
-        if (DatabaseResource.Definition.SQL_SERVER == definition) {
+        if (definition instanceof SqlServerDatabaseResource.Definition) {
             // server
             this.serverComboBox = new ServerComboBox<SqlServer>();
             this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
-                    Azure.az(AzureSqlServer.class).subscription(this.serverComboBox.getSubscription().getId()).sqlServers().stream().map(e -> (SqlServer)e).collect(Collectors.toList()));
+                    Azure.az(AzureSqlServer.class).subscription(this.serverComboBox.getSubscription().getId())
+                            .sqlServers().stream().map(e -> (SqlServer) e).collect(Collectors.toList()));
             this.serverComboBox.setItemTextFunc((Function<SqlServer, String>) server -> server.entity().getName());
             // database
             this.databaseComboBox = new DatabaseComboBox<SqlServer, SqlDatabaseEntity>();
-            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() : ((SqlServer) this.databaseComboBox.getServer()).databases());
+            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ?
+                    Collections.emptyList() : ((SqlServer) this.databaseComboBox.getServer()).databases());
             this.databaseComboBox.setItemTextFunc((Function<SqlDatabaseEntity, String>) databaseEntity -> databaseEntity.getName());
             // username
             this.usernameComboBox = new UsernameComboBox<SqlServer>();
             this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
-                    Arrays.asList(((SqlServer) this.databaseComboBox.getServer()).entity().getAdministratorLoginName() + "@" + ((SqlServer) this.databaseComboBox.getServer()).entity().getName()));
+                    Arrays.asList(((SqlServer) this.databaseComboBox.getServer()).entity().getAdministratorLoginName() + "@" +
+                            ((SqlServer) this.databaseComboBox.getServer()).entity().getName()));
         } else {
             // server
-            this.serverComboBox = new ServerComboBox<Server>();
+            this.serverComboBox = new ServerComboBox<MySqlServer>();
             this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
-                    AuthMethodManager.getInstance().getAzureManager().getMySQLManager(this.serverComboBox.getSubscription().getId()).servers().list());
-            this.serverComboBox.setItemTextFunc((Function<Server, String>) server -> server.name());
+                    Azure.az(AzureMySql.class).subscription(this.serverComboBox.getSubscription().getId()).list());
+            this.serverComboBox.setItemTextFunc((Function<MySqlServer, String>) server -> server.entity().getName());
             // database
-            this.databaseComboBox = new DatabaseComboBox<Server, DatabaseInner>();
-            this.databaseComboBox.setItemsLoader(() -> {
-                if (Objects.isNull(this.databaseComboBox.getServer())) {
-                    return Collections.emptyList();
-                }
-                final Server server = (Server) this.databaseComboBox.getServer();
-                final String sid = ResourceId.fromString(server.id()).subscriptionId();
-                return AuthMethodManager.getInstance().getAzureManager().getMySQLManager(sid).databases().inner().listByServer(server.resourceGroupName(), server.name());
-            });
-            this.databaseComboBox.setItemTextFunc((Function<DatabaseInner, String>) databaseEntity -> databaseEntity.name());
+            this.databaseComboBox = new DatabaseComboBox<MySqlServer, MySqlDatabaseEntity>();
+            this.databaseComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ?
+                    Collections.emptyList() : ((MySqlServer) this.databaseComboBox.getServer()).databases());
+            this.databaseComboBox.setItemTextFunc((Function<MySqlDatabaseEntity, String>) databaseEntity -> databaseEntity.getName());
             // username
-            this.usernameComboBox = new UsernameComboBox<Server>();
+            this.usernameComboBox = new UsernameComboBox<MySqlServer>();
             this.usernameComboBox.setItemsLoader(() -> Objects.isNull(this.databaseComboBox.getServer()) ? Collections.emptyList() :
-                    Arrays.asList(((Server) this.databaseComboBox.getServer()).administratorLogin() + "@" + ((Server) this.databaseComboBox.getServer()).name()));
+                    Arrays.asList(((MySqlServer) this.databaseComboBox.getServer()).entity().getAdministratorLoginName() + "@" +
+                            ((MySqlServer) this.databaseComboBox.getServer()).entity().getName()));
         }
     }
 }

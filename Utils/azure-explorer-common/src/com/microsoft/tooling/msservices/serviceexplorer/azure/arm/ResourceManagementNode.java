@@ -8,7 +8,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -52,6 +51,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
     @Override
     protected void loadActions() {
         addAction(initActionBuilder(this::delete).withAction(AzureActionEnum.DELETE).withBackgroudable(true).withPromptable(true).build());
+        addAction(initActionBuilder(this::openInPortal).withAction(AzureActionEnum.OPEN_IN_PORTAL).withBackgroudable(true).build());
         super.loadActions();
     }
 
@@ -93,6 +93,11 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
     @AzureOperation(name = "arm|rg.delete", params = {"this.rgName"}, type = AzureOperation.Type.ACTION)
     private void delete() {
         getParent().removeNode(sid, rgName, ResourceManagementNode.this);
+    }
+
+    @AzureOperation(name = "arm|rg.open_portal", params = {"this.rgName"}, type = AzureOperation.Type.ACTION)
+    private void openInPortal() {
+        this.openResourcesInPortal(this.sid, this.getId());
     }
 
 }

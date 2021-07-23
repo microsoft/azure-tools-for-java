@@ -92,12 +92,6 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         super(name, new JavaRunConfigurationModule(project, true), factory);
 
         this.jobModel = jobModel;
-        // FIXME: Too many telemetries will be sent if we uncomment the following code
-        // EventUtil.logEvent(EventType.info,
-        //                    getSparkApplicationType().getValue(),
-        //                    TelemetryConstants.CREATE_NEW_RUN_CONFIG,
-        //                    null,
-        //                    null);
     }
 
     @Override
@@ -131,7 +125,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             try {
                 advModel.setClusterName(toSubmitModel.getClusterName());
                 advModel.setSshPassword(
-                        secureStore.loadPassword(advModel.getCredentialStoreAccount(), advModel.getSshUserName()));
+                        secureStore.loadPassword(advModel.getCredentialStoreAccount(), null, advModel.getSshUserName()));
             } catch (final Throwable ex) {
                 log().warn("Can't load SSH ${advModel.sshUserName}'s password from Secure Store", ex);
             }
@@ -147,7 +141,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
 
             if (blobSecService != null) {
                 try {
-                    storeModel.setStorageKey(secureStore.loadPassword(blobSecService, blobSecAccount));
+                    storeModel.setStorageKey(secureStore.loadPassword(blobSecService, null, blobSecAccount));
                 } catch (final Throwable ex) {
                     log().warn("Can't load Blob access key $storageAccount from Secure Store", ex);
                 }
@@ -161,7 +155,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
 
             if (gen2SecService != null) {
                 try {
-                    storeModel.setAccessKey(secureStore.loadPassword(gen2SecService, gen2SecAccount));
+                    storeModel.setAccessKey(secureStore.loadPassword(gen2SecService, null, gen2SecAccount));
                 } catch (final Throwable ex) {
                     log().warn("Can't load ADLS Gen2 access key $gen2Account from Secure Store", ex);
                 }
@@ -180,7 +174,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         if (advModel.enableRemoteDebug
                 && advModel.getSshAuthType() == UsePassword && StringUtils.isNoneBlank(advModel.getSshPassword())) {
             secureStore.savePassword(
-                    advModel.getCredentialStoreAccount(), advModel.getSshUserName(), advModel.getSshPassword());
+                    advModel.getCredentialStoreAccount(), null, advModel.getSshUserName(), advModel.getSshPassword());
         }
 
         // Artifacts uploading storage credentials
@@ -192,7 +186,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             final String blobSecService = getSecureStoreServiceOf(BLOB, blobSecAccount);
 
             if (blobSecService != null) {
-                secureStore.savePassword(blobSecService, blobSecAccount, storeModel.getStorageKey());
+                secureStore.savePassword(blobSecService, null, blobSecAccount, storeModel.getStorageKey());
                 log().info("The Blob access key for " + blobSecAccount + " has been saved into Secure Store.");
             }
         }
@@ -203,7 +197,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             final String gen2SecService = getSecureStoreServiceOf(ADLS_GEN2, gen2SecAccount);
 
             if (gen2SecService != null) {
-                secureStore.savePassword(gen2SecService, gen2SecAccount, storeModel.getAccessKey());
+                secureStore.savePassword(gen2SecService, null, gen2SecAccount, storeModel.getAccessKey());
                 log().info("The ADLS Gen2 access key for " + gen2SecAccount + " has been saved into Secure Store.");
             }
         }
@@ -364,6 +358,8 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
                 compileTask.forEach(task -> task.setEnabled(false));
                 buildArtifactTask.forEach(task -> task.setEnabled(false));
                 break;
+            default:
+                break;
         }
 
         return super.getBeforeRunTasks();
@@ -371,8 +367,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull final Executor executor, @NotNull
-    final ExecutionEnvironment executionEnvironment)
+    public RunProfileState getState(@NotNull final Executor executor, @NotNull final ExecutionEnvironment executionEnvironment)
             throws ExecutionException {
         Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
         final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DEBUG_TARGET_KEY);
@@ -482,4 +477,3 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         return this.getName() + this.getPresentableType();
     }
 }
-

@@ -15,11 +15,11 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.SimpleMessageAction;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -98,7 +98,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "webapp.create_detail", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private Single<IWebApp> createWebApp(final WebAppConfig config) {
-        final IAzureOperationTitle title = title("webapp.create_detail", config.getName());
+        final AzureString title = title("webapp.create_detail", config.getName());
         final AzureTask<IWebApp> task = new AzureTask<>(null, title, false, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
@@ -112,7 +112,7 @@ public class CreateWebAppAction extends NodeActionListener {
 
     @AzureOperation(name = "webapp.deploy_artifact", params = {"webapp.name()"}, type = AzureOperation.Type.ACTION)
     private void deploy(final IWebApp webapp, final Path application, final Project project) {
-        final IAzureOperationTitle title = title("webapp.deploy_artifact", webapp.name());
+        final AzureString title = title("webapp.deploy_artifact", webapp.name());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             final RunProcessHandler processHandler = new RunProcessHandler();
@@ -131,7 +131,7 @@ public class CreateWebAppAction extends NodeActionListener {
     private void refreshAzureExplorer(IWebApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
-                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, app));
             }
         });
     }

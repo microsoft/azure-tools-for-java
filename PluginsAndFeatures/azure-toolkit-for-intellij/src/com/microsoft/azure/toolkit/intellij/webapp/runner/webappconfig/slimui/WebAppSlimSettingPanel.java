@@ -75,6 +75,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JButton btnSlotHover;
     private AzureArtifactComboBox comboBoxArtifact;
     private WebAppComboBox comboBoxWebApp;
+    private JLabel lblArtifact;
+    private JLabel lblWebApp;
     private final HideableDecorator slotDecorator;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
@@ -115,6 +117,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         labelForNewSlotName.setLabelFor(txtNewSlotName);
         final JLabel labelForExistingSlotName = new JLabel("Slot Name");
         labelForExistingSlotName.setLabelFor(cbxSlotName);
+
+        lblArtifact.setLabelFor(comboBoxArtifact);
+        lblWebApp.setLabelFor(comboBoxWebApp);
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);

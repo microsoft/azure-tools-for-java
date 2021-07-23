@@ -7,8 +7,8 @@ package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.springcloud.dependency.SpringCloudDependencyManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.lang3.StringUtils;
-import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
 import org.jetbrains.idea.maven.project.*;
@@ -39,20 +39,16 @@ public class MavenUtils {
 
     public static String getSpringBootFinalJarFilePath(@NotNull Project ideaProject,
                                                        @NotNull MavenProject mavenProject) {
-        String finalName = null;
+        String finalName = mavenProject.getFinalName();
         try {
-            String xml = evaluateEffectivePom(ideaProject, mavenProject);
+            final String xml = evaluateEffectivePom(ideaProject, mavenProject);
             if (StringUtils.isNotEmpty(xml) && xml.contains(SPRING_BOOT_MAVEN_PLUGIN)) {
-                SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
-                finalName = manager.getPluginConfiguration("org.springframework.boot",
-                                                           SPRING_BOOT_MAVEN_PLUGIN, "finalName");
-
+                final SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
+                finalName = StringUtils.firstNonBlank(
+                    manager.getPluginConfiguration("org.springframework.boot", SPRING_BOOT_MAVEN_PLUGIN, "finalName"), finalName);
             }
-        } catch (MavenProcessCanceledException | DocumentException ex) {
-            // ignore
-        }
-        if (StringUtils.isEmpty(finalName)) {
-            finalName = mavenProject.getFinalName();
+        } catch (final Exception ex) {
+            AzureMessager.getMessager().warning(String.format("Can not evaluate effective pom, fall back to final jar %s", finalName));
         }
         return Paths.get(mavenProject.getBuildDirectory(), finalName + "." + mavenProject.getPackaging()).toString();
     }
@@ -61,9 +57,9 @@ public class MavenUtils {
                                               @NotNull MavenProject mavenProject) throws MavenProcessCanceledException {
         final MavenProjectsManager projectsManager = MavenProjectsManager.getInstance(ideaProject);
 
-        MavenEmbeddersManager embeddersManager = projectsManager.getEmbeddersManager();
-        MavenExplicitProfiles profiles = mavenProject.getActivatedProfilesIds();
-        MavenEmbedderWrapper embedder = embeddersManager.getEmbedder(mavenProject,
+        final MavenEmbeddersManager embeddersManager = projectsManager.getEmbeddersManager();
+        final MavenExplicitProfiles profiles = mavenProject.getActivatedProfilesIds();
+        final MavenEmbedderWrapper embedder = embeddersManager.getEmbedder(mavenProject,
                                                                      MavenEmbeddersManager.FOR_DEPENDENCIES_RESOLVE);
         embedder.clearCachesFor(mavenProject.getMavenId());
         return embedder.evaluateEffectivePom(mavenProject.getFile(),

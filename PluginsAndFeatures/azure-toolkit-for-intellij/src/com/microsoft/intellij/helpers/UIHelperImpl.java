@@ -5,6 +5,7 @@
 
 package com.microsoft.intellij.helpers;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -44,7 +45,6 @@ import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPrope
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.sqlserver.model.SqlServerEntity;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -75,10 +75,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 import org.apache.commons.lang.ArrayUtils;
@@ -529,9 +527,9 @@ public class UIHelperImpl implements UIHelper {
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getWebAppName(), sid, webAppId);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.WebApp.MODULE)));
-
         }
-        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+        final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
     }
 
     @Override
@@ -556,7 +554,8 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(), userData);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.DeploymentSlot.MODULE)));
         }
-        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+        final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
     }
 
     @Override
@@ -575,53 +574,49 @@ public class UIHelperImpl implements UIHelper {
             itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), subscriptionId, functionApId);
             itemVirtualFile.setFileType(new AzureFileType(type, AzureIconLoader.loadIcon(AzureIconSymbol.FunctionApp.MODULE)));
         }
-        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+        final LightVirtualFile finalItemVirtualFile = itemVirtualFile;
+        AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(finalItemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/));
     }
 
     @Override
-    public void openMySQLPropertyView(@NotNull MySQLNode node) {
+    public void openMySQLPropertyView(@NotNull String id, @NotNull Object project) {
         EventUtil.executeWithLog(ActionConstants.MySQL.SHOW_PROPERTIES, (operation) -> {
-            String name = node.getName();
-            String subscriptionId = node.getServer().entity().getSubscriptionId();
-            String nodeId = node.getId();
-            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            final ResourceId resourceId = ResourceId.fromString(id);
+            final FileEditorManager fileEditorManager = getFileEditorManager(resourceId.subscriptionId(), resourceId.id(), (Project) project);
             if (fileEditorManager == null) {
                 return;
             }
-            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, nodeId);
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, MySQLPropertyViewProvider.TYPE, resourceId.id());
             if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
+                itemVirtualFile = createVirtualFile(resourceId.name(), resourceId.subscriptionId(), resourceId.id());
                 itemVirtualFile.setFileType(new AzureFileType(MySQLPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.MODULE)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
                 if (editor.getName().equals(MySQLPropertyView.ID) && editor instanceof MySQLPropertyView) {
-                    ((MySQLPropertyView) editor).onReadProperty(subscriptionId, node.getServer().entity().getResourceGroup(), node.getServer().name());
+                    ((MySQLPropertyView) editor).onReadProperty(resourceId.subscriptionId(), resourceId.resourceGroupName(), resourceId.name());
                 }
             }
         });
     }
 
     @Override
-    public void openSqlServerPropertyView(@NotNull SqlServerNode node) {
+    public void openSqlServerPropertyView(@NotNull String id, @NotNull Object project) {
         EventUtil.executeWithLog(ActionConstants.SqlServer.SHOW_PROPERTIES, (operation) -> {
-            String name = node.getName();
-            String subscriptionId = node.getSubscriptionId();
-            String nodeId = node.getId();
-            final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, nodeId, (Project) node.getProject());
+            final ResourceId resourceId = ResourceId.fromString(id);
+            final FileEditorManager fileEditorManager = getFileEditorManager(resourceId.subscriptionId(), resourceId.id(), (Project) project);
             if (fileEditorManager == null) {
                 return;
             }
-            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SqlServerPropertyViewProvider.TYPE, nodeId);
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SqlServerPropertyViewProvider.TYPE, resourceId.id());
             if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(name, subscriptionId, nodeId);
+                itemVirtualFile = createVirtualFile(resourceId.name(), resourceId.subscriptionId(), resourceId.id());
                 itemVirtualFile.setFileType(new AzureFileType(SqlServerPropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SqlServer.MODULE)));
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
                 if (editor.getName().equals(SqlServerPropertyView.ID) && editor instanceof SqlServerPropertyView) {
-                    SqlServerEntity entity = node.getServer().entity();
-                    ((SqlServerPropertyView) editor).onReadProperty(subscriptionId, entity.getResourceGroup(), entity.getName());
+                    ((SqlServerPropertyView) editor).onReadProperty(resourceId.subscriptionId(), resourceId.resourceGroupName(), resourceId.name());
                 }
             }
         });

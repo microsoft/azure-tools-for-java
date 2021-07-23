@@ -6,50 +6,43 @@
 package com.microsoft.azure.hdinsight.sdk.rest.spark;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.AttemptWithAppId;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Application implements IConvertible
-{
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Application implements IConvertible {
     private String id;
 
     private List<Attempt> attempts;
 
     private String name;
 
-    public String getId ()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId (String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public List<Attempt> getAttempts ()
-    {
+    public List<Attempt> getAttempts() {
         return attempts;
     }
 
-    public void setAttempts (List<Attempt> attempts)
-    {
+    public void setAttempts(List<Attempt> attempts) {
         this.attempts = attempts;
     }
 
-    public String getName ()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName (String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 

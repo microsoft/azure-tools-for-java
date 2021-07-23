@@ -69,7 +69,7 @@ public enum CustomerSurvey implements ICustomerSurvey {
     }
 
     private static class Constants {
-        private static final Icon AZURE_ICON = IconLoader.getIcon("/icons/azure_large.png", CustomerSurvey.class);
+        private static final Icon AZURE_ICON = IconLoader.getIcon("/icons/Common/Azure.svg", CustomerSurvey.class);
         // Survey for azure client&mgmt SDK users
         private static final String AZURE_SDK_SURVEY = "Enjoy Azure SDKs?";
         private static final String AZURE_SDK_SURVEY_LINK = "https://www.surveymonkey.com/r/2D9YTRQ?src=intellij&ver=%s";

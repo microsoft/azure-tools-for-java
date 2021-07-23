@@ -22,7 +22,8 @@ import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
+import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azuretools.service.ServiceManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
@@ -35,6 +36,20 @@ import java.util.stream.Collectors;
 
 
 public class IdentityAzureManager extends AzureManagerBase {
+
+    private static final String SERVICE_PRINCIPAL_STORE_SERVICE = "Service Principal";
+    private SecureStore secureStore;
+
+    private static final String LEGACY_SECURE_STORE_SERVICE = "ADAuthManager";
+    private static final String LEGACY_SECURE_STORE_KEY = "cachedAuthResult";
+
+    public IdentityAzureManager() {
+        secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        if (secureStore != null) {
+            // forgot old password, since in new auth, refresh token will be stored through azure identity persistence layer
+            secureStore.forgetPassword(LEGACY_SECURE_STORE_SERVICE, LEGACY_SECURE_STORE_KEY, null);
+        }
+    }
 
     protected AzureTokenCredentials getCredentials(String tenantId) {
         return Azure.az(AzureAccount.class).account().getTokenCredentialForTenantV1(tenantId);
@@ -64,9 +79,11 @@ public class IdentityAzureManager extends AzureManagerBase {
     public List<Subscription> getSubscriptions() {
         return Azure.az(AzureAccount.class).account().getSubscriptions();
     }
+
     public void selectSubscriptionByIds(List<String> subscriptionIds) {
         Azure.az(AzureAccount.class).account().selectSubscription(subscriptionIds);
     }
+
     @Override
     public Subscription getSubscriptionById(String sid) {
         return Azure.az(AzureAccount.class).account().getSubscription(sid);
@@ -82,6 +99,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         }
         return null;
     }
+
     @Override
     public List<Subscription> getSelectedSubscriptions() {
         if (!isSignedIn()) {
@@ -111,7 +129,7 @@ public class IdentityAzureManager extends AzureManagerBase {
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {
-        if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null) {
+        if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null || authMethodDetails.getAuthType() == null) {
             return Mono.just(new AuthMethodDetails());
         }
         AuthType authType = authMethodDetails.getAuthType();
@@ -124,8 +142,14 @@ public class IdentityAzureManager extends AzureManagerBase {
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
                 } else {
-                    String key = MvpUIHelperFactory.getInstance().getMvpUIHelper().loadPasswordFromSecureStore(
-                        StringUtils.joinWith("|", "account", authMethodDetails.getClientId()));
+
+                    secureStore.migratePassword(
+                        "account|" + auth.getClient(),
+                        null,
+                        SERVICE_PRINCIPAL_STORE_SERVICE,
+                        auth.getClient(), null);
+                    String key = secureStore == null ? null : secureStore.loadPassword(SERVICE_PRINCIPAL_STORE_SERVICE,
+                        authMethodDetails.getClientId(), null);
                     if (StringUtils.isBlank(key)) {
                         throw new AzureToolkitRuntimeException(
                                 String.format("Cannot find SP security key for '%s' in intellij key pools.", authMethodDetails.getClientId()));
@@ -150,12 +174,23 @@ public class IdentityAzureManager extends AzureManagerBase {
             }
 
         } catch (Throwable e) {
+            if (StringUtils.isNotBlank(authMethodDetails.getClientId())
+                && authMethodDetails.getAuthType() == AuthType.SERVICE_PRINCIPAL && secureStore != null) {
+                secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, authMethodDetails.getClientId(), null);
+            }
             return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
         }
     }
 
+    private static String getSecureStoreKey(String clientId) {
+        return StringUtils.joinWith("|", "account", clientId);
+    }
+
     public Mono<AuthMethodDetails> signInServicePrincipal(AuthConfiguration auth) {
         return Azure.az(AzureAccount.class).loginAsync(auth, false).flatMap(Account::continueLogin).map(account -> {
+            if (secureStore != null && StringUtils.isNotBlank(auth.getKey())) {
+                secureStore.savePassword(SERVICE_PRINCIPAL_STORE_SERVICE, auth.getClient(), null, auth.getKey());
+            }
             AuthMethodDetails authMethodDetails = fromAccountEntity(account.getEntity());
             // special handle for SP
             authMethodDetails.setCertificate(auth.getCertificate());
@@ -195,7 +230,12 @@ public class IdentityAzureManager extends AzureManagerBase {
         if (!isSignedIn()) {
             return;
         }
-        Azure.az(AzureAccount.class).logout();
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        final AccountEntity account = az.account().getEntity();
+        if (StringUtils.isNotBlank(account.getClientId()) && account.getType() == AuthType.SERVICE_PRINCIPAL && secureStore != null) {
+            secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, account.getClientId(), null);
+        }
+        az.logout();
         super.drop();
     }
 

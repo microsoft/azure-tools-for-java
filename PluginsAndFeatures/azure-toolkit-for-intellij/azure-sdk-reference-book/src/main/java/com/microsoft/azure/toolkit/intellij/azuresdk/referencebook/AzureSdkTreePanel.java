@@ -104,7 +104,10 @@ public class AzureSdkTreePanel implements TextDocumentListenerAdapter {
 
     public void refresh(boolean... force) {
         try {
-            this.services = AzureSdkLibraryService.loadAzureSdkServices(force);
+            if(ArrayUtils.isNotEmpty(force) && force[0]){
+                AzureSdkLibraryService.refresh();
+            }
+            this.services = AzureSdkLibraryService.loadAzureSdkServices();
             this.categories = AzureSdkCategoryService.loadAzureSDKCategories();
             this.fillDescriptionFromCategoryIfMissing(this.categories, this.services);
             this.filter.debounce();

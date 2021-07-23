@@ -6,7 +6,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
-import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperationTitle;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ActionConstants;
@@ -78,10 +78,11 @@ class DelegateActionListener extends NodeActionListener {
             };
             final Object project = e.getAction().getNode().getProject();
             // todo: Add titles properties for services in common library
-            AzureTask task = new AzureTask(project, new IAzureOperationTitle.Simple(progressMessage) {
+            final String key = String.format("%s.%s", BackgroundActionListener.super.getServiceName(e), BackgroundActionListener.super.getOperationName(e));
+            AzureTask task = new AzureTask(project, new AzureString(null, key, new Object[0]) {
                 @Override
-                public String getName() {
-                    return String.format("%s.%s", BackgroundActionListener.super.getServiceName(e), BackgroundActionListener.super.getOperationName(e));
+                public String getString(Object... params) {
+                    return progressMessage;
                 }
             }, cancellable, runnable);
             if (conditionalModal) {

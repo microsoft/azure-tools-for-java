@@ -26,44 +26,55 @@ public final class ObjectConvertUtils {
     private static ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
     private static XmlMapper xmlMapper = new XmlMapper();
 
-    public static  <T> Optional<T> convertJsonToObject(@NotNull String jsonString, @NotNull Class<T> tClass) throws IOException {
-        return Optional.ofNullable(objectMapper.readValue(jsonString, tClass));
+    public static <T> Optional<T> convertJsonToObject(@NotNull String jsonString, @NotNull Class<T> clazz) throws IOException {
+        return Optional.ofNullable(objectMapper.readValue(jsonString, clazz));
     }
 
-    public static <T> T convertToObjectQuietly(@NotNull String jsonString, @NotNull Class<T> tClass) {
+    public static <T> T convertToObjectQuietly(@NotNull String jsonString, @NotNull Class<T> clazz) {
         try {
-            return objectMapper.readValue(jsonString, tClass);
+            return objectMapper.readValue(jsonString, clazz);
         } catch (IOException e) {
             // ignore the exception
         }
         return null;
     }
 
-    public static <T> Optional<T> convertEntityToObject(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
-        final String type = entity.getContentType().getValue().toLowerCase();
+    public static <T> Optional<T> convertEntityToObject(@NotNull HttpEntity entity, @NotNull Class<T> clazz) throws IOException {
+        // To handle complex response Content-Type value.
+        // Ref to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
+        // Like --
+        //   Content-Type: application/xml; charset=UTF-8
+        final String type = entity.getContentType().getValue().toLowerCase().split(";")[0].trim();
 
         switch (type) {
             case "application/json" :
-                return convertJsonToObject(EntityUtils.toString(entity), tClass);
+                return convertJsonToObject(EntityUtils.toString(entity), clazz);
             case "application/xml" :
-                return convertXmlToObject(EntityUtils.toString(entity), tClass);
+                return convertXmlToObject(EntityUtils.toString(entity), clazz);
+            default:
         }
         return Optional.empty();
     }
 
-    public static <T> Optional<List<T>> convertEntityToList(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
-        final String type = entity.getContentType().getValue().toLowerCase();
+    public static <T> Optional<List<T>> convertEntityToList(@NotNull HttpEntity entity, @NotNull Class<T> clazz) throws IOException {
+        // To handle complex response Content-Type value.
+        // Ref to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
+        // Like --
+        //   Content-Type: application/xml; charset=UTF-8
+        final String type = entity.getContentType().getValue().toLowerCase().split(";")[0].trim();
+
         switch (type) {
             case "application/json" :
-                return convertJsonToList(EntityUtils.toString(entity), tClass);
+                return convertJsonToList(EntityUtils.toString(entity), clazz);
             case "application/xml" :
-                return convertJsonToList(EntityUtils.toString(entity), tClass);
+                return convertXmlToList(EntityUtils.toString(entity), clazz);
+            default:
         }
         return Optional.empty();
     }
 
-    public static <T> Optional<List<T>> convertJsonToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
-        List<T> myLists = objectMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
+    public static <T> Optional<List<T>> convertJsonToList(@NotNull String jsonString, Class<T> clazz) throws IOException {
+        List<T> myLists = objectMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, clazz));
         return Optional.ofNullable(myLists);
     }
 
@@ -77,8 +88,8 @@ public final class ObjectConvertUtils {
         }
     }
 
-    public static <T> Optional<List<T>> convertXmlToList(@NotNull String jsonString, Class<T> tClass) throws IOException {
-        List<T> myLists = xmlMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, tClass));
+    public static <T> Optional<List<T>> convertXmlToList(@NotNull String jsonString, Class<T> clazz) throws IOException {
+        List<T> myLists = xmlMapper.readValue(jsonString, TypeFactory.defaultInstance().constructCollectionType(List.class, clazz));
         return Optional.ofNullable(myLists);
     }
 
@@ -100,7 +111,7 @@ public final class ObjectConvertUtils {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> convertXmlToObject(@NotNull String xmlString, Class<T> tClass) throws IOException {
-        return Optional.ofNullable(xmlMapper.readValue(xmlString, tClass));
+    public static <T> Optional<T> convertXmlToObject(@NotNull String xmlString, Class<T> clazz) throws IOException {
+        return Optional.ofNullable(xmlMapper.readValue(xmlString, clazz));
     }
 }

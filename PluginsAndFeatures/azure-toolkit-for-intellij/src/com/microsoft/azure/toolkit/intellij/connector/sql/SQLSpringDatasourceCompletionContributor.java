@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector.sql;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceCompletionContributor;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
@@ -21,9 +20,9 @@ public class SQLSpringDatasourceCompletionContributor extends SpringDatasourceCo
     public List<LookupElement> generateLookupElements() {
         List<LookupElement> lookupElements = new ArrayList<>();
         lookupElements.add(LookupElementBuilder
-                .create(DatabaseResource.Definition.SQL_SERVER.getType(), "spring.datasource.url")
+                .create(SqlServerDatabaseResource.Definition.SQL_SERVER.getType(), "spring.datasource.url")
                 .withIcon(AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO))
-                .withInsertHandler(new SpringDatasourceCompletionContributor.MyInsertHandler(DatabaseResource.Definition.SQL_SERVER.getType()))
+                .withInsertHandler(new SpringDatasourceCompletionContributor.MyInsertHandler(SqlServerDatabaseResource.Definition.SQL_SERVER.getType()))
                 .withBoldness(true)
                 .withTypeText("String")
                 .withTailText(" (SQL Server)"));
