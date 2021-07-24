@@ -145,16 +145,21 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final Subscription subscription = (Subscription) e.getItem();
             this.serverComboBox.setSubscription(subscription);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.serverComboBox.setSubscription(null);
         }
     }
 
     private void onServerChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             this.databaseComboBox.setServer(e.getItem());
             this.usernameComboBox.setServer(e.getItem());
+        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            this.databaseComboBox.setServer(null);
+            this.usernameComboBox.setServer(null);
         }
     }
 

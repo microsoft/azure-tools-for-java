@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
@@ -195,6 +195,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             final List<? extends T> items = this.loadItemsInner();
             this.setLoading(false);
             this.setItems(items);
+            if (CollectionUtils.isNotEmpty(items) && Objects.isNull(getValue())) {
+                setValue(items.get(0));
+            }
         } catch (final Exception e) {
             final Throwable rootCause = ExceptionUtils.getRootCause(e);
             if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {

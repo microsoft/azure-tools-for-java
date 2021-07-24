@@ -208,6 +208,14 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     private void createUIComponents() {
         this.consumerTypeSelector = new AzureComboBoxSimple<>(() -> ResourceManager.getDefinitions(ResourceDefinition.CONSUMER));
-        this.resourceTypeSelector = new AzureComboBoxSimple<>(() -> ResourceManager.getDefinitions(ResourceDefinition.RESOURCE));
+        this.resourceTypeSelector = new AzureComboBoxSimple<>(() -> ResourceManager.getDefinitions(ResourceDefinition.RESOURCE)) {
+            @Override
+            protected String getItemText(final Object item) {
+                if (item instanceof ResourceDefinition) {
+                    return ((ResourceDefinition<?>) item).getTitle();
+                }
+                return super.getItemText(item);
+            }
+        };
     }
 }
