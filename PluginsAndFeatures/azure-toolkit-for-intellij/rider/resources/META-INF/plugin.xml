@@ -25,7 +25,8 @@
       <html>
         <p>[3.50.1-2021.2]</p>
         <ul>
-          <li>Compatibility with Rider 2021.2 EAP</li>
+          <li>Compatibility with Rider 2021.2</li>
+          <li>Show editor warning about missing NuGet Packages instead of installing them automatically (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/445">#445</a>)</li>
         </ul>
         <p>[3.50.1-2021.1]</p>
         <ul>
@@ -237,7 +238,6 @@
 
     <postStartupActivity implementation="com.microsoft.intellij.AzureRiderPlugin" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsDetector" />
-    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgInstaller" />
     <postStartupActivity implementation="org.jetbrains.icons.RiderIconsPatcherRegistrar"/>
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" order="last" />
 
@@ -248,6 +248,7 @@
     <projectService serviceImplementation="org.jetbrains.plugins.azure.cloudshell.CloudShellService" />
 
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplateCustomizer" />
+    <editorNotificationProvider implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgNotificationProvider"/>
 
     <localInspection language="MSBuild"
                      enabledByDefault="true"

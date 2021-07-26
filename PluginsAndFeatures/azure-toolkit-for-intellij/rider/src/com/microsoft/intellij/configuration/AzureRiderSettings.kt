@@ -32,6 +32,7 @@ import java.io.File
 object AzureRiderSettings {
 
     // Dismiss notifications
+    const val DISMISS_NOTIFICATION_AZURE_FUNCTIONS_MISSING_NUPKG = "DismissAzureFunctionsMissingNupkg"
     const val DISMISS_NOTIFICATION_AZURE_AD_REGISTER = "DismissAzureAdRegistration"
 
     // Web Apps
