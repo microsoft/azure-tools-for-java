@@ -81,21 +81,17 @@ patchPluginXml {
     untilBuild = untilBuildValue
 }
 
-// Add Temporary workaround to call ':rider:prepareTestingSandbox' task - https://github.com/JetBrains/gradle-intellij-plugin/issues/743
-// TODO: Remove this dependsOn task after 1.1.4 version of 'org.jetbrains.intellij' plugin is released
 test {
     description = "Rider unit tests."
-    dependsOn ':rider:buildPlugin', prepareTestingSandbox
+    dependsOn ':rider:buildPlugin'
 
     useTestNG()
 }
 
-// Add Temporary workaround to call ':rider:prepareTestingSandbox' task - https://github.com/JetBrains/gradle-intellij-plugin/issues/743
-// TODO: Remove this dependsOn task after 1.1.4 version of 'org.jetbrains.intellij' plugin is released
 task integrationTest(type: Test) {
     description = "Rider Azure integration tests based on Rider Test Framework."
     group = LifecycleBasePlugin.VERIFICATION_GROUP
-    dependsOn ':rider:buildPlugin', prepareTestingSandbox
+    dependsOn ':rider:buildPlugin'
 
     environment("LOCAL_ENV_RUN", rider_test_local_env_run)
     environment("NO_FS_ROOTS_ACCESS_CHECK", true)

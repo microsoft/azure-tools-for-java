@@ -78,16 +78,11 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     protected void doRunInBackgroundableModal(final Runnable runnable, final AzureTask<?> task) {
         final PerformInBackgroundOption foreground = PerformInBackgroundOption.DEAF;
-        // refer https://jetbrains.org/intellij/sdk/docs/basics/disposers.html
-        final Disposable disposable = Disposer.newDisposable();
-        // refer https://github.com/JetBrains/intellij-community/commit/077c5558993b97cfb6f68ccc3cbe13065ba3cba8
-        Registry.get("ide.background.tasks").setValue(false, disposable);
         final Task.Backgroundable modalTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle().toString(), task.isCancellable(), foreground) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
                 task.getContext().setBackgrounded(false);
                 runnable.run();
-                Disposer.dispose(disposable);
             }
 
             @Override
