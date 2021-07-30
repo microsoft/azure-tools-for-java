@@ -161,16 +161,16 @@
                         </constraints>
                         <properties>
                           <labelFor value="7bd75"/>
-                          <text value="  Server:"/>
+                          <text value="  Server(Required):"/>
                         </properties>
                       </component>
                       <component id="34c8" class="javax.swing.JLabel">
                         <constraints>
-                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="5" use-parent-layout="false"/>
+                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
                           <labelFor value="f3f9c"/>
-                          <text value="Knox Port:"/>
+                          <text value="Knox Port(Required):"/>
                         </properties>
                       </component>
                       <component id="f3f9c" class="javax.swing.JTextField" binding="arisPortField">
@@ -190,7 +190,7 @@
                         </constraints>
                         <properties>
                           <labelFor value="626be"/>
-                          <text value="Name:"/>
+                          <text value="Name(Optional):"/>
                         </properties>
                       </component>
                       <component id="7bd75" class="com.microsoft.intellij.ui.HintTextField" binding="arisHostField" custom-create="true" default-binding="true">
@@ -265,11 +265,11 @@
                     <children>
                       <component id="79d99" class="javax.swing.JLabel" binding="userNameLabel">
                         <constraints>
-                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="5" use-parent-layout="false"/>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
                           <labelFor value="a362f"/>
-                          <text value="User Name:"/>
+                          <text value="User Name(Required):"/>
                         </properties>
                       </component>
                       <component id="a362f" class="javax.swing.JTextField" binding="userNameField">
@@ -286,7 +286,7 @@
                         </constraints>
                         <properties>
                           <labelFor value="fb9fe"/>
-                          <text value="Password:"/>
+                          <text value="Password(Required):"/>
                         </properties>
                       </component>
                       <component id="fb9fe" class="javax.swing.JPasswordField" binding="passwordField">
