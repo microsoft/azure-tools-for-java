@@ -15,7 +15,7 @@ import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -53,7 +53,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     private JPanel contentPane;
-    private com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox subscriptionComboBox;
+    private SubscriptionComboBox subscriptionComboBox;
     private JTextField nameTextField;
     private com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox regionComboBox;
     private JComboBox replicationComboBox;

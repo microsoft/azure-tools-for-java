@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.sqlserver.creation;
 
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;

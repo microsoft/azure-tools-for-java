@@ -18,7 +18,7 @@ import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Deployment.DefinitionStages.WithTemplate;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -71,7 +71,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     private JLabel usingExistRgRegionLabel;
     private JLabel usingExistRgRegionDetailLabel;
     private JLabel createNewRgRegionLabel;
-    private com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox subscriptionCb;
+    private SubscriptionComboBox subscriptionCb;
     private TextFieldWithBrowseButton templateTextField;
     private HyperlinkLabel lblTemplateHover;
     private TextFieldWithBrowseButton parametersTextField;

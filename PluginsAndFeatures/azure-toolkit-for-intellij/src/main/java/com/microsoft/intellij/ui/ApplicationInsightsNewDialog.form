@@ -48,7 +48,7 @@
         </constraints>
         <properties/>
       </component>
-      <component id="2248c" class="com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox" binding="comboSub" custom-create="true">
+      <component id="2248c" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="comboSub" custom-create="true">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

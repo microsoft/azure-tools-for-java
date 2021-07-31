@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.subscription;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,7 +24,7 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
         this.setValue(items.get(0)); // select the first subscription
     }
 
-    @NotNull
+    @Nonnull
     @Override
     @AzureOperation(
         name = "account|subscription.list.selected",

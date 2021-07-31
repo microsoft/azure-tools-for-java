@@ -17,7 +17,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -80,7 +80,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     // Widgets
     private JPanel pnlContent;
     private JTextField txtRedisName;
-    private com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox cbSubs;
+    private SubscriptionComboBox cbSubs;
     private JRadioButton rdoCreateNewGrp;
     private JTextField txtNewResGrp;
     private JRadioButton rdoUseExist;

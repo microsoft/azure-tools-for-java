@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.vm.createarmvm;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.VMWizardModel;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -30,7 +30,7 @@ public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements 
     private JPanel rootPanel;
     private JList createVmStepsList;
     private JButton buttonLogin;
-    private com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox subscriptionComboBox;
+    private SubscriptionComboBox subscriptionComboBox;
     private JLabel userInfoLabel;
     private Project project;
 

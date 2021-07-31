@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.AnimatedIcon;
-import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
