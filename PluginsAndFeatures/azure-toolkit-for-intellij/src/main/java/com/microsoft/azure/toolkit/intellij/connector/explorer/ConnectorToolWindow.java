@@ -22,8 +22,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoft.azure.toolkit.intellij.common.tree.AzureNode;
-import com.microsoft.azure.toolkit.intellij.common.tree.AzureTree;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResourceConnectorBusNotifier;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;

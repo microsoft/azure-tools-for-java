@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.common.tree;
+package com.microsoft.azure.toolkit.intellij.connector.explorer;
 
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.ui.PopupHandler;

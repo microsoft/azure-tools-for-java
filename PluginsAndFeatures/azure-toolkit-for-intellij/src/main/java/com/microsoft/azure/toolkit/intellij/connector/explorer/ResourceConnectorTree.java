@@ -11,8 +11,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.tree.AzureNode;
-import com.microsoft.azure.toolkit.intellij.common.tree.AzureTree;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResource;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResourceConnectorBusNotifier;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
