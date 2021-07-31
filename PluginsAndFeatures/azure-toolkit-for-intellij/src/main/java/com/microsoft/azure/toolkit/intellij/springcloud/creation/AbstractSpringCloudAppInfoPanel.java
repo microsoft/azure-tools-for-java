@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureEntityManager;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -68,7 +68,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         });
         if (Objects.nonNull(this.cluster)) {
             selectorSubscription.setValue(new ItemReference<>(this.cluster.subscriptionId(), Subscription::getId));
-            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), IAzureEntityManager::name));
+            selectorCluster.setValue(new ItemReference<>(this.cluster.name(), IAzureResource::name));
         }
     }
 
@@ -99,7 +99,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
 
     protected SpringCloudAppConfig getData(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
-        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureEntityManager::name).orElse(null));
+        config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureResource::name).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
@@ -117,7 +117,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         this.originalConfig = config;
         this.getTextName().setValue(config.getAppName());
         if (Objects.nonNull(config.getClusterName())) {
-            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), IAzureEntityManager::name));
+            this.getSelectorCluster().setValue(new ItemReference<>(config.getClusterName(), IAzureResource::name));
         }
         if (Objects.nonNull(config.getSubscriptionId())) {
             this.getSelectorSubscription().setValue(new ItemReference<>(config.getSubscriptionId(), Subscription::getId));
