@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2021 JetBrains s.r.o.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
@@ -18,13 +19,13 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,11 +35,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SubscriptionsDialog extends AzureDialogWrapper {
     private static final int CHECKBOX_COLUMN = 0;
@@ -138,9 +139,24 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         column.setHeaderValue(""); // Don't show title text
         column.setMinWidth(23);
         column.setMaxWidth(23);
+
         JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN);
         table.getTableHeader().setReorderingAllowed(false);
         new TableSpeedSearch(table);
+
+        // Workaround for focus stealing after clicking in the checkbox column.
+        // Observed while testing https://github.com/JetBrains/azure-tools-for-intellij/issues/518
+        table.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(final FocusEvent e) {
+                if (isModal() &&
+                    e.isTemporary() &&
+                    e.getCause() == FocusEvent.Cause.ACTIVATION &&
+                    e.getOppositeComponent() != null) {
+                    e.getComponent().requestFocus();
+                }
+            }
+        });
 
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override

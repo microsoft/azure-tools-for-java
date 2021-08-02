@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -33,6 +33,7 @@ import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.applyToComponent
 import com.intellij.ui.layout.panel
 import com.intellij.util.ui.UIUtil
+import com.jetbrains.rd.platform.util.application
 import com.microsoft.azuretools.authmanage.AuthMethod
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
@@ -61,11 +62,11 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
             lateinit var signInRow: Row
             signInRow = row {
                 button(RiderAzureBundle.message("settings.managedidentity.sign_in")) {
-                    AuthMethodManager.getInstance().signOut()
                     AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)
-                            .doOnSuccess { dialogPanel.reset() }
-                            .doOnError {
-                                logger.error("Error while signing in", it)
+                            .subscribe {
+                                application.invokeLater {
+                                    dialogPanel.reset()
+                                }
                             }
                 }
             }.onGlobalReset {
@@ -137,6 +138,9 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
                         if (isSignedInWithAzureCli()) {
                             subscriptionsList.setListData(subscriptionDetails?.toTypedArray()
                                     ?: emptyArray<SubscriptionDetail>())
+
+                            dialogPanel.revalidate()
+                            dialogPanel.repaint()
                         }
                     })
                 }
