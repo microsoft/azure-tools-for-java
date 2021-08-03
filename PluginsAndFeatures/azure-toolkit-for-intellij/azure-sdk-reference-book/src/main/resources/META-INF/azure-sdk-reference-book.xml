@@ -1,9 +1,5 @@
 <idea-plugin>
-    <resource-bundle>com.microsoft.azure.toolkit.operation.titles_sdk_intellij</resource-bundle>
-    <extensionPoints>
-    </extensionPoints>
-    <extensions defaultExtensionNs="com.intellij">
-    </extensions>
+    <resource-bundle>com.microsoft.azure.toolkit.operation.titles.sdk</resource-bundle>
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"
                 class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"

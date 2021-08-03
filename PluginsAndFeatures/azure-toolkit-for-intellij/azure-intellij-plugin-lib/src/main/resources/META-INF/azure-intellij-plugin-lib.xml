@@ -1,7 +1,5 @@
 <idea-plugin>
-    <resource-bundle>com.microsoft.azure.toolkit.operation.titles_action_common_intellij</resource-bundle>
-    <extensionPoints>
-    </extensionPoints>
+    <resource-bundle>com.microsoft.azure.toolkit.operation.title.action</resource-bundle>
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.common.preload.AzurePreloadingActivity"/>
