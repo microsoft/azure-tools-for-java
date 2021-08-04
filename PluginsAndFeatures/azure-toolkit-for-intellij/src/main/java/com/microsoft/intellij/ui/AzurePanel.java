@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -62,6 +63,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private TextFieldWithBrowseButton funcCoreToolsPath;
     private JLabel azureEnvDesc;
 
+    private AzureConfiguration originalData;
+
     public AzurePanel() {
     }
 
@@ -92,26 +95,40 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         funcCoreToolsPath.addBrowseFolderListener(null, "Path to Azure Functions Core Tools", null, FileChooserDescriptorFactory.createSingleFileDescriptor(),
             TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
 
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
-        if (StringUtils.isBlank(state.functionCoreToolsPath())) {
+        setData(Azure.az().config());
+    }
+
+    public void setData(AzureConfiguration config) {
+        if (StringUtils.isBlank(config.getFunctionCoreToolsPath())) {
             try {
                 funcCoreToolsPath.setText(FunctionCliResolver.resolveFunc());
             } catch (final Throwable ex) {
                 //ignore
             }
         } else {
-            funcCoreToolsPath.setText(state.functionCoreToolsPath());
+            funcCoreToolsPath.setText(config.getFunctionCoreToolsPath());
         }
 
-        allowTelemetryCheckBox.setSelected(state.allowTelemetry());
-
-        azureEnvironmentComboBox.setSelectedItem(ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(state.environment())
-            , AzureEnvironment.AZURE
-        ));
-
         savePasswordComboBox.setValue(Arrays.stream(Password.SaveType.values())
-            .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+            .filter(e -> StringUtils.equals(e.name(), config.getDatabasePasswordSaveType())).findAny()
             .orElse(Password.SaveType.UNTIL_RESTART));
+        allowTelemetryCheckBox.setSelected(config.getTelemetryEnabled());
+
+        azureEnvironmentComboBox.setSelectedItem(ObjectUtils.firstNonNull(AzureEnvironmentUtils.stringToAzureEnvironment(config.getCloud()),
+            AzureEnvironment.AZURE
+        ));
+        this.originalData = getData();
+    }
+
+    public AzureConfiguration getData() {
+        final AzureConfiguration data = new AzureConfiguration();
+        data.setCloud(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
+        if (savePasswordComboBox.getValue() != null) {
+            data.setDatabasePasswordSaveType(savePasswordComboBox.getValue().name());
+        }
+        data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
+        data.setFunctionCoreToolsPath(funcCoreToolsPath.getText());
+        return data;
     }
 
     private void displayDescriptionForAzureEnv() {
@@ -119,7 +136,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
             final AzureEnvironment currentEnv =
                 AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
-            String currentEnvStr = azureEnvironmentToString(currentEnv);
+            final String currentEnvStr = azureEnvironmentToString(currentEnv);
             if (Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
                 setTextToLabel(azureEnvDesc, "You are currently signed in with environment: " + currentEnvStr);
                 azureEnvDesc.setIcon(AllIcons.General.Information);
@@ -159,21 +176,28 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     @Override
     public boolean doOKAction() {
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-        config.allowTelemetry(allowTelemetryCheckBox.isSelected());
-        config.functionCoreToolsPath(this.funcCoreToolsPath.getText());
-        config.environment(AzureEnvironmentUtils.azureEnvironmentToString((AzureEnvironment) azureEnvironmentComboBox.getSelectedItem()));
-        config.passwordSaveType(savePasswordComboBox.getValue().name());
-        AzureConfigurations.getInstance().loadState(config);
+        final AzureConfiguration data = getData();
+        // persistent current state
+        persistentData(data);
 
+        // set state to global config
+        final AzureConfiguration config = Azure.az().config();
+        config.setCloud(data.getCloud());
+        config.setTelemetryEnabled(data.getTelemetryEnabled());
+        config.setDatabasePasswordSaveType(data.getDatabasePasswordSaveType());
+        config.setFunctionCoreToolsPath(data.getFunctionCoreToolsPath());
+
+        // apply state
+        // we need get rid of CommonSettings later
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-            config.allowTelemetry() ? config.installationId() : StringUtils.EMPTY);
-        Azure.az().config().setUserAgent(userAgent);
+            config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
+        config.setUserAgent(userAgent);
         CommonSettings.setUserAgent(userAgent);
 
+        // we need to get rid of AuthMethodManager, using az.azure_account
         if (AuthMethodManager.getInstance().isSignedIn()) {
-            AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
+            final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+            final String azureEnv = authMethodManager.getAuthMethodDetails().getAzureEnv();
             final AzureEnvironment currentEnv = AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
             if (!Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
@@ -182,7 +206,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         }
 
-        Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(config.environment()));
+        Azure.az(AzureCloud.class).setByName(data.getCloud());
         return true;
     }
 
@@ -203,10 +227,38 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     @Override
     public boolean isModified() {
-        return true;
+        if (originalData == null) {
+            return false;
+        }
+
+        final AzureConfiguration data = getData();
+
+        if (!StringUtils.equalsIgnoreCase(data.getCloud(), originalData.getCloud())) {
+            return true;
+        }
+
+        if (!StringUtils.equalsIgnoreCase(data.getDatabasePasswordSaveType(), originalData.getDatabasePasswordSaveType())) {
+            return true;
+        }
+
+        if (!StringUtils.equalsIgnoreCase(data.getFunctionCoreToolsPath(), originalData.getFunctionCoreToolsPath())) {
+            return true;
+        }
+
+        return !Objects.equals(data.getTelemetryEnabled(), data.getTelemetryEnabled());
     }
 
     @Override
     public void reset() {
+        setData(originalData);
+    }
+
+    private void persistentData(AzureConfiguration data) {
+        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
+
+        config.allowTelemetry(data.getTelemetryEnabled());
+        config.functionCoreToolsPath(data.getFunctionCoreToolsPath());
+        config.environment(data.getCloud());
+        config.passwordSaveType(data.getDatabasePasswordSaveType());
     }
 }

@@ -6,8 +6,8 @@
 package com.microsoft.intellij;
 
 import com.intellij.openapi.application.ApplicationInfo;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azuretools.telemetry.AppInsightsConfiguration;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.UUID;
@@ -36,17 +36,17 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
 
     @Override
     public String installationId() {
-        return AzureConfigurations.getInstance().getState().installationId();
+        return Azure.az().config().getMachineId();
     }
 
     @Override
     public String preferenceVal() {
-        return String.valueOf(AzureConfigurations.getInstance().getState().allowTelemetry());
+        return String.valueOf(Azure.az().config().getTelemetryEnabled());
     }
 
     @Override
     public boolean validated() {
-        return StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().installationId());
+        return StringUtils.isNotBlank(Azure.az().config().getMachineId());
     }
 
     @Override

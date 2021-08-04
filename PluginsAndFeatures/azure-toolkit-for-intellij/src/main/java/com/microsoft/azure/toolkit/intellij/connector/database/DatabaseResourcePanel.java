@@ -11,7 +11,6 @@ import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.DatabaseComboBox;
@@ -261,7 +260,7 @@ public class DatabaseResourcePanel implements AzureFormJPanel<DatabaseResource> 
             this.passwordSaveComboBox.setValue(resource.getPassword().saveType());
         } else {
             this.passwordSaveComboBox.setValue(Arrays.stream(Password.SaveType.values())
-                .filter(e -> StringUtils.equals(e.name(), AzureConfigurations.getInstance().passwordSaveType())).findAny()
+                .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
                 .orElse(Password.SaveType.UNTIL_RESTART));
         }
         Optional.ofNullable(resource.getDatabaseName()).ifPresent(dbName -> {
