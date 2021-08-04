@@ -49,11 +49,12 @@ public class AzureSdkArtifactDetailPanel {
 
     private void setLinks(@Nonnull final Map<String, String> links) {
         this.links.removeAll();
-        links.forEach((type, url) -> {
-            final HyperlinkLabel link = new HyperlinkLabel();
+        linkNames.forEach((type, name) -> {
+            final String url = links.get(type);
             if (StringUtils.isNotBlank(url)) {
+                final HyperlinkLabel link = new HyperlinkLabel();
                 this.links.add(new JToolBar.Separator());
-                link.setHyperlinkText(linkNames.get(type));
+                link.setHyperlinkText(name);
                 link.setHyperlinkTarget(url);
                 this.links.add(new JSeparator(SwingConstants.VERTICAL));
                 this.links.add(link);
