@@ -190,7 +190,7 @@
                         </constraints>
                         <properties>
                           <labelFor value="626be"/>
-                          <text value="Name(Optional):"/>
+                          <text value="Name:"/>
                         </properties>
                       </component>
                       <component id="7bd75" class="com.microsoft.intellij.ui.HintTextField" binding="arisHostField" custom-create="true" default-binding="true">
