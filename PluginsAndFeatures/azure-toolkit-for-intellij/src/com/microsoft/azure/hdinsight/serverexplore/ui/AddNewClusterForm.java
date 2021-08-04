@@ -29,13 +29,13 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.ui.ImmutableComboBoxModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.ui.HintTextField;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -52,7 +52,10 @@ import java.net.URI;
 import java.util.Arrays;
 
 import static com.intellij.execution.ui.ConsoleViewContentType.LOG_DEBUG_OUTPUT;
+import static com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider.getClusterName;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.*;
 
 public class AddNewClusterForm extends DialogWrapper implements SettableControl<AddNewClusterModel> {
     private JPanel wholePanel;
@@ -132,7 +135,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         authComboBox.setRenderer(
                 new SimpleListCellRenderer<AuthType>() {
                     @Override
-                    public void customize(JList<? extends AuthType> jList, AuthType authType, int i, boolean b, boolean b1) {
+                    public void customize(JList<? extends AuthType> elems,
+                                          AuthType authType,
+                                          int i,
+                                          boolean b,
+                                          boolean b1) {
                         if (authType != null) {
                             setText(authType.getTypeName());
                         }
@@ -172,11 +179,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         Arrays.asList(clusterNameOrUrlField, userNameField, passwordField, livyEndpointField, livyClusterNameField,
                 yarnEndpointField, arisHostField, arisPortField, arisClusterNameField).forEach(
                         comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
-                    @Override
-                    protected void textChanged(DocumentEvent e) {
-                        validateBasicInputs();
-                    }
-                }));
+                            @Override
+                            protected void textChanged(DocumentEvent e) {
+                                validateBasicInputs();
+                            }
+                        }));
 
         // load all cluster details to cache for validation check
         loadClusterDetails();
@@ -242,7 +249,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 break;
             case LIVY_LINK_CLUSTER:
                 data.setLivyEndpoint(URI.create(livyEndpointField.getText().trim()))
-                        .setYarnEndpoint(StringUtils.isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
+                        .setYarnEndpoint(isBlank(yarnEndpointField.getText()) ? null : URI.create(yarnEndpointField.getText().trim()))
                         .setClusterName(livyClusterNameField.getText().trim())
                         // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
                         .setClusterNameLabelTitle(livyClusterNameLabel.getText())
@@ -260,9 +267,9 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
     public void afterOkActionPerformed() {
         if (hdInsightModule != null) {
-            // FIXME: There is a bug for linking cluster action: If the cluster name already exists, the linked cluster
-            // will fail to be added to cache. If we don't force refresh again, the cluster will not be shown as linked
-            // state in  Azure Explorer.
+            // TODO: There is a bug for linking cluster action: If the cluster name already exists,
+            // the linked cluster will fail to be added to cache. If we don't force refresh again,
+            // the cluster will not be shown as linked state in Azure Explorer.
             hdInsightModule.load(true);
         }
     }
@@ -299,7 +306,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             public void focusLost(FocusEvent e) {
                 String clusterNameOrUrl = clusterNameOrUrlField.getText();
 
-                if (StringUtils.isBlank(clusterNameOrUrl)) {
+                if (isBlank(clusterNameOrUrl)) {
                     return;
                 }
 
@@ -322,9 +329,9 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     private String getClusterConnectionUrl(String clusterNameOrUrl) {
-        return StringUtils.startsWithIgnoreCase(clusterNameOrUrl, "https://")
-                ? clusterNameOrUrl
-                : ClusterManagerEx.getInstance().getClusterConnectionString(clusterNameOrUrl);
+        return StringUtils.startsWithIgnoreCase(clusterNameOrUrl, "https://") ?
+                clusterNameOrUrl :
+                ClusterManagerEx.getInstance().getClusterConnectionString(clusterNameOrUrl);
     }
 
     public SparkClusterType getSparkClusterType() {
@@ -332,56 +339,87 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     private boolean isHDInsightClusterSelected() {
-        return ((String)clusterComboBox.getSelectedItem()).equalsIgnoreCase("HDInsight Cluster");
+        return ((String) clusterComboBox.getSelectedItem()).equalsIgnoreCase("HDInsight Cluster");
     }
 
     protected boolean isBasicAuthSelected() {
         return authComboBox.getSelectedItem() == AuthType.BasicAuth;
     }
 
-    protected void validateBasicInputs() {
-        String errorMessage = null;
+    private void validateBasicInputs() {
+        final String errorMessage = doInputValidate();
+        validationErrorMessageField.setText(errorMessage);
 
+        Component focused = FocusManager.getCurrentManager().getFocusOwner();
+        ofNullable(focused)
+            .map(Component::getAccessibleContext)
+            .ifPresent(ac -> {
+                // Use accessible description to inform validation error
+                ac.setAccessibleDescription(errorMessage);
+
+                // Register a focus lost event listener to remove validation error
+                focused.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        e.getComponent().getAccessibleContext().setAccessibleDescription(null);
+
+                        super.focusLost(e);
+                    }
+                });
+            });
+
+        getOKAction().setEnabled(isEmpty(errorMessage));
+    }
+
+    /**
+     * Validate Form inputs
+     * TODO: there is a doValidate() method can be override
+     *
+     * @return error messages if validation failed, EMPTY for success.
+     */
+    protected String doInputValidate() {
         switch (getSparkClusterType()) {
             case HDINSIGHT_CLUSTER:
-                if (StringUtils.isBlank(clusterNameOrUrlField.getText())) {
-                    errorMessage = "Cluster name can't be empty";
+                if (isBlank(clusterNameOrUrlField.getText())) {
+                    return "Cluster name can't be empty";
                 } else {
-                    String clusterName = ctrlProvider.getClusterName(clusterNameOrUrlField.getText());
+                    String clusterName = getClusterName(clusterNameOrUrlField.getText());
                     if (clusterName == null) {
-                        errorMessage = "Cluster URL is not a valid URL";
-                    } else if (ctrlProvider.doesClusterNameExistInLinkedHDInsightClusters(clusterName)) {
-                        errorMessage = "Cluster already exists in linked clusters";
+                        return "Cluster URL is not a valid URL";
+                    } else if (ctrlProvider.doesClusterNameExistInLinkedHDInsightClusters(
+                            clusterName)) {
+                        return "Cluster already exists in linked clusters";
                     }
                 }
                 break;
             case LIVY_LINK_CLUSTER:
-                if (StringUtils.isBlank(livyEndpointField.getText()) ||
-                        StringUtils.isBlank(livyClusterNameField.getText())) {
-                    errorMessage = "Livy Endpoint and cluster name can't be empty";
+                if (isBlank(livyEndpointField.getText()) ||
+                        isBlank(livyClusterNameField.getText())) {
+                    return "Livy Endpoint and cluster name can't be empty";
                 } else if (!ctrlProvider.isURLValid(livyEndpointField.getText())) {
-                    errorMessage = "Livy Endpoint is not a valid URL";
-                } else if (ctrlProvider.doesClusterLivyEndpointExistInAllHDInsightClusters(livyEndpointField.getText())) {
-                    errorMessage = "The same name Livy Endpoint already exists in clusters";
-                } else if (ctrlProvider.doesClusterNameExistInAllHDInsightClusters(livyClusterNameField.getText())) {
-                    errorMessage = "Cluster Name already exists in clusters";
-                } else if (!StringUtils.isEmpty(yarnEndpointField.getText()) &&
+                    return "Livy Endpoint is not a valid URL";
+                } else if (ctrlProvider.doesClusterLivyEndpointExistInAllHDInsightClusters(
+                        livyEndpointField.getText())) {
+                    return "The same name Livy Endpoint already exists in clusters";
+                } else if (ctrlProvider.doesClusterNameExistInAllHDInsightClusters(
+                        livyClusterNameField.getText())) {
+                    return "Cluster Name already exists in clusters";
+                } else if (!isEmpty(yarnEndpointField.getText()) &&
                         !ctrlProvider.isURLValid(yarnEndpointField.getText())) {
-                    errorMessage = "Yarn Endpoint is not a valid URL";
+                    return "Yarn Endpoint is not a valid URL";
                 }
                 break;
             default:
                 break;
         }
 
-        if (errorMessage == null && isBasicAuthSelected()) {
-            if (StringUtils.isBlank(userNameField.getText()) || StringUtils.isBlank(passwordField.getText())) {
-                errorMessage = "Username and password can't be empty in Basic Authentication";
+        if (isBasicAuthSelected()) {
+            if (isBlank(userNameField.getText()) || isBlank(passwordField.getText())) {
+                return "Username and password can't be empty in Basic Authentication";
             }
         }
 
-        validationErrorMessageField.setText(errorMessage);
-        getOKAction().setEnabled(StringUtils.isEmpty(errorMessage));
+        return EMPTY;
     }
 
     private void loadClusterDetails() {

@@ -28,7 +28,8 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AuthType
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
+import org.apache.commons.lang3.StringUtils.isBlank
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.DefaultComboBoxModel
@@ -57,16 +58,12 @@ open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HD
         })
     }
 
-    override fun validateBasicInputs() {
-        validationErrorMessageField.text =
-            if (StringUtils.isBlank(userNameField.text) || StringUtils.isBlank(passwordField.text)) {
-                "Username and password can't be empty in Basic Authentication"
-            } else {
-                null
-            }
-
-        okAction.isEnabled = StringUtils.isEmpty(validationErrorMessageField.text)
-    }
+    override fun doInputValidate(): String =
+        if (isBlank(userNameField.text) || isBlank(passwordField.text)) {
+            "Username and password can't be empty in Basic Authentication"
+        } else {
+            EMPTY
+        }
 
     override fun afterOkActionPerformed() {
         val linkedCluster =

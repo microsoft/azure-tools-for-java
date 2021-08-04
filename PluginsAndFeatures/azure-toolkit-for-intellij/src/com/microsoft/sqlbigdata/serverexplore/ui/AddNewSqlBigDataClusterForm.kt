@@ -28,7 +28,7 @@ import com.microsoft.azure.hdinsight.sdk.common.AuthType
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterForm
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.*
 import java.awt.CardLayout
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComponent
@@ -69,30 +69,26 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
     }
 
     override fun getPreferredFocusedComponent(): JComponent? {
-        return arisHostField;
+        return arisHostField
     }
 
     override fun getSparkClusterType(): SparkClusterType {
         return SparkClusterType.SQL_BIG_DATA_CLUSTER
     }
 
-    override fun validateBasicInputs() {
-        validationErrorMessageField.text =
-                if (StringUtils.isBlank(arisHostField.text)) {
-                    "Server can't be empty"
-                } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
-                    "Server format is not valid"
-                } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
-                    "Server already exists in linked clusters"
-                } else if (StringUtils.isNotBlank(arisClusterNameField.text) &&
-                    ctrlProvider.doesClusterNameExistInSqlBigDataClusters(arisClusterNameField.text)) {
-                    "Cluster name already exists in linked clusters"
-                } else if (StringUtils.isBlank(userNameField.text) || StringUtils.isBlank(passwordField.text)) {
-                    "Username and password can't be empty in Basic Authentication"
-                } else {
-                    null
-                }
-
-        okAction.isEnabled = StringUtils.isEmpty(validationErrorMessageField.text)
-    }
+    override fun doInputValidate(): String =
+        if (isBlank(arisHostField.text)) {
+            "Server can't be empty"
+        } else if (!IPV4_ADDRESS_PATTERN.toRegex().matches(arisHostField.text)) {
+            "Server format is not valid"
+        } else if (ctrlProvider.doeshostExistInSqlBigDataClusters(arisHostField.text)) {
+            "Server already exists in linked clusters"
+        } else if (isNotBlank(arisClusterNameField.text) &&
+            ctrlProvider.doesClusterNameExistInSqlBigDataClusters(arisClusterNameField.text)) {
+            "Cluster name already exists in linked clusters"
+        } else if (isBlank(userNameField.text) || isBlank(passwordField.text)) {
+            "Username and password can't be empty in Basic Authentication"
+        } else {
+            EMPTY
+        }
 }
