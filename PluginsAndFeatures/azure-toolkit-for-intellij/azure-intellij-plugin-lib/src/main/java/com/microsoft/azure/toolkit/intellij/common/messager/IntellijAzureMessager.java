@@ -49,8 +49,11 @@ public class IntellijAzureMessager implements IAzureMessager {
         switch (raw.getType()) {
             case ALERT:
             case CONFIRM:
-                final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
-                return MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
+                UIUtil.invokeLaterIfNeeded(() -> {
+                    final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
+                    MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
+                });
+                return true;
         }
         final AzureTask<?> task = AzureTaskContext.current().getTask();
         final Boolean backgrounded = Optional.ofNullable(task).map(AzureTask::getBackgrounded).orElse(null);
