@@ -15,17 +15,18 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.ui.WarningMessageForm;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.swing.Icon;
 
@@ -44,7 +45,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public String getInstallationId() {
         if (isOptIn()) {
-            return AzureConfigurations.getInstance().getState().installationId();
+            return Azure.az().config().getMachineId();
         } else {
             return "";
         }
@@ -52,7 +53,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 
     @Override
     public boolean isOptIn() {
-        return AzureConfigurations.getInstance().getState().allowTelemetry();
+        return ObjectUtils.firstNonNull(Azure.az().config().getTelemetryEnabled(), true);
     }
 
     public void openJobViewEditor(final Object projectObject, final String uuid) {

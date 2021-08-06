@@ -12,7 +12,6 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -30,29 +29,18 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceR
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
-import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.rest.LogLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -69,21 +57,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -91,7 +72,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AzurePlugin implements StartupActivity.DumbAware {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
-    public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
+    public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERSION;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
@@ -119,62 +100,29 @@ public class AzurePlugin implements StartupActivity.DumbAware {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        ProxyUtils.initProxy();
-
         this.azureSettings = AzureSettings.getSafeInstance(project);
-
-        if (isDataFileValid()) {
-            // read legacy settings from old data.xml
-            try {
-                final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
-                final boolean allowTelemetry = Boolean.parseBoolean(DataOperations.getProperty(dataFile, AzureBundle.message("prefVal")));
-                final String installationId = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
-                final String pluginVersion = DataOperations.getProperty(dataFile, AzureBundle.message("pluginVersion"));
-
-                // check non-empty for valid data.xml
-                if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
-                    final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-                    if (config.allowTelemetry()) {
-                        config.allowTelemetry(allowTelemetry);
-                    }
-                    if (StringUtils.isBlank(config.pluginVersion())) {
-                        config.pluginVersion(pluginVersion);
-                    }
-                    if (StringUtils.isBlank(config.installationId()) && InstallationIdUtils.isValidHashMac(installationId)) {
-                        config.installationId(installationId);
-                    }
-                    AzureConfigurations.getInstance().loadState(config);
-                }
-                FileUtils.deleteQuietly(new File(dataFile));
-            } catch (Exception ex) {
-                final Map<String, String> props = new HashMap<>();
-                props.put("error", ex.getMessage());
-                EventUtil.logEvent(EventType.error, SYSTEM, TelemetryConstants.PLUGIN_TRANSFER_SETTINGS, props, null);
-            }
-        }
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-        this.installationID = config.installationId();
-        if (StringUtils.isBlank(this.installationID)) {
-            this.installationID = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));
-        }
-
-        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
-            config.allowTelemetry() ? installationID : StringUtils.EMPTY);
-        Azure.az().config().setLogLevel(LogLevel.NONE.name());
-        Azure.az().config().setUserAgent(userAgent);
-        CommonSettings.setUserAgent(userAgent);
-
-        initializeAIRegistry(project);
-        // Showing dialog needs to be run in UI thread
-        initializeWhatsNew(project);
-
         if (!IS_ANDROID_STUDIO) {
             LOG.info("Starting Azure Plugin");
             firstInstallationByVersion = isFirstInstallationByVersion();
             try {
                 //this code is for copying componentset.xml in plugins folder
                 copyPluginComponents();
-                initializeTelemetry();
+                if (pluginStateListener == null) {
+                    pluginStateListener = new PluginStateListener() {
+                        @Override
+                        public void install(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                        }
+
+                        @Override
+                        public void uninstall(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                            String pluginId = ideaPluginDescriptor.getPluginId().toString();
+                            if (pluginId.equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
+                                EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UNINSTALL, null, null);
+                            }
+                        }
+                    };
+                    PluginInstaller.addStateListener(pluginStateListener);
+                }
                 clearTempDirectory();
                 loadWebappsSettings(project);
                 afterInitialization(project);
@@ -208,55 +156,6 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             });
     }
 
-    private synchronized void initializeTelemetry() {
-        final String version = AzureConfigurations.getInstance().getState().pluginVersion();
-        updatePluginVersionAndMachineId();
-        AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
-        if (StringUtils.isBlank(version)) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
-            EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
-        } else if (StringUtils.isNotBlank(version) && !PLUGIN_VERSION.equalsIgnoreCase(version)) {
-            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
-            EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
-        }
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
-        EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
-        if (Azure.az().config().getHttpProxy() != null) {
-            final Map<String, String> map = Optional.ofNullable(AzureTelemeter.getCommonProperties()).map(HashMap::new).orElse(new HashMap<>());
-            map.put(PROXY, "true");
-            AzureTelemeter.setCommonProperties(map);
-        }
-        if (pluginStateListener == null) {
-            pluginStateListener = new PluginStateListener() {
-                @Override
-                public void install(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
-                }
-
-                @Override
-                public void uninstall(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
-                    String pluginId = ideaPluginDescriptor.getPluginId().toString();
-                    if (pluginId.equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
-                        EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UNINSTALL, null, null);
-                    }
-                }
-            };
-            PluginInstaller.addStateListener(pluginStateListener);
-        }
-    }
-
-    private boolean isDataFileValid() {
-        String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
-        final File file = new File(dataFile);
-        if (!file.exists()) {
-            return false;
-        }
-        try {
-            return ParserXMLUtility.parseXMLFile(dataFile) != null;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     private void initializeAIRegistry(Project myProject) {
         try {
             AzureSettings.getSafeInstance(myProject).loadAppInsights();
@@ -288,17 +187,6 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             if (Objects.isNull(ExceptionUtil.findCause(ex, ProcessCanceledException.class))) {
                 AzurePlugin.log(ex.getMessage(), ex);
             }
-        }
-    }
-
-    private void updatePluginVersionAndMachineId() {
-        try {
-            final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-            config.pluginVersion(PLUGIN_VERSION);
-            config.installationId(installationID);
-            AzureConfigurations.getInstance().loadState(config);
-        } catch (Exception ex) {
-            LOG.error(message("error"), ex);
         }
     }
 
@@ -453,6 +341,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         }
         String version = AzureConfigurations.getInstance().getState().pluginVersion();
         firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
+        // update plugin version;
+        AzureConfigurations.getInstance().getState().pluginVersion(PLUGIN_VERSION);
         return firstInstallationByVersion;
     }
 

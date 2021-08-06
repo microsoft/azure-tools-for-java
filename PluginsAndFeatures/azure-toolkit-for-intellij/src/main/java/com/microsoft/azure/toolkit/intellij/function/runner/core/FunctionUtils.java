@@ -28,6 +28,8 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.functions.annotation.StorageAccount;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
@@ -37,7 +39,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.intellij.secure.IdeaSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -283,11 +284,11 @@ public class FunctionUtils {
     }
 
     public static String getFuncPath() throws IOException, InterruptedException {
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
-        if (StringUtils.isBlank(state.functionCoreToolsPath())) {
+        final AzureConfiguration config = Azure.az().config();
+        if (StringUtils.isBlank(config.getFunctionCoreToolsPath())) {
             return FunctionCliResolver.resolveFunc();
         }
-        return state.functionCoreToolsPath();
+        return config.getFunctionCoreToolsPath();
     }
 
     public static List<String> getFunctionBindingList(Map<String, FunctionConfiguration> configMap) {
