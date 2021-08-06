@@ -116,20 +116,20 @@ subprojects {
 
 sourceSets {
     main {
-        java.srcDirs 'src'
-        kotlin.srcDirs 'src'
+        java.srcDirs 'src/main/java'
+        kotlin.srcDirs 'src/main/kotlin'
         resources {
-            srcDir 'resources'
+            srcDir 'src/main/resources'
             exclude 'bundle/**'
         }
     }
     test {
         java {
-            srcDir 'Test/java'
+            srcDir 'src/test/java'
         }
-        kotlin.srcDirs 'Test/java'
+        kotlin.srcDirs 'src/test/kotlin'
         resources {
-            srcDir 'Test/resources'
+            srcDir 'src/test/resources'
         }
     }
 }
