@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-toolkit-ide-libs</artifactId>
+    <version>0.11.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Libs for Azure Toolkit for IDEs</name>
+    <description>Wrapped libs of Microsoft Azure Toolkits for IDEs</description>
+    <url>https://github.com/microsoft/azure-maven-plugins</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/microsoft/azure-maven-plugins</connection>
+        <developerConnection>scm:git:git@github.com:microsoft/azure-maven-plugins</developerConnection>
+        <url>https://github.com/microsoft/azure-maven-plugins</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>wangmingliang-ms</id>
+            <name>Wang Mingliang</name>
+            <email>wangmi@microsoft.com</email>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>azure-toolkit-ide-common-lib</module>
+        <module>azure-toolkit-ide-springcloud-lib</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <azure.toolkit-lib.version>0.11.0-SNAPSHOT</azure.toolkit-lib.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-libs</artifactId>
+                <version>${azure.toolkit-lib.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-common-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-springcloud-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
