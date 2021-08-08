@@ -1,5 +1,7 @@
-intellij{}
+intellij {
+}
+
 dependencies {
-    compile 'com.microsoft.azure:azure-toolkit-auth-lib:0.11.0-SNAPSHOT'
+    compile project(':azure-intellij-plugin-lib')
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.11.0-SNAPSHOT'
 }

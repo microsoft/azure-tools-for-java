@@ -152,6 +152,7 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.11.0-SNAPSHOT'
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.11.0-SNAPSHOT'
     }
 }
 
@@ -160,6 +161,8 @@ dependencies {
     compile project(':azure-sdk-reference-book')
     compile project(':azure-intellij-resource-connector-lib')
     compile project(':azure-intellij-resource-connector-aad')
+    compile project(':azure-intellij-plugin-springcloud')
+    compile project(':azure-intellij-plugin-service-explorer')
 
     compile 'com.microsoft.azure:azure-client-authentication'
     compile 'com.microsoft.azure:azure-toolkit-resource-lib'

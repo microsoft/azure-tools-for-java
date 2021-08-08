@@ -1,0 +1,7 @@
+intellij {
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile 'com.microsoft.azure:azure-toolkit-appservice-lib:0.11.0-SNAPSHOT'
+}
