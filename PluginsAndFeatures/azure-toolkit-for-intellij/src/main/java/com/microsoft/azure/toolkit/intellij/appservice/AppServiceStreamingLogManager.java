@@ -8,6 +8,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceUtils;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.intellij.common.StreamingLogsToolWindowManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;

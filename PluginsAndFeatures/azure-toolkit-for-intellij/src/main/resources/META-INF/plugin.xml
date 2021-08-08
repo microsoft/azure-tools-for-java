@@ -233,7 +233,7 @@
     </action>
     <!-- Functions End -->
 
-    <action id="Actions.DeploySpringCloud" class="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeployAppAction"
+    <action id="Actions.DeploySpringCloud" class="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction"
             text="Deploy to Azure Spring Cloud" description="Deploy Spring Cloud app to Azure"
             icon="/icons/SpringCloud/Deploy.svg">
     </action>

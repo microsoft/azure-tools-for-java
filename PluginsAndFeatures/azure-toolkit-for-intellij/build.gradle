@@ -95,6 +95,13 @@ subprojects {
         downloadSources = Boolean.valueOf(sources)
     }
 
+    dependencyManagement {
+        imports {
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.11.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.11.0-SNAPSHOT'
+        }
+    }
+
     dependencies {
         compileOnly 'org.jetbrains:annotations:21.0.1'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
