@@ -24,13 +24,14 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import lombok.Setter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AzureModule extends AzureRefreshableNode {
@@ -64,8 +65,6 @@ public class AzureModule extends AzureRefreshableNode {
     @NotNull
     private FunctionModule functionModule;
     @NotNull
-    private SpringCloudModule springCloudModule;
-    @NotNull
     private MySQLModule mysqlModule;
     @NotNull
     private SqlServerModule sqlServerModule;
@@ -86,7 +85,6 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
-        springCloudModule = new SpringCloudModule(this);
         mysqlModule = new MySQLModule(this);
         sqlServerModule = new SqlServerModule(this);
         try {
@@ -159,9 +157,6 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(functionModule)) {
             addChildNode(functionModule);
         }
-        if (!isDirectChild(springCloudModule)) {
-            addChildNode(springCloudModule);
-        }
         if (!isDirectChild(mysqlModule)) {
             addChildNode(mysqlModule);
         }
@@ -197,7 +192,6 @@ public class AzureModule extends AzureRefreshableNode {
                 webAppModule.load(true);
                 resourceManagementModule.load(true);
                 functionModule.load(true);
-                springCloudModule.load(true);
                 mysqlModule.load(true);
                 sqlServerModule.load(true);
 
@@ -248,7 +242,11 @@ public class AzureModule extends AzureRefreshableNode {
         for (Node child : getChildNodes()) {
             child.removeAllChildNodes();
         }
+        Optional.ofNullable(this.clearResourcesListener).ifPresent(Runnable::run);
     }
+
+    @Setter
+    private Runnable clearResourcesListener;
 
     private class SignInOutListener implements Runnable {
         @Override

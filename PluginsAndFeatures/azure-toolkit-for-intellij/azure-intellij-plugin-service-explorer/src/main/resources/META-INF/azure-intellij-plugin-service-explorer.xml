@@ -2,8 +2,8 @@
     <extensionPoints>
         <extensionPoint name="azureExplorerContributor" interface="com.microsoft.azure.toolkit.ide.common.IExplorerContributor"/>
     </extensionPoints>
-    <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="New Azure Explorer" secondary="true" icon="AllIcons.General.Modified" anchor="right"
-                    factoryClass="com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer$ToolWindowFactory"/>
-    </extensions>
+<!--    <extensions defaultExtensionNs="com.intellij">-->
+<!--        <toolWindow id="New Azure Explorer" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->
+<!--                    factoryClass="com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer$ToolWindowFactory"/>-->
+<!--    </extensions>-->
 </idea-plugin>

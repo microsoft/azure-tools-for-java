@@ -6,6 +6,7 @@
 package com.microsoft.intellij.ui;
 
 import com.google.common.collect.ImmutableList;
+import com.intellij.ide.DataManager;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,6 +17,7 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
@@ -23,13 +25,15 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.ide.common.action.Action;
+import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
@@ -44,8 +48,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -93,7 +99,24 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.setCellRenderer(new NodeTreeCellRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
-
+        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
+        final DefaultMutableTreeNode azureRoot = (DefaultMutableTreeNode) root.getChildAt(0);
+        final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
+                .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
+        modules.forEach(azureRoot::add);
+        azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.updateChildren()));
+        tree.addTreeWillExpandListener(new com.microsoft.azure.toolkit.intellij.common.component.Tree.ExpandListener());
+        com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
+        treeModel.reload();
+        DataManager.registerDataProvider(tree, dataId -> {
+            if (StringUtils.equals(dataId, Action.SOURCE)) {
+                final DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                if (Objects.nonNull(selectedNode)) {
+                    return selectedNode.getUserObject();
+                }
+            }
+            return null;
+        });
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
             @Override
@@ -126,8 +149,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 if (treePath == null) {
                     return;
                 }
-
-                SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+                final Object raw = treePath.getLastPathComponent();
+                if (raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || raw instanceof LoadingNode) {
+                    return;
+                }
+                SortableTreeNode treeNode = (SortableTreeNode) raw;
                 Node node = (Node) treeNode.getUserObject();
 
                 Rectangle rectangle = tree.getRowBounds(tree.getRowForPath(treePath));
@@ -173,7 +199,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             return;
         }
         final Node node = getTreeNodeOnMouseClick(tree, treePath);
-        if (!node.isLoading()) {
+        if (Objects.nonNull(node) && !node.isLoading()) {
             node.onNodeDblClicked(project);
         }
     }
@@ -189,7 +215,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             Node node = getTreeNodeOnMouseClick(tree, treePath);
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
-            if (!node.isLoading()) {
+            if (Objects.nonNull(node) && !node.isLoading()) {
                 node.getClickAction().fireNodeActionEvent();
             }
             // for right click show the context menu populated with all the
@@ -201,7 +227,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             }
             // get the tree node associated with right mouse click
             Node node = getTreeNodeOnMouseClick(tree, treePath);
-            if (node.hasNodeActions()) {
+            if (Objects.nonNull(node) && node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
 
@@ -211,8 +237,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         }
     }
 
+    @Nullable
     private Node getTreeNodeOnMouseClick(JTree tree, TreePath treePath) {
-        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+        final Object raw = treePath.getLastPathComponent();
+        if (raw instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || raw instanceof LoadingNode) {
+            return null;
+        }
+        SortableTreeNode treeNode = (SortableTreeNode) raw;
         Node node = (Node) treeNode.getUserObject();
         // set tree and tree path to expand the node later
         node.setTree(tree);
@@ -370,6 +401,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           boolean isLeaf,
                                           int row,
                                           boolean focused) {
+            if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode || value instanceof LoadingNode) {
+                value = com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer.renderNode(value, this);
+                super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
+                return;
+            }
             super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
 
             // if the node has an icon set then we use that

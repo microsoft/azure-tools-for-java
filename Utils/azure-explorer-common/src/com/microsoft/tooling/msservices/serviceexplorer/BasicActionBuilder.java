@@ -12,7 +12,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -50,7 +49,6 @@ public class BasicActionBuilder {
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(DeploymentSlotModule.MODULE_NAME, ActionConstants.WebApp.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(FunctionModule.MODULE_NAME, ActionConstants.FunctionApp.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(MySQLModule.MODULE_NAME, ActionConstants.MySQL.MODULE);
-        MODULE_NAME_TO_SERVICE_NAME_MAP.put(SpringCloudModule.MODULE_NAME, ActionConstants.SpringCloud.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(RedisCacheModule.MODULE_NAME, ActionConstants.RedisCache.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(VMArmModule.MODULE_NAME, ActionConstants.VirtualMachine.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(StorageModule.MODULE_NAME, ActionConstants.StorageAccount.MODULE);

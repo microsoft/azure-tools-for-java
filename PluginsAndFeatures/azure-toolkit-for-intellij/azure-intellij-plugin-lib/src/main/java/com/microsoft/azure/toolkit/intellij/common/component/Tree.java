@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.ActionPopupMenu;
 import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.LoadingNode;
+import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.microsoft.azure.toolkit.ide.common.action.Action;
@@ -37,9 +38,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Getter
-public class Tree extends SimpleTree implements TreeWillExpandListener, DataProvider {
+public class Tree extends SimpleTree implements DataProvider {
     protected Node<?> root;
 
     public Tree() {
@@ -59,23 +61,27 @@ public class Tree extends SimpleTree implements TreeWillExpandListener, DataProv
         TreeUIHelper.getInstance().installSelectionSaver(this);
         TreeUIHelper.getInstance().installEditSourceOnEnterKeyHandler(this);
         this.setCellRenderer(new NodeRenderer());
-        this.setModel(new DefaultTreeModel(buildNode(root)));
-        this.addTreeWillExpandListener(this);
-        this.installPopupMenu();
+        this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
+        this.addTreeWillExpandListener(new ExpandListener());
+        installPopupMenu(this);
     }
 
-    private void installPopupMenu() {
+    public static void installPopupMenu(JTree tree) {
         final MouseAdapter popupHandler = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-                    final Tree tree = Tree.this;
-                    final TreePath path = tree.getClosestPathForLocation(e.getX(), e.getY());
-                    if (path == null) {
-                        return;
-                    }
-                    final Object node = path.getLastPathComponent();
-                    if (node instanceof TreeNode) {
+                final TreePath path = tree.getClosestPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                final Object node = path.getLastPathComponent();
+                if (node instanceof TreeNode) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        if (((TreeNode<?>) node).inner.hasChildren() && ((TreeNode<?>) node).loaded == null) {
+                            ((TreeNode<?>) node).updateChildren();
+                        }
+                        tree.expandPath(path);
+                    } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
                             final ActionManager am = ActionManager.getInstance();
@@ -98,28 +104,7 @@ public class Tree extends SimpleTree implements TreeWillExpandListener, DataProv
                 return new IntellijAzureActionManager.ActionGroupWrapper(actions);
             }
         };
-        this.addMouseListener(popupHandler);
-    }
-
-    @Nonnull
-    protected MutableTreeNode buildNode(@Nonnull Node<?> node) {
-        return new TreeNode<>(node, this);
-    }
-
-    @Override
-    public void treeWillExpand(TreeExpansionEvent event) {
-        final Object component = event.getPath().getLastPathComponent();
-        if (component instanceof TreeNode) {
-            final TreeNode<?> treeNode = (TreeNode<?>) component;
-            if (treeNode.getAllowsChildren()) {
-                treeNode.loadChildren();
-            }
-        }
-    }
-
-    @Override
-    public void treeWillCollapse(TreeExpansionEvent event) {
-
+        tree.addMouseListener(popupHandler);
     }
 
     @Override
@@ -135,16 +120,13 @@ public class Tree extends SimpleTree implements TreeWillExpandListener, DataProv
 
     public static class TreeNode<T> extends DefaultMutableTreeNode implements IView.Dynamic.Updater {
         protected final Node<T> inner;
-        protected final Tree tree;
+        protected final JTree tree;
         private Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
-        public TreeNode(Node<T> n, Tree tree) {
+        public TreeNode(Node<T> n, JTree tree) {
             super(n.data(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
-            if (this.inner.hasChildren()) {
-                this.add(new LoadingNode());
-            }
             if (!this.inner.lazy()) {
                 this.loadChildren();
             }
@@ -177,50 +159,75 @@ public class Tree extends SimpleTree implements TreeWillExpandListener, DataProv
             this.loaded = false;
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             tm.runOnPooledThread(() -> {
-                final List<Node<?>> children = this.inner.getChildren();
-                tm.runLater(() -> {
-                    synchronized (this) {
-                        this.removeAllChildren();
-                        this.setAllowsChildren(children.size() > 0);
-                        for (final Node<?> child : children) {
-                            this.add(this.tree.buildNode(child));
-                        }
-                        this.loaded = true;
-                    }
-                    ((DefaultTreeModel) this.tree.getModel()).reload(this);
-                });
+                try {
+                    final List<Node<?>> children = this.inner.getChildren();
+                    tm.runLater(() -> setChildren(children.stream().map(c -> new TreeNode<>(c, this.tree))));
+                } catch (final Exception e) {
+                    this.setChildren(Stream.empty());
+                }
             });
+        }
+
+        private synchronized void setChildren(Stream<? extends DefaultMutableTreeNode> children) {
+            this.removeAllChildren();
+            children.forEach(this::add);
+            this.loaded = true;
+            ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
 
         @Override
         public void setParent(MutableTreeNode newParent) {
             super.setParent(newParent);
             final IView.Label view = this.inner.view();
-            if (parent == null && view != null) {
+            if (this.getParent() == null && view != null) {
                 view.dispose();
             }
         }
     }
 
     public static class NodeRenderer extends com.intellij.ide.util.treeView.NodeRenderer {
-        @Override
-        public void customizeCellRenderer(@Nonnull JTree tree, Object node, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        public static Object renderNode(Object node, SimpleColoredComponent renderer) {
             Object value = node;
             if (node instanceof TreeNode) {
                 final IView.Label view = ((TreeNode<?>) node).inner.view();
                 if (view != null) {
                     if (StringUtils.isNotBlank(view.getIconPath())) {
                         final Icon icon = AzureIcons.getIcon(view.getIconPath(), Tree.class);
-                        this.setIcon(icon);
+                        renderer.setIcon(icon);
                     }
                     value = view.getTitle();
-                    this.setToolTipText(view.getDescription());
+                    renderer.setToolTipText(view.getDescription());
                 }
                 if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
-                    this.setIcon(new AnimatedIcon.Default());
+                    renderer.setIcon(AnimatedIcon.Default.INSTANCE);
                 }
             }
-            super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
+            return value;
+        }
+
+        @Override
+        public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            final Object node = renderNode(value, this);
+            super.customizeCellRenderer(tree, node, selected, expanded, leaf, row, hasFocus);
+        }
+    }
+
+    public static class ExpandListener implements TreeWillExpandListener {
+
+        @Override
+        public void treeWillExpand(TreeExpansionEvent event) {
+            final Object component = event.getPath().getLastPathComponent();
+            if (component instanceof TreeNode) {
+                final TreeNode<?> treeNode = (TreeNode<?>) component;
+                if (treeNode.getAllowsChildren()) {
+                    treeNode.loadChildren();
+                }
+            }
+        }
+
+        @Override
+        public void treeWillCollapse(TreeExpansionEvent event) {
+
         }
     }
 }

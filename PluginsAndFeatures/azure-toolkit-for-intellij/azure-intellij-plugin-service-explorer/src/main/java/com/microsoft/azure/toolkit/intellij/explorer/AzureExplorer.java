@@ -30,17 +30,14 @@ public class AzureExplorer extends Tree {
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.azureExplorerContributor");
     public static final String ICON = "/icons/Common/Azure.svg";
 
-    public AzureExplorer() {
+    private AzureExplorer() {
         super();
         this.root = buildRoot();
         this.init(this.root);
     }
 
     private Node<Azure> buildRoot() {
-        final List<Node<?>> modules = getModules().stream()
-                .map(IExplorerContributor::getNode)
-                .sorted(Comparator.comparing(Node::zOrder))
-                .collect(Collectors.toList());
+        final List<Node<?>> modules = getModules();
         return new Node<>(Azure.az(), new IView.Label.Static(getTitle(), ICON)).lazy(false).addChildren(modules);
     }
 
@@ -58,8 +55,11 @@ public class AzureExplorer extends Tree {
     }
 
     @Nonnull
-    private List<IExplorerContributor> getModules() {
-        return explorerExtensionPoint.getExtensionList();
+    public static List<Node<?>> getModules() {
+        return explorerExtensionPoint.getExtensionList().stream()
+                .map(IExplorerContributor::getNode)
+                .sorted(Comparator.comparing(Node::zOrder))
+                .collect(Collectors.toList());
     }
 
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
