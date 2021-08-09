@@ -8,7 +8,11 @@ package com.microsoft.azure.toolkit.ide.common.action;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.Getter;
 
+import javax.annotation.Nonnull;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public abstract class AzureActionManager {
 
@@ -34,4 +38,14 @@ public abstract class AzureActionManager {
     public abstract void registerGroup(String id, ActionGroup group);
 
     public abstract ActionGroup getGroup(String id);
+
+    public <D> void registerHandler(@Nonnull String id, @Nonnull Predicate<D> condition, @Nonnull Consumer<D> handler) {
+        final Action<D> action = this.getAction(id);
+        action.registerHandler(condition, handler);
+    }
+
+    public <D, E> void registerHandler(@Nonnull String id, @Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
+        final Action<D> action = this.getAction(id);
+        action.registerHandler(condition, handler);
+    }
 }

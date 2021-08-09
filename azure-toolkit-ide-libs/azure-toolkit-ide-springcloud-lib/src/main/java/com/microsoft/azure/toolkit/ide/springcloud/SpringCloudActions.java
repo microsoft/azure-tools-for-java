@@ -51,6 +51,10 @@ public class SpringCloudActions implements IActionsContributor {
     }
 
     @Override
+    public void registerHandlers(AzureActionManager am) {
+    }
+
+    @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup clusterActionGroup = new ActionGroup("",
                 ResourceCommonActions.OPEN_PORTAL_URL,

@@ -13,8 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
 public class IntellijActions implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        am.<String>getAction(ResourceCommonActions.OPEN_URL)
-                .registerHandler((s) -> true, BrowserUtil::browse);
+        am.<String>registerHandler(ResourceCommonActions.OPEN_URL, (s) -> true, BrowserUtil::browse);
     }
 
     @Override
