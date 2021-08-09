@@ -24,18 +24,25 @@ public class IntellijSpringCloudActions implements IActionsContributor {
     public void registerHandlers(AzureActionManager am) {
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
+        this.registerShowPropertiesActionHandler(am);
+    }
+
+    private void registerShowPropertiesActionHandler(AzureActionManager am) {
+        final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
+        final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
+        am.registerHandler(ResourceCommonActions.CREATE, condition, handler);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {
         final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
         final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
-        am.<IAzureResource<?>>getAction(ResourceCommonActions.CREATE).registerHandler(condition, handler);
+        am.registerHandler(ResourceCommonActions.CREATE, condition, handler);
     }
 
     private void registerDeployAppActionHandler(AzureActionManager am) {
         final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
         final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
-        am.<IAzureResource<?>>getAction(ResourceCommonActions.DEPLOY).registerHandler(condition, handler);
+        am.registerHandler(ResourceCommonActions.DEPLOY, condition, handler);
     }
 
     @Override

@@ -28,12 +28,14 @@ public class CreateSpringCloudAppAction {
 
     public static void createApp(@Nonnull SpringCloudCluster cluster, @Nullable Project project) {
         Azure.az(AzureAccount.class).account();
-        final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(cluster, project);
-        dialog.setOkActionListener((config) -> {
-            dialog.close();
-            createApp(config);
+        AzureTaskManager.getInstance().runLater(() -> {
+            final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog(cluster, project);
+            dialog.setOkActionListener((config) -> {
+                dialog.close();
+                createApp(config);
+            });
+            dialog.show();
         });
-        dialog.show();
     }
 
     @AzureOperation(name = "springcloud|app.create", params = "config.getAppName()", type = AzureOperation.Type.ACTION)

@@ -163,11 +163,13 @@ public class Tree extends SimpleTree implements TreeWillExpandListener, DataProv
 
         @Override
         public synchronized void updateChildren() {
-            this.removeAllChildren();
-            this.add(new LoadingNode());
-            this.loaded = null;
-            ((DefaultTreeModel) this.tree.getModel()).reload(this);
-            this.loadChildren();
+            if (this.getAllowsChildren()) {
+                this.removeAllChildren();
+                this.add(new LoadingNode());
+                this.loaded = null;
+                ((DefaultTreeModel) this.tree.getModel()).reload(this);
+                this.loadChildren();
+            }
         }
 
         protected synchronized void loadChildren() {

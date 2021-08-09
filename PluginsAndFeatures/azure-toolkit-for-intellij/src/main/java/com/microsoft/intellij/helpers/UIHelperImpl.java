@@ -42,6 +42,7 @@ import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewPro
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerRegistryPropertyViewProvider;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -413,30 +414,6 @@ public class UIHelperImpl implements UIHelper {
                 ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
             }
         }
-    }
-
-    @Override
-    public void openSpringCloudAppPropertyView(SpringCloudAppNode node) {
-        final Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        final String id = node.getApp().entity().getId();
-        final String subscription = node.getApp().entity().getSubscriptionId();
-        final String appName = node.getApp().name();
-        final LightVirtualFile existing = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
-        final LightVirtualFile itemVirtualFile = Objects.isNull(existing) ? createVirtualFile(appName, subscription, id) : existing;
-        if (Objects.isNull(existing)) {
-            itemVirtualFile.setFileType(new AzureFileType(SPRING_CLOUD_APP_PROPERTY_TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.SpringCloud.MODULE)));
-        }
-        AzureTaskManager.getInstance().runInModal(String.format("Loading properties of app(%s)", appName), () -> {
-            final SpringCloudCluster cluster = node.getApp().getCluster();
-            final SpringCloudApp app = Objects.requireNonNull(cluster).app(appName);
-            itemVirtualFile.putUserData(SpringCloudAppPropertiesEditorProvider.APP_KEY, app);
-            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.openFile(itemVirtualFile, true, true));
-        });
     }
 
     @Override
