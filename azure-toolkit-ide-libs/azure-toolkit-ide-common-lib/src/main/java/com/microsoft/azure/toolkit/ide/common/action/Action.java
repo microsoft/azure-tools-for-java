@@ -73,7 +73,8 @@ public class Action<D> {
 
     @SuppressWarnings("unchecked")
     public void handle(D source, Object e) {
-        for (final AbstractMap.SimpleEntry<Object, Object> p : this.handlers) {
+        for (int i = this.handlers.size() - 1; i >= 0; i--) {
+            final AbstractMap.SimpleEntry<Object, Object> p = this.handlers.get(i);
             final Object condition = p.getKey();
             if (condition instanceof BiPredicate && ((BiPredicate<D, Object>) condition).test(source, e)) {
                 ((BiConsumer<D, Object>) p.getValue()).accept(source, e);
