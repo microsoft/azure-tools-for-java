@@ -11,13 +11,14 @@ import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.ide.common.action.ActionView;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
-import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
+
+import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class SpringCloudActions implements IActionsContributor {
 
@@ -31,22 +32,19 @@ public class SpringCloudActions implements IActionsContributor {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         final Consumer<SpringCloudApp> openPublicUrl = s -> {
             final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.publicUrl());
-            tm.runInBackground(AzureOperationBundle.title("common|resource.open_public_url", s.name()), runnable);
+            tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_public_url", s.name()), runnable);
         };
-        final Function<SpringCloudApp, IView.Label> openPublicUrlView = s -> {
-            final String description = AzureOperationBundle.title("common|resource.open_public_url", s.name()).toString();
-            return new IView.Label.Static("Access Public Endpoint", "/icons/action/browser.svg", description);
-        };
+        final ActionView.Builder<SpringCloudApp> openPublicUrlView = new ActionView.Builder<SpringCloudApp>("Access Public Endpoint", "/icons/action/browser.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", r.name()).toString()).orElse(null))
+                .enabled(s -> Optional.ofNullable(s).map(r -> r.entity().isPublic()).orElse(false));
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
         final Consumer<SpringCloudApp> openTestUrl = s -> {
             final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.testUrl());
-            tm.runInBackground(AzureOperationBundle.title("common|resource.open_test_url", s.name()), runnable);
+            tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_test_url", s.name()), runnable);
         };
-        final Function<SpringCloudApp, IView.Label> openTestUrlView = s -> {
-            final String description = AzureOperationBundle.title("common|resource.open_test_url", s.name()).toString();
-            return new IView.Label.Static("Access Test Endpoint", "/icons/action/browser.svg", description);
-        };
+        final ActionView.Builder<SpringCloudApp> openTestUrlView = new ActionView.Builder<SpringCloudApp>("Access Test Endpoint", "/icons/action/browser.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", r.name()).toString()).orElse(null));
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
     }
 

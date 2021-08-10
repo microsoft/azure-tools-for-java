@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Accessors(chain = true, fluent = true)
@@ -33,7 +32,7 @@ public class Action<D> {
     private List<AbstractMap.SimpleEntry<Object, Object>> handlers = new ArrayList<>();
     @Nullable
     @Getter
-    private Function<D, IView.Label> view;
+    private ActionView.Builder<D> view;
 
     public Action(@Nonnull Consumer<D> handler) {
         if (handler != EMPTY_HANDLER) {
@@ -47,28 +46,28 @@ public class Action<D> {
         }
     }
 
-    public Action(@Nonnull Consumer<D> handler, @Nullable Function<D, IView.Label> view) {
+    public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder<D> view) {
         this.view = view;
         if (handler != EMPTY_HANDLER) {
             this.registerHandler((d) -> true, handler);
         }
     }
 
-    public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable Function<D, IView.Label> view) {
+    public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder<D> view) {
         this.view = view;
         if (handler != EMPTY_HANDLER) {
             this.registerHandler((d, e) -> true, handler);
         }
     }
 
-    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable Function<D, IView.Label> view) {
+    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder<D> view) {
         this.view = view;
         this.handlers = handlers;
     }
 
     @Nullable
     public IView.Label view(D source) {
-        return Objects.nonNull(this.view) ? this.view.apply(source) : null;
+        return Objects.nonNull(this.view) ? this.view.toActionView(source) : null;
     }
 
     @SuppressWarnings("unchecked")

@@ -6,10 +6,16 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Getter
 @RequiredArgsConstructor
@@ -37,5 +43,36 @@ public class ActionView implements IView.Label {
     @Override
     public void dispose() {
         this.view.dispose();
+    }
+
+    @RequiredArgsConstructor
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    @Accessors(chain = true, fluent = true)
+    public static class Builder<T> {
+        @Nonnull
+        protected final Function<T, String> title;
+        @Nullable
+        protected Function<T, String> iconPath;
+        @Nullable
+        protected Function<T, String> description;
+        @Nullable
+        protected Function<T, Boolean> enabled = s -> true;
+
+        public Builder(String title) {
+            this(s -> title);
+        }
+
+        public Builder(String title, String iconPath) {
+            this(s -> title, s -> iconPath, null, (s) -> true);
+        }
+
+        public ActionView toActionView(T s) {
+            final String iconPath = Optional.ofNullable(this.iconPath).map(p -> p.apply(s)).orElse(null);
+            final String description = Optional.ofNullable(this.description).map(p -> p.apply(s)).orElse(null);
+            final Boolean enabled = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
+            return new ActionView(new Static(this.title.apply(s), iconPath, description), enabled);
+        }
     }
 }
