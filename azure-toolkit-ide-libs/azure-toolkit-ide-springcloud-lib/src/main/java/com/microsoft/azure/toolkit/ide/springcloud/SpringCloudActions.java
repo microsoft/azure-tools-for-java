@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.ide.springcloud;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.Action;
 import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.ide.common.action.ActionView;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
@@ -24,6 +23,7 @@ public class SpringCloudActions implements IActionsContributor {
 
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
+    public static final String SERVICE_ACTIONS = "actions.springcloud.service";
     public static final String OPEN_PUBLIC_URL = "action.springcloud.app.open_public_url";
     public static final String OPEN_TEST_URL = "action.springcloud.app.open_test_url";
 
@@ -54,6 +54,11 @@ public class SpringCloudActions implements IActionsContributor {
 
     @Override
     public void registerGroups(AzureActionManager am) {
+        final ActionGroup serviceActionGroup = new ActionGroup("",
+                ResourceCommonActions.SERVICE_REFRESH
+        );
+        am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
+
         final ActionGroup clusterActionGroup = new ActionGroup("",
                 ResourceCommonActions.OPEN_PORTAL_URL,
                 "---",

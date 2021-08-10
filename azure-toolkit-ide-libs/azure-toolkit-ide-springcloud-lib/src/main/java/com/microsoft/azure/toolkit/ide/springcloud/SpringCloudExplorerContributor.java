@@ -8,12 +8,11 @@ package com.microsoft.azure.toolkit.ide.springcloud;
 import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.IView;
+import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
@@ -28,7 +27,9 @@ public class SpringCloudExplorerContributor implements IExplorerContributor {
         final AzureActionManager am = AzureActionManager.getInstance();
         final IAzureMessager messager = AzureMessager.getDefaultMessager();
 
-        return new Node<>(az(AzureSpringCloud.class)).view(new IView.Label.Static(NAME, ICON))
+        final AzureSpringCloud service = az(AzureSpringCloud.class);
+        return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Cloud", ICON))
+                .actions(SpringCloudActions.SERVICE_ACTIONS)
                 .addChildren(AzureSpringCloud::clusters, (cluster, ascNode) -> new Node<>(cluster)
                         .view(new AzureResourceLabelView<>(cluster))
                         .actions(SpringCloudActions.CLUSTER_ACTIONS)
