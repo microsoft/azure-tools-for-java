@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.IView;
+import com.microsoft.azure.toolkit.lib.AzureService;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
@@ -22,6 +23,7 @@ public class ResourceCommonActions implements IActionsContributor {
     public static final String STOP = "action.resource.stop";
     public static final String RESTART = "action.resource.restart";
     public static final String REFRESH = "action.resource.refresh";
+    public static final String SERVICE_REFRESH = "action.service.refresh";
     public static final String DELETE = "action.resource.delete";
     public static final String OPEN_PORTAL_URL = "action.resource.open_portal_url";
     public static final String SHOW_PROPERTIES = "action.resource.show_properties";
@@ -34,36 +36,43 @@ public class ResourceCommonActions implements IActionsContributor {
         this.registerCommand(am);
         final AzureTaskManager tm = AzureTaskManager.getInstance();
 
-        final Consumer<IAzureResource<?>> start = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.start", s.name()), ((Startable) s)::start);
+        final Consumer<IAzureResource<?>> start = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.start", s.name()), ((Startable<?>) s)::start);
         final Function<IAzureResource<?>, IView.Label> startActionView = s -> {
             final String description = AzureOperationBundle.title("common|resource.start", s.name()).toString();
-            final boolean enabled = s instanceof Startable && ((Startable) s).isStartable();
+            final boolean enabled = s instanceof Startable && ((Startable<?>) s).isStartable();
             return new ActionView(new IView.Label.Static("Start", "/icons/action/start.svg", description), enabled);
         };
         am.registerAction(START, new Action<>(start, startActionView));
 
-        final Consumer<IAzureResource<?>> stop = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.stop", s.name()), ((Startable) s)::stop);
+        final Consumer<IAzureResource<?>> stop = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.stop", s.name()), ((Startable<?>) s)::stop);
         final Function<IAzureResource<?>, IView.Label> stopActionView = s -> {
             final String description = AzureOperationBundle.title("common|resource.stop", s.name()).toString();
-            final boolean enabled = s instanceof Startable && ((Startable) s).isStoppable();
+            final boolean enabled = s instanceof Startable && ((Startable<?>) s).isStoppable();
             return new ActionView(new IView.Label.Static("Stop", "/icons/action/stop.svg", description), enabled);
         };
         am.registerAction(STOP, new Action<>(stop, stopActionView));
 
-        final Consumer<IAzureResource<?>> restart = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.restart", s.name()), ((Startable) s)::restart);
+        final Consumer<IAzureResource<?>> restart = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.restart", s.name()), ((Startable<?>) s)::restart);
         final Function<IAzureResource<?>, IView.Label> restartActionView = s -> {
             final String description = AzureOperationBundle.title("common|resource.restart", s.name()).toString();
-            final boolean enabled = s instanceof Startable && ((Startable) s).isRestartable();
+            final boolean enabled = s instanceof Startable && ((Startable<?>) s).isRestartable();
             return new ActionView(new IView.Label.Static("Restart", "/icons/action/restart.svg", description), enabled);
         };
         am.registerAction(RESTART, new Action<>(restart, restartActionView));
 
-        final Consumer<IAzureResource<?>> refresh = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.refresh", s.name()), s::refreshChildren);
+        final Consumer<IAzureResource<?>> refresh = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.refresh", s.name()), s::refresh);
         final Function<IAzureResource<?>, IView.Label> refreshActionView = s -> {
             final String description = AzureOperationBundle.title("common|resource.refresh", s.name()).toString();
-            return new IView.Label.Static("Referesh", "/icons/action/refresh.svg", description);
+            return new IView.Label.Static("Refresh", "/icons/action/refresh.svg", description);
         };
         am.registerAction(REFRESH, new Action<>(refresh, refreshActionView));
+
+        final Consumer<AzureService> serviceRefresh = s -> tm.runInBackground(AzureOperationBundle.title("common|service.refresh", s.name()), s::refresh);
+        final Function<AzureService, IView.Label> serviceRefreshView = s -> {
+            final String description = AzureOperationBundle.title("common|service.refresh", s.name()).toString();
+            return new IView.Label.Static("Refresh", "/icons/action/refresh.svg", description);
+        };
+        am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 
         final Consumer<IAzureResource<?>> delete = s -> tm.runInBackground(AzureOperationBundle.title("common|resource.delete", s.name()), ((Removable) s)::remove);
         final Function<IAzureResource<?>, IView.Label> deleteActionView = s -> {
