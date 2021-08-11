@@ -6,7 +6,12 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.LocatableConfiguration;
+import com.intellij.execution.configurations.LocatableConfigurationBase;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
@@ -19,10 +24,12 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.IArtifact;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,14 +49,16 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
     private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
 
     @Getter
-    @Setter
     private SpringCloudAppConfig appConfig;
+    @Getter
+    @Setter
+    private SpringCloudApp app;
 
     public SpringCloudDeploymentConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         this.appConfig = SpringCloudAppConfig.builder()
-            .deployment(SpringCloudDeploymentConfig.builder().build())
-            .build();
+                .deployment(SpringCloudDeploymentConfig.builder().build())
+                .build();
     }
 
     @Override
@@ -57,13 +66,13 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         super.readExternal(element);
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.getProject());
         this.appConfig = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
-            .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
-            .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
+                .map(e -> XmlSerializer.deserialize(e, SpringCloudAppConfig.class))
+                .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
         Optional.ofNullable(element.getChild("Artifact"))
-            .map(e -> e.getAttributeValue("identifier"))
-            .map(manager::getAzureArtifactById)
-            .map(a -> new WrappedAzureArtifact(a, this.getProject()))
-            .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
+                .map(e -> e.getAttributeValue("identifier"))
+                .map(manager::getAzureArtifactById)
+                .map(a -> new WrappedAzureArtifact(a, this.getProject()))
+                .ifPresent(a -> this.appConfig.getDeployment().setArtifact(a));
     }
 
     @Override
@@ -73,13 +82,13 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         final Element appConfigElement = XmlSerializer.serialize(this.appConfig, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName()));
         final IArtifact artifact = this.appConfig.getDeployment().getArtifact();
         Optional.ofNullable(this.appConfig)
-            .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName())))
-            .ifPresent(element::addContent);
+                .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"artifact".equalsIgnoreCase(accessor.getName())))
+                .ifPresent(element::addContent);
         Optional.ofNullable(this.appConfig)
-            .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
-            .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
-            .map(id -> new Element("Artifact").setAttribute("identifier", id))
-            .ifPresent(element::addContent);
+                .map(config -> (WrappedAzureArtifact) config.getDeployment().getArtifact())
+                .map((a) -> manager.getArtifactIdentifier(a.getArtifact()))
+                .map(id -> new Element("Artifact").setAttribute("identifier", id))
+                .ifPresent(element::addContent);
     }
 
     @NotNull
@@ -136,18 +145,21 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
 
         @Override
         protected void resetEditorFrom(@NotNull SpringCloudDeploymentConfiguration config) {
-            AzureTaskManager.getInstance().runLater(() -> {
-                this.panel.setConfiguration(config);
-                this.panel.setData(config.appConfig);
-            }, AzureTask.Modality.ANY);
+            this.panel.setConfiguration(config);
+            AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                if (Objects.nonNull(config.app) && StringUtils.isBlank(config.appConfig.getAppName())) {
+                    config.appConfig = SpringCloudAppConfig.fromApp(config.app);
+                }
+                AzureTaskManager.getInstance().runLater(() -> this.panel.setData(config.appConfig), AzureTask.Modality.ANY);
+            });
         }
 
         @Override
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
             final List<AzureValidationInfo> infos = this.panel.validateData();
             final AzureValidationInfo error = infos.stream()
-                .filter(i -> i.getType() == AzureValidationInfo.Type.ERROR)
-                .findAny().orElse(null);
+                    .filter(i -> i.getType() == AzureValidationInfo.Type.ERROR)
+                    .findAny().orElse(null);
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
             }

@@ -18,7 +18,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,11 +44,10 @@ public class DeploySpringCloudAppAction extends AnAction {
         final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
         final RunnerAndConfigurationSettings settings = Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
         final SpringCloudDeploymentConfiguration configuration = ((SpringCloudDeploymentConfiguration) settings.getConfiguration());
-        if (Objects.nonNull(app)) {
-            AzureTaskManager.getInstance().runOnPooledThread(() -> configuration.setAppConfig(SpringCloudAppConfig.fromApp(app)));
-        }
+        configuration.setApp(app);
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+                configuration.setApp(null);
                 settings.storeInLocalWorkspace();
                 manager.addConfiguration(settings);
                 manager.setBeforeRunTasks(configuration, new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration())));
