@@ -79,8 +79,8 @@ public class Tree extends SimpleTree implements DataProvider {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         if (((TreeNode<?>) node).inner.hasChildren() && ((TreeNode<?>) node).loaded == null) {
                             ((TreeNode<?>) node).updateChildren();
+                            tree.expandPath(path);
                         }
-                        tree.expandPath(path);
                     } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
                         final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
                         if (Objects.nonNull(actions)) {
