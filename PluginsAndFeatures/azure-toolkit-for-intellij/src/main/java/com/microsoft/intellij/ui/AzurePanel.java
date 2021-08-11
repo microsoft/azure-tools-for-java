@@ -177,22 +177,17 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     @Override
     public boolean doOKAction() {
         final AzureConfiguration data = getData();
-        // persistent current state
-        persistentData(data);
-
-        // set state to global config
+        // set partial config to global config
         final AzureConfiguration config = Azure.az().config();
         config.setCloud(data.getCloud());
         config.setTelemetryEnabled(data.getTelemetryEnabled());
         config.setDatabasePasswordSaveType(data.getDatabasePasswordSaveType());
         config.setFunctionCoreToolsPath(data.getFunctionCoreToolsPath());
-
-        // apply state
-        // we need get rid of CommonSettings later
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
             config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
         config.setUserAgent(userAgent);
-        CommonSettings.setUserAgent(userAgent);
+
+        // apply changes
 
         // we need to get rid of AuthMethodManager, using az.azure_account
         if (AuthMethodManager.getInstance().isSignedIn()) {
@@ -206,7 +201,12 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         }
 
-        Azure.az(AzureCloud.class).setByName(data.getCloud());
+        // we need get rid of CommonSettings later
+        CommonSettings.setUserAgent(config.getUserAgent());
+        if (StringUtils.isNotBlank(config.getCloud())) {
+            Azure.az(AzureCloud.class).setByName(config.getCloud());
+        }
+        AzureConfigurations.getInstance().saveAzConfig();
         return true;
     }
 
@@ -251,14 +251,5 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     @Override
     public void reset() {
         setData(originalData);
-    }
-
-    private void persistentData(AzureConfiguration data) {
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-
-        config.allowTelemetry(data.getTelemetryEnabled());
-        config.functionCoreToolsPath(data.getFunctionCoreToolsPath());
-        config.environment(data.getCloud());
-        config.passwordSaveType(data.getDatabasePasswordSaveType());
     }
 }

@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
@@ -42,36 +43,27 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class AzureInitializer {
     public static void initialize() {
         ProxyUtils.initProxy();
-        initializeConfigFromLegacySettings();
-        initializeMachineId();
         initializeAzureConfiguration();
-        initializeTelemetry();
     }
 
     private static void initializeAzureConfiguration() {
         final AzureConfiguration config = Azure.az().config();
-        config.setLogLevel(LogLevel.NONE.name());
 
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
-        final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-            state.allowTelemetry() ? state.installationId() : StringUtils.EMPTY);
-        config.setUserAgent(userAgent);
-        CommonSettings.setUserAgent(userAgent);
-
-        if (StringUtils.isNotBlank(state.environment())) {
-            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(state.environment()));
+        if (!AzureConfigurations.getInstance().loadToAzConfig()) {
+            initializeConfigFromLegacySettings();
         }
-        config.setCloud(state.environment());
-        config.setTelemetryEnabled(state.allowTelemetry());
-        config.setDatabasePasswordSaveType(state.passwordSaveType());
-        config.setFunctionCoreToolsPath(state.functionCoreToolsPath());
-        config.setProduct(CommonConst.PLUGIN_NAME);
-        config.setVersion(CommonConst.PLUGIN_VERSION);
-        config.setMachineId(state.installationId());
+        initializeDefaultValues();
+        initializeTelemetry();
+
+        CommonSettings.setUserAgent(config.getUserAgent());
+        if (StringUtils.isNotBlank(config.getCloud())) {
+            Azure.az(AzureCloud.class).setByName(config.getCloud());
+        }
+        AzureConfigurations.getInstance().saveAzConfig();
     }
 
     private static void initializeConfigFromLegacySettings() {
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
+        final AzureConfiguration config = Azure.az().config();
         if (isDataFileValid()) {
             // read legacy settings from old data.xml
             try {
@@ -82,15 +74,10 @@ public class AzureInitializer {
 
                 // check non-empty for valid data.xml
                 if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
-
-                    if (state.allowTelemetry()) {
-                        state.allowTelemetry(allowTelemetry);
-                    }
-                    if (StringUtils.isBlank(state.pluginVersion())) {
-                        state.pluginVersion(pluginVersion);
-                    }
-                    if (StringUtils.isBlank(state.installationId()) && InstallationIdUtils.isValidHashMac(installationId)) {
-                        state.installationId(installationId);
+                    config.setTelemetryEnabled(allowTelemetry);
+                    config.setVersion(pluginVersion);
+                    if (InstallationIdUtils.isValidHashMac(installationId)) {
+                        config.setMachineId(installationId);
                     }
                 }
                 FileUtils.deleteQuietly(new File(dataFile));
@@ -101,25 +88,34 @@ public class AzureInitializer {
             }
         }
 
-        if (CommonSettings.getEnvironment() != null && StringUtils.isBlank(state.environment())) {
+        if (CommonSettings.getEnvironment() != null && StringUtils.isBlank(config.getCloud())) {
             // normalize cloud name
-            state.environment(AzureEnvironmentUtils.azureEnvironmentToString(
+            config.setCloud(AzureEnvironmentUtils.azureEnvironmentToString(
                 AzureEnvironmentUtils.stringToAzureEnvironment(CommonSettings.getEnvironment().getName())));
         }
     }
 
-    private static void initializeMachineId() {
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
-        String installationId = state.installationId();
-        if (StringUtils.isBlank(installationId)) {
-            installationId = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));
+    private static void initializeDefaultValues() {
+        final AzureConfiguration config = Azure.az().config();
+        config.setLogLevel(LogLevel.NONE.name());
+        if (StringUtils.isBlank(config.getMachineId())) {
+            config.setMachineId(StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get())));
         }
-        state.installationId(installationId);
+
+        if (Objects.isNull(config.getTelemetryEnabled())) {
+            config.setTelemetryEnabled(true);
+        }
+        final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
+            config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
+        config.setUserAgent(userAgent);
+        config.setProduct(CommonConst.PLUGIN_NAME);
+
     }
 
     private static void initializeTelemetry() {
-        final AzureConfigurations.AzureConfigurationData state = AzureConfigurations.getInstance().getState();
-        final String version = state.pluginVersion();
+        final AzureConfiguration config = Azure.az().config();
+        final String version = config.getVersion();
+        config.setVersion(CommonConst.PLUGIN_VERSION);
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
         if (StringUtils.isBlank(version)) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);

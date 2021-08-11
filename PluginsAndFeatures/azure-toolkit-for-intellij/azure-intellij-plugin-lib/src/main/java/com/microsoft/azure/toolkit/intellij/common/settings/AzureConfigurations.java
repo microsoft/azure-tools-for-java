@@ -11,10 +11,13 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +70,36 @@ public class AzureConfigurations implements PersistentStateComponent<AzureConfig
 
     public String pluginVersion() {
         return currentConfiguration.pluginVersion();
+    }
+
+    public void saveAzConfig() {
+        // from config -> state
+        final AzureConfiguration config = Azure.az().config();
+        final AzureConfigurations.AzureConfigurationData state = getState();
+        state.allowTelemetry(config.getTelemetryEnabled());
+        state.installationId(config.getMachineId());
+        state.environment(config.getCloud());
+        state.functionCoreToolsPath(config.getFunctionCoreToolsPath());
+        state.passwordSaveType(config.getDatabasePasswordSaveType());
+        state.pluginVersion(config.getVersion());
+    }
+
+    public boolean loadToAzConfig() {
+        // from state -> config
+        final AzureConfiguration config = Azure.az().config();
+        final AzureConfigurations.AzureConfigurationData state = getState();
+        if (StringUtils.isNotBlank(state.installationId())) {
+            config.setTelemetryEnabled(state.allowTelemetry());
+            config.setMachineId(state.installationId());
+            config.setCloud(state.environment());
+
+            if (StringUtils.isNotBlank(state.functionCoreToolsPath()) && new File(state.functionCoreToolsPath()).exists()) {
+                config.setFunctionCoreToolsPath(state.functionCoreToolsPath());
+            }
+            config.setDatabasePasswordSaveType(state.passwordSaveType());
+            return true;
+        }
+        return false;
     }
 
     public static class AzureConfigurationData {
