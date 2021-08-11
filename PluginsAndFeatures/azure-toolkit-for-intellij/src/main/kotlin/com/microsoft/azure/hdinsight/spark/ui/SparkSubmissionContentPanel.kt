@@ -203,7 +203,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             ArtifactUtil.getArtifactWithOutputPaths(myProject).toTypedArray()
     ).apply {
         name = "ideaArtifactComboBox"
-        toolTipText = artifactSelectLabel.toolTipText
+        toolTipText = "Artifact from IntelliJ project"
 
         if (itemCount > 0) {
             selectedIndex = 0
@@ -223,7 +223,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         textField.name = "localArtifactTextFieldText"
         button.name = "localArtifactTextFieldButton"
-        toolTipText = "Artifact from local jar package."
+        toolTipText = "Artifact from local disk"
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
 
