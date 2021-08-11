@@ -24,13 +24,6 @@ public class IntellijSpringCloudActions implements IActionsContributor {
     public void registerHandlers(AzureActionManager am) {
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
-        this.registerShowPropertiesActionHandler(am);
-    }
-
-    private void registerShowPropertiesActionHandler(AzureActionManager am) {
-        final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudCluster;
-        final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> CreateSpringCloudAppAction.createApp((SpringCloudCluster) c, e.getProject());
-        am.registerHandler(ResourceCommonActions.CREATE, condition, handler);
     }
 
     private void registerCreateAppActionHandler(AzureActionManager am) {
