@@ -79,10 +79,10 @@ class SparkSubmissionJobUploadStorageWebHdfsCard: SparkSubmissionJobUploadStorag
                 }
             }
             row {
-                c(webHdfsRootPathLabel); c(webHdfsRootPathField)
+                c(webHdfsRootPathLabel.apply { labelFor = webHdfsRootPathField }); c(webHdfsRootPathField)
             }
             row {
-                c(authMethodLabel); c(authMethodComboBox)
+                c(authMethodLabel.apply { labelFor = authMethodComboBox });  c(authMethodComboBox)
             }
             row {
                c(); c(authAccountForWebHdfsCards)
