@@ -37,7 +37,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
     protected Configurable[] buildConfigurables() {
         myPanels = new ArrayList<Configurable>();
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            myPanels.add(new AzureAbstractConfigurable(new AzurePanel()));
+            myPanels.add(new AzureAbstractConfigurable(new AzurePanel(myProject)));
             myPanels.add(new AzureAbstractConfigurable(new AppInsightsMngmtPanel(myProject)));
         }
         return myPanels.toArray(new Configurable[myPanels.size()]);

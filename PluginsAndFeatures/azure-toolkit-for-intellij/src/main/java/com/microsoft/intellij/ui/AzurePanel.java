@@ -8,13 +8,14 @@ package com.microsoft.intellij.ui;
 
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver;
@@ -22,6 +23,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -45,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
@@ -60,12 +63,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private JTextPane allowTelemetryComment;
     private JComboBox<AzureEnvironment> azureEnvironmentComboBox;
     private PasswordSaveComboBox savePasswordComboBox;
-    private TextFieldWithBrowseButton funcCoreToolsPath;
+    private FunctionCoreToolsCombobox funcCoreToolsPath;
     private JLabel azureEnvDesc;
 
     private AzureConfiguration originalData;
+    private Project project;
 
-    public AzurePanel() {
+    public AzurePanel(Project project) {
+        this.project = project;
     }
 
     @Override
@@ -92,21 +97,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         });
 
         displayDescriptionForAzureEnv();
-        funcCoreToolsPath.addBrowseFolderListener(null, "Path to Azure Functions Core Tools", null, FileChooserDescriptorFactory.createSingleFileDescriptor(),
-            TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
 
         setData(Azure.az().config());
     }
 
     public void setData(AzureConfiguration config) {
-        if (StringUtils.isBlank(config.getFunctionCoreToolsPath())) {
-            try {
-                funcCoreToolsPath.setText(FunctionCliResolver.resolveFunc());
-            } catch (final Throwable ex) {
+        if (StringUtils.isNotBlank(config.getFunctionCoreToolsPath())) {
                 //ignore
-            }
-        } else {
-            funcCoreToolsPath.setText(config.getFunctionCoreToolsPath());
+            funcCoreToolsPath.setValue(config.getFunctionCoreToolsPath());
         }
 
         savePasswordComboBox.setValue(Arrays.stream(Password.SaveType.values())
@@ -127,7 +125,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             data.setDatabasePasswordSaveType(savePasswordComboBox.getValue().name());
         }
         data.setTelemetryEnabled(allowTelemetryCheckBox.isSelected());
-        data.setFunctionCoreToolsPath(funcCoreToolsPath.getText());
+        data.setFunctionCoreToolsPath(funcCoreToolsPath.getItem());
         return data;
     }
 
@@ -251,5 +249,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     @Override
     public void reset() {
         setData(originalData);
+    }
+    private void createUIComponents() {
+        this.funcCoreToolsPath = new FunctionCoreToolsCombobox(project, false);
     }
 }

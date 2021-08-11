@@ -32,15 +32,12 @@
                   <text value="Function CLI:"/>
                 </properties>
               </component>
-              <component id="3e77f" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="txtFunc">
+              <component id="a6210" class="com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox" binding="txtFunc" custom-create="true">
                 <constraints>
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
                   </grid>
                 </constraints>
-                <properties>
-                  <editable value="true"/>
-                </properties>
               </component>
               <component id="ae00f" class="javax.swing.JLabel">
                 <constraints>

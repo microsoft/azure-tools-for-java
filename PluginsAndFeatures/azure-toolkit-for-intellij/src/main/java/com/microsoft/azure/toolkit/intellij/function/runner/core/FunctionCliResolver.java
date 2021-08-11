@@ -50,13 +50,13 @@ public abstract class FunctionCliResolver {
                 // when `func core tools` is manually installed and func is available at PATH
                 // use canonical path to locate the real installation path
                 String result = findFuncInFolder(parentFolder);
-                if (result == null) {
-                    result = resolveAdditionalFunc(parentFolder);
-                }
                 if (result != null) {
                     results.add(result);
                 }
-
+                result = findFuncInAdditionalFolder(parentFolder);
+                if (result != null) {
+                    results.add(result);
+                }
             } catch (IOException ignored) {
                 // ignore
             }
@@ -117,7 +117,7 @@ public abstract class FunctionCliResolver {
         return isWindows ? "func.exe" : "func";
     }
 
-    private static String resolveAdditionalFunc(String funcParentFolder) {
+    private static String findFuncInAdditionalFolder(String funcParentFolder) {
         // from C:\ProgramData\chocolatey\bin\func.exe -> C:\ProgramData\chocolatey\lib\azure-functions-core-tools\tools\func.exe
         return Optional.ofNullable(findFuncInFolder(Paths.get(funcParentFolder, "../lib/azure-functions-core-tools/tools").toString()))
             // detect func installed by `brew install azure-functions-core-tools@3`

@@ -6,10 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.function.runner.localrun.ui;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
@@ -17,7 +15,7 @@ import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppS
 import com.microsoft.azure.toolkit.intellij.function.runner.component.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.function.runner.localrun.FunctionRunConfiguration;
-import com.microsoft.intellij.ui.util.UIUtils;
+import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +25,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +36,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     private JPanel settings;
     private JPanel pnlMain;
-    private TextFieldWithBrowseButton txtFunc;
+    private com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private AppSettingsTable appSettingsTable;
@@ -61,15 +58,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             }
         });
 
-        txtFunc.addActionListener(
-                UIUtils.createFileChooserListenerWithTextPath(txtFunc, project,
-                        FileChooserDescriptorFactory.createSingleFileDescriptor()));
 
-        try {
-            txtFunc.setText(FunctionUtils.getFuncPath());
-        } catch (IOException | InterruptedException e) {
-            // swallow as leave blank
-        }
         fillModules();
     }
 
@@ -95,7 +84,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
         appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
-            txtFunc.setText(configuration.getFuncPath());
+            txtFunc.setValue(configuration.getFuncPath());
         }
         for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
             final Module module = cbFunctionModule.getItemAt(i);
@@ -108,7 +97,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
-        configuration.setFuncPath(txtFunc.getText());
+        configuration.setFuncPath(txtFunc.getItem());
         configuration.saveModule((Module) cbFunctionModule.getSelectedItem());
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
@@ -147,6 +136,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     }
 
     private void createUIComponents() {
+        txtFunc = new FunctionCoreToolsCombobox(project, true);
         final String localSettingPath = Paths.get(project.getBasePath(), "local.settings.json").toString();
         appSettingsTable = new AppSettingsTable(localSettingPath);
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
