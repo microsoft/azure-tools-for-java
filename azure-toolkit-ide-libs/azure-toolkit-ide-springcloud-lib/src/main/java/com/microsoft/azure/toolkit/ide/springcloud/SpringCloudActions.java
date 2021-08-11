@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.springcloud;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.Action;
 import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.ide.common.action.ActionView;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
