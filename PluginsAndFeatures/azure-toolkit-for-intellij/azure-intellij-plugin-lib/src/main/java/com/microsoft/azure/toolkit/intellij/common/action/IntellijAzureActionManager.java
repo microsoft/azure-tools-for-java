@@ -19,7 +19,6 @@ import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -69,10 +68,16 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    @RequiredArgsConstructor
     private static class AnActionWrapper<T> extends AnAction {
         @Nonnull
         private final Action<T> action;
+
+        private AnActionWrapper(@Nonnull Action<T> action) {
+            super();
+            this.action = action;
+            final IView.Label view = action.view(null);
+            applyView(view, this.getTemplatePresentation());
+        }
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
@@ -84,7 +89,10 @@ public class IntellijAzureActionManager extends AzureActionManager {
         public void update(@NotNull AnActionEvent e) {
             final T source = (T) e.getDataContext().getData(Action.SOURCE);
             final IView.Label view = this.action.view(source);
-            final Presentation presentation = e.getPresentation();
+            applyView(view, e.getPresentation());
+        }
+
+        private static void applyView(IView.Label view, Presentation presentation) {
             if (Objects.nonNull(view)) {
                 if (Objects.nonNull(view.getIconPath()))
                     presentation.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
@@ -106,13 +114,11 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.setSearchable(true);
             this.setPopup(true);
             final IView.Label view = this.group.view();
-            final Presentation tmpl = this.getTemplatePresentation();
+            final Presentation template = this.getTemplatePresentation();
             if (Objects.nonNull(view)) {
-                tmpl.setIcon(AzureIcons.getIcon(view.getIconPath(), AnActionWrapper.class));
-                tmpl.setText(view.getTitle());
-                tmpl.setDescription(view.getDescription());
+                AnActionWrapper.applyView(view, template);
             } else {
-                tmpl.setText("Action Group");
+                template.setText("Action Group");
             }
             this.addActions(group.actions());
         }
