@@ -126,6 +126,11 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
         }
 
         @Override
+        public @NotNull String getId() {
+            return FACTORY_NAME;
+        }
+
+        @Override
         public String getName() {
             return FACTORY_NAME;
         }

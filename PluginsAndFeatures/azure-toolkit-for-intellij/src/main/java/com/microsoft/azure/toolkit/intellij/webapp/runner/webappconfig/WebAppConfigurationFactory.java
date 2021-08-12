@@ -33,4 +33,9 @@ public class WebAppConfigurationFactory extends ConfigurationFactory {
     public String getName() {
         return FACTORY_NAME;
     }
+
+    @Override
+    public @NotNull String getId() {
+        return FACTORY_NAME;
+    }
 }
