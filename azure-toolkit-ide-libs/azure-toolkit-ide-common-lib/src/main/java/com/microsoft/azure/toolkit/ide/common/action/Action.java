@@ -32,7 +32,7 @@ public class Action<D> {
     private List<AbstractMap.SimpleEntry<Object, Object>> handlers = new ArrayList<>();
     @Nullable
     @Getter
-    private ActionView.Builder<D> view;
+    private ActionView.Builder view;
 
     public Action(@Nonnull Consumer<D> handler) {
         if (handler != EMPTY_HANDLER) {
@@ -46,21 +46,21 @@ public class Action<D> {
         }
     }
 
-    public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder<D> view) {
+    public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder view) {
         this.view = view;
         if (handler != EMPTY_HANDLER) {
             this.registerHandler((d) -> true, handler);
         }
     }
 
-    public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder<D> view) {
+    public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder view) {
         this.view = view;
         if (handler != EMPTY_HANDLER) {
             this.registerHandler((d, e) -> true, handler);
         }
     }
 
-    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder<D> view) {
+    private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder view) {
         this.view = view;
         this.handlers = handlers;
     }

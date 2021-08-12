@@ -36,8 +36,8 @@ public class SpringCloudActions implements IActionsContributor {
             final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.publicUrl());
             tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_public_url", s.name()), runnable);
         };
-        final ActionView.Builder<SpringCloudApp> openPublicUrlView = new ActionView.Builder<SpringCloudApp>("Access Public Endpoint", "/icons/action/browser.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", r.name()).toString()).orElse(null))
+        final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", "/icons/action/browser.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_public_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).entity().isPublic());
         am.registerAction(OPEN_PUBLIC_URL, new Action<>(openPublicUrl, openPublicUrlView));
 
@@ -45,8 +45,8 @@ public class SpringCloudActions implements IActionsContributor {
             final Runnable runnable = () -> am.getAction(ResourceCommonActions.OPEN_URL).handle(s.testUrl());
             tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_test_url", s.name()), runnable);
         };
-        final ActionView.Builder<SpringCloudApp> openTestUrlView = new ActionView.Builder<SpringCloudApp>("Access Test Endpoint", "/icons/action/browser.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", r.name()).toString()).orElse(null))
+        final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
                 .enabled(Objects::nonNull);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
     }

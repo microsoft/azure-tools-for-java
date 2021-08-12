@@ -37,44 +37,44 @@ public class ResourceCommonActions implements IActionsContributor {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
 
         final Consumer<IAzureResource<?>> start = s -> tm.runInBackground(title("common|resource.start", s.name()), ((Startable<?>) s)::start);
-        final ActionView.Builder<IAzureResource<?>> startView = new ActionView.Builder<IAzureResource<?>>("Start", "/icons/action/start.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.start", r.name()).toString()).orElse(null))
+        final ActionView.Builder startView = new ActionView.Builder("Start", "/icons/action/start.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.start", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof Startable && ((Startable<?>) s).isStartable());
         am.registerAction(START, new Action<>(start, startView));
 
         final Consumer<IAzureResource<?>> stop = s -> tm.runInBackground(title("common|resource.stop", s.name()), ((Startable<?>) s)::stop);
-        final ActionView.Builder<IAzureResource<?>> stopView = new ActionView.Builder<IAzureResource<?>>("Stop", "/icons/action/stop.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.stop", r.name()).toString()).orElse(null))
+        final ActionView.Builder stopView = new ActionView.Builder("Stop", "/icons/action/stop.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.stop", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof Startable && ((Startable<?>) s).isStoppable());
         am.registerAction(STOP, new Action<>(stop, stopView));
 
         final Consumer<IAzureResource<?>> restart = s -> tm.runInBackground(title("common|resource.restart", s.name()), ((Startable<?>) s)::restart);
-        final ActionView.Builder<IAzureResource<?>> restartView = new ActionView.Builder<IAzureResource<?>>("Restart", "/icons/action/restart.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.restart", r.name()).toString()).orElse(null))
+        final ActionView.Builder restartView = new ActionView.Builder("Restart", "/icons/action/restart.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.restart", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof Startable && ((Startable<?>) s).isRestartable());
         am.registerAction(RESTART, new Action<>(restart, restartView));
 
         final Consumer<IAzureResource<?>> delete = s -> tm.runInBackground(title("common|resource.delete", s.name()), ((Removable) s)::remove);
-        final ActionView.Builder<IAzureResource<?>> deleteView = new ActionView.Builder<IAzureResource<?>>("Delete", "/icons/action/delete.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.delete", r.name()).toString()).orElse(null))
+        final ActionView.Builder deleteView = new ActionView.Builder("Delete", "/icons/action/delete.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.delete", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof Removable);
         am.registerAction(DELETE, new Action<>(delete, deleteView));
 
         final Consumer<IAzureResource<?>> refresh = s -> tm.runInBackground(title("common|resource.refresh", s.name()), s::refresh);
-        final ActionView.Builder<IAzureResource<?>> refreshView = new ActionView.Builder<IAzureResource<?>>("Refresh", "/icons/action/refresh.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.refresh", r.name()).toString()).orElse(null))
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.refresh", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof IAzureResource);
         am.registerAction(REFRESH, new Action<>(refresh, refreshView));
 
         final Consumer<AzureService> serviceRefresh = s -> tm.runInBackground(title("common|service.refresh", s.name()), s::refresh);
-        final ActionView.Builder<AzureService> serviceRefreshView = new ActionView.Builder<AzureService>("Refresh", "/icons/action/refresh.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|service.refresh", r.name()).toString()).orElse(null))
+        final ActionView.Builder serviceRefreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|service.refresh", ((AzureService) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof AzureService);
         am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 
         final Consumer<IAzureResource<?>> openPortalUrl = s -> tm.runInBackground(title("common|resource.open_portal_url", s.name()), () -> am.getAction(OPEN_URL).handle(s.portalUrl()));
-        final ActionView.Builder<IAzureResource<?>> openPortalUrlView = new ActionView.Builder<IAzureResource<?>>("Open In Portal", "/icons/action/portal.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", r.name()).toString()).orElse(null))
+        final ActionView.Builder openPortalUrlView = new ActionView.Builder("Open In Portal", "/icons/action/portal.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof IAzureResource);
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
     }
@@ -82,16 +82,16 @@ public class ResourceCommonActions implements IActionsContributor {
     private void registerCommand(AzureActionManager am) {
         am.registerAction(OPEN_URL, Action.emptyHandler());
 
-        final ActionView.Builder<IAzureResource<?>> showPropertiesView = new ActionView.Builder<IAzureResource<?>>("Show Properties", "/icons/action/properties.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.show_properties", r.name()).toString()).orElse(null));
+        final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.show_properties", ((IAzureResource<?>) r).name()).toString()).orElse(null));
         am.registerAction(SHOW_PROPERTIES, new Action<>(Action.emptyHandler(), showPropertiesView));
 
-        final ActionView.Builder<IAzureResource<?>> deployView = new ActionView.Builder<IAzureResource<?>>("Deploy", "/icons/action/deploy.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.deploy", r.name()).toString()).orElse(null));
+        final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.deploy", ((IAzureResource<?>) r).name()).toString()).orElse(null));
         am.registerAction(DEPLOY, new Action<>(Action.emptyHandler(), deployView));
 
-        final ActionView.Builder<IAzureResource<?>> createView = new ActionView.Builder<IAzureResource<?>>("Create", "/icons/action/create.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.create", r.name()).toString()).orElse(null));
+        final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.create", ((IAzureResource<?>) r).name()).toString()).orElse(null));
         am.registerAction(CREATE, new Action<>(Action.emptyHandler(), createView));
     }
 }

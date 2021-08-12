@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,13 +50,13 @@ public class ActionView implements IView.Label {
     @Setter
     @Getter
     @Accessors(chain = true, fluent = true)
-    public static class Builder<T> {
+    public static class Builder {
         @Nonnull
-        protected final Function<T, String> title;
+        protected final Function<Object, String> title;
         @Nullable
-        protected Function<T, String> iconPath;
+        protected Function<Object, String> iconPath;
         @Nullable
-        protected Function<T, String> description;
+        protected Function<Object, String> description;
         @Nullable
         protected Function<Object, Boolean> enabled = s -> true;
 
@@ -69,14 +68,15 @@ public class ActionView implements IView.Label {
             this(s -> title, s -> iconPath, null, (s) -> true);
         }
 
-        public ActionView toActionView(T s) {
-            final Boolean enabled = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
-            if (BooleanUtils.isTrue(enabled)) {
+        public ActionView toActionView(Object s) {
+            try {
+                final Boolean enabled = Optional.ofNullable(this.enabled).map(p -> p.apply(s)).orElse(true);
                 final String iconPath = Optional.ofNullable(this.iconPath).map(p -> p.apply(s)).orElse(null);
                 final String description = Optional.ofNullable(this.description).map(p -> p.apply(s)).orElse(null);
                 return new ActionView(new Static(this.title.apply(s), iconPath, description), enabled);
+            } catch (final Exception e) {
+                return new ActionView(new Static(""), false);
             }
-            return new ActionView(new Static(""), false);
         }
     }
 }
