@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -104,7 +105,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
                 .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.forEach(azureRoot::add);
-        azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.updateChildren()));
+        azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
         com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {

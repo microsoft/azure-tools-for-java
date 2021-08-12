@@ -18,9 +18,9 @@ import java.util.Objects;
 public class IntellijActions implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
-        am.<String>registerHandler(ResourceCommonActions.OPEN_URL, (s) -> true, BrowserUtil::browse);
+        am.<String>registerHandler(ResourceCommonActions.OPEN_URL, Objects::nonNull, BrowserUtil::browse);
         am.<IAzureResource<?>, AnActionEvent>registerHandler(ResourceCommonActions.SHOW_PROPERTIES,
-                (s, e) -> Objects.nonNull(e.getProject()),
+                (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
                 (s, e) -> IntellijShowPropertiesViewAction.showPropertyView(s, Objects.requireNonNull(e.getProject())));
     }
 

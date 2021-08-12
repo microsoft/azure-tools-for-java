@@ -175,6 +175,12 @@ public class Tree extends SimpleTree implements DataProvider {
             ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
 
+        public synchronized void clearChildren() {
+            this.removeAllChildren();
+            this.loaded = null;
+            ((DefaultTreeModel) this.tree.getModel()).reload(this);
+        }
+
         @Override
         public void setParent(MutableTreeNode newParent) {
             super.setParent(newParent);

@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -45,7 +46,8 @@ public class SpringCloudActions implements IActionsContributor {
             tm.runInBackground(AzureOperationBundle.title("springcloud|app.open_test_url", s.name()), runnable);
         };
         final ActionView.Builder<SpringCloudApp> openTestUrlView = new ActionView.Builder<SpringCloudApp>("Access Test Endpoint", "/icons/action/browser.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", r.name()).toString()).orElse(null));
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", r.name()).toString()).orElse(null))
+                .enabled(Objects::nonNull);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
     }
 
