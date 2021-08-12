@@ -62,17 +62,20 @@ public class ResourceCommonActions implements IActionsContributor {
 
         final Consumer<IAzureResource<?>> refresh = s -> tm.runInBackground(title("common|resource.refresh", s.name()), s::refresh);
         final ActionView.Builder<IAzureResource<?>> refreshView = new ActionView.Builder<IAzureResource<?>>("Refresh", "/icons/action/refresh.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.refresh", r.name()).toString()).orElse(null));
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.refresh", r.name()).toString()).orElse(null))
+                .enabled(s -> s instanceof IAzureResource);
         am.registerAction(REFRESH, new Action<>(refresh, refreshView));
 
         final Consumer<AzureService> serviceRefresh = s -> tm.runInBackground(title("common|service.refresh", s.name()), s::refresh);
         final ActionView.Builder<AzureService> serviceRefreshView = new ActionView.Builder<AzureService>("Refresh", "/icons/action/refresh.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|service.refresh", r.name()).toString()).orElse(null));
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|service.refresh", r.name()).toString()).orElse(null))
+                .enabled(s -> s instanceof AzureService);
         am.registerAction(SERVICE_REFRESH, new Action<>(serviceRefresh, serviceRefreshView));
 
         final Consumer<IAzureResource<?>> openPortalUrl = s -> tm.runInBackground(title("common|resource.open_portal_url", s.name()), () -> am.getAction(OPEN_URL).handle(s.portalUrl()));
         final ActionView.Builder<IAzureResource<?>> openPortalUrlView = new ActionView.Builder<IAzureResource<?>>("Open In Portal", "/icons/action/portal.svg")
-                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", r.name()).toString()).orElse(null));
+                .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", r.name()).toString()).orElse(null))
+                .enabled(s -> s instanceof IAzureResource);
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
     }
 
