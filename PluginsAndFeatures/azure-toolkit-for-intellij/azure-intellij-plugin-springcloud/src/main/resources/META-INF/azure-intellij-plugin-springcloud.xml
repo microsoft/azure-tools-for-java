@@ -1,7 +1,19 @@
 <idea-plugin>
+    <resource-bundle>com.microsoft.azure.toolkit.operation.title.springcloud</resource-bundle>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudExplorerContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActions"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.springcloud.IntellijSpringCloudActions"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider"/>
+        <configurationType implementation="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfigurationType"/>
+        <programRunner implementation="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentRunner"/>
+    </extensions>
+    <actions>
+        <action id="Actions.DeploySpringCloud" class="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction"
+                text="Deploy to Azure Spring Cloud" description="Deploy spring cloud app to azure"
+                icon="/icons/SpringCloud/Deploy.svg">
+        </action>
+    </actions>
 </idea-plugin>
