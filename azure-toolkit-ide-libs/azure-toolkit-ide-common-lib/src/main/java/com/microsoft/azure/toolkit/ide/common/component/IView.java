@@ -27,13 +27,10 @@ public interface IView {
             Optional.ofNullable(this.getUpdater()).ifPresent(Updater::updateChildren);
         }
 
-        default void setUpdater(Updater updater) {
-        }
+        void setUpdater(Updater updater);
 
         @Nullable
-        default Updater getUpdater() {
-            return null;
-        }
+        Updater getUpdater();
 
         interface Updater {
             default void updateView() {
