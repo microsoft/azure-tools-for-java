@@ -5,7 +5,7 @@
     </extensionPoints>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <actions implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions"/>
-        <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijActions"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations"/>

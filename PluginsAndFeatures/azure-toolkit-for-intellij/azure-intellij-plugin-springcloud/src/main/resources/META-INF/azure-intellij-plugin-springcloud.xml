@@ -2,7 +2,7 @@
     <resource-bundle>com.microsoft.azure.toolkit.operation.title.springcloud</resource-bundle>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudExplorerContributor"/>
-        <actions implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActions"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.springcloud.IntellijSpringCloudActions"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">

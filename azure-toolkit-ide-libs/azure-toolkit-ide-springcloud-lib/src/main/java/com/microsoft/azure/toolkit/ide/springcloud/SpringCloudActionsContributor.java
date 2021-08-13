@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
-public class SpringCloudActions implements IActionsContributor {
+public class SpringCloudActionsContributor implements IActionsContributor {
 
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
@@ -73,8 +73,8 @@ public class SpringCloudActions implements IActionsContributor {
 
         final ActionGroup appActionGroup = new ActionGroup("",
                 ResourceCommonActions.OPEN_PORTAL_URL,
-                SpringCloudActions.OPEN_PUBLIC_URL,
-                SpringCloudActions.OPEN_TEST_URL,
+                SpringCloudActionsContributor.OPEN_PUBLIC_URL,
+                SpringCloudActionsContributor.OPEN_TEST_URL,
                 "---",
                 ResourceCommonActions.START,
                 ResourceCommonActions.STOP,
@@ -86,7 +86,7 @@ public class SpringCloudActions implements IActionsContributor {
                 ResourceCommonActions.SHOW_PROPERTIES,
                 ResourceCommonActions.REFRESH,
                 "---",
-                SpringCloudActions.STREAM_LOG
+                SpringCloudActionsContributor.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
     }

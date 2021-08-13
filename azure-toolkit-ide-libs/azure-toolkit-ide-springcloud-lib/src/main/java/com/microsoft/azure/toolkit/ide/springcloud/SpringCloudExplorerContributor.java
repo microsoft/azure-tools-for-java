@@ -23,18 +23,18 @@ public class SpringCloudExplorerContributor implements IExplorerContributor {
     private static final String ICON = "/icons/springcloud.svg";
 
     @Override
-    public Node<?> getNode() {
+    public Node<?> getModuleNode() {
         final AzureActionManager am = AzureActionManager.getInstance();
         final IAzureMessager messager = AzureMessager.getDefaultMessager();
 
         final AzureSpringCloud service = az(AzureSpringCloud.class);
         return new Node<>(service).view(new AzureServiceLabelView<>(service, "Spring Cloud", ICON))
-                .actions(SpringCloudActions.SERVICE_ACTIONS)
+                .actions(SpringCloudActionsContributor.SERVICE_ACTIONS)
                 .addChildren(AzureSpringCloud::clusters, (cluster, ascNode) -> new Node<>(cluster)
                         .view(new AzureResourceLabelView<>(cluster))
-                        .actions(SpringCloudActions.CLUSTER_ACTIONS)
+                        .actions(SpringCloudActionsContributor.CLUSTER_ACTIONS)
                         .addChildren(SpringCloudCluster::apps, (app, clusterNode) -> new Node<>(app)
                                 .view(new AzureResourceLabelView<>(app))
-                                .actions(SpringCloudActions.APP_ACTIONS)));
+                                .actions(SpringCloudActionsContributor.APP_ACTIONS)));
     }
 }

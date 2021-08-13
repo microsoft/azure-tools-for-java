@@ -15,7 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 
 import java.util.Objects;
 
-public class IntellijActions implements IActionsContributor {
+public class IntellijActionsContributor implements IActionsContributor {
     @Override
     public void registerHandlers(AzureActionManager am) {
         am.<String>registerHandler(ResourceCommonActions.OPEN_URL, Objects::nonNull, BrowserUtil::browse);

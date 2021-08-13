@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.ide.common;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 
 public interface IExplorerContributor {
-    Node<?> getNode();
+    Node<?> getModuleNode();
 
     default int getOrder() {
         return 0;
