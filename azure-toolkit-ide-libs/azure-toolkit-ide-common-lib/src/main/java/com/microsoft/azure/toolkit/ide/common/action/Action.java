@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.component.IView;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -114,6 +115,25 @@ public class Action<D> {
             super(action.handlers, action.view);
             this.id = id;
             this.action = action;
+        }
+    }
+
+    public static class Id<D> {
+        @Nonnull
+        private final String id;
+
+        private Id(@Nonnull String id) {
+            this.id = id;
+        }
+
+        public static <D> Id<D> of(@Nonnull String id) {
+            assert StringUtils.isNotBlank(id) : "action id can not be blank";
+            return new Id<>(id);
+        }
+
+        @Nonnull
+        public String getId() {
+            return id;
         }
     }
 }

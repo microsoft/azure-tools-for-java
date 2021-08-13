@@ -26,9 +26,9 @@ public class SpringCloudActions implements IActionsContributor {
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
-    public static final String OPEN_PUBLIC_URL = "action.springcloud.app.open_public_url";
-    public static final String OPEN_TEST_URL = "action.springcloud.app.open_test_url";
-    public static final String STREAM_LOG = "action.springcloud.app.stream_log";
+    public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("action.springcloud.app.open_public_url");
+    public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("action.springcloud.app.open_test_url");
+    public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("action.springcloud.app.stream_log");
 
     @Override
     public void registerActions(AzureActionManager am) {

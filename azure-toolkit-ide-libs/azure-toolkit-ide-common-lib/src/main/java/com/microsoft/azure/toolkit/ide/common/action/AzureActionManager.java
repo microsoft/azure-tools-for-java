@@ -27,24 +27,24 @@ public abstract class AzureActionManager {
         instance = manager;
     }
 
-    public abstract <T> void registerAction(String id, Action<T> action);
+    public abstract <D> void registerAction(Action.Id<D> id, Action<D> action);
 
-    public <T> void registerAction(String id, Consumer<T> action) {
+    public <D> void registerAction(Action.Id<D> id, Consumer<D> action) {
         this.registerAction(id, new Action<>(action));
     }
 
-    public abstract <T> Action<T> getAction(String id);
+    public abstract <D> Action<D> getAction(Action.Id<D> id);
 
     public abstract void registerGroup(String id, ActionGroup group);
 
     public abstract ActionGroup getGroup(String id);
 
-    public <D> void registerHandler(@Nonnull String id, @Nonnull Predicate<D> condition, @Nonnull Consumer<D> handler) {
+    public <D> void registerHandler(@Nonnull Action.Id<D> id, @Nonnull Predicate<D> condition, @Nonnull Consumer<D> handler) {
         final Action<D> action = this.getAction(id);
         action.registerHandler(condition, handler);
     }
 
-    public <D, E> void registerHandler(@Nonnull String id, @Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
+    public <D, E> void registerHandler(@Nonnull Action.Id<D> id, @Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
         final Action<D> action = this.getAction(id);
         action.registerHandler(condition, handler);
     }

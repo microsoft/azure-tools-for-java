@@ -19,17 +19,17 @@ import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBun
 
 public class ResourceCommonActions implements IActionsContributor {
 
-    public static final String START = "action.resource.start";
-    public static final String STOP = "action.resource.stop";
-    public static final String RESTART = "action.resource.restart";
-    public static final String REFRESH = "action.resource.refresh";
-    public static final String SERVICE_REFRESH = "action.service.refresh";
-    public static final String DELETE = "action.resource.delete";
-    public static final String OPEN_PORTAL_URL = "action.resource.open_portal_url";
-    public static final String SHOW_PROPERTIES = "action.resource.show_properties";
-    public static final String DEPLOY = "action.resource.deploy";
-    public static final String CREATE = "action.resource.create";
-    public static final String OPEN_URL = "action.open_url";
+    public static final Action.Id<IAzureResource<?>> START = Action.Id.of("action.resource.start");
+    public static final Action.Id<IAzureResource<?>> STOP = Action.Id.of("action.resource.stop");
+    public static final Action.Id<IAzureResource<?>> RESTART = Action.Id.of("action.resource.restart");
+    public static final Action.Id<IAzureResource<?>> REFRESH = Action.Id.of("action.resource.refresh");
+    public static final Action.Id<IAzureResource<?>> DELETE = Action.Id.of("action.resource.delete");
+    public static final Action.Id<IAzureResource<?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
+    public static final Action.Id<IAzureResource<?>> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
+    public static final Action.Id<IAzureResource<?>> DEPLOY = Action.Id.of("action.resource.deploy");
+    public static final Action.Id<IAzureResource<?>> CREATE = Action.Id.of("action.resource.create");
+    public static final Action.Id<AzureService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
+    public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
 
     @Override
     public void registerActions(AzureActionManager am) {
