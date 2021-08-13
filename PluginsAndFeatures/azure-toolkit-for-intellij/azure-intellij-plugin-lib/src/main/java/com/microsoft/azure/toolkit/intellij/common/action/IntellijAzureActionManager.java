@@ -53,7 +53,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
     public <D> Action<D> getAction(Action.Id<D> id) {
         //noinspection unchecked
         final AnActionWrapper<D> action = ((AnActionWrapper<D>) ActionManager.getInstance().getAction(id.getId()));
-        return new Action.Proxy<>(action.getAction(), id.getId());
+        return new Action.Delegate<>(action.getAction(), id.getId());
     }
 
     @Override

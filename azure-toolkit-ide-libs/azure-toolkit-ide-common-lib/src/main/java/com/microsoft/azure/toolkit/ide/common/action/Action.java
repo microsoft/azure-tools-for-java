@@ -105,13 +105,13 @@ public class Action<D> {
 
     @Getter
     @Accessors(chain = true, fluent = true)
-    public static class Proxy<D> extends Action<D> {
+    public static class Delegate<D> extends Action<D> {
         @Nonnull
         private final String id;
         @Nonnull
         private final Action<D> action;
 
-        public Proxy(@Nonnull Action<D> action, @Nonnull String id) {
+        public Delegate(@Nonnull Action<D> action, @Nonnull String id) {
             super(action.handlers, action.view);
             this.id = id;
             this.action = action;
