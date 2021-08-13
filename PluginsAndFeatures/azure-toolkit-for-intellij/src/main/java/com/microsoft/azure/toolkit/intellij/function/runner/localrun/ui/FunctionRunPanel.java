@@ -36,7 +36,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     private JPanel settings;
     private JPanel pnlMain;
-    private com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox txtFunc;
+    private FunctionCoreToolsCombobox txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private AppSettingsTable appSettingsTable;

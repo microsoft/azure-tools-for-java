@@ -29,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,14 +42,16 @@ import java.util.stream.Collectors;
 
 public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     private static final String AZURE_TOOLKIT_FUNCTION_CORE_TOOLS_HISTORY = "azure_toolkit.function.core.tools.history";
+    private static final String OPEN_AZURE_SETTINGS = "Open Azure Settings";
     private static final int MAX_HISTORY_SIZE = 15;
     private final Set<String> funcCoreToolsPathList = new LinkedHashSet<>();
 
     private Condition<? super VirtualFile> fileFilter;
     private Project project;
-    private String openSettings = "Open IDE Settings";
+
     private String lastSelected;
     private boolean includeSettings;
+    private boolean pendingOpenAzureSettings = false;
 
     public FunctionCoreToolsCombobox(Project project, boolean includeSettings) {
         super(false);
@@ -56,36 +60,39 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         final List<String> exePostfix = Arrays.asList("exe|bat|cmd|sh|bin|run".split("\\|"));
         this.fileFilter = file ->
             Comparing.equal(file.getNameWithoutExtension(), "func", file.isCaseSensitive())
-                    && (file.getExtension() == null || exePostfix.contains(
+                && (file.getExtension() == null || exePostfix.contains(
                 file.isCaseSensitive() ? file.getExtension() : StringUtils.lowerCase(file.getExtension())
-                )
+            )
 
             );
+        reset();
         if (includeSettings) {
             this.setRenderer(SimpleListCellRenderer.create((label, value, index) -> {
                 label.setText(value);
-                if (StringUtils.equals(value, openSettings)) {
+                if (StringUtils.equals(value, OPEN_AZURE_SETTINGS)) {
                     label.setIcon(AllIcons.General.GearPlain);
                 }
             }));
 
             this.addItemListener(e -> {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    if (StringUtils.equals((String) e.getItem(), openSettings)) {
-                        AzureTaskManager.getInstance().runLater(() -> {
-                            ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class);
-                            FunctionCoreToolsCombobox.this.reset();
-                        });
-                        FunctionCoreToolsCombobox.this.setValue(lastSelected);
-                        return;
-                    }
+                    if (StringUtils.equals((String) e.getItem(), OPEN_AZURE_SETTINGS)) {
+                        if (!pendingOpenAzureSettings) {
+                            AzureTaskManager.getInstance().runLater(() -> {
+                                ShowSettingsUtil.getInstance().showSettingsDialog(project, AzureConfigurable.AzureAbstractConfigurable.class);
+                                FunctionCoreToolsCombobox.this.reset();
+                                pendingOpenAzureSettings = false;
+                            });
+                            pendingOpenAzureSettings = true;
+                        }
 
-                } else {
-                    lastSelected = (String) e.getItem();
+                        FunctionCoreToolsCombobox.this.setValue(lastSelected);
+                    } else {
+                        lastSelected = (String) e.getItem();
+                    }
                 }
             });
         }
-        reset();
     }
 
     public void reset() {
@@ -95,15 +102,18 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         funcCoreToolsPathList.addAll(FunctionCliResolver.resolve());
 
         final String valueFromAzConfig = Azure.az().config().getFunctionCoreToolsPath();
-        if (StringUtils.isNotBlank(valueFromAzConfig)) {
+        if (StringUtils.isNotBlank(valueFromAzConfig) && Files.exists(Path.of(valueFromAzConfig))) {
             funcCoreToolsPathList.add(valueFromAzConfig);
         }
         funcCoreToolsPathList.forEach(this::addItem);
+
+        if (includeSettings) {
+            this.addItem(OPEN_AZURE_SETTINGS);
+        }
         if (StringUtils.isNotBlank(valueFromAzConfig)) {
             this.setValue(valueFromAzConfig);
-        }
-        if (includeSettings) {
-            this.addItem(openSettings);
+        } else {
+            this.setSelectedIndex(-1);
         }
     }
 
@@ -120,7 +130,8 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
             fileDescriptor.withFileFilter(fileFilter);
         }
         fileDescriptor.withTitle("Select Path to Azure Functions Core Tools");
-        final VirtualFile lastFile = new File(lastFilePath).exists() ? LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
+        final VirtualFile lastFile = lastFilePath != null && new File(lastFilePath).exists()
+            ? LocalFileSystem.getInstance().findFileByIoFile(new File(lastFilePath)) : null;
         FileChooser.chooseFile(fileDescriptor, project, this, lastFile, (file) -> {
             if (file != null && file.exists()) {
                 addOrSelectExistingVirtualFile(file);
@@ -155,7 +166,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
                 if (StringUtils.isNotBlank(item) && new File(item).exists()) {
                     try {
                         result.add(Paths.get(item).toRealPath().toString());
-                    } catch (IOException ignore) {
+                    } catch (Exception ignore) {
                         // ignore since the history data is not important
                     }
                 }
