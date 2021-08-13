@@ -28,6 +28,7 @@ public class SpringCloudActions implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
     public static final String OPEN_PUBLIC_URL = "action.springcloud.app.open_public_url";
     public static final String OPEN_TEST_URL = "action.springcloud.app.open_test_url";
+    public static final String STREAM_LOG = "action.springcloud.app.stream_log";
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -49,10 +50,11 @@ public class SpringCloudActions implements IActionsContributor {
                 .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.open_test_url", ((SpringCloudApp) r).name()).toString()).orElse(null))
                 .enabled(Objects::nonNull);
         am.registerAction(OPEN_TEST_URL, new Action<>(openTestUrl, openTestUrlView));
-    }
 
-    @Override
-    public void registerHandlers(AzureActionManager am) {
+        final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
+                .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.stream_log", ((SpringCloudApp) r).name()).toString()).orElse(null))
+                .enabled(s -> s instanceof SpringCloudApp);
+        am.registerAction(STREAM_LOG, new Action<>(Action.emptyHandler(), streamLogView));
     }
 
     @Override
@@ -64,9 +66,7 @@ public class SpringCloudActions implements IActionsContributor {
 
         final ActionGroup clusterActionGroup = new ActionGroup("",
                 ResourceCommonActions.OPEN_PORTAL_URL,
-                "---",
                 ResourceCommonActions.CREATE,
-                "---",
                 ResourceCommonActions.REFRESH
         );
         am.registerGroup(CLUSTER_ACTIONS, clusterActionGroup);
@@ -84,7 +84,9 @@ public class SpringCloudActions implements IActionsContributor {
                 ResourceCommonActions.DEPLOY,
                 "---",
                 ResourceCommonActions.SHOW_PROPERTIES,
-                ResourceCommonActions.REFRESH
+                ResourceCommonActions.REFRESH,
+                "---",
+                SpringCloudActions.STREAM_LOG
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
     }

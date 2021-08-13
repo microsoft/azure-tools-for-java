@@ -9,8 +9,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActions;
+import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActions;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -25,6 +27,7 @@ public class IntellijSpringCloudActions implements IActionsContributor {
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
         this.registerShowPropertiesActionHandler(am);
+        this.registerStreamLogActionHandler(am);
     }
 
     private void registerShowPropertiesActionHandler(AzureActionManager am) {
@@ -43,6 +46,12 @@ public class IntellijSpringCloudActions implements IActionsContributor {
         final BiPredicate<IAzureResource<?>, AnActionEvent> condition = (r, e) -> r instanceof SpringCloudApp && Objects.nonNull(e.getProject());
         final BiConsumer<IAzureResource<?>, AnActionEvent> handler = (c, e) -> DeploySpringCloudAppAction.deploy((SpringCloudApp) c, e.getProject());
         am.registerHandler(ResourceCommonActions.DEPLOY, condition, handler);
+    }
+
+    private void registerStreamLogActionHandler(AzureActionManager am) {
+        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
+        am.registerHandler(SpringCloudActions.STREAM_LOG, condition, handler);
     }
 
     @Override

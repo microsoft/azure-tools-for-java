@@ -33,7 +33,6 @@ public class ResourceCommonActions implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        this.registerCommand(am);
         final AzureTaskManager tm = AzureTaskManager.getInstance();
 
         final Consumer<IAzureResource<?>> start = s -> tm.runInBackground(title("common|resource.start", s.name()), ((Startable<?>) s)::start);
@@ -77,9 +76,8 @@ public class ResourceCommonActions implements IActionsContributor {
                 .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.open_portal_url", ((IAzureResource<?>) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof IAzureResource);
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
-    }
 
-    private void registerCommand(AzureActionManager am) {
+        // register commands
         am.registerAction(OPEN_URL, Action.emptyHandler());
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")

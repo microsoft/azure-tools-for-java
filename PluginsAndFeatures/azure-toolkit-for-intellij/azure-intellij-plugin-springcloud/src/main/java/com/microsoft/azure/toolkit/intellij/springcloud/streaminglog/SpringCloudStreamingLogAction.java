@@ -19,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class SpringCloudStreamingLogAction {
@@ -30,7 +31,7 @@ public class SpringCloudStreamingLogAction {
     private static final String FAILED_TO_LIST_INSTANCES = "Failed to list spring cloud app instances.";
     private static final String FAILED_TO_LIST_INSTANCES_WITH_MESSAGE = "Failed to list spring cloud app instances: %s";
 
-    protected void startLogStreaming(@Nonnull SpringCloudApp app, Project project) {
+    public static void startLogStreaming(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();
         final AzureString title = AzureOperationBundle.title("springcloud|log_stream.open", app.name());
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
@@ -54,7 +55,7 @@ public class SpringCloudStreamingLogAction {
         }));
     }
 
-    private void showLogStreamingDialog(List<? extends SpringCloudDeploymentInstanceEntity> instances, SpringCloudApp app, Project project) {
+    private static void showLogStreamingDialog(List<? extends SpringCloudDeploymentInstanceEntity> instances, SpringCloudApp app, Project project) {
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
             if (dialog.showAndGet()) {
