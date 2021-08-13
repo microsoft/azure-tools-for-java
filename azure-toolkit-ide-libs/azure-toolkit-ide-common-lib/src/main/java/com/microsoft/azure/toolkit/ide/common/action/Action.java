@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.component.IView;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -24,10 +23,6 @@ import java.util.function.Predicate;
 
 @Accessors(chain = true, fluent = true)
 public class Action<D> {
-    @SuppressWarnings("rawtypes")
-    public static final Consumer EMPTY_HANDLER = (s) -> {
-        throw new AzureToolkitRuntimeException("handler not registered");
-    };
     public static final String SOURCE = "ACTION_SOURCE";
     @Nonnull
     private List<AbstractMap.SimpleEntry<Object, Object>> handlers = new ArrayList<>();
@@ -35,30 +30,26 @@ public class Action<D> {
     @Getter
     private ActionView.Builder view;
 
+    public Action(@Nullable ActionView.Builder view) {
+        this.view = view;
+    }
+
     public Action(@Nonnull Consumer<D> handler) {
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d) -> true, handler);
-        }
+        this.registerHandler((d) -> true, handler);
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler) {
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d, e) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, handler);
     }
 
     public Action(@Nonnull Consumer<D> handler, @Nullable ActionView.Builder view) {
         this.view = view;
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d) -> true, handler);
-        }
+        this.registerHandler((d) -> true, handler);
     }
 
     public <E> Action(@Nonnull BiConsumer<D, E> handler, @Nullable ActionView.Builder view) {
         this.view = view;
-        if (handler != EMPTY_HANDLER) {
-            this.registerHandler((d, e) -> true, handler);
-        }
+        this.registerHandler((d, e) -> true, handler);
     }
 
     private Action(@Nonnull List<AbstractMap.SimpleEntry<Object, Object>> handlers, @Nullable ActionView.Builder view) {
@@ -96,11 +87,6 @@ public class Action<D> {
 
     public <E> void registerHandler(@Nonnull BiPredicate<D, E> condition, @Nonnull BiConsumer<D, E> handler) {
         this.handlers.add(new AbstractMap.SimpleEntry<>(condition, handler));
-    }
-
-    public static <T> Consumer<T> emptyHandler() {
-        //noinspection unchecked
-        return (Consumer<T>) EMPTY_HANDLER;
     }
 
     @Getter

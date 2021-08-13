@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.AzureService;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.Optional;
@@ -78,18 +79,20 @@ public class ResourceCommonActions implements IActionsContributor {
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
 
         // register commands
-        am.registerAction(OPEN_URL, Action.emptyHandler());
+        am.registerAction(OPEN_URL, (s) -> {
+            throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
+        });
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
                 .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.show_properties", ((IAzureResource<?>) r).name()).toString()).orElse(null));
-        am.registerAction(SHOW_PROPERTIES, new Action<>(Action.emptyHandler(), showPropertiesView));
+        am.registerAction(SHOW_PROPERTIES, new Action<>(showPropertiesView));
 
         final ActionView.Builder deployView = new ActionView.Builder("Deploy", "/icons/action/deploy.svg")
                 .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.deploy", ((IAzureResource<?>) r).name()).toString()).orElse(null));
-        am.registerAction(DEPLOY, new Action<>(Action.emptyHandler(), deployView));
+        am.registerAction(DEPLOY, new Action<>(deployView));
 
         final ActionView.Builder createView = new ActionView.Builder("Create", "/icons/action/create.svg")
                 .description(s -> Optional.ofNullable(s).map(r -> title("common|resource.create", ((IAzureResource<?>) r).name()).toString()).orElse(null));
-        am.registerAction(CREATE, new Action<>(Action.emptyHandler(), createView));
+        am.registerAction(CREATE, new Action<>(createView));
     }
 }

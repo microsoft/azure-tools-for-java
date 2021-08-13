@@ -54,7 +54,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", "/icons/action/log.svg")
                 .description(s -> Optional.ofNullable(s).map(r -> title("springcloud|app.stream_log", ((SpringCloudApp) r).name()).toString()).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp);
-        am.registerAction(STREAM_LOG, new Action<>(Action.emptyHandler(), streamLogView));
+        am.registerAction(STREAM_LOG, new Action<>(streamLogView));
     }
 
     @Override
