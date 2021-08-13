@@ -25,7 +25,7 @@ public class IntellijActions implements IActionsContributor {
     }
 
     @Override
-    public int getZOrder() {
+    public int getOrder() {
         return 2; //after azure resource common actions registered
     }
 }

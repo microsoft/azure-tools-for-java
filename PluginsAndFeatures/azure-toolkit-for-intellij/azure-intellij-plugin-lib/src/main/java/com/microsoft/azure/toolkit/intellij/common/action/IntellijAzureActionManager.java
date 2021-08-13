@@ -39,9 +39,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
         final IntellijAzureActionManager am = new IntellijAzureActionManager();
         register(am);
         final List<IActionsContributor> contributors = actionsExtensionPoint.getExtensionList();
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerActions(am));
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerHandlers(am));
-        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getZOrder)).forEach((e) -> e.registerGroups(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerActions(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerHandlers(am));
+        contributors.stream().sorted(Comparator.comparing(IActionsContributor::getOrder)).forEach((e) -> e.registerGroups(am));
     }
 
     @Override

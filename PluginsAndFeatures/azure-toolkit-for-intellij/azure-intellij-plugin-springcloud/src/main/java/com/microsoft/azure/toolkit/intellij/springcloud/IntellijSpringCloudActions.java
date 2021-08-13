@@ -55,7 +55,7 @@ public class IntellijSpringCloudActions implements IActionsContributor {
     }
 
     @Override
-    public int getZOrder() {
-        return IActionsContributor.super.getZOrder();
+    public int getOrder() {
+        return IActionsContributor.super.getOrder();
     }
 }

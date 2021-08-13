@@ -17,7 +17,7 @@ public interface IActionsContributor {
     default void registerHandlers(AzureActionManager am) {
     }
 
-    default int getZOrder() {
+    default int getOrder() {
         return 0;
     }
 }

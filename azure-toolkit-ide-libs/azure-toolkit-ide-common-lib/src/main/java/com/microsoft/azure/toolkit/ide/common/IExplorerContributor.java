@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 public interface IExplorerContributor {
     Node<?> getNode();
 
-    default int getZOrder() {
+    default int getOrder() {
         return 0;
     }
 }
