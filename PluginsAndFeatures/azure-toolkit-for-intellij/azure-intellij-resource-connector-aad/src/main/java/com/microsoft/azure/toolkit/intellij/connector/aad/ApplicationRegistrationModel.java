@@ -7,6 +7,8 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Manages the data entered in the "Create Azure AD application" form.
  */
@@ -17,6 +19,6 @@ class ApplicationRegistrationModel {
     private String displayName;
     private String clientId;
     private String domain;
-    private String callbackUrl;
+    private List<String> callbackUrls;
     private boolean isMultiTenant;
 }

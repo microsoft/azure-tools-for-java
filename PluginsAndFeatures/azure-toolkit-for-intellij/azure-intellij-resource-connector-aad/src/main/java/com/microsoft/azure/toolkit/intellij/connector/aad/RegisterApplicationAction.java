@@ -47,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -97,7 +98,7 @@ public class RegisterApplicationAction extends AnAction {
 
             var model = new ApplicationRegistrationModel();
             model.setDomain(domain);
-            model.setCallbackUrl(ApplicationRegistrationModel.DEFAULT_CALLBACK_URL);
+            model.setCallbackUrls(List.of(ApplicationRegistrationModel.DEFAULT_CALLBACK_URL));
             return model;
         }));
     }
@@ -163,7 +164,7 @@ public class RegisterApplicationAction extends AnAction {
             params.displayName = model.getDisplayName();
             params.identifierUris = Collections.singletonList("https://" + model.getDomain() + "/" + validSuffix);
             params.web = new WebApplication();
-            params.web.redirectUris = Collections.singletonList(model.getCallbackUrl());
+            params.web.redirectUris = List.copyOf(model.getCallbackUrls());
             if (model.isMultiTenant()) {
                 params.signInAudience = "AzureADMultipleOrgs";
             } else {

@@ -48,7 +48,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     public ApplicationRegistrationModel getData() {
         var data = new ApplicationRegistrationModel();
         data.setDisplayName(displayNameInput.getText());
-        data.setCallbackUrl(callbackUrlInput.getText());
+        data.setCallbackUrls(List.of(callbackUrlInput.getText()));
         data.setDomain(domainInput.getText());
         data.setMultiTenant(multiTenantInput.isSelected());
         data.setClientId(clientIdInput.getText());
@@ -62,8 +62,11 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
 
     @Override
     public void setData(ApplicationRegistrationModel data) {
+        var callbackUrls = data.getCallbackUrls();
+        var url = callbackUrls.isEmpty() ? "" : callbackUrls.get(0);
+
         displayNameInput.setText(data.getDisplayName());
-        callbackUrlInput.setText(data.getCallbackUrl());
+        callbackUrlInput.setText(url);
         domainInput.setText(data.getDomain());
         multiTenantInput.setSelected(data.isMultiTenant());
         clientIdInput.setText(data.getClientId());
