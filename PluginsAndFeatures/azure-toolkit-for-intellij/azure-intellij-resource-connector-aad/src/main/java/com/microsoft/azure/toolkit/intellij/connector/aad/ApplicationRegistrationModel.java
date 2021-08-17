@@ -12,6 +12,8 @@ import lombok.Data;
  */
 @Data
 class ApplicationRegistrationModel {
+    public static final String DEFAULT_CALLBACK_URL = "http://localhost:8080/secure/aad";
+
     private String displayName;
     private String clientId;
     private String domain;

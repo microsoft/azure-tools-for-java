@@ -97,6 +97,7 @@ public class RegisterApplicationAction extends AnAction {
 
             var model = new ApplicationRegistrationModel();
             model.setDomain(domain);
+            model.setCallbackUrl(ApplicationRegistrationModel.DEFAULT_CALLBACK_URL);
             return model;
         }));
     }
