@@ -31,7 +31,8 @@ class SparkScalaLocalConsoleConfigurationType : ScalaConsoleConfigurationType() 
         @JvmStatic
         val instance by lazy { ConfigurationTypeUtil.findConfigurationType(SparkScalaLocalConsoleConfigurationType::class.java) }
     }
-    fun sparkLocalConfFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLocalConsoleRunConfigurationFactory(this)
+    fun sparkLocalConfFactory(isMockFs: Boolean): ScalaConsoleRunConfigurationFactory =
+            SparkScalaLocalConsoleRunConfigurationFactory(this, isMockFs)
 
     override fun getDisplayName(): String = "Spark Local Console(Scala)"
 

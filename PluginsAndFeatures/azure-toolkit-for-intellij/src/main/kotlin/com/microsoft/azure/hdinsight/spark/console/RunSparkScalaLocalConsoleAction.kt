@@ -23,10 +23,15 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.ui.Messages
 import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
+    private var isMockFs: Boolean = false
+
     override val selectedMenuActionId: String
         get() = "Actions.SparkRunLocalConsoleActionGroups"
 
@@ -37,9 +42,21 @@ class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
         get() = 0
 
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLocalConsoleConfigurationType().sparkLocalConfFactory()
+        get() = SparkScalaLocalConsoleConfigurationType().sparkLocalConfFactory(isMockFs)
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
 
     override fun getOperationName(event: AnActionEvent?): String = TelemetryConstants.RUN_SPARK_LOCAL_CONSOLE
+
+    override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {
+        val project = CommonDataKeys.PROJECT.getData(event.dataContext) ?: return true
+
+        isMockFs = Messages.YES == Messages.showYesNoDialog(
+                        project,
+                        "Do you want to use a mocked file system?",
+                        "Setting file system",
+                        Messages.getQuestionIcon())
+
+        return super.onActionPerformed(event, operation)
+    }
 }

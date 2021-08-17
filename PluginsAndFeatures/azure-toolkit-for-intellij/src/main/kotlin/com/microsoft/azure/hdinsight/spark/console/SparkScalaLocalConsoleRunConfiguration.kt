@@ -42,7 +42,6 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor
-import com.intellij.openapi.ui.Messages
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.search.ProjectScope
 import com.intellij.util.PathUtil.getJarPathForClass
@@ -56,7 +55,9 @@ import org.jdom.Element
 import java.nio.file.Paths
 import javax.swing.Action
 
-class SparkScalaLocalConsoleRunConfiguration(private val scalaConsoleRunConfDelegate: ScalaConsoleRunConfiguration)
+class SparkScalaLocalConsoleRunConfiguration(
+        private val scalaConsoleRunConfDelegate: ScalaConsoleRunConfiguration,
+        private val isMockFs: Boolean)
     : ModuleBasedConfiguration<RunConfigurationModule, Element>(
         scalaConsoleRunConfDelegate.name,
         scalaConsoleRunConfDelegate.configurationModule,
@@ -105,15 +106,6 @@ class SparkScalaLocalConsoleRunConfiguration(private val scalaConsoleRunConfDele
     }
 
     fun createJavaParams(): JavaParameters {
-        var isMockFs = false
-        if (Messages.YES == Messages.showYesNoDialog(
-                        project,
-                        "Do you want to use a mocked file system?",
-                        "Setting file system",
-                        Messages.getQuestionIcon())) {
-            isMockFs = true
-        }
-
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel, null)
                 .createParams(executor = null, hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
         val params = createScalaParams()

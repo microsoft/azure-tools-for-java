@@ -30,10 +30,13 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
-class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLocalConsoleConfigurationType)
+class SparkScalaLocalConsoleRunConfigurationFactory(
+        sparkConsoleType: SparkScalaLocalConsoleConfigurationType,
+        private val isMockFs: Boolean)
     : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkScalaLocalConsoleRunConfiguration(ScalaConsoleRunConfiguration(project, this, ""))
+        return SparkScalaLocalConsoleRunConfiguration(
+                ScalaConsoleRunConfiguration(project, this, ""), isMockFs)
     }
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
