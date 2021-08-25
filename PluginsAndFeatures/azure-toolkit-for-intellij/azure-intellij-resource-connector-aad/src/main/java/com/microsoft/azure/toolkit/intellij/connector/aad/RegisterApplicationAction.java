@@ -40,6 +40,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
+import com.microsoft.graph.models.ImplicitGrantSettings;
 import com.microsoft.graph.models.WebApplication;
 import com.microsoft.graph.requests.GraphServiceClient;
 import okhttp3.Request;
@@ -170,6 +171,9 @@ public class RegisterApplicationAction extends AnAction {
             } else {
                 params.signInAudience = "AzureADMyOrg";
             }
+            // Grant "ID Tokens" permissions for the web application
+            params.web.implicitGrantSettings = new ImplicitGrantSettings();
+            params.web.implicitGrantSettings.enableIdTokenIssuance = true;
 
             // read-only access if the client ID was defined by the user
             var clientID = model.getClientId();
