@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.ui.DocumentAdapter
@@ -30,7 +31,6 @@ import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
-import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ImmutableComboBoxModelDelegated
@@ -46,9 +46,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
 import com.microsoft.intellij.ui.util.findFirst
-import com.microsoft.intellij.util.PluginUtil
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
-import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -71,7 +69,6 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
     }
 
     private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
-    private val refreshButtonIconPath = "/icons/refresh.png"
     private val storageAccountTip = "The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal."
     private val storageKeyTip = "The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }
@@ -132,7 +129,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
 
         button.name = "blobCardStorageContainerComboBoxButton"
         button.toolTipText = "Refresh"
-        button.icon = PluginUtil.getIcon(refreshButtonIconPath)
+        button.icon = AllIcons.Actions.Refresh
         button.addActionListener { doRefresh() }
     }
 

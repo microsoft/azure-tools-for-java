@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ComboboxWithBrowseButton
@@ -30,7 +31,6 @@ import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
 import com.microsoft.azure.hdinsight.common.AdlUri
-import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ImmutableComboBoxModelDelegated
@@ -39,12 +39,11 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageMod
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN1
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.ui.util.UIUtils
 import com.microsoft.intellij.ui.util.findFirst
-import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
@@ -55,11 +54,7 @@ import java.awt.Font
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
-import javax.swing.ComboBoxModel
-import javax.swing.JComboBox
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.JPanel
+import javax.swing.*
 
 class SparkSubmissionJobUploadStorageAdlsCard
     : SparkSubmissionJobUploadStorageBasicCard(ADLS_GEN1.description), ILogger {
@@ -68,7 +63,6 @@ class SparkSubmissionJobUploadStorageAdlsCard
         var selectedSubscription: String?
     }
 
-    private val refreshButtonIconPath = "/icons/refresh.png"
     private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/<root path>"
     private val adlsRootPathLabel = JLabel("ADLS Root Path").apply { toolTipText = adlsRootPathTip }
     private val adlsRootPathField = HintTextField(adlsRootPathTip).apply {
@@ -88,7 +82,7 @@ class SparkSubmissionJobUploadStorageAdlsCard
         comboBox.name = "adlsCardSubscriptionsComboBoxCombo"
         button.name = "adlsCardSubscriptionsComboBoxButton"
         button.toolTipText = "Refresh"
-        button.icon = PluginUtil.getIcon(refreshButtonIconPath)
+        button.icon = AllIcons.Actions.Refresh
         button.addActionListener {
             //refresh subscriptions after refresh button is clicked
             if (button.isEnabled) {

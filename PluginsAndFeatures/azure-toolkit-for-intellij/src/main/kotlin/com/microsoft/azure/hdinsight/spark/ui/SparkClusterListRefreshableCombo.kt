@@ -22,12 +22,12 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.ui.SimpleListCellRenderer
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
-import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComponentWithBrowseButtonEnabledDelegated
@@ -44,7 +44,6 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.findFirst
-import com.microsoft.intellij.util.PluginUtil
 import rx.Observable
 import rx.Observable.*
 import rx.subjects.BehaviorSubject
@@ -58,17 +57,13 @@ import javax.swing.JComponent
 import javax.swing.JList
 
 open class SparkClusterListRefreshableCombo: ILogger, Disposable {
-    companion object {
-        const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
-    }
-
     open fun getComboBoxNamePrefix(): String = "clusterListComboBox"
 
     private val clustersSelection  = ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
         button.name = getComboBoxNamePrefix() + "Button"
 
-        setButtonIcon(PluginUtil.getIcon(REFRESH_BUTTON_PATH))
+        setButtonIcon(AllIcons.Actions.Refresh)
 
         comboBox.apply {
             setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
