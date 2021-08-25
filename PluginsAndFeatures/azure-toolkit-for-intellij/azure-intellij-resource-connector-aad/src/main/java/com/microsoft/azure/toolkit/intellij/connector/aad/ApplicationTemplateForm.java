@@ -163,12 +163,13 @@ class ApplicationTemplateForm implements AzureForm<Application> {
         var editor = EditorTextFieldProvider.getInstance().getEditorField(language, project, Collections.singleton(editorEx -> {
             editorEx.putUserData(IncrementalFindAction.SEARCH_DISABLED, Boolean.TRUE);
 
-            var globalScheme = EditorColorsManager.getInstance().getGlobalScheme();
-            var c = globalScheme.getColor(EditorColors.READONLY_BACKGROUND_COLOR);
+            var scheme = EditorColorsManager.getInstance().getSchemeForCurrentUITheme();
+            var c = scheme.getColor(EditorColors.READONLY_BACKGROUND_COLOR);
             if (c == null) {
-                c = globalScheme.getDefaultBackground();
+                c = scheme.getDefaultBackground();
             }
             editorEx.setBackgroundColor(c);
+            editorEx.setColorsScheme(scheme);
             editorEx.setVerticalScrollbarVisible(true);
             editorEx.setHorizontalScrollbarVisible(true);
             editorEx.setBorder(JBUI.Borders.empty(5));
