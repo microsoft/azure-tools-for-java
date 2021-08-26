@@ -31,7 +31,6 @@ import java.awt.event.KeyEvent
 import javax.accessibility.AccessibleAction
 import javax.accessibility.AccessibleContext
 import javax.swing.JComponent
-import javax.swing.UIManager
 
 class AccessibleHideableTitledPanel(
         title: String,
@@ -84,7 +83,8 @@ class AccessibleHideableTitledPanel(
             }
 
             override fun focusGained(e: FocusEvent?) {
-                border = JBUI.Borders.customLine(UIManager.getColor("TextField.focusedBorderColor"))
+                border = JBUI.Borders.customLine(
+                        JBUI.CurrentTheme.Focus.focusColor(), JBUI.scale(3))
             }
         })
 
