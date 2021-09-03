@@ -15,8 +15,8 @@ import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.NetworkSecurityGroup;
 import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.toolkit.intellij.storage.component.VMStorageAccountCreationDialog;
-import com.microsoft.azure.toolkit.intellij.storage.task.CreateStorageAccountTask;
+import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccountAction;
+import com.microsoft.azure.toolkit.intellij.storage.creation.VMStorageAccountCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -694,7 +694,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 }
                 // create storage account when use choose to create new one
                 if (Objects.nonNull(model.getStorageAccountConfig())) {
-                    model.setStorageAccount(new CreateStorageAccountTask(model.getStorageAccountConfig()).execute());
+                    model.setStorageAccount(CreateStorageAccountAction.createStorageAccount(model.getStorageAccountConfig()));
                 }
                 final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
                     .createVirtualMachine(model.getSubscription().getId(),

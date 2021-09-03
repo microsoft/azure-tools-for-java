@@ -173,6 +173,7 @@ dependencies {
     compile project(':azure-intellij-resource-connector-aad')
     compile project(':azure-intellij-plugin-vm')
     compile project(':azure-intellij-plugin-springcloud')
+    compile project(':azure-intellij-plugin-storage')
     compile project(':azure-intellij-plugin-service-explorer')
 
     compile 'com.microsoft.azure:azure-client-authentication'

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.storage.component;
+package com.microsoft.azure.toolkit.intellij.storage.creation;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
