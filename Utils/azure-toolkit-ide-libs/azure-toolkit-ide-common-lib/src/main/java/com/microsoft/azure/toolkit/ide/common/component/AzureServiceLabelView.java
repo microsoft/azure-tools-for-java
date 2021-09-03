@@ -60,7 +60,7 @@ public class AzureServiceLabelView<T extends AzureService> implements IView.Labe
         if ("common|service.refresh".equals(type)
                 && source instanceof AzureService
                 && ((AzureService) source).name().equals(this.service.name())) {
-            if (((AzureOperationEvent<?>) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+            if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                 AzureTaskManager.getInstance().runLater(this::updateChildren);
             }
         }
