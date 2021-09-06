@@ -31,8 +31,6 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitM
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
-import com.microsoft.azuretools.securestore.SecureStore
-import com.microsoft.azuretools.service.ServiceManager
 import rx.Observable
 import java.net.URI
 
