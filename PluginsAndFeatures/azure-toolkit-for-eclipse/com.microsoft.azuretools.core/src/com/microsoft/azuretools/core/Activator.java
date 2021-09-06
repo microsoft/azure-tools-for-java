@@ -329,9 +329,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     }
 
     public static void removeUnNecessaryListener() {
-		for (int i = 0; i < depEveList.size(); i++) {
-			removeDeploymentEventListener(depEveList.get(i));
-		}
+        for (int i = 0; i < depEveList.size(); i++) {
+            removeDeploymentEventListener(depEveList.get(i));
+        }
         depEveList.clear();
     }
 
