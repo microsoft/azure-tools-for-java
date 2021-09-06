@@ -4,9 +4,4 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
-    compile 'com.microsoft.azuretools:azuretools-core:3.57.0-SNAPSHOT', {
-        exclude group: "com.microsoft.azure", module: "azure-client-authentication"
-        exclude group: "com.microsoft.azure", module: "azure-client-runtime"
-        exclude group: "javax.xml.bind", module: "jaxb-api"
-    }
 }

@@ -32,10 +32,10 @@ import com.microsoft.azure.hdinsight.spark.run.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageWithUploadPathPanel;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -78,8 +78,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     public static final String ACTION_TRIGGER_PROP = "ActionTrigger";
 
     @Nullable
-    private final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
-
+    private final ISecureStore secureStore = AzureStoreManager.getInstance().getSecureStore();
     @NotNull
     private final SparkBatchJobConfigurableModel jobModel;
     @NotNull

@@ -40,6 +40,8 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB
 import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel.Constants.Companion.submissionFolder
 import com.microsoft.azure.storage.blob.BlobRequestOptions
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
@@ -68,7 +70,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
         var selectedContainer: String?
     }
 
-    private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
+    private val secureStore: ISecureStore? = AzureStoreManager.getInstance().secureStore
     private val storageAccountTip = "The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal."
     private val storageKeyTip = "The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }

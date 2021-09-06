@@ -7,7 +7,7 @@ package com.microsoft.intellij.secure;
 
 import com.intellij.credentialStore.CredentialAttributes;
 import com.intellij.ide.passwordSafe.PasswordSafe;
-import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
-public class IdeaSecureStore implements SecureStore {
+public class IdeaSecureStore implements ISecureStore {
     private IdeaSecureStore() {
     }
 

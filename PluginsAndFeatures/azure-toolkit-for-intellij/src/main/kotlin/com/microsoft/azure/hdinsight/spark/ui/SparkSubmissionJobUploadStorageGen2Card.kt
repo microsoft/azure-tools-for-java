@@ -32,10 +32,10 @@ import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2
 import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.intellij.ui.HintTextField
-import com.microsoft.azuretools.securestore.SecureStore
-import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
@@ -53,7 +53,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
         var accessKey: String?
     }
 
-    private val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
+    private val secureStore: ISecureStore? = AzureStoreManager.getInstance().secureStore
     private val storageKeyTip = "The access key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageKeyLabel = JLabel("Access Key").apply { toolTipText = storageKeyTip }
     val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip; name = "gen2CardstorageKeyField" }

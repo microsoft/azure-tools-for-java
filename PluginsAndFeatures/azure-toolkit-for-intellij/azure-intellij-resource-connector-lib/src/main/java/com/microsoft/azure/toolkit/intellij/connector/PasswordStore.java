@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.credentialStore.CredentialAttributes;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class PasswordStore {
     private static final Map<CredentialAttributes, String> memoStore = new HashMap<>();
-    private static final SecureStore passwordSafe = ServiceManager.getServiceProvider(SecureStore.class);
+    private static final ISecureStore passwordSafe = AzureStoreManager.getInstance().getSecureStore();
 
     public static void savePassword(String serviceName, String resourceId, String username, char[] password, Password.SaveType passwordSave) {
         if (Password.SaveType.FOREVER == passwordSave) {

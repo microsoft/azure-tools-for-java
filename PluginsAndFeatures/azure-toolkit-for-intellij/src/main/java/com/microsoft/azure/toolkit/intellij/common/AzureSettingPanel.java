@@ -14,10 +14,10 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.SimpleListCellRenderer;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfiguration;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -31,7 +31,10 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
@@ -45,12 +48,12 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     private boolean telemetrySent;
     private Artifact lastSelectedArtifact;
     protected AzureArtifact lastSelectedAzureArtifact;
-    protected SecureStore secureStore;
+    protected ISecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
         this.project = project;
         this.isCbArtifactInited = false;
-        this.secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        this.secureStore = AzureStoreManager.getInstance().getSecureStore();
     }
 
     public AzureSettingPanel(@NotNull Project project,
