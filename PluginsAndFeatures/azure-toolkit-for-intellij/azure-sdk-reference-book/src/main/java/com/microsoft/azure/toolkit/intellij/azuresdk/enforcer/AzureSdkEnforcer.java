@@ -11,10 +11,11 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReference
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.AzureSdkLibraryService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.ProjectLibraryService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.ProjectLibraryService.ProjectLibEntity;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijActionMessageAction;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijNeverShowAgainAction;
 import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,10 +53,10 @@ public class AzureSdkEnforcer {
     @AzureOperation(name = "sdk|deprecated_libs.warn", type = AzureOperation.Type.ACTION)
     private static void warnDeprecatedLibs(@AzureTelemetry.Property List<? extends AzureJavaSdkEntity> deprecatedLibs) {
         final String message = buildMessage(deprecatedLibs);
-        final IAzureMessage.Action referenceBook = new IntellijActionMessageAction(OpenReferenceBookAction.ID);
-        final String neverShowGainActionId = "AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain";
-        AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook,
-                new IntellijActionMessageAction(neverShowGainActionId));
+        final AzureActionManager am = AzureActionManager.getInstance();
+        final Action<?> referenceBook = am.getAction(Action.Id.of(OpenReferenceBookAction.ID));
+        final Action<?> neverShowAgain = am.getAction(Action.Id.of(IntellijNeverShowAgainAction.ID));
+        AzureMessager.getMessager().warning(message, "Deprecated Azure SDK libraries Detected", referenceBook, neverShowAgain);
     }
 
     private static String buildMessage(@Nonnull List<? extends AzureJavaSdkEntity> libs) {

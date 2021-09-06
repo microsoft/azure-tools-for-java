@@ -6,9 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.MessageDialogBuilder;
@@ -17,15 +19,19 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskContext;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 @Log
 public class IntellijAzureMessager implements IAzureMessager {
@@ -81,7 +87,15 @@ public class IntellijAzureMessager implements IAzureMessager {
         final NotificationType type = types.get(message.getType());
         final String content = message.getContent();
         final Notification notification = this.createNotification(message.getTitle(), content, type);
-        notification.addActions(message.getAnActions());
+        notification.addActions(Arrays.stream(message.getActions()).map(a -> {
+            final String title = Optional.ofNullable(a.view(null)).map(IView.Label::getLabel).orElse(a.toString());
+            return new NotificationAction(title) {
+                @Override
+                public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+                    a.handle(null, e);
+                }
+            };
+        }).collect(Collectors.toList()));
         Notifications.Bus.notify(notification, message.getProject());
     }
 }

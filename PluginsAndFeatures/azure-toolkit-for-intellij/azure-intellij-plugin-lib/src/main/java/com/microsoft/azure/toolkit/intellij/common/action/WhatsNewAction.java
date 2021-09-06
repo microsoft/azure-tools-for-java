@@ -20,7 +20,9 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.microsoft.azure.toolkit.intellij.common.messager.IntellijOpenInBrowserMessageAction;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -38,6 +40,8 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 
 public class WhatsNewAction extends AnAction implements DumbAware {
     public static final String ID = "Actions.WhatsNew";
@@ -79,7 +83,8 @@ public class WhatsNewAction extends AnAction implements DumbAware {
                 } else {
                     final String message = String.format("Azure Toolkit for Java is updated to <b><u>%s</u></b>", version.toString());
                     final String title = "Azure Toolkit for Java Updated";
-                    final IntellijOpenInBrowserMessageAction changelog = new IntellijOpenInBrowserMessageAction("What's New", WHATSNEW_URL);
+                    final AzureActionManager am = AzureActionManager.getInstance();
+                    final Action<?> changelog = new Action<>((n) -> am.getAction(OPEN_URL).handle(WHATSNEW_URL), new ActionView.Builder("What's New"));
                     AzureMessager.getMessager().info(message, title, changelog);
                 }
             }

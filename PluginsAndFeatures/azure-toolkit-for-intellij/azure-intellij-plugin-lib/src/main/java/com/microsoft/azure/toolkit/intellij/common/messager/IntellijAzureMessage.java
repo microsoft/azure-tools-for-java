@@ -5,9 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -16,20 +13,15 @@ import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.IAzureOperation;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.regex.Pattern.compile;
 
@@ -95,11 +87,6 @@ public class IntellijAzureMessage extends AzureMessage {
         return Objects.isNull(result) && Objects.nonNull(dft) ? dft.get() : result;
     }
 
-    @Nonnull
-    protected List<AnAction> getAnActions() {
-        return Arrays.stream(this.getActions()).map(a -> toAction(a, ObjectUtils.firstNonNull(this.original, this))).collect(Collectors.toList());
-    }
-
     private static String transformURLIntoLinks(String text) {
         final Matcher m = URL_PATTERN.matcher(text);
         final StringBuilder sb = new StringBuilder();
@@ -109,18 +96,6 @@ public class IntellijAzureMessage extends AzureMessage {
         }
         m.appendTail(sb);
         return sb.toString();
-    }
-
-    private static AnAction toAction(IAzureMessage.Action a, IAzureMessage message) {
-        if (a instanceof IntellijActionMessageAction) {
-            return ActionManager.getInstance().getAction(((IntellijActionMessageAction) a).getActionId());
-        }
-        return new AnAction(a.name()) {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                a.actionPerformed(message);
-            }
-        };
     }
 
     public static IntellijAzureMessage from(IAzureMessage raw) {
