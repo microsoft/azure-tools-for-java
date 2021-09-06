@@ -1,8 +1,0 @@
-intellij {
-    plugins = ['java', "properties"]
-}
-
-dependencies {
-    compile project(':azure-intellij-plugin-lib')
-    compile project(':azure-intellij-resource-connector-lib')
-}
