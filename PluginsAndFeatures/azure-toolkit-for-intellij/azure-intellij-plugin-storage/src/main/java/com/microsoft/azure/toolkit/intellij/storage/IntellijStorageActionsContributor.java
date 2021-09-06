@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.intellij.storage;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.storage.creation.CreateStorageAccountAction;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 
 import java.util.function.BiConsumer;

@@ -5,7 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.common;
 
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 
 public interface IActionsContributor {
     default void registerActions(AzureActionManager am) {

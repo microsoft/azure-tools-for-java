@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.ide.springcloud;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;

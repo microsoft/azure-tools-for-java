@@ -5,8 +5,9 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
-import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
