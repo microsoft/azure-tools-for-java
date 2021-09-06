@@ -9,11 +9,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.widgets.Display;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.ui.PlatformUI;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -34,32 +30,17 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void invokeLater(Runnable runnable) {
-        Display.getDefault().asyncExec(runnable);
+        AzureTaskManager.getInstance().runLater(runnable);
     }
 
     @Override
     public void invokeAndWait(Runnable runnable) {
-        Display.getDefault().syncExec(runnable);
+        AzureTaskManager.getInstance().runAndWait(runnable);
     }
 
     @Override
     public void executeOnPooledThread(final Runnable runnable) {
-        Job job = new Job("Loading...") {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                monitor.beginTask("", IProgressMonitor.UNKNOWN);
-                try {
-                    runnable.run();
-                } catch (Exception ex) {
-                    monitor.done();
-                    return Status.CANCEL_STATUS;
-                }
-                monitor.done();
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
+        AzureTaskManager.getInstance().runOnPooledThread(runnable);
     }
 
     @Override
