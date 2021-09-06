@@ -42,8 +42,6 @@ import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel.Consta
 import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
-import com.microsoft.azuretools.securestore.SecureStore
-import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
