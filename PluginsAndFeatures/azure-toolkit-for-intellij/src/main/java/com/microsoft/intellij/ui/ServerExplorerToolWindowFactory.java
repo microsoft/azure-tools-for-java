@@ -46,6 +46,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -297,6 +298,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // create child tree nodes for each child node
         node.getChildNodes().stream()
+            .filter(s -> !(s instanceof StorageModule))
             .sorted(Comparator.comparing(Node::getPriority).thenComparing(Node::getName))
             .map(childNode -> createTreeNode(childNode, project))
             .forEach(treeNode::add);
