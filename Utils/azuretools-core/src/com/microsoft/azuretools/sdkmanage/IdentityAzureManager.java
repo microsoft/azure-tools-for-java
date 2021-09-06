@@ -7,6 +7,8 @@ package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -22,8 +24,6 @@ import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
@@ -38,13 +38,13 @@ import java.util.stream.Collectors;
 public class IdentityAzureManager extends AzureManagerBase {
 
     private static final String SERVICE_PRINCIPAL_STORE_SERVICE = "Service Principal";
-    private SecureStore secureStore;
+    private ISecureStore secureStore;
 
     private static final String LEGACY_SECURE_STORE_SERVICE = "ADAuthManager";
     private static final String LEGACY_SECURE_STORE_KEY = "cachedAuthResult";
 
     public IdentityAzureManager() {
-        secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        secureStore = AzureStoreManager.getInstance().getSecureStore();
         if (secureStore != null) {
             // forgot old password, since in new auth, refresh token will be stored through azure identity persistence layer
             secureStore.forgetPassword(LEGACY_SECURE_STORE_SERVICE, LEGACY_SECURE_STORE_KEY, null);

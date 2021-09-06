@@ -8,23 +8,20 @@ package com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.common.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.webapp.docker.ContainerSettingPanel;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.utils.DockerUtil;
-import com.microsoft.azuretools.securestore.SecureStore;
-import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
     public static final String PRIVATE_DOCKER_REGISTRY = "Private Docker Registry";
@@ -130,7 +127,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
             containerSettingPanel.getImageTag(),
             ""
         ));
-        final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+        final ISecureStore secureStore = AzureStoreManager.getInstance().getSecureStore();
         secureStore.savePassword(PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword());
 
@@ -152,7 +149,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
         if (StringUtils.isEmpty(acrInfo.getPassword())) {
-            final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+            final ISecureStore secureStore = AzureStoreManager.getInstance().getSecureStore();
             secureStore.migratePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
                 PRIVATE_DOCKER_REGISTRY, containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName());
 

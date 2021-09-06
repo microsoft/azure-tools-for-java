@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.securestore;
+package com.microsoft.azure.toolkit.ide.common.store;
 
 
 import javax.annotation.Nonnull;
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * Interface for secure store operations
  */
-public interface SecureStore {
+public interface ISecureStore {
     /**
      * Load password or credential from the secure store
      *

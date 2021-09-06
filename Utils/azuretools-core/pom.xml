@@ -35,6 +35,7 @@
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <checkstyle.skip>true</checkstyle.skip>
+        <azure-toolkit-ide-common-lib.version>0.12.0-SNAPSHOT</azure-toolkit-ide-common-lib.version>
     </properties>
     <profiles>
         <profile>
@@ -333,6 +334,10 @@
             <groupId>org.jtwig</groupId>
             <artifactId>jtwig-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-toolkit-ide-common-lib</artifactId>
+            <version>${azure-toolkit-ide-common-lib.version}</version>
+        </dependency>
     </dependencies>
-
 </project>

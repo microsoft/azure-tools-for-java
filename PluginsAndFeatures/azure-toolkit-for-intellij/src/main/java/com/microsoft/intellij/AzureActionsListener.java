@@ -18,6 +18,7 @@ import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
@@ -33,7 +34,6 @@ import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
-import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
@@ -137,7 +137,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         }
         AzureInitializer.initialize();
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
+            AzureStoreManager.register(new FileStore(), new IntellijStore(), IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
             ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
                     new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
