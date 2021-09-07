@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.ide.common.action.ActionView;
 import com.microsoft.azure.toolkit.ide.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.storage.action.OpenStorageBrowserAction;
+import com.microsoft.azure.toolkit.ide.storage.action.OpenStorageExplorerAction;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 
 import java.util.Optional;
@@ -23,15 +23,15 @@ public class StorageActionsContributor implements IActionsContributor {
     public static final String SERVICE_ACTIONS = "actions.storage.service";
     public static final String ACCOUNT_ACTIONS = "actions.storage.account";
 
-    public static final Action.Id<StorageAccount> OPEN_STORAGE_BROWSER = Action.Id.of("action.storage.open_storage_explorer");
+    public static final Action.Id<StorageAccount> OPEN_STORAGE_EXPLORER = Action.Id.of("action.storage.open_storage_explorer");
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final Consumer<StorageAccount> open = OpenStorageBrowserAction::openStorageBrowser;
+        final Consumer<StorageAccount> open = OpenStorageExplorerAction::openStorageBrowser;
         final ActionView.Builder openView = new ActionView.Builder("Open Storage Explorer", "/icons/action/portal.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("storage|account.open_storage_explorer", ((StorageAccount) r).name())).orElse(null))
                 .enabled(s -> s instanceof StorageAccount);
-        am.registerAction(OPEN_STORAGE_BROWSER, new Action<>(open, openView));
+        am.registerAction(OPEN_STORAGE_EXPLORER, new Action<>(open, openView));
     }
 
     @Override
@@ -43,7 +43,8 @@ public class StorageActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup accountActionGroup = new ActionGroup(
-                OPEN_STORAGE_BROWSER,
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                "---",
                 ResourceCommonActionsContributor.DELETE
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
