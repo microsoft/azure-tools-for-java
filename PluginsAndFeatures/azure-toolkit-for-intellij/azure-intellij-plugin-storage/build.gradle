@@ -1,0 +1,10 @@
+intellij {
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.12.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-storage-lib:0.12.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.12.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-ide-storage-lib:0.12.0-SNAPSHOT'
+}

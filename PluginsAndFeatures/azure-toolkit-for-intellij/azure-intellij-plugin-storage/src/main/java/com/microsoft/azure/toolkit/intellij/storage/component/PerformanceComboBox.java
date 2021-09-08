@@ -10,13 +10,13 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public class PerformanceComboBox extends AzureComboBox<Performance> {
 
-    @NotNull
+    @Nonnull
     @Override
     @AzureOperation(
             name = "storage|account.performance.list.supported",

@@ -3,13 +3,17 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.storage.component;
+package com.microsoft.azure.toolkit.intellij.storage.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
-import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
+import com.microsoft.azure.toolkit.intellij.storage.component.AccountNameTextField;
+import com.microsoft.azure.toolkit.intellij.storage.component.KindComboBox;
+import com.microsoft.azure.toolkit.intellij.storage.component.PerformanceComboBox;
+import com.microsoft.azure.toolkit.intellij.storage.component.RedundancyComboBox;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
