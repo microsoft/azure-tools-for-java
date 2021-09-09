@@ -1,3 +1,13 @@
 <idea-plugin>
   <resource-bundle>messages.aadBundle</resource-bundle>
+
+  <actions>
+    <action id="AzureToolkit.AzureRegisterApp"
+            icon="/icons/WebApp/WebApp.svg"
+            class="com.microsoft.azure.toolkit.intellij.connector.aad.RegisterApplicationAction"/>
+
+    <action id="AzureToolkit.AzureAppTemplates"
+            icon="/icons/WebApp/WebApp.svg"
+            class="com.microsoft.azure.toolkit.intellij.connector.aad.ShowApplicationTemplatesAction"/>
+  </actions>
 </idea-plugin>
