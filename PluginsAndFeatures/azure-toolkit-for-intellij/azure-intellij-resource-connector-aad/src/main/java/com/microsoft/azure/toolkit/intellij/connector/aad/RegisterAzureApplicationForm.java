@@ -18,7 +18,6 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     private JPanel contentPanel;
 
     private AzureTextInput displayNameInput;
-    private AzureTextInput callbackUrlInput;
     private AzureTextInput domainInput;
     private JBCheckBox multiTenantInput;
     private AzureTextInput clientIdInput;
@@ -26,6 +25,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     private TitledSeparator advancedSettingsSeparator;
     private JComponent noteComponent;
     private JBLabel clientIdNote;
+    private AzureEditableCallbackUrlsCombobox callbackUrlsInput;
 
     RegisterAzureApplicationForm() {
         var separator = (AzureHideableTitledSeparator) advancedSettingsSeparator;
@@ -48,7 +48,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     public ApplicationRegistrationModel getData() {
         var data = new ApplicationRegistrationModel();
         data.setDisplayName(displayNameInput.getText());
-        data.setCallbackUrls(List.of(callbackUrlInput.getText()));
+        data.setCallbackUrls(callbackUrlsInput.getItems());
         data.setDomain(domainInput.getText());
         data.setMultiTenant(multiTenantInput.isSelected());
         data.setClientId(clientIdInput.getText());
@@ -57,16 +57,15 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(displayNameInput, callbackUrlInput, domainInput, clientIdInput);
+        return Arrays.asList(displayNameInput, callbackUrlsInput, domainInput, clientIdInput);
     }
 
     @Override
     public void setData(ApplicationRegistrationModel data) {
         var callbackUrls = data.getCallbackUrls();
-        var url = callbackUrls.isEmpty() ? "" : callbackUrls.get(0);
 
         displayNameInput.setText(data.getDisplayName());
-        callbackUrlInput.setText(url);
+        callbackUrlsInput.setUrls(callbackUrls);
         domainInput.setText(data.getDomain());
         multiTenantInput.setSelected(data.isMultiTenant());
         clientIdInput.setText(data.getClientId());
@@ -76,7 +75,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
         noteComponent = ComponentsKt.noteComponent(MessageBundle.message("dialog.identity.ad.register_app.description"));
         noteComponent.setBorder(JBUI.Borders.emptyBottom(5));
 
-        callbackUrlInput = new AzureCallbackURLInput();
+        callbackUrlsInput = new AzureEditableCallbackUrlsCombobox();
         clientIdInput = new AzureClientIdInput();
         advancedSettingsSeparator = new AzureHideableTitledSeparator();
     }
