@@ -13,20 +13,20 @@ public class AzureStoreManager {
     private static AzureStoreManager instance;
 
     @Getter
-    private IFileStore fileStore;
+    private IMachineStore machineStore;
 
     @Getter
-    private IApplicationStore appStore;
+    private IIdeStore ideStore;
 
     @Getter
     private ISecureStore secureStore;
 
-    public static synchronized void register(@Nonnull IFileStore fileStore,
-                                             @Nonnull IApplicationStore appStore,
+    public static synchronized void register(@Nonnull IMachineStore machineStore,
+                                             @Nonnull IIdeStore ideStore,
                                              @Nonnull ISecureStore secureStore) {
         getInstance();
-        instance.fileStore = fileStore;
-        instance.appStore = appStore;
+        instance.machineStore = machineStore;
+        instance.ideStore = ideStore;
         instance.secureStore = secureStore;
     }
 

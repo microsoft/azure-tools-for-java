@@ -137,7 +137,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         }
         AzureInitializer.initialize();
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            AzureStoreManager.register(new FileStore(), new IntellijStore(), IdeaSecureStore.getInstance());
+            AzureStoreManager.register(null, null, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
             ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
                     new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
