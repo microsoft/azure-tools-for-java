@@ -352,10 +352,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion;
         }
-        String version = AzureStoreManager.getInstance().getAppStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
+        String version = AzureStoreManager.getInstance().getIdeStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
         firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
         // update plugin version;
-        AzureStoreManager.getInstance().getAppStore().setProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, PLUGIN_VERSION);
+        AzureStoreManager.getInstance().getIdeStore().setProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, PLUGIN_VERSION);
         return firstInstallationByVersion;
     }
 
