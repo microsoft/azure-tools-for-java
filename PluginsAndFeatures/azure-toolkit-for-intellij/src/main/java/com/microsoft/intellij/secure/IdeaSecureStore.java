@@ -16,18 +16,35 @@ import javax.annotation.Nullable;
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
 public class IdeaSecureStore implements ISecureStore {
-    private IdeaSecureStore() {
-    }
-
-    // Leverage IntelliJ PasswordSafe component
-    private PasswordSafe passwordSafe = PasswordSafe.getInstance();
-
     private static class LazyHolder {
         static final IdeaSecureStore INSTANCE = new IdeaSecureStore();
     }
 
     public static IdeaSecureStore getInstance() {
         return LazyHolder.INSTANCE;
+    }
+
+    private IdeaSecureStore() {
+    }
+
+    // Leverage IntelliJ PasswordSafe component
+    private PasswordSafe passwordSafe = PasswordSafe.getInstance();
+
+    @Nullable
+    @Override
+    public String getProperty(@Nonnull String service, @Nonnull String key) {
+        return loadPassword(service, key, null);
+    }
+
+    @Nullable
+    @Override
+    public String getProperty(@Nonnull String service, @Nonnull String key, @Nullable String defaultValue) {
+        return StringUtils.firstNonBlank(loadPassword(service, key, null), defaultValue);
+    }
+
+    @Override
+    public void setProperty(@Nonnull String service, @Nonnull String key, @Nullable String value) {
+        savePassword(service, key, null, value);
     }
 
     @Override

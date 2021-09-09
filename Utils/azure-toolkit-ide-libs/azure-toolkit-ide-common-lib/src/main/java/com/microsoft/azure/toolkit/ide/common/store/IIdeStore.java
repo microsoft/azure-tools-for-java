@@ -5,5 +5,5 @@
 
 package com.microsoft.azure.toolkit.ide.common.store;
 
-public interface IFileStore extends IPropertyStore {
+public interface IIdeStore extends IPropertyStore {
 }

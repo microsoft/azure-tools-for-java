@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * Interface for secure store operations
  */
-public interface ISecureStore {
+public interface ISecureStore extends IPropertyStore {
     /**
      * Load password or credential from the secure store
      *

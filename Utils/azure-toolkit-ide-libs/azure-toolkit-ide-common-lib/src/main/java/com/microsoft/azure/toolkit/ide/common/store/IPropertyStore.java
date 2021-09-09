@@ -16,6 +16,4 @@ public interface IPropertyStore {
     String getProperty(@Nonnull String serviceName, @Nonnull String key, @Nullable String defaultValue);
 
     void setProperty(@Nonnull String serviceName, @Nonnull String key, @Nullable String value);
-
-    void load();
 }
