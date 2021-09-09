@@ -45,6 +45,10 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("ComponentNotRegistered")
 public class ShowApplicationTemplatesAction extends AnAction {
+    public ShowApplicationTemplatesAction() {
+        super(MessageBundle.message("action.AzureToolkit.AzureAppTemplates.text"));
+    }
+
     @Override
     @AzureOperation(name = "connector|aad.show_application_templates", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@NotNull AnActionEvent e) {

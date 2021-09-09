@@ -60,6 +60,10 @@ import java.util.UUID;
 public class RegisterApplicationAction extends AnAction {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.aad");
 
+    public RegisterApplicationAction() {
+        super(MessageBundle.message("action.AzureToolkit.AzureRegisterApp.text"));
+    }
+
     @Override
     @AzureOperation(name = "connector|aad.register_application", type = AzureOperation.Type.ACTION)
     public void actionPerformed(@NotNull AnActionEvent e) {
