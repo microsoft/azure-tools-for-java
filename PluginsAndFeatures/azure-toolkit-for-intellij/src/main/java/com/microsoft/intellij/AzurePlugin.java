@@ -31,10 +31,10 @@ import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.intellij.azuresdk.dependencesurvey.activity.WorkspaceTaggingActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
 import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
@@ -73,6 +73,8 @@ import java.util.zip.ZipInputStream;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.intellij.AzureConfigInitializer.TELEMETRY;
+import static com.microsoft.intellij.AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -350,10 +352,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion;
         }
-        String version = AzureConfigurations.getInstance().getState().pluginVersion();
+        String version = AzureStoreManager.getInstance().getAppStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
         firstInstallationByVersion = StringUtils.equalsIgnoreCase(version, PLUGIN_VERSION);
         // update plugin version;
-        AzureConfigurations.getInstance().getState().pluginVersion(PLUGIN_VERSION);
+        AzureStoreManager.getInstance().getAppStore().setProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, PLUGIN_VERSION);
         return firstInstallationByVersion;
     }
 

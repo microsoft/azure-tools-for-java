@@ -70,6 +70,15 @@ public class FileStorage {
         write(new byte[]{});
     }
 
+    public void removeFile() throws IOException {
+        try {
+            rwlock.writeLock().lock();
+            Files.deleteIfExists(filePath);
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
     public void append(byte[] data) throws IOException {
         try {
             rwlock.writeLock().lock();
@@ -85,6 +94,6 @@ public class FileStorage {
     }
 
     public void appendln(String string) throws IOException {
-        append(string+"\n");
+        append(string + "\n");
     }
 }

@@ -35,7 +35,6 @@ final class ParserXMLUtility {
      *
      * @param fileName .
      * @return XML document or <B>null</B> if error occured
-     * @throws WindowsAzureInvalidProjectOperationException
      */
     protected static Document parseXMLFile(final String fileName, String errorMessage) throws Exception {
         try {
@@ -60,7 +59,6 @@ final class ParserXMLUtility {
      * @param doc
      * @return XML document or <B>null</B> if error occured
      * @throws IOException
-     * @throws WindowsAzureInvalidProjectOperationException
      */
     protected static boolean saveXMLFile(String fileName, Document doc) throws Exception {
         File xmlFile = null;

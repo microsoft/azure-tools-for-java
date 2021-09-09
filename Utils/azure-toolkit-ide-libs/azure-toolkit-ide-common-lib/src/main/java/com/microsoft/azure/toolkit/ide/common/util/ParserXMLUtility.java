@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.azurecommons.util;
+package com.microsoft.azure.toolkit.ide.common.util;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

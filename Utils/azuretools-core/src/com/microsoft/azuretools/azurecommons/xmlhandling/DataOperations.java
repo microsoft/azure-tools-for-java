@@ -10,7 +10,7 @@ import java.util.HashMap;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azure.toolkit.ide.common.util.ParserXMLUtility;
 import org.w3c.dom.Document;
 
 public class DataOperations {

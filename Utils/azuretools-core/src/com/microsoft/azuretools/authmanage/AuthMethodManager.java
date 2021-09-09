@@ -6,6 +6,7 @@
 package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
@@ -24,13 +25,13 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +50,8 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHO
 
 public class AuthMethodManager {
     private static final org.apache.log4j.Logger LOGGER =
-        org.apache.log4j.Logger.getLogger(AuthMethodManager.class);
+            org.apache.log4j.Logger.getLogger(AuthMethodManager.class);
+    public static final String AUTH_METHOD_DETAIL = "auth_method_detail";
     private AuthMethodDetails authMethodDetails;
     private final Set<Runnable> signInEventListeners = new HashSet<>();
     private final Set<Runnable> signOutEventListeners = new HashSet<>();
@@ -197,8 +199,7 @@ public class AuthMethodManager {
         try {
             System.out.println("saving authMethodDetails...");
             String sd = JsonHelper.serialize(authMethodDetails);
-            FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
-            fs.write(sd.getBytes(StandardCharsets.UTF_8));
+            AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, sd);
         } catch (final IOException e) {
             final String error = "Failed to persist auth method settings while updating";
             final String action = "Retry later";
@@ -240,7 +241,7 @@ public class AuthMethodManager {
                 List<SubscriptionDetail> persistSubscriptions = identityAzureManager.getSubscriptionManager().loadSubscriptions();
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
                     List<String> savedSubscriptionList = persistSubscriptions.stream()
-                        .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                            .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
                 initFuture.complete(true);
@@ -273,11 +274,16 @@ public class AuthMethodManager {
     private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {
-            FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
-            byte[] data = fs.read();
-            String json = new String(data);
-            if (json.isEmpty()) {
-                System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + " is empty");
+            String json = AzureStoreManager.getInstance().getIdeStore().getProperty(ACCOUNT, AUTH_METHOD_DETAIL, "");
+            if (StringUtils.isBlank(json)) {
+                FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
+                byte[] data = fs.read();
+                json = new String(data);
+                AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, json);
+                fs.removeFile();
+            }
+            if (StringUtils.isBlank(json)) {
+                System.out.println("No auth method details are saved.");
                 return new AuthMethodDetails();
             }
             return JsonHelper.deserialize(AuthMethodDetails.class, json);

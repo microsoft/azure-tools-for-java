@@ -61,25 +61,15 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         // check non-empty for valid data.xml
         if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
             final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-            if (config.allowTelemetry()) {
-                config.allowTelemetry(true);
-            }
-            if (StringUtils.isBlank(config.pluginVersion())) {
-                config.pluginVersion(pluginVersion);
-            }
-            if (StringUtils.isBlank(config.installationId()) && InstallationIdUtils.isValidHashMac(installationId)) {
-                config.installationId(installationId);
-            }
             AzureConfigurations.getInstance().loadState(config);
         }
         final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-        String installationID = config.installationId();
+        String installationID = InstallationIdUtils.getHashMac();
         if (StringUtils.isBlank(installationID)) {
             installationID = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));
         }
 
-        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION,
-                config.allowTelemetry() ? installationID : StringUtils.EMPTY);
+        final String userAgent = String.format(USER_AGENT, PLUGIN_VERSION, installationID);
         Azure.az().config().setLogLevel("NONE");
         Azure.az().config().setUserAgent(userAgent);
         final AnAction action = ActionManager.getInstance().getAction(WhatsNewAction.ID);

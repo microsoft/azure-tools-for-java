@@ -44,9 +44,6 @@ public class PluginLifeCycleListener implements AppLifecycleListener {
 
     @Override
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
-        if (StringUtils.isNotBlank(AzureConfigurations.getInstance().getState().environment())) {
-            Azure.az(AzureCloud.class).set(AzureEnvironmentUtils.stringToAzureEnvironment(AzureConfigurations.getInstance().getState().environment()));
-        }
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());

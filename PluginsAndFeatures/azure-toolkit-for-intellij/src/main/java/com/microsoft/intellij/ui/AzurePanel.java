@@ -13,7 +13,8 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -24,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.AzureConfigInitializer;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -199,8 +201,21 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(config.getCloud())) {
             Azure.az(AzureCloud.class).setByName(config.getCloud());
         }
-        AzureConfigurations.getInstance().saveAzConfig();
+        saveAzConfig();
         return true;
+    }
+
+    private void saveAzConfig() {
+        final AzureConfiguration config = Azure.az().config();
+        IIdeStore ideStore = AzureStoreManager.getInstance().getIdeStore();
+        ideStore.setProperty(AzureConfigInitializer.TELEMETRY, AzureConfigInitializer.TELEMETRY_ALLOW_TELEMETRY,
+                Boolean.toString(config.getTelemetryEnabled()));
+        ideStore.setProperty(AzureConfigInitializer.ACCOUNT, AzureConfigInitializer.AZURE_ENVIRONMENT_KEY,
+                config.getCloud());
+        ideStore.setProperty(AzureConfigInitializer.FUNCTION, AzureConfigInitializer.FUNCTION_CORE_TOOLS_PATH,
+                config.getFunctionCoreToolsPath());
+        ideStore.setProperty(AzureConfigInitializer.DATABASE, AzureConfigInitializer.PASSWORD_SAVE_TYPE,
+                config.getDatabasePasswordSaveType());
     }
 
     @Override

@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -13,10 +14,12 @@ import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import lombok.extern.java.Log;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +29,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,38 +57,23 @@ public class SubscriptionManager {
 
     public synchronized void cleanSubscriptions() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.cleanSubscriptions()");
-        deleteSubscriptions();
-    }
-
-    @AzureOperation(name = "account|subscription.clear_cache", type = AzureOperation.Type.TASK)
-    public static synchronized void deleteSubscriptions() {
-        System.out.println("cleaning " + FILE_NAME_SUBSCRIPTIONS_DETAILS + " file");
-        FileStorage fs = null;
-        try {
-            fs = new FileStorage(FILE_NAME_SUBSCRIPTIONS_DETAILS, CommonSettings.getSettingsBaseDir());
-        } catch (final IOException e) {
-            log.warning(FILE_NAME_SUBSCRIPTIONS_DETAILS + " is not found when try to clean subscriptions");
-        }
-        if (Objects.nonNull(fs)) {
-            try {
-                fs.cleanFile();
-            } catch (final IOException e) {
-                final String error = "Failed to clear local cached subscriptions";
-                throw new AzureToolkitRuntimeException(error, e);
-            }
-        }
+        AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscriptions_json", null);
     }
 
     @AzureOperation(name = "account|subscription.load_cache", type = AzureOperation.Type.TASK)
     public static List<SubscriptionDetail> loadSubscriptions() {
         System.out.println("SubscriptionManager.loadSubscriptions()");
-        //subscriptionDetails.clear();
         try {
-            final FileStorage file = new FileStorage(FILE_NAME_SUBSCRIPTIONS_DETAILS, CommonSettings.getSettingsBaseDir());
-            final byte[] data = file.read();
-            final String json = new String(data, StandardCharsets.UTF_8);
+            String json = AzureStoreManager.getInstance().getIdeStore().getProperty(TelemetryConstants.ACCOUNT, "subscription_details");
+            if (StringUtils.isBlank(json)) {
+                final FileStorage file = new FileStorage(FILE_NAME_SUBSCRIPTIONS_DETAILS, CommonSettings.getSettingsBaseDir());
+                final byte[] data = file.read();
+                json = new String(data, StandardCharsets.UTF_8);
+                file.removeFile();
+                AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscriptions_json", json);
+            }
             if (json.isEmpty()) {
-                System.out.println(FILE_NAME_SUBSCRIPTIONS_DETAILS + " file is empty");
+                System.out.println("subscription details is empty");
                 return Collections.emptyList();
             }
             final SubscriptionDetail[] sda = JsonHelper.deserialize(SubscriptionDetail[].class, json);
