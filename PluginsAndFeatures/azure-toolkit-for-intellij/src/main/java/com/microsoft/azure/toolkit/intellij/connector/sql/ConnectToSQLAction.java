@@ -7,8 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector.sql;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.lib.sqlserver.SqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -38,7 +36,7 @@ public class ConnectToSQLAction extends NodeActionListener {
 
     @Override
     public void actionPerformed(NodeActionEvent e) {
-        final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
+        final ConnectorDialog dialog = new ConnectorDialog(project);
         final SqlServer server = this.node.getServer();
         dialog.setResource(new SqlServerDatabaseResource(server.entity().getId(), null));
         dialog.show();

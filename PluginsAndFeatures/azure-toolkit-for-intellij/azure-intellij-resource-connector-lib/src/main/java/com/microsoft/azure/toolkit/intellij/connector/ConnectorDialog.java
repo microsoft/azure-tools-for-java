@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ConnectorDialog<R extends Resource, C extends Resource> extends AzureDialog<Connection<R, C>>
-        implements AzureForm<Connection<R, C>> {
+public class ConnectorDialog extends AzureDialog<Connection<? extends Resource, ? extends Resource>>
+        implements AzureForm<Connection<? extends Resource, ? extends Resource>> {
     private final Project project;
     private JPanel contentPane;
-    private AzureFormJPanel<C> consumerPanel;
-    private AzureFormJPanel<R> resourcePanel;
+    private AzureFormJPanel<? extends Resource> consumerPanel;
+    private AzureFormJPanel<? extends Resource> resourcePanel;
     private AzureComboBox<ResourceDefinition<? extends Resource>> consumerTypeSelector;
     private AzureComboBox<ResourceDefinition<? extends Resource>> resourceTypeSelector;
     private JPanel consumerPanelContainer;
@@ -48,8 +48,8 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
-    private C consumer;
-    private R resource;
+    private Resource consumer;
+    private Resource resource;
     @Setter
     private String resourceType;
     @Setter
@@ -99,14 +99,14 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         this.centerRelativeToParent();
     }
 
-    protected void saveConnection(Connection<R, C> connection) {
+    protected void saveConnection(Connection<? extends Resource, ? extends Resource> connection) {
         AzureTaskManager.getInstance().runLater(() -> {
             this.close(0);
-            final R connectionResource = connection.getResource();
-            final C connectionConsumer = connection.getConsumer();
+            final Resource connectionResource = connection.getResource();
+            final Resource connectionConsumer = connection.getConsumer();
             final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinitionOrDefault(connectionResource.getType(), connectionConsumer.getType());
+            final ConnectionDefinition<? extends Resource, ? extends Resource> definition = ConnectionManager.getDefinitionOrDefault(connectionResource.getType(), connectionConsumer.getType());
             if (definition.validate(connection, this.project)) {
                 resourceManager.addResource(connectionResource);
                 resourceManager.addResource(connectionConsumer);
@@ -121,7 +121,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     }
 
     @Override
-    public AzureForm<Connection<R, C>> getForm() {
+    public AzureForm<Connection<? extends Resource, ? extends Resource>> getForm() {
         return this;
     }
 
@@ -131,10 +131,10 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     }
 
     @Override
-    public Connection<R, C> getData() {
-        final R localResource = this.resourcePanel.getData();
-        final C localConsumer = this.consumerPanel.getData();
-        final ConnectionDefinition<R, C> definition = ConnectionManager.getDefinition(localResource.getType(), localConsumer.getType());
+    public Connection<? extends Resource, ? extends Resource> getData() {
+        final Resource localResource = this.resourcePanel.getData();
+        final Resource localConsumer = this.consumerPanel.getData();
+        final ConnectionDefinition<? extends Resource, ? extends Resource> definition = ConnectionManager.getDefinition(localResource.getType(), localConsumer.getType());
         if (Objects.nonNull(definition)) {
             return definition.create(localResource, localConsumer);
         }
@@ -142,7 +142,7 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     }
 
     @Override
-    public void setData(Connection<R, C> connection) {
+    public void setData(Connection<? extends Resource, ? extends Resource> connection) {
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
     }
@@ -156,7 +156,6 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
     }
 
     @Override
-    @SuppressWarnings({"unchecked"})
     public void show() {
         // initialize resource panel
         final String resourceTypeTemp = ObjectUtils.firstNonNull(Optional.ofNullable(this.resource).map(Resource::getType).orElse(null), this.resourceType,
@@ -172,22 +171,23 @@ public class ConnectorDialog<R extends Resource, C extends Resource> extends Azu
         super.show();
     }
 
-    public void setResource(final R resource) {
+    public void setResource(final Resource resource) {
         this.resource = resource;
         this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
     }
 
-    public void setConsumer(final C consumer) {
+    public void setConsumer(final Resource consumer) {
         this.consumer = consumer;
         this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
     }
 
-    private AzureFormJPanel updatePanel(ResourceDefinition<? extends Resource> definition, JPanel resourcePanelContainer, Resource resource) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private AzureFormJPanel<? extends Resource> updatePanel(ResourceDefinition<? extends Resource> definition, JPanel resourcePanelContainer, Resource resource) {
         final GridConstraints constraints = new GridConstraints();
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
-        AzureFormJPanel newResourcePanel = definition.getResourcesPanel(definition.getType(), this.project);
+        final AzureFormJPanel newResourcePanel = definition.getResourcesPanel(definition.getType(), this.project);
         Optional.ofNullable(resource).ifPresent(newResourcePanel::setData);
         resourcePanelContainer.removeAll();
         resourcePanelContainer.add(newResourcePanel.getContentPanel(), constraints);

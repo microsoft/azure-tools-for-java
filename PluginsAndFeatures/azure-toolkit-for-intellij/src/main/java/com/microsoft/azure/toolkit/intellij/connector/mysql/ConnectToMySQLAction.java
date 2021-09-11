@@ -7,8 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector.mysql;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azuretools.ActionConstants;
 import com.microsoft.intellij.actions.AzureSignInAction;
@@ -40,7 +38,7 @@ public class ConnectToMySQLAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         AzureSignInAction.requireSignedIn(project, () -> {
-            final ConnectorDialog<DatabaseResource, ModuleResource> dialog = new ConnectorDialog<>(project);
+            final ConnectorDialog dialog = new ConnectorDialog(project);
             final MySqlServer server = this.node.getServer();
             dialog.setResource(new MySQLDatabaseResource(server.id(), null));
             dialog.show();

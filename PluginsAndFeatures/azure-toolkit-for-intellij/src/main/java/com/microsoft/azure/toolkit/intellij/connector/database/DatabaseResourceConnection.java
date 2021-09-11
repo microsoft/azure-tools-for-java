@@ -171,8 +171,8 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
 
         @Override
-        public DatabaseResourceConnection create(DatabaseResource resource, ModuleResource consumer) {
-            return new DatabaseResourceConnection(resource, consumer);
+        public DatabaseResourceConnection create(Resource resource, Resource consumer) {
+            return new DatabaseResourceConnection(((DatabaseResource) resource), ((ModuleResource) consumer));
         }
 
         @Override
@@ -205,9 +205,9 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
         }
 
         @Override
-        public boolean validate(Connection<DatabaseResource, ModuleResource> connection, Project project) {
+        public boolean validate(Connection<? extends Resource, ? extends Resource> connection, Project project) {
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final DatabaseResource databaseResource = connection.getResource();
+            final DatabaseResource databaseResource = (DatabaseResource) connection.getResource();
             final DatabaseResource existedResource = (DatabaseResource) resourceManager.getResourceById(databaseResource.getId());
             if (Objects.nonNull(existedResource)) { // not new
                 final boolean urlModified = !Objects.equals(databaseResource.getJdbcUrl(), existedResource.getJdbcUrl());
@@ -218,17 +218,17 @@ public class DatabaseResourceConnection implements Connection<DatabaseResource, 
                     final String template = "%s database \"%s/%s\" with different configuration is found on your PC. \nDo you want to override it?";
                     final String msg = String.format(template, databaseResource.getTitle(),
                             databaseResource.getServerId().name(), databaseResource.getDatabaseName());
-                    boolean validated = DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
+                    final boolean validated = DefaultLoader.getUIHelper().showConfirmation(msg, PROMPT_TITLE, PROMPT_OPTIONS, null);
                     if (!validated) {
                         return false;
                     }
                 }
             }
             final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
-            final ModuleResource module = connection.getConsumer();
+            final ModuleResource module = (ModuleResource) connection.getConsumer();
             final List<Connection<? extends Resource, ? extends Resource>> existedConnections = connectionManager.getConnectionsByConsumerId(module.getId());
             if (CollectionUtils.isNotEmpty(existedConnections)) {
-                Connection<? extends Resource, ? extends Resource> existedConnection = existedConnections.stream()
+                final Connection<? extends Resource, ? extends Resource> existedConnection = existedConnections.stream()
                         .filter(e -> StringUtils.equals(e.getConsumer().getId(), module.getId()) && e.getResource() instanceof DatabaseResource &&
                                 StringUtils.equals(((DatabaseResource) e.getResource()).getEnvPrefix(), databaseResource.getEnvPrefix()))
                         .findFirst().orElse(null);
