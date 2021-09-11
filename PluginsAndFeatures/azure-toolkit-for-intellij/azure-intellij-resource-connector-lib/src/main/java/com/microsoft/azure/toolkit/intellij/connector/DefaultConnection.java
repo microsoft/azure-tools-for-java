@@ -26,12 +26,13 @@ public class DefaultConnection<R extends Resource, C extends Resource> implement
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     @Getter
     public static class Definition<R extends Resource, C extends Resource> implements ConnectionDefinition<R, C> {
 
         @Override
-        public Connection<R, C> create(R resource, C consumer) {
-            return new DefaultConnection<>(resource, consumer);
+        public Connection<R, C> create(Resource resource, Resource consumer) {
+            return new DefaultConnection<>(((R) resource), (C)consumer);
         }
 
         @Override
@@ -58,7 +59,7 @@ public class DefaultConnection<R extends Resource, C extends Resource> implement
         }
 
         @Override
-        public boolean validate(Connection<R, C> connection, Project project) {
+        public boolean validate(Connection<? extends Resource, ? extends Resource> connection, Project project) {
             return true;
         }
     }

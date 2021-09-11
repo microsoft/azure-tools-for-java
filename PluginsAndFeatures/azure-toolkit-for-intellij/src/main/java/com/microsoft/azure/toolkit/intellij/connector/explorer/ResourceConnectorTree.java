@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ResourceConnectorTree extends AzureTree {
@@ -50,6 +51,7 @@ public class ResourceConnectorTree extends AzureTree {
     }
 
     public ResourceConnectorTree(Project project) {
+        super();
         this.project = project;
         this.loadNodes();
         this.initModuleNodeLoadListener();
@@ -57,15 +59,15 @@ public class ResourceConnectorTree extends AzureTree {
 
     private void initModuleNodeLoadListener() {
         project.getMessageBus().connect().subscribe(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC, connection -> {
-            Resource consumer = connection.getConsumer();
+            final Resource consumer = connection.getConsumer();
             if (!(consumer instanceof ModuleResource)) {
                 return;
             }
-            Enumeration<TreeNode> e = ResourceConnectorTree.this.getRootNode().children();
+            final Enumeration<TreeNode> e = ResourceConnectorTree.this.getRootNode().children();
             while (e.hasMoreElements()) {
-                TreeNode node = e.nextElement();
+                final TreeNode node = e.nextElement();
                 if (node instanceof ModuleNode) {
-                    ModuleNode moduleNode = (ModuleNode) node;
+                    final ModuleNode moduleNode = (ModuleNode) node;
                     if (StringUtils.equals(consumer.getId(), moduleNode.getData().getModuleName())) {
                         moduleNode.loadResourceNodes();
                         getModel().reload(moduleNode);
@@ -77,12 +79,12 @@ public class ResourceConnectorTree extends AzureTree {
 
     @Override
     public void loadNodes() {
-        DefaultMutableTreeNode rootNode = getRootNode();
+        final DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
-        Module[] modules = ModuleManager.getInstance(project).getModules().clone();
+        final Module[] modules = ModuleManager.getInstance(project).getModules().clone();
         Arrays.sort(modules, Comparator.comparing(Module::getName));
-        for (Module module : modules) {
-            ModuleNode moduleNode = new ModuleNode(new ModuleResource(module.getName()));
+        for (final Module module : modules) {
+            final ModuleNode moduleNode = new ModuleNode(new ModuleResource(module.getName()));
             getModel().insertNodeInto(moduleNode, rootNode, rootNode.getChildCount());
             moduleNode.loadResourceNodes();
         }
@@ -98,9 +100,9 @@ public class ResourceConnectorTree extends AzureTree {
 
         private void loadResourceNodes() {
             this.removeAllChildren();
-            List<Connection<? extends Resource, ? extends Resource>> moduleConnections = ResourceConnectorTree.this.project
+            final List<Connection<? extends Resource, ? extends Resource>> moduleConnections = ResourceConnectorTree.this.project
                 .getService(ConnectionManager.class).getConnectionsByConsumerId(getData().getModuleName());
-            for (Connection<? extends Resource, ? extends Resource> connection : moduleConnections) {
+            for (final Connection<? extends Resource, ? extends Resource> connection : moduleConnections) {
                 Optional.ofNullable(connection.getResource()).filter(resource -> resource instanceof AzureResource).ifPresent(resource ->
                     getModel().insertNodeInto(new ResourceNode((AzureResource) resource, resourceIconMap.get(resource.getClass())),
                             this, this.getChildCount()));
@@ -116,7 +118,7 @@ public class ResourceConnectorTree extends AzureTree {
             @Override
             @AzureOperation(name = "connector|explorer.add_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                final ConnectorDialog<? extends Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
+                final ConnectorDialog dialog = new ConnectorDialog(project);
                 dialog.setConsumer(ModuleNode.this.getData());
                 dialog.show();
             }
@@ -140,7 +142,7 @@ public class ResourceConnectorTree extends AzureTree {
             @Override
             @AzureOperation(name = "connector|explorer.edit_connection", type = AzureOperation.Type.ACTION)
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-                final ConnectorDialog<Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
+                final ConnectorDialog dialog = new ConnectorDialog(project);
                 dialog.setConsumer(new ModuleResource(((ModuleNode) ResourceNode.this.getParent()).getData().getModuleName()));
                 dialog.setResource(ResourceNode.this.getData());
                 dialog.show();
@@ -158,9 +160,9 @@ public class ResourceConnectorTree extends AzureTree {
             public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
                 Optional.ofNullable(ResourceNode.this.getData()).ifPresent(resource -> {
                     if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(resource.getType())) {
-                        DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getServerId().id(), anActionEvent.getProject());
+                        DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getServerId().id(), Objects.requireNonNull(anActionEvent.getProject()));
                     } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(resource.getType())) {
-                        DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getServerId().id(), anActionEvent.getProject());
+                        DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getServerId().id(), Objects.requireNonNull(anActionEvent.getProject()));
                     }
                 });
             }

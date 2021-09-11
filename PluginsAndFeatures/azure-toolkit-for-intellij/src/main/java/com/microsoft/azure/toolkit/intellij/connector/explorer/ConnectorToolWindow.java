@@ -25,8 +25,6 @@ import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.AzureResourceConnectorBusNotifier;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +42,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         this.project = project;
         this.tree = new ResourceConnectorTree(project);
         new TreeSpeedSearch(tree);
-        ActionToolbarImpl actionToolbar = this.initToolbar();
+        final ActionToolbarImpl actionToolbar = this.initToolbar();
         actionToolbar.setTargetComponent(this.tree);
         actionToolbar.setForceMinimumSize(true);
         this.setContent(this.tree);
@@ -68,7 +66,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
 
     private void initShowToolWindowListener(@NotNull final Project project) {
         project.getMessageBus().connect().subscribe(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC, connection -> {
-            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
+            final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Azure Resource Connector");
             assert toolWindow != null;
             if (!toolWindow.isVisible()) {
                 toolWindow.show();
@@ -109,9 +107,9 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         @Override
         @AzureOperation(name = "connector|explorer.add_connection", type = AzureOperation.Type.ACTION)
         public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-            AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
+            final AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
             if (Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ModuleNode) {
-                final ConnectorDialog<? extends Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
+                final ConnectorDialog dialog = new ConnectorDialog(project);
                 dialog.setConsumer(((ResourceConnectorTree.ModuleNode) selectedNode).getData());
                 dialog.show();
             }
@@ -120,7 +118,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         @Override
         public void update(@NotNull AnActionEvent event) {
             final Presentation presentation = event.getPresentation();
-            AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
+            final AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
             presentation.setEnabled(Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ModuleNode);
         }
     }
@@ -137,8 +135,8 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
             Optional.ofNullable(((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode()).ifPresent(selectedNode -> {
                 if (selectedNode instanceof ResourceConnectorTree.ResourceNode && selectedNode.getParent() instanceof ResourceConnectorTree.ModuleNode) {
                     // remove node from connector manager
-                    ResourceConnectorTree.ResourceNode resourceNode = (ResourceConnectorTree.ResourceNode) selectedNode;
-                    ResourceConnectorTree.ModuleNode consumerNode = (ResourceConnectorTree.ModuleNode) resourceNode.getParent();
+                    final ResourceConnectorTree.ResourceNode resourceNode = (ResourceConnectorTree.ResourceNode) selectedNode;
+                    final ResourceConnectorTree.ModuleNode consumerNode = (ResourceConnectorTree.ModuleNode) resourceNode.getParent();
                     project.getService(ConnectionManager.class).removeConnection(resourceNode.getData().getId(), consumerNode.getData().getModuleName());
                     // remove node from tree
                     ((AzureTree) ConnectorToolWindow.this.tree).getModel().removeNodeFromParent(selectedNode);
@@ -149,7 +147,7 @@ public class ConnectorToolWindow extends SimpleToolWindowPanel {
         @Override
         public void update(@NotNull AnActionEvent event) {
             final Presentation presentation = event.getPresentation();
-            AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
+            final AzureNode<?> selectedNode = ((AzureTree) ConnectorToolWindow.this.tree).getSelectedAzureNode();
             presentation.setEnabled(Objects.nonNull(selectedNode) && selectedNode instanceof ResourceConnectorTree.ResourceNode);
         }
 

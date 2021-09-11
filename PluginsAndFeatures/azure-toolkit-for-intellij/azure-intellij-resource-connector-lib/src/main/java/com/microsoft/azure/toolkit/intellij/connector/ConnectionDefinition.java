@@ -5,11 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,7 +17,7 @@ public interface ConnectionDefinition<R extends Resource, C extends Resource> {
      * create {@link Connection} from given {@code resource} and {@code consumer}
      */
     @Nonnull
-    Connection<R, C> create(R resource, C consumer);
+    Connection<R, C> create(Resource resource, Resource consumer);
 
     /**
      * read/deserialize a instance of {@link Connection} from {@code element}
@@ -41,7 +39,7 @@ public interface ConnectionDefinition<R extends Resource, C extends Resource> {
      * @return false if the give {@code connection} is not valid and should not
      * be created and persisted.
      */
-    boolean validate(Connection<R, C> connection, Project project);
+    boolean validate(Connection<? extends Resource, ? extends Resource> connection, Project project);
 
     /**
      * get <b>custom</b> connector dialog to create resource connection of

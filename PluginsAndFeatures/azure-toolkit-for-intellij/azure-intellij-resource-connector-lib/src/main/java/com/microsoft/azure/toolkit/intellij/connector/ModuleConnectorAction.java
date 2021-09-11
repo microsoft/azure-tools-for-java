@@ -18,7 +18,7 @@ public class ModuleConnectorAction extends AnAction {
         final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
         if (module != null) {
             final Project project = module.getProject();
-            final ConnectorDialog<? extends Resource, ModuleResource> dialog = new ConnectorDialog<>(project);
+            final ConnectorDialog dialog = new ConnectorDialog(project);
             dialog.setConsumer(new ModuleResource(module.getName()));
             dialog.show();
         }
