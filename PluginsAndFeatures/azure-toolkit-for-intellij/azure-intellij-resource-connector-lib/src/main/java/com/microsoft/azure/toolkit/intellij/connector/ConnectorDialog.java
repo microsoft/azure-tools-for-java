@@ -115,7 +115,7 @@ public class ConnectorDialog extends AzureDialog<Connection<? extends Resource, 
                         connectionResource.toString(), connectionConsumer.toString());
                 AzureMessager.getMessager().success(message);
                 // send connect successful event.
-                project.getMessageBus().syncPublisher(AzureResourceConnectorBusNotifier.AZURE_RESOURCE_CONNECTOR_TOPIC).afterAction(connection);
+                project.getMessageBus().syncPublisher(ConnectionTopics.CONNECTION_CHANGED).connectionChanged(connection);
             }
         });
     }
@@ -171,14 +171,18 @@ public class ConnectorDialog extends AzureDialog<Connection<? extends Resource, 
         super.show();
     }
 
-    public void setResource(final Resource resource) {
+    public void setResource(@Nullable final Resource resource) {
         this.resource = resource;
-        this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
+        if (Objects.nonNull(resource)) {
+            this.resourceTypeSelector.setValue(new ItemReference<>(resource.getType(), ResourceDefinition::getType), true);
+        }
     }
 
-    public void setConsumer(final Resource consumer) {
+    public void setConsumer(@Nullable final Resource consumer) {
         this.consumer = consumer;
-        this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
+        if (Objects.nonNull(consumer)) {
+            this.consumerTypeSelector.setValue(new ItemReference<>(consumer.getType(), ResourceDefinition::getType), true);
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

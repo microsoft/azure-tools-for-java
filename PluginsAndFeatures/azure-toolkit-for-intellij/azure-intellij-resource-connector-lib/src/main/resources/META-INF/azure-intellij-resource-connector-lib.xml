@@ -1,7 +1,10 @@
 <idea-plugin>
-    <extensionPoints>
-    </extensionPoints>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
+    </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Azure Resource Connector" anchor="right" icon="/icons/Common/AzureResourceConnector.svg"
+                    factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorConsumerDefinitionPreloadingActivity"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
