@@ -13,7 +13,9 @@ import com.intellij.ui.LoadingNode;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
+import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -56,6 +58,7 @@ public class Tree extends SimpleTree implements DataProvider {
 
     protected void init(@Nonnull Node<?> root) {
         this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        TreeUtil.installActions(this);
         TreeUIHelper.getInstance().installTreeSpeedSearch(this);
         TreeUIHelper.getInstance().installSmartExpander(this);
         TreeUIHelper.getInstance().installSelectionSaver(this);
@@ -78,7 +81,7 @@ public class Tree extends SimpleTree implements DataProvider {
                 if (node instanceof TreeNode) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         if (((TreeNode<?>) node).inner.hasChildren() && ((TreeNode<?>) node).loaded == null) {
-                            ((TreeNode<?>) node).updateChildren();
+                            ((TreeNode<?>) node).refreshChildren();
                             tree.expandPath(path);
                         }
                     } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
@@ -118,7 +121,7 @@ public class Tree extends SimpleTree implements DataProvider {
         return null;
     }
 
-    public static class TreeNode<T> extends DefaultMutableTreeNode implements IView.Dynamic.Updater {
+    public static class TreeNode<T> extends DefaultMutableTreeNode implements NodeView.Refresher {
         protected final Node<T> inner;
         protected final JTree tree;
         private Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
@@ -130,21 +133,19 @@ public class Tree extends SimpleTree implements DataProvider {
             if (!this.inner.lazy()) {
                 this.loadChildren();
             }
-            final IView.Label view = this.inner.view();
-            if (view instanceof IView.Dynamic) {
-                ((IView.Dynamic) view).setUpdater(this);
-            }
+            final NodeView view = this.inner.view();
+            view.setRefresher(this);
         }
 
         @Override
-        public void updateView() {
+        public void refreshView() {
             if (this.getParent() != null) {
                 ((DefaultTreeModel) this.tree.getModel()).nodeChanged(this);
             }
         }
 
         @Override
-        public synchronized void updateChildren() {
+        public synchronized void refreshChildren() {
             if (this.getAllowsChildren()) {
                 this.removeAllChildren();
                 this.add(new LoadingNode());
@@ -184,9 +185,8 @@ public class Tree extends SimpleTree implements DataProvider {
         @Override
         public void setParent(MutableTreeNode newParent) {
             super.setParent(newParent);
-            final IView.Label view = this.inner.view();
-            if (this.getParent() == null && view != null) {
-                view.dispose();
+            if (this.getParent() == null) {
+                this.inner.dispose();
             }
         }
     }
@@ -196,14 +196,12 @@ public class Tree extends SimpleTree implements DataProvider {
             Object value = node;
             if (node instanceof TreeNode) {
                 final IView.Label view = ((TreeNode<?>) node).inner.view();
-                if (view != null) {
-                    if (StringUtils.isNotBlank(view.getIconPath())) {
-                        final Icon icon = AzureIcons.getIcon(view.getIconPath(), Tree.class);
-                        renderer.setIcon(icon);
-                    }
-                    value = view.getLabel();
-                    renderer.setToolTipText(view.getDescription());
+                if (StringUtils.isNotBlank(view.getIconPath())) {
+                    final Icon icon = AzureIcons.getIcon(view.getIconPath(), Tree.class);
+                    renderer.setIcon(icon);
                 }
+                value = view.getLabel();
+                renderer.setToolTipText(view.getDescription());
                 if (BooleanUtils.isFalse(((TreeNode<?>) node).loaded)) {
                     renderer.setIcon(AnimatedIcon.Default.INSTANCE);
                 }

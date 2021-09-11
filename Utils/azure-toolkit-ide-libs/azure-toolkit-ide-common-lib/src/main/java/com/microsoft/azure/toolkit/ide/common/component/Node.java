@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.ide.common.component;
 
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.view.IView;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -23,31 +23,28 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Getter
 @Accessors(chain = true, fluent = true)
 public class Node<D> {
     @Nonnull
-    @Getter
     private final D data;
     @Nonnull
+    @Getter(AccessLevel.NONE)
     private final List<ChildrenNodeBuilder<D, ?>> childrenBuilders = new ArrayList<>();
-    @Nullable
-    @Getter
+    @Nonnull
     @Setter
-    private IView.Label view;
-    @Getter
+    private NodeView view;
     @Setter
     private boolean lazy = true;
     @Nullable
-    @Getter
     private ActionGroup actions;
-    @Getter
     private int order;
 
     public Node(@Nonnull D data) {
         this(data, null);
     }
 
-    public Node(@Nonnull D data, @Nullable IView.Label view) {
+    public Node(@Nonnull D data, @Nonnull NodeView view) {
         this.data = data;
         this.view = view;
     }
@@ -86,6 +83,10 @@ public class Node<D> {
     public Node<D> actions(ActionGroup group) {
         this.actions = group;
         return this;
+    }
+
+    public void dispose() {
+        this.view.dispose();
     }
 
     @RequiredArgsConstructor
