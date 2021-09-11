@@ -26,6 +26,11 @@ public class AzureIcons {
             put("/icons/action/portal.svg", AllIcons.Actions.InlayGlobe);
             put("/icons/action/browser.svg", AllIcons.Actions.InlayGlobe);
             put("/icons/action/properties.svg", AllIcons.Actions.Properties);
+            put("/icons/action/refresh", AllIcons.Actions.Refresh);
+            put("/icons/action/add", AllIcons.General.Add);
+            put("/icons/action/remove", AllIcons.General.Remove);
+            put("/icons/action/edit", AllIcons.Actions.Edit);
+            put("/icons/module", AllIcons.Nodes.Module);
         }
     };
 

@@ -116,7 +116,6 @@
             factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
-    <toolWindow id="Azure Resource Connector" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" factoryClass="com.microsoft.azure.toolkit.intellij.connector.explorer.ConnectorToolWindowFactory"/>
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
