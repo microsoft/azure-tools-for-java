@@ -20,18 +20,19 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.util.ProcessingContext;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class SpringDatasourceCompletionContributor extends CompletionContributor {
 
@@ -39,7 +40,7 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
         super();
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new CompletionProvider<>() {
             @Override
-            public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet) {
+            public void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context, @Nonnull CompletionResultSet resultSet) {
                 final Module module = ModuleUtil.findModuleForFile(parameters.getOriginalFile());
                 if (module == null) {
                     return;
@@ -54,13 +55,10 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
 
     public abstract List<LookupElement> generateLookupElements();
 
+    @RequiredArgsConstructor
     protected static class MyInsertHandler implements InsertHandler<LookupElement> {
 
-        private final String resourceType;
-
-        public MyInsertHandler(String resourceType) {
-            this.resourceType = resourceType;
-        }
+        private final ResourceDefinition<?> definition;
 
         @Override
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
@@ -69,20 +67,19 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
             if (module != null) {
                 project.getService(ConnectionManager.class)
                         .getConnectionsByConsumerId(module.getName()).stream()
-                        .filter(c -> StringUtils.equals(resourceType, c.getResource().getType()))
-                        .map(c -> ((Connection<DatabaseResource, ModuleResource>) c)).findAny()
+                        .filter(c -> Objects.equals(definition, c.getResource().getDefinition())).findAny()
                         .ifPresentOrElse(c -> this.insert(c, context), () -> this.createAndInsert(module, context));
             }
         }
 
-        private void createAndInsert(Module module, @NotNull InsertionContext context) {
+        private void createAndInsert(Module module, @Nonnull InsertionContext context) {
             final Project project = context.getProject();
             AzureTaskManager.getInstance().runLater(() -> {
                 final var dialog = new ConnectorDialog(project);
                 dialog.setConsumer(new ModuleResource(module.getName()));
-                dialog.setResourceType(resourceType);
+                dialog.setResourceDefinition(definition);
                 if (dialog.showAndGet()) {
-                    final Connection<? extends Resource, ? extends Resource> c = dialog.getData();
+                    final Connection<?, ?> c = dialog.getData();
                     WriteCommandAction.runWriteCommandAction(project, () -> this.insert(c, context));
                 } else {
                     WriteCommandAction.runWriteCommandAction(project, () -> {
@@ -92,8 +89,8 @@ public abstract class SpringDatasourceCompletionContributor extends CompletionCo
             });
         }
 
-        private void insert(Connection<? extends Resource, ? extends Resource> c, @NotNull InsertionContext context) {
-            final String envPrefix = ((DatabaseResource) c.getResource()).getEnvPrefix();
+        private void insert(Connection<?, ?> c, @Nonnull InsertionContext context) {
+            final String envPrefix = ((Database) c.getResource().getData()).getEnvPrefix();
             final String builder = "=${" + envPrefix + "URL}" + StringUtils.LF
                     + "spring.datasource.username=${" + envPrefix + "USERNAME}" + StringUtils.LF
                     + "spring.datasource.password=${" + envPrefix + "PASSWORD}" + StringUtils.LF;

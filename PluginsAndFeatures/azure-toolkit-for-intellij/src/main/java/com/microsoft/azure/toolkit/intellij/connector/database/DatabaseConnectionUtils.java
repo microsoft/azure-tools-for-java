@@ -64,7 +64,7 @@ public class DatabaseConnectionUtils {
             if (StringUtils.startsWith(url.toString(), SQL_SERVER_URL_PREFIX)) {
                 try {
                     serverVersion = (String) FieldUtils.readField(connection, "sqlServerVersion", true);
-                } catch (IllegalAccessException e) {
+                } catch (final IllegalAccessException e) {
                     serverVersion = "unknown";
                 }
             } else {

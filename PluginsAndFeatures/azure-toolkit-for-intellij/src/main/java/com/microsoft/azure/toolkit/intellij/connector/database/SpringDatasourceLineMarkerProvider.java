@@ -14,9 +14,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
-import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -47,19 +45,19 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         }
         final Project project = module.getProject();
         return project.getService(ConnectionManager.class)
-            .getConnectionsByConsumerId(module.getName()).stream()
-            .filter(c -> MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(c.getResource().getType())
-                    || SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(c.getResource().getType()))
-            .map(c -> ((DatabaseResourceConnection) c))
-            .filter(c -> StringUtils.equals(envPrefix, c.getResource().getEnvPrefix()))
-            .findAny()
-            .map(DatabaseResourceConnection::getResource)
-            .map(r -> new LineMarkerInfo<>(
-                element, element.getTextRange(),
-                AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                element2 -> String.format("Connect to %s (%s)", r.getTitle(), r.getJdbcUrl().getServerHost()),
-                new SpringDatasourceNavigationHandler(r),
-                GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
+                .getConnectionsByConsumerId(module.getName()).stream()
+                .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getName().equals(c.getResource().getDefName())
+                        || DatabaseResource.Definition.SQL_SERVER.getName().equals(c.getResource().getDefName()))
+                .map(c -> ((DatabaseResourceConnection) c))
+                .filter(c -> StringUtils.equals(envPrefix, c.getResource().getDatabase().getEnvPrefix()))
+                .findAny()
+                .map(DatabaseResourceConnection::getResource)
+                .map(r -> new LineMarkerInfo<>(
+                        element, element.getTextRange(),
+                        AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
+                        element2 -> String.format("Connect to %s (%s)", r.getTitle(), r.getDatabase().getJdbcUrl().getServerHost()),
+                        new SpringDatasourceNavigationHandler(r),
+                        GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
     }
 
     private String extractEnvPrefix(String value) {
@@ -80,15 +78,15 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
-                final String resourceName = database.getDatabaseName();
+                final String resourceName = database.getName();
                 final String message = String.format("Failed to connect %s (%s) , please sign in Azure first.", database.getTitle(), resourceName);
                 DefaultLoader.getUIHelper().showError(message, "Connect to " + database.getTitle());
                 return;
             }
-            if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(database.getType())) {
-                DefaultLoader.getUIHelper().openMySQLPropertyView(database.getServerId().id(), psiElement.getProject());
-            } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(database.getType())) {
-                DefaultLoader.getUIHelper().openSqlServerPropertyView(database.getServerId().id(), psiElement.getProject());
+            if (DatabaseResource.Definition.AZURE_MYSQL.getName().equals(database.getDefName())) {
+                DefaultLoader.getUIHelper().openMySQLPropertyView(database.getDatabase().getServerId(), psiElement.getProject());
+            } else if (DatabaseResource.Definition.SQL_SERVER.getName().equals(database.getDefName())) {
+                DefaultLoader.getUIHelper().openSqlServerPropertyView(database.getDatabase().getServerId(), psiElement.getProject());
             }
         }
     }

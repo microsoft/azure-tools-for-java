@@ -7,11 +7,11 @@
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectorConsumerDefinitionPreloadingActivity"/>
         <projectService
-            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
-            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager$Impl" />
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager$Impl" />
         <applicationService
-            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ResourceManager"
-            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.ResourceManager$Impl" />
+            serviceInterface="com.microsoft.azure.toolkit.intellij.connector.lib.ResourceManager"
+            serviceImplementation="com.microsoft.azure.toolkit.intellij.connector.lib.ResourceManager$Impl" />
         <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration" id="ConnectionRunnerForConfigurationId"/>
         <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$MyRunConfigurationExtension"/>
     </extensions>
@@ -20,7 +20,7 @@
             id="AzureToolkit.ConnectToAzureResource"
             class="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectorAction"
             text="Connect to Azure Resource"
-            icon="/icons/Connector/connect.svg"
+            icon="/icons/connector/connect.svg"
             description="To consume azure resources in your project"/>
     </actions>
 </idea-plugin>

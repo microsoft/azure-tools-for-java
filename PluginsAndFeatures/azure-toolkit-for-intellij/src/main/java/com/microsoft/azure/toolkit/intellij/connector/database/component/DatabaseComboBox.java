@@ -12,7 +12,7 @@ import lombok.Getter;
 
 import java.util.Objects;
 
-public class DatabaseComboBox<S extends IDatabaseServer, T extends IAzureResourceEntity> extends AzureComboBox<T> {
+public class DatabaseComboBox<T extends IAzureResourceEntity, S extends IDatabaseServer> extends AzureComboBox<T> {
 
     @Getter
     private S server;

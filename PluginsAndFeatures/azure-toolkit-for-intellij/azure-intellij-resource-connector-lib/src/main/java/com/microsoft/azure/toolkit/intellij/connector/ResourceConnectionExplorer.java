@@ -22,6 +22,8 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Resource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
 import javax.annotation.Nonnull;
@@ -58,7 +60,7 @@ public class ResourceConnectionExplorer extends Tree {
             super(module);
             final MessageBusConnection bus = module.getProject().getMessageBus().connect();
             bus.subscribe(CONNECTION_CHANGED, conn -> {
-                final Resource consumer = conn.getConsumer();
+                final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
                     this.view().refreshChildren();
                 }

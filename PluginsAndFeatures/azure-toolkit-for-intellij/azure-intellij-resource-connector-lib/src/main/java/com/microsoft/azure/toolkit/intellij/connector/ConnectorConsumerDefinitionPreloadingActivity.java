@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ResourceManager;
 import org.jetbrains.annotations.NotNull;
 
 public class ConnectorConsumerDefinitionPreloadingActivity extends PreloadingActivity {

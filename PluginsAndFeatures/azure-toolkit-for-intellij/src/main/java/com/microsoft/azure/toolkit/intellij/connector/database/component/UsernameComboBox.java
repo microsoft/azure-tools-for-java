@@ -6,16 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.connector.database.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
 
 import java.util.Objects;
 
-public class UsernameComboBox<S> extends AzureComboBox<String> {
+public class UsernameComboBox extends AzureComboBox<String> {
 
     @Getter
-    private S server;
+    private IDatabaseServer server;
 
-    public void setServer(S server) {
+    public void setServer(IDatabaseServer server) {
         if (Objects.equals(server, this.server)) {
             return;
         }

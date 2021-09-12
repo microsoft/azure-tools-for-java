@@ -9,6 +9,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Resource;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -26,8 +29,8 @@ import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CO
 public class ResourceConnectionActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> REFRESH_CONNECTIONS = Action.Id.of("action.connector.connections.refresh");
     public static final Action.Id<Module> ADD_CONNECTION = Action.Id.of("action.connector.connection.add");
-    public static final Action.Id<Connection<? extends Resource, ? extends Resource>> EDIT_CONNECTION = Action.Id.of("action.connector.connection.edit");
-    public static final Action.Id<Connection<? extends Resource, ? extends Resource>> REMOVE_CONNECTION = Action.Id.of("action.connector.connection.remove");
+    public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("action.connector.connection.edit");
+    public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("action.connector.connection.remove");
     public static final String MODULE_ACTIONS = "actions.connector.module";
     public static final String CONNECTION_ACTIONS = "actions.connector.connection";
 
@@ -45,13 +48,13 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 .title(t -> AzureOperationBundle.title("connector|explorer.add_connection"));
         final Action<Module> addAction = new Action<>(addHandler, addView);
 
-        final BiConsumer<Connection<? extends Resource, ? extends Resource>, AnActionEvent> editHandler =
+        final BiConsumer<Connection<?, ?>, AnActionEvent> editHandler =
                 (c, e) -> openDialog(c.getResource(), c.getConsumer(), e.getProject());
         final ActionView.Builder editView = new ActionView.Builder("Edit", "/icons/action/edit")
                 .title(t -> AzureOperationBundle.title("connector|explorer.edit_connection"));
-        final Action<Connection<? extends Resource, ? extends Resource>> editAction = new Action<>(editHandler, editView);
+        final Action<Connection<?, ?>> editAction = new Action<>(editHandler, editView);
 
-        final BiConsumer<Connection<? extends Resource, ? extends Resource>, AnActionEvent> removeHandler =
+        final BiConsumer<Connection<?, ?>, AnActionEvent> removeHandler =
                 (c, e) -> {
                     final Project project = Objects.requireNonNull(e.getProject());
                     project.getService(ConnectionManager.class).removeConnection(c.getResource().getId(), c.getConsumer().getId());
@@ -59,7 +62,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 };
         final ActionView.Builder removeView = new ActionView.Builder("Remove", "/icons/action/remove")
                 .title(t -> AzureOperationBundle.title("connector|explorer.remove_connection"));
-        final Action<Connection<? extends Resource, ? extends Resource>> removeAction = new Action<>(removeHandler, removeView);
+        final Action<Connection<?, ?>> removeAction = new Action<>(removeHandler, removeView);
 
         am.registerAction(REFRESH_CONNECTIONS, refreshAction);
         am.registerAction(ADD_CONNECTION, addAction);
@@ -82,7 +85,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         am.registerGroup(CONNECTION_ACTIONS, connectionActions);
     }
 
-    private void openDialog(@Nullable Resource r, @Nullable Resource c, Project project) {
+    private void openDialog(@Nullable Resource<?> r, @Nullable Resource<?> c, Project project) {
         AzureTaskManager.getInstance().runLater(() -> {
             final ConnectorDialog dialog = new ConnectorDialog(project);
             dialog.setConsumer(c);

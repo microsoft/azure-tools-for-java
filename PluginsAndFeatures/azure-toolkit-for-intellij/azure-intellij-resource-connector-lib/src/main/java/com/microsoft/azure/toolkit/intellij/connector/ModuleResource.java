@@ -7,8 +7,9 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
@@ -19,16 +20,27 @@ import javax.annotation.Nullable;
 
 @Getter
 @RequiredArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public final class ModuleResource implements Resource {
-    public static final String TYPE = Definition.IJ_MODULE.type;
-    private final String type = Definition.IJ_MODULE.type;
-    @EqualsAndHashCode.Include
+public final class ModuleResource implements Resource<String> {
     private final String moduleName;
 
     @Override
+    public ResourceDefinition<String> getDefinition() {
+        return Definition.IJ_MODULE;
+    }
+
+    @Override
+    public String getData() {
+        return this.moduleName;
+    }
+
+    @Override
     public String getId() {
-        return moduleName;
+        return this.moduleName;
+    }
+
+    @Override
+    public String getName() {
+        return this.moduleName;
     }
 
     @Override
@@ -39,19 +51,24 @@ public final class ModuleResource implements Resource {
     @Getter
     @RequiredArgsConstructor
     @Log
-    public enum Definition implements ResourceDefinition<ModuleResource> {
+    public enum Definition implements ResourceDefinition<String> {
         IJ_MODULE("Jetbrains.IJModule", "Intellij Module");
-        private final String type;
+        private final String name;
         private final String title;
         private final int role = CONSUMER;
 
         @Override
-        public AzureFormJPanel<ModuleResource> getResourcesPanel(@Nonnull String type, final Project project) {
+        public Resource<String> define(String resource) {
+            return new ModuleResource(resource);
+        }
+
+        @Override
+        public AzureFormJPanel<String> getResourcesPanel(@Nonnull String type, final Project project) {
             return new ModulePanel(project);
         }
 
         @Override
-        public boolean write(@Nonnull Element resourceEle, @Nonnull ModuleResource resource) {
+        public boolean write(@Nonnull Element resourceEle, @Nonnull Resource<String> resource) {
             return false;
         }
 

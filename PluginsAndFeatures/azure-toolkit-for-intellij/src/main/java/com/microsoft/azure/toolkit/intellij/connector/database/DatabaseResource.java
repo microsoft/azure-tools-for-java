@@ -5,102 +5,120 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.lib.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.lib.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
 
 @Setter
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class DatabaseResource implements Resource {
-    private final String type;
-    private final String databaseName;
-    private final ResourceId serverId;
+public class DatabaseResource implements Resource<Database> {
 
-    private JdbcUrl jdbcUrl;
-    private String username;
-    private Password password;
-    private String envPrefix;
+    private final Database database;
+    private final Definition definition;
 
-    protected DatabaseResource(@Nonnull String type, @Nonnull final String serverId, @Nullable final String databaseName) {
-        this.type = type;
-        this.databaseName = databaseName;
-        this.serverId = ResourceId.fromString(serverId);
-    }
-
-    protected DatabaseResource(@Nonnull String type, @Nonnull final String databaseId) {
-        this.type = type;
-        final ResourceId dbId = ResourceId.fromString(databaseId);
-        this.serverId = dbId.parent();
-        this.databaseName = dbId.name();
+    @Override
+    public Database getData() {
+        return database;
     }
 
     @Override
     public String getId() {
-        return DigestUtils.md5Hex(this.getDatabaseId());
-    }
-
-    @NotNull
-    @EqualsAndHashCode.Include
-    public String getDatabaseId() {
-        return serverId.id() + "/databases/" + databaseName;
+        return DigestUtils.md5Hex(this.database.getId());
     }
 
     @Override
-    public String toString() {
-        return String.format("%s database: \"%s/%s\"", this.getTitle(), this.getServerId().name(), this.databaseName);
+    public String getName() {
+        return this.database.getName();
     }
 
     public String getTitle() {
         return "Azure Database";
     }
 
-    protected interface DatabaseDefinition extends ResourceDefinition<DatabaseResource> {
+    @RequiredArgsConstructor
+    public static class Definition implements ResourceDefinition<Database> {
+        public static final Definition SQL_SERVER = new Definition("Microsoft.Sql", "SQL Server", DatabaseResourcePanel::sqlServer);
+        public static final Definition AZURE_MYSQL = new Definition("Microsoft.DBforMySQL", "Azure Database for MySQL", DatabaseResourcePanel::mysql);
+
+        public static List<Definition> values() {
+            return Arrays.asList(AZURE_MYSQL, SQL_SERVER);
+        }
+
+        @Getter
+        private final String name;
+        @Getter
+        private final String title;
+        private final Supplier<AzureFormJPanel<Database>> panelSupplier;
 
         @Override
-        default boolean write(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
+        public Resource<Database> define(Database resource) {
+            return new DatabaseResource(resource, this);
+        }
+
+        @Override
+        public AzureFormJPanel<Database> getResourcesPanel(@Nonnull String type, Project project) {
+            return this.panelSupplier.get();
+        }
+
+        @Override
+        public boolean write(@Nonnull final Element resourceEle, @Nonnull final Resource<Database> r) {
+            final DatabaseResource resource = (DatabaseResource) r;
+            final String defName = resource.getDefName();
+            final Database database = resource.getData();
+            final Password.SaveType saveType = database.getPassword().saveType();
             resourceEle.setAttribute(new Attribute(Resource.FIELD_ID, resource.getId()));
-            resourceEle.addContent(new Element("azureResourceId").addContent(resource.getDatabaseId()));
-            resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
-            resourceEle.addContent(new Element("username").setText(resource.username));
-            resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
-            final char[] password = resource.password.password();
-            final String storedPassword = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType());
+            resourceEle.addContent(new Element("azureResourceId").addContent(database.getId()));
+            resourceEle.addContent(new Element("url").setText(database.getJdbcUrl().toString()));
+            resourceEle.addContent(new Element("username").setText(database.getUsername()));
+            resourceEle.addContent(new Element("passwordSave").setText(saveType.name()));
+            final char[] password = database.getPassword().password();
+            final String storedPassword = PasswordStore.loadPassword(defName, resource.getId(), database.getUsername(), saveType);
             if (ArrayUtils.isNotEmpty(password) && !StringUtils.equals(String.valueOf(password), storedPassword)) {
-                PasswordStore.savePassword(resource.getType(), resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
+                PasswordStore.savePassword(defName, resource.getId(), database.getUsername(), database.getPassword().password(), saveType);
             }
             return true;
         }
 
-        default void read(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
-            resource.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
-            resource.setUsername(resourceEle.getChildTextTrim("username"));
-            resource.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
-            if (resource.password.saveType() == Password.SaveType.FOREVER) {
-                PasswordStore.migratePassword(resource.getId(), resource.getUsername(), resource.getType(), resource.getId(), resource.getUsername());
-            }
-            final String savedPassword = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType());
-            if (StringUtils.isNotBlank(savedPassword)) {
-                resource.password.password(savedPassword.toCharArray());
-            }
+        @Override
+        public Resource<Database> read(@Nonnull Element resourceEle) {
+            final String id = resourceEle.getChildTextTrim("azureResourceId");
+            final Database db = Database.fromId(id);
+            return new DatabaseResource(db, this);
         }
 
+        public void read(@Nonnull final Element resourceEle, @Nonnull final DatabaseResource resource) {
+            final String defName = resource.getDefName();
+            final Database database = resource.getDatabase();
+            database.setJdbcUrl(JdbcUrl.from(resourceEle.getChildTextTrim("url")));
+            database.setUsername(resourceEle.getChildTextTrim("username"));
+            database.setPassword(new Password().saveType(Password.SaveType.valueOf(resourceEle.getChildTextTrim("passwordSave"))));
+            if (database.getPassword().saveType() == Password.SaveType.FOREVER) {
+                PasswordStore.migratePassword(database.getId(), database.getUsername(), defName, database.getId(), database.getUsername());
+            }
+            final String savedPassword = PasswordStore.loadPassword(defName, database.getId(), database.getUsername(), database.getPassword().saveType());
+            if (StringUtils.isNotBlank(savedPassword)) {
+                database.getPassword().password(savedPassword.toCharArray());
+            }
+        }
     }
 }

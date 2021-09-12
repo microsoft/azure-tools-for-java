@@ -3,18 +3,28 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector;
+package com.microsoft.azure.toolkit.intellij.connector.lib;
+
+import org.jdom.Element;
+
+import javax.annotation.Nonnull;
 
 /**
  * the <b>{@code resource}</b> in <b>{@code resource connection}</b><br>
  * it's usually An Azure resource or an intellij module
  */
-public interface Resource {
-    String FIELD_TYPE = "type";
+public interface Resource<T> {
+    String FIELD_DEFINITION = "type";
     String FIELD_BIZ_ID = "bizId";
     String FIELD_ID = "id";
 
-    String getType();
+    @Nonnull
+    ResourceDefinition<T> getDefinition();
+
+    @Nonnull
+    default String getDefName() {
+        return this.getDefinition().getName();
+    }
 
     /**
      * get the id of the resource<br>
@@ -22,5 +32,13 @@ public interface Resource {
      * this id will be saved somewhere in the workspace and may be tracked by git.<br>
      * a good practice would be returning the hashed(e.g. md5/sha1/sha256...) Azure resource id
      */
+    T getData();
+
     String getId();
+
+    String getName();
+
+    default boolean writeTo(Element resourceEle) {
+        return this.getDefinition().write(resourceEle, this);
+    }
 }
