@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.microsoft.azure.toolkit.intellij.connector.AzureResource;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -30,7 +29,7 @@ import javax.annotation.Nullable;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class DatabaseResource implements AzureResource {
+public class DatabaseResource implements Resource {
     private final String type;
     private final String databaseName;
     private final ResourceId serverId;
@@ -82,8 +81,8 @@ public class DatabaseResource implements AzureResource {
             resourceEle.addContent(new Element("url").setText(resource.jdbcUrl.toString()));
             resourceEle.addContent(new Element("username").setText(resource.username));
             resourceEle.addContent(new Element("passwordSave").setText(resource.password.saveType().name()));
-            char[] password = resource.password.password();
-            String storedPassword = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType());
+            final char[] password = resource.password.password();
+            final String storedPassword = PasswordStore.loadPassword(resource.getType(), resource.getId(), resource.getUsername(), resource.password.saveType());
             if (ArrayUtils.isNotEmpty(password) && !StringUtils.equals(String.valueOf(password), storedPassword)) {
                 PasswordStore.savePassword(resource.getType(), resource.getId(), resource.username, resource.password.password(), resource.password.saveType());
             }
