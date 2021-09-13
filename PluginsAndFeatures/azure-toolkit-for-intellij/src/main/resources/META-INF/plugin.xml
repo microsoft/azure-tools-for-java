@@ -55,7 +55,6 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.intellij.gradle</depends>
   <depends optional="true">com.intellij.database</depends>
-  <xi:include href="/META-INF/operation-titles.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-lib.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-sdk-reference-book.xml" xpointer="xpointer(/idea-plugin/*)"/>
@@ -159,10 +158,8 @@
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.azure.toolkit.intellij.function.runner.FunctionRunLineMarkerProvider"/>
 
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLConnectionDefinitionPreloadingActivity"/>
-    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerConnectionDefinitionPreloadingActivity"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLSpringDatasourceCompletionContributor"/>
-    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.sql.SQLSpringDatasourceCompletionContributor"/>
+    <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionDefinitionPreloadingActivity"/>
+    <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceCompletionContributor"/>
     <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.database.SpringDatasourceLineMarkerProvider"/>
   </extensions>
 

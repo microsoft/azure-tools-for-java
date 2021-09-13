@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.database.Database;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectionUtils;
 import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseResource;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -36,8 +37,9 @@ import java.util.Optional;
 
 public class PasswordDialog extends AzureDialog<Password> implements AzureForm<Password> {
 
-    private static final String TITLE = "Credential for %s";
+    private static final String TITLE = "Credential for \"%s\"";
     private static final String HEADER_PATTERN = "Please provide credential for user (%s) to access database (%s) on server (%s).";
+    private final Database database;
 
     private JPanel root;
     private JLabel headerIconLabel;
@@ -48,14 +50,12 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
     private JPasswordField passwordField;
     private PasswordSaveComboBox passwordSaveComboBox;
 
-    private final DatabaseResource resource;
-
     public PasswordDialog(Project project, DatabaseResource resource) {
         super(project);
-        this.resource = resource;
-        setTitle(String.format(TITLE, resource.getTitle()));
-        headerTextPane.setText(String.format(HEADER_PATTERN, resource.getUsername(), resource.getJdbcUrl().getDatabase(),
-                resource.getJdbcUrl().getServerHost()));
+        this.database = resource.getDatabase();
+        setTitle(String.format(TITLE, resource.getName()));
+        headerTextPane.setText(String.format(HEADER_PATTERN, this.database.getUsername(), this.database.getJdbcUrl().getDatabase(),
+                this.database.getJdbcUrl().getServerHost()));
         testConnectionButton.setEnabled(false);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
@@ -64,7 +64,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         this.passwordSaveComboBox.setPreferredSize(lastColumnSize);
         this.passwordSaveComboBox.setMaximumSize(lastColumnSize);
         this.passwordSaveComboBox.setSize(lastColumnSize);
-        this.setData(resource.getPassword());
+        this.setData(this.database.getPassword());
         this.init();
         this.initListener();
     }
@@ -92,7 +92,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         final String password = String.valueOf(passwordField.getPassword());
         final Runnable runnable = () -> {
             final DatabaseConnectionUtils.ConnectResult connectResult = DatabaseConnectionUtils
-                    .connectWithPing(this.resource.getJdbcUrl(), this.resource.getUsername(), password);
+                    .connectWithPing(this.database.getJdbcUrl(), this.database.getUsername(), password);
             testConnectionActionPanel.setVisible(true);
             testResultTextPane.setText(getConnectResultMessage(connectResult));
             final Icon icon = connectResult.isConnected() ? AllIcons.General.InspectionsOK : AllIcons.General.BalloonError;
@@ -100,7 +100,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
             testConnectionButton.setIcon(null);
             testConnectionButton.setEnabled(true);
         };
-        final String title = AzureBundle.message("azure.mysql.link.connection.title", this.resource.getJdbcUrl().getServerHost());
+        final String title = AzureBundle.message("azure.mysql.link.connection.title", this.database.getJdbcUrl().getServerHost());
         final AzureTask<Void> task = new AzureTask<>(null, title, false, runnable);
         AzureTaskManager.getInstance().runInBackground(task);
     }
@@ -153,7 +153,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
 
     @Override
     public void setData(Password data) {
-        this.passwordSaveComboBox.setValue(Optional.ofNullable(data).map(e -> e.saveType()).orElse(Arrays.stream(Password.SaveType.values())
+        this.passwordSaveComboBox.setValue(Optional.ofNullable(data).map(Password::saveType).orElse(Arrays.stream(Password.SaveType.values())
                 .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
                 .orElse(Password.SaveType.UNTIL_RESTART)));
     }
