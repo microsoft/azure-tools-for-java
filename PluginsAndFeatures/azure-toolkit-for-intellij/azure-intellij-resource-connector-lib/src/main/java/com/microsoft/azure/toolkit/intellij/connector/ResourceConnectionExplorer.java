@@ -44,12 +44,12 @@ public class ResourceConnectionExplorer extends Tree {
     private Node<Project> buildRoot() {
         final ConnectionManager cm = this.project.getService(ConnectionManager.class);
         return new Node<>(project).lazy(false)
-                .view(new NodeView.Static("Resource Connections", "/icons/azure.svg"))
+                .view(new NodeView.Static("Resource Connections", "/icons/azure"))
                 .addChildren(project -> Arrays.asList(ModuleManager.getInstance(project).getModules().clone()), (m, n) -> new ModuleNode(m).lazy(false)
                         .view(new NodeView.Static(m.getName(), "/icons/module"))
                         .actions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
                         .addChildren(module -> cm.getConnectionsByConsumerId(module.getName()), (c, mn) -> new Node<>(c).lazy(false)
-                                .view(new NodeView.Static(c.getResource().toString(), ""))
+                                .view(new NodeView.Static(c.getResource().getName(), c.getResource().getDefinition().getIcon()))
                                 .actions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
 
@@ -58,7 +58,7 @@ public class ResourceConnectionExplorer extends Tree {
             super(module);
             final MessageBusConnection bus = module.getProject().getMessageBus().connect();
             bus.subscribe(CONNECTION_CHANGED, conn -> {
-                final Resource consumer = conn.getConsumer();
+                final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
                     this.view().refreshChildren();
                 }

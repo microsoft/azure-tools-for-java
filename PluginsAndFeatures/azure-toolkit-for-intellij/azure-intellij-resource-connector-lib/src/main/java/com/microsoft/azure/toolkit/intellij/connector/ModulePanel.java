@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ModulePanel implements AzureFormJPanel<ModuleResource> {
+public class ModulePanel implements AzureFormJPanel<String> {
     @Getter
     private JPanel contentPanel;
     private ModuleComboBox moduleComboBox;
@@ -31,14 +31,14 @@ public class ModulePanel implements AzureFormJPanel<ModuleResource> {
     }
 
     @Override
-    public ModuleResource getData() {
-        return new ModuleResource(moduleComboBox.getValue().getName());
+    public String getData() {
+        return moduleComboBox.getValue().getName();
     }
 
     @Override
-    public void setData(ModuleResource resource) {
-        Optional.ofNullable(resource.getModuleName()).ifPresent((moduleName -> {
-            final ItemReference<Module> val = new ItemReference<>(moduleName, Module::getName);
+    public void setData(String module) {
+        Optional.ofNullable(module).ifPresent((m -> {
+            final ItemReference<Module> val = new ItemReference<>(m, Module::getName);
             this.moduleComboBox.setValue(val, true);
         }));
     }

@@ -20,7 +20,7 @@
             id="AzureToolkit.ConnectToAzureResource"
             class="com.microsoft.azure.toolkit.intellij.connector.ModuleConnectorAction"
             text="Connect to Azure Resource"
-            icon="/icons/Connector/connect.svg"
+            icon="/icons/connector/connect.svg"
             description="To consume azure resources in your project"/>
     </actions>
 </idea-plugin>

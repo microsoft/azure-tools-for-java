@@ -13,7 +13,7 @@ public interface ConnectionTopics {
     Topic<ConnectionsRefreshed> CONNECTIONS_REFRESHED = Topic.create("connector.connections.refreshed", ConnectionsRefreshed.class);
 
     interface ConnectionChanged {
-        void connectionChanged(Connection<? extends Resource, ? extends Resource> connection);
+        void connectionChanged(Connection<?, ?> connection);
     }
 
     interface ConnectionsRefreshed {

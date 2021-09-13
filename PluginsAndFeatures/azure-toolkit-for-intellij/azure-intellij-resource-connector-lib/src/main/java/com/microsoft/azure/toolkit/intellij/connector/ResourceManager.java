@@ -11,96 +11,94 @@ import com.intellij.openapi.components.Storage;
 import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public interface ResourceManager {
 
-    static ResourceDefinition<? extends Resource> getDefinition(String type) {
+    static ResourceDefinition<?> getDefinition(String type) {
         return Impl.definitions.get(type);
     }
 
-    static List<ResourceDefinition<? extends Resource>> getDefinitions() {
+    static List<ResourceDefinition<?>> getDefinitions() {
         return new ArrayList<>(Impl.definitions.values());
     }
 
-    static List<ResourceDefinition<? extends Resource>> getDefinitions(int role) {
+    static List<ResourceDefinition<?>> getDefinitions(int role) {
         return Impl.definitions.values().stream()
                 .filter(d -> (d.getRole() & role) == role)
                 .collect(Collectors.toList());
     }
 
-    static void registerDefinition(ResourceDefinition<? extends Resource> definition) {
-        Impl.definitions.put(definition.getType(), definition);
+    static void registerDefinition(ResourceDefinition<?> definition) {
+        Impl.definitions.put(definition.getName(), definition);
     }
 
-    void addResource(Resource resource);
+    void addResource(Resource<?> resource);
 
     @Nullable
-    Resource getResourceById(String id);
+    Resource<?> getResourceById(String id);
 
     @Log
     @State(name = Impl.ELEMENT_NAME_RESOURCES, storages = {@Storage("azure/connection-resources.xml")})
     final class Impl implements ResourceManager, PersistentStateComponent<Element> {
+        private static final String ATTR_DEFINITION = "type";
         protected static final String ELEMENT_NAME_RESOURCES = "resources";
         protected static final String ELEMENT_NAME_RESOURCE = "resource";
-        protected final Set<Resource> resources = new LinkedHashSet<>();
-        private static final Map<String, ResourceDefinition<? extends Resource>> definitions = new LinkedHashMap<>();
+        protected final Set<Resource<?>> resources = new LinkedHashSet<>();
+        private static final Map<String, ResourceDefinition<?>> definitions = new LinkedHashMap<>();
 
         @Override
-        public synchronized void addResource(Resource resource) {
+        public synchronized void addResource(Resource<?> resource) {
             resources.remove(resource);
             resources.add(resource);
         }
 
         @Nullable
         @Override
-        public Resource getResourceById(String id) {
+        public Resource<?> getResourceById(String id) {
+            if (StringUtils.isBlank(id)) {
+                return null;
+            }
             return resources.stream().filter(e -> StringUtils.equals(e.getId(), id)).findFirst().orElse(null);
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         public Element getState() {
             final Element resourcesEle = new Element(ELEMENT_NAME_RESOURCES);
-            for (final Resource resource : this.resources) {
-                final ResourceDefinition<Resource> definition = (ResourceDefinition<Resource>) ResourceManager.getDefinition(resource.getType());
+            this.resources.forEach(resource -> {
                 final Element resourceEle = new Element(ELEMENT_NAME_RESOURCE);
                 try {
-                    if (definition.write(resourceEle, resource)) {
-                        resourceEle.setAttribute(Resource.FIELD_TYPE, resource.getType());
+                    if (resource.writeTo(resourceEle)) {
+                        resourceEle.setAttribute(ATTR_DEFINITION, resource.getDefName());
                         resourcesEle.addContent(resourceEle);
                     }
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when persist resource of type '%s'", definition.getType()), e);
+                    log.log(Level.WARNING, String.format("error occurs when persist resource of type '%s'", resource.getDefName()), e);
                 }
-            }
+            });
             return resourcesEle;
         }
 
         @Override
-        public void loadState(@NotNull Element resourcesEle) {
+        public void loadState(@Nonnull Element resourcesEle) {
             for (final Element resourceEle : resourcesEle.getChildren()) {
-                final String resourceType = resourceEle.getAttributeValue(Resource.FIELD_TYPE);
-                final ResourceDefinition<? extends Resource> definition = ResourceManager.getDefinition(resourceType);
-                assert definition != null : String.format("definition for resource of type \"%s\" is not found", resourceType);
+                final String resDef = resourceEle.getAttributeValue(ATTR_DEFINITION);
+                final ResourceDefinition<?> definition = ResourceManager.getDefinition(resDef);
                 try {
-                    final Resource resource = definition.read(resourceEle);
-                    if (Objects.nonNull(resource)) {
-                        this.addResource(resource);
-                    }
+                    Optional.ofNullable(definition).map(d -> definition.read(resourceEle)).ifPresent(this::addResource);
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when load a resource of type '%s'", resourceType), e);
+                    log.log(Level.WARNING, String.format("error occurs when load a resource of type '%s'", resDef), e);
                 }
             }
         }
