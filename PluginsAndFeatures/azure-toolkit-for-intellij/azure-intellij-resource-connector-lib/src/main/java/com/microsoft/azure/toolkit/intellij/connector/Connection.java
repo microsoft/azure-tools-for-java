@@ -8,10 +8,10 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
-import org.apache.commons.lang3.StringUtils;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
+import javax.annotation.Nonnull;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -21,16 +21,25 @@ import java.util.Optional;
  *            it can only be {@link ModuleResource} for now({@code v3.52.0})
  * @since 3.52.0
  */
-public interface Connection<R extends Resource, C extends Resource> {
+public interface Connection<R, C> {
+
+    @Nonnull
+    ConnectionDefinition<R, C> getDefinition();
+
+    @Nonnull
+    default String getDefName() {
+        return this.getDefinition().getName();
+    }
+
     /**
      * @return the resource consumed by consumer
      */
-    R getResource();
+    Resource<R> getResource();
 
     /**
      * @return the consumer consuming resource
      */
-    C getConsumer();
+    Resource<C> getConsumer();
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
@@ -56,9 +65,7 @@ public interface Connection<R extends Resource, C extends Resource> {
     default void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
     }
 
-    default String getType() {
-        final String resourceType = Optional.ofNullable(getResource()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
-        final String consumerType = Optional.ofNullable(getConsumer()).map(Resource::getType).filter(StringUtils::isNotBlank).orElse("default");
-        return resourceType + ":" + consumerType;
+    default void write(Element connectionEle) {
+        this.getDefinition().write(connectionEle, this);
     }
 }
