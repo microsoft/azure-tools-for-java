@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
@@ -54,11 +55,17 @@ public class IntellijAzureActionManager extends AzureActionManager {
         ActionManager.getInstance().registerAction(id.getId(), new AnActionWrapper<>(action));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <D> Action<D> getAction(Action.Id<D> id) {
-        //noinspection unchecked
-        final AnActionWrapper<D> action = ((AnActionWrapper<D>) ActionManager.getInstance().getAction(id.getId()));
-        return new Action.Delegate<>(action.getAction(), id.getId());
+        final AnAction origin = ActionManager.getInstance().getAction(id.getId());
+        if (origin instanceof AnActionWrapper) {
+            final AnActionWrapper<D> action = ((AnActionWrapper<D>) origin);
+            return new Action.Delegate<>(action.getAction(), id.getId());
+        } else {
+            final ActionView.Builder view = new ActionView.Builder(origin.getTemplateText());
+            return new Action<>((D d, AnActionEvent e) -> origin.actionPerformed(e), view);
+        }
     }
 
     @Override
