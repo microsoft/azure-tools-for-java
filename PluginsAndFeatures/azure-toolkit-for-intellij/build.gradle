@@ -154,6 +154,7 @@ configurations {
     compile.exclude module:'azure-core-http-netty'
     compile.exclude module:'netty-transport'
     compile.exclude module:'netty-resolver'
+    compile.exclude module:'groovy-templates'
     cucumberRuntime {
         extendsFrom testRuntime
     }

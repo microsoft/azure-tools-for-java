@@ -13,8 +13,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
+import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordSaveComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -25,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.function.FunctionCoreToolsCombobox;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.AzureConfigInitializer;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -181,7 +179,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
             config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
         config.setUserAgent(userAgent);
-
+        CommonSettings.setUserAgent(config.getUserAgent());
         // apply changes
 
         // we need to get rid of AuthMethodManager, using az.azure_account
@@ -196,26 +194,11 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
             }
         }
 
-        // we need get rid of CommonSettings later
-        CommonSettings.setUserAgent(config.getUserAgent());
         if (StringUtils.isNotBlank(config.getCloud())) {
             Azure.az(AzureCloud.class).setByName(config.getCloud());
         }
-        saveAzConfig();
+        AzureConfigInitializer.saveAzConfig();
         return true;
-    }
-
-    private void saveAzConfig() {
-        final AzureConfiguration config = Azure.az().config();
-        IIdeStore ideStore = AzureStoreManager.getInstance().getIdeStore();
-        ideStore.setProperty(AzureConfigInitializer.TELEMETRY, AzureConfigInitializer.TELEMETRY_ALLOW_TELEMETRY,
-                Boolean.toString(config.getTelemetryEnabled()));
-        ideStore.setProperty(AzureConfigInitializer.ACCOUNT, AzureConfigInitializer.AZURE_ENVIRONMENT_KEY,
-                config.getCloud());
-        ideStore.setProperty(AzureConfigInitializer.FUNCTION, AzureConfigInitializer.FUNCTION_CORE_TOOLS_PATH,
-                config.getFunctionCoreToolsPath());
-        ideStore.setProperty(AzureConfigInitializer.DATABASE, AzureConfigInitializer.PASSWORD_SAVE_TYPE,
-                config.getDatabasePasswordSaveType());
     }
 
     @Override

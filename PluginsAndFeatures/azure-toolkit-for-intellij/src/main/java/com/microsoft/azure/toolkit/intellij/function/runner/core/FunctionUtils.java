@@ -40,10 +40,10 @@ import com.microsoft.azure.toolkit.lib.legacy.function.bindings.BindingEnum;
 import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionConfiguration;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
-import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.intellij.secure.IntelliJSecureStore;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -93,14 +93,14 @@ public class FunctionUtils {
             return;
         }
         final String appSettingsJsonValue = JsonUtils.toJsonString(appSettings);
-        IdeaSecureStore.getInstance().savePassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null, appSettingsJsonValue);
+        IntelliJSecureStore.getInstance().savePassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null, appSettingsJsonValue);
     }
 
     public static Map<String, String> loadAppSettingsFromSecurityStorage(String key) {
         if (StringUtils.isEmpty(key)) {
             return new HashMap<>();
         }
-        final String value = IdeaSecureStore.getInstance().loadPassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null);
+        final String value = IntelliJSecureStore.getInstance().loadPassword(AZURE_FUNCTIONS_APP_SETTINGS, key, null);
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 

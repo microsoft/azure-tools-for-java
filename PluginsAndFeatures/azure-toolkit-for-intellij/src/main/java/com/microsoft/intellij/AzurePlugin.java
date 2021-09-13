@@ -70,11 +70,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY;
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_NEW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.AzureConfigInitializer.TELEMETRY;
-import static com.microsoft.intellij.AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 

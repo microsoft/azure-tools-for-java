@@ -15,16 +15,16 @@ import javax.annotation.Nullable;
 
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
-public class IdeaSecureStore implements ISecureStore {
+public class IntelliJSecureStore implements ISecureStore {
     private static class LazyHolder {
-        static final IdeaSecureStore INSTANCE = new IdeaSecureStore();
+        static final IntelliJSecureStore INSTANCE = new IntelliJSecureStore();
     }
 
-    public static IdeaSecureStore getInstance() {
+    public static IntelliJSecureStore getInstance() {
         return LazyHolder.INSTANCE;
     }
 
-    private IdeaSecureStore() {
+    private IntelliJSecureStore() {
     }
 
     // Leverage IntelliJ PasswordSafe component

@@ -18,11 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PROXY;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY;
+import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class AzureInitializer {
     public static void initialize() {
@@ -31,12 +29,12 @@ public class AzureInitializer {
     }
 
     private static void initializeAzureConfiguration() {
-        AzureConfigInitializer.initialize();
+        IntellijConfigInitializer.initialize();
         initializeTelemetry();
     }
 
     private static void initializeTelemetry() {
-        final String oldVersion = AzureStoreManager.getInstance().getIdeStore().getProperty(AzureConfigInitializer.TELEMETRY, AzureConfigInitializer.TELEMETRY_PLUGIN_VERSION);
+        final String oldVersion = AzureStoreManager.getInstance().getIdeStore().getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION);
         // the code of saving current plugin version is at AzurePlugin
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
         if (StringUtils.isBlank(oldVersion)) {

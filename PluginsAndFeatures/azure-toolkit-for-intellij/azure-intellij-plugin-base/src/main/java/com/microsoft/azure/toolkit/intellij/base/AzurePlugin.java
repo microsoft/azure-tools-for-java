@@ -20,7 +20,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
@@ -60,10 +60,10 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         final String pluginVersion = "0.0.1-SNAPSHOT";
         // check non-empty for valid data.xml
         if (StringUtils.isNoneBlank(installationId, pluginVersion)) {
-            final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
-            AzureConfigurations.getInstance().loadState(config);
+            final IntellijStore.AzureConfigurationData config = IntellijStore.getInstance().getState();
+            IntellijStore.getInstance().loadState(config);
         }
-        final AzureConfigurations.AzureConfigurationData config = AzureConfigurations.getInstance().getState();
+        final IntellijStore.AzureConfigurationData config = IntellijStore.getInstance().getState();
         String installationID = InstallationIdUtils.getHashMac();
         if (StringUtils.isBlank(installationID)) {
             installationID = StringUtils.firstNonBlank(InstallationIdUtils.getHashMac(), InstallationIdUtils.hash(PermanentInstallationID.get()));

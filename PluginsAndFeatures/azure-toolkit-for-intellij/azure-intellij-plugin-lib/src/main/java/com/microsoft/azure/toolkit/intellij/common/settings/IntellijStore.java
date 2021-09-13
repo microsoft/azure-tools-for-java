@@ -14,15 +14,15 @@ import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @State(name = "Azure Toolkit for IntelliJ", storages = {@Storage("azure-data.xml")})
-public class AzureConfigurations implements PersistentStateComponent<AzureConfigurations.AzureConfigurationData>, IIdeStore {
+public class IntellijStore implements PersistentStateComponent<IntellijStore.AzureConfigurationData>, IIdeStore {
     private static final String AZURE_ENVIRONMENT_KEY = "azure_environment";
     private static final String PASSWORD_SAVE_TYPE = "password_save_type";
     private static final String FUNCTION_CORE_TOOLS_PATH = "function_core_tools_path";
@@ -32,8 +32,8 @@ public class AzureConfigurations implements PersistentStateComponent<AzureConfig
 
     private final AzureConfigurationData currentConfiguration = new AzureConfigurationData();
 
-    public static AzureConfigurations getInstance() {
-        return ServiceManager.getService(AzureConfigurations.class);
+    public static IntellijStore getInstance() {
+        return ServiceManager.getService(IntellijStore.class);
     }
 
     @Override

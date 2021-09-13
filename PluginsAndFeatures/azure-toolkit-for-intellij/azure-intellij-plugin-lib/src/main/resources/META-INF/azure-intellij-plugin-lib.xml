@@ -8,7 +8,7 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations"/>
+        <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.common.preload.AzurePreloadingActivity"/>
     </extensions>
     <actions>

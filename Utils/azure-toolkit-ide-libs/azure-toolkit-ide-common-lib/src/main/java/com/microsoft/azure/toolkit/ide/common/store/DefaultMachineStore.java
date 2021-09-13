@@ -4,29 +4,23 @@
  */
 package com.microsoft.azure.toolkit.ide.common.store;
 
-import com.microsoft.azure.toolkit.ide.common.util.ParserXMLUtility;
+import com.google.gson.reflect.TypeToken;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.annotation.Nonnull;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
+import javax.annotation.Nullable;
 import java.io.File;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DefaultMachineStore implements IMachineStore {
+
     private String dataFile;
     private Map<String, String> map = new HashMap<>();
 
@@ -48,7 +42,12 @@ public class DefaultMachineStore implements IMachineStore {
     }
 
     public void setProperty(@javax.annotation.Nullable String service, @Nonnull String key, @Nullable String value) {
-        map.put(combineKey(service, key), value);
+        String hashKey = combineKey(service, key);
+        if (value == null) {
+            map.remove(hashKey);
+            return;
+        }
+        map.put(hashKey, value);
         save();
     }
 
@@ -58,58 +57,22 @@ public class DefaultMachineStore implements IMachineStore {
 
     public void load() {
         try {
-            final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-            if (doc != null) {
-                final String expression = "/data/property[@name and @value]";
-                final XPath xPath = XPathFactory.newInstance().newXPath();
-                final NodeList list = (NodeList) xPath.compile(expression).evaluate(doc, XPathConstants.NODESET);
-                for (int i = 0; i < list.getLength(); i++) {
-                    final Node name = list.item(i).getAttributes().getNamedItem("name");
-                    final Node value = list.item(i).getAttributes().getNamedItem("value");
-                    String keyText = name.getTextContent();
-                    String valueText = value.getTextContent();
-                    if (StringUtils.isNoneBlank(keyText, valueText)) {
-                        map.put(keyText, valueText);
-                    }
-                }
+            if (Files.exists(Paths.get(dataFile))) {
+                String json = FileUtils.readFileToString(new File(dataFile), "utf8");
+                Type type = new TypeToken<Map<String, String>>(){}.getType();
+                map = JsonUtils.getGson().fromJson(json, type);
             }
         } catch (Exception ex) {
-            throw new AzureToolkitRuntimeException("Cannot load property due to error:" + ex.getMessage());
+            throw new AzureToolkitRuntimeException("Cannot load property.", ex);
         }
     }
 
     public void save() {
         try {
-            Document doc = new File(dataFile).exists() ? ParserXMLUtility.parseXMLFile(dataFile) : createNewDoc();
-            map.forEach((k, v) -> {
-                updatePropertyValue(doc, k, v);
-            });
+            FileUtils.writeStringToFile(new File(dataFile), JsonUtils.toJson(map), "utf8");
         } catch (Exception ex) {
-            throw new AzureToolkitRuntimeException("Cannot save property due to error:" + ex.getMessage());
-        }
-
-    }
-
-    private void updatePropertyValue(Document doc, String propertyName, String value) {
-        try {
-            String nodeExpr = String.format("/data/property[@name='%s']", propertyName);
-            final Map<String, String> nodeAttributes = new HashMap();
-            nodeAttributes.put("name", propertyName);
-            nodeAttributes.put("value", value);
-            if (!ParserXMLUtility.doesNodeExists(doc, "/data")) {
-                Element data = doc.createElement("data");
-                doc.appendChild(data);
-            }
-            ParserXMLUtility.updateOrCreateElement(doc, nodeExpr, "/data", "property", true, nodeAttributes);
-            ParserXMLUtility.saveXMLFile(dataFile, doc);
-        } catch (Exception ex) {
-            throw new AzureToolkitRuntimeException("Cannot update property due to error:" + ex.getMessage());
+            throw new AzureToolkitRuntimeException("Cannot save property", ex);
         }
     }
 
-    private Document createNewDoc() throws ParserConfigurationException {
-        final DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
-        final DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
-        return documentBuilder.newDocument();
-    }
 }

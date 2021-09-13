@@ -22,7 +22,7 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
-import com.microsoft.azure.toolkit.intellij.common.settings.AzureConfigurations;
+import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -40,7 +40,7 @@ import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.intellij.secure.IntelliJSecureStore;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.util.NetworkDiagnose;
@@ -134,8 +134,8 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
         HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
 
-        AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure-data.xml")),
-                AzureConfigurations.getInstance(), IdeaSecureStore.getInstance());
+        AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure.json")),
+                IntellijStore.getInstance(), IntelliJSecureStore.getInstance());
 
         try {
             loadPluginSettings();
