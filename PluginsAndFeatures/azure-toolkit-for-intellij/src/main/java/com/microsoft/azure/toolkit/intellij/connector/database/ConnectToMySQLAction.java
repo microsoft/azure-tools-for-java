@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.mysql;
+package com.microsoft.azure.toolkit.intellij.connector.database;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
@@ -40,7 +40,9 @@ public class ConnectToMySQLAction extends NodeActionListener {
         AzureSignInAction.requireSignedIn(project, () -> {
             final ConnectorDialog dialog = new ConnectorDialog(project);
             final MySqlServer server = this.node.getServer();
-            dialog.setResource(new MySQLDatabaseResource(server.id(), null));
+            final Database database = new Database(server.id(), null);
+            final DatabaseResource resource = new DatabaseResource(database, DatabaseResource.Definition.AZURE_MYSQL);
+            dialog.setResource(resource);
             dialog.show();
         });
     }

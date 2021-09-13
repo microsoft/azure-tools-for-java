@@ -14,16 +14,15 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.mysql.MySQLDatabaseResource;
-import com.microsoft.azure.toolkit.intellij.connector.sql.SqlServerDatabaseResource;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.intellij.helpers.AzureIconLoader;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
@@ -32,7 +31,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     @Nullable
-    public LineMarkerInfo<PsiElement> getLineMarkerInfo(@NotNull PsiElement element) {
+    public LineMarkerInfo<PsiElement> getLineMarkerInfo(@Nonnull PsiElement element) {
         // Do not show azure line marker if not signed in
         if (!AuthMethodManager.getInstance().isSignedIn() || !(element instanceof PropertyImpl)) {
             return null;
@@ -47,19 +46,19 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         }
         final Project project = module.getProject();
         return project.getService(ConnectionManager.class)
-            .getConnectionsByConsumerId(module.getName()).stream()
-            .filter(c -> MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(c.getResource().getType())
-                    || SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(c.getResource().getType()))
-            .map(c -> ((DatabaseResourceConnection) c))
-            .filter(c -> StringUtils.equals(envPrefix, c.getResource().getEnvPrefix()))
-            .findAny()
-            .map(DatabaseResourceConnection::getResource)
-            .map(r -> new LineMarkerInfo<>(
-                element, element.getTextRange(),
-                AzureIconLoader.loadIcon(AzureIconSymbol.MySQL.BIND_INTO),
-                element2 -> String.format("Connect to %s (%s)", r.getTitle(), r.getJdbcUrl().getServerHost()),
-                new SpringDatasourceNavigationHandler(r),
-                GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
+                .getConnectionsByConsumerId(module.getName()).stream()
+                .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getName().equals(c.getResource().getDefName())
+                        || DatabaseResource.Definition.SQL_SERVER.getName().equals(c.getResource().getDefName()))
+                .map(c -> ((DatabaseResourceConnection) c))
+                .filter(c -> StringUtils.equals(envPrefix, c.getResource().getDatabase().getEnvPrefix()))
+                .findAny()
+                .map(DatabaseResourceConnection::getResource)
+                .map(r -> new LineMarkerInfo<>(
+                        element, element.getTextRange(),
+                        AzureIcons.getIcon("/icons/connector/connect.svg"),
+                        element2 -> String.format("Connect to %s (%s)", r.getDefinition().getTitle(), r.getName()),
+                        new SpringDatasourceNavigationHandler(r),
+                        GutterIconRenderer.Alignment.LEFT, () -> "")).orElse(null);
     }
 
     private String extractEnvPrefix(String value) {
@@ -69,26 +68,21 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         return StringUtils.EMPTY;
     }
 
+    @RequiredArgsConstructor
     public static class SpringDatasourceNavigationHandler implements GutterIconNavigationHandler<PsiElement> {
-
-        private final DatabaseResource database;
-
-        SpringDatasourceNavigationHandler(DatabaseResource database) {
-            this.database = database;
-        }
+        private final DatabaseResource resource;
 
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
             if (!AuthMethodManager.getInstance().isSignedIn()) {
-                final String resourceName = database.getDatabaseName();
-                final String message = String.format("Failed to connect %s (%s) , please sign in Azure first.", database.getTitle(), resourceName);
-                DefaultLoader.getUIHelper().showError(message, "Connect to " + database.getTitle());
+                final String message = String.format("Failed to connect (%s) , please sign in Azure first.", resource.getName());
+                AzureMessager.getMessager().error(message, "Connect to " + resource.getName());
                 return;
             }
-            if (MySQLDatabaseResource.Definition.AZURE_MYSQL.getType().equals(database.getType())) {
-                DefaultLoader.getUIHelper().openMySQLPropertyView(database.getServerId().id(), psiElement.getProject());
-            } else if (SqlServerDatabaseResource.Definition.SQL_SERVER.getType().equals(database.getType())) {
-                DefaultLoader.getUIHelper().openSqlServerPropertyView(database.getServerId().id(), psiElement.getProject());
+            if (DatabaseResource.Definition.AZURE_MYSQL == resource.getDefinition()) {
+                DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getDatabase().getServerId().id(), psiElement.getProject());
+            } else if (DatabaseResource.Definition.SQL_SERVER == resource.getDefinition()) {
+                DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getDatabase().getServerId().id(), psiElement.getProject());
             }
         }
     }
