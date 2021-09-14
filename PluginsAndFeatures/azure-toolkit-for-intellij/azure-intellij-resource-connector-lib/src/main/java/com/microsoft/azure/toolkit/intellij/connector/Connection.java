@@ -5,18 +5,28 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * the <b>{@code resource connection}</b>
@@ -30,6 +40,7 @@ import javax.annotation.Nonnull;
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Connection<R, C> {
+    private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     @Nonnull
     @EqualsAndHashCode.Include
     protected final Resource<R> resource;
@@ -41,11 +52,7 @@ public class Connection<R, C> {
     protected final ConnectionDefinition<R, C> definition;
     @Setter
     private String envPrefix;
-
-    @Nonnull
-    public String getDefName() {
-        return this.getDefinition().getName();
-    }
+    private Map<String, String> env = new HashMap<>();
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
@@ -55,7 +62,14 @@ public class Connection<R, C> {
      *
      * @return true if this connection should intervene the specified {@code configuration}.
      */
-    public boolean isApplicableFor(@NotNull RunConfiguration configuration) {
+    public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
+        final boolean javaAppRunConfiguration = configuration instanceof ApplicationConfiguration;
+        final boolean springbootAppRunConfiguration = StringUtils.equals(configuration.getClass().getName(), SPRING_BOOT_CONFIGURATION);
+        final boolean azureWebAppRunConfiguration = configuration instanceof IWebAppRunConfiguration;
+        if (javaAppRunConfiguration || azureWebAppRunConfiguration || springbootAppRunConfiguration) {
+            final Module module = getTargetModule(configuration);
+            return Objects.nonNull(module) && Objects.equals(module.getName(), this.consumer.getName());
+        }
         return false;
     }
 
@@ -63,14 +77,39 @@ public class Connection<R, C> {
      * do some preparation in the {@code Connect Azure Resource} before run task
      * of the {@code configuration}<br>
      */
-    public boolean prepareBeforeRun(@NotNull RunConfiguration configuration, DataContext dataContext) {
-        return false;
+    @AzureOperation(name = "connector|connection.prepare_before_run", type = AzureOperation.Type.ACTION)
+    public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
+        this.env = this.initEnv(configuration.getProject());
+        if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
+            final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
+            webAppConfiguration.setApplicationSettings(this.env);
+        }
+        return true;
     }
 
     /**
      * update java parameters exactly before start the {@code configuration}
      */
-    public void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
+    public void updateJavaParametersAtRun(@Nonnull RunConfiguration configuration, @Nonnull JavaParameters parameters) {
+        if (Objects.nonNull(this.env)) {
+            for (final Map.Entry<String, String> entry : this.env.entrySet()) {
+                parameters.addEnv(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    @Nullable
+    private static Module getTargetModule(@Nonnull RunConfiguration configuration) {
+        if (configuration instanceof ModuleBasedConfiguration) {
+            return ((ModuleBasedConfiguration<?, ?>) configuration).getConfigurationModule().getModule();
+        } else if (configuration instanceof IWebAppRunConfiguration) {
+            return ((IWebAppRunConfiguration) configuration).getModule();
+        }
+        return null;
+    }
+
+    protected Map<String, String> initEnv(Project project) {
+        return Collections.emptyMap();
     }
 
     public void write(Element connectionEle) {

@@ -101,7 +101,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection<?, ?> connection : this.connections) {
                 final Element connectionEle = new Element(ELEMENT_NAME_CONNECTION);
-                connectionEle.setAttribute(FIELD_TYPE, connection.getDefName());
+                connectionEle.setAttribute(FIELD_TYPE, connection.getDefinition().getName());
                 connection.write(connectionEle);
                 connectionsEle.addContent(connectionEle);
             }
