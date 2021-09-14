@@ -58,7 +58,7 @@ public final class ModuleResource implements Resource<String> {
         }
 
         @Override
-        public AzureFormJPanel<String> getResourcesPanel(@Nonnull String type, final Project project) {
+        public AzureFormJPanel<String> getResourcePanel(final Project project) {
             return new ModulePanel(project);
         }
 

@@ -69,7 +69,7 @@ public class DatabaseResource implements Resource<Database> {
         }
 
         @Override
-        public AzureFormJPanel<Database> getResourcesPanel(@Nonnull String type, Project project) {
+        public AzureFormJPanel<Database> getResourcePanel(Project project) {
             return this.panelSupplier.get();
         }
 

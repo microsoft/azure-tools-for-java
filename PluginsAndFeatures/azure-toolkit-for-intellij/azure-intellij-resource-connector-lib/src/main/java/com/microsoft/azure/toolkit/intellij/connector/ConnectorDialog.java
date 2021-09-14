@@ -201,7 +201,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
-        final AzureFormJPanel<?> newResourcePanel = definition.getResourcesPanel(definition.getName(), this.project);
+        final AzureFormJPanel<?> newResourcePanel = definition.getResourcePanel(this.project);
         container.removeAll();
         container.add(newResourcePanel.getContentPanel(), constraints);
         return newResourcePanel;
