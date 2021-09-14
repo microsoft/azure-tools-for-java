@@ -15,16 +15,16 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
-import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
-import com.microsoft.azure.toolkit.intellij.connector.Password;
-import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
-import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
+import com.microsoft.azure.toolkit.intellij.connector.Password;
+import com.microsoft.azure.toolkit.intellij.connector.PasswordStore;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
+import com.microsoft.azure.toolkit.intellij.connector.database.component.PasswordDialog;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -51,20 +51,14 @@ import static com.microsoft.azure.toolkit.intellij.connector.database.DatabaseCo
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class DatabaseResourceConnection implements Connection<Database, String> {
+public class DatabaseResourceConnection extends Connection<Database, String> {
     private static final String SPRING_BOOT_CONFIGURATION = "com.intellij.spring.boot.run.SpringBootApplicationRunConfiguration";
     private static final String AZURE_WEBAPP_CONFIGURATION = "com.microsoft.azure.toolkit.intellij.webapp.runner.webappconfig.WebAppConfiguration";
-    @Getter
-    @Nonnull
-    @EqualsAndHashCode.Include
-    private final DatabaseResource resource;
-    @Getter
-    @Nonnull
-    @EqualsAndHashCode.Include
-    private final ModuleResource consumer;
-    @Getter
-    private final Definition definition;
     private Map<String, String> env = new HashMap<>();
+
+    public DatabaseResourceConnection(DatabaseResource resource, ModuleResource consumer, Definition definition) {
+        super(resource, consumer, definition);
+    }
 
     @Override
     public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
@@ -114,19 +108,19 @@ public class DatabaseResourceConnection implements Connection<Database, String> 
 
     private Map<String, String> initEnv(@Nonnull final Project project) {
         final Map<String, String> envMap = new HashMap<>();
-        final Database database = this.resource.getDatabase();
+        final Database database = this.resource.getData();
         envMap.put(database.getEnvPrefix() + "URL", database.getJdbcUrl().toString());
         envMap.put(database.getEnvPrefix() + "USERNAME", database.getUsername());
-        envMap.put(database.getEnvPrefix() + "PASSWORD", loadPassword(this.resource).or(() -> inputPassword(project, resource)).orElse(""));
+        envMap.put(database.getEnvPrefix() + "PASSWORD", loadPassword(resource).or(() -> inputPassword(project, resource)).orElse(""));
         return envMap;
     }
 
-    private static Optional<String> loadPassword(@Nonnull final DatabaseResource resource) {
-        final Database database = resource.getDatabase();
+    private static Optional<String> loadPassword(@Nonnull final Resource<Database> resource) {
+        final Database database = resource.getData();
         if (Objects.nonNull(database.getPassword()) && database.getPassword().saveType() == Password.SaveType.NEVER) {
             return Optional.empty();
         }
-        final String defName = resource.getDefName();
+        final String defName = resource.getDefinition().getName();
         if (database.getPassword().saveType() == Password.SaveType.FOREVER) {
             PasswordStore.migratePassword(database.getId(), database.getUsername(),
                     defName, database.getId(), database.getUsername());
@@ -146,10 +140,10 @@ public class DatabaseResourceConnection implements Connection<Database, String> 
     }
 
     @Nonnull
-    private static Optional<String> inputPassword(@Nonnull final Project project, @Nonnull final DatabaseResource resource) {
+    private static Optional<String> inputPassword(@Nonnull final Project project, @Nonnull final Resource<Database> resource) {
         final AtomicReference<Password> passwordRef = new AtomicReference<>();
         final AzureString title = AzureOperationBundle.title("mysql.update_password");
-        final Database database = resource.getDatabase();
+        final Database database = resource.getData();
         AzureTaskManager.getInstance().runAndWait(title, () -> {
             final PasswordDialog dialog = new PasswordDialog(project, resource);
             if (dialog.showAndGet()) {
@@ -183,42 +177,31 @@ public class DatabaseResourceConnection implements Connection<Database, String> 
         @Nullable
         @Override
         public Connection<Database, String> read(Element connectionEle) {
-            final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
-            // TODO: check if module exists
-            final ModuleResource moduleConsumer = new ModuleResource(connectionEle.getChildTextTrim("consumer"));
-            final DatabaseResource databaseResource = (DatabaseResource) manager.getResourceById(connectionEle.getChildTextTrim("resource"));
-            if (Objects.nonNull(databaseResource)) {
-                databaseResource.getDatabase().setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
-                return new DatabaseResourceConnection(databaseResource, moduleConsumer, this);
-            } else {
-                // TODO: alert user to create new resource
-                return null;
+            final Connection<Database, String> connection = super.read(connectionEle);
+            if (connection != null) {
+                connection.getResource().getData().setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
             }
+            return connection;
         }
 
         @Override
         public boolean write(Element connectionEle, Connection<? extends Database, ? extends String> c) {
-            final DatabaseResourceConnection connection = (DatabaseResourceConnection) c;
-            final DatabaseResource resource = connection.getResource();
-            final ModuleResource consumer = connection.getConsumer();
-
-            if (StringUtils.isNotBlank(resource.getDatabase().getEnvPrefix())) {
-                connectionEle.setAttribute("envPrefix", resource.getDatabase().getEnvPrefix());
-            }
-            connectionEle.addContent(new Element("resource").setAttribute("type", resource.getDefName()).setText(resource.getId()));
-            connectionEle.addContent(new Element("consumer").setAttribute("type", consumer.getDefName()).setText(consumer.getId()));
-            return true;
+            connectionEle.setAttribute("envPrefix", c.getResource().getData().getEnvPrefix());
+            return super.write(connectionEle, c);
         }
 
         @Override
         public boolean validate(Connection<?, ?> c, Project project) {
+            if (!(c instanceof DatabaseResourceConnection)) {
+                return false;
+            }
             final DatabaseResourceConnection connection = (DatabaseResourceConnection) c;
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            final DatabaseResource resource = connection.getResource();
-            final DatabaseResource existedResource = (DatabaseResource) resourceManager.getResourceById(resource.getId());
+            final Resource<Database> resource = connection.getResource();
+            final Resource<Database> existedResource = (DatabaseResource) resourceManager.getResourceById(resource.getId());
             if (Objects.nonNull(existedResource)) { // not new
-                final Database db = resource.getDatabase();
-                final Database edb = existedResource.getDatabase();
+                final Database db = resource.getData();
+                final Database edb = existedResource.getData();
                 final boolean urlModified = !Objects.equals(db.getJdbcUrl(), edb.getJdbcUrl());
                 final boolean usernameModified = !StringUtils.equals(db.getUsername(), edb.getUsername());
                 final boolean passwordSaveTypeModified = db.getPassword().saveType() != edb.getPassword().saveType();
@@ -232,12 +215,12 @@ public class DatabaseResourceConnection implements Connection<Database, String> 
                 }
             }
             final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
-            final ModuleResource consumer = connection.getConsumer();
+            final Resource<String> consumer = connection.getConsumer();
             final List<Connection<?, ?>> existedConnections = connectionManager.getConnectionsByConsumerId(consumer.getId());
             if (CollectionUtils.isNotEmpty(existedConnections)) {
                 final Connection<?, ?> existedConnection = existedConnections.stream()
-                        .filter(e -> StringUtils.equals(e.getConsumer().getId(), consumer.getId()) && e.getResource() instanceof DatabaseResource &&
-                                StringUtils.equals(((DatabaseResource) e.getResource()).getDatabase().getEnvPrefix(), resource.getDatabase().getEnvPrefix()))
+                        .filter(e -> e.getResource() instanceof DatabaseResource)
+                        .filter(e -> StringUtils.equals(((DatabaseResource) e.getResource()).getData().getEnvPrefix(), resource.getData().getEnvPrefix()))
                         .findFirst().orElse(null);
                 if (Objects.nonNull(existedConnection)) { // modified
                     final DatabaseResource connected = (DatabaseResource) existedConnection.getResource();

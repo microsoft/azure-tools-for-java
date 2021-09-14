@@ -42,7 +42,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
     static ConnectionDefinition<?, ?> getDefinitionOrDefault(@Nonnull ResourceDefinition<?> rd, @Nonnull ResourceDefinition<?> cd) {
         final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinition(rd, cd);
         if (Objects.isNull(definition)) {
-            return new DefaultConnection.Definition<>(rd, cd);
+            return new ConnectionDefinition<>(rd, cd);
         }
         return definition;
     }

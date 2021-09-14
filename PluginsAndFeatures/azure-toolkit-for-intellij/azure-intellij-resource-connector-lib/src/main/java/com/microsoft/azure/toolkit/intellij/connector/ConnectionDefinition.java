@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import lombok.EqualsAndHashCode;
@@ -13,10 +14,11 @@ import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public abstract class ConnectionDefinition<R, C> {
+public class ConnectionDefinition<R, C> {
     @Nonnull
     private final ResourceDefinition<R> resourceDefinition;
     @Nonnull
@@ -40,20 +42,46 @@ public abstract class ConnectionDefinition<R, C> {
      * create {@link Connection} from given {@code resource} and {@code consumer}
      */
     @Nonnull
-    public abstract Connection<R, C> define(Resource<R> resource, Resource<C> consumer);
+    public Connection<R, C> define(Resource<R> resource, Resource<C> consumer) {
+        return new Connection<>(resource, consumer, this);
+    }
 
     /**
      * read/deserialize a instance of {@link Connection} from {@code element}
      */
     @Nullable
-    public abstract Connection<R, C> read(Element element);
+    @SuppressWarnings("unchecked")
+    public Connection<R, C> read(Element connectionEle) {
+        final ResourceManager manager = ServiceManager.getService(ResourceManager.class);
+        final Element consumerEle = connectionEle.getChild("consumer");
+        final Element resourceEle = connectionEle.getChild("resource");
+        final String consumerDefName = consumerEle.getAttributeValue("type");
+        final Resource<R> resource = (Resource<R>) manager.getResourceById(resourceEle.getTextTrim());
+        final Resource<C> consumer = ModuleResource.Definition.IJ_MODULE.getName().equals(consumerDefName) ?
+                (Resource<C>) new ModuleResource(consumerEle.getTextTrim()) :
+                (Resource<C>) manager.getResourceById(consumerEle.getTextTrim());
+        if (Objects.nonNull(resource) && Objects.nonNull(consumer)) {
+            return this.define(resource, consumer);
+        }
+        return null;
+    }
 
     /**
      * write/serialize {@code connection} to {@code element} for persistence
      *
      * @return true if to persist, false otherwise
      */
-    public abstract boolean write(Element element, Connection<? extends R, ? extends C> connection);
+    public boolean write(Element connectionEle, Connection<? extends R, ? extends C> connection) {
+        final Resource<? extends R> resource = connection.getResource();
+        final Resource<? extends C> consumer = connection.getConsumer();
+        connectionEle.addContent(new Element("resource")
+                .setAttribute("type", resource.getDefName())
+                .setText(resource.getId()));
+        connectionEle.addContent(new Element("consumer")
+                .setAttribute("type", consumer.getDefName())
+                .setText(consumer.getId()));
+        return true;
+    }
 
     /**
      * validate if the given {@code connection} is valid, e.g. check if
@@ -62,7 +90,9 @@ public abstract class ConnectionDefinition<R, C> {
      * @return false if the give {@code connection} is not valid and should not
      * be created and persisted.
      */
-    public abstract boolean validate(Connection<?, ?> connection, Project project);
+    public boolean validate(Connection<?, ?> connection, Project project) {
+        return true;
+    }
 
     /**
      * get <b>custom</b> connector dialog to create resource connection of

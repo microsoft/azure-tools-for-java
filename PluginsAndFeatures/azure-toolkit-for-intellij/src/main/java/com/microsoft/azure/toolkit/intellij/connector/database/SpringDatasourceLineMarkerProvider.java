@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -50,7 +51,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getName().equals(c.getResource().getDefName())
                         || DatabaseResource.Definition.SQL_SERVER.getName().equals(c.getResource().getDefName()))
                 .map(c -> ((DatabaseResourceConnection) c))
-                .filter(c -> StringUtils.equals(envPrefix, c.getResource().getDatabase().getEnvPrefix()))
+                .filter(c -> StringUtils.equals(envPrefix, c.getResource().getData().getEnvPrefix()))
                 .findAny()
                 .map(DatabaseResourceConnection::getResource)
                 .map(r -> new LineMarkerInfo<>(
@@ -70,7 +71,7 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
 
     @RequiredArgsConstructor
     public static class SpringDatasourceNavigationHandler implements GutterIconNavigationHandler<PsiElement> {
-        private final DatabaseResource resource;
+        private final Resource<Database> resource;
 
         @Override
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
@@ -80,9 +81,9 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
                 return;
             }
             if (DatabaseResource.Definition.AZURE_MYSQL == resource.getDefinition()) {
-                DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getDatabase().getServerId().id(), psiElement.getProject());
+                DefaultLoader.getUIHelper().openMySQLPropertyView(resource.getData().getServerId().id(), psiElement.getProject());
             } else if (DatabaseResource.Definition.SQL_SERVER == resource.getDefinition()) {
-                DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getDatabase().getServerId().id(), psiElement.getProject());
+                DefaultLoader.getUIHelper().openSqlServerPropertyView(resource.getData().getServerId().id(), psiElement.getProject());
             }
         }
     }

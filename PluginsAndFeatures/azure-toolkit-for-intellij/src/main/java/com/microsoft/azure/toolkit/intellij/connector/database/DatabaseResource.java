@@ -31,24 +31,18 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DatabaseResource implements Resource<Database> {
-
     @EqualsAndHashCode.Include
-    private final Database database;
+    private final Database data;
     private final Definition definition;
 
     @Override
-    public Database getData() {
-        return database;
-    }
-
-    @Override
     public String getId() {
-        return DigestUtils.md5Hex(this.database.getId());
+        return DigestUtils.md5Hex(this.data.getId());
     }
 
     @Override
     public String getName() {
-        return this.database.getFullName();
+        return this.data.getFullName();
     }
 
     @Getter

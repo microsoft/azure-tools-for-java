@@ -8,6 +8,9 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,25 +24,24 @@ import javax.annotation.Nonnull;
  *            it can only be {@link ModuleResource} for now({@code v3.52.0})
  * @since 3.52.0
  */
-public interface Connection<R, C> {
+@Getter
+@RequiredArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Connection<R, C> {
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final Resource<R> resource;
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final Resource<C> consumer;
+    @Nonnull
+    @EqualsAndHashCode.Include
+    protected final ConnectionDefinition<R, C> definition;
 
     @Nonnull
-    ConnectionDefinition<R, C> getDefinition();
-
-    @Nonnull
-    default String getDefName() {
+    public String getDefName() {
         return this.getDefinition().getName();
     }
-
-    /**
-     * @return the resource consumed by consumer
-     */
-    Resource<R> getResource();
-
-    /**
-     * @return the consumer consuming resource
-     */
-    Resource<C> getConsumer();
 
     /**
      * is this connection applicable for the specified {@code configuration}.<br>
@@ -49,7 +51,7 @@ public interface Connection<R, C> {
      *
      * @return true if this connection should intervene the specified {@code configuration}.
      */
-    default boolean isApplicableFor(@NotNull RunConfiguration configuration) {
+    public boolean isApplicableFor(@NotNull RunConfiguration configuration) {
         return false;
     }
 
@@ -57,15 +59,17 @@ public interface Connection<R, C> {
      * do some preparation in the {@code Connect Azure Resource} before run task
      * of the {@code configuration}<br>
      */
-    boolean prepareBeforeRun(@NotNull RunConfiguration configuration, DataContext dataContext);
+    public boolean prepareBeforeRun(@NotNull RunConfiguration configuration, DataContext dataContext) {
+        return false;
+    }
 
     /**
      * update java parameters exactly before start the {@code configuration}
      */
-    default void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
+    public void updateJavaParametersAtRun(RunConfiguration configuration, @NotNull JavaParameters parameters) {
     }
 
-    default void write(Element connectionEle) {
+    public void write(Element connectionEle) {
         this.getDefinition().write(connectionEle, this);
     }
 }
