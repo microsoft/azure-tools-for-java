@@ -149,7 +149,8 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
             if (dialog.showAndGet()) {
                 final Password password = dialog.getData();
                 database.getPassword().saveType(password.saveType());
-                PasswordStore.savePassword(resource.getDefName(), database.getId(), database.getUsername(), password.password(), password.saveType());
+                PasswordStore.savePassword(resource.getDefinition().getName(),
+                        database.getId(), database.getUsername(), password.password(), password.saveType());
                 passwordRef.set(password);
             }
         });

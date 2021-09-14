@@ -80,11 +80,11 @@ public interface ResourceManager {
                 final Element resourceEle = new Element(ELEMENT_NAME_RESOURCE);
                 try {
                     if (resource.writeTo(resourceEle)) {
-                        resourceEle.setAttribute(ATTR_DEFINITION, resource.getDefName());
+                        resourceEle.setAttribute(ATTR_DEFINITION, resource.getDefinition().getName());
                         resourcesEle.addContent(resourceEle);
                     }
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when persist resource of type '%s'", resource.getDefName()), e);
+                    log.log(Level.WARNING, String.format("error occurs when persist resource of type '%s'", resource.getDefinition().getName()), e);
                 }
             });
             return resourcesEle;

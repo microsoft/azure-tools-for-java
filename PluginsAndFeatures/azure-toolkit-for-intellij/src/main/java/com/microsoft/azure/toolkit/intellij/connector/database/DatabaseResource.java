@@ -70,7 +70,7 @@ public class DatabaseResource implements Resource<Database> {
         @Override
         public boolean write(@Nonnull final Element resourceEle, @Nonnull final Resource<Database> r) {
             final DatabaseResource resource = (DatabaseResource) r;
-            final String defName = resource.getDefName();
+            final String defName = resource.getDefinition().getName();
             final Database database = resource.getData();
             final Password.SaveType saveType = database.getPassword().saveType();
             resourceEle.setAttribute(new Attribute("id", resource.getId()));

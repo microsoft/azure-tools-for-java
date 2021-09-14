@@ -17,11 +17,6 @@ public interface Resource<T> {
     @Nonnull
     ResourceDefinition<T> getDefinition();
 
-    @Nonnull
-    default String getDefName() {
-        return this.getDefinition().getName();
-    }
-
     /**
      * get the id of the resource<br>
      * be careful <b>NOT</b> to return the Azure resource id directly since

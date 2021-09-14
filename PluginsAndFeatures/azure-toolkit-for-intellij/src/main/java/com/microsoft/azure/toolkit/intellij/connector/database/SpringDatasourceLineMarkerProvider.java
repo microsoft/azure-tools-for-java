@@ -48,8 +48,8 @@ public class SpringDatasourceLineMarkerProvider implements LineMarkerProvider {
         final Project project = module.getProject();
         return project.getService(ConnectionManager.class)
                 .getConnectionsByConsumerId(module.getName()).stream()
-                .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getName().equals(c.getResource().getDefName())
-                        || DatabaseResource.Definition.SQL_SERVER.getName().equals(c.getResource().getDefName()))
+                .filter(c -> DatabaseResource.Definition.AZURE_MYSQL.getName().equals(c.getResource().getDefinition().getName())
+                        || DatabaseResource.Definition.SQL_SERVER.getName().equals(c.getResource().getDefinition().getName()))
                 .map(c -> ((DatabaseResourceConnection) c))
                 .filter(c -> StringUtils.equals(envPrefix, c.getResource().getData().getEnvPrefix()))
                 .findAny()

@@ -75,10 +75,10 @@ public class ConnectionDefinition<R, C> {
         final Resource<? extends R> resource = connection.getResource();
         final Resource<? extends C> consumer = connection.getConsumer();
         connectionEle.addContent(new Element("resource")
-                .setAttribute("type", resource.getDefName())
+                .setAttribute("type", resource.getDefinition().getName())
                 .setText(resource.getId()));
         connectionEle.addContent(new Element("consumer")
-                .setAttribute("type", consumer.getDefName())
+                .setAttribute("type", resource.getDefinition().getName())
                 .setText(consumer.getId()));
         return true;
     }
