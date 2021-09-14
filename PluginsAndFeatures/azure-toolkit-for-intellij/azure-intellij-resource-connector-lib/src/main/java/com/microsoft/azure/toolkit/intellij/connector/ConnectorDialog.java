@@ -48,6 +48,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private JBLabel resourceTypeLabel;
     private TitledSeparator resourceTitle;
     private TitledSeparator consumerTitle;
+    protected JTextField envPrefixTextField;
 
     @Getter
     private final String dialogTitle = "Azure Resource Connector";
@@ -79,7 +80,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             if (Objects.equals(e.getSource(), this.consumerTypeSelector)) {
                 this.consumerPanel = this.updatePanel(this.consumerTypeSelector.getValue(), this.consumerPanelContainer);
             } else {
-                this.resourcePanel = this.updatePanel(this.resourceTypeSelector.getValue(), this.resourcePanelContainer);
+                final ResourceDefinition<?> rd = this.resourceTypeSelector.getValue();
+                this.envPrefixTextField.setText(rd.getDefaultEnvPrefix());
+                this.resourcePanel = this.updatePanel(rd, this.resourcePanelContainer);
             }
         }
         this.contentPane.revalidate();
@@ -110,7 +113,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             final Resource<?> consumer = connection.getConsumer();
             final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
             final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
-            if (connection.getDefinition().validate(connection, this.project)) {
+            if (connection.validate(this.project)) {
                 resourceManager.addResource(resource);
                 resourceManager.addResource(consumer);
                 connectionManager.addConnection(connection);
@@ -141,13 +144,16 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
         final Resource resource = resourceDef.define(resourceData);
         final Resource consumer = consumerDef.define(consumerData);
-        return ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
+        final Connection connection = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef).define(resource, consumer);
+        connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
+        return connection;
     }
 
     @Override
     public void setData(Connection<?, ?> connection) {
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
+        this.envPrefixTextField.setText(connection.getEnvPrefix());
     }
 
     @Override

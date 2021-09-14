@@ -19,7 +19,6 @@ public class Database {
     private JdbcUrl jdbcUrl;
     private String username;
     private Password password;
-    private String envPrefix;
 
     public Database(String serverId, String name) {
         this.serverId = ResourceId.fromString(serverId);

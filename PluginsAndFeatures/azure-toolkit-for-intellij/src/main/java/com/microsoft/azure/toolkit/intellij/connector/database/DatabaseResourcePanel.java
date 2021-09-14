@@ -60,7 +60,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     protected DatabaseComboBox<D, S> databaseComboBox;
     protected UsernameComboBox usernameComboBox;
     private JPasswordField inputPasswordField;
-    protected JTextField envPrefixTextField;
     private PasswordSaveComboBox passwordSaveComboBox;
     private JTextField urlTextField;
     private JButton testConnectionButton;
@@ -80,10 +79,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
         passwordSaveComboBox.setPreferredSize(passwordSaveComboBoxSize);
         passwordSaveComboBox.setMaximumSize(passwordSaveComboBoxSize);
         passwordSaveComboBox.setSize(passwordSaveComboBoxSize);
-        final Dimension envPrefixTextFieldSize = new Dimension(106, envPrefixTextField.getPreferredSize().height);
-        envPrefixTextField.setPreferredSize(envPrefixTextFieldSize);
-        envPrefixTextField.setMaximumSize(envPrefixTextFieldSize);
-        envPrefixTextField.setSize(envPrefixTextFieldSize);
         testConnectionActionPanel.setVisible(false);
         testResultTextPane.setEditable(false);
         testConnectionButton.setEnabled(false);
@@ -220,7 +215,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
         db.setPassword(password);
         db.setUsername(usernameComboBox.getValue());
         db.setJdbcUrl(this.jdbcUrl);
-        db.setEnvPrefix(envPrefixTextField.getText());
         return db;
     }
 
@@ -244,8 +238,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
                 this.databaseComboBox.setValue(new AzureComboBox.ItemReference<>(dbName, IAzureResourceEntity::getName), true));
         Optional.ofNullable(db.getUsername())
                 .ifPresent((username -> this.usernameComboBox.setValue(username)));
-        Optional.ofNullable(db.getEnvPrefix())
-                .ifPresent(p -> this.envPrefixTextField.setText(p));
     }
 
     @Override
@@ -284,7 +276,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
         public SqlServerDatabaseResourcePanel() {
             super();
             this.jdbcUrl = JdbcUrl.sqlserver(StringUtils.EMPTY);
-            envPrefixTextField.setText("AZURE_SQL_");
             this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
                     Azure.az(AzureSqlServer.class).subscription(this.serverComboBox.getSubscription().getId()).list());
         }
@@ -295,7 +286,6 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
         public MySQLDatabaseResourcePanel() {
             super();
             this.jdbcUrl = JdbcUrl.mysql(StringUtils.EMPTY);
-            envPrefixTextField.setText("AZURE_MYSQL_");
             this.serverComboBox.setItemsLoader(() -> Optional.ofNullable(this.serverComboBox.getSubscription())
                     .map(s -> Azure.az(AzureMySql.class).subscription(s.getId()).list())
                     .orElse(Collections.emptyList()));

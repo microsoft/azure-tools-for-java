@@ -103,7 +103,7 @@ public class SpringDatasourceCompletionContributor extends CompletionContributor
         }
 
         private void insert(Connection<?, ?> c, @Nonnull InsertionContext context) {
-            final String envPrefix = ((Database) c.getResource().getData()).getEnvPrefix();
+            final String envPrefix = c.getEnvPrefix();
             final String builder = "=${" + envPrefix + "URL}" + StringUtils.LF
                     + "spring.datasource.username=${" + envPrefix + "USERNAME}" + StringUtils.LF
                     + "spring.datasource.password=${" + envPrefix + "PASSWORD}" + StringUtils.LF;

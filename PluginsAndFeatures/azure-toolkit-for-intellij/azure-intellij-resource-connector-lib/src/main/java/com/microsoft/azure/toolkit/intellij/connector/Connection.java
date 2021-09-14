@@ -8,9 +8,11 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.project.Project;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +39,8 @@ public class Connection<R, C> {
     @Nonnull
     @EqualsAndHashCode.Include
     protected final ConnectionDefinition<R, C> definition;
+    @Setter
+    private String envPrefix;
 
     @Nonnull
     public String getDefName() {
@@ -71,5 +75,9 @@ public class Connection<R, C> {
 
     public void write(Element connectionEle) {
         this.getDefinition().write(connectionEle, this);
+    }
+
+    public boolean validate(Project project) {
+        return this.getDefinition().validate(this, project);
     }
 }

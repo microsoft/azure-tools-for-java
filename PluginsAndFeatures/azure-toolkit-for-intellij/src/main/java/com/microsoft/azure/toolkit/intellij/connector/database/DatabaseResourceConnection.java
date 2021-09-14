@@ -109,9 +109,9 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
     private Map<String, String> initEnv(@Nonnull final Project project) {
         final Map<String, String> envMap = new HashMap<>();
         final Database database = this.resource.getData();
-        envMap.put(database.getEnvPrefix() + "URL", database.getJdbcUrl().toString());
-        envMap.put(database.getEnvPrefix() + "USERNAME", database.getUsername());
-        envMap.put(database.getEnvPrefix() + "PASSWORD", loadPassword(resource).or(() -> inputPassword(project, resource)).orElse(""));
+        envMap.put(this.getEnvPrefix() + "URL", database.getJdbcUrl().toString());
+        envMap.put(this.getEnvPrefix() + "USERNAME", database.getUsername());
+        envMap.put(this.getEnvPrefix() + "PASSWORD", loadPassword(resource).or(() -> inputPassword(project, resource)).orElse(""));
         return envMap;
     }
 
@@ -175,22 +175,6 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
             return new DatabaseResourceConnection((DatabaseResource) resource, (ModuleResource) consumer, this);
         }
 
-        @Nullable
-        @Override
-        public Connection<Database, String> read(Element connectionEle) {
-            final Connection<Database, String> connection = super.read(connectionEle);
-            if (connection != null) {
-                connection.getResource().getData().setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
-            }
-            return connection;
-        }
-
-        @Override
-        public boolean write(Element connectionEle, Connection<? extends Database, ? extends String> c) {
-            connectionEle.setAttribute("envPrefix", c.getResource().getData().getEnvPrefix());
-            return super.write(connectionEle, c);
-        }
-
         @Override
         public boolean validate(Connection<?, ?> c, Project project) {
             if (!(c instanceof DatabaseResourceConnection)) {
@@ -221,7 +205,7 @@ public class DatabaseResourceConnection extends Connection<Database, String> {
             if (CollectionUtils.isNotEmpty(existedConnections)) {
                 final Connection<?, ?> existedConnection = existedConnections.stream()
                         .filter(e -> e.getResource() instanceof DatabaseResource)
-                        .filter(e -> StringUtils.equals(((DatabaseResource) e.getResource()).getData().getEnvPrefix(), resource.getData().getEnvPrefix()))
+                        .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
                         .findFirst().orElse(null);
                 if (Objects.nonNull(existedConnection)) { // modified
                     final DatabaseResource connected = (DatabaseResource) existedConnection.getResource();

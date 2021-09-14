@@ -61,7 +61,9 @@ public class ConnectionDefinition<R, C> {
                 (Resource<C>) new ModuleResource(consumerEle.getTextTrim()) :
                 (Resource<C>) manager.getResourceById(consumerEle.getTextTrim());
         if (Objects.nonNull(resource) && Objects.nonNull(consumer)) {
-            return this.define(resource, consumer);
+            final Connection<R, C> connection = this.define(resource, consumer);
+            connection.setEnvPrefix(connectionEle.getAttributeValue("envPrefix"));
+            return connection;
         }
         return null;
     }
@@ -80,6 +82,7 @@ public class ConnectionDefinition<R, C> {
         connectionEle.addContent(new Element("consumer")
                 .setAttribute("type", resource.getDefinition().getName())
                 .setText(consumer.getId()));
+        connectionEle.setAttribute("envPrefix", connection.getEnvPrefix());
         return true;
     }
 

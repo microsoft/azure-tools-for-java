@@ -48,8 +48,8 @@ public class DatabaseResource implements Resource<Database> {
     @Getter
     @RequiredArgsConstructor
     public enum Definition implements ResourceDefinition<Database> {
-        SQL_SERVER("Microsoft.Sql", "SQL Server", "/icons/SqlServer/SqlServer.svg", DatabaseResourcePanel::sqlServer),
-        AZURE_MYSQL("Microsoft.DBforMySQL", "Azure Database for MySQL", "/icons/MySQL/MySQL.svg", DatabaseResourcePanel::mysql);
+        SQL_SERVER("Azure.SqlServer", "Azure SQL Server", "/icons/SqlServer/SqlServer.svg", DatabaseResourcePanel::sqlServer),
+        AZURE_MYSQL("Azure.MySQL", "Azure MySQL", "/icons/MySQL/MySQL.svg", DatabaseResourcePanel::mysql);
 
         private final String name;
         private final String title;

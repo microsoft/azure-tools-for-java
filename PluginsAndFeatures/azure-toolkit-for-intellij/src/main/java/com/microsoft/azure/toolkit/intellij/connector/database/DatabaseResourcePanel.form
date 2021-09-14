@@ -173,26 +173,6 @@
           <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="5" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
       </nested-form>
-      <component id="4b6c5" class="javax.swing.JTextField" binding="envPrefixTextField">
-        <constraints>
-          <grid row="7" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="110" height="30"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value="AZURE_MYSQL_"/>
-        </properties>
-      </component>
-      <component id="40279" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <preferred-size width="56" height="16"/>
-          </grid>
-        </constraints>
-        <properties>
-          <text value="Env prefix:"/>
-        </properties>
-      </component>
       <scrollpane id="f946">
         <constraints>
           <grid row="8" column="1" row-span="1" col-span="3" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>

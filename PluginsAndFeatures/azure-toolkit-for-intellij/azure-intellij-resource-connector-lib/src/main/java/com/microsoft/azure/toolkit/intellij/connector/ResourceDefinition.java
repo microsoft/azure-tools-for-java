@@ -58,4 +58,8 @@ public interface ResourceDefinition<T> {
      * read/deserialize a instance of {@link T} from {@code element}
      */
     Resource<T> read(@Nonnull final Element element);
+
+    default String getDefaultEnvPrefix() {
+        return this.getName().toUpperCase().replaceAll("[^a-zA-Z0-9]", "_") + "_";
+    }
 }
