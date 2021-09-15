@@ -19,7 +19,7 @@ public class ImageComboBox extends AzureComboBox<AzureImage> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof AzureImage ? String.format("%s:%s", ((AzureImage) item).sku(), ((AzureImage) item).version()) : super.getItemText(item);
+        return item instanceof AzureImage ? String.format("%s:%s", ((AzureImage) item).getSku(), ((AzureImage) item).getVersion()) : super.getItemText(item);
     }
 
     @Nonnull
