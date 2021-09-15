@@ -8,12 +8,16 @@ package com.microsoft.azure.toolkit.intellij.connector;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -23,6 +27,7 @@ public class ConnectionDefinition<R, C> {
     private final ResourceDefinition<R> resourceDefinition;
     @Nonnull
     private final ResourceDefinition<C> consumerDefinition;
+    private static final String PROMPT_TITLE = "Azure Resource Connector";
 
     public ConnectionDefinition(@Nonnull ResourceDefinition<R> rd, @Nonnull ResourceDefinition<C> cd) {
         this.resourceDefinition = rd;
@@ -93,8 +98,45 @@ public class ConnectionDefinition<R, C> {
      * @return false if the give {@code connection} is not valid and should not
      * be created and persisted.
      */
-    public boolean validate(Connection<?, ?> connection, Project project) {
-        return true;
+    public boolean validate(Connection<R, C> connection, Project project) {
+        final ResourceManager resourceManager = ServiceManager.getService(ResourceManager.class);
+        final Resource<R> resource = connection.getResource();
+        final Resource<R> existedResource = (Resource<R>) resourceManager.getResourceById(resource.getId());
+        if (Objects.nonNull(existedResource)) { // not new
+            final R current = resource.getData();
+            final R origin = existedResource.getData();
+            if (Objects.equals(origin, current) && this.isModified(origin, current)) { // modified
+                final String template = "%s \"%s\" with different configuration is found on your PC. \nDo you want to override it?";
+                final String msg = String.format(template, resource.getDefinition().getTitle(), resource.getName());
+                if (!AzureMessager.getMessager().confirm(msg, PROMPT_TITLE)) {
+                    return false;
+                }
+            }
+        }
+        final ConnectionManager connectionManager = project.getService(ConnectionManager.class);
+        final Resource<C> consumer = connection.getConsumer();
+        final List<Connection<?, ?>> existedConnections = connectionManager.getConnectionsByConsumerId(consumer.getId());
+        if (CollectionUtils.isNotEmpty(existedConnections)) {
+            final Connection<?, ?> existedConnection = existedConnections.stream()
+                    .filter(e -> e.getResource().getDefinition() == this.resourceDefinition)
+                    .filter(e -> StringUtils.equals(e.getEnvPrefix(), connection.getEnvPrefix()))
+                    .findFirst().orElse(null);
+            if (Objects.nonNull(existedConnection)) { // modified
+                final Resource<R> connected = (Resource<R>) existedConnection.getResource();
+                final String template = "%s \"%s\" has already connected to %s \"%s\". \n" +
+                        "Do you want to reconnect it to database \"%s\"?";
+                final String msg = String.format(template,
+                        consumer.getDefinition().getTitle(), consumer.getName(),
+                        connected.getDefinition().getTitle(), connected.getName(),
+                        resource.getName());
+                return AzureMessager.getMessager().confirm(msg, PROMPT_TITLE);
+            }
+        }
+        return true; // is new or not modified.
+    }
+
+    protected boolean isModified(R origin, R current) {
+        return false;
     }
 
     /**

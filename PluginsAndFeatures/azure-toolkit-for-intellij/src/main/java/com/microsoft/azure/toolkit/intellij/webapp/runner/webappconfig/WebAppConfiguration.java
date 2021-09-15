@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
@@ -19,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
@@ -39,7 +41,8 @@ import java.util.Optional;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
+public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel>
+        implements IWebAppRunConfiguration {
 
     // const string
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
@@ -68,10 +71,16 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         return new WebAppSettingEditor(getProject(), this);
     }
 
+    public Module getModule() {
+        final AzureArtifact azureArtifact = AzureArtifactManager.getInstance(this.getProject())
+                .getAzureArtifactById(this.getAzureArtifactType(), this.getArtifactIdentifier());
+        return AzureArtifactManager.getInstance(this.getProject()).getModuleFromAzureArtifact(azureArtifact);
+    }
+
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
-        throws ExecutionException {
+            throws ExecutionException {
         return new WebAppRunState(getProject(), this);
     }
 

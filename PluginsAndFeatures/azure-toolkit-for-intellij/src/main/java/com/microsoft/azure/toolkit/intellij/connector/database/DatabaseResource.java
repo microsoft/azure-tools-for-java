@@ -103,5 +103,10 @@ public class DatabaseResource implements Resource<Database> {
             }
             return new DatabaseResource(db, this);
         }
+
+        @Override
+        public String toString() {
+            return this.getTitle();
+        }
     }
 }
