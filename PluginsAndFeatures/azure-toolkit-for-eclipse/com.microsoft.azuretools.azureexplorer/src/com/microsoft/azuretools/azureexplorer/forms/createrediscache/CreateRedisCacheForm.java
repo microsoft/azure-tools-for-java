@@ -75,8 +75,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureActionEnum;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 
-import lombok.AllArgsConstructor;
-
 public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
     private static Activator LOG = Activator.getDefault();
@@ -550,10 +548,13 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
         this.onCreate = onCreate;
     }
 
-    @AllArgsConstructor
     static class CreateRedisTask extends AzureTask<RedisCache> {
 
         private RedisConfig config;
+        
+        CreateRedisTask(RedisConfig config) {
+            this.config = config;
+        }
 
         public RedisCache execute() {
             ResourceGroup rg = config.getResourceGroup();

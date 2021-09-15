@@ -25,10 +25,6 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.event.EventListenerList;
 
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.eclipse.common.messager.EclipseAzureMessager;
-import com.microsoft.azure.toolkit.eclipse.common.task.EclipseAzureTaskManager;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -44,6 +40,15 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
+import com.microsoft.azure.toolkit.eclipse.common.messager.EclipseAzureMessager;
+import com.microsoft.azure.toolkit.eclipse.common.task.EclipseAzureTaskManager;
+import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -57,10 +62,11 @@ import com.microsoft.azuretools.core.azureexplorer.helpers.MvpUIHelperImpl;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.azuretools.core.store.EclipseSecureStore;
+import com.microsoft.azuretools.core.store.EclipseStore;
 import com.microsoft.azuretools.core.ui.UIFactory;
 import com.microsoft.azuretools.core.ui.views.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
@@ -116,12 +122,16 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
                 com.microsoft.azuretools.core.utils.Messages.commonPluginID).toString();
         dataFile = Paths.get(pluginInstLoc, File.separator,
                 com.microsoft.azuretools.core.utils.Messages.dataFileName).toString();
+        AzureStoreManager.register(new DefaultMachineStore(Paths.get(pluginInstLoc, 
+                "azure.json").toString()),
+                new EclipseStore(), new EclipseSecureStore());
         AzureTaskManager.register(new EclipseAzureTaskManager());
         AzureMessager.setDefaultMessager(new EclipseAzureMessager());
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
+        AzureConfigInitializer.initialize(InstallationIdUtils.getHashMac(), "Azure Toolkit for Eclipse", Activator.getDefault().getBundle().getVersion().toString());
         initAzureToolsCoreLibsSettings();
 
         // load up the plugin settings
@@ -131,6 +141,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             showException("Azure Core Plugin", "An error occurred while attempting to load settings for the Azure Core plugin.", e);
         }
         findObsoletePackages(context);
+        
         super.start(context);
     }
 
@@ -149,9 +160,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsSettings() {
         try {
-            CommonSettings.setUserAgent(String.format(USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
-                    TelemetryUtils.getMachieId(dataFile, com.microsoft.azuretools.core.utils.Messages.prefVal,
-                            com.microsoft.azuretools.core.utils.Messages.instID)));
+            CommonSettings.setUserAgent(String.format(USER_AGENT, 
+                    Azure.az().config().getVersion(),
+                    Azure.az().config().getMachineId()));
             if (CommonSettings.getUiFactory() == null) {
                 CommonSettings.setUiFactory(new UIFactory());
             }

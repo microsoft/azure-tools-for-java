@@ -11,9 +11,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
 
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
 import java.net.URL;
 
@@ -33,9 +30,11 @@ import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Document;
 
+import com.microsoft.azure.toolkit.ide.common.util.ParserXMLUtility;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.utils.FileUtil;
@@ -43,6 +42,8 @@ import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 
 /**
@@ -170,8 +171,8 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
                 FileUtil.copyResourceFile(Messages.dataFileEntry, dataFile);
                 setValues(dataFile);
             }
-            String userAgent = String.format(Activator.USER_AGENT, FrameworkUtil.getBundle(getClass()).getVersion(),
-                    TelemetryUtils.getMachieId(dataFile, Messages.prefVal, Messages.instID));
+            String userAgent = String.format(Activator.USER_AGENT, Azure.az().config().getVersion(),
+                    Azure.az().config().getMachineId());
             CommonSettings.setUserAgent(userAgent);
         } catch (Exception ex) {
             isSet = false;

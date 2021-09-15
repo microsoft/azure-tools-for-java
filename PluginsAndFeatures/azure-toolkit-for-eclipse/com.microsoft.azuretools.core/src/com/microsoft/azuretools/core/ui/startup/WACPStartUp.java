@@ -10,10 +10,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-
 import java.io.File;
 import java.util.Collection;
 
@@ -24,8 +20,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IStartup;
 import org.w3c.dom.Document;
 
+import com.microsoft.azure.toolkit.ide.common.util.ParserXMLUtility;
+import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.core.Activator;
@@ -36,6 +33,8 @@ import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 
 /**
  * This class gets executed after the Workbench initializes.
@@ -72,6 +71,7 @@ public class WACPStartUp implements IStartup {
      */
     private void initialize() {
         try {
+            
             String pluginInstLoc = String.format("%s%s%s", PluginUtil.pluginFolder, File.separator,
                     Messages.commonPluginID);
             final String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
