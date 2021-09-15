@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachine
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualMachineSizeComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.VirtualNetworkComboBox;
 import com.microsoft.azure.toolkit.intellij.vm.creation.component.ip.PublicIPAddressComboBox;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -32,8 +33,8 @@ import com.microsoft.azure.toolkit.lib.compute.vm.DraftVirtualMachine;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AuthenticationType;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.AzureSpotConfig;
 import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
+import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,8 +42,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -121,6 +122,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     private JPanel networkPane;
     private JPanel advancedPane;
 
+    @Getter
     private final Project project;
 
     public VMCreationDialog(@Nullable Project project) {
@@ -334,9 +336,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         } else if (rdoSshPublicKey.isSelected()) {
             draftVirtualMachine.setAuthenticationType(AuthenticationType.SSH);
             try {
-                final String sshKey = FileUtils.readFileToString(new File(txtCertificate.getValue()), Charset.defaultCharset());
-                draftVirtualMachine.setSshKey(txtPassword.getText());
-            } catch (IOException e) {
+                draftVirtualMachine.setSshKey(readCert(txtCertificate.getValue()));
+            } catch (final IOException e) {
                 // swallow exception while get data
             }
         }
@@ -348,7 +349,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                     AzureSpotConfig.EvictionType.CapacityOnly : AzureSpotConfig.EvictionType.PriceOrCapacity;
             final AzureSpotConfig.EvictionPolicy evictionPolicy = rdoStopAndDeallocate.isSelected() ?
                     AzureSpotConfig.EvictionPolicy.StopAndDeallocate : AzureSpotConfig.EvictionPolicy.Delete;
-            final Double maximumPrice = Double.valueOf(txtMaximumPrice.getText());
+            final double maximumPrice = Double.parseDouble(txtMaximumPrice.getText());
             final AzureSpotConfig spotConfig = new AzureSpotConfig(maximumPrice, evictionType, evictionPolicy);
             draftVirtualMachine.setAzureSpotConfig(spotConfig);
         } else {
@@ -379,6 +380,22 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         // todo: Implement storage account related logic, as currently we did not implement none storage
         // draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
         return draftVirtualMachine;
+    }
+
+    private String readCert(final String certificate) throws IOException {
+        byte[] certData = new byte[0];
+        if (!certificate.isEmpty()) {
+            final File certFile = new File(certificate);
+            if (certFile.exists()) {
+                try (final FileInputStream certStream = new FileInputStream(certFile)) {
+                    certData = new byte[(int) certFile.length()];
+                    if (certStream.read(certData) != certData.length) {
+                        throw new AzureToolkitRuntimeException("Unable to process certificate: stream longer than informed size.");
+                    }
+                }
+            }
+        }
+        return new String(certData);
     }
 
     @Override
