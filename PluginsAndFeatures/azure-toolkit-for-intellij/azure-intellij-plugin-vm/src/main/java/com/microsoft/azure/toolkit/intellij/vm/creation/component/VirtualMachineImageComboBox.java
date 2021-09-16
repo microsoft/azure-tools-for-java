@@ -44,14 +44,14 @@ public class VirtualMachineImageComboBox extends AzureComboBox<AzureImage> {
         }
     }
 
-    @Nullable
-    @Override
-    protected Icon getItemIcon(Object item) {
-        if(item instanceof AzureImage){
-            return ((AzureImage) item).getOperatingSystem() == OperatingSystem.Linux ? AllIcons.RunConfigurations.Wsl : AllIcons.Gutter.Colors;
-        }
-        return super.getItemIcon(item);
-    }
+//    @Nullable
+//    @Override
+//    protected Icon getItemIcon(Object item) {
+//        if(item instanceof AzureImage){
+//            return ((AzureImage) item).getOperatingSystem() == OperatingSystem.Linux ? AllIcons.RunConfigurations.Wsl : AllIcons.Gutter.Colors;
+//        }
+//        return super.getItemIcon(item);
+//    }
 
     @Nonnull
     @Override
