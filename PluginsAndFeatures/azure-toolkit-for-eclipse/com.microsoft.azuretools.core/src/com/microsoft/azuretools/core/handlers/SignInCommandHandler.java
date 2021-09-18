@@ -30,6 +30,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.core.ui.DeviceLoginWindow;
 import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.ui.ServicePrincipalLoginDialog;
 import com.microsoft.azuretools.core.ui.SignInDialog;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
@@ -131,8 +132,11 @@ public class SignInCommandHandler extends AzureAbstractHandler {
 
         AuthConfiguration auth = dialog.getData();
         if (auth.getType() == AuthType.SERVICE_PRINCIPAL) {
-            // TODO: add sp login
-            throw new UnsupportedOperationException("SP login doesn't support");
+            ServicePrincipalLoginDialog servicePrincipalLoginDialog = new ServicePrincipalLoginDialog(parentShell);
+            if (servicePrincipalLoginDialog.open() == Window.CANCEL) {
+                throw new InterruptedException("user cancel");
+            }
+            auth = servicePrincipalLoginDialog.getModel();
         }
         return auth;
     }
