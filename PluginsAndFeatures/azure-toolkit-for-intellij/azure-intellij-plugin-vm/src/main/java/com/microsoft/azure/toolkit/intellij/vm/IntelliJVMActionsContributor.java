@@ -20,9 +20,6 @@ import java.util.function.BiPredicate;
 
 public class IntelliJVMActionsContributor implements IActionsContributor {
     // todo: Implement action contributor for vm and migrate explorer tree from utils
-
-
-
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<Object, AnActionEvent> createCondition = (r, e) -> r instanceof AzureVirtualMachine;

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.vm.creation;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -177,7 +182,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         cbResourceGroup.addItemListener(this::onResourceGroupChanged);
         cbVirtualNetwork.addItemListener(this::onNetworkChanged);
         cbImage.addItemListener(this::onImageChanged);
-        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate, project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
+                project, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         unifyComponentsStyle();
     }
 
@@ -481,6 +487,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         return rootPane;
     }
 
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
     }
 }
