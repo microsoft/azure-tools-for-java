@@ -77,14 +77,6 @@
                   <text value="Virtual machine name:"/>
                 </properties>
               </component>
-              <component id="6cb6d" class="javax.swing.JTextField" binding="txtVisualMachineName">
-                <constraints>
-                  <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties/>
-              </component>
               <component id="b85ab" class="javax.swing.JLabel" binding="lblRegion">
                 <constraints>
                   <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
@@ -157,17 +149,8 @@
                   <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <labelFor value="cdc72"/>
                   <text value="User name:"/>
                 </properties>
-              </component>
-              <component id="cdc72" class="javax.swing.JTextField" binding="txtUserName">
-                <constraints>
-                  <grid row="11" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties/>
               </component>
               <component id="73157" class="javax.swing.JLabel" binding="lblPassword">
                 <constraints>
@@ -250,7 +233,19 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="11e1a" class="javax.swing.JPasswordField" binding="txtPassword">
+              <component id="feea" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtVisualMachineName" custom-create="true">
+                <constraints>
+                  <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="944f4" class="com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput" binding="txtUserName" custom-create="true">
+                <constraints>
+                  <grid row="11" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="b5512" class="javax.swing.JPasswordField" binding="txtPassword" custom-create="true">
                 <constraints>
                   <grid row="12" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
@@ -258,7 +253,7 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="31b98" class="javax.swing.JPasswordField" binding="txtConfirmPassword">
+              <component id="19b45" class="javax.swing.JPasswordField" binding="txtConfirmPassword" custom-create="true">
                 <constraints>
                   <grid row="13" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>

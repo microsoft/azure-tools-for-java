@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -17,7 +18,9 @@ import javax.swing.event.DocumentListener;
 public class AzurePasswordFieldInput implements AzureFormInputComponent<String> {
 
     private JPasswordField delegate;
-
+    @Getter
+    @Setter
+    private boolean required;
     @Getter
     private boolean passwordInitialized;
 
