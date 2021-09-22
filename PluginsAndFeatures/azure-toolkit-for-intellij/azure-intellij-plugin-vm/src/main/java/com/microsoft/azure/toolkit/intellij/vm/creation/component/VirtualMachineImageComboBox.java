@@ -14,13 +14,10 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureImage;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
-import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
 import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

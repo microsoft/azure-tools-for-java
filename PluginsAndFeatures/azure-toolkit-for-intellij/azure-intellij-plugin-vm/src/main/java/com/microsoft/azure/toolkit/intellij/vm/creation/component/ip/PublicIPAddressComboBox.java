@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.compute.AzureResourceDraft;
 import com.microsoft.azure.toolkit.lib.compute.ip.AzurePublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.DraftPublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.PublicIpAddress;
-import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
