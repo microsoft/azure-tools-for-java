@@ -7,8 +7,10 @@ package com.microsoft.azure.toolkit.intellij.vm.creation.component.ip;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.applicationinsights.web.dependencies.apachecommons.lang3.StringUtils;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -18,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.compute.AzureResourceDraft;
 import com.microsoft.azure.toolkit.lib.compute.ip.AzurePublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.DraftPublicIpAddress;
 import com.microsoft.azure.toolkit.lib.compute.ip.PublicIpAddress;
-import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -27,6 +28,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,9 +37,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
     public static final PublicIpAddress NONE = new DraftPublicIpAddress("null", "null", "None");
 
     private Subscription subscription;
-    @Setter
     private ResourceGroup resourceGroup;
-    @Setter
     private Region region;
     private DraftPublicIpAddress draftPublicIpAddress;
 
@@ -55,7 +55,18 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
             return;
         }
         this.subscription = subscription;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setSubscriptionId(subscription.getId()));
         this.refreshItems();
+    }
+
+    public void setResourceGroup(ResourceGroup resourceGroup) {
+        this.resourceGroup = resourceGroup;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setResourceGroup(resourceGroup.getName()));
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+        Optional.ofNullable(draftPublicIpAddress).ifPresent(draftNetwork -> draftNetwork.setRegion(region));
     }
 
     @Override
@@ -69,9 +80,12 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
     public void setValue(PublicIpAddress address) {
         if (address == null) {
             super.setValue(NONE);
-        } else {
-            super.setValue(address);
+            return;
         }
+        if (address instanceof DraftPublicIpAddress && StringUtils.equals(address.status(), IAzureBaseResource.Status.DRAFT)) {
+            draftPublicIpAddress = (DraftPublicIpAddress) address;
+        }
+        super.setValue(address);
     }
 
     @Nonnull

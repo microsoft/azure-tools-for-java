@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.intellij.icons.AllIcons;
@@ -9,13 +14,10 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureImage;
 import com.microsoft.azure.toolkit.lib.compute.vm.AzureVirtualMachine;
-import com.microsoft.azure.toolkit.lib.compute.vm.model.OperatingSystem;
 import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,15 +46,6 @@ public class VirtualMachineImageComboBox extends AzureComboBox<AzureImage> {
         }
     }
 
-    @Nullable
-    @Override
-    protected Icon getItemIcon(Object item) {
-        if(item instanceof AzureImage){
-            return ((AzureImage) item).getOperatingSystem() == OperatingSystem.Linux ? AllIcons.RunConfigurations.Wsl : AllIcons.Gutter.Colors;
-        }
-        return super.getItemIcon(item);
-    }
-
     @Nonnull
     @Override
     protected List<? extends AzureImage> loadItems() throws Exception {
@@ -62,6 +55,6 @@ public class VirtualMachineImageComboBox extends AzureComboBox<AzureImage> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof AzureImage ? String.format("%s %s", ((AzureImage) item).offer(), ((AzureImage) item).sku()) : super.getItemText(item);
+        return item instanceof AzureImage ? String.format("%s %s", ((AzureImage) item).getOffer(), ((AzureImage) item).getSku()) : super.getItemText(item);
     }
 }

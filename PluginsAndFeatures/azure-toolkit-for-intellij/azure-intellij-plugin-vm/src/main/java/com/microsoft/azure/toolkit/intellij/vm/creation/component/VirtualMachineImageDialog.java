@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -99,6 +104,7 @@ public class VirtualMachineImageDialog extends AzureDialog<AzureImage> implement
         cbPublisher.refreshItems();
     }
 
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     private void $$$setupUI$$$() {
     }
 }

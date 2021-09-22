@@ -376,9 +376,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     // unregistered all event handlers recursively and remove
                     // child nodes from the tree
                     for (Node childNode : (Collection<Node>) e.getOldItems()) {
-                        removeEventHandlers(childNode);
-
+                        if (isOutdatedModule(childNode)) {
+                            continue;
+                        }
                         // remove this node from the tree
+                        removeEventHandlers(childNode);
                         treeNode.remove((MutableTreeNode) childNode.getViewData());
                     }
                     break;
