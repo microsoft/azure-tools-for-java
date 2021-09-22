@@ -24,14 +24,14 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
-import com.microsoft.intellij.actions.SelectSubscriptionsAction;
-import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.CollectionUtils;
@@ -44,6 +44,9 @@ import reactor.core.scheduler.Schedulers;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +145,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     }
 
     private void createUIComponents() {
+        contentPane = new JPanel();
+        contentPane.setPreferredSize(new Dimension(350, 200));
+
         DefaultTableModel model = new SubscriptionTableModel();
         model.addColumn("Selected"); // Set the text read by JAWS
         model.addColumn("Subscription name");
@@ -156,7 +162,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN);
         table.getTableHeader().setReorderingAllowed(false);
         new TableSpeedSearch(table);
-
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -176,7 +181,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
                 AzureTaskManager.getInstance().runInBackground(task);
             }
         };
-
+        refreshAction.registerCustomShortcutSet(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK, contentPane);
         ToolbarDecorator tableToolbarDecorator =
             ToolbarDecorator.createDecorator(table)
                 .disableUpDownActions()
