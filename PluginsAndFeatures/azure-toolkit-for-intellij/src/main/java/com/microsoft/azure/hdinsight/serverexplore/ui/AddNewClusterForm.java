@@ -16,7 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.HideableTitledPanel;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
@@ -35,14 +35,16 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
-import com.microsoft.intellij.ui.HintTextField;
+import com.microsoft.intellij.ui.AccessibleHideableTitledPanel;
 import com.microsoft.intellij.ui.ErrorTextArea;
+import com.microsoft.intellij.ui.HintTextField;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import javax.swing.FocusManager;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.*;
@@ -92,7 +94,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JPanel authErrorDetailsPanel;
     protected JLabel linkResourceTypeLabel;
     private JPanel azureAccountCard;
-    protected HideableDecorator authErrorDetailsDecorator;
+    protected HideableTitledPanel authErrorDetailsDecorator;
     protected ConsoleViewImpl consoleViewPanel;
     @NotNull
     private RefreshableNode hdInsightModule;
@@ -119,11 +121,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         this.setTitle("Link A Cluster");
 
         // Make error message widget hideable
+        authErrorDetailsPanel = new JPanel(new BorderLayout());
         authErrorDetailsPanel.setBorder(BorderFactory.createEmptyBorder());
-        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder,
-                                                          "Authentication Error Details:", true);
-        authErrorDetailsDecorator.setContentComponent(authErrorDetailsPanel);
-        authErrorDetailsDecorator.setOn(false);
 
         // Initialize console view panel
         consoleViewPanel = new ConsoleViewImpl(project, false);
@@ -131,6 +130,15 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("linkClusterLog",
                 new DefaultActionGroup(consoleViewPanel.createConsoleActions()), false);
         authErrorDetailsPanel.add(toolbar.getComponent(), BorderLayout.WEST);
+
+        authErrorDetailsDecorator = new AccessibleHideableTitledPanel(
+                "Authentication Error Details:",
+                authErrorDetailsPanel,
+                true,
+                false
+        );
+
+        authErrorDetailsPanelHolder.add(authErrorDetailsDecorator);
 
         authComboBox.setModel(authOpsForHdiCluster);
         authComboBox.setRenderer(
