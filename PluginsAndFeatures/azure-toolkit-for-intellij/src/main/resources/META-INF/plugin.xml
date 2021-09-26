@@ -49,7 +49,7 @@
   <idea-version since-build="202.6397.94" until-build="202.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends optional="true" config-file="withScala.xml">org.intellij.scala</depends>
+  <depends optional="true">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
