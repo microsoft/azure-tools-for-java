@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.mysql.creation;
 
+import com.microsoft.azure.toolkit.intellij.common.component.SupportedRegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -71,7 +72,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         passwordFieldInput = PasswordUtils.generatePasswordFieldInput(this.passwordField, this.adminUsernameTextField);
         confirmPasswordFieldInput = PasswordUtils.generateConfirmPasswordFieldInput(this.confirmPasswordField, this.passwordField);
         regionComboBox.setValidateFunction(new MySQLRegionValidator());
-        regionComboBox.setLoader(sid -> Azure.az(AzureMySql.class).listSupportedRegions(sid));
+        regionComboBox.setLoader(sid -> SupportedRegionComboBox.loadSupportedRegions(Azure.az(AzureMySql.class), sid));
         serverNameTextField.setSubscriptionId(config.getSubscription().getId());
         serverNameTextField.setMinLength(3);
         serverNameTextField.setMaxLength(63);

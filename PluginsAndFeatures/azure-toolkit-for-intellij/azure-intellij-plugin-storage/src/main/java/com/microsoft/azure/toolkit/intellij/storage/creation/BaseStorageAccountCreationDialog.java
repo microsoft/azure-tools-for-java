@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
+import com.microsoft.azure.toolkit.intellij.common.component.SupportedRegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.storage.component.AccountNameTextField;
 import com.microsoft.azure.toolkit.intellij.storage.component.KindComboBox;
@@ -17,7 +18,6 @@ import com.microsoft.azure.toolkit.intellij.storage.component.RedundancyComboBox
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
@@ -25,13 +25,13 @@ import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccountConfig> implements AzureForm<StorageAccountConfig> {
@@ -153,13 +153,6 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
     }
 
     private void createUIComponents() {
-        this.regionComboBox = new RegionComboBox() {
-            protected List<? extends Region> loadItems() {
-                if (Objects.nonNull(this.subscription)) {
-                    return Azure.az(AzureStorageAccount.class).listSupportedRegions(subscription.getId());
-                }
-                return Collections.emptyList();
-            }
-        };
+        this.regionComboBox = new SupportedRegionComboBox(Azure.az(AzureStorageAccount.class));
     }
 }

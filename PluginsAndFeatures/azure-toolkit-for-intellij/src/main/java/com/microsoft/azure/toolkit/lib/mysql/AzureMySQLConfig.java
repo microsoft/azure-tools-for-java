@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.lib.mysql;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.toolkit.intellij.common.DraftResourceGroup;
+import com.microsoft.azure.toolkit.intellij.common.component.SupportedRegionComboBox;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -51,8 +52,7 @@ public class AzureMySQLConfig {
         config.setSubscription(subscription);
         final DraftResourceGroup resourceGroup = new DraftResourceGroup(subscription, "rs-" + defaultNameSuffix);
         config.setResourceGroup(resourceGroup);
-        final AzureMySql azureMySql = az(AzureMySql.class).subscription(subscription.getId());
-        final List<Region> supportedRegions = azureMySql.listSupportedRegions();
+        final List<? extends Region> supportedRegions = SupportedRegionComboBox.loadSupportedRegions(az(AzureMySql.class), subscription.getId());
         if (CollectionUtils.isNotEmpty(supportedRegions)) {
             config.setRegion(supportedRegions.get(0));
         }
