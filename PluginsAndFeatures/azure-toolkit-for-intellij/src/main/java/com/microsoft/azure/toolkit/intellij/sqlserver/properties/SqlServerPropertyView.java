@@ -38,6 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -282,7 +283,13 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         overview.getServerNameTextField().setCaretPosition(0);
         overview.getServerAdminLoginNameTextField().setText(entity.getAdministratorLoginName() + "@" + entity.getName());
         overview.getServerAdminLoginNameTextField().setCaretPosition(0);
-        overview.getVersionTextField().setText(entity.getVersion());
+        //TODO(andxu): remove legacy code to show version
+        try {
+            final String versionText = ((com.azure.resourcemanager.sql.models.SqlServer) FieldUtils.readField(entity, "remote", true)).version();
+            overview.getVersionTextField().setText(versionText);
+        } catch (Throwable ex) {
+            //ignore
+        }
         if ("Ready".equals(entity.getState())) {
             List<FirewallRuleEntity> firewallRules = property.getFirewallRules();
             originalAllowAccessToAzureServices = firewallRules.stream()
