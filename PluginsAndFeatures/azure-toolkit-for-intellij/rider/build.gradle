@@ -100,7 +100,7 @@ task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 
-    jvmArgs '--illegal-access=warn'
+    jvmArgs '--illegal-access=warn', '-Didea.force.use.core.classloader=true'
 
     testLogging {
         showStandardStreams = true

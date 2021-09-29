@@ -32,8 +32,8 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.applyToComponent
 import com.intellij.ui.layout.panel
+import com.intellij.util.application
 import com.intellij.util.ui.UIUtil
-import com.jetbrains.rd.platform.util.application
 import com.microsoft.azuretools.authmanage.AuthMethod
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail

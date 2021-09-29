@@ -6,13 +6,7 @@
     <html>
         <h4>Added:</h4>
         <ul>
-          <li>Compatibility with Rider 2021.2 EAP 9</li>
-        </ul>
-        <h4>Fixed:</h4>
-        <ul>
-          <li>Failures on trying to login to Azure account (<a href="https://youtrack.jetbrains.com/issue/RIDER-65794">RIDER-65794</a>)</li>
-          <li>Azure Functions - Hide "Use external console for Isolated worker (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/504">#504</a>)</li>
-          <li>Unable to login through Settings | Tools | Azure | Service Authentication (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/518">#518</a>)</li>
+          <li>Compatibility with Rider 2021.3 EAP1</li>
         </ul>
     </html>
     ]]>

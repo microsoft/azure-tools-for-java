@@ -26,8 +26,8 @@ import com.intellij.ide.browsers.WebBrowserReferenceConverter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
+import com.intellij.util.application
 import com.intellij.util.xmlb.annotations.Attribute
-import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution

@@ -8,10 +8,11 @@ package com.microsoft.intellij.ui.libraries;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.impl.ModuleLibraryOrderEntryImpl;
+import com.intellij.openapi.roots.impl.OrderEntryUtil;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
@@ -110,21 +111,25 @@ public class LibrariesConfigurationDialog extends AzureDialogWrapper {
             try {
                 final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
                 for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-                    if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                            && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                        AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(message(
-                            "error"), message("libraryExistsError")));
-                        return;
+                    if (orderEntry instanceof LibraryOrderEntry && OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry)) {
+                        final LibraryOrderEntry libraryEntry = (LibraryOrderEntry)orderEntry;
+                        if (azureLibrary.getName().equals(libraryEntry.getLibraryName())) {
+                            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(message(
+                                "error"), message("libraryExistsError")));
+                            return;
+                        }
                     }
                 }
 
                 Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(azureLibrary.getName(), level, new ArrayList<OrderRoot>());
                 if (model.isExported()) {
                     for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-                        if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                                && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                            ((ModuleLibraryOrderEntryImpl) orderEntry).setExported(true);
-                            break;
+                        if (orderEntry instanceof LibraryOrderEntry && OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry)) {
+                            final LibraryOrderEntry libraryEntry = (LibraryOrderEntry)orderEntry;
+                            if (azureLibrary.getName().equals(libraryEntry.getLibraryName())) {
+                                libraryEntry.setExported(true);
+                                break;
+                            }
                         }
                     }
                 }
@@ -170,21 +175,23 @@ public class LibrariesConfigurationDialog extends AzureDialogWrapper {
         final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         OrderEntry libraryOrderEntry = null;
         for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-            if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                    && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                libraryOrderEntry = orderEntry;
-                break;
+            if (orderEntry instanceof LibraryOrderEntry && OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry)) {
+                final LibraryOrderEntry libraryEntry = (LibraryOrderEntry)orderEntry;
+                if (azureLibrary.getName().equals(libraryEntry.getLibraryName())) {
+                    libraryOrderEntry = orderEntry;
+                    break;
+                }
             }
         }
         if (libraryOrderEntry != null) {
             LibraryPropertiesPanel libraryPropertiesPanel = new LibraryPropertiesPanel(module, azureLibrary, true,
-                    ((ModuleLibraryOrderEntryImpl) libraryOrderEntry).isExported());
+                    ((LibraryOrderEntry) libraryOrderEntry).isExported());
             DefaultDialogWrapper libraryProperties = new DefaultDialogWrapper(module.getProject(), libraryPropertiesPanel);
             libraryProperties.show();
             if (libraryProperties.isOK()) {
                 AccessToken token = WriteAction.start();
                 try {
-                    ((ModuleLibraryOrderEntryImpl) libraryOrderEntry).setExported(libraryPropertiesPanel.isExported());
+                    ((LibraryOrderEntry) libraryOrderEntry).setExported(libraryPropertiesPanel.isExported());
                     modifiableModel.commit();
                 } finally {
                     token.finish();

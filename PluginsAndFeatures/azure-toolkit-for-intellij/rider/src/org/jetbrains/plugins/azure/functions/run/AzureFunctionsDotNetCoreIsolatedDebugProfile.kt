@@ -160,11 +160,10 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         processListeners.filterNotNull().forEach { targetProcessHandler.addProcessListener(it) }
 
         console = createConsole(
-                external = false,
+                consoleKind = ConsoleKind.Normal,
                 processHandler = targetProcessHandler,
-                commandLineString = commandLine.commandLineString,
-                project = executionEnvironment.project
-        )
+                project = executionEnvironment.project)
+
         if (dotNetExecutable.useExternalConsole) {
             logger.debug("Ignoring for isolated worker: dotNetExecutable.useExternalConsole=${dotNetExecutable.useExternalConsole}")
             console.print(RiderAzureBundle.message("run_config.run_function_app.debug.ignore.externalconsole") + System.lineSeparator(),

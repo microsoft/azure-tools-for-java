@@ -37,7 +37,9 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
 
     private val pluginRepo: URI
         get() {
-            val url = if (plugin.url.endsWith("/")) plugin.url else plugin.url + "/"
+            val pluginUrl = plugin.url ?: return URI.create("https://localhost/")
+
+            val url = if (pluginUrl.endsWith("/")) pluginUrl else pluginUrl + "/"
 
             return URI.create(url)
         }

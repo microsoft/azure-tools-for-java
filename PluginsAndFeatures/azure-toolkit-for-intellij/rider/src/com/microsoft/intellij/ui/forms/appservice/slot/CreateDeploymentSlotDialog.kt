@@ -27,7 +27,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ValidationInfo
-import com.jetbrains.rd.platform.util.application
+import com.intellij.util.application
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rd.util.threading.SpinWait

@@ -68,7 +68,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
         return if (isFuncX64) DebuggerWorkerPlatform.X64 else DebuggerWorkerPlatform.X86
     }
 
-    override fun startDebuggerWorker(
+    override suspend fun startDebuggerWorker(
             workerCmd: GeneralCommandLine,
             protocolModel: DebuggerWorkerModel,
             protocolServerPort: Int,
@@ -85,9 +85,12 @@ class AzureFunctionsDotNetCoreDebugProfile(
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>, workerProcessHandler: DebuggerWorkerProcessHandler)
             : ExecutionResult {
-        val useExternalConsole = consoleKind == ConsoleKind.ExternalConsole
-        val console = createConsole(useExternalConsole, workerProcessHandler.debuggerWorkerRealHandler,
-                workerProcessHandler.presentableCommandLine, executionEnvironment.project)
+
+        val console = createConsole(
+                consoleKind = consoleKind,
+                processHandler = workerProcessHandler.debuggerWorkerRealHandler,
+                project = executionEnvironment.project)
+
         dotNetExecutable.onBeforeProcessStarted(executionEnvironment.runProfile, workerProcessHandler)
         return DefaultExecutionResult(console, workerProcessHandler)
     }

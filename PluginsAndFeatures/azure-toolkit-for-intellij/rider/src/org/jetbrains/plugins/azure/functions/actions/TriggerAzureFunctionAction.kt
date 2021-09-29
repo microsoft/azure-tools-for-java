@@ -31,7 +31,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import icons.RestClientIcons
+import com.intellij.httpClient.RestClientIcons
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.IOException
 

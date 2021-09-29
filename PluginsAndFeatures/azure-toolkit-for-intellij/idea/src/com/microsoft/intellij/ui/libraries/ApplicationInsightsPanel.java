@@ -9,10 +9,11 @@ import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.impl.ModuleLibraryOrderEntryImpl;
+import com.intellij.openapi.roots.impl.OrderEntryUtil;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
@@ -274,9 +275,11 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private void configureAzureSDK() {
         final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-            if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                    && AzureLibrary.APP_INSIGHTS.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                return;
+            if (orderEntry instanceof LibraryOrderEntry && OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry)) {
+                final LibraryOrderEntry libraryEntry = (LibraryOrderEntry)orderEntry;
+                if (AzureLibrary.APP_INSIGHTS.getName().equals(libraryEntry.getLibraryName())) {
+                    return;
+                }
             }
         }
 
@@ -285,10 +288,12 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
         try {
             Library newLibrary = LibrariesContainerFactory.createContainer(modifiableModel).createLibrary(AzureLibrary.APP_INSIGHTS.getName(), level, new ArrayList<OrderRoot>());
             for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-                if (orderEntry instanceof ModuleLibraryOrderEntryImpl
-                        && AzureLibrary.APP_INSIGHTS.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                    ((ModuleLibraryOrderEntryImpl) orderEntry).setExported(true);
-                    break;
+                if (orderEntry instanceof LibraryOrderEntry && OrderEntryUtil.isModuleLibraryOrderEntry(orderEntry)) {
+                    final LibraryOrderEntry libraryEntry = (LibraryOrderEntry)orderEntry;
+                    if (AzureLibrary.APP_INSIGHTS.getName().equals(libraryEntry.getLibraryName())) {
+                        libraryEntry.setExported(true);
+                        break;
+                    }
                 }
             }
             Library.ModifiableModel newLibraryModel = newLibrary.getModifiableModel();

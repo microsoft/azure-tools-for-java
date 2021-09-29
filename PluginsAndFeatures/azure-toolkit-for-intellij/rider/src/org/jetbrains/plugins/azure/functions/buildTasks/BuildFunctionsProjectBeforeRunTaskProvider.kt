@@ -29,13 +29,10 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.Key
-import com.intellij.util.concurrency.Semaphore
-import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.platform.util.getComponent
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.build.tasks.BuildTaskThrottler
-import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.BuildTarget
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfiguration
@@ -87,6 +84,6 @@ class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildFu
             return false
 
         val throttler = BuildTaskThrottler.getInstance(project)
-        return throttler.runBuildWithThrottling(BuildParameters(BuildTarget(), selectedProjectsForBuild)).get()
+        return throttler.runBuildWithThrottling(BuildParameters(BuildTarget(), selectedProjectsForBuild)).get().msBuildStatus
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,7 +25,7 @@ package com.microsoft.intellij.runner.functionapp.model
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
-import com.jetbrains.rd.platform.util.application
+import com.intellij.util.application
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
