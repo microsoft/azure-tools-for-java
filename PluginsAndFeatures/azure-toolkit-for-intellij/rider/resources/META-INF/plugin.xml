@@ -27,6 +27,10 @@
         <ul>
           <li>Compatibility with Rider 2021.3 EAP2</li>
         </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+          <li>Azure Functions debugging support on Apple Silicon / M1 / Rosetta <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/526">#526</a></li>
+        </ul>
         <p>[3.50.1-2021.2]</p>
         <ul>
           <li>Compatibility with Rider 2021.2</li>

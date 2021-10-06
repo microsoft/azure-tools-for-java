@@ -28,20 +28,24 @@ import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.jetbrains.rider.run.DotNetProcessRunProfileState
 import com.jetbrains.rider.run.IDotNetDebugProfileState
+import com.jetbrains.rider.run.dotNetCore.DotNetCoreDebugProfile
 import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.DotNetRuntime
 import com.jetbrains.rider.runtime.RunningAssemblyInfo
 import com.jetbrains.rider.runtime.SuspendedAttachableDotNetRuntime
+import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntimeType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionsWorkerRuntime
 
 class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo, val workerRuntime: FunctionsWorkerRuntime)
     : DotNetRuntime(DotNetCoreRuntimeType), SuspendedAttachableDotNetRuntime {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun createDebugState(dotNetExecutable: DotNetExecutable, executionEnvironment: ExecutionEnvironment) : IDotNetDebugProfileState {
         return when (workerRuntime) {
-            FunctionsWorkerRuntime.DotNetDefault -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable)
+            FunctionsWorkerRuntime.DotNetDefault -> DotNetCoreDebugProfile(DotNetCoreRuntime(coreToolsInfo.coreToolsExecutable), dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable)
             FunctionsWorkerRuntime.DotNetIsolated -> AzureFunctionsDotNetCoreIsolatedDebugProfile(dotNetExecutable, this, executionEnvironment)
         }
     }
