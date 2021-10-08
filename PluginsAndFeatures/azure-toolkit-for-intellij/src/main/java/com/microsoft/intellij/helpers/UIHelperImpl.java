@@ -32,9 +32,6 @@ import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyView;
 import com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCacheExplorerProvider;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyView;
-import com.microsoft.azure.toolkit.intellij.redis.RedisCachePropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyView;
 import com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider;
 import com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider;
@@ -47,7 +44,6 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
@@ -336,57 +332,12 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openRedisPropertyView(@NotNull RedisCacheNode node) {
-        EventUtil.executeWithLog(TelemetryConstants.REDIS, TelemetryConstants.REDIS_READPROP, (operation) -> {
-            String redisName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
-            String sid = node.getSubscriptionId();
-            String resId = node.getResourceId();
-            if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-                return;
-            }
-            Project project = (Project) node.getProject();
-            FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-            if (fileEditorManager == null) {
-                showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-                return;
-            }
-            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                                                                  RedisCachePropertyViewProvider.TYPE, resId);
-            if (itemVirtualFile == null) {
-                itemVirtualFile = createVirtualFile(redisName, sid, resId);
-                itemVirtualFile.setFileType(
-                        new AzureFileType(RedisCachePropertyViewProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
-            }
-            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
-            for (FileEditor editor : editors) {
-                if (editor.getName().equals(RedisCachePropertyView.ID) &&
-                    editor instanceof RedisCachePropertyView) {
-                    ((RedisCachePropertyView) editor).onReadProperty(sid, resId);
-                }
-            }
-        });
+        throw new UnsupportedOperationException("this method should not be called");
     }
 
     @Override
     public void openRedisExplorer(RedisCacheNode redisCacheNode) {
-        String redisName = redisCacheNode.getName() != null ? redisCacheNode.getName() : RedisCacheNode.TYPE;
-        String sid = redisCacheNode.getSubscriptionId();
-        String resId = redisCacheNode.getResourceId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
-        }
-        Project project = (Project) redisCacheNode.getProject();
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, sid, resId);
-            itemVirtualFile.setFileType(new AzureFileType(RedisCacheExplorerProvider.TYPE, AzureIconLoader.loadIcon(AzureIconSymbol.RedisCache.MODULE)));
-
-        }
-        fileEditorManager.openFile(itemVirtualFile, true, true);
+        throw new UnsupportedOperationException("this method should not be called");
     }
 
     @Override

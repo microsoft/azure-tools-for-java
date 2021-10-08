@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.redis;
+package com.microsoft.azure.toolkit.intellij.redis.creation;
 
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
@@ -24,15 +24,12 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
-import com.microsoft.azure.toolkit.redis.PricingTier;
-import com.microsoft.azure.toolkit.redis.RedisConfig;
+import com.microsoft.azure.toolkit.redis.model.PricingTier;
+import com.microsoft.azure.toolkit.redis.model.RedisConfig;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.annotation.Nullable;
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -73,7 +70,8 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     }
 
     @Override
-    protected @Nullable JComponent createCenterPanel() {
+    @Nullable
+    protected JComponent createCenterPanel() {
         return panel;
     }
 
@@ -110,7 +108,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
             final CheckNameAvailabilityResultEntity resultEntity =
                     Azure.az(AzureRedis.class).checkNameAvailability(subscriptionComboBox.getValue().getId(), name);
             if (!resultEntity.isAvailable()) {
-                String message = resultEntity.getUnavailabilityReason();
+                final String message = resultEntity.getUnavailabilityReason();
                 throw new AzureToolkitRuntimeException(message);
             }
         }
@@ -145,7 +143,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
 
     @Override
     public RedisConfig getData() {
-        RedisConfig config = new RedisConfig();
+        final RedisConfig config = new RedisConfig();
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setName(redisNameTextField.getText());
@@ -168,11 +166,11 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            this.subscriptionComboBox,
-            this.resourceGroupComboBox,
-            this.redisNameTextField,
-            this.pricingComboBox,
-            this.regionComboBox
+                this.subscriptionComboBox,
+                this.resourceGroupComboBox,
+                this.redisNameTextField,
+                this.pricingComboBox,
+                this.regionComboBox
         };
         return Arrays.asList(inputs);
     }

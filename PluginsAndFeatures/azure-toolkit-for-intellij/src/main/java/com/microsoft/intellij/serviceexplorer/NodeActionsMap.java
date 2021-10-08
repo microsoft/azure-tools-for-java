@@ -29,7 +29,6 @@ import com.microsoft.azure.toolkit.intellij.arm.action.ExportParameterAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.ExportTemplateAction;
 import com.microsoft.azure.toolkit.intellij.arm.action.UpdateDeploymentAction;
 import com.microsoft.azure.toolkit.intellij.webapp.docker.action.PushToContainerRegistryAction;
-import com.microsoft.azure.toolkit.intellij.redis.action.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
@@ -46,7 +45,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionA
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.sqlserver.SqlServerNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -73,8 +71,6 @@ public class NodeActionsMap {
                 .add(CreateQueueAction.class).build());
         NODE_ACTIONS.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateTableAction.class).build());
-        NODE_ACTIONS.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateRedisCacheAction.class).build());
         NODE_ACTIONS.put(WebAppModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateWebAppAction.class).build());
         NODE_ACTIONS.put(FunctionModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()

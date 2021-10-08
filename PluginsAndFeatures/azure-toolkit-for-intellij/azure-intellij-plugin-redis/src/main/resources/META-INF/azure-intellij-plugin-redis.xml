@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.redis.RedisExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.redis.RedisActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.redis.IntellijRedisActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.redis.property.RedisCachePropertiesEditorProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.redis.explorer.RedisCacheExplorerProvider"/>
+    </extensions>
+</idea-plugin>

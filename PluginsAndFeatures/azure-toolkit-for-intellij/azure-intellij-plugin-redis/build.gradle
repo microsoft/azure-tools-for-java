@@ -1,0 +1,12 @@
+intellij {
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-resource-connector-lib')
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:0.13.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-redis-lib:0.13.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.13.0-SNAPSHOT'
+    compile 'com.microsoft.azure:azure-toolkit-ide-redis-lib:0.13.0-SNAPSHOT'
+    compile 'redis.clients:jedis:3.6.3'
+}
