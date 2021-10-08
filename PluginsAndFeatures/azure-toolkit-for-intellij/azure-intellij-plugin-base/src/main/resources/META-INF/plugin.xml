@@ -33,6 +33,12 @@
   <xi:include href="/META-INF/azure-intellij-plugin-service-explorer.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-springcloud.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-storage.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-redis.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+  <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+    <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.LegacyIntellijActionsContributor"/>
+  </extensions>
+
   <applicationListeners>
     <listener class="com.microsoft.azure.toolkit.intellij.base.PluginLifeCycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
   </applicationListeners>
