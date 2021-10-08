@@ -5,10 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
+import com.intellij.openapi.application.PreloadingActivity;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -16,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.service.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,5 +65,12 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     @Override
     public AzureFormJPanel<StorageAccount> getResourcePanel(Project project) {
         return new StorageAccountResourcePanel();
+    }
+
+    public static class RegisterActivity extends PreloadingActivity {
+        @Override
+        public void preload(@NotNull ProgressIndicator progressIndicator) {
+            ResourceManager.registerDefinition(INSTANCE);
+        }
     }
 }
