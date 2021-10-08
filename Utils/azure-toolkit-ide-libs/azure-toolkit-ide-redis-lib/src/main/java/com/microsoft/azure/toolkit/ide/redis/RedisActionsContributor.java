@@ -26,9 +26,10 @@ public class RedisActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 "---",
-                ResourceCommonActionsContributor.REFRESH,
+                ResourceCommonActionsContributor.CONNECT,
+                ResourceCommonActionsContributor.DELETE,
                 "---",
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.REFRESH
         );
         am.registerGroup(REDIS_ACTIONS, accountActionGroup);
     }

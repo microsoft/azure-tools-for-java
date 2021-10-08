@@ -47,8 +47,9 @@ public class StorageActionsContributor implements IActionsContributor {
                 StorageActionsContributor.OPEN_STORAGE_EXPLORER,
                 "---",
                 ResourceCommonActionsContributor.CONNECT,
+                ResourceCommonActionsContributor.DELETE,
                 "---",
-                ResourceCommonActionsContributor.DELETE
+                ResourceCommonActionsContributor.REFRESH
         );
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
     }
