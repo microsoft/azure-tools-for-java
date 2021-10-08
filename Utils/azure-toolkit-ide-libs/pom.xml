@@ -39,6 +39,7 @@
         <module>azure-toolkit-ide-springcloud-lib</module>
         <module>azure-toolkit-ide-storage-lib</module>
         <module>azure-toolkit-ide-vm-lib</module>
+        <module>azure-toolkit-ide-redis-lib</module>
     </modules>
 
     <properties>
@@ -63,6 +64,16 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-springcloud-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-storage-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-redis-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
