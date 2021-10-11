@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -35,15 +35,17 @@ object FunctionsCoreToolsInfoProvider {
     private val logger = Logger.getInstance(FunctionsCoreToolsInfoProvider::class.java)
 
     fun retrieve(): FunctionsCoreToolsInfo? {
-        val funcCoreToolsPath = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
-        if (funcCoreToolsPath.isNullOrEmpty() || !File(funcCoreToolsPath).exists()) {
+        val funcCoreToolsPathSetting = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
+        if (funcCoreToolsPathSetting.isNullOrEmpty() || !File(funcCoreToolsPathSetting).exists()) {
             return null
         }
 
+        val funcCoreToolsPath = patchCoreToolsPath(File(funcCoreToolsPathSetting))
+
         val coreToolsExecutablePath = if (SystemInfo.isWindows) {
-            File(funcCoreToolsPath).resolve("func.exe")
+            funcCoreToolsPath.resolve("func.exe")
         } else {
-            File(funcCoreToolsPath).resolve("func")
+            funcCoreToolsPath.resolve("func")
         }
 
         if (!coreToolsExecutablePath.exists()) {
@@ -59,7 +61,31 @@ object FunctionsCoreToolsInfoProvider {
             }
         }
 
-        return FunctionsCoreToolsInfo(funcCoreToolsPath, coreToolsExecutablePath.path)
+        return FunctionsCoreToolsInfo(funcCoreToolsPath.path, coreToolsExecutablePath.path)
+    }
+
+    fun patchCoreToolsPath(funcCoreToolsPath: File): File {
+
+        if (!SystemInfo.isWindows) return funcCoreToolsPath
+
+        // Chocolatey and NPM have shim executables that are not .NET (and not debuggable).
+        // If it's a Chocolatey install or NPM install, rewrite the path to the tools path
+        // where the func executable is located.
+        //
+        // Logic is similar to com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionCliResolver.resolveFunc()
+        val chocolateyCoreToolsPath = funcCoreToolsPath.resolve("..").resolve("lib").resolve("azure-functions-core-tools").resolve("tools").normalize()
+        if (chocolateyCoreToolsPath.exists()) {
+            logger.info("Functions core tools path ${funcCoreToolsPath.path} is Chocolatey-installed. Rewriting path to ${chocolateyCoreToolsPath.path}")
+            return chocolateyCoreToolsPath
+        }
+
+        val npmCoreToolsPath = funcCoreToolsPath.resolve("..").resolve("node_modules").resolve("azure-functions-core-tools").resolve("bin").normalize()
+        if (npmCoreToolsPath.exists()) {
+            logger.info("Functions core tools path ${funcCoreToolsPath.path} is NPM-installed. Rewriting path to ${npmCoreToolsPath.path}")
+            return npmCoreToolsPath
+        }
+
+        return funcCoreToolsPath
     }
 
     fun detectFunctionCoreToolsPath(): String? {
