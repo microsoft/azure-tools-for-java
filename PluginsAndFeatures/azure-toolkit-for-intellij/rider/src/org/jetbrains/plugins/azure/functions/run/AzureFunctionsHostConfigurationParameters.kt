@@ -71,17 +71,17 @@ open class AzureFunctionsHostConfigurationParameters(
         var functionNames: String,
         var startBrowserParameters: DotNetStartBrowserParameters
 ) : DotNetExeConfigurationParameters(
-        project,
-        exePath,
-        programParameters,
-        workingDirectory,
-        envs,
-        isPassParentEnvs,
-        useExternalConsole,
-        false,
-        false,
-        null,
-        ""
+        project = project,
+        exePath = exePath,
+        programParameters = programParameters,
+        workingDirectory = workingDirectory,
+        envs = envs,
+        isPassParentEnvs = isPassParentEnvs,
+        useExternalConsole = useExternalConsole,
+        executeAsIs = false,
+        assemblyToDebug = null,
+        runtimeArguments = "",
+        runtimeType = null
 ) {
 
     companion object {

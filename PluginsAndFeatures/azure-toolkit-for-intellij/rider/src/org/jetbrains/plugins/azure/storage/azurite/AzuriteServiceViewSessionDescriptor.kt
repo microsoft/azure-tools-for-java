@@ -66,8 +66,8 @@ class AzuriteServiceViewSessionDescriptor(private val project: Project)
             .createBuilder(project).apply { setViewer(true) }.console
 
     init {
-        Disposer.register(project, consoleView)
         Disposer.register(project, this)
+        Disposer.register(project, consoleView)
     }
 
     protected val panel = createEmptyComponent()

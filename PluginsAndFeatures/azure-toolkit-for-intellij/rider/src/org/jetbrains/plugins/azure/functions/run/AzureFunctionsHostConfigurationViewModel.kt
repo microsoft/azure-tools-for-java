@@ -54,16 +54,17 @@ class AzureFunctionsHostConfigurationViewModel(
         val urlEditor: TextEditor,
         val dotNetBrowserSettingsEditor: BrowserSettingsEditor
 ) : DotNetExeConfigurationViewModel(
-        lifetime,
-        project,
-        PathSelector("", null, lifetime),
-        programParametersEditor,
-        workingDirectorySelector,
-        environmentVariablesEditor,
-        FlagEditor(""),
-        ProgramParametersEditor("", lifetime),
-        false,
-        useExternalConsoleEditor) {
+        lifetime = lifetime,
+        project = project,
+        exePathSelector = PathSelector("", null, lifetime),
+        programParametersEditor = programParametersEditor,
+        workingDirectorySelector = workingDirectorySelector,
+        environmentVariablesEditor = environmentVariablesEditor,
+        runtimeSelector = RuntimeSelector(""),
+        runtimeArgumentsEditor = ProgramParametersEditor("", lifetime),
+        trackExePathInWorkingDirectoryIfItPossible = false,
+        useExternalConsoleEditor = useExternalConsoleEditor
+) {
 
     override val controls: List<ControlBase> = listOf(
             projectSelector,
@@ -234,14 +235,14 @@ class AzureFunctionsHostConfigurationViewModel(
               dotNetStartBrowserParameters: DotNetStartBrowserParameters) {
         fun resetProperties(exePath: String, programParameters: String, workingDirectory: String, workerRuntimeSupportsExternalConsole: Boolean) {
             super.reset(
-                    exePath,
-                    programParameters,
-                    workingDirectory,
-                    envs,
-                    passParentEnvs,
-                    false,
-                    "",
-                    workerRuntimeSupportsExternalConsole && useExternalConsole
+                    exePath = exePath,
+                    programParameters = programParameters,
+                    workingDirectory = workingDirectory,
+                    envs = envs,
+                    isPassParentEnvs = passParentEnvs,
+                    runtime = null,
+                    runtimeOptions = "",
+                    useExternalConsole = workerRuntimeSupportsExternalConsole && useExternalConsole
             )
         }
 
