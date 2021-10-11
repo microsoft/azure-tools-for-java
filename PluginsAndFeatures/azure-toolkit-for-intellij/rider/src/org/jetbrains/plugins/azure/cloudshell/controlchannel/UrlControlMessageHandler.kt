@@ -33,7 +33,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.AzureNotifications
-import org.jetbrains.plugins.azure.util.WaitForUrl
+import org.jetbrains.plugins.azure.util.WaitForResponse
 
 class UrlControlMessageHandler(
         private val gson: Gson,
@@ -55,7 +55,7 @@ class UrlControlMessageHandler(
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, waitingText, true, PerformInBackgroundOption.DEAF) {
                 override fun run(indicator: ProgressIndicator) {
                     try {
-                        WaitForUrl(message.url).withRetries(30,
+                        WaitForResponse(message.url).withRetries(30,
                                 { attempt, of -> indicator.text = "$waitingText (attempt ${attempt + 1}/$of)" },
                                 { it.code() in 200..400 })
 

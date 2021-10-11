@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -43,6 +43,10 @@ object AzureRiderSettings {
     const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
     const val PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE = "AzureFunctionsCoreToolsAllowPrerelease"
     const val PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES = "AzureFunctionCoreToolsCheckUpdates"
+
+    // Web deploy
+    const val PROPERTY_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_NAME = "AzureDeployCollectArtifactsTimeoutMinutes"
+    const val VALUE_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_DEFAULT = 3
 
     // Azurite
     const val PROPERTY_AZURITE_NODE_INTERPRETER = "AzureAzuriteNodeInterpreter"

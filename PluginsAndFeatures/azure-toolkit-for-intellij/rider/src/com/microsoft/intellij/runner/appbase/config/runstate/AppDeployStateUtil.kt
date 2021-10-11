@@ -25,11 +25,13 @@ package com.microsoft.intellij.runner.appbase.config.runstate
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.util.launchIOBackground
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.application
 import com.intellij.util.io.ZipUtil
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.spinUntil
 import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.toIOFile
@@ -56,8 +58,6 @@ import java.util.zip.ZipOutputStream
 object AppDeployStateUtil {
 
     private val logger = Logger.getInstance(AppDeployStateUtil::class.java)
-
-    private const val COLLECT_ARTIFACTS_TIMEOUT_MS = 180000L
 
     private const val APP_START_TIMEOUT_MS = 20000L
     private const val APP_STOP_TIMEOUT_MS = 10000L
@@ -122,10 +122,11 @@ object AppDeployStateUtil {
      *
      * @param project IDEA [Project] instance
      * @param publishableProject contains information about project to be published (isDotNetCore, path to project file)
+     * @param timeoutMs timeout for collecting artifacts
      *
      * @return [File] to project content to be published
      */
-    fun collectProjectArtifacts(project: Project, publishableProject: PublishableProjectModel): File {
+    fun collectProjectArtifacts(project: Project, publishableProject: PublishableProjectModel, timeoutMs: Long): File {
         // Get out parameters
         val publishService = MsBuildPublishingService.getInstance(project)
         val (targetProperties, outPath) = publishService.getPublishToTempDirParameterAndPath()
@@ -141,14 +142,16 @@ object AppDeployStateUtil {
                 event.setResult(it)
             }
 
-            if (publishableProject.isDotNetCore) {
-                publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true, onFinish)
-            } else {
-                publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
+            Lifetime.Eternal.launchIOBackground {
+                if (publishableProject.isDotNetCore) {
+                    publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true, onFinish)
+                } else {
+                    publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
+                }
             }
         }
 
-        val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+        val buildResult = event.get(timeoutMs, TimeUnit.MILLISECONDS)
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
             val errorMessage = message("process_event.publish.project.artifacts.collecting_failed")
             logger.error(errorMessage)

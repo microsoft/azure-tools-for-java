@@ -30,6 +30,7 @@
         <h4>Fixed bugs:</h4>
         <ul>
           <li>Azure Functions debugging support on Apple Silicon / M1 / Rosetta <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/526">#526</a></li>
+          <li>Extend web app/function app publishing timeout <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/530">#530</a> / <a href="https://youtrack.jetbrains.com/issue/RIDER-68824">RIDER-68824</a></li>
         </ul>
         <p>[3.50.1-2021.2]</p>
         <ul>

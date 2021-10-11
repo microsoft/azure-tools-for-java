@@ -36,13 +36,18 @@ object KuduClient {
 
     private val logger = Logger.getInstance(WebAppDeployStateUtil::class.java)
 
-    private const val URL_KUDU_ZIP_DEPLOY_SUFFIX = "/api/zipdeploy"
+    private const val URL_KUDU_ZIP_DEPLOY_SUFFIX = "/api/zipdeploy?isAsync=true"
     private const val URL_AZURE_BASE = ".azurewebsites.net"
     private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
     private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE$URL_KUDU_ZIP_DEPLOY_SUFFIX"
 
     private const val SLEEP_TIME_MS = 5000L
-    private const val DEPLOY_TIMEOUT_MS = 180000L
+
+    // Per attempt to upload, the global timeout will be DEPLOY_POLLING_MAX_TRY * DEPLOY_POLLING_TIMEOUT_MS
+    private const val DEPLOY_REQUEST_TIMEOUT_MS = 300000L // How long can a request take?
+    private const val DEPLOY_POLLING_TIMEOUT_MS = 10000L  // How long do we wait between polls?
+    private const val DEPLOY_POLLING_MAX_TRY = 60         // How many times do we poll, maximum?
+
     private const val UPLOADING_MAX_TRY = 3
 
     /**
@@ -86,15 +91,19 @@ object KuduClient {
         var uploadCount = 0
         var response: Response? = null
 
+        val kuduPublishUrl = kuduBaseUrl ?: "https://" + appName.toLowerCase() + URL_KUDU_ZIP_DEPLOY
+
         try {
             do {
                 processHandler.setText(message("process_event.publish.zip_deploy.start_publish", uploadCount + 1, UPLOADING_MAX_TRY))
 
                 try {
                     response = session.publishZip(
-                            kuduBaseUrl ?: "https://" + appName.toLowerCase() + URL_KUDU_ZIP_DEPLOY,
+                            kuduPublishUrl,
                             zipFile,
-                            DEPLOY_TIMEOUT_MS)
+                            DEPLOY_REQUEST_TIMEOUT_MS,
+                            DEPLOY_POLLING_TIMEOUT_MS,
+                            DEPLOY_POLLING_MAX_TRY)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
                     processHandler.setText("${message("process_event.publish.zip_deploy.fail")}: $e")

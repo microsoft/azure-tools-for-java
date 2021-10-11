@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-2020 JetBrains s.r.o.
+ * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -77,8 +77,12 @@ class FunctionAppRunState(project: Project, private val myModel: FunctionAppSett
         val subscriptionId = myModel.functionAppModel.subscription?.subscriptionId()
                 ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
+        val collectArtifactsTimeoutMs = PropertiesComponent.getInstance().getInt(
+                AzureRiderSettings.PROPERTY_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_NAME,
+                AzureRiderSettings.VALUE_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_DEFAULT) * 60000L
+
         val app = getOrCreateFunctionAppFromConfiguration(myModel.functionAppModel, processHandler)
-        deployToAzureFunctionApp(project, publishableProject, app, processHandler)
+        deployToAzureFunctionApp(project, publishableProject, app, processHandler, collectArtifactsTimeoutMs)
 
         isFunctionAppCreated = true
 

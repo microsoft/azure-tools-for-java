@@ -89,8 +89,12 @@ class RiderWebAppRunState(project: Project,
         val subscriptionId = myModel.webAppModel.subscription?.subscriptionId()
                 ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
+        val collectArtifactsTimeoutMs = PropertiesComponent.getInstance().getInt(
+                AzureRiderSettings.PROPERTY_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_NAME,
+                AzureRiderSettings.VALUE_COLLECT_ARTIFACTS_TIMEOUT_MINUTES_DEFAULT) * 60000L
+
         val appTarget = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
-        deployToAzureWebApp(project, publishableProject, appTarget, processHandler)
+        deployToAzureWebApp(project, publishableProject, appTarget, processHandler, collectArtifactsTimeoutMs)
 
         if (myModel.webAppModel.isCreatingNewApp && myModel.webAppModel.operatingSystem == OperatingSystem.LINUX &&
                 publishableProject.isDotNetCore) {
