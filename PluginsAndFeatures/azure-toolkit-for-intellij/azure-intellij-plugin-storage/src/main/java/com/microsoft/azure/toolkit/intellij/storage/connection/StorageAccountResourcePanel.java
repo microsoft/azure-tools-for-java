@@ -39,7 +39,6 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     private void init() {
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                final Subscription subscription = (Subscription) e.getItem();
                 this.accountComboBox.refreshItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.accountComboBox.clear();

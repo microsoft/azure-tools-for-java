@@ -39,7 +39,6 @@ public class RedisResourcePanel implements AzureFormJPanel<RedisCache> {
     private void init() {
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                final Subscription subscription = (Subscription) e.getItem();
                 this.redisComboBox.refreshItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.redisComboBox.clear();
