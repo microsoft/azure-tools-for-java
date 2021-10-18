@@ -31,10 +31,11 @@ import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.application
 import com.intellij.util.io.ZipUtil
-import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rd.util.spinUntil
 import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.toIOFile
+import com.jetbrains.rider.build.tasks.BuildStatus
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
@@ -45,6 +46,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.File
@@ -134,20 +136,27 @@ object AppDeployStateUtil {
         val event = AsyncPromise<BuildResultKind>()
         application.invokeLater {
 
-            val onFinish: (result: BuildResultKind) -> Unit = {
-                if (it == BuildResultKind.Successful || it == BuildResultKind.HasWarnings) {
+            val onFinish: (result: BuildStatus) -> Unit = {
+                if (it.buildResultKind == BuildResultKind.Successful || it.buildResultKind == BuildResultKind.HasWarnings) {
                     requestRunWindowFocus(project)
                 }
 
-                event.setResult(it)
+                event.setResult(it.buildResultKind)
             }
 
-            Lifetime.Eternal.launchIOBackground {
-                if (publishableProject.isDotNetCore) {
-                    publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true, onFinish)
-                } else {
-                    publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
+            project.lifetime.launchIOBackground {
+                val buildResult = try {
+                    if (publishableProject.isDotNetCore) {
+                        publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true)
+                    } else {
+                        publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true)
+                    }
+                } catch (t: Throwable) {
+                    logger.error(t)
+                    BuildStatus(false, BuildResultKind.Crashed)
                 }
+
+                onFinish(buildResult)
             }
         }
 
