@@ -115,6 +115,7 @@ configure(mainProjects) {
 
     compileKotlin {
         kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
     }
 
     compileTestKotlin {

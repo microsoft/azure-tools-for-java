@@ -100,7 +100,7 @@ class FunctionAppPublishComponent(private val lifetime: Lifetime,
                 else config.appServicePlanName
 
         pnlCreateFunctionApp.pnlStorageAccount.txtName.text =
-                if (config.storageAccountName.isEmpty()) RandomStringUtils.randomAlphanumeric(4).toLowerCase()
+                if (config.storageAccountName.isEmpty()) RandomStringUtils.randomAlphanumeric(4).lowercase()
                 else config.storageAccountName
 
         // Is Creating New

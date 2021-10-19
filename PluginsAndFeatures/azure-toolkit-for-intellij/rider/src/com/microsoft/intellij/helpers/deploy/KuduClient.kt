@@ -64,9 +64,9 @@ object KuduClient {
     fun kuduZipDeploy(zipFile: File, app: WebAppBase, processHandler: RunProcessHandler) {
 
         val appName = app.name()
-        val kuduBaseUrl = "https://" + app.defaultHostName().toLowerCase()
+        val kuduBaseUrl = "https://" + app.defaultHostName().lowercase()
                 .replace("http://", "")
-                .replace(app.name().toLowerCase(), app.name().toLowerCase() + ".scm")
+                .replace(app.name().lowercase(), app.name().lowercase() + ".scm")
                 .trimEnd('/') + URL_KUDU_ZIP_DEPLOY_SUFFIX
 
         kuduZipDeploy(zipFile, app.publishingProfile, appName, kuduBaseUrl, processHandler)
@@ -91,7 +91,7 @@ object KuduClient {
         var uploadCount = 0
         var response: Response? = null
 
-        val kuduPublishUrl = kuduBaseUrl ?: "https://" + appName.toLowerCase() + URL_KUDU_ZIP_DEPLOY
+        val kuduPublishUrl = kuduBaseUrl ?: "https://" + appName.lowercase() + URL_KUDU_ZIP_DEPLOY
 
         try {
             do {

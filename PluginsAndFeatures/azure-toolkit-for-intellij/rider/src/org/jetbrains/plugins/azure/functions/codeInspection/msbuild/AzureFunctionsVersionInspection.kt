@@ -40,7 +40,7 @@ class AzureFunctionsVersionInspection : XmlSuppressableInspectionTool() {
             override fun visitXmlTag(tag: XmlTag?) {
                 if (tag == null) return
 
-                val tagName = tag.name.toLowerCase()
+                val tagName = tag.name.lowercase()
                 if (tagName == "azurefunctionsversion") {
 
                     val child = XmlChildRole.START_TAG_END_FINDER.findChild(tag.node)

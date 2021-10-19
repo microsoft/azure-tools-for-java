@@ -30,6 +30,7 @@ import com.microsoft.azure.management.appservice.*
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.intellij.ui.component.AzureComponent
 import net.miginfocom.swing.MigLayout
+import java.util.*
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.RowFilter.regexFilter
@@ -106,7 +107,7 @@ abstract class AppExistingComponent<TApp : WebAppBase, TSlot: DeploymentSlotBase
 
         val osColumnIndex = (pnlExistingAppTable.table.model as DefaultTableModel).findColumn(pnlExistingAppTable.appTableColumnOs)
         require(osColumnIndex >= 0) { "Column index is out of range" }
-        sorter.rowFilter = regexFilter(OperatingSystem.WINDOWS.name.toLowerCase().capitalize(), osColumnIndex)
+        sorter.rowFilter = regexFilter(OperatingSystem.WINDOWS.name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }, osColumnIndex)
     }
 
     private fun initRefreshButton() {
