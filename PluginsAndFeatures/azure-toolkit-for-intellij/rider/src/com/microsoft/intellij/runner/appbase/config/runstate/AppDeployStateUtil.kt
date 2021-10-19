@@ -25,18 +25,19 @@ package com.microsoft.intellij.runner.appbase.config.runstate
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.util.launchIOBackground
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.util.application
 import com.intellij.util.io.ZipUtil
-import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rd.util.spinUntil
 import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.toIOFile
+import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.build.tasks.BuildStatus
+import com.jetbrains.rider.build.tasks.BuildTaskThrottler
 import com.jetbrains.rider.model.BuildResultKind
+import com.jetbrains.rider.model.CustomTargetExtraProperty
+import com.jetbrains.rider.model.CustomTargetWithExtraProperties
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
 import com.microsoft.azure.management.appservice.WebAppBase
@@ -46,14 +47,14 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.RunProcessHandler
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.nio.file.Path
 import java.util.*
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipOutputStream
 
@@ -133,38 +134,20 @@ object AppDeployStateUtil {
         val publishService = MsBuildPublishingService.getInstance(project)
         val (targetProperties, outPath) = publishService.getPublishToTempDirParameterAndPath()
 
-        val event = AsyncPromise<BuildResultKind>()
-        application.invokeLater {
-
-            val onFinish: (result: BuildStatus) -> Unit = {
-                if (it.buildResultKind == BuildResultKind.Successful || it.buildResultKind == BuildResultKind.HasWarnings) {
-                    requestRunWindowFocus(project)
-                }
-
-                event.setResult(it.buildResultKind)
+        val buildResultFuture =
+            if (publishableProject.isDotNetCore) {
+                invokeMsBuild(project, publishableProject, listOf(targetProperties), false, true, true)
+            } else {
+                webPublishToFileSystem(project, publishableProject.projectFilePath, outPath, false, true)
             }
 
-            project.lifetime.launchIOBackground {
-                val buildResult = try {
-                    if (publishableProject.isDotNetCore) {
-                        publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true)
-                    } else {
-                        publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true)
-                    }
-                } catch (t: Throwable) {
-                    logger.error(t)
-                    BuildStatus(false, BuildResultKind.Crashed)
-                }
-
-                onFinish(buildResult)
-            }
-        }
-
-        val buildResult = event.get(timeoutMs, TimeUnit.MILLISECONDS)
+        val buildResult = buildResultFuture.get(timeoutMs, TimeUnit.MILLISECONDS)?.buildResultKind
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
             val errorMessage = message("process_event.publish.project.artifacts.collecting_failed")
             logger.error(errorMessage)
             throw RuntimeException(errorMessage)
+        } else {
+            requestRunWindowFocus(project)
         }
 
         return outPath.toFile().canonicalFile
@@ -175,11 +158,11 @@ object AppDeployStateUtil {
      */
     private fun requestRunWindowFocus(project: Project) {
         try {
-            ToolWindowManager.getInstance(project).invokeLater(Runnable {
+            ToolWindowManager.getInstance(project).invokeLater {
                 val window = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.RUN)
                 if (window != null && window.isAvailable)
                     window.show(null)
-            })
+            }
         } catch (e: Throwable) {
             logger.error(e)
         }
@@ -258,5 +241,38 @@ object AppDeployStateUtil {
         ZipOutputStream(FileOutputStream(zipFileToCreate)).use { zipOutput ->
             ZipUtil.addDirToZipRecursively(zipOutput, null, fileToZip, "", filter, null)
         }
+    }
+
+    private fun invokeMsBuild(project: Project,
+                              projectModel: PublishableProjectModel,
+                              extraProperties: List<CustomTargetExtraProperty>,
+                              diagnosticsMode: Boolean,
+                              silentMode: Boolean = false,
+                              noRestore: Boolean = false): Future<BuildStatus> {
+        val buildParameters = BuildParameters(
+                CustomTargetWithExtraProperties(
+                        "Publish",
+                        extraProperties
+                ), listOf(projectModel.projectFilePath), diagnosticsMode, silentMode, noRestore = noRestore
+        )
+
+        return BuildTaskThrottler.getInstance(project).runBuildWithThrottling(buildParameters)
+    }
+
+    private fun webPublishToFileSystem(project: Project,
+                                       pathToProject: String,
+                                       outPath: Path,
+                                       diagnosticsMode: Boolean = false,
+                                       silentMode: Boolean = false): Future<BuildStatus> {
+        val buildParameters = BuildParameters(
+                CustomTargetWithExtraProperties(
+                        "WebPublish",
+                        listOf(
+                                CustomTargetExtraProperty("WebPublishMethod", "FileSystem"),
+                                CustomTargetExtraProperty("PublishUrl", outPath.toString()))
+                ), listOf(pathToProject), diagnosticsMode, silentMode
+        )
+
+        return BuildTaskThrottler.getInstance(project).runBuildWithThrottling(buildParameters)
     }
 }
