@@ -26,7 +26,7 @@ import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.enums.CoreVersion
 import org.cases.runconfig.functionapp.FunctionHostConfigurationEditorTestCore
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.DOT_NET_CORE_3_1)
 class FunctionHostConfigurationEditorTest : FunctionHostConfigurationEditorTestCore(
         solutionDirectoryName = "FunctionApp",
         projectName = "FunctionApp",

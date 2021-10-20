@@ -30,5 +30,6 @@ import org.cases.runconfig.functionapp.FunctionHostConfigurationTestCore
 class FunctionHostConfigurationTest : FunctionHostConfigurationTestCore(
         solutionDirectoryName = "FunctionAppIsolated",
         projectName = "FunctionAppIsolated",
-        projectTfm = "net5.0"
+        projectTfm = "net5.0",
+        coreVersion = CoreVersion.DOT_NET_5
 )

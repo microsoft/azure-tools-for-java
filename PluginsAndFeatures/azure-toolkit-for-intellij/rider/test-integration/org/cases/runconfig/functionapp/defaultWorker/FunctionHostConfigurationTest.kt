@@ -26,9 +26,10 @@ import com.jetbrains.rider.test.annotations.TestEnvironment
 import com.jetbrains.rider.test.enums.CoreVersion
 import org.cases.runconfig.functionapp.FunctionHostConfigurationTestCore
 
-@TestEnvironment(coreVersion = CoreVersion.DEFAULT)
+@TestEnvironment(coreVersion = CoreVersion.DOT_NET_CORE_3_1)
 class FunctionHostConfigurationTest : FunctionHostConfigurationTestCore(
         solutionDirectoryName = "FunctionApp",
         projectName = "FunctionApp",
-        projectTfm = ".NETCoreApp,Version=v3.1"
+        projectTfm = ".NETCoreApp,Version=v3.1",
+        coreVersion = CoreVersion.DOT_NET_CORE_3_1
 )
