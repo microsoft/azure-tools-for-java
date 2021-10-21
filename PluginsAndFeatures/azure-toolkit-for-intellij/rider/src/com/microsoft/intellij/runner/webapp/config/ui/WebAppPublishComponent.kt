@@ -61,7 +61,8 @@ class WebAppPublishComponent(private val lifetime: Lifetime,
         private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-"
 
         private val netCoreAppVersionRegex = Regex("\\.NETCoreApp,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
-        private val netAppVersionRegex = Regex("\\.NETFramework,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
+        private val netAppVersionRegex = Regex("net([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
+        private val netFxAppVersionRegex = Regex("\\.NETFramework,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
     }
 
     private val pnlWebAppSelector = ExistingOrNewSelector(message("run_config.publish.form.web_app.existing_new_selector"))
@@ -332,15 +333,17 @@ class WebAppPublishComponent(private val lifetime: Lifetime,
      *                  for a target framework ".NETCoreApp,Version=v2.0", the method returns "2.0"
      */
     private fun getProjectNetCoreFrameworkVersion(publishableProject: PublishableProjectModel): String {
-        val defaultVersion = "2.1"
+        val defaultVersion = "3.1"
         val currentFramework = getCurrentFrameworkId(publishableProject) ?: return defaultVersion
-        return netCoreAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value ?: defaultVersion
+        return netAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value // netX.Y
+                ?: netCoreAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value // .NETCoreApp,version=vX.Y
+                ?: defaultVersion
     }
 
     private fun getProjectNetFrameworkVersion(publishableProject: PublishableProjectModel): String {
         val defaultVersion = "4.7"
         val currentFramework = getCurrentFrameworkId(publishableProject) ?: return defaultVersion
-        return netAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value ?: defaultVersion
+        return netFxAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value ?: defaultVersion
     }
 
     private fun getCurrentFrameworkId(publishableProject: PublishableProjectModel): String? {
