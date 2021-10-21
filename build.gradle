@@ -104,12 +104,13 @@ task buildEclipse {
 }
 
 task buildIntelliJ {
-    dependsOn buildUtils, buildAdditionalLibrary
+    // dependsOn buildUtils, buildAdditionalLibrary
 
     doLast {
         logger.info('Building IntelliJ plugin ...')
 
-        def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) + [
+        def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) +
+                (skipTest.toBoolean() ? [] : [ 'test' ]) + [
                 'buildPlugin',
                 'spotbugsMain',
                 'bundleBuildIdeaZip',
