@@ -39,6 +39,7 @@ import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.ui.components.JsonEnvPropertiesField
+import org.junit.Ignore
 import org.junit.Test
 import java.awt.BorderLayout
 import java.awt.Container
@@ -134,6 +135,7 @@ class FormBuilderPanel {
     }
 }
 
+@Ignore
 class ContainerTelemetryExtensionTest : LightProjectDescriptor() {
     override fun getSdk(): Sdk? {
         return IdeaTestUtil.getMockJdk18()

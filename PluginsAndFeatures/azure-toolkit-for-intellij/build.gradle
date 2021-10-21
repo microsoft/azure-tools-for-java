@@ -160,7 +160,7 @@ configurations {
     compile.exclude module:'stax-api'
     compile.exclude module:'groovy-templates'
     cucumberRuntime {
-        extendsFrom testRuntime
+        extendsFrom testImplementation
     }
 }
 
@@ -246,8 +246,8 @@ dependencies {
     compile group: 'org.apache.maven', name: 'maven-archiver', version: '3.5.1'
 
     testCompile 'junit:junit:4.13'
-    testCompile 'info.cukes:cucumber-junit:1.2.6'
-    testCompile 'info.cukes:cucumber-java:1.2.6'
+    testImplementation 'io.cucumber:cucumber-java:7.0.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.0.0'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'org.assertj:assertj-swing-junit:3.17.1'
 
@@ -285,10 +285,10 @@ task cucumberPackJar(type: Jar) {
 buildSearchableOptions.onlyIf {false}
 
 task cucumber() {
-    dependsOn compileTestJava, cucumberPackJar
+    dependsOn assemble, testClasses, compileTestJava, cucumberPackJar
     doLast {
         javaexec {
-            main = "cucumber.api.cli.Main"
+            main = "io.cucumber.core.cli.Main"
             classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
             args = [
                 '--plugin', 'progress',

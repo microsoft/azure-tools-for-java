@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common
 
-import com.intellij.testFramework.IdeaTestCase
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import org.junit.Before
 import org.junit.Ignore
@@ -33,7 +33,7 @@ import javax.swing.JDialog
  * Ignore those UI tests, since they are helpers to do manually tests
  */
 @Ignore
-open class SparkUITest : IdeaTestCase() {
+open class SparkUITest : LightJavaCodeInsightFixtureTestCase() {
     protected var dialog: JDialog? = null
 
     @Before

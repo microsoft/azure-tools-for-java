@@ -43,7 +43,7 @@ public class SubmissionTableModelTest extends TestCase{
     public void testAddRow() throws Exception {
         int rows = tableModel.getRowCount();
         tableModel.addRow("test1", "test2");
-        assertEquals("test1", tableModel.getValueAt(rows, 0));
+        assertEquals("test1", tableModel.getValueAt(rows - 1, 0));
     }
 
     @Test

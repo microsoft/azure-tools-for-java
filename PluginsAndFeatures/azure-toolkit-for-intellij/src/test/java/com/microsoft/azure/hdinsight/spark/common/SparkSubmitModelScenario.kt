@@ -22,9 +22,9 @@
 
 package com.microsoft.azure.hdinsight.spark.common
 
-import cucumber.api.java.Before
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.Before
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.jdom.input.SAXBuilder
 import org.jdom.output.XMLOutputter
 import java.io.StringReader
