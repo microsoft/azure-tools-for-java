@@ -3,18 +3,21 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.eclipse.webapp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
@@ -25,11 +28,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppDeploymentSlot;
@@ -55,7 +60,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final BiConsumer<AppServiceFile, Object> downloadHandler = (file, e) -> AzureTaskManager
                 .getInstance().runLater(()->{
-                    final File destFile = DefaultLoader.getUIHelper().showFileChooser(String.format("Download %s", file.getName()));
+                    final File destFile = DefaultLoader.getUIHelper().showFileSaver(String.format("Download %s", file.getName()), file.getName());
                     if (destFile == null) {
                         return;
                     }
@@ -121,13 +126,27 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         final BiConsumer<IAzureBaseResource<?, ?>, Object> deployWebAppHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> {
                     try {
-                        ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class)).executeCommand("com.microsoft.azuretools.webapp.commands.deployToAzure", null);
-                    } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e1) {
+                        Command deployCommand = ((ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class))
+                                .getCommand("com.microsoft.azuretools.webapp.commands.deployToAzure");
+                        deployCommand.execute(new ExecutionEvent(null, Collections.singletonMap("resourceId", c.id()), c, null));
+                    } catch (ExecutionException | NotHandledException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                 });
         am.registerHandler(ResourceCommonActionsContributor.DEPLOY, isWebApp, deployWebAppHandler);
+        
+        final BiPredicate<Object, Object> createCondition = (r, e) -> r instanceof AzureWebApp;
+        final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager
+                .getInstance().runLater(() -> {
+                    try {
+                        ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class)).executeCommand("com.microsoft.azuretools.webapp.commands.createWebApp", null);
+                    } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                });
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
     }
 
     private void openEditor(EditorType type, IEditorInput input, IEditorDescriptor descriptor) {

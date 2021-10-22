@@ -32,6 +32,8 @@ import java.text.DecimalFormat;
 import java.util.Map;
 
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
+
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -146,9 +148,18 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public File showFileSaver(String s, String s1) {
-        // todo
-        return null;
+    public File showFileSaver(String title, String name) {
+        FileDialog dialog = new FileDialog(new Shell(), SWT.SAVE);
+        dialog.setOverwrite(true);
+        dialog.setText(title);
+        dialog.setFileName(name);
+//        dialog.setFilterExtensions(new String[] {FilenameUtils.getExtension(name)});
+        String fileName = dialog.open();
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
+        } else {
+            return new File(fileName);
+        }
     }
 
     @Override
