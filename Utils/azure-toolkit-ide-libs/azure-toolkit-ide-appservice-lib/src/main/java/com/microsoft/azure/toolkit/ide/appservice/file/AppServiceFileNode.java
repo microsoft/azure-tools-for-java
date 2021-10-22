@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppServiceFileNode extends Node<AppServiceFile> {
+    public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
+
     private final AppServiceFile file;
     private final IAppService<?> appService;
     private final NodeView view;
@@ -114,7 +116,8 @@ public class AppServiceFileNode extends Node<AppServiceFile> {
 
         @Override
         public String getIconPath() {
-            return file.getType() == AppServiceFile.Type.DIRECTORY ? "/icons/storagefolder.png" : String.format("file-%s", FilenameUtils.getExtension(file.getName()));
+            return file.getType() == AppServiceFile.Type.DIRECTORY ? "/icons/storagefolder.png" :
+                    FILE_EXTENSION_ICON_PREFIX +  FilenameUtils.getExtension(file.getName());
         }
 
         @Override

@@ -12,7 +12,7 @@ import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.S
 import com.microsoft.azuretools.azureexplorer.Activator;
 
 public class AzureIcons {
-	public static final String FILE_EXTENSION_ICON_PREFIX = "file-";
+	public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
 	public static ImageDescriptor getIcon(String input) {
 		if (StringUtils.startsWith(input, FILE_EXTENSION_ICON_PREFIX)) {
