@@ -11,9 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 
-public class SubmissionTableModelTest extends TestCase{
+public class SubmissionTableModelTest extends TestCase {
     private SubmissionTableModel tableModel;
 
     @Before
@@ -29,14 +28,14 @@ public class SubmissionTableModelTest extends TestCase{
     @Test
     public void testSetValueAt() throws Exception {
         tableModel.setValueAt("test", 0, 1);
-        assertEquals("test", tableModel.getValueAt(0,1));
+        assertEquals("test", tableModel.getValueAt(0, 1));
 
         tableModel.setValueAt("test2", 1, 0);
-        assertEquals("test2", tableModel.getValueAt(1,0));
+        assertEquals("test2", tableModel.getValueAt(1, 0));
 
         //set value to no-exist row.
         tableModel.setValueAt("test3", 4, 4);
-        assertEquals(null, tableModel.getValueAt(4,4));
+        assertEquals(null, tableModel.getValueAt(4, 4));
     }
 
     @Test
