@@ -14,11 +14,13 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.updateSettings.impl.pluginsAdvertisement.PluginsAdvertiser;
+import com.intellij.platform.ProjectTemplate;
 import com.microsoft.azure.hdinsight.projects.HDInsightExternalSystem;
 import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.projects.HDInsightProjectTemplate;
 import com.microsoft.azure.hdinsight.projects.HDInsightTemplatesType;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.intellij.ui.AccessibleListCellRenderer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -39,10 +41,20 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
     public HDInsightProjectTypeStep(HDInsightModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
-        this.scalaPluginInstalled = PluginManager.getPlugin(PluginId.findId(SCALA_PLUGIN_ID)) != null;
+        this.scalaPluginInstalled = PluginManagerCore.getPlugin(PluginId.findId(SCALA_PLUGIN_ID)) != null;
 
         this.templateList.addListSelectionListener(e -> onTemplateSelected());
         this.templateList.setTemplates(moduleBuilder.getTemplates(), false);
+
+        var templateListView = this.templateList.getList();
+        templateListView.setCellRenderer(new AccessibleListCellRenderer<>() {
+            @NotNull
+            @Override
+            public String getText(ProjectTemplate template) {
+                return template.getName();
+            }
+        });
+
         checkScalaPlugin();
 
         this.externalSystemsLabel.setText("Build tool:");
