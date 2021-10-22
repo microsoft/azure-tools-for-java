@@ -50,6 +50,7 @@ import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.toolkit.eclipse.common.AzureIcons;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.eclipse.explorer.AzureTreeNode;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
@@ -178,8 +179,13 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             setHDInsightRootModule(azureModule);
             azureNode = createTreeNode(azureModule);
 
-            azureModules = Arrays.stream(AzureExplorer.getModules())
-                    .map(node -> new AzureTreeNode(viewer, null, node)).toArray(AzureTreeNode[]::new);
+            azureModules = Arrays.stream(AzureExplorer.getModules()).map(node -> new AzureTreeNode(viewer, null, node))
+                    .toArray(AzureTreeNode[]::new);
+            
+            azureModule.setClearResourcesListener(() -> {
+                AzureTaskManager.getInstance()
+                        .runLater(() -> Arrays.stream(azureModules).forEach(module -> module.clearNode()));
+            });
             azureModule.load(false);
         }
     }
