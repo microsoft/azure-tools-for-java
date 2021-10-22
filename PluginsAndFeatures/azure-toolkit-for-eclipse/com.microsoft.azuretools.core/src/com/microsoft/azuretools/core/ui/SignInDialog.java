@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.core.ui;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -111,6 +112,9 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             .flatMap(ac -> Mono.zip(Mono.just(ac), ac.checkAvailable().onErrorResume(e -> Mono.just(false))))
             .filter(Tuple2::getT2).map(Tuple2::getT1).collectList().subscribe(accounts -> {
                 AzureTaskManager.getInstance().runLater(() -> {
+                	if (Optional.ofNullable(getShell()).map(Shell::isDisposed).orElse(true)) {
+                		return;
+                	}
                     if (accounts.stream().anyMatch(ac -> ac.getAuthType() == AuthType.AZURE_CLI)) {
                         enableAzureCliLogin();
                     } else {
