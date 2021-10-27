@@ -28,7 +28,7 @@ public class EclipseAzureMessage extends AzureHtmlMessage {
             content = super.getContent() + this.getDetails();
         }
         final String font = "font-family:'Segoe UI', Consolas, 'Liberation Mono', Menlo, Courier, monospace;";
-        final String style = "font-size:14px;" + font;
+        final String style = "font-size:12px;" + font;
         return String.format("<html><head><style>body{%s}</style></head><body>%s</body></html>", style, content);
     }
 
