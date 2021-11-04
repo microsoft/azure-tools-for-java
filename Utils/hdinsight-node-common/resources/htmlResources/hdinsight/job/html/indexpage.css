@@ -226,10 +226,6 @@ body {
     border: 2px solid var(--focus-color)
 }
 
-.resultTextArea:focus {
-    border: 2px solid var(--focus-color)
-}
-
 .table-striped#myTable tbody {
     font-size: 11px;
     background-color: var(--bg-color);
