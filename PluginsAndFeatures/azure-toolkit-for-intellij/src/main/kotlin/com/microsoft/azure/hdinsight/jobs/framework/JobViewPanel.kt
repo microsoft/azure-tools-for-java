@@ -13,6 +13,7 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.microsoft.azure.hdinsight.spark.jobs.JobViewHttpServer
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
+import org.cef.handler.CefFocusHandlerAdapter
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.io.File
@@ -25,7 +26,7 @@ class JobViewPanel(private val rootPath: String, private val clusterName: String
 
     private val QUERY_TEMPLATE = "?clusterName=%s&port=%s"
     private val panel = JPanel(BorderLayout())
-    private val browser: JBCefBrowser by lazy {
+    val browser: JBCefBrowser by lazy {
         val url = if (ApplicationManager.getApplication().isInternal && !developingHtmlDir.isNullOrBlank()) {
             // In plugin development mode and reading HTML from development source
 
@@ -56,6 +57,12 @@ class JobViewPanel(private val rootPath: String, private val clusterName: String
         browser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                 browser?.updateTheme()
+            }
+        }, browser.cefBrowser)
+
+        browser.jbCefClient.addFocusHandler(object : CefFocusHandlerAdapter() {
+            override fun onTakeFocus(onBrowser: CefBrowser?, next: Boolean) {
+                onBrowser?.setFocus(true)
             }
         }, browser.cefBrowser)
 

@@ -30,7 +30,7 @@ public class JobViewEditor implements FileEditor {
     private final JobViewEditorProvider myProvider;
     private final VirtualFile myVirtualFile;
     @NotNull
-    private final JComponent myComponent;
+    private final JobViewPanel jobViewPanel;
 
     @NotNull
     private final String uuid;
@@ -43,7 +43,7 @@ public class JobViewEditor implements FileEditor {
         myProvider = provider;
         myVirtualFile = file;
         uuid = file.getUserData(JobViewEditorProvider.JOB_VIEW_UUID);
-        myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory() + "/com.microsoft.hdinsight", uuid).getComponent();
+        jobViewPanel = new JobViewPanel(PluginUtil.getPluginRootDirectory() + "/com.microsoft.hdinsight", uuid);
         AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobview"), null);
         EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
             HDInsightBundle.message("HDInsightSparkJobview"), null);
@@ -52,13 +52,13 @@ public class JobViewEditor implements FileEditor {
     @NotNull
     @Override
     public JComponent getComponent() {
-        return myComponent;
+        return jobViewPanel.getComponent();
     }
 
     @Nullable
     @Override
     public JComponent getPreferredFocusedComponent() {
-        return myComponent;
+        return jobViewPanel.getBrowser().getComponent();
     }
 
     @NotNull

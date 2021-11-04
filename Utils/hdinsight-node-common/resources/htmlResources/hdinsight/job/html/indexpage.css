@@ -7,6 +7,7 @@
     --edge-color: #828384;
     --arrow-color: white;
     --Job-s-color: #4B77AF;
+    --focus-color: #2f65ca;
 }
 :root.light-theme-mode {
     --text-color: black;
@@ -16,6 +17,7 @@
     --edge-color: #828384;
     --arrow-color: black;
     --Job-s-color: #2687BF;
+    --focus-color: #2675bf;
 }
 :root.highcontrast-theme-mode {
     --text-color: white;
@@ -25,6 +27,7 @@
     --edge-color: #828384;
     --arrow-color: white;
     --Job-s-color: #3333FF;
+    --focus-color: #3333ff;
 }
 
 body {
@@ -205,6 +208,26 @@ body {
     font-size: 11px;
     font-family: consolas,"courier new",monospace;
     padding: 8px;
+}
+
+.table-bordered:focus {
+    border: 2px solid var(--focus-color)
+}
+
+.btn:focus {
+    border: 2px solid var(--focus-color)
+}
+
+.nav-tabs > li.active > a:focus {
+    border: 2px solid var(--focus-color)
+}
+
+.nav > li > a:focus {
+    border: 2px solid var(--focus-color)
+}
+
+.resultTextArea:focus {
+    border: 2px solid var(--focus-color)
 }
 
 .table-striped#myTable tbody {
