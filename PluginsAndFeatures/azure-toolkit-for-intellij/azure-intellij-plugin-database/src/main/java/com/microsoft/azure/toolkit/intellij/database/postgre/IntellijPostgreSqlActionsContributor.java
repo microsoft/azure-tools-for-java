@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.postgre.PostgreSqlActionsContributor;
+import com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor;
 import com.microsoft.azure.toolkit.intellij.database.IntellijDatasourceService;
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePostgreSqlAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
