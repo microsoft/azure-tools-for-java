@@ -8,4 +8,5 @@ include 'azure-intellij-plugin-service-explorer'
 include 'azure-intellij-plugin-vm'
 include 'azure-intellij-plugin-storage'
 include 'azure-intellij-plugin-redis'
+include 'azure-intellij-plugin-database'
 
