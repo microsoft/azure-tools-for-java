@@ -3,12 +3,16 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-resource-connector-lib')
     compile 'com.microsoft.azure:azure-toolkit-resource-lib:'+  azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-database-lib:'+  azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-mysql-lib:'+  azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-sqlserver-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-postgre-lib:' + azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
-    compile 'com.microsoft.azure:azure-toolkit-ide-postgre-lib:' + azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-ide-database-lib:' + azureToolkitVersion
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
 
     // TODO(andxu): remove the legacy dependencies
     compile 'com.microsoft.azuretools:azuretools-core:3.59.0-SNAPSHOT', {

@@ -243,8 +243,6 @@ dependencies {
 
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
     compile group: 'org.apache.maven', name: 'maven-archiver', version: '3.5.1'
 
     testCompile 'junit:junit:4.13'
