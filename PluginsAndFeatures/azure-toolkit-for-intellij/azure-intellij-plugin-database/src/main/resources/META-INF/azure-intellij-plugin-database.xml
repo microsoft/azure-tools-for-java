@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.postgre.PostgreSqlExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.postgre.PostgreSqlActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.postgre.property.PostgreSqlPropertiesEditorProvider"/>
+        <!-- <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreSqlResourceDefinition$RegisterActivity"/>-->
+    </extensions>
+</idea-plugin>

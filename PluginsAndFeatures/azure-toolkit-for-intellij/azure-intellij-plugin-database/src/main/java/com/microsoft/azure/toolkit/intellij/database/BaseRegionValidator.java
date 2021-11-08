@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.BiFunction;
 
 @RequiredArgsConstructor
-public abstract class BaseRegionValidator implements AzureFormInput.Validator {
+public class BaseRegionValidator implements AzureFormInput.Validator {
     private static final String REGION_UNAVAILABLE_MESSAGE = "Currently, the service is not available in this location for your subscription.";
     private final RegionComboBox input;
     private final BiFunction<String, Region, Boolean> checkRegionAvailFunc;
