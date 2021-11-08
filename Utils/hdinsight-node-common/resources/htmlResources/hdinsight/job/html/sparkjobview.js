@@ -327,6 +327,7 @@ function renderApplicationGraph() {
             return left['Job ID'] > right['Job ID'];
         });
 
+        initJobViewContext();
         renderJobGraphOnApplicationLevel(spark.currentSelectedJobs);
     }, spark.appId);
 }

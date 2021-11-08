@@ -1,9 +1,25 @@
-document.jobGraphFocusStack = [];
 document.jobGraphView = {
     minX: -10,
     width: 480,
     height: 480,
     tipsWidth: 200
+}
+
+var jobGraphFocusStack = [];
+var jobGraphUpDownFocusStacks = {};
+
+function initJobViewContext() {
+    jobGraphFocusStack = [];
+    jobGraphUpDownFocusStacks = {
+        appView: {
+            up: [],
+            down: []
+        },
+        jobView: {
+            up: [],
+            down: []
+        }
+    };
 }
 
 function renderJobGraphOnApplicationLevel(jobs) {
@@ -65,11 +81,15 @@ function renderJobGraphOnApplicationLevel(jobs) {
 
     // Simple function to style the tooltip for the given node.
     inner.selectAll("g.node")
-        .attr('tabindex', "0")
+        .attr('tabindex', "-1")
         .attr("title", function(v) {
             return setToolTips(jobs, v)
         })
         .each(function(v) {
+            if (v === '0') {
+                $(this).attr('tabindex', "0")
+            }
+
             $(this).tipsy({
                 gravity: "w",
                 opacity: 1,
@@ -81,28 +101,138 @@ function renderJobGraphOnApplicationLevel(jobs) {
                 trigger:'focus',
                 html: true });
         })
-        .on('keypress', function(d) {
-            if ( d === '0' || d3.event.code !== "Enter") {
-                return;
+        .on('keydown', function(d) {
+            var upDownFocusStack = jobGraphUpDownFocusStacks.appView;
+
+            switch (d3.event.code) {
+                case "Enter":
+                    if (d == '0') {
+                        return;
+                    }
+
+                    renderJobGraphForSelectedJob(d);
+                    break;
+                default:
+                    moveFocusByArrows(d3.event.code, g, d, upDownFocusStack);
             }
-            renderJobGraphForSelectedJob(d);
         })
         .on('click',function(d) {
-            if ( d === '0') {
+            if ( d == '0') {
                 return;
             }
             renderJobGraphForSelectedJob(d);
         });
 
-    var lastFocusNodeIdx = document.jobGraphFocusStack.pop();
+    var lastFocusNodeIdx = jobGraphFocusStack.pop();
     if (lastFocusNodeIdx) {
-        inner.selectAll("g.node")[0][lastFocusNodeIdx].focus();
+        focusOnNode(lastFocusNodeIdx)
     }
+}
+
+function moveFocusByArrows(arrowCode, g, current, upDownFocusStack) {
+    switch (arrowCode) {
+        case "ArrowUp":
+            var parent = findParent(g, upDownFocusStack.down, current);
+            focusOnNode(parent)
+
+            if (current != parent) {
+                upDownFocusStack.up.push(current);
+            }
+
+            break;
+        case "ArrowDown":
+            var child = findChild(g, upDownFocusStack.up, current);
+            focusOnNode(child)
+
+            if (current != child) {
+                upDownFocusStack.down.push(current);
+            }
+
+            break;
+        case "ArrowLeft":
+            var buddies = findBuddy(g, current)
+            focusOnNode(buddies.left)
+
+            break;
+        case "ArrowRight":
+            var buddies = findBuddy(g, current)
+            focusOnNode(buddies.right)
+
+            break;
+        default:
+    }
+
+}
+
+function focusOnNode(index) {
+    var nodes = d3.selectAll("#applicationGraphSvg g.node");
+    var lastFocus = document.activeElement
+    
+    nodes.attr('tabindex', "-1");
+    var toFocus = nodes.filter((datum, i) =>
+        datum == index)
+    .attr('tabindex', "0")
+    .node()
+    .focus();
+}
+
+function findParent(g, stack, current) {
+    var last = stack.pop();
+
+    if (!last) {
+       var firstParent = g.edges().find(edge => edge.w == current);
+
+       if (!firstParent || firstParent.w != current) {
+           return 0;
+       }
+
+       return firstParent.v;
+    }
+
+    return last;
+}
+
+function findChild(g, stack, current) {
+    var last = stack.pop();
+
+    if (!last) {
+       var firstChild = g.edges().find(edge => edge.v == current);
+
+       if (!firstChild || firstChild.v != current) {
+           return current;
+       }
+
+       return firstChild.w;
+    }
+
+    return last;
+}
+
+function findBuddy(g, current) {
+    var parents = g.edges().filter(edge => edge.w === current).map(edge => edge.v);
+
+    var buddies = g.edges().filter(edge => parents.indexOf(edge.v) >= 0);
+
+    var left = right = current;
+    var i;
+    for(i = 0; i < buddies.length; i++) {
+        if (buddies[i].w == current) {
+            break;
+        }
+
+        left = buddies[i].w;
+    }
+    
+    if (i < buddies.length - 1) {
+        right = buddies[i + 1].w;
+    }
+
+    return { left: left, right: right }
 }
 
 function renderJobGraphForSelectedJob(d) {
     var job = spark.jobStartEvents[d - 1];
-    document.jobGraphFocusStack.push(d);
+    jobGraphFocusStack.push(d);
 
     renderJobGraph(job);
 }
@@ -201,6 +331,11 @@ function renderJobGraph(job) {
         .attr('tabindex', "0")
         .attr('title', function(d, v) {
             return setToolTipForStage(d);
+        })
+        .on('keydown', function(d) {
+            var upDownFocusStack = jobGraphUpDownFocusStacks.jobView;
+
+            moveFocusByArrows(d3.event.code, g, d, upDownFocusStack);
         })
         .each(function(v) {
             $(this).tipsy({
