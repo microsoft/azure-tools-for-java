@@ -53,10 +53,10 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
     }
 
     @Override
-    public FlightRecorderConfiguration getData() {
+    public FlightRecorderConfiguration getValue() {
         final FlightRecorderConfiguration.FlightRecorderConfigurationBuilder builder =
                 FlightRecorderConfiguration.builder();
-        builder.duration(this.durationPanel.getData());
+        builder.duration(this.durationPanel.getValue());
         ProcessInfo pi = this.processComboBox1.getValue();
         if (pi != null) {
             builder.pid(pi.getId());
@@ -66,9 +66,9 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
     }
 
     @Override
-    public void setData(final FlightRecorderConfiguration data) {
+    public void setValue(final FlightRecorderConfiguration data) {
         // no need to persist process list since it is volatile
-        this.durationPanel.setData(data.getDuration());
+        this.durationPanel.setValue(data.getDuration());
     }
 
     @Override

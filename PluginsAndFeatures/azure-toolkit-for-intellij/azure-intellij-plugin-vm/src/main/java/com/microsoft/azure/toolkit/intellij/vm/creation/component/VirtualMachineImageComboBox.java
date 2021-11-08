@@ -40,7 +40,7 @@ public class VirtualMachineImageComboBox extends AzureComboBox<AzureImage> {
         }
         final VirtualMachineImageDialog dialog = new VirtualMachineImageDialog(subscription, region);
         if (dialog.showAndGet()) {
-            customImage = dialog.getData();
+            customImage = dialog.getValue();
             refreshItems();
             setValue(customImage);
         }

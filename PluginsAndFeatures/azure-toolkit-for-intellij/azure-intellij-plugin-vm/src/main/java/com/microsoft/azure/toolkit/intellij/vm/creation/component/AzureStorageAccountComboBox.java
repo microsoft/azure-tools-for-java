@@ -74,7 +74,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
     private void createStorageAccount() {
         final VMStorageAccountCreationDialog creationDialog = new VMStorageAccountCreationDialog(null);
         if (creationDialog.showAndGet()) {
-            draft = creationDialog.getData();
+            draft = creationDialog.getValue();
             this.addItem(draft);
             setValue(draft);
         }

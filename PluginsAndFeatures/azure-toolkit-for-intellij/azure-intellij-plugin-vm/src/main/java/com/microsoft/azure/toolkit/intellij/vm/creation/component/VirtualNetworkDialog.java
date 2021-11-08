@@ -66,7 +66,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     }
 
     @Override
-    public DraftNetwork getData() {
+    public DraftNetwork getValue() {
         final DraftNetwork draftNetwork = new DraftNetwork(subscriptionId, resourceGroup, txtName.getValue());
         draftNetwork.setRegion(region);
         draftNetwork.setAddressSpace(txtAddressSpace.getValue());
@@ -76,7 +76,7 @@ public class VirtualNetworkDialog extends AzureDialog<DraftNetwork> implements A
     }
 
     @Override
-    public void setData(DraftNetwork data) {
+    public void setValue(DraftNetwork data) {
         txtName.setText(data.getName());
         txtAddressSpace.setText(data.getAddressSpace());
         txtSubnetName.setText(data.getSubnet());

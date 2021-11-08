@@ -80,7 +80,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public DraftServicePlan getData() {
+    public DraftServicePlan getValue() {
         return new DraftServicePlan(this.subscription,
                this.textName.getValue(),
                this.region,
@@ -89,7 +89,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
-    public void setData(final DraftServicePlan data) {
+    public void setValue(final DraftServicePlan data) {
         this.subscription = data.getSubscription();
         this.os = data.getOperatingSystem();
         this.region = Region.fromName(data.getRegion());

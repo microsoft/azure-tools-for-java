@@ -132,7 +132,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     @Override
     protected @NotNull List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
-        AuthConfiguration data = getData();
+        AuthConfiguration data = getValue();
         if (StringUtils.isBlank(data.getTenant())) {
             res.add(new ValidationInfo("tenant is required.", tenantIdTextField));
         }
@@ -191,7 +191,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         return editorTextField;
     }
 
-    public AuthConfiguration getData() {
+    public AuthConfiguration getValue() {
         AuthConfiguration data = new AuthConfiguration();
 
         data.setClient(clientIdTextField.getText());
@@ -206,7 +206,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     @Override
-    public void setData(AuthConfiguration data) {
+    public void setValue(AuthConfiguration data) {
         this.auth = data;
     }
 
@@ -260,7 +260,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         }
         try {
             Map<String, String> map = new LinkedHashMap<>();
-            AuthConfiguration data = getData();
+            AuthConfiguration data = getValue();
 
             if (this.certificateRadioButton.isSelected()) {
                 map.put("fileWithCertAndPrivateKey", data.getCertificate());

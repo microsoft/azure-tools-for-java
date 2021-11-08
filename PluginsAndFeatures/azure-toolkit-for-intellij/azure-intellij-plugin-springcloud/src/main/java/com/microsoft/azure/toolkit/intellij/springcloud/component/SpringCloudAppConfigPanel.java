@@ -98,7 +98,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     public void reset() {
-        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalConfig).ifPresent(this::setData));
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(this.originalConfig).ifPresent(this::setValue));
     }
 
     public void setDataChangedListener(Consumer<? super SpringCloudAppConfig> listener) {
@@ -107,7 +107,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
 
     private void onDataChanged() {
         if (Objects.nonNull(this.originalConfig) && Objects.nonNull(this.listener)) {
-            final SpringCloudAppConfig newConfig = this.getData();
+            final SpringCloudAppConfig newConfig = this.getValue();
             this.listener.accept(newConfig);
         }
     }
@@ -163,7 +163,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     @Contract("_->_")
-    public SpringCloudAppConfig getData(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
+    public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
@@ -178,7 +178,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     @Override
-    public synchronized void setData(SpringCloudAppConfig config) {
+    public synchronized void setValue(SpringCloudAppConfig config) {
         this.originalConfig = config;
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggleStorage(deployment.getEnablePersistentStorage());
@@ -197,11 +197,12 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     @Nonnull
-    public SpringCloudAppConfig getData() {
+    @Override
+    public SpringCloudAppConfig getValue() {
         final SpringCloudAppConfig appConfig = SpringCloudAppConfig.builder()
                 .deployment(SpringCloudDeploymentConfig.builder().build())
                 .build();
-        this.getData(appConfig);
+        this.getValue(appConfig);
         return appConfig;
     }
 

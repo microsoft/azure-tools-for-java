@@ -45,7 +45,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         init();
         initListeners();
-        setData(config);
+        setValue(config);
     }
 
     private void init() {
@@ -77,7 +77,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     }
 
     @Override
-    public SqlServerConfig getData() {
+    public SqlServerConfig getValue() {
         config.setServerName(serverNameTextField.getText());
         config.setAdminUsername(adminUsernameTextField.getText());
         config.setPassword(passwordField.getPassword());
@@ -86,7 +86,7 @@ public class SqlServerCreationBasicPanel extends JPanel implements AzureFormPane
     }
 
     @Override
-    public void setData(SqlServerConfig data) {
+    public void setValue(SqlServerConfig data) {
         if (StringUtils.isNotBlank(config.getServerName())) {
             serverNameTextField.setText(config.getServerName());
         }

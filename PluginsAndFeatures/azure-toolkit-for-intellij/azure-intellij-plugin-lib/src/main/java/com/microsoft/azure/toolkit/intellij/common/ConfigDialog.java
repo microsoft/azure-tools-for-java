@@ -24,11 +24,11 @@ public abstract class ConfigDialog<T> extends AzureDialog<T> {
     }
 
     public void setData(final T config) {
-        this.getForm().setData(config);
+        this.getForm().setValue(config);
     }
 
     public T getData() {
-        return this.getForm().getData();
+        return this.getForm().getValue();
     }
 
     @AzureOperation(name = "common.toggle_config_mode.ui", type = AzureOperation.Type.TASK)
@@ -37,7 +37,7 @@ public abstract class ConfigDialog<T> extends AzureDialog<T> {
         final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
         final AzureFormPanel<T> followingForm = advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
         previousForm.setVisible(false);
-        followingForm.setData(previousForm.getData());
+        followingForm.setValue(previousForm.getValue());
         followingForm.setVisible(true);
         this.repaint();
     }

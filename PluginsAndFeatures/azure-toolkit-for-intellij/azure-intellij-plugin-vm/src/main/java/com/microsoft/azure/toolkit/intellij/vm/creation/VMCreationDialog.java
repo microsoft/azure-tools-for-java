@@ -135,8 +135,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         this.project = project;
 
         $$$setupUI$$$();
-        pnlPorts.addActionListenerToComponents(e -> pnlBasicPorts.setData(pnlPorts.getData()));
-        pnlBasicPorts.addActionListenerToComponents(e -> pnlPorts.setData(pnlBasicPorts.getData()));
+        pnlPorts.addActionListenerToComponents(e -> pnlBasicPorts.setValue(pnlPorts.getValue()));
+        pnlBasicPorts.addActionListenerToComponents(e -> pnlPorts.setValue(pnlBasicPorts.getValue()));
         init();
     }
 
@@ -350,7 +350,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public DraftVirtualMachine getData() {
+    public DraftVirtualMachine getValue() {
         final Subscription subscription = cbSubscription.getValue();
         final String subscriptionId = Optional.ofNullable(subscription).map(Subscription::getId).orElse(StringUtils.EMPTY);
         final ResourceGroup resourceGroup = cbResourceGroup.getValue();
@@ -399,7 +399,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
             draftNetworkSecurityGroup.setResourceGroup(resourceGroupName);
             draftNetworkSecurityGroup.setName(vmName + "-sg" + Utils.getTimestamp());
             draftNetworkSecurityGroup.setRegion(cbRegion.getValue());
-            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getData());
+            draftNetworkSecurityGroup.setSecurityRuleList(pnlPorts.getValue());
             draftVirtualMachine.setSecurityGroup(draftNetworkSecurityGroup);
         }
         draftVirtualMachine.setStorageAccount(cbStorageAccount.getValue());
@@ -423,7 +423,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
     }
 
     @Override
-    public void setData(DraftVirtualMachine data) {
+    public void setValue(DraftVirtualMachine data) {
         Optional.ofNullable(data.getResourceGroup()).ifPresent(groupName -> cbResourceGroup.setValue(
                 new AzureComboBox.ItemReference<>(group -> StringUtils.equalsIgnoreCase(group.getName(), groupName))));
         Optional.ofNullable(data.getSubscriptionId()).ifPresent(id -> cbSubscription.setValue(
@@ -443,8 +443,8 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 rdoBasicSecurityGroup.setSelected(true);
                 final List<SecurityRule> securityRuleList = ((DraftNetworkSecurityGroup) networkSecurityGroup).getSecurityRuleList();
                 rdoAllowSelectedInboundPorts.setSelected(!Collections.isEmpty(securityRuleList));
-                pnlPorts.setData(securityRuleList);
-                pnlBasicPorts.setData(securityRuleList);
+                pnlPorts.setValue(securityRuleList);
+                pnlBasicPorts.setValue(securityRuleList);
             } else if (networkSecurityGroup.exists()) {
                 rdoAdvancedSecurityGroup.setSelected(true);
                 cbSecurityGroup.setData(networkSecurityGroup);

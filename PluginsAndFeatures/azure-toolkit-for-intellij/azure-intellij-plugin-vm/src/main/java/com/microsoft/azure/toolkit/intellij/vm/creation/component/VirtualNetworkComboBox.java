@@ -79,9 +79,9 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
         final DraftNetwork defaultNetwork = DraftNetwork.getDefaultNetworkDraft();
         final VirtualNetworkDialog dialog = new VirtualNetworkDialog(subscription.getId(), resourceGroup.getName(), region);
-        dialog.setData(defaultNetwork);
+        dialog.setValue(defaultNetwork);
         if (dialog.showAndGet()) {
-            this.draftNetwork = dialog.getData();
+            this.draftNetwork = dialog.getValue();
             this.addItem(draftNetwork);
             setValue(draftNetwork);
         }

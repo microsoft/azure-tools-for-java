@@ -93,7 +93,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
     }
 
     void refreshSelectedApplication() {
-        var application = getData();
+        var application = getValue();
         if (application != null) {
             applyTemplate(application);
         }
@@ -154,12 +154,12 @@ class ApplicationTemplateForm implements AzureForm<Application> {
 
     @Override
     @Nullable
-    public Application getData() {
+    public Application getValue() {
         return applicationsBox.getValue();
     }
 
     @Override
-    public void setData(Application applicationInner) {
+    public void setValue(Application applicationInner) {
         applicationsBox.setSelectedItem(applicationInner);
     }
 

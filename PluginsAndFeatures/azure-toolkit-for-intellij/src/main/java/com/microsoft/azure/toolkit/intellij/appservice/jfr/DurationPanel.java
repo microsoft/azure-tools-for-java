@@ -56,12 +56,12 @@ public class DurationPanel extends JPanel implements AzureFormPanel<Integer> {
     }
 
     @Override
-    public Integer getData() {
+    public Integer getValue() {
         return this.textField1.getValue();
     }
 
     @Override
-    public void setData(Integer data) {
+    public void setValue(Integer data) {
         if (Objects.nonNull(data)) {
             this.textField1.setValue(data);
             this.slider1.setValue(data);

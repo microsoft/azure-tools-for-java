@@ -58,7 +58,7 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
         this.subscriptionComboBox.setPreferredSize(new Dimension(340, this.subscriptionComboBox.getPreferredSize().height));
         init();
         initListeners();
-        setData(config);
+        setValue(config);
     }
 
     protected void initListeners() {
@@ -101,7 +101,7 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
     }
 
     @Override
-    public StorageAccountConfig getData() {
+    public StorageAccountConfig getValue() {
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
         config.setName(accountNameTextField.getText());
@@ -113,7 +113,7 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
     }
 
     @Override
-    public void setData(StorageAccountConfig config) {
+    public void setValue(StorageAccountConfig config) {
         Optional.ofNullable(config.getName()).ifPresent(e -> accountNameTextField.setValue(e));
         Optional.ofNullable(config.getSubscription()).ifPresent(e -> subscriptionComboBox.setValue(e));
         Optional.ofNullable(config.getResourceGroup()).ifPresent(e -> resourceGroupComboBox.setValue(e));

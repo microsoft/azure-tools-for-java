@@ -206,7 +206,7 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     }
 
     @Override
-    public Database getData() {
+    public Database getValue() {
         final Password password = new Password();
         password.password(inputPasswordField.getPassword());
         password.saveType(passwordSaveComboBox.getValue());
@@ -219,7 +219,7 @@ public abstract class DatabaseResourcePanel<S extends IDatabaseServer, D extends
     }
 
     @Override
-    public void setData(Database db) {
+    public void setValue(Database db) {
         Optional.ofNullable(db.getServerId()).ifPresent((serverId -> {
             this.subscriptionComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.subscriptionId(), Subscription::getId));
             this.serverComboBox.setValue(new AzureComboBox.ItemReference<>(serverId.name(), server -> server.entity().getName()));

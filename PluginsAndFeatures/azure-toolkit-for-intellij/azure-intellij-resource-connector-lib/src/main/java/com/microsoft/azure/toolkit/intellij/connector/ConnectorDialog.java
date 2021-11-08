@@ -136,9 +136,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public Connection<?, ?> getData() {
-        final Object resourceData = this.resourcePanel.getData();
-        final Object consumerData = this.consumerPanel.getData();
+    public Connection<?, ?> getValue() {
+        final Object resourceData = this.resourcePanel.getValue();
+        final Object consumerData = this.consumerPanel.getValue();
         final ResourceDefinition resourceDef = this.resourceTypeSelector.getValue();
         final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
         final Resource resource = resourceDef.define(resourceData);
@@ -149,7 +149,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     @Override
-    public void setData(Connection<?, ?> connection) {
+    public void setValue(Connection<?, ?> connection) {
         this.setConsumer(connection.getConsumer());
         this.setResource(connection.getResource());
         this.envPrefixTextField.setText(connection.getEnvPrefix());
@@ -169,7 +169,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (Objects.nonNull(resource)) {
             this.setResourceDefinition(resource.getDefinition());
             //noinspection unchecked
-            this.resourcePanel.setData(resource.getData());
+            this.resourcePanel.setValue(resource.getData());
             this.resourceTypeSelector.setEnabled(false);
         } else {
             ResourceManager.getDefinitions(RESOURCE).stream().findFirst().ifPresent(this::setResourceDefinition);
@@ -180,7 +180,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (Objects.nonNull(consumer)) {
             this.setConsumerDefinition(consumer.getDefinition());
             //noinspection unchecked
-            this.consumerPanel.setData(consumer.getData());
+            this.consumerPanel.setValue(consumer.getData());
             this.consumerTypeSelector.setEnabled(false);
         } else {
             ResourceManager.getDefinitions(CONSUMER).stream().findFirst().ifPresent(this::setConsumerDefinition);

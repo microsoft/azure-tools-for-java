@@ -63,7 +63,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
         this.passwordSaveComboBox.setPreferredSize(lastColumnSize);
         this.passwordSaveComboBox.setMaximumSize(lastColumnSize);
         this.passwordSaveComboBox.setSize(lastColumnSize);
-        this.setData(this.database.getPassword());
+        this.setValue(this.database.getPassword());
         this.init();
         this.initListener();
     }
@@ -143,7 +143,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
     }
 
     @Override
-    public Password getData() {
+    public Password getValue() {
         final Password config = new Password();
         config.saveType(passwordSaveComboBox.getValue());
         config.password(passwordField.getPassword());
@@ -151,7 +151,7 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
     }
 
     @Override
-    public void setData(Password data) {
+    public void setValue(Password data) {
         this.passwordSaveComboBox.setValue(Optional.ofNullable(data).map(Password::saveType).orElse(Arrays.stream(Password.SaveType.values())
                 .filter(e -> StringUtils.equals(e.name(), Azure.az().config().getDatabasePasswordSaveType())).findAny()
                 .orElse(Password.SaveType.UNTIL_RESTART)));

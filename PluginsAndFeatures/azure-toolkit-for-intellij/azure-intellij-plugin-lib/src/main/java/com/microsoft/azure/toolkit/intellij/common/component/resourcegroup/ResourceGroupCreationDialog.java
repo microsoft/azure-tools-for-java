@@ -53,12 +53,12 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
-    public DraftResourceGroup getData() {
+    public DraftResourceGroup getValue() {
         return new DraftResourceGroup(this.subscription, this.textName.getValue());
     }
 
     @Override
-    public void setData(final DraftResourceGroup data) {
+    public void setValue(final DraftResourceGroup data) {
         this.subscription = data.getSubscription();
         this.textName.setValue(data.getName());
     }

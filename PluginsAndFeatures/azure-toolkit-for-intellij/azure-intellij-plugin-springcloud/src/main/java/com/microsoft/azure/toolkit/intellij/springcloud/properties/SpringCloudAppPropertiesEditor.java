@@ -73,7 +73,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
             }));
             AzureTaskManager.getInstance().runOnPooledThread((() -> {
                 this.originalConfig = SpringCloudAppConfig.fromApp(this.app);
-                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setData(this.originalConfig));
+                AzureTaskManager.getInstance().runLater(() -> this.formConfig.setValue(this.originalConfig));
             }));
             this.panelInstances.setApp(this.app);
         });
@@ -138,7 +138,7 @@ public class SpringCloudAppPropertiesEditor extends BaseEditor {
 
     @Nonnull
     private SpringCloudAppConfig getConfig() {
-        final SpringCloudAppConfig config = this.formConfig.getData();
+        final SpringCloudAppConfig config = this.formConfig.getValue();
         config.setSubscriptionId(this.app.subscriptionId());
         config.setClusterName(this.app.getCluster().name());
         config.setAppName(this.app.name());

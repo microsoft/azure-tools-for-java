@@ -51,16 +51,16 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
     }
 
     @Override
-    public FunctionAppConfig getData() {
-        final FunctionAppConfig data = appServiceConfigPanelAdvanced.getData();
-        data.setMonitorConfig(appServiceMonitorPanel.getData());
+    public FunctionAppConfig getValue() {
+        final FunctionAppConfig data = appServiceConfigPanelAdvanced.getValue();
+        data.setMonitorConfig(appServiceMonitorPanel.getValue());
         return data;
     }
 
     @Override
-    public void setData(final FunctionAppConfig data) {
-        appServiceConfigPanelAdvanced.setData(data);
-        appServiceMonitorPanel.setData(data.getMonitorConfig());
+    public void setValue(final FunctionAppConfig data) {
+        appServiceConfigPanelAdvanced.setValue(data);
+        appServiceMonitorPanel.setValue(data.getMonitorConfig());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
 
         appServiceMonitorPanel = new AppServiceMonitorPanel(project);
         appServiceMonitorPanel.setWebServerLogVisible(false);
-        appServiceMonitorPanel.setData(MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build());
+        appServiceMonitorPanel.setValue(MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build());
 
         appServiceConfigPanelAdvanced.getSelectorSubscription().addActionListener(event ->
                 appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue()));

@@ -142,7 +142,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     }
 
     @Override
-    public RedisConfig getData() {
+    public RedisConfig getValue() {
         final RedisConfig config = new RedisConfig();
         config.setSubscription(subscriptionComboBox.getValue());
         config.setResourceGroup(resourceGroupComboBox.getValue());
@@ -154,7 +154,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     }
 
     @Override
-    public void setData(RedisConfig config) {
+    public void setValue(RedisConfig config) {
         Optional.ofNullable(config.getName()).ifPresent(e -> redisNameTextField.setText(e));
         Optional.ofNullable(config.getSubscription()).ifPresent(e -> subscriptionComboBox.setValue(e));
         Optional.ofNullable(config.getResourceGroup()).ifPresent(e -> resourceGroupComboBox.setValue(e));

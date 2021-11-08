@@ -96,7 +96,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     private void openDialog(Connection<?, ?> c, Project project) {
         AzureTaskManager.getInstance().runLater(() -> {
             final ConnectorDialog dialog = new ConnectorDialog(project);
-            dialog.setData(c);
+            dialog.setValue(c);
             dialog.show();
         });
     }

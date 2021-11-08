@@ -106,7 +106,7 @@ public class DatabaseResource implements Resource<Database> {
         AzureTaskManager.getInstance().runAndWait(AzureOperationBundle.title("mysql.update_password"), () -> {
             final PasswordDialog dialog = new PasswordDialog(project, this.data);
             if (dialog.showAndGet()) {
-                final Password password = dialog.getData();
+                final Password password = dialog.getValue();
                 this.data.getPassword().saveType(password.saveType());
                 PasswordStore.savePassword(this.definition.getName(),
                         this.getDataId(), this.data.getUsername(), password.password(), password.saveType());

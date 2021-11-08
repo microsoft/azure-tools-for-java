@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public interface AzureFormPanel<T> extends AzureForm<T> {
@@ -19,7 +18,7 @@ public interface AzureFormPanel<T> extends AzureForm<T> {
     }
 
     @Override
-    default T getData() {
+    default T getValue() {
         throw new AzureToolkitRuntimeException("method not implemented");
     }
 

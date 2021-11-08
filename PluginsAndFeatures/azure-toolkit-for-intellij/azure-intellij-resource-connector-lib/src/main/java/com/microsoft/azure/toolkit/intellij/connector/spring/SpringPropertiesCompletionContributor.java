@@ -88,7 +88,7 @@ public class SpringPropertiesCompletionContributor extends CompletionContributor
                 dialog.setConsumer(new ModuleResource(module.getName()));
                 dialog.setResourceDefinition(definition);
                 if (dialog.showAndGet()) {
-                    final Connection<?, ?> c = dialog.getData();
+                    final Connection<?, ?> c = dialog.getValue();
                     WriteCommandAction.runWriteCommandAction(project, () -> this.insert(c, context));
                 } else {
                     WriteCommandAction.runWriteCommandAction(project, () -> {

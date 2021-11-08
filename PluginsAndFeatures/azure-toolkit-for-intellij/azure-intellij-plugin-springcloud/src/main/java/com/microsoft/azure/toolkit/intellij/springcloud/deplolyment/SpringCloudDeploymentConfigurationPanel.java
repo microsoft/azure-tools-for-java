@@ -99,13 +99,12 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         }
     }
 
-    public synchronized void setData(SpringCloudAppConfig appConfig) {
+    @Override
+    public synchronized void setValue(SpringCloudAppConfig appConfig) {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final SpringCloudCluster cluster = Azure.az(AzureSpringCloud.class).cluster(appConfig.getClusterName());
             if (Objects.nonNull(cluster) && !cluster.app(appConfig.getAppName()).exists()) {
-                AzureTaskManager.getInstance().runLater(() -> {
-                    this.selectorApp.addLocalItem(cluster.app(appConfig));
-                });
+                AzureTaskManager.getInstance().runLater(() -> this.selectorApp.addLocalItem(cluster.app(appConfig)));
             }
         });
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
@@ -121,18 +120,19 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
     }
 
     @Nullable
-    public SpringCloudAppConfig getData() {
+    @Override
+    public SpringCloudAppConfig getValue() {
         SpringCloudAppConfig appConfig = this.selectorApp.getValue().entity().getConfig();
         if (Objects.isNull(appConfig)) {
             appConfig = SpringCloudAppConfig.builder()
                     .deployment(SpringCloudDeploymentConfig.builder().build())
                     .build();
         }
-        this.getData(appConfig);
+        this.getValue(appConfig);
         return appConfig;
     }
 
-    public SpringCloudAppConfig getData(SpringCloudAppConfig appConfig) {
+    public SpringCloudAppConfig getValue(SpringCloudAppConfig appConfig) {
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         appConfig.setSubscriptionId(this.selectorSubscription.getValue().getId());
         appConfig.setClusterName(this.selectorCluster.getValue().name());

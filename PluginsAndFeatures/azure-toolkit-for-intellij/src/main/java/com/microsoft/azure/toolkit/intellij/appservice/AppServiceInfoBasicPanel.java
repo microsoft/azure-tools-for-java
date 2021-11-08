@@ -76,7 +76,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
         });
         this.setDeploymentVisible(false);
         this.config = initConfig();
-        setData(this.config);
+        setValue(this.config);
 
         this.lblName.setLabelFor(textName);
         this.lblPlatform.setLabelFor(selectorRuntime);
@@ -85,7 +85,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     @SneakyThrows
     @Override
-    public T getData() {
+    public T getValue() {
         final String name = this.textName.getValue();
         final Runtime platform = this.selectorRuntime.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
@@ -120,7 +120,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     }
 
     @Override
-    public void setData(final T config) {
+    public void setValue(final T config) {
         this.textName.setValue(config.getName());
         this.selectorRuntime.setValue(config.getRuntime());
     }

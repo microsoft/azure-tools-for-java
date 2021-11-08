@@ -116,7 +116,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         });
 
         if (ui.showAndGet()) {
-            return ui.getData();
+            return ui.getValue();
         }
         return null;
     }

@@ -58,7 +58,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         selectorCluster.addItemListener(this::onClusterChanged);
         textName.setRequired(true);
         textName.setValue(this.defaultAppName);
-        textName.setValidator(() -> {
+        textName.addValidator(() -> {
             try {
                 validateSpringCloudAppName(textName.getValue(), this.cluster);
             } catch (final IllegalArgumentException e) {
@@ -93,26 +93,27 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
         if (Objects.isNull(this.originalConfig)) {
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 this.originalConfig = SpringCloudAppConfig.fromApp(app);
-                AzureTaskManager.getInstance().runLater(() -> this.setData(this.originalConfig));
+                AzureTaskManager.getInstance().runLater(() -> this.setValue(this.originalConfig));
             });
         }
     }
 
-    protected SpringCloudAppConfig getData(SpringCloudAppConfig config) {
+    protected SpringCloudAppConfig getValue(SpringCloudAppConfig config) {
         config.setSubscriptionId(Optional.ofNullable(this.getSelectorSubscription().getValue()).map(Subscription::getId).orElse(null));
         config.setClusterName(Optional.ofNullable(this.getSelectorCluster().getValue()).map(IAzureResource::name).orElse(null));
         config.setAppName(this.getTextName().getValue());
         return config;
     }
 
-    public SpringCloudAppConfig getData() {
+    @Override
+    public SpringCloudAppConfig getValue() {
         final SpringCloudAppConfig config = Optional.ofNullable(this.originalConfig)
                 .orElse(SpringCloudAppConfig.builder().deployment(SpringCloudDeploymentConfig.builder().build()).build());
-        return getData(config);
+        return getValue(config);
     }
 
     @Override
-    public synchronized void setData(final SpringCloudAppConfig config) {
+    public synchronized void setValue(final SpringCloudAppConfig config) {
         final Integer count = config.getDeployment().getInstanceCount();
         config.getDeployment().setInstanceCount(Objects.isNull(count) || count == 0 ? 1 : count);
         this.originalConfig = config;

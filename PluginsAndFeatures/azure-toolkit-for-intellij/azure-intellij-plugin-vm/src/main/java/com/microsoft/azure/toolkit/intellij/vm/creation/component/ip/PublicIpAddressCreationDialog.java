@@ -59,14 +59,14 @@ public class PublicIpAddressCreationDialog extends AzureDialog<DraftPublicIpAddr
     }
 
     @Override
-    public DraftPublicIpAddress getData() {
+    public DraftPublicIpAddress getValue() {
         final DraftPublicIpAddress draftPublicIpAddress = new DraftPublicIpAddress(this.subscription.getId(), this.resourceGroup.getName(), this.txtName.getValue());
         draftPublicIpAddress.setRegion(region);
         return draftPublicIpAddress;
     }
 
     @Override
-    public void setData(final DraftPublicIpAddress data) {
+    public void setValue(final DraftPublicIpAddress data) {
         this.subscription = data.subscription();
         this.txtName.setValue(data.getName());
     }

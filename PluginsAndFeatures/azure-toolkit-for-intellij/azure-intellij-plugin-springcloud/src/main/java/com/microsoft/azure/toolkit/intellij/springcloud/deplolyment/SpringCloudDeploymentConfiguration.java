@@ -154,20 +154,20 @@ public class SpringCloudDeploymentConfiguration extends LocatableConfigurationBa
                 if (Objects.nonNull(config.app)) {
                     config.appConfig = SpringCloudAppConfig.fromApp(config.app);
                 }
-                AzureTaskManager.getInstance().runLater(() -> this.panel.setData(config.appConfig), AzureTask.Modality.ANY);
+                AzureTaskManager.getInstance().runLater(() -> this.panel.setValue(config.appConfig), AzureTask.Modality.ANY);
             });
         }
 
         @Override
         protected void applyEditorTo(@NotNull SpringCloudDeploymentConfiguration config) throws ConfigurationException {
-            final List<AzureValidationInfo> infos = this.panel.validateData();
+            final List<AzureValidationInfo> infos = this.panel.validateAllInputs();
             final AzureValidationInfo error = infos.stream()
                     .filter(i -> i.getType() == AzureValidationInfo.Type.ERROR)
                     .findAny().orElse(null);
             if (Objects.nonNull(error)) {
                 throw new ConfigurationException(error.getMessage());
             }
-            config.appConfig = this.panel.getData();
+            config.appConfig = this.panel.getValue();
         }
 
         @Override

@@ -32,7 +32,7 @@ public class InboundPortRulesForm extends JPanel implements AzureForm<List<Secur
     }
 
     @Override
-    public List<SecurityRule> getData() {
+    public List<SecurityRule> getValue() {
         final List<SecurityRule> policies = new ArrayList<>();
         Optional.ofNullable(chkHTTP.isSelected() ? SecurityRule.HTTP_RULE : null).ifPresent(policies::add);
         Optional.ofNullable(chkHTTPS.isSelected() ? SecurityRule.HTTPS_RULE : null).ifPresent(policies::add);
@@ -42,7 +42,7 @@ public class InboundPortRulesForm extends JPanel implements AzureForm<List<Secur
     }
 
     @Override
-    public void setData(List<SecurityRule> data) {
+    public void setValue(List<SecurityRule> data) {
         if (CollectionUtils.isEmpty(data)) {
             Stream.of(chkRDP, chkHTTP, chkHTTPS, chkSSH).forEach(component -> component.setSelected(false));
             return;

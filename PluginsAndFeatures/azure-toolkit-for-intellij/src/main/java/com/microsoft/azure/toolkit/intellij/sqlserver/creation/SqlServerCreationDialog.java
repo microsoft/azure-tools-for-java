@@ -63,9 +63,9 @@ public class SqlServerCreationDialog extends AzureDialog<SqlServerConfig> {
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         if (advancedMode) {
-            advanced.setData(basic.getData());
+            advanced.setValue(basic.getValue());
         } else {
-            basic.setData(advanced.getData());
+            basic.setValue(advanced.getValue());
         }
         advanced.setVisible(advancedMode);
         basic.setVisible(!advancedMode);

@@ -59,12 +59,12 @@ public class VirtualMachineImageDialog extends AzureDialog<AzureImage> implement
     }
 
     @Override
-    public AzureImage getData() {
+    public AzureImage getValue() {
         return cbImage.getValue();
     }
 
     @Override
-    public void setData(AzureImage data) {
+    public void setValue(AzureImage data) {
 
     }
 

@@ -127,7 +127,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         }
         final PublicIpAddressCreationDialog dialog = new PublicIpAddressCreationDialog(this.subscription, this.resourceGroup, this.region);
         if (dialog.showAndGet()) {
-            this.draftPublicIpAddress = dialog.getData();
+            this.draftPublicIpAddress = dialog.getValue();
             this.addItem(draftPublicIpAddress);
             setValue(draftPublicIpAddress);
         }

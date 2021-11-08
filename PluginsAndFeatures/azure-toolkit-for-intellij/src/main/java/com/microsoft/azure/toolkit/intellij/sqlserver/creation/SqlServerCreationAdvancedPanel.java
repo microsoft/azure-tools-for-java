@@ -59,7 +59,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         init();
         initListeners();
-        setData(config);
+        setValue(config);
     }
 
     private void init() {
@@ -103,7 +103,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     }
 
     @Override
-    public SqlServerConfig getData() {
+    public SqlServerConfig getValue() {
         config.setServerName(serverNameTextField.getText());
         config.setAdminUsername(adminUsernameTextField.getText());
         config.setPassword(passwordField.getPassword());
@@ -117,7 +117,7 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     }
 
     @Override
-    public void setData(SqlServerConfig data) {
+    public void setValue(SqlServerConfig data) {
         if (StringUtils.isNotBlank(config.getServerName())) {
             serverNameTextField.setText(config.getServerName());
         }

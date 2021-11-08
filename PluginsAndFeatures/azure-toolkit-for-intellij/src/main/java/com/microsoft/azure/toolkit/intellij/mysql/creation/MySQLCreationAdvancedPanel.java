@@ -62,7 +62,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         init();
         initListeners();
-        setData(config);
+        setValue(config);
     }
 
     private void init() {
@@ -116,7 +116,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     }
 
     @Override
-    public AzureMySQLConfig getData() {
+    public AzureMySQLConfig getValue() {
         config.setServerName(serverNameTextField.getText());
         config.setAdminUsername(adminUsernameTextField.getText());
         config.setPassword(passwordField.getPassword());
@@ -133,7 +133,7 @@ public class MySQLCreationAdvancedPanel extends JPanel implements AzureFormPanel
     }
 
     @Override
-    public void setData(AzureMySQLConfig data) {
+    public void setValue(AzureMySQLConfig data) {
         if (StringUtils.isNotBlank(config.getServerName())) {
             serverNameTextField.setText(config.getServerName());
         }

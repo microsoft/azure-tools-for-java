@@ -227,7 +227,7 @@ public class AzureSignInAction extends AzureAnAction {
             if (!spDialog.showAndGet()) {
                 throw new InterruptedException("user cancel");
             }
-            auth = spDialog.getData();
+            auth = spDialog.getValue();
         }
         return auth;
     }

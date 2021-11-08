@@ -47,7 +47,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     }
 
     @Override
-    public void setData(StorageAccount account) {
+    public void setValue(StorageAccount account) {
         Optional.ofNullable(account).ifPresent((a -> {
             this.subscriptionComboBox.setValue(new ItemReference<>(a.subscriptionId(), Subscription::getId));
             this.accountComboBox.setValue(new ItemReference<>(a.name(), StorageAccount::name));
@@ -55,7 +55,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<StorageAccou
     }
 
     @Override
-    public StorageAccount getData() {
+    public StorageAccount getValue() {
         return this.accountComboBox.getValue();
     }
 

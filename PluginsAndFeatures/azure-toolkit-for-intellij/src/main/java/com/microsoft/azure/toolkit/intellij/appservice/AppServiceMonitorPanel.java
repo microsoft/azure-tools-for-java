@@ -90,7 +90,7 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     }
 
     @Override
-    public MonitorConfig getData() {
+    public MonitorConfig getValue() {
         final ApplicationInsightsConfig insightsConfig = (rdoEnableApplicationInsights.isSelected() && titleApplicationInsights.isVisible()) ?
                 applicationInsightsComboBox.getValue() : null;
         final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
@@ -105,7 +105,7 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     }
 
     @Override
-    public void setData(final MonitorConfig data) {
+    public void setValue(final MonitorConfig data) {
         if (titleApplicationInsights.isVisible()) {
             if (data.getApplicationInsightsConfig() != null) {
                 rdoEnableApplicationLog.setSelected(true);

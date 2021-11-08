@@ -30,7 +30,7 @@ public class CreateVirtualMachineAction {
 
     private static void showVirtualMachineCreationDialog(final Project project, final DraftVirtualMachine draftVirtualMachine) {
         final VMCreationDialog dialog = new VMCreationDialog(project);
-        dialog.setData(draftVirtualMachine);
+        dialog.setValue(draftVirtualMachine);
         dialog.setOkActionListener((config) -> {
             dialog.close();
             createVirtualMachine(config, dialog);

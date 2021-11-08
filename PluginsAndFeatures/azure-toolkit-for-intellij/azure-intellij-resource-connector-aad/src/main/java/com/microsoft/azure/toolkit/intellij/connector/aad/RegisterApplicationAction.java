@@ -67,7 +67,7 @@ public class RegisterApplicationAction extends AnAction {
                 return;
             }
 
-            var task = new RegisterApplicationTask(project, dialog.getForm().getData(), subscription);
+            var task = new RegisterApplicationTask(project, dialog.getForm().getValue(), subscription);
             var title = MessageBundle.message("action.azure.aad.registerApp.registeringApplication");
 
             AzureTaskManager.getInstance().runInBackground(title, task);

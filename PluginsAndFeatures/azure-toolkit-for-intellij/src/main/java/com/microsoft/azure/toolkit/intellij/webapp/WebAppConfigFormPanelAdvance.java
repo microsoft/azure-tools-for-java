@@ -40,16 +40,16 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
     }
 
     @Override
-    public WebAppConfig getData() {
-        final WebAppConfig data = appServiceConfigPanelAdvanced.getData();
-        data.setMonitorConfig(appServiceMonitorPanel.getData());
+    public WebAppConfig getValue() {
+        final WebAppConfig data = appServiceConfigPanelAdvanced.getValue();
+        data.setMonitorConfig(appServiceMonitorPanel.getValue());
         return data;
     }
 
     @Override
-    public void setData(final WebAppConfig data) {
-        appServiceConfigPanelAdvanced.setData(data);
-        appServiceMonitorPanel.setData(data.getMonitorConfig());
+    public void setValue(final WebAppConfig data) {
+        appServiceConfigPanelAdvanced.setValue(data);
+        appServiceMonitorPanel.setValue(data.getMonitorConfig());
     }
 
     @Override
@@ -74,7 +74,7 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
         appServiceMonitorPanel = new AppServiceMonitorPanel(project);
         // Application Insights is not supported in Web App
         appServiceMonitorPanel.setApplicationInsightsVisible(false);
-        appServiceMonitorPanel.setData(MonitorConfig.builder().build());
+        appServiceMonitorPanel.setValue(MonitorConfig.builder().build());
 
         appServiceConfigPanelAdvanced.getSelectorRuntime().addActionListener(event -> {
             final Runtime runtime = appServiceConfigPanelAdvanced.getSelectorRuntime().getValue();

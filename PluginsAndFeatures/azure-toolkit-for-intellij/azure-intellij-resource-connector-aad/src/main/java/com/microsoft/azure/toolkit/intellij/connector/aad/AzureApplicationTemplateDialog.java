@@ -114,7 +114,7 @@ class AzureApplicationTemplateDialog extends AzureDialog<Application> {
                 try {
                     // prefer the pair of predefined data, if available.
                     // In this case the form isn't necessarily referencing the same subscription as its UI box hidden
-                    var application = predefinedData != null ? predefinedData.getApplication() : form.getData();
+                    var application = predefinedData != null ? predefinedData.getApplication() : form.getValue();
                     var subscription = predefinedData != null ? predefinedData.getSubscription() : form.getSubscription();
                     if (application == null || subscription == null) {
                         return;

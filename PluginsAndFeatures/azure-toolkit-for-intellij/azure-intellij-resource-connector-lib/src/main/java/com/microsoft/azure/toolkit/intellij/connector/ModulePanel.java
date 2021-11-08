@@ -31,12 +31,12 @@ public class ModulePanel implements AzureFormJPanel<String> {
     }
 
     @Override
-    public String getData() {
+    public String getValue() {
         return moduleComboBox.getValue().getName();
     }
 
     @Override
-    public void setData(String module) {
+    public void setValue(String module) {
         Optional.ofNullable(module).ifPresent((m -> {
             final ItemReference<Module> val = new ItemReference<>(m, Module::getName);
             this.moduleComboBox.setValue(val);

@@ -78,7 +78,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     }
 
     @Override
-    public T getData() {
+    public T getValue() {
         final Subscription subscription = this.selectorSubscription.getValue();
         final ResourceGroup resourceGroup = this.selectorGroup.getValue();
         final String name = this.textName.getValue();
@@ -103,7 +103,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     }
 
     @Override
-    public void setData(final T config) {
+    public void setValue(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
         this.selectorGroup.setValue(config.getResourceGroup());
         this.textName.setValue(config.getName());

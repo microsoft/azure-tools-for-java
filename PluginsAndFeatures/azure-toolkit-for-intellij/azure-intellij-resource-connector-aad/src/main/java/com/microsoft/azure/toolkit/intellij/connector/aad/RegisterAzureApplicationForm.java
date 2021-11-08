@@ -71,7 +71,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     }
 
     @Override
-    public ApplicationRegistrationModel getData() {
+    public ApplicationRegistrationModel getValue() {
         var urls = callbackUrlsTable.getTableView().getItems()
                 .stream()
                 .map(StringBuilder::toString)
@@ -94,7 +94,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     }
 
     @Override
-    public void setData(ApplicationRegistrationModel data) {
+    public void setValue(ApplicationRegistrationModel data) {
         var callbackUrls = data.getCallbackUrls();
 
         displayNameInput.setText(data.getDisplayName());
@@ -138,7 +138,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
             model.setDomain(domain);
             model.setCallbackUrls(List.of(ApplicationRegistrationModel.DEFAULT_CALLBACK_URL));
 
-            AzureTaskManager.getInstance().runLater(() -> setData(model));
+            AzureTaskManager.getInstance().runLater(() -> setValue(model));
         }));
     }
 
