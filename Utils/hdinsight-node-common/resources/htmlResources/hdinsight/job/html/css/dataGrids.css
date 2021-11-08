@@ -72,7 +72,10 @@
   [role="gridcell"]:focus,
   [role="gridcell"] *:focus,
   [role="grid"] [tabindex="0"]:focus {
-    border: 2px solid var(--focus-color)
+    background-color: var(--selection-bg-color);
+    color: var(--selection-text-color);
+    font-weight: bold;
+    font-size: 13px;
   }
   
   #arrow-keys-indicator {
