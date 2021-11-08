@@ -1,7 +1,7 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.postgre.PostgreSqlExplorerContributor"/>
-        <actions implementation="com.microsoft.azure.toolkit.ide.postgre.PostgreSqlActionsContributor"/>
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
