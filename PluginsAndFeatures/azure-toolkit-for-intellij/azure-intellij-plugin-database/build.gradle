@@ -1,0 +1,24 @@
+intellij {
+}
+
+dependencies {
+    compile project(':azure-intellij-plugin-lib')
+    compile 'com.microsoft.azure:azure-toolkit-resource-lib:'+  azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-database-lib:'+  azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-mysql-lib:'+  azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-sqlserver-lib:'+  azureToolkitVersion
+    compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:'+  azureToolkitVersion
+
+    // TODO(andxu): remove the legacy dependencies
+    compile 'com.microsoft.azuretools:azuretools-core:3.59.0-SNAPSHOT', {
+        exclude group: "com.microsoft.azure", module: "azure-client-authentication"
+        exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
+    }
+
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.59.0-SNAPSHOT', {
+        exclude group: "com.microsoft.azure", module: "azure-client-authentication"
+        exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
+    }
+}

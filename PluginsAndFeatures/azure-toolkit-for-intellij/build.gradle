@@ -181,7 +181,7 @@ dependencies {
     compile project(':azure-intellij-plugin-storage')
     compile project(':azure-intellij-plugin-redis')
     compile project(':azure-intellij-plugin-service-explorer')
-
+    compile project(':azure-intellij-plugin-database')
     compile 'com.microsoft.azure:azure-client-authentication'
     compile 'com.microsoft.azure:azure-toolkit-resource-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
@@ -189,6 +189,7 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-mysql-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
     compile 'com.microsoft.azure:azure-toolkit-redis-lib'
+    compile 'com.microsoft.azure:azure-toolkit-postgre-lib'
     aspect "com.microsoft.azure:azure-toolkit-common-lib",  {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
@@ -222,6 +223,7 @@ dependencies {
     compile "com.github.akarnokd:rxjava3-interop:3.0.2"
     compile 'commons-io:commons-io'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.3.1'
     compile group: 'org.apache.commons', name: 'commons-lang3'
     compile 'net.minidev:json-smart:2.4.7'
     compile group: 'org.dom4j', name: 'dom4j', {

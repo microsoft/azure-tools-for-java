@@ -101,8 +101,8 @@
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.mysql.MySQLPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.sqlserver.properties.SqlServerPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.mysql.MySQLPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.properties.SqlServerPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"

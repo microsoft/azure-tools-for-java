@@ -41,6 +41,7 @@
         <module>azure-toolkit-ide-vm-lib</module>
         <module>azure-toolkit-ide-redis-lib</module>
         <module>azure-toolkit-ide-appservice-lib</module>
+        <module>azure-toolkit-ide-database-lib</module>
     </modules>
 
     <properties>
