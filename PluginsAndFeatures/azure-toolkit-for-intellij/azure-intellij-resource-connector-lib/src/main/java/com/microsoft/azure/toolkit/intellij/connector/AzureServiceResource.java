@@ -73,6 +73,11 @@ public class AzureServiceResource<T extends IAzureResource<?>> implements Resour
         AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SHOW_PROPERTIES).handle(this.getData(), event);
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getDefinition().title, this.getName());
+    }
+
     @Getter
     @RequiredArgsConstructor
     @EqualsAndHashCode(onlyExplicitlyIncluded = true)

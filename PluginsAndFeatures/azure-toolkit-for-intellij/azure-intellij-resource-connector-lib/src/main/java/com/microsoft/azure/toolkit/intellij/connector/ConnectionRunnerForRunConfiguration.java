@@ -56,7 +56,15 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
 
     @Override
     public String getDescription(MyBeforeRunTask task) {
-        return MyBeforeRunTask.DESCRIPTION;
+        final List<Connection<?, ?>> connections = task.getConnections();
+        if (CollectionUtils.isEmpty(connections)) {
+            return "No Azure resource is connected.";
+        }
+        if (connections.size() == 1) {
+            return String.format("Connect \"%s\"", connections.get(0).getResource().toString());
+        } else {
+            return String.format("Connect \"%s\" and %d other resources", connections.get(0).getResource().toString(), (connections.size() - 1));
+        }
     }
 
     @Nullable
