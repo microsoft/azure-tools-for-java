@@ -17,6 +17,7 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.util.containers.ContainerUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,23 +36,37 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class BeforeRunTaskUtils {
+public class BuildArtifactBeforeRunTaskUtils {
     private static final String GRADLE_TASK_ASSEMBLE = "assemble";
     private static final String MAVEN_TASK_PACKAGE = "package";
 
-    public static void addBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact, @Nonnull RunConfiguration config) {
+    public static void addBeforeRunTask(
+        @Nonnull ConfigurationSettingsEditorWrapper editor,
+        @Nonnull AzureArtifact artifact,
+        @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         final BeforeRunTask<?> task = createBuildTask(artifact, config);
         if (Objects.nonNull(task)) { // task is null if artifact is File type.
             addTask(editor, tasks, task, config);
         }
+        updateConnectorBeforeRunTask(config, editor);
     }
 
-    public static void removeBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
+    public static void removeBeforeRunTask(
+        @Nonnull ConfigurationSettingsEditorWrapper editor,
+        @Nonnull AzureArtifact artifact,
+        @Nonnull RunConfiguration config) {
         final List<? extends BeforeRunTask<?>> tasks = getBuildTasks(editor, artifact);
         removeTasks(editor, tasks);
+    }
+
+    private static void updateConnectorBeforeRunTask(@Nonnull RunConfiguration config, @Nonnull ConfigurationSettingsEditorWrapper editor) {
+        config.getProject().getMessageBus()
+            .syncPublisher(IWebAppRunConfiguration.MODULE_CHANGED)
+            .moduleMayChanged(config, editor);
     }
 
     public static List<? extends BeforeRunTask<?>> getBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull AzureArtifact artifact) {
@@ -142,10 +157,22 @@ public class BeforeRunTaskUtils {
     }
 
     @SneakyThrows
-    private static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, List<T> tasks) {
+    public static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, List<T> tasks) {
         // there is no way of removing tasks, use reflection
         final Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
         final CollectionListModel<T> model = (CollectionListModel<T>) FieldUtils.readField(myBeforeRunStepsPanelField, "myModel", true);
+        for (final T t : tasks) {
+            t.setEnabled(false);
+            model.remove(t);
+        }
+    }
+
+    @SneakyThrows
+    public static synchronized <T extends BeforeRunTask<?>> void removeTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, Predicate<T> cond) {
+        // there is no way of removing tasks, use reflection
+        final Object myBeforeRunStepsPanelField = FieldUtils.readField(editor, "myBeforeRunStepsPanel", true);
+        final CollectionListModel<T> model = (CollectionListModel<T>) FieldUtils.readField(myBeforeRunStepsPanelField, "myModel", true);
+        final List<T> tasks = model.getItems().stream().filter(cond).collect(Collectors.toList());
         for (final T t : tasks) {
             t.setEnabled(false);
             model.remove(t);

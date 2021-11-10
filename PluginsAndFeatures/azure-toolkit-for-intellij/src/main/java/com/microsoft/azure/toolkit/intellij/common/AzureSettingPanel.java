@@ -19,7 +19,7 @@ import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.intellij.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfiguration;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import com.microsoft.intellij.util.BeforeRunTaskUtils;
+import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     private boolean isArtifact;
     private boolean telemetrySent;
     private Artifact lastSelectedArtifact;
-    protected AzureArtifact lastSelectedAzureArtifact;
+    protected AzureArtifact currentArtifact;
     protected ISecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
@@ -143,21 +143,21 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         }
     }
 
-    protected void syncBeforeRunTasks(AzureArtifact azureArtifact, @NotNull final RunConfiguration configuration) {
-        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifact(lastSelectedAzureArtifact, azureArtifact)) {
+    protected void syncBeforeRunTasks(AzureArtifact newArtifact, @NotNull final RunConfiguration configuration) {
+        if (!AzureArtifactManager.getInstance(configuration.getProject()).equalsAzureArtifact(currentArtifact, newArtifact)) {
+            final AzureArtifact oldArtifact = currentArtifact;
+            currentArtifact = newArtifact;
             final JPanel pnlRoot = getMainPanel();
             final DataContext context = DataManager.getInstance().getDataContext(pnlRoot);
             final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
             if (editor == null) {
                 return;
             }
-            if (Objects.nonNull(lastSelectedAzureArtifact)) {
-                BeforeRunTaskUtils.removeBeforeRunTask(editor, lastSelectedAzureArtifact);
+            if (Objects.nonNull(oldArtifact)) {
+                BuildArtifactBeforeRunTaskUtils.removeBeforeRunTask(editor, oldArtifact, configuration);
             }
-
-            lastSelectedAzureArtifact = azureArtifact;
-            if (Objects.nonNull(azureArtifact)) {
-                BeforeRunTaskUtils.addBeforeRunTask(editor, azureArtifact, configuration);
+            if (Objects.nonNull(newArtifact)) {
+                BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, newArtifact, configuration);
             }
         }
     }

@@ -22,6 +22,8 @@
                   topic="com.intellij.execution.RunManagerListener" />
         <listener class="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$BeforeRunTaskAdder"
                   topic="com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics$ConnectionChanged" />
+        <listener class="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$BeforeRunTaskAdder"
+                  topic="com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration$ModuleChangedListener" />
         <listener class="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowOpener"
                   topic="com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics$ConnectionChanged" />
     </projectListeners>

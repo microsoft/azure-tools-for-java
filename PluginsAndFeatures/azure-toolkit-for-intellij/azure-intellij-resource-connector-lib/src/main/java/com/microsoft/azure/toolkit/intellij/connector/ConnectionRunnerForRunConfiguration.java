@@ -15,21 +15,26 @@ import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -73,16 +78,6 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         return new MyBeforeRunTask(config);
     }
 
-    @Nullable
-    private static MyBeforeRunTask createTaskFor(@Nonnull RunConfiguration config) {
-        final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
-        final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
-        if (connections.stream().anyMatch(c -> c.isApplicableFor(config)) && tasks.stream().noneMatch(t -> t instanceof MyBeforeRunTask)) {
-            return new MyBeforeRunTask(config);
-        }
-        return null;
-    }
-
     @Override
     public boolean executeTask(
         @Nonnull DataContext dataContext,
@@ -123,13 +118,19 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
         }
     }
 
-    public static class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged {
+    public static class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
         public void runConfigurationAdded(@Nonnull RunnerAndConfigurationSettings settings) {
             final RunConfiguration config = settings.getConfiguration();
-            final MyBeforeRunTask task = createTaskFor(config);
-            if (Objects.nonNull(task)) {
-                config.getBeforeRunTasks().add(task);
+            final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+            final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
+            if (connections.stream().anyMatch(c -> c.isApplicableFor(config)) && tasks.stream().noneMatch(t -> t instanceof MyBeforeRunTask)) {
+                config.getBeforeRunTasks().add(new MyBeforeRunTask(config));
             }
+        }
+
+        @Override
+        public void runConfigurationChanged(@NotNull RunnerAndConfigurationSettings settings) {
+            this.moduleMayChanged(settings.getConfiguration(), null);
         }
 
         @Override
@@ -148,6 +149,21 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
                         tasks.removeIf(t -> t instanceof MyBeforeRunTask);
                     }
                 }
+            }
+        }
+
+        @Override
+        public void moduleMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
+            final List<Connection<?, ?>> connections = config.getProject().getService(ConnectionManager.class).getConnections();
+            final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks();
+            Optional.ofNullable(editor).ifPresent(e -> BuildArtifactBeforeRunTaskUtils.removeTasks(e, (t) -> t instanceof MyBeforeRunTask));
+            tasks.removeIf(t -> t instanceof MyBeforeRunTask);
+            if (connections.stream().anyMatch(c -> c.isApplicableFor(config))) {
+                final List<BeforeRunTask> newTasks = new ArrayList<>(tasks);
+                final MyBeforeRunTask task = new MyBeforeRunTask(config);
+                newTasks.add(task);
+                RunManagerEx.getInstanceEx(config.getProject()).setBeforeRunTasks(config, newTasks);
+                Optional.ofNullable(editor).ifPresent(e -> e.addBeforeLaunchStep(task));
             }
         }
     }

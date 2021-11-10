@@ -26,7 +26,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.intellij.util.BeforeRunTaskUtils;
+import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -77,10 +77,10 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         final AzureArtifact artifact = (AzureArtifact) e.getItem();
         if (Objects.nonNull(editor) && Objects.nonNull(artifact)) {
             if (e.getStateChange() == ItemEvent.DESELECTED) {
-                BeforeRunTaskUtils.removeBeforeRunTask(editor, artifact);
+                BuildArtifactBeforeRunTaskUtils.removeBeforeRunTask(editor, artifact, this.configuration);
             }
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                BeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
+                BuildArtifactBeforeRunTaskUtils.addBeforeRunTask(editor, artifact, this.configuration);
             }
         }
     }
