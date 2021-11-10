@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.Topic;
 
 public interface ConnectionTopics {
@@ -13,10 +14,14 @@ public interface ConnectionTopics {
     Topic<ConnectionsRefreshed> CONNECTIONS_REFRESHED = Topic.create("connector.connections.refreshed", ConnectionsRefreshed.class);
 
     interface ConnectionChanged {
-        void connectionChanged(Connection<?, ?> connection);
+        void connectionChanged(Project project, Connection<?, ?> connection, Action change);
     }
 
     interface ConnectionsRefreshed {
         void connectionsRefreshed();
+    }
+
+    enum Action {
+        ADD, REMOVE
     }
 }

@@ -17,6 +17,12 @@
         <completion.contributor language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.SpringPropertiesCompletionContributor"/>
         <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.SpringPropertiesLineMarkerProvider"/>
     </extensions>
+    <projectListeners>
+        <listener class="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$BeforeRunTaskAdder"
+                  topic="com.intellij.execution.RunManagerListener" />
+        <listener class="com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration$BeforeRunTaskAdder"
+                  topic="com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics$ConnectionChanged" />
+    </projectListeners>
     <actions>
         <action
             id="AzureToolkit.ConnectToAzureResource"

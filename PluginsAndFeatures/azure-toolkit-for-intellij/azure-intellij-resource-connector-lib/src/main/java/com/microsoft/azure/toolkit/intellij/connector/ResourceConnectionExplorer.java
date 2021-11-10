@@ -58,7 +58,7 @@ public class ResourceConnectionExplorer extends Tree {
         public ModuleNode(@Nonnull Module module) {
             super(module);
             final MessageBusConnection connection = module.getProject().getMessageBus().connect();
-            connection.subscribe(CONNECTION_CHANGED, conn -> {
+            connection.subscribe(CONNECTION_CHANGED, (p, conn, action) -> {
                 final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
                     this.view().refreshChildren();
@@ -87,7 +87,7 @@ public class ResourceConnectionExplorer extends Tree {
             actionToolbar.setForceMinimumSize(true);
             this.setContent(this.tree);
             this.setToolbar(actionToolbar);
-            project.getMessageBus().connect().subscribe(CONNECTION_CHANGED, c -> ResourceConnectionExplorer.open(project));
+            project.getMessageBus().connect().subscribe(CONNECTION_CHANGED, (p, c, a) -> ResourceConnectionExplorer.open(project));
         }
 
         private ActionToolbarImpl initToolbar() {

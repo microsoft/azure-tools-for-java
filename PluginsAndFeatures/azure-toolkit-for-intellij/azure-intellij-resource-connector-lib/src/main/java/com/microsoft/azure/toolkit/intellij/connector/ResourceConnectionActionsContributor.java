@@ -56,7 +56,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                 (c, e) -> {
                     final Project project = Objects.requireNonNull(e.getProject());
                     project.getService(ConnectionManager.class).removeConnection(c.getResource().getId(), c.getConsumer().getId());
-                    project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(c);
+                    project.getMessageBus().syncPublisher(CONNECTION_CHANGED).connectionChanged(project, c, ConnectionTopics.Action.REMOVE);
                 };
         final ActionView.Builder removeView = new ActionView.Builder("Remove", "/icons/action/remove")
                 .title(t -> AzureOperationBundle.title("connector|explorer.remove_connection"))
