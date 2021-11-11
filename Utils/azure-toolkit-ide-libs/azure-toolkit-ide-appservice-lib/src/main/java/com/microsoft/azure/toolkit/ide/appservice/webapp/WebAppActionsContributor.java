@@ -56,7 +56,7 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
                 ResourceCommonActionsContributor.DELETE,
-                "___",
+                "---",
                 AppServiceActionsContributor.START_STREAM_LOG,
                 AppServiceActionsContributor.STOP_STREAM_LOG
                 // todo: add profile actions like log streaming
@@ -74,7 +74,7 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.STOP,
                 ResourceCommonActionsContributor.RESTART,
                 ResourceCommonActionsContributor.DELETE,
-                "___",
+                "---",
                 AppServiceActionsContributor.START_STREAM_LOG,
                 AppServiceActionsContributor.STOP_STREAM_LOG
         );

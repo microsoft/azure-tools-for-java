@@ -77,6 +77,9 @@
       <explorerContributor
             implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor">
       </explorerContributor>
+      <explorerContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppExplorerContributor">
+      </explorerContributor>     
    </extension>
    <extension
          point="com.microsoft.azure.toolkit.actions">
@@ -91,6 +94,9 @@
       </actionContributor>
       <actionContributor
             implementation="com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor">
+      </actionContributor>
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor">
       </actionContributor>
    </extension>
 
