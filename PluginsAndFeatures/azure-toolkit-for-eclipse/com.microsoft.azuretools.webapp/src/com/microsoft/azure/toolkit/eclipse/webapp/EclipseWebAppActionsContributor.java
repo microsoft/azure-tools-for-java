@@ -27,6 +27,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 
 import com.microsoft.azure.toolkit.eclipse.webapp.handlers.DownloadAppServiceFileAction;
 import com.microsoft.azure.toolkit.eclipse.webapp.handlers.WebAppLogStreamingHandler;
+import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -50,6 +51,8 @@ import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEdito
 import com.microsoft.azuretools.azureexplorer.helpers.EditorType;
 
 public class EclipseWebAppActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = WebAppActionsContributor.INITIALIZE_ORDER + 1;
+
     private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open explorer";
 
     @Override
@@ -118,11 +121,11 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IWebAppBase<?>;
         final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
                 .startLogStreaming((IWebAppBase<?>) c);
-        am.registerHandler(WebAppActionsContributor.START_STREAM_LOG, logStreamingPredicate, startLogStreamingHandler);
+        am.registerHandler(AppServiceActionsContributor.START_STREAM_LOG, logStreamingPredicate, startLogStreamingHandler);
 
         final BiConsumer<IAppService<?>, Object> stopLogStreamingHandler = (c, e) -> WebAppLogStreamingHandler
                 .stopLogStreaming((IWebAppBase<?>) c);
-        am.registerHandler(WebAppActionsContributor.STOP_STREAM_LOG, logStreamingPredicate, stopLogStreamingHandler);
+        am.registerHandler(AppServiceActionsContributor.STOP_STREAM_LOG, logStreamingPredicate, stopLogStreamingHandler);
     }
 
     private void openEditor(EditorType type, IEditorInput input, IEditorDescriptor descriptor) {
@@ -143,6 +146,6 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
     }
 
     public int getOrder() {
-        return 2;
+        return INITIALIZE_ORDER;
     }
 }

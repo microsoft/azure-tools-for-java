@@ -89,6 +89,9 @@
       <actionContributor
             implementation="com.microsoft.azure.toolkit.eclipse.webapp.EclipseWebAppActionsContributor">
       </actionContributor>
+      <actionContributor
+            implementation="com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor">
+      </actionContributor>
    </extension>
 
 	<extension point="org.eclipse.debug.core.launchConfigurationTypes">

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.webapp;
 
+import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
@@ -26,16 +27,15 @@ import java.util.function.Consumer;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class WebAppActionsContributor implements IActionsContributor {
+    public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
+
     public static final String SERVICE_ACTIONS = "actions.webapp.service";
     public static final String WEBAPP_ACTIONS = "actions.webapp.management";
-    public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployments";
-    public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployments.slot";
+    public static final String DEPLOYMENT_SLOTS_ACTIONS = "actions.webapp.deployment_slots";
+    public static final String DEPLOYMENT_SLOT_ACTIONS = "actions.webapp.deployment_slot";
 
-    public static final Action.Id<IAppService<?>> OPEN_IN_BROWSER = Action.Id.of("actions.webapp.open_in_browser");
-    public static final Action.Id<IAppService<?>> START_STREAM_LOG = Action.Id.of("actions.webapp.stream_log.start");
-    public static final Action.Id<IAppService<?>> STOP_STREAM_LOG = Action.Id.of("actions.webapp.stream_log.stop");
-    public static final Action.Id<IWebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployments.refresh");
-    public static final Action.Id<IWebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("action.webapp.slot.swap");
+    public static final Action.Id<IWebApp> REFRESH_DEPLOYMENT_SLOTS = Action.Id.of("actions.webapp.deployment_slots.refresh");
+    public static final Action.Id<IWebAppDeploymentSlot> SWAP_DEPLOYMENT_SLOT = Action.Id.of("actions.webapp.deployment_slot.swap");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -48,7 +48,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionGroup webAppActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                WebAppActionsContributor.OPEN_IN_BROWSER,
+                AppServiceActionsContributor.OPEN_IN_BROWSER,
                 ResourceCommonActionsContributor.DEPLOY,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 "---",
@@ -57,8 +57,8 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.RESTART,
                 ResourceCommonActionsContributor.DELETE,
                 "___",
-                WebAppActionsContributor.START_STREAM_LOG,
-                WebAppActionsContributor.STOP_STREAM_LOG
+                AppServiceActionsContributor.START_STREAM_LOG,
+                AppServiceActionsContributor.STOP_STREAM_LOG
                 // todo: add profile actions like log streaming
         );
         am.registerGroup(WEBAPP_ACTIONS, webAppActionGroup);
@@ -66,7 +66,7 @@ public class WebAppActionsContributor implements IActionsContributor {
         final ActionGroup deploymentSlotActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
-                WebAppActionsContributor.OPEN_IN_BROWSER,
+                AppServiceActionsContributor.OPEN_IN_BROWSER,
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
                 SWAP_DEPLOYMENT_SLOT,
                 "---",
@@ -75,8 +75,8 @@ public class WebAppActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.RESTART,
                 ResourceCommonActionsContributor.DELETE,
                 "___",
-                WebAppActionsContributor.START_STREAM_LOG,
-                WebAppActionsContributor.STOP_STREAM_LOG
+                AppServiceActionsContributor.START_STREAM_LOG,
+                AppServiceActionsContributor.STOP_STREAM_LOG
         );
         am.registerGroup(DEPLOYMENT_SLOT_ACTIONS, deploymentSlotActionGroup);
 
@@ -97,23 +97,6 @@ public class WebAppActionsContributor implements IActionsContributor {
                         ((IWebAppDeploymentSlot) s).name(), ((IWebAppDeploymentSlot) s).webApp().name())).orElse(null))
                 .enabled(s -> s instanceof IWebAppDeploymentSlot && StringUtils.equals(((IWebAppDeploymentSlot) s).status(), IAzureBaseResource.Status.RUNNING));
         am.registerAction(SWAP_DEPLOYMENT_SLOT, new Action<>(swap, swapView));
-
-        final Consumer<IAppService<?>> openInBrowser = appService -> am.getAction(ResourceCommonActionsContributor.OPEN_URL)
-                .handle("https://" + appService.hostName());
-        final ActionView.Builder openInBrowserView = new ActionView.Builder("Open In Browser", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp.open_browser")).orElse(null))
-                .enabled(s -> s instanceof IAppService);
-        am.registerAction(OPEN_IN_BROWSER, new Action<>(openInBrowser, openInBrowserView));
-
-        final ActionView.Builder startStreamLogView = new ActionView.Builder("Start Streaming Logs", "/icons/action/log.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.start_stream_log", ((IAppService) r).name())).orElse(null))
-                .enabled(s -> s instanceof IAppService);
-        am.registerAction(START_STREAM_LOG, new Action<>(startStreamLogView));
-
-        final ActionView.Builder stopStreamLogView = new ActionView.Builder("Stop Streaming Logs", "/icons/action/log.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("webapp|app.stop_stream_log", ((IAppService) r).name())).orElse(null))
-                .enabled(s -> s instanceof IAppService);
-        am.registerAction(STOP_STREAM_LOG, new Action<>(stopStreamLogView));
     }
 
     @Override
@@ -136,6 +119,6 @@ public class WebAppActionsContributor implements IActionsContributor {
 
     @Override
     public int getOrder() {
-        return 1; //after azure resource common actions registered
+        return INITIALIZE_ORDER; //after azure resource common actions registered
     }
 }
