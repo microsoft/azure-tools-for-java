@@ -23,14 +23,13 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.plugins.gradle.execution.GradleBeforeRunTaskProvider;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,8 +98,8 @@ public class BuildArtifactBeforeRunTaskUtils {
         }
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getIntellijBuildTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull Artifact artifact) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getIntellijBuildTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull Artifact artifact) {
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), BuildArtifactsBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getArtifactPointers())
                 && task.getArtifactPointers().size() == 1
@@ -108,8 +107,8 @@ public class BuildArtifactBeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getMavenPackageTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @Nonnull MavenProject project) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getMavenPackageTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull MavenProject project) {
         final String pomXmlPath = MavenUtils.getMavenModulePath(project);
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), MavenBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task) && Objects.nonNull(task.getProjectPath()) && Objects.nonNull(pomXmlPath)
@@ -118,8 +117,8 @@ public class BuildArtifactBeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static List<BeforeRunTask<?>> getGradleAssembleTasks(@NotNull ConfigurationSettingsEditorWrapper editor, @NotNull ExternalProjectPojo project) {
+    @Nonnull
+    public static List<BeforeRunTask<?>> getGradleAssembleTasks(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull ExternalProjectPojo project) {
         return ContainerUtil.findAll(editor.getStepsBeforeLaunch(), ExternalSystemBeforeRunTask.class).stream()
             .filter(task -> Objects.nonNull(task)
                 && StringUtils.equals(task.getTaskExecutionSettings().getExternalProjectPath(), project.getPath())
@@ -128,16 +127,16 @@ public class BuildArtifactBeforeRunTaskUtils {
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createIntellijBuildTask(@NotNull Artifact artifact, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createIntellijBuildTask(@Nonnull Artifact artifact, @Nonnull RunConfiguration config) {
         final BuildArtifactsBeforeRunTaskProvider provider = new BuildArtifactsBeforeRunTaskProvider(config.getProject());
         final BuildArtifactsBeforeRunTask task = provider.createTask(config);
         task.addArtifact(artifact);
         return task;
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createMavenPackageTask(@Nonnull MavenProject project, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createMavenPackageTask(@Nonnull MavenProject project, @Nonnull RunConfiguration config) {
         final String pomXmlPath = MavenUtils.getMavenModulePath(project);
         final MavenBeforeRunTask task = new MavenBeforeRunTask();
         task.setEnabled(true);
@@ -146,8 +145,8 @@ public class BuildArtifactBeforeRunTaskUtils {
         return task;
     }
 
-    @NotNull
-    public static BeforeRunTask<?> createGradleAssembleTask(@NotNull ExternalProjectPojo project, @NotNull RunConfiguration config) {
+    @Nonnull
+    public static BeforeRunTask<?> createGradleAssembleTask(@Nonnull ExternalProjectPojo project, @Nonnull RunConfiguration config) {
         final GradleBeforeRunTaskProvider provider = new GradleBeforeRunTaskProvider(config.getProject());
         final ExternalSystemBeforeRunTask task = provider.createTask(config);
         task.getTaskExecutionSettings().setExternalSystemIdString(GradleConstants.SYSTEM_ID.toString());
