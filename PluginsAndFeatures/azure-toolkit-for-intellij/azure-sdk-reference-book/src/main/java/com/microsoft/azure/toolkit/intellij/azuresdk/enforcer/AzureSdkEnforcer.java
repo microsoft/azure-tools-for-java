@@ -23,6 +23,7 @@ import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,12 +63,15 @@ public class AzureSdkEnforcer {
     private static String buildMessage(@Nonnull List<? extends AzureJavaSdkEntity> libs) {
         final String liPackages = libs.stream().map(l -> {
             if (StringUtils.isNotBlank(l.getReplace())) {
-                final String replacePackage = l.getReplace().trim();
+                final String[] replacePackages = l.getReplace().trim().split(",");
+                final String replaces = Arrays.stream(replacePackages)
+                    .map(p -> String.format("<a href='%s'>%s</a>", getMavenArtifactUrl(p.trim()), p.trim()))
+                    .collect(Collectors.joining(", "));
                 return String.format("<li>%s" +
-                        "   <ul style='margin-top:0;margin-bottom:0;padding:0'>" +
-                        "       <li>Replaced by: <a href='%s'>%s</a></li>" +
-                        "   </ul>" +
-                        "</li>", l.getPackageName(), getMavenArtifactUrl(replacePackage), replacePackage);
+                    "   <ul style='margin-top:0;margin-bottom:0;padding:0'>" +
+                    "       <li>Replaced by: %s</li>" +
+                    "   </ul>" +
+                    "</li>", l.getPackageName(), replaces);
             } else {
                 return String.format("<li>%s</li>", l.getPackageName());
             }
