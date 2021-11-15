@@ -6,6 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
 import com.intellij.ui.components.JBScrollPane;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -22,7 +24,7 @@ public class AzureSdkReferenceBookPanel {
     public AzureSdkReferenceBookPanel() {
         this.contentPanel.setPreferredSize(new Dimension(840, 600));
         this.initListeners();
-        this.servicesTreePanel.refresh();
+        AzureTaskManager.getInstance().runInBackground(AzureString.fromString("loading Azure SDK data"), () -> this.servicesTreePanel.refresh());
     }
 
     private void initListeners() {
