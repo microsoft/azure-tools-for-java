@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WebApp Plugin for Eclipse
-Bundle-SymbolicName: com.microsoft.azuretools.webapp;singleton:=true
+Bundle-SymbolicName: com.microsoft.azuretools.appservice;singleton:=true
 Bundle-Version: 3.29.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.m2e.maven.runtime,
  org.apache.commons.collections
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Activator: com.microsoft.azuretools.webapp.Activator
+Bundle-Activator: com.microsoft.azuretools.appservice.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: Microsoft Corp.
 Import-Package: com.microsoft.azure.management,
@@ -45,8 +45,8 @@ Import-Package: com.microsoft.azure.management,
  org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
  org.eclipse.ui.ide
-Export-Package: com.microsoft.azuretools.webapp,
- com.microsoft.azuretools.webapp.handlers,
- com.microsoft.azuretools.webapp.ui
+Export-Package: com.microsoft.azuretools.appservice,
+ com.microsoft.azuretools.appservice.handlers,
+ com.microsoft.azuretools.appservice.ui
 Bundle-ClassPath: .,
  target/lib/azure-toolkit-ide-appservice-lib-0.14.0-SNAPSHOT.jar

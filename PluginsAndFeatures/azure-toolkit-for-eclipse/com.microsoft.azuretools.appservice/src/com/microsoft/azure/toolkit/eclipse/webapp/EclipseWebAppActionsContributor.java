@@ -97,7 +97,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
                 .getInstance().runLater(() -> {
                     try {
                         Command deployCommand = ((ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class))
-                                .getCommand("com.microsoft.azuretools.webapp.commands.deployToAzure");
+                                .getCommand("com.microsoft.azuretools.appservice.commands.deployToAzure");
                         deployCommand.execute(new ExecutionEvent(null, Collections.singletonMap("resourceId", c.id()), c, null));
                     } catch (ExecutionException | NotHandledException exception) {
                         AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager()
@@ -110,7 +110,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         final BiConsumer<Object, Object> createHandler = (c, e) -> AzureTaskManager.getInstance().runLater(() -> {
             try {
                 ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
-                        .executeCommand("com.microsoft.azuretools.webapp.commands.createWebApp", null);
+                        .executeCommand("com.microsoft.azuretools.appservice.commands.createWebApp", null);
             } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException exception) {
                 AzureTaskManager.getInstance().runLater(() -> AzureMessager.getMessager()
                         .error(AzureString.format("Failed to create web app, %s", exception.getMessage())));

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp.ui;
+package com.microsoft.azuretools.appservice.ui;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP_SLOT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
@@ -105,8 +105,8 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.util.CommonUtils;
+import com.microsoft.azuretools.appservice.Activator;
+import com.microsoft.azuretools.appservice.util.CommonUtils;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;

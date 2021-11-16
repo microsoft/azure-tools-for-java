@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp.ui;
+package com.microsoft.azuretools.appservice.ui;
 
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import java.util.LinkedList;

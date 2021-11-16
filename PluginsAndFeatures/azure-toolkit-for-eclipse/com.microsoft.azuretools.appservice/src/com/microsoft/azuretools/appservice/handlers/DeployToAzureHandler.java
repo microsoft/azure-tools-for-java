@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp.handlers;
+package com.microsoft.azuretools.appservice.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -14,7 +14,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.webapp.ui.WebAppDeployDialog;
+import com.microsoft.azuretools.appservice.ui.WebAppDeployDialog;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public class DeployToAzureHandler extends AzureAbstractHandler {

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp;
+package com.microsoft.azuretools.appservice;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -12,7 +12,7 @@ import org.osgi.framework.BundleContext;
 
 public class Activator extends AbstractUIPlugin {
 
-    public static final String PLUGIN_ID = "com.microsoft.azuretools.webapp";
+    public static final String PLUGIN_ID = "com.microsoft.azuretools.appservice";
 
     // The shared instance
     private static Activator plugin;

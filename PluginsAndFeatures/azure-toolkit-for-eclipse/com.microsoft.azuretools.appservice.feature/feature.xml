@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.microsoft.azuretools.webapp.feature"
+      id="com.microsoft.azuretools.appservice.feature"
       label="WebApp Plugin for Eclipse"
       version="3.29.0.qualifier"
       provider-name="Microsoft Corp.">
@@ -95,7 +95,7 @@ EFFET JURIDIQUE. Le présent contrat décrit certains droits juridiques. Vous p
 </license>
 
    <plugin
-         id="com.microsoft.azuretools.webapp"
+         id="com.microsoft.azuretools.appservice"
          download-size="0"
          install-size="0"
          version="0.0.0"

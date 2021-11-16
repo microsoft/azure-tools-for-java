@@ -22,8 +22,8 @@
     <module>com.microsoft.azuretools.azureexplorer.feature</module>
     <module>com.microsoft.azuretools.hdinsight</module>
     <module>com.microsoft.azuretools.hdinsight.feature</module>
-    <module>com.microsoft.azuretools.webapp</module>
-    <module>com.microsoft.azuretools.webapp.feature</module>
+    <module>com.microsoft.azuretools.appservice</module>
+    <module>com.microsoft.azuretools.appservice.feature</module>
     <module>com.microsoft.azuretools.container</module>
     <module>com.microsoft.azuretools.container.feature</module>
     <module>com.microsoft.azuretools.springcloud</module>

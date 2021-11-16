@@ -3,10 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp.util;
+package com.microsoft.azuretools.appservice.util;
 
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.appservice.Activator;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.swt.widgets.Combo;

@@ -5,26 +5,26 @@
        <command
             name="Publish as Azure Web App..."
             categoryId="com.microsoft.ui.dropdown.category"
-            id="com.microsoft.azuretools.webapp.commands.deployToAzure"
+            id="com.microsoft.azuretools.appservice.commands.deployToAzure"
             icon="icons/PublishWebApp_16.png">
             <commandParameter id="com.microsoft.ui.dropdown.msg" name="DropDown Options" optional="true"></commandParameter>
        </command>   
        <command
             name="Create Web App..."
             categoryId="com.microsoft.ui.dropdown.category"
-            id="com.microsoft.azuretools.webapp.commands.createWebApp"
+            id="com.microsoft.azuretools.appservice.commands.createWebApp"
             icon="icons/PublishWebApp_16.png">
        </command> 
    </extension>
    
    <extension point="org.eclipse.ui.handlers">
       <handler
-            commandId="com.microsoft.azuretools.webapp.commands.deployToAzure"
-            class="com.microsoft.azuretools.webapp.handlers.DeployToAzureHandler">
+            commandId="com.microsoft.azuretools.appservice.commands.deployToAzure"
+            class="com.microsoft.azuretools.appservice.handlers.DeployToAzureHandler">
       </handler>
       
       <handler
-            commandId="com.microsoft.azuretools.webapp.commands.createWebApp"
+            commandId="com.microsoft.azuretools.appservice.commands.createWebApp"
             class="com.microsoft.azure.toolkit.eclipse.webapp.handlers.CreateWebAppHandler">
       </handler>
    </extension>
@@ -35,7 +35,7 @@
                label="Azure"
                id="com.microsoft.azuretools.webprojmenu"
                icon="icons/windowsAzure.png">
-              <command commandId="com.microsoft.azuretools.webapp.commands.deployToAzure">
+              <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure">
                 <visibleWhen  checkEnabled="false">
                     <with 
                     variable="selection">
@@ -52,7 +52,7 @@
           </menu>
       </menuContribution>
       <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
-         <command commandId="com.microsoft.azuretools.webapp.commands.deployToAzure" style="push">
+         <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" style="push">
             <visibleWhen  checkEnabled="false">
                 <with 
                 variable="selection">
@@ -70,7 +70,7 @@
    </extension>
    
    <extension point="org.eclipse.ui.commandImages">
-     <image commandId="com.microsoft.azuretools.webapp.commands.deployToAzure" icon="icons/PublishWebApp_16.png"></image>
+     <image commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" icon="icons/PublishWebApp_16.png"></image>
    </extension>
       <extension
          point="com.microsoft.azure.toolkit.explorer">

@@ -22,7 +22,7 @@
    <feature url="features/com.microsoft.azuretools.core.feature_3.29.0.qualifier.jar" id="com.microsoft.azuretools.core.feature" version="3.29.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.webapp.feature_3.29.0.qualifier.jar" id="com.microsoft.azuretools.webapp.feature" version="3.29.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.appservice.feature_3.29.0.qualifier.jar" id="com.microsoft.azuretools.appservice.feature" version="3.29.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
    <feature url="features/com.microsoft.azuretools.container.feature_3.29.0.qualifier.jar" id="com.microsoft.azuretools.container.feature" version="3.29.0.qualifier">

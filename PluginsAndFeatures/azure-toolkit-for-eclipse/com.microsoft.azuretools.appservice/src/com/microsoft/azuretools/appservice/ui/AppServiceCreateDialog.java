@@ -3,13 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azuretools.webapp.ui;
+package com.microsoft.azuretools.appservice.ui;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_LOCATION;
-import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_PRICING;
-import static com.microsoft.azuretools.webapp.util.CommonUtils.getSelectedItem;
+import static com.microsoft.azuretools.appservice.util.CommonUtils.ASP_CREATE_LOCATION;
+import static com.microsoft.azuretools.appservice.util.CommonUtils.ASP_CREATE_PRICING;
+import static com.microsoft.azuretools.appservice.util.CommonUtils.getSelectedItem;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -103,8 +103,8 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.util.CommonUtils;
+import com.microsoft.azuretools.appservice.Activator;
+import com.microsoft.azuretools.appservice.util.CommonUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import reactor.core.publisher.Mono;
