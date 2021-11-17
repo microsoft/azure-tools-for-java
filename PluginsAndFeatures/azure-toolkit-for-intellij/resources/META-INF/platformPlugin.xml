@@ -14,6 +14,7 @@
           <li>Azure Functions debugging support on Apple Silicon / M1 / Rosetta <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/526">#526</a></li>
           <li>Extend web app/function app publishing timeout <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/530">#530</a> / <a href="https://youtrack.jetbrains.com/issue/RIDER-68824">RIDER-68824</a></li>
           <li>Publishing web app does not set correct runtime version in Azure App Service <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/535">#535</a></li>
+          <li>Azure gutter mark shouldn't be overlapped with formatting options or hammer icons <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/545">#545</a> / <a href="https://youtrack.jetbrains.com/issue/RIDER-70842">RIDER-70842</a></li>
         </ul>
     </html>
     ]]>

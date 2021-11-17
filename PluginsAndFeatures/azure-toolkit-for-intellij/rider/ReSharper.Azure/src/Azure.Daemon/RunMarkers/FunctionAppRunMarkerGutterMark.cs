@@ -80,19 +80,19 @@ namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
                 new ExecutableItem(() => { functionAppDaemonHost.RunFunctionApp(methodName, functionName, projectFilePath); }),
                 new RichText(javaPropertiesLoader.GetLocalizedString("gutter.function_app.run", functionName)),
                 RunMarkersThemedIcons.RunThis.Id,
-                BulbMenuAnchors.PermanentBackgroundItems);
+                BulbMenuAnchors.PermanentItem);
 
             yield return new BulbMenuItem(
                 new ExecutableItem(() => { functionAppDaemonHost.DebugFunctionApp(methodName, functionName, projectFilePath); }),
                 new RichText(javaPropertiesLoader.GetLocalizedString("gutter.function_app.debug", functionName)),
                 RunMarkersThemedIcons.DebugThis.Id,
-                BulbMenuAnchors.PermanentBackgroundItems);
+                BulbMenuAnchors.PermanentItem);
 
             yield return new BulbMenuItem(
                 new ExecutableItem(() => { functionAppDaemonHost.TriggerFunctionApp(methodName, functionName, projectFilePath); }),
                 new RichText(javaPropertiesLoader.GetLocalizedString("gutter.function_app.trigger", functionName)),
                 FunctionAppRunMarkersThemedIcons.Trigger.Id,
-                BulbMenuAnchors.PermanentBackgroundItems);
+                BulbMenuAnchors.PermanentItem);
         }
     }
 
