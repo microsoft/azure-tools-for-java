@@ -12,7 +12,7 @@
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
         <project.build.encoding>UTF-8</project.build.encoding>
         <scala.version>2.11.12</scala.version>
-        <spark.version>2.1.0</spark.version>
+        <spark.version>2.4.8</spark.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
 
