@@ -16,7 +16,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.WriteExternalException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
@@ -83,12 +82,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
             throws ExecutionException {
         return new WebAppRunState(getProject(), this);
-    }
-
-    @Override
-    public void writeExternal(Element element) throws WriteExternalException {
-        element.getChildren().forEach(child -> element.removeChild(child.getName()));
-        super.writeExternal(element);
     }
 
     @Override

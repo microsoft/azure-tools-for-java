@@ -8,8 +8,6 @@ package com.microsoft.intellij.util;
 import com.azure.core.management.exception.ManagementException;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
-import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
-import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.entity.CheckNameAvailabilityResultEntity;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
@@ -19,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +54,6 @@ public class ValidationUtils {
         return version != null && version.matches(VERSION_REGEX);
     }
 
-    @Cacheable(cacheName = "appservice/validation/name", key = "$subscriptionId/$appServiceName")
     public static void validateAppServiceName(String subscriptionId, String appServiceName) {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException(message("appService.subscription.validate.empty"));
@@ -71,16 +67,6 @@ public class ValidationUtils {
         }
     }
 
-    // todo: move validation and related cache management to toolkit lib
-    public static void evictCacheForAppServiceNameValidation(String subscriptionId, String appServiceName) {
-        try {
-            CacheManager.evictCache("appservice/validation/name", String.format("%s/%s", subscriptionId, appServiceName));
-        } catch (ExecutionException e) {
-            // swallow exception for clear cache
-        }
-    }
-
-    @Cacheable(cacheName = "resourcegroup/validation/name", key = "$subscriptionId/$resourceGroup")
     public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException(message("appService.subscription.validate.empty"));

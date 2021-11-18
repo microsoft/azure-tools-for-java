@@ -165,9 +165,7 @@ public class WebAppRunState extends AzureRunProfileState<IAppService> {
         }
         if (webAppSettingModel.isCreatingNew()) {
             processHandler.setText(message("webapp.deploy.hint.creatingWebApp"));
-            final IWebApp webAppFromSettingModel = AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(webAppSettingModel);
-            ValidationUtils.evictCacheForAppServiceNameValidation(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppName());
-            return webAppFromSettingModel;
+            return AzureWebAppMvpModel.getInstance().createWebAppFromSettingModel(webAppSettingModel);
         } else {
             processHandler.setText(message("appService.deploy.hint.failed"));
             throw new Exception(message("webapp.deploy.error.noWebApp"));

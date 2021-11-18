@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.resource.AzureGroup;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
-import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -102,7 +101,6 @@ public class FunctionAppService {
                 .withAppSettings(appSettings)
                 .withDiagnosticConfig(config.getMonitorConfig().getDiagnosticConfig())
                 .commit();
-        ValidationUtils.evictCacheForAppServiceNameValidation(config.getSubscriptionId(), config.getName());
         AzureMessager.getMessager().info(String.format(CREATE_FUNCTION_APP_DONE, result.name()));
         return result;
     }
