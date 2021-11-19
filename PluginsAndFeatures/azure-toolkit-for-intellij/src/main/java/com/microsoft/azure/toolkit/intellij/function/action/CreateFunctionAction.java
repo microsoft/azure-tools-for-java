@@ -32,7 +32,7 @@ import com.intellij.util.IncorrectOperationException;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
-import com.microsoft.azure.toolkit.intellij.function.AzureFunctionsUtils;
+import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.intellij.function.CreateFunctionForm;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
