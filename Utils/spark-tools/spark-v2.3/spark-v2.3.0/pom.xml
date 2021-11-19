@@ -31,7 +31,6 @@
 
     <properties>
         <spark.version>2.3.0</spark.version>
-        <hadoop.version>2.6.5</hadoop.version>
     </properties>
 
     <modelVersion>4.0.0</modelVersion>
