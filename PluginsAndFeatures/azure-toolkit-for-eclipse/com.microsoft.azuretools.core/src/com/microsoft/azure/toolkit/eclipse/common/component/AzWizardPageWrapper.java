@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public abstract class AzWizardPageWrapper<T> extends WizardPage {
     private Disposable subscription;
     private int validationDelay = 300;
+    private volatile boolean validationEnabled = false;
 
     protected AzWizardPageWrapper(String pageName) {
         super(pageName);
@@ -30,6 +31,7 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
     public void dispose() {
         super.dispose();
         stopValidation();
+        validationEnabled = false;
     }
 
     private void startValidation() {
@@ -43,6 +45,9 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
     }
 
     private boolean validateAll() {
+        if (!validationEnabled) {
+            return false;
+        }
         final List<AzureValidationInfo> errors = this.doValidateAll();
         boolean valid = Objects.isNull(errors) || errors.isEmpty();
         AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(errors));
@@ -99,6 +104,7 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
         if (visible) {
             startValidation();
         }
+        validationEnabled = visible;
     }
 
     private void stopValidation() {
