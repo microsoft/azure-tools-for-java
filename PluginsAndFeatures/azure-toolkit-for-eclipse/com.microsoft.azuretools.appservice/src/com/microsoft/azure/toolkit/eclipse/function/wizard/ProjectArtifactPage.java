@@ -156,7 +156,4 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
         return name != null && name.matches(GROUP_ARTIFACT_ID_REGEX);
     }
 
-    private static void setDefaultText(Text txt, String value) {
-        txt.setText(StringUtils.firstNonBlank(txt.getText(), value));
-    }
 }
