@@ -45,9 +45,14 @@
                   <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
                 </artifactItem>
                 <artifactItem>
-				    <groupId>org.codehaus.plexus</groupId>
-				    <artifactId>plexus-archiver</artifactId>
-				    <version>3.0.3</version>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-archiver</artifactId>
+                    <version>3.0.3</version>
+                </artifactItem>
+                <artifactItem>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-io</artifactId>
+                    <version>3.0.1</version>
                 </artifactItem>
               </artifactItems>
             </configuration>

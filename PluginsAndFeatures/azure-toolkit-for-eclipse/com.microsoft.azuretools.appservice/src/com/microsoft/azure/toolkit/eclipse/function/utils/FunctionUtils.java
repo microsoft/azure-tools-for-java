@@ -147,8 +147,9 @@ public class FunctionUtils {
             return false;
         }
         try {
-            CollectingSearchRequestor requestor2 = searchFunctionNameAnnotation(project);
-            return !requestor2.getResults().isEmpty();
+            CollectingSearchRequestor requestor = searchFunctionNameAnnotation(project,
+                    JavaSearchScopeFactory.getInstance().createJavaProjectSearchScope(project, false));
+            return !requestor.getResults().isEmpty();
         } catch (CoreException e) {
             // ignore
         }
@@ -247,7 +248,7 @@ public class FunctionUtils {
         }
     }
 
-    private static CollectingSearchRequestor searchFunctionNameAnnotation(IJavaProject javaProject) throws CoreException {
+    private static CollectingSearchRequestor searchFunctionNameAnnotation(IJavaProject javaProject, IJavaSearchScope scope) throws CoreException {
         CollectingSearchRequestor requester = new CollectingSearchRequestor();
         IType type = javaProject.findType(AZURE_FUNCTION_ANNOTATION_CLASS);
         if (type != null) {
@@ -256,11 +257,16 @@ public class FunctionUtils {
                     IJavaSearchConstants.ANNOTATION_TYPE_REFERENCE,
                     SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
-            IJavaSearchScope workspaceScope = JavaSearchScopeFactory.getInstance().createJavaProjectSearchScope(javaProject, false);
             new SearchEngine().search(pattern, new SearchParticipant[]{SearchEngine
-                    .getDefaultSearchParticipant()}, workspaceScope, requester, new NullProgressMonitor());
+                    .getDefaultSearchParticipant()}, scope, requester, new NullProgressMonitor());
         }
         return requester;
+    }
+
+    public static CollectingSearchRequestor searchFunctionNameAnnotation(IType type) throws CoreException {
+        IJavaSearchScope scope = JavaSearchScopeFactory.getInstance().createJavaSearchScope(new IJavaElement[] {type},
+                false);
+        return searchFunctionNameAnnotation(type.getJavaProject(), scope);
     }
 
     @AzureOperation(
@@ -270,7 +276,8 @@ public class FunctionUtils {
     )
     public static List<IMethod> findFunctionsByAnnotation(IJavaProject project) {
         try {
-            return searchFunctionNameAnnotation(project).getResults()
+            final IJavaSearchScope scope = JavaSearchScopeFactory.getInstance().createJavaProjectSearchScope(project, false);
+            return searchFunctionNameAnnotation(project, scope).getResults()
                     .stream()
                     .filter(t -> t.getElement() instanceof IMethod)
                     .map(t -> ((IMethod) t.getElement())).distinct().collect(Collectors.toList());
