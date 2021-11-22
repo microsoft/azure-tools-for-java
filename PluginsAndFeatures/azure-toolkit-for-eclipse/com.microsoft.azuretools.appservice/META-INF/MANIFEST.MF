@@ -49,6 +49,7 @@ Import-Package: com.microsoft.azure.management,
  com.microsoft.azuretools.utils,
  org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
+ org.eclipse.jdt.internal.corext.refactoring,
  org.eclipse.ui.ide
 Export-Package: com.microsoft.azuretools.appservice,
  com.microsoft.azuretools.appservice.handlers,

@@ -140,4 +140,14 @@
         project="true"
         id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
    </extension>
+    <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            properties="isFunction"
+            namespace="com.microsoft.azure.toolkit"
+            type="org.eclipse.core.runtime.IAdaptable"
+            class="com.microsoft.azure.toolkit.eclipse.function.tester.AzureFunctionTypeTester"
+            id="com.microsoft.azure.toolkit.eclipse.function.launch.AzureFunctionTypeTester">
+      </propertyTester>
+   </extension>
 </plugin>
