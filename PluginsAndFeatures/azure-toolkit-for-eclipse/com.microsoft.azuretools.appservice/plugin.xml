@@ -126,4 +126,18 @@
 	            icon="icons/PublishWebApp_16.png">
 	    </launchConfigurationTypeImage>
     </extension>
+    <extension
+         point="org.eclipse.ui.newWizards">
+           <category
+                 id="com.microsoft.azure.wizards.wizard"
+                 name="Azure">
+          </category>
+         <wizard
+        name="Create New Azure Function Project"
+        icon="icons/functionapp.png"
+        category="com.microsoft.azure.wizards.wizard"
+        class="com.microsoft.azure.toolkit.eclipse.function.wizard.CreateFunctionProjectWizard"
+        project="true"
+        id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
+   </extension>
 </plugin>

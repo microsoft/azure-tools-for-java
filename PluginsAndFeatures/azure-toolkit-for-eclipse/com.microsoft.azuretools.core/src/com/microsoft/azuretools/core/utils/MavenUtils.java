@@ -4,8 +4,6 @@
  */
 
 package com.microsoft.azuretools.core.utils;
-
-
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
@@ -82,7 +80,7 @@ public class MavenUtils {
     }
 
     @Nonnull
-    private static MavenProject toMavenProject(@Nonnull IFile pom) throws Exception {
+    public static MavenProject toMavenProject(@Nonnull IFile pom) throws Exception {
         final IMavenProjectRegistry projectManager = MavenPlugin.getMavenProjectRegistry();
         final NullProgressMonitor monitor = new NullProgressMonitor();
         if (projectManager == null) {

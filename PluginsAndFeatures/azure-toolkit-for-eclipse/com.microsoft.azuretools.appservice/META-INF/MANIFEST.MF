@@ -18,7 +18,12 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.forms,
  org.eclipse.ui.console,
  org.eclipse.m2e.maven.runtime,
- org.apache.commons.collections
+ org.apache.commons.collections,
+ org.eclipse.jdt.launching,
+ org.eclipse.jdt.debug,
+ org.eclipse.jdt.debug.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.core.expressions
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: com.microsoft.azuretools.appservice.Activator
 Bundle-ActivationPolicy: lazy
