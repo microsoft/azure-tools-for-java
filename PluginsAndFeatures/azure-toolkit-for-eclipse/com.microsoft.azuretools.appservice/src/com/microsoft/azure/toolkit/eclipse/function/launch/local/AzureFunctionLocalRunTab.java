@@ -2,12 +2,12 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-package com.microsoft.azure.toolkit.eclipse.function.launch.deploy;
+package com.microsoft.azure.toolkit.eclipse.function.launch.local;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.function.launch.LaunchConfigurationUtils;
-import com.microsoft.azure.toolkit.eclipse.function.model.FunctionDeployConfiguration;
+import com.microsoft.azure.toolkit.eclipse.function.model.FunctionLocalRunConfiguration;
 import com.microsoft.azure.toolkit.eclipse.function.ui.FunctionProjectComboBox;
 import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -32,10 +33,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class DeployFunctionTab extends AbstractLaunchConfigurationTab implements AzureForm<FunctionDeployConfiguration> {
+public class AzureFunctionLocalRunTab extends AbstractLaunchConfigurationTab implements AzureForm<FunctionLocalRunConfiguration> {
+
     private FunctionProjectComboBox cbProject;
     private AzureTextInput txtFunctionCli;
+    private AzureTextInput txtLocalSettings;
 
+    /**
+     * @wbp.parser.entryPoint
+     */
     @Override
     public void createControl(Composite parent) {
 
@@ -62,14 +68,20 @@ public class DeployFunctionTab extends AbstractLaunchConfigurationTab implements
         lblLocalSettings.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblLocalSettings.setText("Local settings:");
 
-        // to start getValue -> compare with origin model -> mark dirty -> Enable apple
+        txtLocalSettings = new AzureTextInput(comp);
+        txtLocalSettings.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
         this.cbProject.addValueChangedListener(v -> {
             markDirty();
+            IFile file = v.getProject().getFile("local.settings.json");
+            if (file.exists()) {
+                this.txtLocalSettings.setValue(file.getLocation().toOSString());
+            }
         });
 
-        this.txtFunctionCli.addValueChangedListener(v -> {
-            markDirty();
-        });
+        this.txtLocalSettings.addValueChangedListener(v -> markDirty());
+
+        this.txtFunctionCli.addValueChangedListener(v -> markDirty());
     }
 
     @Override
@@ -78,15 +90,15 @@ public class DeployFunctionTab extends AbstractLaunchConfigurationTab implements
 
     @Override
     public void initializeFrom(ILaunchConfiguration configuration) {
-        FunctionDeployConfiguration origin = LaunchConfigurationUtils.getFromConfiguration(configuration, FunctionDeployConfiguration.class);
+        FunctionLocalRunConfiguration origin = LaunchConfigurationUtils.getFromConfiguration(configuration, FunctionLocalRunConfiguration.class);
         setValue(origin);
         this.cbProject.refreshItems();
     }
 
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        FunctionDeployConfiguration origin = LaunchConfigurationUtils.getFromConfiguration(configuration, FunctionDeployConfiguration.class);
-        FunctionDeployConfiguration newConfig = getValue();
+        FunctionLocalRunConfiguration origin = LaunchConfigurationUtils.getFromConfiguration(configuration, FunctionLocalRunConfiguration.class);
+        FunctionLocalRunConfiguration newConfig = getValue();
         try {
 
             Utils.mergeObjects(newConfig, origin);
@@ -103,19 +115,22 @@ public class DeployFunctionTab extends AbstractLaunchConfigurationTab implements
         }
     }
 
-    public FunctionDeployConfiguration getValue() {
-        FunctionDeployConfiguration config = new FunctionDeployConfiguration();
+    public FunctionLocalRunConfiguration getValue() {
+        FunctionLocalRunConfiguration config = new FunctionLocalRunConfiguration();
         if (cbProject.getValue() != null) {
             config.setProjectName(cbProject.getValue().getElementName());
         }
         if (StringUtils.isNotBlank(txtFunctionCli.getValue())) {
             config.setFunctionCliPath(txtFunctionCli.getValue());
         }
+        if (StringUtils.isNotBlank(txtLocalSettings.getValue())) {
+            config.setLocalSettingsJsonPath(txtLocalSettings.getValue());
+        }
         return config;
     }
 
     @Override
-    public void setValue(FunctionDeployConfiguration config) {
+    public void setValue(FunctionLocalRunConfiguration config) {
         if (StringUtils.isNotBlank(config.getProjectName())) {
             this.cbProject.setValue(new AzureComboBox.ItemReference<>(config.getProjectName(), IJavaElement::getElementName));
         }
@@ -128,16 +143,19 @@ public class DeployFunctionTab extends AbstractLaunchConfigurationTab implements
                 AzureMessager.getMessager().warning("Cannot find function core tools due to error:" + e.getMessage());
             }
         }
+
+        if (StringUtils.isNotBlank(config.getLocalSettingsJsonPath())) {
+            txtLocalSettings.setValue(config.getLocalSettingsJsonPath());
+        }
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(this.cbProject, this.txtFunctionCli);
+        return Arrays.asList(this.cbProject, this.txtFunctionCli, this.txtLocalSettings);
     }
 
     @Override
     public String getName() {
-        return "Deploy Functions tab";
+        return "Run Azure Function";
     }
-
 }

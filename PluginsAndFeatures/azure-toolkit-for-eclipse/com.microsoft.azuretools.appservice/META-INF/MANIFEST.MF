@@ -56,6 +56,6 @@ Export-Package: com.microsoft.azuretools.appservice,
  com.microsoft.azuretools.appservice.handlers,
  com.microsoft.azuretools.appservice.ui
 Bundle-ClassPath: .,
- target/lib/azure-toolkit-ide-appservice-lib-0.14.0.jar
- target/lib/plexus-archiver-3.0.3.jar
+ target/lib/azure-toolkit-ide-appservice-lib-0.14.0.jar,
+ target/lib/plexus-archiver-3.0.3.jar,
  target/lib/plexus-io-3.0.1.jar
