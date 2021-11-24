@@ -82,7 +82,7 @@
 
 
     <extension point="org.eclipse.debug.core.launchConfigurationTypes">
-        <launchConfigurationType name="Run Azure Functions" delegate="com.microsoft.azure.toolkit.eclipse.function.launch.local.AzureFunctionLocalLaunchDelegate" modes="run" id="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationType"></launchConfigurationType>
+        <launchConfigurationType name="Run Azure Functions" delegate="com.microsoft.azure.toolkit.eclipse.function.launch.local.AzureFunctionLocalLaunchDelegate" modes="run,debug" id="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationType"></launchConfigurationType>
     </extension>
 
     <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">

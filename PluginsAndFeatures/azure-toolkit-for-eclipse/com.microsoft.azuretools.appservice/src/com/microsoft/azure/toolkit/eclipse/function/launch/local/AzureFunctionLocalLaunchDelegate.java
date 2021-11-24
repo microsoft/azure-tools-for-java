@@ -91,7 +91,7 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
         if (ILaunchManager.RUN_MODE.equals(mode)) {
             return new AzureFunctionRunner(vm, func, stagingFolder);
         } else if (ILaunchManager.DEBUG_MODE.equals(mode)) {
-            throw new UnsupportedOperationException("Local debug Azure Function is not supported by now.");
+            return new AzureFunctionDebugger(vm, func, stagingFolder);
         }
         return null;
     }
