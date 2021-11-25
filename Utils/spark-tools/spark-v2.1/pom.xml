@@ -114,6 +114,20 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion><!--CVE-2014-0114-->
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.struts</groupId>
+                    <artifactId>struts2-core</artifactId>
+                </exclusion>
+                <exclusion><!--CVE-2019-10172 and CVE-2019-10202-->
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -133,6 +147,14 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion><!--CVE-2017-15288-->
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-compiler</artifactId>
+                </exclusion>
+                <exclusion><!--CVE-2019-9518 and WS-2020-0408-->
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -181,6 +203,10 @@
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
+                </exclusion>
+                <exclusion><!--WS-2019-0065-->
+                    <groupId>org.jpmml</groupId>
+                    <artifactId>pmml-model</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
