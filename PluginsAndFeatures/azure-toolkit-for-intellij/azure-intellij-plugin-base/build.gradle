@@ -103,10 +103,10 @@ subprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:21.0.1'
+        compileOnly 'org.jetbrains:annotations:23.0.0'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
         compile 'com.microsoft.azure:azure-toolkit-common-lib:' + azureToolkitVersion, {
             exclude group: "com.squareup.okhttp3", module: "okhttp"

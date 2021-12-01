@@ -11,8 +11,8 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-postgre-lib:' + azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
     compile 'com.microsoft.azure:azure-toolkit-ide-database-lib:' + azureToolkitVersion
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.25'
-    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.27'
+    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.5.0.jre8-preview'
 
     // TODO(andxu): remove the legacy dependencies
     compile 'com.microsoft.azuretools:azuretools-core:3.60.0-SNAPSHOT', {

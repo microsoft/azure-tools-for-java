@@ -1,11 +1,11 @@
 plugins {
     id "org.jetbrains.intellij" version "1.1.4"
     id "org.jetbrains.kotlin.jvm" version "1.5.21"
-    id 'org.openjfx.javafxplugin' version '0.0.9'
-    id "de.undercouch.download" version "4.1.1"
+    id 'org.openjfx.javafxplugin' version '0.0.10'
+    id "de.undercouch.download" version "4.1.2"
     id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"
-    id "com.github.spotbugs" version "4.7.1"
+    id "com.github.spotbugs" version "4.8.0"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
@@ -110,7 +110,7 @@ subprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:21.0.1'
+        compileOnly 'org.jetbrains:annotations:23.0.0'
         // https://mvnrepository.com/artifact/org.projectlombok/lombok
         compileOnly 'org.projectlombok:lombok:1.18.20'
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
@@ -223,10 +223,10 @@ dependencies {
     }
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib:' + azureToolkitVersion
 
-    compile 'com.nimbusds:oauth2-oidc-sdk:9.7', { force = true }
+    compile 'com.nimbusds:oauth2-oidc-sdk:9.20', { force = true }
 
-    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.3'
-    compile "com.github.akarnokd:rxjava3-interop:3.0.2"
+    compile group: 'io.projectreactor.addons', name: 'reactor-adapter', version: '3.4.5'
+    compile "com.github.akarnokd:rxjava3-interop:3.1.1"
     compile 'commons-io:commons-io'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.3.1'
@@ -251,14 +251,14 @@ dependencies {
     compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
     compile group: 'org.apache.maven', name: 'maven-archiver', version: '3.5.1'
 
-    testCompile 'junit:junit:4.13'
-    testImplementation 'io.cucumber:cucumber-java:7.0.0'
-    testImplementation 'io.cucumber:cucumber-junit:7.0.0'
+    testCompile 'junit:junit:4.13.2'
+    testImplementation 'io.cucumber:cucumber-java:7.1.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.1.0'
     testCompile 'org.mockito:mockito-core:2.7.22'
     testCompile 'org.assertj:assertj-swing-junit:3.17.1'
 
-    testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
-    testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
+    testCompile 'org.powermock:powermock-module-junit4:2.0.9'
+    testCompile 'org.powermock:powermock-api-mockito2:2.0.9'
     testCompile 'javax.servlet:javax.servlet-api:4.0.1'
 
     testCompile "org.jetbrains.kotlin:kotlin-stdlib"

@@ -8,5 +8,5 @@ dependencies {
     compile 'com.microsoft.azure:azure-toolkit-redis-lib:0.15.0-SNAPSHOT'
     compile 'com.microsoft.azure:azure-toolkit-ide-common-lib:0.15.0-SNAPSHOT'
     compile 'com.microsoft.azure:azure-toolkit-ide-redis-lib:0.15.0-SNAPSHOT'
-    compile 'redis.clients:jedis:3.6.3'
+    compile 'redis.clients:jedis:3.7.0'
 }

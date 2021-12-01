@@ -48,7 +48,7 @@ public class YarnHistoryTask extends Task<String> {
         if (preTagElements.size() == 0) {
             throw new HDIException("No logs here or logs not available");
         } else {
-            return preTagElements.get(0).asText();
+            return preTagElements.get(0).asNormalizedText();
         }
     }
 }

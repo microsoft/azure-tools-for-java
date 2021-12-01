@@ -3,7 +3,7 @@ apply plugin: "io.freefair.aspectj.post-compile-weaving"
 dependencies {
     implementation project(":azure-intellij-plugin-lib")
 
-    implementation 'com.microsoft.graph:microsoft-graph:3.7.0'
+    implementation 'com.microsoft.graph:microsoft-graph:5.8.0'
     implementation "com.microsoft.azure:azure-toolkit-auth-lib:0.15.0-SNAPSHOT"
-    implementation "com.azure.resourcemanager:azure-resourcemanager-authorization:2.5.0"
+    implementation "com.azure.resourcemanager:azure-resourcemanager-authorization:2.10.0"
 }
