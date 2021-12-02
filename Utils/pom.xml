@@ -377,12 +377,12 @@
             <dependency>
                 <groupId>io.cucumber</groupId>
                 <artifactId>cucumber-junit</artifactId>
-                <version>7.1.0</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>io.cucumber</groupId>
                 <artifactId>cucumber-java</artifactId>
-                <version>7.1.0</version>
+                <version>1.2.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -422,7 +422,7 @@
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>1.49</version>
+                <version>1.34</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
