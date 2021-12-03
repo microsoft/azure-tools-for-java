@@ -120,12 +120,16 @@
                     <artifactId>commons-beanutils</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils-core</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.struts</groupId>
                     <artifactId>struts2-core</artifactId>
                 </exclusion>
-                <exclusion><!--CVE-2019-10172 and CVE-2019-10202-->
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
+                <exclusion><!--CVE-2019-17571-->
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -223,6 +227,12 @@
             <version>${spark.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13-atlassian-6</version>
         </dependency>
     </dependencies>
 </project>
