@@ -103,3 +103,12 @@ function getTimeIntervalByMins(time1, time2) {
     var strictIsoParse = d3.utcParse("%Y-%m-%dT%H:%M:%S.%LGMT");
     return ((strictIsoParse(time1) - strictIsoParse(time2))/(1000 * 60.0)).toFixed(2);
 }
+
+function onBodyFocus() {
+    if (document.activeElement != document.body) {
+        return;
+    }
+
+    console.log("tab next")
+     $.tabNext();
+}
