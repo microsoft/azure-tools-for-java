@@ -69,6 +69,7 @@ task buildUtils {
         logger.info('Building Utils ...')
         maven {
             goals = "install"
+            skipTest = true
             pom = file('Utils/pom.xml')
         }
     }
