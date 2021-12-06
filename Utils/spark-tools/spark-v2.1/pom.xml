@@ -232,7 +232,7 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.13-atlassian-6</version>
+            <version>1.9.14-atlassian-6</version>
         </dependency>
     </dependencies>
 </project>
