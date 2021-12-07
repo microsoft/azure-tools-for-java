@@ -93,6 +93,9 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        maven { // refer 7f0f9991
+            url "https://packages.atlassian.com/maven-3rdparty/"
+        }
     }
 
     apply plugin: 'org.jetbrains.intellij'
