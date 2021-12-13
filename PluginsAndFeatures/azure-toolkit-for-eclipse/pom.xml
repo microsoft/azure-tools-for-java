@@ -32,15 +32,15 @@
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>2.4.0</tycho-version>
+    <tycho-version>2.5.0</tycho-version>
     <azuretool.eclipse.version>3.30.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
   <repositories>
     <repository>
-      <id>mars</id>
+      <id>2021-06</id>
       <layout>p2</layout>
-      <url>https://download.eclipse.org/releases/mars/</url>
+      <url>https://download.eclipse.org/releases/2021-06</url>
     </repository>
     <repository>
       <id>scala</id>
