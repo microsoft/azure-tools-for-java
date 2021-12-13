@@ -20,42 +20,16 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azureexplorer.editors.webapp;
+package com.microsoft.azure.toolkit.eclipse.webapp.property;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPersistableElement;
+import com.microsoft.azure.toolkit.eclipse.appservice.property.AppServiceBasePropertyEditor;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 
-public abstract class WebAppBasePropertyEditorInput implements IEditorInput {
+public class WebAppPropertyEditor extends AppServiceBasePropertyEditor {
+    public static final String ID = "com.microsoft.azure.toolkit.eclipse.webapp.property.WebAppPropertyEditor";
 
-    @Override
-    public boolean exists() {
-        return false;
-    }
-
-    @Override
-    public ImageDescriptor getImageDescriptor() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-    @Override
-    public IPersistableElement getPersistable() {
-        return null;
-    }
-
-    @Override
-    public String getToolTipText() {
-        return null;
-    }
-
-    @Override
-    public <T> T getAdapter(Class<T> aClass) {
-        return null;
+    public WebAppPropertyEditor() {
+        super(new WebAppPropertyViewPresenter());
     }
 
 }

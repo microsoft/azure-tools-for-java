@@ -72,18 +72,6 @@
              id="com.microsoft.azuretools.azureexplorer.editors.container.ContainerRegistryExplorerEditor"
              name="ACR Explorer">
        </editor>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
-             icon="icons/WebApp_16.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor"
-             name="WebApp Properties">
-       </editor>
-       <editor
-             class="com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor"
-             icon="icons/Slot_16.png"
-             id="com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor"
-             name="Deployment slot Properties">
-     </editor>
     </extension>
 
 	<extension point="org.eclipse.ui.handlers">

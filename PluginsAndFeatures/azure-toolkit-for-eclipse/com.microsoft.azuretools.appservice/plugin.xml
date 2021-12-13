@@ -1,143 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension point="org.eclipse.ui.commands">
-       <command
-            name="Publish as Azure Web App..."
-            categoryId="com.microsoft.ui.dropdown.category"
-            id="com.microsoft.azuretools.appservice.commands.deployToAzure"
-            icon="icons/PublishWebApp_16.png">
+    <extension point="org.eclipse.ui.editors">
+        <editor class="com.microsoft.azure.toolkit.eclipse.webapp.property.WebAppPropertyEditor" icon="icons/webapp.png" id="com.microsoft.azure.toolkit.eclipse.webapp.property.WebAppPropertyEditor" name="WebApp Properties"></editor>
+        <editor class="com.microsoft.azure.toolkit.eclipse.webapp.property.DeploymentSlotEditor" icon="icons/webappdeploymentslot.png" id="com.microsoft.azure.toolkit.eclipse.webapp.property.DeploymentSlotEditor" name="Deployment slot Properties"></editor>
+        <editor class="com.microsoft.azure.toolkit.eclipse.functionapp.property.FunctionAppPropertyEditor" icon="icons/functionapp.png" id="com.microsoft.azure.toolkit.eclipse.functionapp.property.FunctionAppPropertyEditor" name="FunctionApp Properties"></editor>
+    </extension>
+    <extension point="org.eclipse.ui.commands">
+        <command name="Publish as Azure Web App..." categoryId="com.microsoft.ui.dropdown.category" id="com.microsoft.azuretools.appservice.commands.deployToAzure" icon="icons/PublishWebApp_16.png">
             <commandParameter id="com.microsoft.ui.dropdown.msg" name="DropDown Options" optional="true"></commandParameter>
-       </command>   
-       <command
-            name="Create Web App..."
-            categoryId="com.microsoft.ui.dropdown.category"
-            id="com.microsoft.azuretools.appservice.commands.createWebApp"
-            icon="icons/PublishWebApp_16.png">
-       </command> 
-   </extension>
-   
-   <extension point="org.eclipse.ui.handlers">
-      <handler
-            commandId="com.microsoft.azuretools.appservice.commands.deployToAzure"
-            class="com.microsoft.azuretools.appservice.handlers.DeployToAzureHandler">
-      </handler>
-      
-      <handler
-            commandId="com.microsoft.azuretools.appservice.commands.createWebApp"
-            class="com.microsoft.azure.toolkit.eclipse.webapp.creation.CreateWebAppHandler">
-      </handler>
-   </extension>
-   
-   <extension point="org.eclipse.ui.menus">
-      <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-          <menu
-               label="Azure"
-               id="com.microsoft.azuretools.webprojmenu"
-               icon="icons/windowsAzure.png">
-              <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure">
-                <visibleWhen  checkEnabled="false">
-                    <with 
-                    variable="selection">
-                        <count value="1"/> 
-                        <iterate 
-                            operator="or">
+        </command>
+        <command name="Create Web App..." categoryId="com.microsoft.ui.dropdown.category" id="com.microsoft.azuretools.appservice.commands.createWebApp" icon="icons/PublishWebApp_16.png"></command>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" class="com.microsoft.azuretools.appservice.handlers.DeployToAzureHandler"></handler>
+
+        <handler commandId="com.microsoft.azuretools.appservice.commands.createWebApp" class="com.microsoft.azure.toolkit.eclipse.webapp.creation.CreateWebAppHandler"></handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <menu label="Azure" id="com.microsoft.azuretools.webprojmenu" icon="icons/windowsAzure.png">
+                <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure">
+                    <visibleWhen checkEnabled="false">
+                        <with variable="selection">
+                            <count value="1" />
+                            <iterate operator="or">
+                                <adapt type="org.eclipse.core.resources.IProject">
+                                    <test property="com.microsoft.ui.webapp.property.isSupportedProj" />
+                                </adapt>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </menu>
+        </menuContribution>
+        <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
+            <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" style="push">
+                <visibleWhen checkEnabled="false">
+                    <with variable="selection">
+                        <count value="1" />
+                        <iterate operator="or">
                             <adapt type="org.eclipse.core.resources.IProject">
-                                <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
+                                <test property="com.microsoft.ui.webapp.property.isSupportedProj" />
                             </adapt>
-                        </iterate> 
+                        </iterate>
                     </with>
                 </visibleWhen>
-              </command>
-          </menu>
-      </menuContribution>
-      <menuContribution locationURI="menu:com.microsoft.ui.dropdown.toolbar.command">
-         <command commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" style="push">
-            <visibleWhen  checkEnabled="false">
-                <with 
-                variable="selection">
-                    <count value="1"/> 
-                    <iterate 
-                        operator="or">
-                        <adapt type="org.eclipse.core.resources.IProject">
-                            <test property="com.microsoft.ui.webapp.property.isSupportedProj"/>
-                        </adapt>
-                    </iterate> 
-                </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-   </extension>
-   
-   <extension point="org.eclipse.ui.commandImages">
-     <image commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" icon="icons/PublishWebApp_16.png"></image>
-   </extension>
-      <extension
-         point="com.microsoft.azure.toolkit.explorer">
-      <explorerContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor">
-      </explorerContributor>
-      <explorerContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppExplorerContributor">
-      </explorerContributor>     
-   </extension>
-   <extension
-         point="com.microsoft.azure.toolkit.actions">
-      <actionContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor">
-      </actionContributor>
-      <actionContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor">
-      </actionContributor>
-      <actionContributor
-            implementation="com.microsoft.azure.toolkit.eclipse.webapp.EclipseWebAppActionsContributor">
-      </actionContributor>
-      <actionContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor">
-      </actionContributor>
-      <actionContributor
-            implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor">
-      </actionContributor>
-            <actionContributor
-            implementation="com.microsoft.azure.toolkit.eclipse.functionapp.EclipseFunctionAppActionsContributor">
-      </actionContributor>
-   </extension>
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="com.microsoft.azuretools.appservice.commands.deployToAzure" icon="icons/PublishWebApp_16.png"></image>
+    </extension>
+    <extension point="com.microsoft.azure.toolkit.explorer">
+        <explorerContributor implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppExplorerContributor"></explorerContributor>
+        <explorerContributor implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppExplorerContributor"></explorerContributor>
+    </extension>
+    <extension point="com.microsoft.azure.toolkit.actions">
+        <actionContributor implementation="com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.eclipse.webapp.EclipseWebAppActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor"></actionContributor>
+        <actionContributor implementation="com.microsoft.azure.toolkit.eclipse.functionapp.EclipseFunctionAppActionsContributor"></actionContributor>
+    </extension>
 
     <extension point="org.eclipse.debug.core.launchConfigurationTypes">
-        <launchConfigurationType name="Deploy Azure Webapp launch"
-            delegate="com.microsoft.azure.toolkit.eclipse.webapp.WebAppDeployLaunchConfiguration"
-            modes="run"
-            id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
-        </launchConfigurationType>
+        <launchConfigurationType name="Deploy Azure Webapp launch" delegate="com.microsoft.azure.toolkit.eclipse.webapp.WebAppDeployLaunchConfiguration" modes="run" id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType"></launchConfigurationType>
     </extension>
-    <extension
-        point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-        <launchConfigurationTabGroup
-            class="com.microsoft.azure.toolkit.eclipse.webapp.AzureWebAppDeployConfigurationTabGroup"
-            id="com.microsoft.azure.toolkit.eclipse.webapp.azureWebAppDeployConfigurationTabGroup"
-            type="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType">
-        </launchConfigurationTabGroup>
+    <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+        <launchConfigurationTabGroup class="com.microsoft.azure.toolkit.eclipse.webapp.AzureWebAppDeployConfigurationTabGroup" id="com.microsoft.azure.toolkit.eclipse.webapp.azureWebAppDeployConfigurationTabGroup" type="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType"></launchConfigurationTabGroup>
     </extension>
-    <extension
-        point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-        <launchConfigurationTypeImage
-                id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationTypeImage"
-                configTypeID="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType"
-                icon="icons/PublishWebApp_16.png">
-        </launchConfigurationTypeImage>
+    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+        <launchConfigurationTypeImage id="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationTypeImage" configTypeID="com.microsoft.azure.toolkit.eclipse.webapp.launchConfigurationType" icon="icons/PublishWebApp_16.png"></launchConfigurationTypeImage>
     </extension>
-    <extension
-         point="org.eclipse.ui.newWizards">
-           <category
-                 id="com.microsoft.azure.wizards.category"
-                 name="Azure">
-          </category>
-         <wizard
-            name="Create New Azure Function Project"
-            icon="icons/functionapp.png"
-            category="com.microsoft.azure.wizards.category"
-            class="com.microsoft.azure.toolkit.eclipse.function.wizard.CreateFunctionProjectWizard"
-            project="true"
-            id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
-   </extension>
+    <extension point="org.eclipse.ui.newWizards">
+        <category id="com.microsoft.azure.wizards.category" name="Azure"></category>
+        <wizard name="Create New Azure Function Project" icon="icons/functionapp.png" category="com.microsoft.azure.wizards.category" class="com.microsoft.azure.toolkit.eclipse.function.wizard.CreateFunctionProjectWizard" project="true" id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
+    </extension>
 </plugin>

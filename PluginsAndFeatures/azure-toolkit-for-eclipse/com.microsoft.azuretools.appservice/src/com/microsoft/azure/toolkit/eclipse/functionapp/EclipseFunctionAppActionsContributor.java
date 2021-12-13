@@ -8,8 +8,17 @@ package com.microsoft.azure.toolkit.eclipse.functionapp;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+
+import com.microsoft.azure.toolkit.eclipse.appservice.property.AppServicePropertyEditorInput;
 import com.microsoft.azure.toolkit.eclipse.functionapp.creation.CreateFunctionAppHandler;
 import com.microsoft.azure.toolkit.eclipse.functionapp.logstreaming.FunctionAppLogStreamingHandler;
+import com.microsoft.azure.toolkit.eclipse.functionapp.property.FunctionAppPropertyEditor;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -17,7 +26,10 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.appservice.AzureFunction;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.IFunctionAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 public class EclipseFunctionAppActionsContributor implements IActionsContributor {
@@ -30,6 +42,16 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
                 .runLater(() -> CreateFunctionAppHandler.create());
         am.registerHandler(ResourceCommonActionsContributor.CREATE, createCondition, createHandler);
 
+        final BiPredicate<IAzureBaseResource<?, ?>, Object> isFunctionApp = (r, e) -> r instanceof FunctionApp;
+        final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppPropertyViewHandler = (c, e) -> AzureTaskManager
+                .getInstance().runLater(() -> {
+                    IWorkbench workbench = PlatformUI.getWorkbench();
+                    AppServicePropertyEditorInput input = new AppServicePropertyEditorInput(c.id());
+                    IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(FunctionAppPropertyEditor.ID);
+                    openEditor(input, descriptor);
+                });
+        am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, isFunctionApp, openWebAppPropertyViewHandler);
+        
         final BiPredicate<IAppService<?>, Object> logStreamingPredicate = (r, e) -> r instanceof IFunctionAppBase<?>;
         final BiConsumer<IAppService<?>, Object> startLogStreamingHandler = (c, e) -> FunctionAppLogStreamingHandler
                 .startLogStreaming((IFunctionAppBase<?>) c);
@@ -42,6 +64,24 @@ public class EclipseFunctionAppActionsContributor implements IActionsContributor
                 stopLogStreamingHandler);
     }
 
+    // todo: remove duplicated with EclipseWebAppActionsContributor
+    private void openEditor(IEditorInput input, IEditorDescriptor descriptor) {
+        try {
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+            if (activeWorkbenchWindow == null) {
+                return;
+            }
+            IWorkbenchPage page = activeWorkbenchWindow.getActivePage();
+            if (page == null) {
+                return;
+            }
+            page.openEditor(input, descriptor.getId());
+        } catch (Exception e) {
+            AzureMessager.getMessager().error(e, "Unable to open editor view");
+        }
+    }
+    
     public int getOrder() {
         return INITIALIZE_ORDER;
     }

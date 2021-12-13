@@ -25,8 +25,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
+import com.microsoft.azure.toolkit.eclipse.appservice.property.AppServicePropertyEditorInput;
 import com.microsoft.azure.toolkit.eclipse.webapp.handlers.DownloadAppServiceFileAction;
 import com.microsoft.azure.toolkit.eclipse.webapp.handlers.WebAppLogStreamingHandler;
+import com.microsoft.azure.toolkit.eclipse.webapp.property.DeploymentSlotEditor;
+import com.microsoft.azure.toolkit.eclipse.webapp.property.WebAppPropertyEditor;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppActionsContributor;
@@ -35,8 +38,8 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -45,9 +48,6 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotPropertyEditorInput;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor;
-import com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditorInput;
 import com.microsoft.azuretools.azureexplorer.helpers.EditorType;
 
 public class EclipseWebAppActionsContributor implements IActionsContributor {
@@ -73,8 +73,7 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppPropertyViewHandler = (c, e) -> AzureTaskManager
                 .getInstance().runLater(() -> {
                     IWorkbench workbench = PlatformUI.getWorkbench();
-                    WebAppPropertyEditorInput input = new WebAppPropertyEditorInput(((WebApp) c).subscriptionId(),
-                            ((WebApp) c).id(), ((WebApp) c).name());
+                    AppServicePropertyEditorInput input = new AppServicePropertyEditorInput(c.id());
                     IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
                     openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
                 });
@@ -84,10 +83,8 @@ public class EclipseWebAppActionsContributor implements IActionsContributor {
         final BiConsumer<IAzureBaseResource<?, ?>, Object> openWebAppSlotPropertyViewHandler = (c,
                 e) -> AzureTaskManager.getInstance().runLater(() -> {
                     IWorkbench workbench = PlatformUI.getWorkbench();
-                    DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(
-                            ((WebAppDeploymentSlot) c).id(), ((WebAppDeploymentSlot) c).subscriptionId(),
-                            ((WebAppDeploymentSlot) c).webApp().id(), ((WebAppDeploymentSlot) c).name());
-                    IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(WebAppPropertyEditor.ID);
+                    AppServicePropertyEditorInput input = new AppServicePropertyEditorInput(c.id());
+                    IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
                     openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
                 });
         am.registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES, isWebAppSlot,
