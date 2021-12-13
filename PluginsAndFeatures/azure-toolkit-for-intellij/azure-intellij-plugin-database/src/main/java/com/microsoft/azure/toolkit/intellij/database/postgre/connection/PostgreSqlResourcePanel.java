@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.intellij.connector.database.DatabaseConnectio
 import com.microsoft.azure.toolkit.intellij.connector.database.component.*;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -177,13 +176,7 @@ public class PostgreSqlResourcePanel implements AzureFormJPanel<Resource<Postgre
     }
 
     private void onCopyButtonClicked(ActionEvent e) {
-        try {
-            Utils.copyToSystemClipboard(testResultTextPane.getText());
-        } catch (final Exception exception) {
-            final String error = "copy test result error";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        Utils.copyToSystemClipboard(testResultTextPane.getText());
     }
 
     private KeyListener onPasswordChanged() {

@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Toolkit;
@@ -156,12 +158,7 @@ public class Utils {
         if (recordedVersion == null || recordedVersion.isEmpty()) {
             return true;
         }
-
-        if (compareVersion(recordedVersion, "3.0") >= 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return compareVersion(recordedVersion, "3.0") < 0;
     }
 
     /*
@@ -200,13 +197,14 @@ public class Utils {
         return str == null || str.trim().isEmpty();
     }
 
-    public static void copyToSystemClipboard(String key) throws Exception {
-        StringSelection stringSelection = new StringSelection(key);
-        Toolkit toolKit = Toolkit.getDefaultToolkit();
+    @AzureOperation(name = "common.copy", type = AzureOperation.Type.TASK)
+    public static void copyToSystemClipboard(String key) {
+        final StringSelection stringSelection = new StringSelection(key);
+        final Toolkit toolKit = Toolkit.getDefaultToolkit();
         if (toolKit == null) {
-            throw new Exception("Cannot copy to system clipboard.");
+            throw new AzureToolkitRuntimeException("Error occurs when copy to system clipboard.");
         }
-        Clipboard clipboard = toolKit.getSystemClipboard();
+        final Clipboard clipboard = toolKit.getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
 

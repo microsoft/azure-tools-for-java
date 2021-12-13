@@ -82,7 +82,7 @@ public class PostgreSqlResourceDefinition extends AzureServiceResource.Definitio
         final String dataId = resourceEle.getChildTextTrim("dataId");
 
         if (StringUtils.isBlank(dataId)) {
-            throw new AzureToolkitRuntimeException("Missing required dataId for postgre SQL database in service link.");
+            throw new AzureToolkitRuntimeException("persistent data of resource connection is corrupted");
         }
         final PostgreSqlDatabaseResource resource = new PostgreSqlDatabaseResource(dataId, resourceEle.getChildTextTrim("username"), this);
 

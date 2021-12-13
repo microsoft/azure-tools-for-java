@@ -44,14 +44,8 @@ public class SubscriptionManager {
     public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.setSubscriptionDetails()");
         synchronized (this) {
-            try {
-                saveSubscriptions(subscriptionDetails);
-                notifyAllListeners(CollectionUtils.isEmpty(subscriptionDetails));
-            } catch (final IOException e) {
-                final String error = "Failed to update local subscriptions cache while updating";
-                final String action = "Retry later";
-                throw new AzureToolkitRuntimeException(error, e, action);
-            }
+            saveSubscriptions(subscriptionDetails);
+            notifyAllListeners(CollectionUtils.isEmpty(subscriptionDetails));
         }
     }
 
@@ -79,15 +73,12 @@ public class SubscriptionManager {
             final SubscriptionDetail[] sda = JsonHelper.deserialize(SubscriptionDetail[].class, json);
             return new ArrayList<>(Arrays.asList(sda));
         } catch (final IOException e) {
-            final String error = "Failed to load local cached subscriptions";
-            final String action = "Retry later or logout to clear local cached subscriptions";
-            throw new AzureToolkitRuntimeException(error, e);
+            throw new AzureToolkitRuntimeException(e);
         }
     }
 
     @AzureOperation(name = "account.persist_subscription", type = AzureOperation.Type.TASK)
-    private static void saveSubscriptions(List<SubscriptionDetail> sdl)
-            throws IOException {
+    private static void saveSubscriptions(List<SubscriptionDetail> sdl) {
         System.out.println("SubscriptionManager.saveSubscriptions()");
         AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscription_details", JsonHelper.serialize(sdl));
     }
@@ -95,7 +86,7 @@ public class SubscriptionManager {
     public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionDetailsMap()");
         updateSubscriptionDetailsIfNull();
-        return Utils.groupByIgnoreDuplicate(IdentityAzureManager.getInstance().getSubscriptionDetails(), d -> d.getSubscriptionId());
+        return Utils.groupByIgnoreDuplicate(IdentityAzureManager.getInstance().getSubscriptionDetails(), SubscriptionDetail::getSubscriptionId);
     }
 
     @AzureOperation(name = "account.get_subscription_details", type = AzureOperation.Type.TASK)
@@ -110,19 +101,14 @@ public class SubscriptionManager {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
 
-        final List<SubscriptionDetail> selectedSubscriptions =
-                IdentityAzureManager.getInstance().getSubscriptionDetails().stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-
-        return selectedSubscriptions;
+        return IdentityAzureManager.getInstance().getSubscriptionDetails().stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
     }
 
     public void updateSubscriptionDetailsIfNull() {
     }
 
     public synchronized void addListener(ISubscriptionSelectionListener l) {
-        if (!listeners.contains(l)) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
 
     public synchronized void removeListener(ISubscriptionSelectionListener l) {
@@ -134,7 +120,7 @@ public class SubscriptionManager {
     }
 
     protected void notifyAllListeners(boolean isRefresh) {
-        for (ISubscriptionSelectionListener l : listeners) {
+        for (final ISubscriptionSelectionListener l : listeners) {
             l.update(isRefresh);
         }
         if (AzureUIRefreshCore.listeners != null) {

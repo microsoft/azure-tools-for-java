@@ -81,9 +81,8 @@ public class FunctionNode extends Node implements TelemetryProperties {
         final String triggerType = Optional.ofNullable(trigger)
                 .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
         if (StringUtils.isEmpty(triggerType)) {
-            final String error = String.format("failed to get trigger type of function[%s].", functionApp.name());
-            final String action = "confirm trigger type is configured.";
-            throw new AzureToolkitRuntimeException(error, action);
+            final String error = String.format("trigger type is not configured for function[%s].", functionApp.name());
+            throw new AzureToolkitRuntimeException(error);
         }
         switch (triggerType.toLowerCase()) {
             case "httptrigger":

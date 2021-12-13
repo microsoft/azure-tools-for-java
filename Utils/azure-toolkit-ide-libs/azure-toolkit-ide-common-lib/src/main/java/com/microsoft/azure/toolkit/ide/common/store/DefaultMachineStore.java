@@ -6,6 +6,7 @@ package com.microsoft.azure.toolkit.ide.common.store;
 
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class DefaultMachineStore implements IMachineStore {
 
-    private String dataFile;
+    private final String dataFile;
     private Map<String, String> map = new HashMap<>();
 
     public DefaultMachineStore(String dataFile) {
@@ -42,7 +43,7 @@ public class DefaultMachineStore implements IMachineStore {
     }
 
     public void setProperty(@javax.annotation.Nullable String service, @Nonnull String key, @Nullable String value) {
-        String hashKey = combineKey(service, key);
+        final String hashKey = combineKey(service, key);
         if (value == null) {
             map.remove(hashKey);
             return;
@@ -55,23 +56,25 @@ public class DefaultMachineStore implements IMachineStore {
         return StringUtils.isBlank(service) ? key : String.format("%s.%s", service, key);
     }
 
+    @AzureOperation(name = "common.load_settings", type = AzureOperation.Type.TASK)
     public void load() {
         try {
             if (Files.exists(Paths.get(dataFile))) {
-                String json = FileUtils.readFileToString(new File(dataFile), "utf8");
-                Type type = new TypeToken<Map<String, String>>(){}.getType();
+                final String json = FileUtils.readFileToString(new File(dataFile), "utf8");
+                final Type type = new TypeToken<Map<String, String>>(){}.getType();
                 map = JsonUtils.getGson().fromJson(json, type);
             }
-        } catch (Exception ex) {
-            throw new AzureToolkitRuntimeException("Cannot load property.", ex);
+        } catch (final Exception ex) {
+            throw new AzureToolkitRuntimeException(ex);
         }
     }
 
+    @AzureOperation(name = "common.save_settings", type = AzureOperation.Type.TASK)
     public void save() {
         try {
             FileUtils.writeStringToFile(new File(dataFile), JsonUtils.toJson(map), "utf8");
-        } catch (Exception ex) {
-            throw new AzureToolkitRuntimeException("Cannot save property", ex);
+        } catch (final Exception ex) {
+            throw new AzureToolkitRuntimeException(ex);
         }
     }
 

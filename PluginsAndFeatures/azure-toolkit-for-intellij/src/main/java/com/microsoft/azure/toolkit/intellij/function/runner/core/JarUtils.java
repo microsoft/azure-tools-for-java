@@ -7,7 +7,11 @@ package com.microsoft.azure.toolkit.intellij.function.runner.core;
 
 import com.intellij.openapi.compiler.CompilerPaths;
 import com.intellij.openapi.module.Module;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationException;
+import com.microsoft.azure.toolkit.lib.common.operation.SimpleOperation;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.jar.Manifest;
 import org.codehaus.plexus.archiver.jar.ManifestException;
@@ -36,8 +40,10 @@ public class JarUtils {
         manifest.getMainAttributes().put(new Attributes.Name("Created-By"), "Azure Intellij Plugin");
         try {
             jar.addConfiguredManifest(manifest);
-        } catch (ManifestException e) {
-            throw new AzureToolkitRuntimeException("Cannot create manifest for function jar.", e);
+        } catch (final ManifestException e) {
+            final AzureString title = AzureOperationBundle.title("function.create_manifest");
+            final SimpleOperation op = new SimpleOperation(title, AzureOperation.Type.TASK);
+            throw new AzureOperationException(op, e);
         }
         jar.createArchive();
         return outputFile;

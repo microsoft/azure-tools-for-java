@@ -213,9 +213,8 @@ public class AzureWebAppMvpModel {
     public void deployArtifactsToWebApp(@NotNull final IWebAppBase deployTarget, @NotNull final File file,
                                         boolean isDeployToRoot, @NotNull final IProgressIndicator progressIndicator) {
         if (!(deployTarget instanceof WebApp || deployTarget instanceof WebAppDeploymentSlot)) {
-            final String error = "the deployment target is not a valid (deployment slot of) Web App";
-            final String action = "select a valid Web App or deployment slot to deploy the artifact";
-            throw new AzureToolkitRuntimeException(error, action);
+            final String error = "deployment target can only be Web App or deployment slot";
+            throw new AzureToolkitRuntimeException(error);
         }
         // stop target app service
         String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;

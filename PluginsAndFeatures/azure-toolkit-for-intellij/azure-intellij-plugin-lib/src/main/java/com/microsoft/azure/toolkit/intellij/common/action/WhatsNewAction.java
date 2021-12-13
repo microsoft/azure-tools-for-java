@@ -32,7 +32,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -48,7 +47,6 @@ public class WhatsNewAction extends AnAction implements DumbAware {
     private static final String WHATSNEW_URL = "https://aka.ms/whatsnewazureintellij";
     private static final String AZURE_TOOLKIT_FOR_JAVA = "What's New in Azure Toolkit for Java";
     private static final String AZURE_TOOLKIT_WHATS_NEW = "AzureToolkit.WhatsNew";
-    private static final String FAILED_TO_LOAD_WHATS_NEW = "Failed to load what's new document";
     private static final String VERSION_PATTERN = "<!-- Version: (.*) -->";
     private static final String CONTENT_PATH = "/whatsnew.md";
     private static final Key<String> CONTENT_KEY = new Key<>("WHATS_NEW_IN_AZURE_TOOLKIT");
@@ -103,15 +101,13 @@ public class WhatsNewAction extends AnAction implements DumbAware {
     }
 
     @Nullable
+    @AzureOperation(name = "common.load_whatsnew", type = AzureOperation.Type.TASK)
     private static String getWhatsNewContent() {
         try (final InputStream html = WhatsNewAction.class.getResourceAsStream(CONTENT_PATH)) {
-            if (html != null) {
-                return new String(StreamUtil.readBytes(html), StandardCharsets.UTF_8);
-            }
-        } catch (final IOException e) {
-            throw new AzureToolkitRuntimeException(FAILED_TO_LOAD_WHATS_NEW, e);
+            return new String(StreamUtil.readBytes(Objects.requireNonNull(html)), StandardCharsets.UTF_8);
+        } catch (final Exception e) {
+            throw new AzureToolkitRuntimeException(e);
         }
-        throw new AzureToolkitRuntimeException(FAILED_TO_LOAD_WHATS_NEW);
     }
 
     /**

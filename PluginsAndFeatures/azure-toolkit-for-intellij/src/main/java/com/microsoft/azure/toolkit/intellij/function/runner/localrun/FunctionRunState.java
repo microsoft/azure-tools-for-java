@@ -286,8 +286,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                     installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
                 }
             } catch (AzureExecutionException | IOException e) {
-                final String error = String.format("failed prepare staging folder[%s]", folder);
-                throw new AzureToolkitRuntimeException(error, e);
+                throw new AzureToolkitRuntimeException(e);
             }
         });
         if (installProcess != null) {

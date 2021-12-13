@@ -346,7 +346,7 @@ public class AzureSignInAction extends AzureAnAction {
             if (shouldNoticeErrorToUser(e)) {
                 EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             }
-            throw new AzureToolkitRuntimeException(e.getMessage(), e);
+            throw new AzureToolkitRuntimeException(e);
         } finally {
             operation.complete();
         }

@@ -108,10 +108,8 @@ public class AuthMethodManager {
                 return azure;
             }
         }
-        final String error = "Failed to connect Azure service with current account";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        final String errorCode = "001";
-        throw new AzureToolkitRuntimeException(error, null, action, errorCode);
+        final String error = "Cannot connect to Azure with current account";
+        throw new AzureToolkitRuntimeException(error);
     }
 
     public void addSignInEventListener(Runnable l) {
@@ -206,15 +204,9 @@ public class AuthMethodManager {
     @AzureOperation(name = "account.persist_auth_setting", type = AzureOperation.Type.TASK)
     public void persistAuthMethodDetails() {
         waitInitFinish();
-        try {
-            System.out.println("saving authMethodDetails...");
-            String sd = JsonHelper.serialize(authMethodDetails);
-            AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, sd);
-        } catch (final IOException e) {
-            final String error = "Failed to persist auth method settings while updating";
-            final String action = "Retry later";
-            throw new AzureToolkitRuntimeException(error, e, action);
-        }
+        System.out.println("saving authMethodDetails...");
+        final String sd = JsonHelper.serialize(authMethodDetails);
+        AzureStoreManager.getInstance().getIdeStore().setProperty(ACCOUNT, AUTH_METHOD_DETAIL, sd);
     }
 
     private void initAuthMethodManagerFromSettings() {

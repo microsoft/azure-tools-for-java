@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.database.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionSecurityPanel;
 import com.microsoft.azure.toolkit.intellij.database.ui.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -153,13 +152,7 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     }
 
     private void onJDBCCopyButtonClicked(ActionEvent e) {
-        try {
-            copyToSystemClipboard(PostgreSqlPropertiesEditor.this.connectionStringsJDBC.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy JDBC connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        copyToSystemClipboard(PostgreSqlPropertiesEditor.this.connectionStringsJDBC.getOutputTextArea().getText());
     }
 
     private void copyToSystemClipboard(String text) {
@@ -167,13 +160,7 @@ public class PostgreSqlPropertiesEditor extends BaseEditor {
     }
 
     private void onSpringCopyButtonClicked(ActionEvent e) {
-        try {
-            copyToSystemClipboard(PostgreSqlPropertiesEditor.this.connectionStringsSpring.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy Spring connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        copyToSystemClipboard(PostgreSqlPropertiesEditor.this.connectionStringsSpring.getOutputTextArea().getText());
     }
 
     private void onSaveButtonClicked(ActionEvent e) {

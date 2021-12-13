@@ -34,9 +34,13 @@ import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.intellij.function.CreateFunctionForm;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationException;
+import com.microsoft.azure.toolkit.lib.common.operation.SimpleOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -110,8 +114,9 @@ public class CreateFunctionAction extends CreateElementActionBase {
                                 mkDirs.directory.checkCreateFile(className + ".java");
                             } catch (final IncorrectOperationException e) {
                                 final String dir = mkDirs.directory.getName();
-                                final String error = String.format("failed to create function class[%s] in directory[%s]", className, dir);
-                                throw new AzureToolkitRuntimeException(error, e);
+                                final AzureString title = AzureOperationBundle.title("function.create_class.name|dir", className, dir);
+                                final SimpleOperation op = new SimpleOperation(title, AzureOperation.Type.REQUEST);
+                                throw new AzureOperationException(op, e);
                             }
                             CommandProcessor.getInstance().executeCommand(project, () -> {
                                 PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
@@ -119,16 +124,16 @@ public class CreateFunctionAction extends CreateElementActionBase {
                             }, null, null);
 
                             if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                                final String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
+                                    getEventHubNamespaceConnectionString(form.getEventHubNamespace());
                                 try {
-                                    String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
-                                            getEventHubNamespaceConnectionString(form.getEventHubNamespace());
-
                                     AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
-                                            parameters.get("connection"), connectionString);
+                                        parameters.get("connection"), connectionString);
                                 } catch (IOException e) {
                                     EventUtil.logError(operation, ErrorType.systemError, e, null, null);
-                                    final String error = "failed to get connection string and save to local settings";
-                                    throw new AzureToolkitRuntimeException(error, e);
+                                    final AzureString title = AzureOperationBundle.title("function.save_connection_settings");
+                                    final SimpleOperation op = new SimpleOperation(title, AzureOperation.Type.REQUEST);
+                                    throw new AzureOperationException(op, e);
                                 }
                             }
                         });

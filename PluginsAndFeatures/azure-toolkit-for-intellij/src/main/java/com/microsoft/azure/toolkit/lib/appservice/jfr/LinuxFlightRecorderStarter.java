@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.lib.appservice.TunnelProxy;
 import com.microsoft.azure.toolkit.lib.appservice.model.CommandOutput;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -83,9 +83,9 @@ public class LinuxFlightRecorderStarter extends FlightRecorderStarterBase {
         return Paths.get(HOME_PATH, filename).toString().replaceAll("\\\\", "/");
     }
 
+    @AzureOperation(name = "appservice.download_jfr.file|app", params = {"fileName", "this.appService.name()"}, type = AzureOperation.Type.TASK)
     public byte[] downloadJFRFile(String fileName) {
         // linux kudu vfs api doesn't support absolute path
-        return FluxUtil.collectBytesInByteBufferStream(appService.getFileContent(fileName)).blockOptional()
-                .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("Failed to download JFR file %s from %s", fileName, appService.name())));
+        return FluxUtil.collectBytesInByteBufferStream(appService.getFileContent(fileName)).block();
     }
 }

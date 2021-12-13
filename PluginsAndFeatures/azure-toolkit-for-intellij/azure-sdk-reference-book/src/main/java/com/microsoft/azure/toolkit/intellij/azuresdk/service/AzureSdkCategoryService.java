@@ -54,8 +54,7 @@ public class AzureSdkCategoryService {
             // group
             return uniqueCategories.stream().collect(Collectors.groupingBy(AzureSdkCategoryEntity::getCategory));
         } catch (final IOException e) {
-            final String message = String.format("failed to load Azure SDK categories from \"%s\"", SERVICE_CATEGORY_CSV);
-            throw new AzureToolkitRuntimeException(message, e);
+            throw new AzureToolkitRuntimeException(e);
         }
     }
 

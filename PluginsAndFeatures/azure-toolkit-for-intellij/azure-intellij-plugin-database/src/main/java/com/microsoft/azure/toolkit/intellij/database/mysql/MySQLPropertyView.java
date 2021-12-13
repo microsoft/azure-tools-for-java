@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.database.mysql;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.database.DatabaseComboBox;
@@ -17,9 +17,9 @@ import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
@@ -37,10 +37,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.mysql.MySQLPropert
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.HashMap;
@@ -178,23 +175,11 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
     }
 
     private void onJDBCCopyButtonClicked(ActionEvent e) {
-        try {
-            Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy JDBC connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
     }
 
     private void onSpringCopyButtonClicked(ActionEvent e) {
-        try {
-            Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy Spring connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        Utils.copyToSystemClipboard(MySQLPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
     }
 
     private void onSaveButtonClicked(ActionEvent e) {
@@ -289,17 +274,12 @@ public class MySQLPropertyView extends BaseEditor implements MySQLPropertyMvpVie
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, taskTitle, false, runnable));
     }
 
+    @AzureOperation(name = "mysql.refresh_properties_view.server", params = {"name"}, type = AzureOperation.Type.ACTION)
     private void refreshProperty(String sid, String resourceGroup, String name) {
         final MySQLProperty newProperty = new MySQLProperty();
         newProperty.setSubscriptionId(sid);
         // find server
-        try {
-            newProperty.setServer(Azure.az(AzureMySql.class).subscription(sid).get(resourceGroup, name));
-        } catch (final Exception ex) {
-            final String error = "find Azure Database for MySQL server information";
-            final String action = "confirm your network is available and your server actually exists.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        newProperty.setServer(Azure.az(AzureMySql.class).subscription(sid).get(resourceGroup, name));
         if (StringUtils.equalsIgnoreCase("READY", newProperty.getServer().entity().getState())) {
             // find firewalls
             newProperty.setFirewallRules(newProperty.getServer().firewallRules().list());

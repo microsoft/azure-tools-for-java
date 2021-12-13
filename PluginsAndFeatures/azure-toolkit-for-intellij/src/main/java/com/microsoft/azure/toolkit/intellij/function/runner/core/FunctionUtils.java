@@ -105,6 +105,7 @@ public class FunctionUtils {
         return StringUtils.isEmpty(value) ? new HashMap<>() : JsonUtils.fromJson(value, Map.class);
     }
 
+    @AzureOperation(name = "function.get_temp_staging_folder", type = AzureOperation.Type.TASK)
     public static File getTempStagingFolder() {
         try {
             final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
@@ -112,7 +113,7 @@ public class FunctionUtils {
             FileUtils.forceDeleteOnExit(file);
             return file;
         } catch (final IOException e) {
-            throw new AzureToolkitRuntimeException("failed to get temp staging folder", e);
+            throw new AzureToolkitRuntimeException(e);
         }
     }
 

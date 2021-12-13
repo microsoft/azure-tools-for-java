@@ -17,8 +17,8 @@ import com.microsoft.azure.toolkit.intellij.database.ui.MySQLPropertyActionPanel
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
@@ -86,7 +86,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         connectionStringsSeparator.addContentComponent(connectionStringsSpring);
         connectionStringsJDBC.getTitleLabel().setText("JDBC");
         connectionStringsSpring.getTitleLabel().setText("Spring");
-        JdbcUrl jdbcUrl = this.getJdbcUrl(null, null, null);
+        final JdbcUrl jdbcUrl = this.getJdbcUrl(null, null, null);
         connectionStringsJDBC.getOutputTextArea().setText(DatabaseTemplateUtils.toJdbcTemplate(jdbcUrl));
         connectionStringsSpring.getOutputTextArea().setText(DatabaseTemplateUtils.toSpringTemplate(jdbcUrl, SQLSERVER_DRIVER_CLASS_NAME));
         init();
@@ -109,9 +109,9 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     }
 
     private JdbcUrl getJdbcUrl(final String hostname, final String database, final String username) {
-        String realHostname = StringUtils.isNotBlank(hostname) ? hostname : "${your_hostname}";
-        String realDatabase = StringUtils.isNotBlank(database) ? database : "${your_database}";
-        String realUsername = StringUtils.isNotBlank(username) ? username : "${your_username}";
+        final String realHostname = StringUtils.isNotBlank(hostname) ? hostname : "${your_hostname}";
+        final String realDatabase = StringUtils.isNotBlank(database) ? database : "${your_database}";
+        final String realUsername = StringUtils.isNotBlank(username) ? username : "${your_username}";
         return JdbcUrl.sqlserver(realHostname, realDatabase).setUsername(realUsername).setPassword("${your_password}");
     }
 
@@ -136,43 +136,31 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         if (itemEvent.getStateChange() == ItemEvent.SELECTED || itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-            boolean changed = SqlServerPropertyView.this.changed();
+            final boolean changed = SqlServerPropertyView.this.changed();
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             SqlServerPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
         }
     }
 
     private void onJDBCCopyButtonClicked(ActionEvent e) {
-        try {
-            Utils.copyToSystemClipboard(SqlServerPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
-        } catch (Exception exception) {
-            String error = "copy JDBC connection strings";
-            String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        Utils.copyToSystemClipboard(SqlServerPropertyView.this.connectionStringsJDBC.getOutputTextArea().getText());
     }
 
     private void onSpringCopyButtonClicked(ActionEvent e) {
-        try {
-            Utils.copyToSystemClipboard(SqlServerPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
-        } catch (Exception exception) {
-            String error = "copy Spring connection strings";
-            String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
+        Utils.copyToSystemClipboard(SqlServerPropertyView.this.connectionStringsSpring.getOutputTextArea().getText());
     }
 
     private void onSaveButtonClicked(ActionEvent e) {
         final String actionName = "Saving";
-        String originalText = SqlServerPropertyView.this.propertyActionPanel.getSaveButton().getText();
+        final String originalText = SqlServerPropertyView.this.propertyActionPanel.getSaveButton().getText();
         SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setText(actionName);
         SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(false);
-        Runnable runnable = () -> {
+        final Runnable runnable = () -> {
             // refresh property
-            SqlServerEntity entity = this.property.getServer().entity();
+            final SqlServerEntity entity = this.property.getServer().entity();
             refreshProperty(entity.getSubscriptionId(), entity.getResourceGroupName(), entity.getName());
-            boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
-            boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
+            final boolean allowAccessToAzureServices = connectionSecurity.getAllowAccessFromAzureServicesCheckBox().getModel().isSelected();
+            final boolean allowAccessToLocal = connectionSecurity.getAllowAccessFromLocalMachineCheckBox().getModel().isSelected();
             if (!originalAllowAccessToAzureServices.equals(allowAccessToAzureServices) || !originalAllowAccessToLocal.equals(allowAccessToLocal)) {
                 // update
                 this.property.getServer().update()
@@ -183,7 +171,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
                 originalAllowAccessToLocal = allowAccessToLocal;
             }
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setText(originalText);
-            boolean changed = SqlServerPropertyView.this.changed();
+            final boolean changed = SqlServerPropertyView.this.changed();
             SqlServerPropertyView.this.propertyActionPanel.getSaveButton().setEnabled(changed);
             SqlServerPropertyView.this.propertyActionPanel.getDiscardButton().setEnabled(changed);
             final Map<String, String> properties = new HashMap<>();
@@ -206,8 +194,8 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     private void onDatabaseComboBoxChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() instanceof SqlDatabaseEntity) {
             final SqlDatabaseEntity database = (SqlDatabaseEntity) e.getItem();
-            SqlServerEntity entity = this.property.getServer().entity();
-            JdbcUrl jdbcUrl = this.getJdbcUrl(entity.getFullyQualifiedDomainName(),
+            final SqlServerEntity entity = this.property.getServer().entity();
+            final JdbcUrl jdbcUrl = this.getJdbcUrl(entity.getFullyQualifiedDomainName(),
                     database.getName(), overview.getServerAdminLoginNameTextField().getText());
             connectionStringsJDBC.getOutputTextArea().setText(DatabaseTemplateUtils.toJdbcTemplate(jdbcUrl));
             connectionStringsSpring.getOutputTextArea().setText(DatabaseTemplateUtils.toSpringTemplate(jdbcUrl, SQLSERVER_DRIVER_CLASS_NAME));
@@ -237,39 +225,34 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
     // @Override
     public void onReadProperty(String sid, String resourceGroup, String name) {
         final String actionName = "Opening Property of";
-        Runnable runnable = () -> {
+        final Runnable runnable = () -> {
             // refresh property
             this.refreshProperty(sid, resourceGroup, name);
             // show property
             this.showProperty(this.property);
         };
         // show property in background
-        String taskTitle = Node.getProgressMessage(actionName, SqlServerModule.MODULE_NAME, name);
+        final String taskTitle = Node.getProgressMessage(actionName, SqlServerModule.MODULE_NAME, name);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(null, taskTitle, false, runnable));
     }
 
+    @AzureOperation(name = "sqlserver.refresh_properties_view.server", params = {"name"}, type = AzureOperation.Type.ACTION)
     private void refreshProperty(String sid, String resourceGroup, String name) {
         // find server
-        try {
-            SqlServer server = Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
-            this.property.setServer(server);
-        } catch (Exception ex) {
-            String error = "find Azure Database for MySQL server information";
-            String action = "confirm your network is available and your server actually exists.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
-        SqlServerEntity entity = property.getServer().entity();
+        final SqlServer server = Azure.az(AzureSqlServer.class).sqlServer(sid, resourceGroup, name);
+        this.property.setServer(server);
+        final SqlServerEntity entity = property.getServer().entity();
         if ("Ready".equals(entity.getState())) {
             // find firewalls
-            List<FirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
+            final List<FirewallRuleEntity> firewallRules = Azure.az(AzureSqlServer.class).sqlServer(entity.getId()).firewallRules();
             this.property.setFirewallRules(firewallRules);
         }
     }
 
     // @Override
     public void showProperty(SqlServerProperty property) {
-        SqlServerEntity entity = property.getServer().entity();
-        Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(entity.getSubscriptionId());
+        final SqlServerEntity entity = property.getServer().entity();
+        final Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(entity.getSubscriptionId());
         if (subscription != null) {
             overview.getSubscriptionTextField().setText(subscription.getName());
         }
@@ -284,7 +267,7 @@ public class SqlServerPropertyView extends BaseEditor implements MvpView {
         overview.getServerAdminLoginNameTextField().setCaretPosition(0);
         overview.getVersionTextField().setText(entity.getVersion());
         if ("Ready".equals(entity.getState())) {
-            List<FirewallRuleEntity> firewallRules = property.getFirewallRules();
+            final List<FirewallRuleEntity> firewallRules = property.getFirewallRules();
             originalAllowAccessToAzureServices = firewallRules.stream()
                     .anyMatch(e -> FirewallRuleEntity.ACCESS_FROM_AZURE_SERVICES_FIREWALL_RULE_NAME.equalsIgnoreCase(e.getName()));
             connectionSecurity.getAllowAccessFromAzureServicesCheckBox().setSelected(originalAllowAccessToAzureServices);

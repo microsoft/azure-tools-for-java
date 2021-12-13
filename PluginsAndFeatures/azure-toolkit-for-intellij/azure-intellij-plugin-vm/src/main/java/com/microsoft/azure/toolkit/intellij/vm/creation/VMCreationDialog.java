@@ -414,7 +414,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
                 try (final FileInputStream certStream = new FileInputStream(certFile)) {
                     certData = new byte[(int) certFile.length()];
                     if (certStream.read(certData) != certData.length) {
-                        throw new AzureToolkitRuntimeException("Unable to process certificate: stream longer than informed size.");
+                        throw new AzureToolkitRuntimeException("Unable to process certificate: stream is longer than informed size.");
                     }
                 }
             }

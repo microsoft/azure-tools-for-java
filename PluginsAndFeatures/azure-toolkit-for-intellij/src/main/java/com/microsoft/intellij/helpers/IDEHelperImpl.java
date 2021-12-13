@@ -51,6 +51,8 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationException;
+import com.microsoft.azure.toolkit.lib.common.operation.SimpleOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -400,9 +402,7 @@ public class IDEHelperImpl implements IDEHelper {
                                 output.write(bytes.array(), 0, bytes.limit());
                             }
                         } catch (final IOException e) {
-                            final String error = "failed to load data into editor";
-                            final String action = "try later or downloading it first";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            throw new AzureToolkitRuntimeException(e);
                         }
                     }, IDEHelperImpl::onRxException);
         });
@@ -495,9 +495,8 @@ public class IDEHelperImpl implements IDEHelper {
                                 output.write(bytes.array(), 0, bytes.limit());
                             }
                         } catch (final IOException e) {
-                            final String error = "failed to write data into local file";
-                            final String action = "try later";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            final SimpleOperation op = new SimpleOperation(AzureOperationBundle.title("common.persist"), AzureOperation.Type.TASK);
+                            throw new AzureOperationException(op, e);
                         }
                     }, IDEHelperImpl::onRxException);
         });

@@ -5,33 +5,55 @@
 
 package com.microsoft.azuretools.adauth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import org.jetbrains.annotations.Contract;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 
 //import java.util.logging.Logger;
 
 public class JsonHelper {
-//    private static final Logger log = Logger.getLogger(JsonHelper.class.getName());
+    //    private static final Logger log = Logger.getLogger(JsonHelper.class.getName());
+    static ObjectMapper mapper = new ObjectMapper();
 
-    public static <T> T deserialize(Class<T> cls, String json) throws IOException {
-//        log.log(Level.FINEST, "structure: " + cls.getName());
-//        log.log(Level.FINEST, "json string: " + json);
+    @Nullable
+    @Contract("_, null -> null")
+    @AzureOperation(name = "common.deserialize_json", type = AzureOperation.Type.TASK)
+    public static <T> T deserialize(Class<T> cls, String json) {
         if (json == null) return null;
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, cls);
+        try {
+            return mapper.readValue(json, cls);
+        } catch (final JsonProcessingException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
     }
 
-    public static <T> T deserialize(Class<T> cls, InputStream is) throws IOException {
+    @Nullable
+    @Contract("_, null -> null")
+    @AzureOperation(name = "common.deserialize_json", type = AzureOperation.Type.TASK)
+    public static <T> T deserialize(Class<T> cls, InputStream is) {
         if (is == null) return null;
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(is, cls);
+        try {
+            return mapper.readValue(is, cls);
+        } catch (final IOException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
     }
 
-    public static <T> String serialize(T jsonObject) throws IOException {
+    @Nullable
+    @Contract("null -> null")
+    @AzureOperation(name = "common.serialize_json", type = AzureOperation.Type.TASK)
+    public static <T> String serialize(T jsonObject) {
         if (jsonObject == null) return null;
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(jsonObject);
+        try {
+            return mapper.writeValueAsString(jsonObject);
+        } catch (final JsonProcessingException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
     }
 }

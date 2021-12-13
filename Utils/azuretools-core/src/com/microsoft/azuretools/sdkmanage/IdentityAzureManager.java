@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -127,6 +128,7 @@ public class IdentityAzureManager extends AzureManagerBase {
         return az.loginAsync(AuthType.OAUTH2, true).flatMap(Account::continueLogin).map(account -> fromAccountEntity(account.getEntity()));
     }
 
+    @AzureOperation(name = "account.restore_credential", type = AzureOperation.Type.TASK)
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {
         if (authMethodDetails == null || authMethodDetails.getAuthMethod() == null || authMethodDetails.getAuthType() == null) {
             return Mono.just(new AuthMethodDetails());
@@ -172,7 +174,7 @@ public class IdentityAzureManager extends AzureManagerBase {
                     Account account = Azure.az(AzureAccount.class).account(entity);
                     return Mono.just(fromAccountEntity(account.getEntity()));
                 } else {
-                    throw new AzureToolkitRuntimeException("Cannot restore credentials due to version change.");
+                    throw new AzureToolkitRuntimeException("Cannot restore credentials due to upgrading");
                 }
             }
 
@@ -181,7 +183,7 @@ public class IdentityAzureManager extends AzureManagerBase {
                     secureStore != null) {
                 secureStore.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, authMethodDetails.getClientId(), null);
             }
-            return Mono.error(new AzureToolkitRuntimeException(String.format("Cannot restore credentials due to error: %s", e.getMessage())));
+            return Mono.error(new AzureToolkitRuntimeException(e));
         }
     }
 

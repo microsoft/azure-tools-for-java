@@ -84,7 +84,7 @@ public enum AppServiceStreamingLogManager {
     @AzureOperation(name = "appservice.open_log_stream.app", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.SERVICE)
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
         final AzureString title = AzureOperationBundle.title("appservice.open_log_stream.app", ResourceUtils.nameFromResourceId(resourceId));
-        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
                 final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);
@@ -113,7 +113,7 @@ public enum AppServiceStreamingLogManager {
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
                         project, resourceId, logStreaming.getTitle(), consoleView);
             } catch (final Throwable e) {
-                throw new AzureToolkitRuntimeException("failed to open streaming log", e);
+                throw new AzureToolkitRuntimeException(e);
             }
         }));
     }

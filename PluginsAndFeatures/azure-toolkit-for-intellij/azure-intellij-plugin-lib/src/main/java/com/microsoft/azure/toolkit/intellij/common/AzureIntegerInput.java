@@ -34,7 +34,7 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
         try {
             return Integer.parseInt(text);
         } catch (final Exception e) {
-            throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an integer", text));
+            throw new AzureToolkitRuntimeException(String.format("\"%s\" is not an valid integer", text));
         }
     }
 

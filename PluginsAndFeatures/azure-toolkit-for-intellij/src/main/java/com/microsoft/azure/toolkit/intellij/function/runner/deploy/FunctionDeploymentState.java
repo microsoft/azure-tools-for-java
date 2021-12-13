@@ -99,7 +99,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             updateApplicationSettings(functionApp);
         }
         stagingFolder = FunctionUtils.getTempStagingFolder();
-        prepareStagingFolder(stagingFolder, processHandler, operation);
+        AzureTaskManager.getInstance().read(() -> prepareStagingFolder(stagingFolder, processHandler, operation));
         // deploy function to Azure
         FunctionAppService.getInstance().deployFunctionApp(functionApp, stagingFolder);
         // list triggers after deployment
@@ -145,23 +145,20 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
             type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
-        AzureTaskManager.getInstance().read(() -> {
-            final Module module = functionDeployConfiguration.getModule();
-            if (module == null) {
-                throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
-            }
-            final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(module);
-            final Path folder = stagingFolder.toPath();
-            try {
-                final Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(folder, hostJsonPath, module, methods);
-                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
-            } catch (final AzureExecutionException | IOException e) {
-                final String error = String.format("failed prepare staging folder[%s]", folder);
-                throw new AzureToolkitRuntimeException(error, e);
-            }
-        });
+        final Module module = functionDeployConfiguration.getModule();
+        if (module == null) {
+            throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
+        }
+        final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+        final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(module);
+        final Path folder = stagingFolder.toPath();
+        try {
+            final Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(folder, hostJsonPath, module, methods);
+            operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
+        } catch (final AzureExecutionException | IOException e) {
+            throw new AzureToolkitRuntimeException(e);
+        }
     }
 
     @Override
