@@ -61,20 +61,20 @@ class AzureCoreToolsMissingNupkgNotificationProvider : EditorNotifications.Provi
         private val markerToTriggerMap = mapOf(
                 // Default worker
                 "Microsoft.Azure.WebJobs" to mapOf(
-                        "BlobTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4"),
-                        "QueueTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4"),
-                        "CosmosDBTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.5"),
-                        "OrchestrationTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "2.1.1"),
-                        "EventGridTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "2.1.0"),
-                        "EventHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1"),
-                        "IoTHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1"),
-                        "ServiceBusTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "4.1.0")
+                        "BlobTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage.Blobs", "5.0.0"),
+                        "QueueTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage.Queues", "5.0.0"),
+                        "CosmosDBTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.10"),
+                        "OrchestrationTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "2.6.0"),
+                        "EventGridTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "3.0.1"),
+                        "EventHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "5.0.0"),
+                        "IoTHubTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "5.0.0"),
+                        "ServiceBusTrigger" to PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "5.2.0")
                 ),
 
                 // Isolated worker
                 "Microsoft.Azure.Functions.Worker" to mapOf(
-                        "BlobTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage", "4.0.4"),
-                        "QueueTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage", "4.0.4"),
+                        "BlobTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage.Blobs", "4.0.4"),
+                        "QueueTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues", "4.0.4"),
                         "CosmosDBTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.CosmosDB", "3.0.9"),
                         "EventGridTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.EventGrid", "2.1.0"),
                         "EventHubTrigger" to PackageDependency("Microsoft.Azure.Functions.Worker.Extensions.EventHubs", "4.2.0"),
