@@ -6,8 +6,8 @@
 package com.microsoft.azure.toolkit.eclipse.functionapp.logstreaming;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -85,13 +85,14 @@ public class FunctionAppLogStreamingHandler {
         AzureTaskManager.getInstance().runLater(() -> PluginUtil.openLinkInBrowser(aiUrl));
     }
 
-    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl) {
+    private static String getApplicationInsightLiveMetricsUrl(ApplicationInsightsEntity target, String portalUrl) 
+            throws UnsupportedEncodingException {
         final JsonObject componentObject = new JsonObject();
         componentObject.addProperty("Name", target.getName());
         componentObject.addProperty("SubscriptionId", target.getSubscriptionId());
         componentObject.addProperty("ResourceGroup", target.getResourceGroup());
-        final String componentId = URLEncoder.encode(componentObject.toString(), StandardCharsets.UTF_8);
-        final String aiResourceId = URLEncoder.encode(target.getId(), StandardCharsets.UTF_8);
+        final String componentId = URLEncoder.encode(componentObject.toString(), "utf-8");
+        final String aiResourceId = URLEncoder.encode(target.getId(), "utf-8");
         return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
     }
 
