@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.appservice.function;
 
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
+import com.microsoft.azure.toolkit.ide.appservice.function.node.TriggerFunctionInBrowserAction;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
@@ -31,6 +32,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
+    public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION_IN_BROWSER = Action.Id.of("actions.function.function.trigger_in_browser");
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -57,7 +59,8 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         );
         am.registerGroup(FUNCTION_APP_ACTIONS, functionAppActionGroup);
 
-        am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION));
+        am.registerGroup(FUNCTION_ACTION, new ActionGroup(FunctionAppActionsContributor.TRIGGER_FUNCTION,
+                FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER));
         am.registerGroup(FUNCTIONS_ACTIONS, new ActionGroup(FunctionAppActionsContributor.REFRESH_FUNCTIONS));
     }
 
@@ -65,14 +68,20 @@ public class FunctionAppActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|function.functions.refresh", ((FunctionApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.refresh_funcs")).orElse(null))
                 .enabled(s -> s instanceof FunctionApp);
         am.registerAction(REFRESH_FUNCTIONS, new Action<>(refresh, refreshView));
 
         final ActionView.Builder triggerView = new ActionView.Builder("Trigger Function")
-                .title(s -> Optional.ofNullable(s).map(r -> title("appservice|function.function.trigger", ((FunctionEntity) s).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func.app", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity);
         am.registerAction(TRIGGER_FUNCTION, new Action<>(triggerView));
+
+        final Consumer<FunctionEntity> triggerInBrowserHandler = entity -> new TriggerFunctionInBrowserAction(entity).trigger();
+        final ActionView.Builder triggerInBrowserView = new ActionView.Builder("Trigger Function In Browser")
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.trigger_func_http.app", ((FunctionEntity) s).getName())).orElse(null))
+                .enabled(s -> s instanceof FunctionEntity && TriggerFunctionInBrowserAction.isApplyFor((FunctionEntity) s));
+        am.registerAction(TRIGGER_FUNCTION_IN_BROWSER, new Action<>(triggerInBrowserHandler, triggerInBrowserView));
     }
 
     @Override

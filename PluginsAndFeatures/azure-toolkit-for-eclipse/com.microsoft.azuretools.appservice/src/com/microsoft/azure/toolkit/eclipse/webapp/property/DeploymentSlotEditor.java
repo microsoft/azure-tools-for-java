@@ -20,15 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azureexplorer.editors.webapp;
+package com.microsoft.azure.toolkit.eclipse.webapp.property;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import com.microsoft.azure.toolkit.eclipse.appservice.property.AppServiceBasePropertyEditor;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 
-public class WebAppPropertyEditor extends WebAppBasePropertyEditor {
-    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor";
+public class DeploymentSlotEditor extends AppServiceBasePropertyEditor {
 
-    public WebAppPropertyEditor() {
-        super(new WebAppPropertyViewPresenter());
+    public static final String ID = "com.microsoft.azure.toolkit.eclipse.webapp.property.DeploymentSlotEditor";
+
+    public DeploymentSlotEditor() {
+        super(new DeploymentSlotPropertyViewPresenter());
     }
 
 }

@@ -20,9 +20,8 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azureexplorer.editors.webapp;
+package com.microsoft.azure.toolkit.eclipse.appservice.property;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -65,8 +64,9 @@ import com.microsoft.azuretools.core.components.AzureListenerWrapper;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
-public abstract class WebAppBasePropertyEditor extends EditorPart implements WebAppBasePropertyMvpView {
+public abstract class AppServiceBasePropertyEditor extends EditorPart implements WebAppBasePropertyMvpView {
 
     private static final String INSIGHT_NAME = "AzurePlugin.Eclipse.Editor.WebAppPropertyEditor";
     private static final int PROGRESS_BAR_HEIGHT = 3;
@@ -79,7 +79,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
 
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
-    private final WebAppBasePropertyViewPresenter webAppBasePropertyViewPresenter;
+    private final WebAppBasePropertyViewPresenter presenter;
     private Text txtResourceGroup;
     private Text txtAppServicePlan;
     private Text txtStatus;
@@ -109,9 +109,9 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     /**
      * Constructor.
      */
-    public WebAppBasePropertyEditor(WebAppBasePropertyViewPresenter webAppBasePropertyViewPresenter) {
-        this.webAppBasePropertyViewPresenter = webAppBasePropertyViewPresenter;
-        this.webAppBasePropertyViewPresenter.onAttachView(this);
+    public AppServiceBasePropertyEditor(WebAppBasePropertyViewPresenter presenter) {
+        this.presenter = presenter;
+        this.presenter.onAttachView(this);
 
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
@@ -171,7 +171,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
             @Override
             protected void handleEventFunc(Event event) {
                 setBtnEnableStatus(false);
-                webAppBasePropertyViewPresenter
+                presenter
                     .onUpdateWebAppProperty(subscriptionId, webAppId, slotName, cachedAppSettings, editedAppSettings);
             }
         });
@@ -448,19 +448,19 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         String firstPath = dirDialog.open();
         if (firstPath != null) {
             setBtnEnableStatus(false);
-            webAppBasePropertyViewPresenter
+            presenter
                 .onGetPublishingProfileXmlWithSecrets(subscriptionId, webAppId, slotName, firstPath);
         }
     }
 
     @Override
     public void onErrorWithException(String message, Exception ex) {
-        this.webAppBasePropertyViewPresenter.getMvpView().onErrorWithException(message, ex);
+        this.presenter.getMvpView().onErrorWithException(message, ex);
     }
 
     @Override
     public void dispose() {
-        this.webAppBasePropertyViewPresenter.onDetachView();
+        this.presenter.onDetachView();
         super.dispose();
     }
 
@@ -468,19 +468,15 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
-        if (input instanceof WebAppPropertyEditorInput) {
-            WebAppPropertyEditorInput webappInput = (WebAppPropertyEditorInput) input;
-            this.setPartName(webappInput.getName());
-            this.subscriptionId = webappInput.getSubscriptionId();
-            this.webAppId = webappInput.getId();
-            this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, null);
-        } else if (input instanceof DeploymentSlotPropertyEditorInput) {
-            DeploymentSlotPropertyEditorInput slotInput = (DeploymentSlotPropertyEditorInput) input;
-            this.setPartName(slotInput.getName());
-            this.subscriptionId = slotInput.getSubscriptionId();
-            this.webAppId = slotInput.getWebappId();
-            this.slotName = slotInput.getName();
-            this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(subscriptionId, webAppId, slotName);
+        
+        this.setPartName(input.getName());
+        if (input instanceof AppServicePropertyEditorInput) {
+            AppServicePropertyEditorInput appServiceInput = (AppServicePropertyEditorInput) input;
+            this.setPartName(appServiceInput.getName());
+            this.subscriptionId = appServiceInput.getSubscriptionId();
+            this.webAppId = appServiceInput.getAppServiceId();
+            this.slotName = appServiceInput.getSlotName();
+            this.presenter.onLoadWebAppProperty(subscriptionId, webAppId, slotName);
         }
 
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -488,7 +484,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
         workbench.addWorkbenchListener(new IWorkbenchListener() {
             @Override
             public boolean preShutdown(IWorkbench workbench, boolean forced) {
-                activePage.closeEditor(WebAppBasePropertyEditor.this, true);
+                activePage.closeEditor(AppServiceBasePropertyEditor.this, true);
                 return true;
             }
 
@@ -535,7 +531,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     @Override
     public void onLoadWebAppProperty(String sid, String webAppId, String slotName) {
         progressBar.setVisible(true);
-        this.webAppBasePropertyViewPresenter.onLoadWebAppProperty(sid, webAppId, slotName);
+        this.presenter.onLoadWebAppProperty(sid, webAppId, slotName);
     }
 
     @Override
