@@ -15,6 +15,11 @@
       <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
       <version>0.15.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
+      <version>3.0.3</version>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
@@ -48,6 +53,10 @@
                 <artifactItem>
                   <groupId>com.microsoft.azure</groupId>
                   <artifactId>azure-toolkit-ide-appservice-lib</artifactId>
+                </artifactItem>
+                <artifactItem>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-archiver</artifactId>
                 </artifactItem>
               </artifactItems>
             </configuration>

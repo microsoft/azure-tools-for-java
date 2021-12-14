@@ -13,7 +13,7 @@
   <packaging>eclipse-repository</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>2.4.0</tycho-version>
+    <tycho-version>2.5.0</tycho-version>
   </properties>
 
   <build>

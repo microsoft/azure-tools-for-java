@@ -34,8 +34,6 @@ public class EclipseFunctionProject extends FunctionProject {
     public void buildJar() throws Exception {
         IFile pom = MavenUtils.getPomFile(eclipseProject.getProject());
         final MavenProject mavenProject = MavenUtils.toMavenProject(pom);
-        final File jarFile = JarUtils.buildJarFileToTempFile(this);
-        this.setArtifactFile(jarFile);
 
         final List<File> jarFiles = new ArrayList<>();
         mavenProject.getArtifacts().forEach(t -> {
@@ -43,7 +41,9 @@ public class EclipseFunctionProject extends FunctionProject {
                 jarFiles.add(t.getFile());
             }
         });
-
+        setClassesOutputDirectory(new File(mavenProject.getBuild().getOutputDirectory()));
         setDependencies(jarFiles);
+        final File jarFile = JarUtils.buildJarFileToTempFile(this);
+        this.setArtifactFile(jarFile);
     }
 }
