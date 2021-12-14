@@ -50,16 +50,7 @@ public class AzureFunctionTypeTester extends PropertyTester {
 
     private boolean testFunction(IJavaElement element) {
         try {
-            IType type = null;
-            if (element instanceof ICompilationUnit) {
-                type = (((ICompilationUnit) element)).findPrimaryType();
-            } else if (element instanceof IOrdinaryClassFile) {
-                type = (((IOrdinaryClassFile) element)).getType();
-            } else if (element instanceof IType) {
-                type = (IType) element;
-            } else if (element instanceof IMember) {
-                type = ((IMember) element).getDeclaringType();
-            }
+            IType type = getTypeFromJavaElement(element);
             if (type != null && type.exists()) {
                 return hasAzureFunctionAnnotatedMethods(type);
             }
@@ -68,6 +59,20 @@ public class AzureFunctionTypeTester extends PropertyTester {
         }
 
         return false;
+    }
+
+    public static IType getTypeFromJavaElement(IJavaElement element) {
+        IType type = null;
+        if (element instanceof ICompilationUnit) {
+            type = (((ICompilationUnit) element)).findPrimaryType();
+        } else if (element instanceof IOrdinaryClassFile) {
+            type = (((IOrdinaryClassFile) element)).getType();
+        } else if (element instanceof IType) {
+            type = (IType) element;
+        } else if (element instanceof IMember) {
+            type = ((IMember) element).getDeclaringType();
+        }
+        return type;
     }
 
     private boolean hasAzureFunctionAnnotatedMethods(IType type) throws CoreException {

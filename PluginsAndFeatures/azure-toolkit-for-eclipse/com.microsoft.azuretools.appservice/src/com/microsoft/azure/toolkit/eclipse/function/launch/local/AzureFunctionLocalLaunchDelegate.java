@@ -67,6 +67,7 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
                     eclipseFunctionProject.setHostJsonFile(file);
                     eclipseFunctionProject.buildJar();
                     stagingContributor.prepareStagingFolder(eclipseFunctionProject, false);
+                    FileUtils.deleteQuietly(eclipseFunctionProject.getArtifactFile());
                     monoSink.success(true);
                 } catch (Throwable e) {
                     monoSink.error(e);
@@ -92,13 +93,6 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
             return new AzureFunctionVMDebugger(vm, func, stagingFolder);
         }
         return null;
-    }
-
-    public Map<String, Object> getVMSpecificAttributesMap(ILaunchConfiguration configuration) {
-        Map<String, Object> attributes = new HashMap<>();
-
-        attributes.put(IJavaLaunchConfigurationConstants.ATTR_JAVA_COMMAND, "xgf");
-        return attributes;
     }
 
     public String[] getClasspath(ILaunchConfiguration configuration) {
