@@ -31,6 +31,9 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
     public static final Action.Id<FunctionApp> REFRESH_FUNCTIONS = Action.Id.of("actions.function.functions.refresh");
     public static final Action.Id<FunctionEntity> TRIGGER_FUNCTION = Action.Id.of("actions.function.function.trigger");
+    public static final Action.Id<Void> DOWNLOAD_CORE_TOOLS = Action.Id.of("action.function.download_core_tools");
+    public static final Action.Id<Void> CONFIG_CORE_TOOLS = Action.Id.of("action.function.config_core_tools");
+    public static final String CORE_TOOLS_URL = "https://aka.ms/azfunc-install";
 
     @Override
     public void registerGroups(AzureActionManager am) {
@@ -73,6 +76,22 @@ public class FunctionAppActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> title("appservice|function.function.trigger", ((FunctionEntity) s).getName())).orElse(null))
                 .enabled(s -> s instanceof FunctionEntity);
         am.registerAction(TRIGGER_FUNCTION, new Action<>(triggerView));
+
+        final ActionView.Builder downloadCliView = new ActionView.Builder("Download")
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.download_core_tools")).orElse(null));
+        final Action<Void> downloadCliAction = new Action<>((v) -> {
+            am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(CORE_TOOLS_URL);
+        }, downloadCliView);
+        downloadCliAction.authRequired(false);
+        am.registerAction(DOWNLOAD_CORE_TOOLS, downloadCliAction);
+
+        final ActionView.Builder configCliView = new ActionView.Builder("Configure")
+                .title(s -> Optional.ofNullable(s).map(r -> title("function.config_core_tools")).orElse(null));
+        final Action<Void> configCliAction = new Action<>((v) -> {
+            // TODO: @wangmi open Azure Settings dialog.
+        }, configCliView);
+        configCliAction.authRequired(false);
+        am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }
 
     @Override

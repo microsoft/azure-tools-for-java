@@ -58,6 +58,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.CONFIG_CORE_TOOLS;
+import static com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor.DOWNLOAD_CORE_TOOLS;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
@@ -122,20 +124,16 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return null;
     }
 
-    @AzureOperation(
-        name = "function.validate_runtime.function",
-        params = {"this.functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.TASK
-    )
+    @AzureOperation(name = "function.validate_runtime", type = AzureOperation.Type.TASK)
     private void validateFunctionRuntime(RunProcessHandler processHandler) {
         try {
             final String funcPath = functionRunConfiguration.getFuncPath();
             if (StringUtils.isEmpty(funcPath)) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion funcVersion = getFuncVersion();
             if (funcVersion == null) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
             final ComparableVersion javaVersion = getJavaVersion();
             if (javaVersion == null) {
@@ -149,10 +147,10 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0 ? MINIMUM_JAVA_9_SUPPORTED_VERSION
                                                      : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
             if (funcVersion.compareTo(minimumVersion) < 0) {
-                throw new AzureToolkitRuntimeException(message("function.run.error.funcOutOfDate"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.funcOutOfDate"), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
             }
         } catch (IOException e) {
-            throw new AzureToolkitRuntimeException(message("function.run.error.validateRuntimeFailed", e.getMessage()));
+            throw new AzureToolkitRuntimeException(e.getMessage(), DOWNLOAD_CORE_TOOLS, CONFIG_CORE_TOOLS);
         }
     }
 
