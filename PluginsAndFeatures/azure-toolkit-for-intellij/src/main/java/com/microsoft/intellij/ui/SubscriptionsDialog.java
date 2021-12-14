@@ -6,6 +6,7 @@
 package com.microsoft.intellij.ui;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -32,7 +33,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.JTableUtils;
-import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -85,8 +85,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
      */
     public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
         if (CollectionUtils.isEmpty(sdl)) {
-            PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free " +
-                    "one from https://azure.microsoft.com/en-us/free/");
+            final String message = "No subscription in current account";
+            final int result = Messages.showOkCancelDialog(message, "No Subscription", "Try Azure for Free", Messages.getCancelButton(), Messages.getWarningIcon());
+            if (result == Messages.OK) {
+                BrowserUtil.browse("https://azure.microsoft.com/en-us/free/");
+            }
             return null;
         }
         SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
