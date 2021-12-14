@@ -140,4 +140,37 @@
             project="true"
             id="com.microsoft.azure.toolkit.eclipse.wizards.functionwizard"></wizard>
    </extension>
+   
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester properties="isFunction" namespace="com.microsoft.azure.toolkit" type="org.eclipse.core.runtime.IAdaptable" class="com.microsoft.azure.toolkit.eclipse.function.tester.AzureFunctionTypeTester" id="com.microsoft.azure.toolkit.eclipse.function.tester.AzureFunctionTypeTester"></propertyTester>
+    </extension>
+   
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+        <launchConfigurationType name="Run Azure Functions" delegate="com.microsoft.azure.toolkit.eclipse.function.launch.local.AzureFunctionLocalLaunchDelegate" modes="run,debug" id="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationType"></launchConfigurationType>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+        <launchConfigurationTabGroup class="com.microsoft.azure.toolkit.eclipse.function.launch.local.AzureFunctionLocalRunTabGroup" id="com.microsoft.azure.toolkit.eclipse.function.launch.local.launchConfigurationTabGroup" type="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationType"></launchConfigurationTabGroup>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+        <launchConfigurationTypeImage id="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationTypeImage" configTypeID="com.microsoft.azure.toolkit.eclipse.function.localRunConfigurationType" icon="icons/functionapp.png"></launchConfigurationTypeImage>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.launchShortcuts">
+        <shortcut class="com.microsoft.azure.toolkit.eclipse.function.launch.local.FunctionLocalRunShortcut" icon="icons/functionapp.png" id="com.microsoft.azure.toolkit.eclipse.function.launch.local.shortcut" label="Local run Function Shortcut" modes="run, debug">
+            <contextualLaunch>
+                <enablement>
+                    <with variable="selection">
+                        <count value="1" />
+                        <iterate>
+                            <adapt type="org.eclipse.jdt.core.IJavaElement">
+                                <test property="com.microsoft.azure.toolkit.isFunction" forcePluginActivation="true" />
+                            </adapt>
+                        </iterate>
+                    </with>
+                </enablement>
+            </contextualLaunch>
+        </shortcut>
+    </extension>
 </plugin>
