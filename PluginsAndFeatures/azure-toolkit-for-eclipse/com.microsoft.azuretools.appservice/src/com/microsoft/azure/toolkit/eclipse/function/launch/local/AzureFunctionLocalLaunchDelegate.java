@@ -27,8 +27,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate {
     @Override
@@ -57,7 +55,7 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
         }
         File tempFolder = FunctionUtils.getTempStagingFolder().toFile();
 
-        final EclipseFunctionStagingContributor stagingContributor = new EclipseFunctionStagingContributor();
+        final EclipseFunctionStagingContributor stagingContributor = new EclipseFunctionStagingContributor(config.getFunctionCliPath());
         try {
             Mono.create(monoSink -> AzureLongDurationTaskRunnerWithConsole.getInstance().runTask("Launching function local run", () -> {
                 try {
@@ -66,7 +64,7 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
                     final EclipseFunctionProject eclipseFunctionProject = new EclipseFunctionProject(project, tempFolder);
                     eclipseFunctionProject.setHostJsonFile(file);
                     eclipseFunctionProject.buildJar();
-                    stagingContributor.prepareStagingFolder(eclipseFunctionProject, false);
+                    stagingContributor.prepareStagingFolder(eclipseFunctionProject, true);
                     FileUtils.deleteQuietly(eclipseFunctionProject.getArtifactFile());
                     monoSink.success(true);
                 } catch (Throwable e) {

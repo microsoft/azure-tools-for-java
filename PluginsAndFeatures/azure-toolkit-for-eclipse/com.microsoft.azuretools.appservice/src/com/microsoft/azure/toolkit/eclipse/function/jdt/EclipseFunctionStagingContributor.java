@@ -8,8 +8,13 @@ package com.microsoft.azure.toolkit.eclipse.function.jdt;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionStagingInitializer;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.CommandHandlerImpl;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandler;
+import com.microsoft.azure.toolkit.lib.legacy.function.handlers.FunctionCoreToolsHandlerImpl;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.*;
@@ -18,6 +23,7 @@ import org.eclipse.jdt.core.search.*;
 import org.eclipse.jdt.internal.corext.refactoring.CollectingSearchRequestor;
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,12 +32,15 @@ public class EclipseFunctionStagingContributor extends FunctionStagingInitialize
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
 
-    public EclipseFunctionStagingContributor() {
+    private final File funcPath;
+
+    public EclipseFunctionStagingContributor(String funcPath) {
         super(EclipseFunctionStagingContributor::findAnnotatedMethods, EclipseFunctionStagingContributor::installExtension);
+        this.funcPath = new File(funcPath);
     }
 
     public static CollectingSearchRequestor searchFunctionNameAnnotation(IType type) throws CoreException {
-        IJavaSearchScope scope = JavaSearchScopeFactory.getInstance().createJavaSearchScope(new IJavaElement[] {type},
+        IJavaSearchScope scope = JavaSearchScopeFactory.getInstance().createJavaSearchScope(new IJavaElement[]{type},
                 false);
         return searchFunctionNameAnnotation(type.getJavaProject(), scope);
     }
@@ -58,7 +67,14 @@ public class EclipseFunctionStagingContributor extends FunctionStagingInitialize
     }
 
     public static void installExtension(FunctionProject project) {
-        //TODO(andxu): add func install code
+        // need to refactor this code using local field: func path
+        final CommandHandler commandHandler = new CommandHandlerImpl();
+        final FunctionCoreToolsHandler functionCoreToolsHandler = new FunctionCoreToolsHandlerImpl(commandHandler);
+        try {
+            functionCoreToolsHandler.installExtension(project.getStagingFolder(), project.getBaseDirectory());
+        } catch (AzureExecutionException e) {
+            throw new AzureToolkitRuntimeException("Cannot run install on Azure Function staging folder:" + project.getStagingFolder(), e);
+        }
     }
 
     public static CollectingSearchRequestor searchFunctionNameAnnotation(IJavaProject javaProject, IJavaSearchScope scope) throws CoreException {

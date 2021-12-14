@@ -9,6 +9,8 @@ import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -19,6 +21,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.internal.wizards.datatransfer.SmartImportJob;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 
 public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
@@ -59,8 +62,19 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
-        final FunctionArtifactModel model = artifactPage.getValue();
         final FunctionProjectModel projectModel = projectPage.getValue();
+        final FunctionArtifactModel model = artifactPage.getValue();
+        if (StringUtils.isBlank(model.getArtifactId())) {
+            model.setArtifactId(projectModel.getProjectName());
+        }
+        final FunctionArtifactModel defaultModel = FunctionArtifactModel.getDefaultFunctionProjectConfig();
+
+        try {
+            mergeObjects(model, defaultModel);
+        } catch (IllegalAccessException e) {
+            // ignore
+        }
+
         AzureFunctionsUtils.createAzureFunctionProject(projectModel.getLocation(),
                 model.getGroupId()
                 , model.getArtifactId(), model.getVersion(), "maven", projectModel.getTriggers().toArray(new String[0]), model.getPackageName());
@@ -81,4 +95,15 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
         return true;
     }
 
+    private static <T> void mergeObjects(T to, T from) throws IllegalAccessException {
+        for (Field field : FieldUtils.getAllFields(from.getClass())) {
+            final Object originValue = FieldUtils.readField(field, to, true);
+            if (originValue == null || (originValue instanceof String && StringUtils.isBlank((String) originValue))) {
+                final Object value = FieldUtils.readField(field, from, true);
+                if (value != null) {
+                    FieldUtils.writeField(field, to, value, true);
+                }
+            }
+        }
+    }
 }
