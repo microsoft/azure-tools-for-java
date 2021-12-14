@@ -5,6 +5,7 @@
 package com.microsoft.azure.toolkit.eclipse.function.jdt;
 
 import com.microsoft.azure.toolkit.eclipse.function.utils.JarUtils;
+import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
 import com.microsoft.azuretools.core.utils.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,5 +46,15 @@ public class EclipseFunctionProject extends FunctionProject {
 
     public IJavaProject getEclipseProject() {
         return eclipseProject;
+    }
+
+    @Override
+    public List<FunctionMethod> findAnnotatedMethods() {
+        return EclipseFunctionStagingContributor.findAnnotatedMethods(this);
+    }
+
+    @Override
+    public void installExtension(String funcPath) {
+        EclipseFunctionStagingContributor.installExtension(this, funcPath);
     }
 }

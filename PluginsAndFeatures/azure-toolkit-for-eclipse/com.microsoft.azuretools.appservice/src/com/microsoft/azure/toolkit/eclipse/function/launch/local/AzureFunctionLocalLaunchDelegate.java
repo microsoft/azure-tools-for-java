@@ -7,9 +7,9 @@ package com.microsoft.azure.toolkit.eclipse.function.launch.local;
 import com.microsoft.azure.toolkit.eclipse.common.launch.AzureLongDurationTaskRunnerWithConsole;
 import com.microsoft.azure.toolkit.eclipse.common.launch.LaunchConfigurationUtils;
 import com.microsoft.azure.toolkit.eclipse.function.jdt.EclipseFunctionProject;
-import com.microsoft.azure.toolkit.eclipse.function.jdt.EclipseFunctionStagingContributor;
 import com.microsoft.azure.toolkit.eclipse.function.launch.model.FunctionLocalRunConfiguration;
 import com.microsoft.azure.toolkit.eclipse.function.utils.FunctionUtils;
+import com.microsoft.azure.toolkit.lib.appservice.function.core.AzureFunctionPackager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import org.apache.commons.io.FileUtils;
@@ -55,7 +55,6 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
         }
         File tempFolder = FunctionUtils.getTempStagingFolder().toFile();
 
-        final EclipseFunctionStagingContributor stagingContributor = new EclipseFunctionStagingContributor(config.getFunctionCliPath());
         try {
             Mono.create(monoSink -> AzureLongDurationTaskRunnerWithConsole.getInstance().runTask("Launching function local run", () -> {
                 try {
@@ -64,7 +63,7 @@ public class AzureFunctionLocalLaunchDelegate extends AdvancedJavaLaunchDelegate
                     final EclipseFunctionProject eclipseFunctionProject = new EclipseFunctionProject(project, tempFolder);
                     eclipseFunctionProject.setHostJsonFile(file);
                     eclipseFunctionProject.buildJar();
-                    stagingContributor.prepareStagingFolder(eclipseFunctionProject, true);
+                    AzureFunctionPackager.getInstance().packageProject(eclipseFunctionProject, true, config.getFunctionCliPath());
                     FileUtils.deleteQuietly(eclipseFunctionProject.getArtifactFile());
                     monoSink.success(true);
                 } catch (Throwable e) {

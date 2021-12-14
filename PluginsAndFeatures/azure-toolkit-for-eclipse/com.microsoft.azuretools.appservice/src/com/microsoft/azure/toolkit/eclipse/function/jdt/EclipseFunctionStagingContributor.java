@@ -5,9 +5,8 @@
 
 package com.microsoft.azure.toolkit.eclipse.function.jdt;
 
-import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionMethod;
-import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
-import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionStagingInitializer;
+import com.microsoft.azure.toolkit.eclipse.function.utils.AnnotationUtils;
+import com.microsoft.azure.toolkit.lib.appservice.function.core.*;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -23,21 +22,13 @@ import org.eclipse.jdt.core.search.*;
 import org.eclipse.jdt.internal.corext.refactoring.CollectingSearchRequestor;
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import javax.annotation.Nonnull;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class EclipseFunctionStagingContributor extends FunctionStagingInitializer {
+class EclipseFunctionStagingContributor {
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
-
-    private final File funcPath;
-
-    public EclipseFunctionStagingContributor(String funcPath) {
-        super(EclipseFunctionStagingContributor::findAnnotatedMethods, EclipseFunctionStagingContributor::installExtension);
-        this.funcPath = new File(funcPath);
-    }
 
     public static CollectingSearchRequestor searchFunctionNameAnnotation(IType type) throws CoreException {
         IJavaSearchScope scope = JavaSearchScopeFactory.getInstance().createJavaSearchScope(new IJavaElement[]{type},
@@ -58,7 +49,7 @@ public class EclipseFunctionStagingContributor extends FunctionStagingInitialize
                     .stream()
                     .filter(t -> t.getElement() instanceof IMethod)
                     .map(t -> ((IMethod) t.getElement())).distinct()
-                    .map(m -> JdtFunctionAdaptor.create(getMethodBinding(m)))
+                    .map(m -> EclipseFunctionStagingContributor.create(getMethodBinding(m)))
                     .collect(Collectors.toList());
 
         } catch (CoreException ex) {
@@ -66,8 +57,8 @@ public class EclipseFunctionStagingContributor extends FunctionStagingInitialize
         }
     }
 
-    public static void installExtension(FunctionProject project) {
-        // need to refactor this code using local field: func path
+    public static void installExtension(FunctionProject project, String funcPath) {
+        // need to refactor this code using 'func path'
         final CommandHandler commandHandler = new CommandHandlerImpl();
         final FunctionCoreToolsHandler functionCoreToolsHandler = new FunctionCoreToolsHandlerImpl(commandHandler);
         try {
@@ -136,6 +127,60 @@ public class EclipseFunctionStagingContributor extends FunctionStagingInitialize
             return true;
         }
         return false;
+    }
+
+    public static FunctionMethod create(IMethodBinding method) {
+        FunctionMethod functionMethod = new FunctionMethod();
+        functionMethod.setName(method.getName());
+        functionMethod.setReturnTypeName(method.getReturnType().getQualifiedName());
+        functionMethod.setAnnotations(method.getAnnotations() == null ? Collections.emptyList() :
+                Arrays.stream(method.getAnnotations()).map(EclipseFunctionStagingContributor::create).collect(Collectors.toList()));
+
+        int len = method.getParameterTypes().length;
+        List<FunctionAnnotation[]> parameterAnnotations = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            IAnnotationBinding[] paramAnnotations = method.getParameterAnnotations(i);
+            if (paramAnnotations != null) {
+                parameterAnnotations.add(Arrays.stream(paramAnnotations).map(EclipseFunctionStagingContributor::create).toArray(FunctionAnnotation[]::new));
+            }
+        }
+        functionMethod.setParameterAnnotations(parameterAnnotations);
+        functionMethod.setDeclaringTypeName(method.getDeclaringClass().getQualifiedName());
+        return functionMethod;
+    }
+
+    public static FunctionAnnotation create(@Nonnull IAnnotationBinding obj) {
+        return create(obj, true);
+    }
+
+    private static FunctionAnnotation create(@Nonnull IAnnotationBinding obj, boolean resolveAnnotationType) {
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> defaultMap = new HashMap<>();
+
+        for (IMemberValuePairBinding pair : obj.getDeclaredMemberValuePairs()) {
+            map.put(pair.getName(), AnnotationUtils.calculateJdtValue(pair.getValue()));
+        }
+
+        for (IMemberValuePairBinding pair : obj.getAllMemberValuePairs()) {
+            defaultMap.put(pair.getName(), AnnotationUtils.calculateJdtValue(pair.getValue()));
+        }
+
+        FunctionAnnotation functionAnnotation = new FunctionAnnotation();
+        functionAnnotation.setAnnotationClass(toFunctionAnnotationClass(obj.getAnnotationType(), resolveAnnotationType));
+
+        functionAnnotation.setProperties(map);
+        functionAnnotation.setDefaultProperties(defaultMap);
+        return functionAnnotation;
+    }
+
+    private static FunctionClass toFunctionAnnotationClass(ITypeBinding type, boolean resolveAnnotationType) {
+        FunctionClass res = new FunctionClass();
+        res.setFullName(type.getQualifiedName());
+        res.setName(type.getName());
+        if (resolveAnnotationType) {
+            res.setAnnotations(Arrays.stream(type.getAnnotations()).map(a -> create(a, false)).collect(Collectors.toList()));
+        }
+        return res;
     }
 
     private static String removeGeneric(String signature) {
