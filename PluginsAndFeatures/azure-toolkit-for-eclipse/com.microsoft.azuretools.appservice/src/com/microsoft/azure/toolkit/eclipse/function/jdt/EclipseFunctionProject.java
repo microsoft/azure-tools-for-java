@@ -7,8 +7,6 @@ package com.microsoft.azure.toolkit.eclipse.function.jdt;
 import com.microsoft.azure.toolkit.eclipse.function.utils.JarUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.core.FunctionProject;
 import com.microsoft.azuretools.core.utils.MavenUtils;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IFile;
@@ -20,9 +18,7 @@ import java.util.List;
 
 public class EclipseFunctionProject extends FunctionProject {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
-    @Getter
-    @Setter
-    private IJavaProject eclipseProject;
+    private final IJavaProject eclipseProject;
 
     public EclipseFunctionProject(IJavaProject project, File stagingFolder) {
         this.eclipseProject = project;
@@ -45,5 +41,9 @@ public class EclipseFunctionProject extends FunctionProject {
         setDependencies(jarFiles);
         final File jarFile = JarUtils.buildJarFileToTempFile(this);
         this.setArtifactFile(jarFile);
+    }
+
+    public IJavaProject getEclipseProject() {
+        return eclipseProject;
     }
 }
