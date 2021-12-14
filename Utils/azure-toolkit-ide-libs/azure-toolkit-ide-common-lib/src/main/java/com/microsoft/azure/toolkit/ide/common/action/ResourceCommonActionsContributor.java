@@ -23,6 +23,7 @@ import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBun
 
 public class ResourceCommonActionsContributor implements IActionsContributor {
 
+    public static final int INITIALIZE_ORDER = 0;
     public static final Action.Id<IAzureBaseResource<?, ?>> START = Action.Id.of("action.resource.start");
     public static final Action.Id<IAzureBaseResource<?, ?>> STOP = Action.Id.of("action.resource.stop");
     public static final Action.Id<IAzureBaseResource<?, ?>> RESTART = Action.Id.of("action.resource.restart");
@@ -115,6 +116,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     }
 
     public int getOrder() {
-        return 1; //after azure resource common actions registered
+        return INITIALIZE_ORDER; //after azure resource common actions registered
     }
 }

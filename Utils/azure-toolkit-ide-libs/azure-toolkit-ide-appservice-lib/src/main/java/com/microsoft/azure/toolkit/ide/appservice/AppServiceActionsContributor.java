@@ -23,7 +23,7 @@ import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBun
 
 public class AppServiceActionsContributor implements IActionsContributor {
 
-    public static final int INITIALIZE_ORDER = 1;
+    public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
     public static final Action.Id<IAppService<?>> OPEN_IN_BROWSER = Action.Id.of("actions.appservice.open_in_browser");
     public static final Action.Id<IAppService<?>> START_STREAM_LOG = Action.Id.of("actions.appservice.stream_log.start");
     public static final Action.Id<IAppService<?>> STOP_STREAM_LOG = Action.Id.of("actions.appservice.stream_log.stop");
