@@ -26,7 +26,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class EclipseFunctionStagingContributor {
+public class EclipseFunctionStagingContributor {
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
 
