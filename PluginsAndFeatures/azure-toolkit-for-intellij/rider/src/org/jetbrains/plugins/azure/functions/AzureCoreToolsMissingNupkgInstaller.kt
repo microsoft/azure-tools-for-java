@@ -90,7 +90,7 @@ class AzureCoreToolsMissingNupkgNotificationProvider : EditorNotifications.Provi
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
-        if (PropertiesComponent.getInstance().getBoolean(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_FUNCTIONS_MISSING_NUPKG)) return null
+        if (PropertiesComponent.getInstance(project).getBoolean(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_FUNCTIONS_MISSING_NUPKG)) return null
 
         if (!hasKnownFileSuffix(file)) return null
 
