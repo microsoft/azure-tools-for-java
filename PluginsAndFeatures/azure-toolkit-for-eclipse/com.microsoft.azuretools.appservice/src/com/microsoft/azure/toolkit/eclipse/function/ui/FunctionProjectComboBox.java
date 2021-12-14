@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
 package com.microsoft.azure.toolkit.eclipse.function.ui;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
@@ -14,9 +18,11 @@ public class FunctionProjectComboBox extends AzureComboBox<IJavaProject> {
     public FunctionProjectComboBox(Composite parent) {
         super(parent, false);
     }
+
     protected List<IJavaProject> loadItems() throws Exception {
         return Arrays.stream(FunctionUtils.listFunctionProjects()).collect(Collectors.toList());
     }
+
     protected String getItemText(Object item) {
         if (item instanceof IJavaProject) {
             return ((IJavaProject) item).getElementName();

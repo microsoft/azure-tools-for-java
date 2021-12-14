@@ -77,6 +77,4 @@ public class AzureFunctionVMRunner extends StandardVMRunner {
     public String getStagingFolder() {
         return stagingFolder;
     }
-
-
 }

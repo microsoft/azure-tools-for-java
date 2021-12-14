@@ -8,22 +8,22 @@ package com.microsoft.azure.toolkit.eclipse.function.launch.model;
 import com.microsoft.azure.toolkit.eclipse.common.launch.BaseRunConfiguration;
 
 public class FunctionLocalRunConfiguration extends BaseRunConfiguration {
-	private String functionCliPath;
-	private String localSettingsJsonPath;
+    private String functionCliPath;
+    private String localSettingsJsonPath;
 
-	public String getFunctionCliPath() {
-		return functionCliPath;
-	}
+    public String getFunctionCliPath() {
+        return functionCliPath;
+    }
 
-	public void setFunctionCliPath(String functionCliPath) {
-		this.functionCliPath = functionCliPath;
-	}
+    public void setFunctionCliPath(String functionCliPath) {
+        this.functionCliPath = functionCliPath;
+    }
 
-	public String getLocalSettingsJsonPath() {
-		return localSettingsJsonPath;
-	}
+    public String getLocalSettingsJsonPath() {
+        return localSettingsJsonPath;
+    }
 
-	public void setLocalSettingsJsonPath(String localSettingsJsonPath) {
-		this.localSettingsJsonPath = localSettingsJsonPath;
-	}
+    public void setLocalSettingsJsonPath(String localSettingsJsonPath) {
+        this.localSettingsJsonPath = localSettingsJsonPath;
+    }
 }
