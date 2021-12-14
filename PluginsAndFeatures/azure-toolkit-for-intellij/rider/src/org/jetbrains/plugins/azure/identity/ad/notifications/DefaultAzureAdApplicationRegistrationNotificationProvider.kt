@@ -44,7 +44,7 @@ class DefaultAzureAdApplicationRegistrationNotificationProvider : EditorNotifica
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
-        if (PropertiesComponent.getInstance().getBoolean(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_AD_REGISTER)) return null
+        if (PropertiesComponent.getInstance(project).getBoolean(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_AD_REGISTER)) return null
 
         if (!RegisterApplicationInAzureAdAction.isAppSettingsJsonFileName(file.name)) return null
 
