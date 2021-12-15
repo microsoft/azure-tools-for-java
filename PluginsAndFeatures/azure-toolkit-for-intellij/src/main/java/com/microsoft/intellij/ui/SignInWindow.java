@@ -7,10 +7,14 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
+import com.intellij.ui.components.ActionLink;
+import com.intellij.ui.components.panels.NonOpaquePanel;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import reactor.core.publisher.Mono;
@@ -20,6 +24,8 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collections;
+
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final String DESC = "desc_label";
@@ -103,6 +109,16 @@ public class SignInWindow extends AzureDialogWrapper {
                     updateSelection();
                 }).subscribe(cliBtn::setEnabled);
         });
+    }
+
+    protected JPanel createSouthAdditionalPanel() {
+        final ActionLink link = new ActionLink("Try Azure for free", e -> {
+            AzureActionManager.getInstance().getAction(OPEN_URL).handle(AZURE_FREE);
+        });
+        final JPanel panel = new NonOpaquePanel(new BorderLayout());
+        panel.setBorder(JBUI.Borders.emptyLeft(10));
+        panel.add(link);
+        return panel;
     }
 
     @Override

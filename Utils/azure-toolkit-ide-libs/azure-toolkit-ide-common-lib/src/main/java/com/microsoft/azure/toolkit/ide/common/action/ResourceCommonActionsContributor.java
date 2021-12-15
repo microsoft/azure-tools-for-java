@@ -84,9 +84,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_PORTAL_URL, new Action<>(openPortalUrl, openPortalUrlView));
 
         // register commands
-        am.registerAction(OPEN_URL, (s) -> {
+        final Action<String> action = new Action<>((s) -> {
             throw new AzureToolkitRuntimeException(String.format("no matched handler for action %s.", s));
         });
+        action.authRequired(false);
+        am.registerAction(OPEN_URL, action);
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureResource<?>) r).name())).orElse(null));
