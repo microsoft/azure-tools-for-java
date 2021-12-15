@@ -228,14 +228,13 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
         IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
         IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
-        Mono.fromCallable(() -> {
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
             AzureAccount az = Azure.az(AzureAccount.class);
             selectedIds.stream().limit(5).forEach(sid -> {
                 // pr-load regions
                 az.listRegions(sid);
             });
-            return 1;
-        }).subscribeOn(Schedulers.boundedElastic()).subscribe();
+        });
 
         final Map<String, String> properties = new HashMap<>();
         properties.put("subsCount", String.valueOf(rc));
