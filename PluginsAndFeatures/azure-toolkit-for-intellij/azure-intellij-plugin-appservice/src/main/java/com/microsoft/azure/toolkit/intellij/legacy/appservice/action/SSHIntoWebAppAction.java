@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -50,6 +51,7 @@ public class SSHIntoWebAppAction {
     }
 
     public void execute() {
+        final Action<Void> retry = Action.retryFromFailure(this::execute);
         logger.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
         final AzureString title = title("webapp.connect_ssh.app", webAppName);
@@ -66,7 +68,7 @@ public class SSHIntoWebAppAction {
                     } catch (Throwable ex) {
                         // ignore
                     }
-                    throw new AzureToolkitRuntimeException(message("webapp.ssh.error.message"));
+                    throw new AzureToolkitRuntimeException(message("webapp.ssh.error.message"), retry);
                 }
                 final int finalLocalPort = localPort;
 

@@ -33,6 +33,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -77,6 +78,7 @@ public class AppServiceFileAction {
     )
     @SneakyThrows
     public void openAppServiceFile(AppServiceFile target, Object context) {
+        final Action<Void> retry = Action.retryFromFailure((() -> this.openAppServiceFile(target, context)));
         final IAppService appService = target.getApp();
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(target, fileEditorManager);
@@ -111,7 +113,7 @@ public class AppServiceFileAction {
                         } catch (final IOException e) {
                             final String error = "failed to load data into editor";
                             final String action = "try later or downloading it first";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            throw new AzureToolkitRuntimeException(error, e, action, retry);
                         }
                     }, AppServiceFileAction::onRxException);
         });
@@ -181,6 +183,7 @@ public class AppServiceFileAction {
 
     @SneakyThrows
     public void saveAppServiceFile(@NotNull AppServiceFile file, @Nullable Project project, @Nullable File dest) {
+        final Action<Void> retry = Action.retryFromFailure((() -> this.saveAppServiceFile(file, project, dest)));
         final File destFile = Objects.isNull(dest) ? showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
             return;
@@ -200,8 +203,7 @@ public class AppServiceFileAction {
                             }
                         } catch (final IOException e) {
                             final String error = "failed to write data into local file";
-                            final String action = "try later";
-                            throw new AzureToolkitRuntimeException(error, e, action);
+                            throw new AzureToolkitRuntimeException(error, e, retry);
                         }
                     }, AppServiceFileAction::onRxException);
         });

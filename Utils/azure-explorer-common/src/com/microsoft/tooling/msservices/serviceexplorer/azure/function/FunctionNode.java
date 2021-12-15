@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.utils.Utils;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -77,13 +78,14 @@ public class FunctionNode extends Node implements TelemetryProperties {
         type = AzureOperation.Type.SERVICE
     )
     private void trigger() {
+        final Action<Void> retry = Action.retryFromFailure((this::trigger));
         final FunctionEntity.BindingEntity trigger = functionEntity.getTrigger();
         final String triggerType = Optional.ofNullable(trigger)
                 .map(functionTrigger -> functionTrigger.getProperty("type")).orElse(null);
         if (StringUtils.isEmpty(triggerType)) {
             final String error = String.format("failed to get trigger type of function[%s].", functionApp.name());
             final String action = "confirm trigger type is configured.";
-            throw new AzureToolkitRuntimeException(error, action);
+            throw new AzureToolkitRuntimeException(error, action, retry);
         }
         switch (triggerType.toLowerCase()) {
             case "httptrigger":
@@ -106,6 +108,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
         type = AzureOperation.Type.TASK
     )
     private void triggerHttpTrigger(FunctionEntity.BindingEntity binding) {
+        final Action<Void> retry = Action.retryFromFailure((() -> this.triggerHttpTrigger(binding)));
         final AuthorizationLevel authLevel = EnumUtils.getEnumIgnoreCase(AuthorizationLevel.class, binding.getProperty("authLevel"));
         String targetUrl;
         switch (authLevel) {
@@ -120,7 +123,7 @@ public class FunctionNode extends Node implements TelemetryProperties {
                 break;
             default:
                 final String format = String.format("Unsupported authorization level %s", authLevel);
-                throw new AzureToolkitRuntimeException(format);
+                throw new AzureToolkitRuntimeException(format, retry);
         }
         DefaultLoader.getUIHelper().openInBrowser(targetUrl);
     }

@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -82,6 +83,7 @@ public enum AppServiceStreamingLogManager {
 
     @AzureOperation(name = "appservice.open_log_stream.app", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.SERVICE)
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
+        final Action<Void> retry = Action.retryFromFailure(() -> this.showAppServiceStreamingLog(project, resourceId, logStreaming));
         final AzureString title = AzureOperationBundle.title("appservice.open_log_stream.app", ResourceUtils.nameFromResourceId(resourceId));
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             try {
@@ -112,7 +114,7 @@ public enum AppServiceStreamingLogManager {
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
                         project, resourceId, logStreaming.getTitle(), consoleView);
             } catch (final Throwable e) {
-                throw new AzureToolkitRuntimeException("failed to open streaming log", e);
+                throw new AzureToolkitRuntimeException("failed to open streaming log", e, retry);
             }
         }));
     }

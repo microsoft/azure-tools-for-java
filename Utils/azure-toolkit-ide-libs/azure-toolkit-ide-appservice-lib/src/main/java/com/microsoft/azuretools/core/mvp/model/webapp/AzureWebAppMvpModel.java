@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.appservice.service.IWebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.ResourceGroup;
@@ -212,10 +213,11 @@ public class AzureWebAppMvpModel {
     )
     public void deployArtifactsToWebApp(@Nonnull final IWebAppBase deployTarget, @Nonnull final File file,
                                         boolean isDeployToRoot, @Nonnull final IProgressIndicator progressIndicator) {
+        final Action<Void> retry = Action.retryFromFailure(() -> deployArtifactsToWebApp(deployTarget, file, isDeployToRoot, progressIndicator));
         if (!(deployTarget instanceof WebApp || deployTarget instanceof WebAppDeploymentSlot)) {
             final String error = "the deployment target is not a valid (deployment slot of) Web App";
             final String action = "select a valid Web App or deployment slot to deploy the artifact";
-            throw new AzureToolkitRuntimeException(error, action);
+            throw new AzureToolkitRuntimeException(error, action, retry);
         }
         // stop target app service
         String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
