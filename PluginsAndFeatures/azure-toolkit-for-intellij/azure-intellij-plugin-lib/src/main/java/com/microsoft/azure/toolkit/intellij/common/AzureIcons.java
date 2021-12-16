@@ -9,6 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.IconLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -27,13 +28,13 @@ public class AzureIcons {
             put("/icons/action/refresh.svg", AllIcons.Actions.Refresh);
             put("/icons/action/deploy.svg", AllIcons.Nodes.Deploy);
             put("/icons/action/create.svg", AllIcons.General.Add);
-            put("/icons/action/delete.svg", AllIcons.Vcs.Remove);
-            put("/icons/action/portal.svg", AllIcons.Actions.InlayGlobe);
-            put("/icons/action/browser.svg", AllIcons.Actions.InlayGlobe);
+            put("/icons/action/delete.svg", AllIcons.Actions.GC);
+            put("/icons/action/portal.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
+            put("/icons/action/browser.svg", IconLoader.getIcon("icons/Common/OpenInPortal.svg", AzureIcons.class));
             put("/icons/action/properties.svg", AllIcons.Actions.Properties);
             put("/icons/action/refresh", AllIcons.Actions.Refresh);
             put("/icons/action/add", AllIcons.General.Add);
-            put("/icons/action/remove", AllIcons.General.Remove);
+            put("/icons/action/remove", AllIcons.Actions.GC);
             put("/icons/action/edit", AllIcons.Actions.Edit);
             put("/icons/module", AllIcons.Nodes.Module);
         }
