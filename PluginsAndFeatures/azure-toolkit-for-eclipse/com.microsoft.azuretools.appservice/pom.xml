@@ -20,6 +20,11 @@
       <artifactId>plexus-archiver</artifactId>
       <version>3.0.3</version>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-io</artifactId>
+      <version>3.0.1</version>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
@@ -57,6 +62,10 @@
                 <artifactItem>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-archiver</artifactId>
+                </artifactItem>
+                <artifactItem>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-io</artifactId>
                 </artifactItem>
               </artifactItems>
             </configuration>
