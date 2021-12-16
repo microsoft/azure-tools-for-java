@@ -243,9 +243,13 @@ public class FunctionUtils {
         if (gradleProject.isValid() && gradleProject.getArtifactFile() != null) {
             jarFile = gradleProject.getArtifactFile().toPath();
             gradleProject.packageJar();
+            if (!gradleProject.getArtifactFile().exists()) {
+                final String error = String.format("Failed generate jar file for project(%s)", gradleProject.getName());
+                throw new AzureToolkitRuntimeException(error);
+            }
             FileUtils.copyFileToDirectory(gradleProject.getArtifactFile(), stagingFolder.toFile());
         } else {
-            jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);;
+            jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
         }
 
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
@@ -263,19 +267,23 @@ public class FunctionUtils {
 
         final List<File> jarFiles = new ArrayList<>();
         if (gradleProject.isValid()) {
-            jarFiles.addAll(gradleProject.getDependencies());
+            gradleProject.getDependencies().forEach(lib -> {
+                if (!lib.exists() || StringUtils.startsWithIgnoreCase(lib.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+                    return;
+                }
+                jarFiles.add(lib);
+            });
+
         } else {
             OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
                 if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
                     return true;
                 }
 
-                if (lib != null) {
-                    for (final VirtualFile virtualFile : lib.getFiles(OrderRootType.CLASSES)) {
-                        final File file = new File(stripExtraCharacters(virtualFile.getPath()));
-                        if (file.exists()) {
-                            jarFiles.add(file);
-                        }
+                for (final VirtualFile virtualFile : lib.getFiles(OrderRootType.CLASSES)) {
+                    final File file = new File(stripExtraCharacters(virtualFile.getPath()));
+                    if (file.exists()) {
+                        jarFiles.add(file);
                     }
                 }
                 return true;
