@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
 public class FunctionAppActionsContributor implements IActionsContributor {
@@ -87,9 +88,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
 
         final ActionView.Builder configCliView = new ActionView.Builder("Configure")
                 .title(s -> Optional.ofNullable(s).map(r -> title("function.config_core_tools")).orElse(null));
-        final Action<Void> configCliAction = new Action<>((v) -> {
-            // TODO: @wangmi open Azure Settings dialog.
-        }, configCliView);
+        final Action<Void> configCliAction = new Action<>((v) -> am.getAction(OPEN_AZURE_SETTINGS).handle(null), configCliView);
         configCliAction.authRequired(false);
         am.registerAction(CONFIG_CORE_TOOLS, configCliAction);
     }

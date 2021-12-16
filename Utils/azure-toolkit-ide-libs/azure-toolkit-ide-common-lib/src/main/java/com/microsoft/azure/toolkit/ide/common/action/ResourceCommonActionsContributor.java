@@ -37,7 +37,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<AzureService<?>> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Void> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
-    public static final Action.Id<Void> OPEN_SETTINGS = Action.Id.of("action.open_settings");
 
     @Override
     public void registerActions(AzureActionManager am) {
