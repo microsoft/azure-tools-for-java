@@ -33,18 +33,24 @@ public class DeploySpringCloudAppAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         final Project project = anActionEvent.getProject();
         if (project != null) {
-            deploy(null, project);
+            deploy((SpringCloudApp) null, project);
         }
     }
 
     public static void deploy(@Nullable SpringCloudApp app, @Nonnull Project project) {
-        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
-        final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
-        final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
-        final RunnerAndConfigurationSettings settings = Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
+        final RunnerAndConfigurationSettings settings = getConfigurationSettings(project);
         final SpringCloudDeploymentConfiguration configuration = ((SpringCloudDeploymentConfiguration) settings.getConfiguration());
         configuration.setApp(app);
+        runConfiguration(project, settings, configuration);
+    }
+
+    public static void deploy(@Nonnull SpringCloudDeploymentConfiguration configuration, @Nonnull Project project) {
+        final RunnerAndConfigurationSettings settings = getConfigurationSettings(project);
+        runConfiguration(project, settings, configuration);
+    }
+
+    private static void runConfiguration(@Nonnull Project project, RunnerAndConfigurationSettings settings, SpringCloudDeploymentConfiguration configuration) {
+        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         AzureTaskManager.getInstance().runLater(() -> {
             if (RunDialog.editConfiguration(project, settings, DEPLOY_SPRING_CLOUD_APP_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
                 settings.storeInLocalWorkspace();
@@ -54,5 +60,14 @@ public class DeploySpringCloudAppAction extends AnAction {
                 ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
             }
         });
+    }
+
+    @Nonnull
+    private static RunnerAndConfigurationSettings getConfigurationSettings(@Nonnull Project project) {
+        final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
+        final ConfigurationFactory factory = configType.getConfigurationFactories()[0];
+        final String configurationName = String.format("%s: %s", factory.getName(), project.getName());
+        final RunnerAndConfigurationSettings existed = manager.findConfigurationByName(configurationName);
+        return Objects.nonNull(existed) ? existed : manager.createConfiguration(configurationName, factory);
     }
 }

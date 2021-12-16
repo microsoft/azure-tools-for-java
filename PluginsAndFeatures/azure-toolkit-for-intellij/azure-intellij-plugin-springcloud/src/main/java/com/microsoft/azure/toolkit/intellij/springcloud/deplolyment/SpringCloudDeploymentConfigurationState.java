@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
 import com.intellij.execution.DefaultExecutionResult;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
@@ -18,6 +17,9 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -40,6 +42,9 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle.message;
 
 public class SpringCloudDeploymentConfigurationState implements RunProfileState {
     private static final int GET_URL_TIMEOUT = 60;
@@ -58,7 +63,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
     }
 
     @Override
-    public @Nullable ExecutionResult execute(Executor executor, @NotNull ProgramRunner<?> runner) throws ExecutionException {
+    public @Nullable ExecutionResult execute(Executor executor, @NotNull ProgramRunner<?> runner) {
+        final Action<Void> retry = Action.retryFromFailure(() -> this.execute(executor, runner));
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         processHandler.startNotify();
@@ -71,7 +77,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
                 this.execute(messager);
                 messager.success("Deploy succeed!");
             } catch (final Exception e) {
-                messager.error(e);
+                messager.error(e, "Azure", retry);
             }
         };
         final Disposable subscribe = Mono.fromRunnable(execute)
@@ -88,11 +94,17 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
-    @AzureOperation(name = "springcloud.create_update_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.deploy_app.app", params = {"this.config.getAppConfig().getAppName()"}, type = AzureOperation.Type.ACTION)
     public SpringCloudDeployment execute(IAzureMessager messager) {
         AzureMessager.getContext().setMessager(messager);
         AzureTelemetry.getContext().setProperties(getTelemetryProperties());
         final SpringCloudAppConfig appConfig = this.config.getAppConfig();
+        if (Optional.ofNullable(this.config.getAppConfig().getDeployment().getArtifact()).filter(a -> a.getFile().exists()).isEmpty()) {
+            throw new AzureToolkitRuntimeException(
+                message("springcloud.deploy_app.no_artifact").toString(),
+                message("springcloud.deploy_app.no_artifact.tips").toString(),
+                new Action<Void>((v) -> DeploySpringCloudAppAction.deploy(this.config, this.project), new ActionView.Builder("Add BeforeRunTask")));
+        }
         final DeploySpringCloudAppTask task = new DeploySpringCloudAppTask(appConfig);
         final SpringCloudDeployment deployment = task.execute();
         final SpringCloudApp app = deployment.app();

@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.legacy.common;
 
 import com.intellij.execution.DefaultExecutionResult;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfileState;
@@ -17,6 +16,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -41,7 +41,8 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     @Nullable
     @Override
-    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) throws ExecutionException {
+    public ExecutionResult execute(Executor executor, @NotNull ProgramRunner programRunner) {
+        final Action<Void> retry = Action.retryFromFailure(() -> this.execute(executor, programRunner));
         final RunProcessHandler processHandler = new RunProcessHandler();
         processHandler.addDefaultListener();
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(this.project).getConsole();
@@ -66,6 +67,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                 err.printStackTrace();
                 this.sendTelemetry(operation, err);
                 this.onFail(err, processHandler);
+                AzureMessager.getMessager().error(err, "Azure", retry);
             });
 
         processHandler.addProcessListener(new ProcessAdapter() {
@@ -106,6 +108,5 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
             String.format("Failed to %s", error.getMessage()) : error.getMessage();
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
-        AzureMessager.getMessager().error(error);
     }
 }
