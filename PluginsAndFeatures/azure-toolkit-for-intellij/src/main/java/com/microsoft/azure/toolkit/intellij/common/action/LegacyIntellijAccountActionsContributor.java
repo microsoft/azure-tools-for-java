@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -46,7 +45,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions").title((s) -> authnTitle);
         final BiConsumer<Void, AnActionEvent> selectSubsHandler = (Void v, AnActionEvent e) ->
             SelectSubscriptionsAction.selectSubscriptions(e.getProject()).subscribe();
-        am.registerAction(IAccountActions.SELECT_SUBS, new Action<>(selectSubsHandler, selectSubsView).authRequired(true));
+        am.registerAction(IntellijAccountActionsContributor.SELECT_SUBS, new Action<>(selectSubsHandler, selectSubsView).authRequired(true));
     }
 
     @Override
