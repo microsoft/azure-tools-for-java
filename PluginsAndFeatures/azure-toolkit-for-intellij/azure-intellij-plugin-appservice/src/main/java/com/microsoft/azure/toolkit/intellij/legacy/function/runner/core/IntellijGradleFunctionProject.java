@@ -28,6 +28,7 @@ import org.jetbrains.plugins.gradle.service.task.GradleTaskManager;
 import org.jetbrains.plugins.gradle.settings.GradleExecutionSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +39,16 @@ public class IntellijGradleFunctionProject extends FunctionProject {
     @Getter
     private final boolean isValid;
 
-    public IntellijGradleFunctionProject(Project workspace, Module module) {
+    public IntellijGradleFunctionProject(@Nonnull Project workspace, @Nonnull Module module) {
         this.workspace = workspace;
         final String externalProjectPath = ExternalSystemApiUtil.getExternalProjectPath(module);
-        externalProject = ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(externalProjectPath);
+
+        externalProject = externalProjectPath != null ? ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(externalProjectPath) : null;
         isValid = externalProject != null;
         init();
     }
 
-    public IntellijGradleFunctionProject(Project workspace, ExternalProjectPojo project) {
+    public IntellijGradleFunctionProject(@Nonnull Project workspace, @Nonnull ExternalProjectPojo project) {
         this.workspace = workspace;
         externalProject = ExternalProjectDataCache.getInstance(workspace).getRootExternalProject(project.getPath());
         isValid = externalProject != null;
