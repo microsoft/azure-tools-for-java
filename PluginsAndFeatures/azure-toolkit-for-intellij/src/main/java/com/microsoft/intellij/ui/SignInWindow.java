@@ -113,7 +113,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     protected JPanel createSouthAdditionalPanel() {
         final ActionLink link = new ActionLink("Try Azure for free", e -> {
-            AzureActionManager.getInstance().getAction(OPEN_URL).handle(IntellijAccountActionsContributor.FREE_AZURE);
+            AzureActionManager.getInstance().getAction(OPEN_URL).handle(IntellijAccountActionsContributor.URL_TRY_AZURE_FOR_FREE);
         });
         final JPanel panel = new NonOpaquePanel(new BorderLayout());
         panel.setBorder(JBUI.Borders.emptyLeft(10));

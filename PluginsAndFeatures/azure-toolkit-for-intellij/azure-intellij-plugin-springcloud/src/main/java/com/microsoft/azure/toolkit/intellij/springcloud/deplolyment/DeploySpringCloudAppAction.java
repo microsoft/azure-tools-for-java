@@ -15,6 +15,8 @@ import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -33,7 +35,7 @@ public class DeploySpringCloudAppAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         final Project project = anActionEvent.getProject();
         if (project != null) {
-            deploy((SpringCloudApp) null, project);
+            AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> deploy((SpringCloudApp) null, project));
         }
     }
 

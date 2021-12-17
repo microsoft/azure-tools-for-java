@@ -19,14 +19,14 @@ import java.util.function.BiConsumer;
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 
 public class IntellijAccountActionsContributor implements IActionsContributor, IAccountActions {
-    public static final String FREE_AZURE = "https://azure.microsoft.com/en-us/free/?utm_campaign=javatools";
+    public static final String URL_TRY_AZURE_FOR_FREE = "https://azure.microsoft.com/en-us/free/?utm_campaign=javatools";
 
     @Override
     public void registerActions(AzureActionManager am) {
         final AzureString tryAzureTitle = AzureOperationBundle.title("account.try_aure");
         final ActionView.Builder tryAzureView = new ActionView.Builder("Try Azure for Free").title((s) -> tryAzureTitle);
         final BiConsumer<Void, AnActionEvent> tryAzureHandler = (Void v, AnActionEvent e) ->
-            AzureActionManager.getInstance().getAction(OPEN_URL).handle(FREE_AZURE);
+            AzureActionManager.getInstance().getAction(OPEN_URL).handle(URL_TRY_AZURE_FOR_FREE);
         am.registerAction(IAccountActions.TRY_AZURE, new Action<>(tryAzureHandler, tryAzureView).authRequired(false));
     }
 

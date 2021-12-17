@@ -46,7 +46,7 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions").title((s) -> authnTitle);
         final BiConsumer<Void, AnActionEvent> selectSubsHandler = (Void v, AnActionEvent e) ->
             SelectSubscriptionsAction.selectSubscriptions(e.getProject()).subscribe();
-        am.registerAction(IAccountActions.SELECT_SUBS, new Action<>(selectSubsHandler, selectSubsView).authRequired(false));
+        am.registerAction(IAccountActions.SELECT_SUBS, new Action<>(selectSubsHandler, selectSubsView).authRequired(true));
     }
 
     @Override
