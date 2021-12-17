@@ -1,1 +1,2 @@
 com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor
+com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor

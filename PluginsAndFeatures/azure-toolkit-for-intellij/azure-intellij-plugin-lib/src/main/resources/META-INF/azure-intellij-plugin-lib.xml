@@ -6,6 +6,7 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <actions implementation="com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <webHelpProvider implementation="com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider"/>

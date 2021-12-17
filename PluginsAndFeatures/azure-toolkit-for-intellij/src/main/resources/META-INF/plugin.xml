@@ -92,7 +92,7 @@
   <depends>com.intellij.modules.lang</depends>
   -->
   <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-    <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.LegacyIntellijActionsContributor"/>
+    <actions implementation="com.microsoft.azure.toolkit.intellij.common.action.LegacyIntellijAccountActionsContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
