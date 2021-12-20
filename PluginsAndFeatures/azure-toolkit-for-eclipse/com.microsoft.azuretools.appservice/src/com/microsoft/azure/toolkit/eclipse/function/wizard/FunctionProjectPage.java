@@ -152,7 +152,7 @@ public class FunctionProjectPage extends AzWizardPageWrapper implements AzureFor
             if (StringUtils.isBlank(txtProjectName.getValue())) {
                 txtProjectName.setValue(FileNameUtils.getBaseName(selectedDir));
             }
-            this.doValidateAll();
+            this.doValidateAllSync();
         }));
         txtProjectName.addValidator(() -> {
             final IWorkspace workspace = JavaPlugin.getWorkspace();

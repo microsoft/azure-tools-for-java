@@ -8,7 +8,6 @@ import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionArtifactModel;
 import com.microsoft.azure.toolkit.ide.appservice.model.FunctionProjectModel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -47,20 +46,10 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
         addPage(artifactPage);
     }
 
-    public boolean canFinish() {
-        if (projectPage == null || !projectPage.isPageComplete()) {
-            return false;
-        }
-        if (artifactPage == null || !artifactPage.isPageComplete()) {
-            return false;
-        }
-        return super.canFinish();
-    }
-
     @Override
     public boolean performFinish() {
-        final FunctionArtifactModel model = artifactPage.getValue();
         final FunctionProjectModel projectModel = projectPage.getValue();
+        final FunctionArtifactModel model = artifactPage.getValue();
         AzureFunctionsUtils.createAzureFunctionProject(projectModel.getLocation(),
                 model.getGroupId()
                 , model.getArtifactId(), model.getVersion(), "maven", projectModel.getTriggers().toArray(new String[0]), model.getPackageName());
@@ -71,8 +60,7 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
             public void done(IJobChangeEvent event) {
                 final IStatus result = event.getResult();
                 if (!result.isOK()) {
-                    AzureTaskManager.getInstance().runLater(() ->
-                            AzureMessager.getMessager().error(result.getMessage(), "Failed to create Azure Function project"));
+                    AzureMessager.getMessager().error(result.getMessage(), "Failed to create Azure Function project");
                 }
             }
 
@@ -80,5 +68,4 @@ public class CreateFunctionProjectWizard extends Wizard implements INewWizard {
 
         return true;
     }
-
 }

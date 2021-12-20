@@ -10,42 +10,26 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AzWizardPageWrapper<T> extends WizardPage {
-    private Disposable subscription;
-    private int validationDelay = 300;
-    private volatile boolean validationEnabled = false;
-
     protected AzWizardPageWrapper(String pageName) {
         super(pageName);
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-        stopValidation();
-        validationEnabled = false;
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            this.getForm().getInputs().forEach(t -> t.addValueChangedListener(this::valueChanged));
+        }
     }
 
     public boolean isPageComplete() {
-        if (super.isPageComplete()) {
-            final List<AzureValidationInfo> infos = this.getForm().getAllValidationInfos(false);
-            return !infos.isEmpty() && infos.stream().allMatch(AzureValidationInfo::isValid);
-        }
-        return false;
-    }
-
-    private void startValidation() {
-        stopValidation();
-
-        this.getForm().getInputs().forEach(t -> t.addValueChangedListener(this::valueChanged));
+        final List<AzureValidationInfo> infos = this.doValidateAllSync();
+        return infos.stream().allMatch(AzureValidationInfo::isValid);
     }
 
     private void valueChanged(Object o) {
@@ -53,38 +37,24 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
     }
 
     private boolean validateAll() {
-        if (!validationEnabled) {
-            return false;
-        }
-        final List<AzureValidationInfo> errors = this.doValidateAll();
+        final List<AzureValidationInfo> errors = this.doValidateAllSync();
         boolean valid = Objects.isNull(errors) || errors.isEmpty();
-        AzureTaskManager.getInstance().runLater(() -> setErrorInfoAll(errors));
-        if (!valid) {
-            this.subscription = Mono.delay(Duration.ofMillis(this.validationDelay))
-                    .map(n -> this.validateAll())
-                    .onErrorStop().subscribe();
-        }
+        AzureTaskManager.getInstance().runLater(() -> showValidationErrors(errors));
         return valid;
     }
 
-    protected final void setErrorInfoAll(List<AzureValidationInfo> infos) {
+    protected final void showValidationErrors(List<AzureValidationInfo> infos) {
         final String titleErrorMessage = infos.isEmpty() ? null : infos.get(0).getMessage();
         List<AzureValidationInfo> errors = infos.stream().filter(i -> i.getType() == AzureValidationInfo.Type.ERROR).collect(Collectors.toList());
         this.setErrorMessage(errors.isEmpty() ? null : errors.get(0).getMessage());
-        for (AzureValidationInfo info : infos) {
-            final AzureFormInputControl<?> input = (AzureFormInputControl<?>) info.getInput();
-            input.setValidationInfo(info);
-        }
         setOkButtonEnabled(titleErrorMessage == null);
     }
 
-    protected List<AzureValidationInfo> doValidateAll() {
-        final List<AzureValidationInfo> infos = this.getForm().getAllValidationInfos(true);
+    protected List<AzureValidationInfo> doValidateAllSync() {
+        List<AzureValidationInfo> infos = this.getForm().getInputs().stream().map(input ->
+                ((AzureFormInputControl<?>) input).validateSync()
+        ).collect(Collectors.toList());
         return infos.stream().filter(i -> !i.isValid()).collect(Collectors.toList());
-    }
-
-    public void setValidationDelay(int delay) {
-        this.validationDelay = delay;
     }
 
     public void setOkButtonEnabled(boolean enabled) {
@@ -105,21 +75,5 @@ public abstract class AzWizardPageWrapper<T> extends WizardPage {
         }
 
         return super.getNextPage();
-    }
-
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible) {
-            startValidation();
-        }
-        validationEnabled = visible;
-    }
-
-    private void stopValidation() {
-        if (Objects.nonNull(this.subscription) && !this.subscription.isDisposed()) {
-            this.subscription.dispose();
-            this.subscription = null;
-        }
-        this.getForm().getInputs().forEach(t -> t.removeValueChangedListener(this::valueChanged));
     }
 }

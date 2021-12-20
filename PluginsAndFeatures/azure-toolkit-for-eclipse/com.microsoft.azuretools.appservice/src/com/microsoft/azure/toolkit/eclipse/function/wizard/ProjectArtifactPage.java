@@ -21,7 +21,6 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureForm<FunctionArtifactModel> {
     private AzureTextInput txtGroupId;
@@ -43,19 +42,9 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
     public void setDefaultValueFirstTime() {
         FunctionProjectPage previousPage = (FunctionProjectPage) getWizard().getPreviousPage(this);
 
-        if (Stream.of(txtArtifact, txtVersion, txtPackageName, txtGroupId).map(AzureTextInput::getValue).noneMatch(StringUtils::isNotBlank)) {
-            FunctionArtifactModel defaultModel = FunctionArtifactModel.getDefaultFunctionProjectConfig();
-            defaultModel.setArtifactId(previousPage.getProjectName());
-            setValue(defaultModel);
+        if (StringUtils.isBlank(txtArtifact.getValue())) {
+            this.txtArtifact.setValue(previousPage.getProjectName());
         }
-        addValidator("group id", txtGroupId, ProjectArtifactPage::isValidGroupIdArtifactId,
-                "contain only letters, numbers, the period, the underscore and start only with letters.");
-        addValidator("artifact id", txtArtifact, ProjectArtifactPage::isValidGroupIdArtifactId,
-                "contain only letters, numbers, the hyphen, the period, the underscore and start only with letters, numbers.");
-        addValidator("version", txtVersion, ProjectArtifactPage::isValidVersion,
-                "contain only letters, numbers, the hyphen, the period, the underscore and start only with numbers.");
-        addValidator("package name", txtPackageName, ProjectArtifactPage::isValidJavaPackageName,
-                "contain only letters, numbers, the period, the underscore and start only with letters.");
     }
 
     private static void addValidator(String propertyName, AzureTextInput input, Predicate<String> validator, String description) {
@@ -108,6 +97,7 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
         super.setVisible(visible);
         if (visible) {
             setDefaultValueFirstTime();
+
         }
     }
 
@@ -145,6 +135,18 @@ public class ProjectArtifactPage extends AzWizardPageWrapper implements AzureFor
         txtPackageName = new AzureTextInput(container);
         txtPackageName.setText("");
         txtPackageName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        addValidator("group id", txtGroupId, ProjectArtifactPage::isValidGroupIdArtifactId,
+                "contain only letters, numbers, the period, the underscore and start only with letters.");
+        addValidator("artifact id", txtArtifact, ProjectArtifactPage::isValidGroupIdArtifactId,
+                "contain only letters, numbers, the hyphen, the period, the underscore and start only with letters, numbers.");
+        addValidator("version", txtVersion, ProjectArtifactPage::isValidVersion,
+                "contain only letters, numbers, the hyphen, the period, the underscore and start only with numbers.");
+        addValidator("package name", txtPackageName, ProjectArtifactPage::isValidJavaPackageName,
+                "contain only letters, numbers, the period, the underscore and start only with letters.");
+        FunctionArtifactModel defaultModel = FunctionArtifactModel.getDefaultFunctionArtifactModel();
+        defaultModel.setArtifactId(StringUtils.EMPTY);
+        setValue(defaultModel);
     }
 
     private static boolean isValidJavaPackageName(String packageName) {

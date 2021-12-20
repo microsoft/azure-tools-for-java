@@ -15,7 +15,7 @@ public class FunctionArtifactModel {
     private String version;
     private String packageName;
 
-    public static FunctionArtifactModel getDefaultFunctionProjectConfig() {
+    public static FunctionArtifactModel getDefaultFunctionArtifactModel() {
         FunctionArtifactModel model = new FunctionArtifactModel();
         model.setArtifactId("FirstProject");
         model.setGroupId("com.example");

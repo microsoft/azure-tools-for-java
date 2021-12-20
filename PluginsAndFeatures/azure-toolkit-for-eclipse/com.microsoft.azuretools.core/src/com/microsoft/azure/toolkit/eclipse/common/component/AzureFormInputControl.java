@@ -41,12 +41,19 @@ public interface AzureFormInputControl<T> extends AzureFormInput<T> {
     @Override
     default AzureValidationInfo validateInternal(T value) {
         final Boolean needValidate = AzureTaskManager.getInstance()
-            .runAndWaitAsObservable(new AzureTask<>(() -> !this.getInputControl().isEnabled() || !this.getInputControl().isVisible()))
+            .runAndWaitAsObservable(new AzureTask<>(() -> this.getInputControl().isDisposed() ? false : (!this.getInputControl().isEnabled() || !this.getInputControl().isVisible())))
             .toBlocking().single();
         if (BooleanUtils.isTrue(needValidate)) {
             return AzureValidationInfo.success(this);
         }
         return AzureFormInput.super.validateInternal(value);
+    }
+
+    default AzureValidationInfo validateSync() {
+        final T value = this.getValue();
+        final AzureValidationInfo info = validateInternal(value);
+        setValidationInfo(info);
+        return info;
     }
 
     default void setLabeledBy(Label label) {
