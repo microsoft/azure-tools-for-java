@@ -29,6 +29,7 @@ Bundle-Activator: com.microsoft.azuretools.appservice.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: Microsoft Corp.
 Import-Package: com.microsoft.azure.management,
+ com.microsoft.azure.toolkit.eclipse.common.launch,
  com.microsoft.azure.management.appservice,
  com.microsoft.azure.management.appservice.implementation,
  com.microsoft.azure.management.resources,
@@ -54,6 +55,6 @@ Export-Package: com.microsoft.azuretools.appservice,
  com.microsoft.azuretools.appservice.handlers,
  com.microsoft.azuretools.appservice.ui
 Bundle-ClassPath: .,
- target/lib/azure-toolkit-appservice-lib-0.15.0-SNAPSHOT.jar,
+ target/lib/azure-toolkit-ide-appservice-lib-0.15.0-SNAPSHOT.jar,
  target/lib/plexus-archiver-3.0.3.jar,
  target/lib/plexus-io-3.0.1.jar
