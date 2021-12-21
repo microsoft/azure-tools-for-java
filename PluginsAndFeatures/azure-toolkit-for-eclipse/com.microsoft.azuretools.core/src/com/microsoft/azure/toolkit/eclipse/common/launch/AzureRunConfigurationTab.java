@@ -6,6 +6,7 @@ package com.microsoft.azure.toolkit.eclipse.common.launch;
 
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -15,12 +16,13 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import java.util.List;
 import java.util.function.Function;
 
 public class AzureRunConfigurationTab<T extends BaseRunConfiguration> extends AbstractLaunchConfigurationTab {
     private final Class<T> configurationModelClass;
     private final Function<Composite, AzureFormPanel<T>> panelSupplier;
-    private AzureFormPanel<T> apply;
+    private AzureFormPanel<T> panel;
     private String name;
 
     public AzureRunConfigurationTab(Function<Composite, AzureFormPanel<T>> panelSupplier, String name, Class<T> clz) {
@@ -28,15 +30,22 @@ public class AzureRunConfigurationTab<T extends BaseRunConfiguration> extends Ab
         this.panelSupplier = panelSupplier;
         this.name = name;
     }
+
     @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
     }
 
     @Override
+    public boolean isValid(ILaunchConfiguration configuration) {
+        final List<AzureValidationInfo> infos = panel.getAllValidationInfos(true);
+        return infos.stream().allMatch(AzureValidationInfo::isValid);
+    }
+
+    @Override
     public void createControl(Composite parent) {
-        apply = panelSupplier.apply(parent);
-        setControl((Control) apply);
-        for (AzureFormInput<?> input : apply.getInputs()) {
+        panel = panelSupplier.apply(parent);
+        setControl((Control) panel);
+        for (AzureFormInput<?> input : panel.getInputs()) {
             input.addValueChangedListener(v -> {
                 markDirty();
             });
@@ -47,13 +56,13 @@ public class AzureRunConfigurationTab<T extends BaseRunConfiguration> extends Ab
     @Override
     public void initializeFrom(ILaunchConfiguration configuration) {
         T origin = LaunchConfigurationUtils.getFromConfiguration(configuration, configurationModelClass);
-        apply.setValue(origin);
+        panel.setValue(origin);
     }
 
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         T origin = LaunchConfigurationUtils.getFromConfiguration(configuration, configurationModelClass);
-        T newConfig = apply.getValue();
+        T newConfig = panel.getValue();
         try {
 
             Utils.mergeObjects(newConfig, origin);
