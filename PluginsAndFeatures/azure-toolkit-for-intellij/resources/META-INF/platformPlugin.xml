@@ -16,6 +16,7 @@
           <li>Publishing web app does not set correct runtime version in Azure App Service <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/535">#535</a></li>
           <li>Azure gutter mark shouldn't be overlapped with formatting options or hammer icons <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/545">#545</a> / <a href="https://youtrack.jetbrains.com/issue/RIDER-70842">RIDER-70842</a></li>
           <li>Don't show again does not make the warning go away <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/550">#550</a></li>
+          <li>Publishing Azure Web App fails if the target is running on a Linux App Service Plan <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/271">#271</a></li>
         </ul>
     </html>
     ]]>
