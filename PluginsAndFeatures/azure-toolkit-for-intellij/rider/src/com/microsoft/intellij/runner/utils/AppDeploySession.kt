@@ -76,6 +76,7 @@ class AppDeploySession(username: String, password: String) {
         val request = Request.Builder()
                 .url(connectUrl)
                 .post(requestBody)
+                .header("Content-type", "application/octet-steam")
                 .build()
 
         client.newCall(request).execute().use { response ->
