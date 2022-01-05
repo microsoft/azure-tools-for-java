@@ -153,7 +153,12 @@ public class IdentityAzureManager extends AzureManagerBase {
                 AuthConfiguration auth = new AuthConfiguration();
                 auth.setType(AuthType.SERVICE_PRINCIPAL);
                 auth.setClient(authMethodDetails.getClientId());
-                auth.setTenant(authMethodDetails.getTenantId());
+                if (CollectionUtils.isNotEmpty(authMethodDetails.getTenantIds())) {
+                    auth.setTenant(authMethodDetails.getTenantIds().get(0));
+                } else {
+                    auth.setTenant(authMethodDetails.getTenantId());
+                }
+
                 auth.setEnvironment(Azure.az(AzureCloud.class).get());
                 if (StringUtils.isNotBlank(authMethodDetails.getCertificate())) {
                     auth.setCertificate(authMethodDetails.getCertificate());
