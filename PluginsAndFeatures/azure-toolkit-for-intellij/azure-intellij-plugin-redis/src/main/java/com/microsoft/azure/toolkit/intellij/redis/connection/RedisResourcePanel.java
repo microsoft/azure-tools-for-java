@@ -74,7 +74,7 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
                 .ofNullable(this.subscriptionComboBox)
                 .map(AzureComboBox::getValue)
                 .map(Subscription::getId)
-                .map(id -> Azure.az(AzureRedis.class).list(id))
+                .map(id -> Azure.az(AzureRedis.class).caches(id).list())
                 .orElse(Collections.emptyList());
         this.redisComboBox = new AzureComboBoxSimple<>(loader) {
             @Override

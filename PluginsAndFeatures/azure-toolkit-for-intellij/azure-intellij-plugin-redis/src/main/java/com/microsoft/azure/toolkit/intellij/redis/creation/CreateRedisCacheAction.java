@@ -16,6 +16,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
+import com.microsoft.azure.toolkit.redis.RedisCacheDraft;
+import com.microsoft.azure.toolkit.redis.RedisCacheModule;
 import com.microsoft.azure.toolkit.redis.model.RedisConfig;
 
 public class CreateRedisCacheAction {
@@ -41,7 +43,12 @@ public class CreateRedisCacheAction {
             if (rg instanceof Draft) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
-            Azure.az(AzureRedis.class).subscription(config.getSubscription()).create(config);
+            final RedisCacheModule caches = Azure.az(AzureRedis.class).caches(config.getSubscription().getId());
+            final RedisCacheDraft draft = caches.create(config.getName(), config.getResourceGroup().getName());
+            draft.setPricingTier(config.getPricingTier());
+            draft.setRegion(config.getRegion());
+            draft.setNonSslPortEnabled(config.isEnableNonSslPort());
+            draft.commit();
         });
     }
 }

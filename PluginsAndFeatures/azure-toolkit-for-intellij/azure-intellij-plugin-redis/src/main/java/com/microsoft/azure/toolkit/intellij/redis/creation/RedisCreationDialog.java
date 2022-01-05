@@ -132,7 +132,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         this.regionComboBox = new RegionComboBox() {
             protected List<? extends Region> loadItems() {
                 if (Objects.nonNull(this.subscription)) {
-                    return Azure.az(AzureRedis.class).listSupportedRegions(subscription.getId());
+                    return Azure.az(AzureRedis.class).forSubscription(subscription.getId()).listSupportedRegions();
                 }
                 return Collections.emptyList();
             }

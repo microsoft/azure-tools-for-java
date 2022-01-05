@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.redis.connection;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class RedisResourceDefinition extends AzureServiceResource.Definition<RedisCache> implements SpringSupported<RedisCache> {
@@ -37,12 +39,12 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
 
     @Override
     public Map<String, String> initEnv(AzureServiceResource<RedisCache> redisDef, Project project) {
-        RedisCache redis = redisDef.getData();
+        final RedisCache redis = redisDef.getData();
         final HashMap<String, String> env = new HashMap<>();
-        env.put(String.format("%s_HOST", Connection.ENV_PREFIX), redis.entity().getHostName());
-        env.put(String.format("%s_PORT", Connection.ENV_PREFIX), String.valueOf(redis.entity().getSSLPort()));
-        env.put(String.format("%s_SSL", Connection.ENV_PREFIX), String.valueOf(redis.entity().getNonSslPortEnabled()));
-        env.put(String.format("%s_KEY", Connection.ENV_PREFIX), redis.entity().getPrimaryKey());
+        env.put(String.format("%s_HOST", Connection.ENV_PREFIX), redis.getHostName());
+        env.put(String.format("%s_PORT", Connection.ENV_PREFIX), String.valueOf(redis.getSSLPort()));
+        env.put(String.format("%s_SSL", Connection.ENV_PREFIX), String.valueOf(redis.isNonSslPortEnabled()));
+        env.put(String.format("%s_KEY", Connection.ENV_PREFIX), redis.getPrimaryKey());
         return env;
     }
 
@@ -59,7 +61,9 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
 
     @Override
     public RedisCache getResource(String dataId) {
-        return Azure.az(AzureRedis.class).get(dataId);
+        final ResourceId resourceId = ResourceId.fromString(dataId);
+        final String rg = resourceId.resourceGroupName();
+        return Objects.requireNonNull(Azure.az(AzureRedis.class).get(resourceId.subscriptionId(), rg)).caches().get(resourceId.name(), rg);
     }
 
     @Override
