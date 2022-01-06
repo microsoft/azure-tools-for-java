@@ -46,13 +46,13 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("service.refresh.service", listener);
-        AzureEventBus.on("module.children_changed.module", listener);
+        AzureEventBus.on("service.children_changed.service", listener);
         this.refreshView();
     }
 
     public void dispose() {
         AzureEventBus.off("service.refresh.service", listener);
-        AzureEventBus.off("module.children_changed.module", listener);
+        AzureEventBus.off("service.children_changed.service", listener);
         this.refresher = null;
     }
 
@@ -67,7 +67,7 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
                         tm.runLater(this::refreshChildren);
                     }
                     break;
-                case "module.children_changed.module":
+                case "service.children_changed.service":
                     tm.runLater(this::refreshChildren);
                     break;
             }
