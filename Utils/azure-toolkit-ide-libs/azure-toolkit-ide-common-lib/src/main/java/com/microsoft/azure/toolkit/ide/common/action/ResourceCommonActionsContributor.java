@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.ide.common.action;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.lib.AzService;
-import com.microsoft.azure.toolkit.lib.AzureService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -116,12 +115,12 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                     String name = r.getClass().getSimpleName();
                     if (r instanceof IAzureBaseResource) {
                         name = ((IAzureBaseResource<?, ?>) r).name();
-                    } else if (r instanceof AzureService) {
-                        name = ((AzureService<?>) r).name();
+                    } else if (r instanceof AzService) {
+                        name = ((AzService) r).getName();
                     }
                     return title("resource.create_resource.service", name);
                 }).orElse(null))
-                .enabled(s -> s instanceof IAzureBaseResource || s instanceof AzureService);
+                .enabled(s -> s instanceof IAzureBaseResource || s instanceof AzService);
         am.registerAction(CREATE, new Action<>(createView));
     }
 

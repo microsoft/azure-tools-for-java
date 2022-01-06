@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common.preload;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PreloadingActivity;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.microsoft.azure.toolkit.lib.AzureService;
+import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.cache.Preloader;
 import lombok.extern.java.Log;
 
@@ -25,7 +25,7 @@ public class AzurePreloadingActivity extends PreloadingActivity {
         try {
             final ClassLoader classLoader = AzurePreloadingActivity.class.getClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
-            az(AzureService.class);
+            az(AzService.class);
         } catch (final Exception e) {
             log.log(Level.WARNING, "failed to load AzureServices.", e);
         } finally {
