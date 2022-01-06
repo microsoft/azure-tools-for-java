@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 
 public class RedisCachePropertiesEditorProvider implements FileEditorProvider, DumbAware {
 
-    public static final String TYPE = "REDISCACHE_FILE_TYPE";
+    public static final String TYPE = "Microsoft.Cache.Redis";
 
     @Override
     public boolean accept(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
