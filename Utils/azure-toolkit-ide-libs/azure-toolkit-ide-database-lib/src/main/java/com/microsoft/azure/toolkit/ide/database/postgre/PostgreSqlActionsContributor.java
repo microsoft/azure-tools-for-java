@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
 import java.util.Optional;
@@ -31,7 +30,7 @@ public class PostgreSqlActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools")
-                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureResource<?>) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> title("postgre.connect_server.server", ((IAzureBaseResource<?, ?>) r).name())).orElse(null))
                 .enabled(s -> s instanceof PostgreSqlServer);
         am.registerAction(OPEN_DATABASE_TOOL, new Action<>(openDatabaseTool));
     }

@@ -17,7 +17,6 @@ import com.microsoft.azure.toolkit.intellij.database.postgre.connection.PostgreS
 import com.microsoft.azure.toolkit.intellij.database.postgre.creation.CreatePostgreSqlAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
@@ -38,10 +37,10 @@ public class IntellijPostgreSqlActionsContributor implements IActionsContributor
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreatePostgreSqlAction.create((e.getProject()));
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<IAzureResource<?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof PostgreSqlServer,
+        am.<IAzureBaseResource<?, ?>, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof PostgreSqlServer,
                 (o, e) -> AzureTaskManager.getInstance().runLater(() -> {
                     final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
-                    PostgreSqlServerEntity entity = ((PostgreSqlServer) o).entity();
+                    final PostgreSqlServerEntity entity = ((PostgreSqlServer) o).entity();
                     dialog.setResource(new PostgreSqlDatabaseResource(((PostgreSqlServer) o).databasesV2().get(0),
                             entity.getAdministratorLoginName() + "@" + entity.getName(),
                             PostgreSqlResourceDefinition.INSTANCE));

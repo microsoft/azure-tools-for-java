@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.postgre.AzurePostgreSql;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 
@@ -36,6 +36,6 @@ public class PostgreSqlExplorerContributor implements IExplorerContributor {
 
     @Nonnull
     private List<PostgreSqlServer> listPostgreServers(AzurePostgreSql s) {
-        return s.list().stream().sorted(Comparator.comparing(IAzureResource::name)).collect(Collectors.toList());
+        return s.list().stream().sorted(Comparator.comparing(IAzureBaseResource::name)).collect(Collectors.toList());
     }
 }

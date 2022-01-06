@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
+import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.storage.service.AzureStorageAccount;
@@ -42,6 +42,6 @@ public class StorageExplorerContributor implements IExplorerContributor {
 
     @Nonnull
     private List<StorageAccount> listStorageAccounts(AzureStorageAccount s) {
-        return s.list().stream().sorted(Comparator.comparing(IAzureResource::name)).collect(Collectors.toList());
+        return s.list().stream().sorted(Comparator.comparing(IAzureBaseResource::name)).collect(Collectors.toList());
     }
 }

@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureResource;
 import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -35,7 +34,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> OPEN_PORTAL_URL = Action.Id.of("action.resource.open_portal_url");
     public static final Action.Id<IAzureBaseResource<?, ?>> SHOW_PROPERTIES = Action.Id.of("action.resource.show_properties");
     public static final Action.Id<IAzureBaseResource<?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
-    public static final Action.Id<IAzureResource<?>> CONNECT = Action.Id.of("action.resource.connect");
+    public static final Action.Id<IAzureBaseResource<?, ?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
     public static final Action.Id<AzService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
@@ -96,7 +95,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         am.registerAction(OPEN_URL, action);
 
         final ActionView.Builder connectView = new ActionView.Builder("Connect to Project", "/icons/connector/connect.svg")
-                .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureResource<?>) r).name())).orElse(null));
+                .title(s -> Optional.ofNullable(s).map(r -> title("resource.connect_resource.resource", ((IAzureBaseResource<?, ?>) r).name()))
+                .orElse(null));
         am.registerAction(CONNECT, new Action<>(connectView));
 
         final ActionView.Builder showPropertiesView = new ActionView.Builder("Show Properties", "/icons/action/properties.svg")
