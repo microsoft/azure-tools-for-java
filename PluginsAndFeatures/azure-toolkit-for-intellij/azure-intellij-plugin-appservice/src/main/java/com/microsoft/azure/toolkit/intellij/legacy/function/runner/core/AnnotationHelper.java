@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.ClassUtils;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -21,7 +21,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AnnotationHelper {
     public static Map<String, Object> evaluateAnnotationProperties(Project project, PsiAnnotation annotation,
-            List<String> requiredProperties) throws AzureExecutionException {
+            List<String> requiredProperties) throws AzureToolkitException {
         PsiConstantEvaluationHelper
                 evaluationHelper = JavaPsiFacade.getInstance(project).getConstantEvaluationHelper();
         Map<String, Object> properties = new HashMap<>();
@@ -60,7 +60,7 @@ public class AnnotationHelper {
     }
 
     private static Object[] handleArrayAnnotationValue(PsiConstantEvaluationHelper helper, PsiArrayInitializerMemberValue value)
-            throws AzureExecutionException {
+            throws AzureToolkitException {
         final PsiAnnotationMemberValue[] initializers = value.getInitializers();
         final List<Object> result = Lists.newArrayListWithCapacity(initializers.length);
 
@@ -81,7 +81,7 @@ public class AnnotationHelper {
         return null;
     }
 
-    private static String getEnumConstantString(PsiAnnotationMemberValue value) throws AzureExecutionException {
+    private static String getEnumConstantString(PsiAnnotationMemberValue value) throws AzureToolkitException {
         if (value instanceof PsiReferenceExpression) {
             final PsiReferenceExpression referenceExpression = (PsiReferenceExpression) value;
             final Object resolved = referenceExpression.resolve();
@@ -92,7 +92,7 @@ public class AnnotationHelper {
                     try {
                         return getEnumFieldString(enumClass.getQualifiedName(), enumConstant.getName());
                     } catch (ClassNotFoundException | IllegalAccessException e) {
-                        throw new AzureExecutionException(e.getMessage(), e);
+                        throw new AzureToolkitException(e.getMessage(), e);
                     }
                 } else {
                     return enumConstant.getName();
@@ -104,7 +104,7 @@ public class AnnotationHelper {
     }
 
     private static Object getPsiAnnotationMemberValue(PsiConstantEvaluationHelper helper,
-                                                      PsiAnnotationMemberValue value) throws AzureExecutionException {
+                                                      PsiAnnotationMemberValue value) throws AzureToolkitException {
         if (value == null) {
             return null;
         }
@@ -133,6 +133,6 @@ public class AnnotationHelper {
         }
         final String error = message("function.annotation.error.invalidAnnotationType",
                                      PsiAnnotation.class.getCanonicalName(), obj.getClass().getCanonicalName());
-        throw new AzureExecutionException(error);
+        throw new AzureToolkitException(error);
     }
 }

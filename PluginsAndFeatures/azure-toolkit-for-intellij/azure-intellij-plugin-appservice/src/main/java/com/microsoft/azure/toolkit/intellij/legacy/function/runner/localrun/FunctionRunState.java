@@ -27,7 +27,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -298,7 +298,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
                     installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
                 }
-            } catch (AzureExecutionException | IOException e) {
+            } catch (AzureToolkitException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
                 throw new AzureToolkitRuntimeException(error, e);
             }
@@ -316,7 +316,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             });
             int exitCode = installProcess.waitFor();
             if (exitCode != 0) {
-                throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
+                throw new AzureToolkitException(message("function.run.error.installFuncFailed"));
             }
         }
     }

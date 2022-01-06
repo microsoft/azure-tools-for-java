@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -150,7 +150,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionApp> {
                 final Map<String, FunctionConfiguration> configMap =
                         FunctionUtils.prepareStagingFolder(folder, hostJsonPath, project, module, methods);
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, StringUtils.join(FunctionUtils.getFunctionBindingList(configMap), ","));
-            } catch (final AzureExecutionException | IOException e) {
+            } catch (final AzureToolkitException | IOException e) {
                 final String error = String.format("failed prepare staging folder[%s]", folder);
                 throw new AzureToolkitRuntimeException(error, e);
             }

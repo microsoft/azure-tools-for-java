@@ -34,7 +34,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.utils.FunctionCliResolver;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitException;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -231,7 +231,7 @@ public class FunctionUtils {
         type = AzureOperation.Type.TASK
     )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Project project, Module module, PsiMethod[] methods)
-            throws AzureExecutionException, IOException {
+            throws AzureToolkitException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         if (stagingFolder.toFile().isDirectory()) {
             FileUtils.cleanDirectory(stagingFolder.toFile());
@@ -359,7 +359,7 @@ public class FunctionUtils {
     }
 
     private static Map<String, FunctionConfiguration> generateConfigurations(final PsiMethod[] methods)
-            throws AzureExecutionException {
+            throws AzureToolkitException {
         final Map<String, FunctionConfiguration> configMap = new HashMap<>();
         for (final PsiMethod method : methods) {
             final PsiAnnotation annotation = AnnotationUtil.findAnnotation(method,
@@ -370,7 +370,7 @@ public class FunctionUtils {
         return configMap;
     }
 
-    private static FunctionConfiguration generateConfiguration(PsiMethod method) throws AzureExecutionException {
+    private static FunctionConfiguration generateConfiguration(PsiMethod method) throws AzureToolkitException {
         final FunctionConfiguration config = new FunctionConfiguration();
         final List<Binding> bindings = new ArrayList<>();
         processParameterAnnotations(method, bindings);
@@ -383,14 +383,14 @@ public class FunctionUtils {
     }
 
     private static void processParameterAnnotations(final PsiMethod method, final List<Binding> bindings)
-            throws AzureExecutionException {
+            throws AzureToolkitException {
         for (final JvmParameter param : method.getParameters()) {
             bindings.addAll(parseAnnotations(method.getProject(), param.getAnnotations()));
         }
     }
 
     private static List<Binding> parseAnnotations(final Project project,
-                                                  JvmAnnotation[] annotations) throws AzureExecutionException {
+                                                  JvmAnnotation[] annotations) throws AzureToolkitException {
         final List<Binding> bindings = new ArrayList<>();
 
         for (final JvmAnnotation annotation : annotations) {
@@ -404,12 +404,12 @@ public class FunctionUtils {
         return bindings;
     }
 
-    private static Binding getBinding(final Project project, JvmAnnotation annotation) throws AzureExecutionException {
+    private static Binding getBinding(final Project project, JvmAnnotation annotation) throws AzureToolkitException {
         if (annotation == null) {
             return null;
         }
         if (!(annotation instanceof PsiAnnotation)) {
-            throw new AzureExecutionException(
+            throw new AzureToolkitException(
                 AzureBundle.message("function.binding.error.parseFailed",
                         PsiAnnotation.class.getCanonicalName(),
                         annotation.getClass().getCanonicalName()));
@@ -425,7 +425,7 @@ public class FunctionUtils {
                                       : createBinding(project, annotationEnum, (PsiAnnotation) annotation);
     }
 
-    private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureExecutionException {
+    private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureToolkitException {
         final PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
         if (referenceElement == null) {
             return null;
@@ -469,7 +469,7 @@ public class FunctionUtils {
     }
 
     private static void processMethodAnnotations(final PsiMethod method, final List<Binding> bindings)
-            throws AzureExecutionException {
+            throws AzureToolkitException {
         if (!method.getReturnType().equals(Void.TYPE)) {
             bindings.addAll(parseAnnotations(method.getProject(), method.getAnnotations()));
 
@@ -507,12 +507,10 @@ public class FunctionUtils {
     }
 
     private static Binding createBinding(final Project project, BindingEnum bindingEnum, PsiAnnotation annotation)
-            throws AzureExecutionException {
+            throws AzureToolkitException {
         final Binding binding = new Binding(bindingEnum);
         AnnotationHelper.evaluateAnnotationProperties(project, annotation, REQUIRED_ATTRIBUTE_MAP.get(bindingEnum))
-                .forEach((name, value) -> {
-                    binding.setAttribute(name, value);
-                });
+                .forEach(binding::setAttribute);
         return binding;
     }
 
@@ -529,7 +527,7 @@ public class FunctionUtils {
     private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
         final JsonObject jsonObject = ObjectUtils.firstNonNull(JsonUtils.readJsonFile(target), new JsonObject());
         final JsonObject valueObject = new JsonObject();
-        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
+        appSettings.forEach(valueObject::addProperty);
         jsonObject.add("Values", valueObject);
         JsonUtils.writeJsonToFile(target, jsonObject);
     }
