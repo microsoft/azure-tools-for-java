@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.deplolyment;
 
-import com.azure.resourcemanager.appplatform.models.SpringApp;
 import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -122,26 +121,26 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
         final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
         Optional.ofNullable(deploymentConfig).map(SpringCloudDeploymentConfig::getArtifact).map(a -> ((WrappedAzureArtifact) a))
-                .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
+            .ifPresent((a -> this.selectorArtifact.setArtifact(a.getArtifact())));
         Optional.ofNullable(appConfig.getSubscriptionId())
-                .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
+            .ifPresent((id -> this.selectorSubscription.setValue(new ItemReference<>(id, Subscription::getId))));
         Optional.ofNullable(appConfig.getClusterName())
-                .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
+            .ifPresent((id -> this.selectorCluster.setValue(new ItemReference<>(id, SpringCloudCluster::name))));
         Optional.ofNullable(appConfig.getAppName())
-                .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
+            .ifPresent((id -> this.selectorApp.setValue(new ItemReference<>(id, SpringCloudApp::name))));
     }
 
     @Nullable
     @Override
     public SpringCloudAppConfig getValue() {
         SpringCloudAppConfig appConfig = Optional.ofNullable(this.selectorApp.getValue())
-            .filter(a->a instanceof SpringCloudAppDraft)
-            .map(a->((SpringCloudAppDraft) a).getConfig())
+            .filter(a -> a instanceof SpringCloudAppDraft)
+            .map(a -> ((SpringCloudAppDraft) a).getConfig())
             .orElse(null);
         if (Objects.isNull(appConfig)) {
             appConfig = SpringCloudAppConfig.builder()
-                    .deployment(SpringCloudDeploymentConfig.builder().build())
-                    .build();
+                .deployment(SpringCloudDeploymentConfig.builder().build())
+                .build();
         }
         this.getValue(appConfig);
         return appConfig;

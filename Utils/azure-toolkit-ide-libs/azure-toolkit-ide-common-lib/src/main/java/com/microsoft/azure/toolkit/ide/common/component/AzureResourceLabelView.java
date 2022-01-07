@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Locale;
 
 public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
     @Nonnull

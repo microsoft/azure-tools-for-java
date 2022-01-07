@@ -64,7 +64,6 @@ public class IntellijShowPropertiesViewAction {
         return iconPath + ":" + fallback;
     }
 
-
     @Nonnull
     private static String getNewFileTypeName(AzResource<?, ?, ?> resource) {
         AzResource<?, ?, ?> current = resource;
