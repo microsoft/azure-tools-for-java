@@ -5,7 +5,9 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,6 +25,10 @@ public interface NodeView extends IView.Label {
 
     default void refreshChildren() {
         Optional.ofNullable(this.getRefresher()).ifPresent(Refresher::refreshChildren);
+    }
+
+    default AzureIcon getIcon() {
+        return StringUtils.isEmpty(getIconPath()) ? null : AzureIcon.builder().iconPath(getIconPath()).build();
     }
 
     void setRefresher(Refresher refresher);

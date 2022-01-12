@@ -5,19 +5,22 @@
 
 package com.microsoft.azure.toolkit.ide.common.component;
 
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implements NodeView {
     @Nonnull
@@ -25,30 +28,35 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     private final T resource;
     @Getter
     private final String label;
-    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
-    private final Function<T, String> iconLoader;
-    private final Function<T, String> descriptionLoader;
     @Getter
     private String description;
     @Getter
     private String iconPath;
+    @Getter
+    private AzureIcon icon;
     @Nullable
     @Setter
     @Getter
     private Refresher refresher;
 
+    private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
+    private final Function<T, String> descriptionLoader;
+    private final Function<T, String> iconPathFunction;
+    private final List<Function<T, AzureIcon.Modifier>> modifierFunctionList;
+
     public AzureResourceLabelView(@Nonnull T resource) {
-        this(resource, r -> initIconPath(resource), r -> resource.getStatus());
+        this(resource, IAzureBaseResource::getStatus, AzureResourceLabelView::getResourceIconPath, Arrays.asList(AzureResourceLabelView::getStatusModifier));
     }
 
-    public AzureResourceLabelView(@Nonnull T resource, Function<T, String> iconLoader, Function<T, String> descriptionLoader) {
+    public AzureResourceLabelView(@Nonnull T resource, @Nonnull Function<T, String> descriptionLoader, @Nonnull final Function<T, String> iconPathFunction,
+                                  @Nonnull final List<Function<T, AzureIcon.Modifier>> modifierFunctionList) {
         this.resource = resource;
         this.label = resource.name();
-        this.iconLoader = iconLoader;
-        this.descriptionLoader = descriptionLoader;
-        this.iconPath = iconLoader.apply(resource);
-        this.description = descriptionLoader.apply(resource);
+        this.iconPathFunction = iconPathFunction;
+        this.modifierFunctionList = modifierFunctionList;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        this.descriptionLoader = descriptionLoader;
+        this.description = descriptionLoader.apply(resource);
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);
@@ -72,8 +80,8 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                 case "common|resource.status_changed":
                 case "resource.status_changed.resource":
                     tm.runOnPooledThread(() -> {
+                        this.icon = getIcon();
                         this.description = descriptionLoader.apply(resource);
-                        this.iconPath = iconLoader.apply(resource);
                         tm.runLater(this::refreshView);
                     });
                     break;
@@ -94,32 +102,19 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.refresher = null;
     }
 
-    public static String initIconPath(IAzureBaseResource<?, ?> resource) {
-        final String formalStatus = resource.getFormalStatus();
-        if (resource instanceof AzResource) {
-            return getIconPath((AzResource<?, ?, ?>) resource);
-        }
-        final String type = resource.getClass().getSimpleName().toLowerCase();
-        final String icon = StringUtils.isBlank(formalStatus) ? type : String.format("%s-%s", type, formalStatus.toLowerCase().trim());
-        return String.format("/icons/%s.svg", icon);
+    @Override
+    public AzureIcon getIcon() {
+        final String iconPath = iconPathFunction.apply(this.resource);
+        final List<AzureIcon.Modifier> modifiers = modifierFunctionList.stream()
+                .map(function -> function.apply(this.resource)).filter(Objects::nonNull).collect(Collectors.toList());
+        return AzureIcon.builder().iconPath(iconPath).modifierList(modifiers).build();
     }
 
-    @Nonnull
-    private static String getIconPath(AzResource<?, ?, ?> resource) {
-        final String status = resource.getStatus();
-        AzResource<?, ?, ?> current = resource;
-        final StringBuilder modulePath = new StringBuilder();
-        while (!(current instanceof AzResource.None)) {
-            modulePath.insert(0, "/" + current.getModule().getName());
-            current = current.getParent();
-        }
-        String fallback = String.format("/icons%s/default.svg", modulePath);
-        if (status.toLowerCase().endsWith("ing")) {
-            fallback = "/icons/spinner";
-        } else if (status.toLowerCase().endsWith("ed")) {
-            fallback = "/icons/error";
-        }
-        final String iconPath = String.format("/icons%s/%s.svg", modulePath, status.toLowerCase());
-        return iconPath + ":" + fallback;
+    public static <T extends IAzureBaseResource<?, ?>> String getResourceIconPath(T resource) {
+        return String.format("/icons/%s.svg", resource.getClass().getSimpleName().toLowerCase());
+    }
+
+    public static <T extends IAzureBaseResource<?, ?>> AzureIcon.Modifier getStatusModifier(T resource) {
+        return new AzureIcon.Modifier(resource.status(), AzureIcon.ModifierLocation.BOTTOM_RIGHT);
     }
 }
