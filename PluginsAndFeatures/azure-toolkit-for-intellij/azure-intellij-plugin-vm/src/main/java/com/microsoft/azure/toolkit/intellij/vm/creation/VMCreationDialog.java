@@ -278,6 +278,7 @@ public class VMCreationDialog extends AzureDialog<DraftVirtualMachine> implement
         txtMaximumPrice.setVisible(enableAzureSpotInstance);
         txtMaximumPrice.setRequired(enableAzureSpotInstance);
         txtMaximumPrice.setValidator(enableAzureSpotInstance ? this::validateMaximumPricing : null);
+        txtMaximumPrice.validateValueAsync(); // trigger revalidate after reset validator
         txtMaximumPrice.onDocumentChanged(); // trigger revalidate after reset validator
     }
 
