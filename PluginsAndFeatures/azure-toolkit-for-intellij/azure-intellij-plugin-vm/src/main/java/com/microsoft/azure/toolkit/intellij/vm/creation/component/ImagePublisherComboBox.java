@@ -29,11 +29,13 @@ public class ImagePublisherComboBox extends AzureComboBox<AzureImagePublisher> {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
+        this.clear();
         this.refreshItems();
     }
 
     public void setRegion(Region region) {
         this.region = region;
+        this.clear();
         this.refreshItems();
     }
 

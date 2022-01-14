@@ -19,6 +19,7 @@ public class ImageComboBox extends AzureComboBox<AzureImage> {
 
     public void setImageSku(AzureImageSku imageSku) {
         this.imageSku = imageSku;
+        this.clear();
         this.refreshItems();
     }
 

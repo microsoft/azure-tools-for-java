@@ -19,6 +19,7 @@ public class ImageOfferComboBox extends AzureComboBox<AzureImageOffer> {
 
     public void setPublisher(AzureImagePublisher publisher) {
         this.publisher = publisher;
+        this.clear();
         refreshItems();
     }
 
