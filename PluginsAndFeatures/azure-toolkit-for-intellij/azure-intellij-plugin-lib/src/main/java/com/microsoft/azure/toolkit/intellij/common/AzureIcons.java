@@ -10,16 +10,20 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.AnimatedIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIconManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class AzureIcons {
+public class AzureIcons extends AzureIconManager {
     public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
     private static final Map<String, Icon> icons = new ConcurrentHashMap<>() {
@@ -43,6 +47,7 @@ public class AzureIcons {
             put("/icons/error", AllIcons.General.Error);
         }
     };
+    private static final Map<AzureIcon, Icon> azureIcons = new ConcurrentHashMap<>();
 
     public static Icon getIcon(@Nonnull String iconPathOrName) {
         return getIcon(iconPathOrName, AzureIcons.class);
@@ -60,12 +65,14 @@ public class AzureIcons {
         return doGetIcon(iconPathOrName, fallback, clazz);
     }
 
-    private static Icon doGetIcon(@Nonnull String iconPathOrName, String fallback, Class<?> clazz) {
+    @Nullable
+    private static Icon doGetIcon(@Nonnull String iconPathOrName, @Nullable String fallback, Class<?> clazz) {
         if (StringUtils.startsWith(iconPathOrName, FILE_EXTENSION_ICON_PREFIX)) {
             final String fileExtension = StringUtils.substringAfter(iconPathOrName, FILE_EXTENSION_ICON_PREFIX);
             return getFileTypeIcon(fileExtension);
         }
-        return icons.computeIfAbsent(iconPathOrName, path -> loadIcon(path, fallback, clazz));
+        return icons.computeIfAbsent(iconPathOrName, path -> Optional.ofNullable(loadIcon(iconPathOrName, clazz))
+                .orElseGet(() -> StringUtils.isEmpty(fallback) ? null : loadIcon(fallback, clazz)));
     }
 
     private static Icon getFileTypeIcon(final String name) {
@@ -79,18 +86,22 @@ public class AzureIcons {
         return type.getIcon();
     }
 
-    @Nonnull
-    private static Icon loadIcon(String iconPathOrName, String fallback, Class<?> clazz) {
-        final Icon icon = IconLoader.getIcon(iconPathOrName, clazz);
-        if (icon.getIconHeight() < 2) {
-            System.out.println(iconPathOrName + ":" + fallback);
-            if (StringUtils.isNotBlank(fallback)) {
-                if (icons.containsKey(fallback)) {
-                    return icons.get(fallback);
-                }
-                return IconLoader.getIcon(fallback, clazz);
-            }
+    @Nullable
+    private static Icon loadIcon(String iconPathOrName, Class<?> clazz) {
+        try {
+            final Icon result = IconLoader.getIcon(iconPathOrName, clazz);
+            return result.getIconHeight() > 1 ? result : null; // IconLoader may return dot for non-existing icon
+        } catch (final IllegalStateException ise) {
+            return null;
         }
-        return icon;
+    }
+
+    @Override
+    public Icon getIcon(@Nonnull AzureIcon azureIcon) {
+        return azureIcons.computeIfAbsent(azureIcon, this::getAzureIcon);
+    }
+
+    private Icon getAzureIcon(@Nonnull AzureIcon azureIcon) {
+        return doGetIcon(AzureIcon.getIconPathWithModifier(azureIcon), azureIcon.getIconPath(), AzureIcons.class);
     }
 }

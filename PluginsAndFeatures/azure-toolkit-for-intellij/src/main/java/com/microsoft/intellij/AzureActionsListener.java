@@ -18,8 +18,10 @@ import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIconManager;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
+import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
@@ -126,6 +128,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
         AzureTaskManager.register(new IntellijAzureTaskManager());
         AzureRxTaskManager.register();
+        AzureIconManager.register(new AzureIcons());
         AzureMessager.setDefaultMessager(new IntellijAzureMessager());
         IntellijAzureActionManager.register();
         Node.setNode2Actions(NodeActionsMap.NODE_ACTIONS);

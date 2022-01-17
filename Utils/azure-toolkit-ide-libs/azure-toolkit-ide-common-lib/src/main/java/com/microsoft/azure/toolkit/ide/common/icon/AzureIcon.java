@@ -8,9 +8,14 @@ package com.microsoft.azure.toolkit.ide.common.icon;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder(toBuilder = true)
@@ -18,6 +23,16 @@ import java.util.List;
 public class AzureIcon {
     private String iconPath;
     private List<Modifier> modifierList;
+
+    public static final String getIconPathWithModifier(@Nonnull final AzureIcon azureIcon) {
+        if (CollectionUtils.isEmpty(azureIcon.getModifierList())) {
+            return azureIcon.getIconPath();
+        }
+        final File parent = new File(azureIcon.getIconPath()).getParentFile();
+        final String iconName = azureIcon.getModifierList().stream().filter(Objects::nonNull).map(Modifier::getIconPath).collect(Collectors.joining("-"));
+        final String path = new File(parent, String.format("%s.svg", iconName)).getPath();
+        return FilenameUtils.separatorsToUnix(path);
+    }
 
     @Getter
     @EqualsAndHashCode
