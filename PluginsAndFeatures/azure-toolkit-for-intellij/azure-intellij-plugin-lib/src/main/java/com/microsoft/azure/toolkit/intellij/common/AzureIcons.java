@@ -11,7 +11,6 @@ import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIconManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,7 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-public class AzureIcons extends AzureIconManager {
+public class AzureIcons {
     public static final String FILE_EXTENSION_ICON_PREFIX = "file/";
 
     private static final Map<String, Icon> icons = new ConcurrentHashMap<>() {
@@ -96,12 +95,11 @@ public class AzureIcons extends AzureIconManager {
         }
     }
 
-    @Override
-    public Icon getIcon(@Nonnull AzureIcon azureIcon) {
-        return azureIcons.computeIfAbsent(azureIcon, this::getAzureIcon);
+    public static Icon getIcon(@Nonnull AzureIcon azureIcon) {
+        return azureIcons.computeIfAbsent(azureIcon, AzureIcons::getAzureIcon);
     }
 
-    private Icon getAzureIcon(@Nonnull AzureIcon azureIcon) {
+    private static Icon getAzureIcon(@Nonnull AzureIcon azureIcon) {
         return doGetIcon(AzureIcon.getIconPathWithModifier(azureIcon), azureIcon.getIconPath(), AzureIcons.class);
     }
 }

@@ -18,7 +18,6 @@ import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIconManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -239,7 +238,7 @@ public class Tree extends SimpleTree implements DataProvider {
             if (BooleanUtils.isFalse(node.loaded)) {
                 renderer.setIcon(AnimatedIcon.Default.INSTANCE);
             } else if (view instanceof NodeView) {
-                renderer.setIcon(AzureIconManager.getInstance().getIcon(((NodeView) view).getIcon()));
+                renderer.setIcon(AzureIcons.getIcon(((NodeView) view).getIcon()));
             } else if (StringUtils.isNotBlank(view.getIconPath())) {
                 renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
             }
