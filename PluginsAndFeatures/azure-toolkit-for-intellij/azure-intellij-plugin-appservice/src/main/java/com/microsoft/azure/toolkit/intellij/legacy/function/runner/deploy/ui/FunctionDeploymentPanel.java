@@ -13,6 +13,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTable;
@@ -136,6 +137,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         }
         if (!StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
             appSettingsFunctionApp = configuration.getConfig();
+            functionAppComboBox.setValue(new AzureComboBox.ItemReference<>(item -> FunctionAppConfig.isSameApp(item, configuration.getConfig())));
             functionAppComboBox.setConfigModel(configuration.getConfig());
         }
         final Module previousModule = configuration.getModule();
