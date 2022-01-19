@@ -57,7 +57,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         this.descriptionLoader = descriptionLoader;
         this.description = descriptionLoader.apply(resource);
-        this.icon = iconProvider.getIconWithoutModifier(resource);
+        this.icon = iconProvider.getIcon(resource);
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
         AzureEventBus.on("resource.children_changed.resource", listener);

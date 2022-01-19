@@ -18,8 +18,8 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.appservice.service.impl.WebApp;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,12 +52,13 @@ public class WebAppExplorerContributor implements IExplorerContributor {
     }
 
     public static AzureIcon.Modifier getOperatingSystemModifier(IAppService<?> resource) {
-        // do not add os modifier in loading status as runtime request may have high cost
-        if (StringUtils.equalsAnyIgnoreCase(resource.getStatus(), IAzureBaseResource.Status.LOADING, IAzureBaseResource.Status.PENDING)) {
+        if (resource.getRawEntity() == null) {
+            // do not add os modifier in loading status as runtime request may have high cost
+            AzureTaskManager.getInstance().runOnPooledThreadAsObservable(resource::getRuntime)
+                    .subscribe(ignore -> AzureEventBus.emit("resource.status_changed.resource", resource));
             return null;
         }
-        return resource.getRuntime().getOperatingSystem() == OperatingSystem.LINUX ?
-                new AzureIcon.Modifier(OperatingSystem.LINUX.name().toLowerCase(), AzureIcon.ModifierLocation.BOTTOM_LEFT) : null;
+        return resource.getRuntime().getOperatingSystem() == OperatingSystem.LINUX ? AzureIcon.Modifier.LINUX : null;
     }
 
     private static List<WebApp> listWebApps(AzureWebApp webAppModule) {

@@ -37,6 +37,8 @@ public class AzureIcon {
     @Getter
     @EqualsAndHashCode
     public static class Modifier {
+        public static final Modifier LINUX = new AzureIcon.Modifier("linux", AzureIcon.ModifierLocation.BOTTOM_LEFT);
+
         private final String iconPath;
         private final ModifierLocation location;
         private int horizontalShift;
