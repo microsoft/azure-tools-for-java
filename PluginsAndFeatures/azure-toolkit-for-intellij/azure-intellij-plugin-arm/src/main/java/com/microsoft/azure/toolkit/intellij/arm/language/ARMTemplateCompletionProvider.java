@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.language.arm.codeinsight;
+package com.microsoft.azure.toolkit.intellij.arm.language;
 
 import com.google.common.collect.Sets;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -13,13 +13,13 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.psi.impl.JsonPropertyImpl;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
-import com.microsoft.intellij.language.arm.ARMLanguage;
+
 import java.util.Arrays;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-public class ARMCompletionProvider extends CompletionProvider<CompletionParameters> {
-    public static final ARMCompletionProvider INSTANCE = new ARMCompletionProvider();
+public class ARMTemplateCompletionProvider extends CompletionProvider<CompletionParameters> {
+    public static final ARMTemplateCompletionProvider INSTANCE = new ARMTemplateCompletionProvider();
     private static final Set<String> KEYWORDS = Sets.newConcurrentHashSet(Arrays.asList("$schema", "contentVersion",
         "parameters", "variables", "resources", "outputs"));
     private static final Set<String> RESOURCES = Sets.newConcurrentHashSet(Arrays.asList("type", "apiVersion", "name",
@@ -33,7 +33,7 @@ public class ARMCompletionProvider extends CompletionProvider<CompletionParamete
     protected void addCompletions(@NotNull CompletionParameters parameters, ProcessingContext context,
         @NotNull CompletionResultSet result) {
         try {
-            if (parameters.getOriginalFile().getLanguage().getID().equals(ARMLanguage.ID)) {
+            if (parameters.getOriginalFile().getLanguage().getID().equals(ARMTemplateLanguage.ID)) {
                 PsiElement position = parameters.getPosition();
                 if (isProperty(position)) {
                     Scope scope = findScope(position);

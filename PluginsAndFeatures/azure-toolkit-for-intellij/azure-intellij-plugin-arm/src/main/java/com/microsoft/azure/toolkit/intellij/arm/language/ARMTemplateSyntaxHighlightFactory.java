@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.language.arm.editor;
+package com.microsoft.azure.toolkit.intellij.arm.language;
 
 import com.intellij.json.highlighting.JsonSyntaxHighlighterFactory;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ARMSyntaxHighlightFactory extends SyntaxHighlighterFactory {
+public class ARMTemplateSyntaxHighlightFactory extends SyntaxHighlighterFactory {
 
     @NotNull
     @Override

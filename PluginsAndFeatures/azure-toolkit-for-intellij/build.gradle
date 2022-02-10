@@ -184,6 +184,7 @@ dependencies {
     compile project(':azure-intellij-plugin-service-explorer')
     compile project(':azure-intellij-plugin-database')
     compile project(':azure-intellij-plugin-appservice')
+    compile project(':azure-intellij-plugin-arm')
     compile 'com.microsoft.azure:azure-client-authentication'
     compile 'com.microsoft.azure:azure-toolkit-resource-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'

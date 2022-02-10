@@ -3,22 +3,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.language.arm.file;
+package com.microsoft.azure.toolkit.intellij.arm.language;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.microsoft.intellij.language.arm.ARMLanguage;
+
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ARMFileType extends LanguageFileType {
+public class ARMTemplateFileType extends LanguageFileType {
 
-    public static final ARMFileType INSTANCE = new ARMFileType();
+    public static final ARMTemplateFileType INSTANCE = new ARMTemplateFileType();
     public static final String DEFAULT_EXTENSION = "template";
     public static final String EXTENSIONS = "template";
 
-    protected ARMFileType() {
-        super(ARMLanguage.INSTANCE);
+    protected ARMTemplateFileType() {
+        super(ARMTemplateLanguage.INSTANCE);
     }
 
     @NotNull

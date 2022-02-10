@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.language.arm.parser;
+package com.microsoft.azure.toolkit.intellij.arm.language;
 
 import com.intellij.json.JsonLexer;
 import com.intellij.json.JsonParserDefinition;
@@ -15,13 +15,12 @@ import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
-import com.microsoft.intellij.language.arm.ARMLanguage;
 import org.jetbrains.annotations.NotNull;
 
 
-public class ARMParserDefinition extends JsonParserDefinition {
+public class ARMTemplateParserDefinition extends JsonParserDefinition {
 
-    static final IFileElementType ARMFILE = new IFileElementType(ARMLanguage.INSTANCE);
+    static final IFileElementType ARMFILE = new IFileElementType(ARMTemplateLanguage.INSTANCE);
 
     @NotNull
     @Override
@@ -31,7 +30,7 @@ public class ARMParserDefinition extends JsonParserDefinition {
 
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
-        return new JsonFileImpl(fileViewProvider, ARMLanguage.INSTANCE);
+        return new JsonFileImpl(fileViewProvider, ARMTemplateLanguage.INSTANCE);
     }
 
     @Override

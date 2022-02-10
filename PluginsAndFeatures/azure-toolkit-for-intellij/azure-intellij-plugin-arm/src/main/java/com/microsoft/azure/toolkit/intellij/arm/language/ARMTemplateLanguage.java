@@ -3,18 +3,18 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.intellij.language.arm;
+package com.microsoft.azure.toolkit.intellij.arm.language;
 
 import com.intellij.lang.Language;
 
-public class ARMLanguage extends Language {
+public class ARMTemplateLanguage extends Language {
 
-    public static final ARMLanguage INSTANCE = new ARMLanguage();
+    public static final ARMTemplateLanguage INSTANCE = new ARMTemplateLanguage();
     public static final String MIME_TYPE = "application/x-template";
     public static final String MIME_TYPE2 = "application/template";
     public static final String ID = "arm";
 
-    public ARMLanguage() {
+    public ARMTemplateLanguage() {
         super(ID, MIME_TYPE, MIME_TYPE2);
     }
 

@@ -1,0 +1,18 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.arm.ArmExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.arm.ArmActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.arm.IntellijArmActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.property.DeploymentPropertyViewProvider"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.arm.template.ResourceTemplateViewProvider"/>
+        <fileTypeFactory implementation="com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateFileTypeFactory"/>
+        <lang.syntaxHighlighterFactory language="arm"
+                                       implementationClass="com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateSyntaxHighlightFactory"/>
+        <lang.parserDefinition language="arm"
+                               implementationClass="com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateParserDefinition"/>
+        <completion.contributor language="JSON" order="first"
+                                implementationClass="com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateCompletionContributor"/>
+    </extensions>
+</idea-plugin>
