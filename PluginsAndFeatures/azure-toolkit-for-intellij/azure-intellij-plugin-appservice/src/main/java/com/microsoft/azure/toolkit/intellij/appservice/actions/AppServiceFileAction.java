@@ -10,9 +10,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileChooser.FileChooserFactory;
-import com.intellij.openapi.fileChooser.FileSaverDescriptor;
-import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -23,14 +20,13 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.intellij.common.FileChooser;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.service.IAppService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -184,7 +180,7 @@ public class AppServiceFileAction {
     @SneakyThrows
     public void saveAppServiceFile(@NotNull AppServiceFile file, @Nullable Project project, @Nullable File dest) {
         final Action<Void> retry = Action.retryFromFailure((() -> this.saveAppServiceFile(file, project, dest)));
-        final File destFile = Objects.isNull(dest) ? showFileSaver("Download", file.getName()) : dest;
+        final File destFile = Objects.isNull(dest) ? FileChooser.showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {
             return;
         }
@@ -250,16 +246,6 @@ public class AppServiceFileAction {
             }
         });
         Notifications.Bus.notify(notification);
-    }
-
-    private File showFileSaver(String title, String fileName) {
-        FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(title, "");
-        final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
-        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), fileName);
-        if (save != null) {
-            return save.getFile();
-        }
-        return null;
     }
 
     private static void onRxException(Throwable e) {

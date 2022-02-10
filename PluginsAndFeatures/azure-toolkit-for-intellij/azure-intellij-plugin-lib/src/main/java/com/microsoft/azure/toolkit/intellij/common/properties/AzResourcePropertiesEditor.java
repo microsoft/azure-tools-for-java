@@ -20,9 +20,9 @@ import javax.annotation.Nonnull;
 public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> extends BaseEditor {
 
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
-    private final Project project;
     private final T resource;
     private final TailingDebouncer debouncer;
+    protected final Project project;
 
     public AzResourcePropertiesEditor(@Nonnull final VirtualFile virtualFile, @Nonnull T resource, @Nonnull final Project project) {
         super(virtualFile);
