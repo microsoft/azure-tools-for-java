@@ -42,6 +42,7 @@
         <module>azure-toolkit-ide-redis-lib</module>
         <module>azure-toolkit-ide-appservice-lib</module>
         <module>azure-toolkit-ide-database-lib</module>
+        <module>azure-toolkit-ide-arm-lib</module>
     </modules>
 
     <properties>
