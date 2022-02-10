@@ -62,19 +62,20 @@ public class CreateArmStorageAccountAction extends NodeActionListener {
             createStorageAccountForm.open();
         });
     }
+
     private static StorageAccount createStorageAccount(StorageAccountConfig config) {
         final String subscriptionId = config.getSubscription().getId();
         AzureTelemetry.getActionContext().setProperty("subscriptionId", subscriptionId);
         if (config.getResourceGroup() instanceof Draft) { // create resource group if necessary.
-            final ResourceGroup newResourceGroup = Azure.az(AzureResources.class)
-                    .groups(subscriptionId).createResourceGroupIfNotExist(config.getResourceGroup().getName(), config.getRegion());
+            final ResourceGroup newResourceGroup = Azure.az(AzureResources.class).groups(subscriptionId)
+                    .createResourceGroupIfNotExist(config.getResourceGroup().getName(), config.getRegion());
             config.setResourceGroup(newResourceGroup);
         }
         final AzureStorageAccount az = Azure.az(AzureStorageAccount.class);
-        final StorageAccountDraft draft = az.accounts(config.getSubscriptionId()).create(config.getName(), config.getResourceGroupName());
+        final StorageAccountDraft draft = az.accounts(config.getSubscriptionId()).create(config.getName(),
+                config.getResourceGroupName());
         draft.setConfig(config);
         return draft.commit();
     }
-
 
 }
