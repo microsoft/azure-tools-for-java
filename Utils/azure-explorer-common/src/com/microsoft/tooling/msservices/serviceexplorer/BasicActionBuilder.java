@@ -7,7 +7,6 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.base.Preconditions;
 import com.microsoft.azuretools.ActionConstants;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -50,7 +49,6 @@ public class BasicActionBuilder {
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(RedisCacheModule.MODULE_NAME, ActionConstants.RedisCache.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(VMArmModule.MODULE_NAME, ActionConstants.VirtualMachine.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(StorageModule.MODULE_NAME, ActionConstants.StorageAccount.MODULE);
-        MODULE_NAME_TO_SERVICE_NAME_MAP.put(ResourceManagementModule.MODULE_NAME, ActionConstants.ResourceManagement.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put("Deployment of Resource Management", ActionConstants.ResourceManagement.MODULE);
         MODULE_NAME_TO_SERVICE_NAME_MAP.put(ContainerRegistryModule.MODULE_NAME, ActionConstants.ContainerRegister.MODULE);
     }

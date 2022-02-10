@@ -19,7 +19,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -59,8 +58,6 @@ public class AzureModule extends AzureRefreshableNode {
     @NotNull
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
-    private ResourceManagementModule resourceManagementModule;
-    @NotNull
     private FunctionModule functionModule;
 
     /**
@@ -77,7 +74,6 @@ public class AzureModule extends AzureRefreshableNode {
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
-        resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
@@ -147,9 +143,6 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(webAppModule)) {
             addChildNode(webAppModule);
         }
-        if (!isDirectChild(resourceManagementModule)) {
-            addChildNode(resourceManagementModule);
-        }
         if (!isDirectChild(functionModule)) {
             addChildNode(functionModule);
         }
@@ -180,7 +173,6 @@ public class AzureModule extends AzureRefreshableNode {
                 redisCacheModule.load(true);
                 storageModule.load(true);
                 webAppModule.load(true);
-                resourceManagementModule.load(true);
                 functionModule.load(true);
 
                 if (hdInsightModule != null) {

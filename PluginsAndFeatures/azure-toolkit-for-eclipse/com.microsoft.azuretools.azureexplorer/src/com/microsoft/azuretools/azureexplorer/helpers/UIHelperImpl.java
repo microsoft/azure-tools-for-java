@@ -293,16 +293,6 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void openDeploymentPropertyView(DeploymentNode deploymentNode) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void openResourceTemplateView(DeploymentNode deploymentNode, String s) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();

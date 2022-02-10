@@ -24,9 +24,6 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateView;
-import com.microsoft.azure.toolkit.intellij.arm.ResourceTemplateViewProvider;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
 import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyView;
 import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider;
@@ -55,7 +52,6 @@ import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -76,7 +72,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.function.Supplier;
 
-import static com.microsoft.azure.toolkit.intellij.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 
@@ -274,49 +269,6 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void openRedisExplorer(RedisCacheNode redisCacheNode) {
         throw new UnsupportedOperationException("this method should not be called");
-    }
-
-    @Override
-    public void openDeploymentPropertyView(DeploymentNode node) {
-        final Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
-            itemVirtualFile.setFileType(new AzureFileType(TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
-        }
-        final FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
-        for (final FileEditor fileEditor : fileEditors) {
-            if (fileEditor.getName().equals(DeploymentPropertyView.ID) && fileEditor instanceof DeploymentPropertyView) {
-                ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
-            }
-        }
-    }
-
-    @Override
-    public void openResourceTemplateView(DeploymentNode node, String template) {
-        final Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
-                                                              node.getId());
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(node.getName(), node.getSubscriptionId(), node.getId());
-            itemVirtualFile.setFileType(new AzureFileType(ResourceTemplateViewProvider.TYPE, UIHelperImpl.loadIcon(DeploymentNode.ICON_PATH)));
-        }
-        final FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
-        for (final FileEditor fileEditor : fileEditors) {
-            if (fileEditor.getName().equals(ResourceTemplateView.ID) && fileEditor instanceof ResourceTemplateView) {
-                ((ResourceTemplateView) fileEditor).loadTemplate(node, template);
-            }
-        }
     }
 
     @Override
