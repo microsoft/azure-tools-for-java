@@ -12,8 +12,6 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Map;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -315,7 +313,9 @@ public class UIHelperImpl implements UIHelper {
     }
 
     public static String readableFileSize(long size) {
-        if (size <= 0) return "0";
+        if (size <= 0) {
+            return "0";
+        }
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
