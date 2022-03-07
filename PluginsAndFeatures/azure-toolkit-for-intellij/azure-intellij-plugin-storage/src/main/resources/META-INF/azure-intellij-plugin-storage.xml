@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.storage.StorageExplorerContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.storage.StorageNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>
     </extensions>

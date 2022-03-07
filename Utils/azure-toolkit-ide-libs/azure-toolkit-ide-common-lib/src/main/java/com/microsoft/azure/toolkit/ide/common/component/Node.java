@@ -52,9 +52,16 @@ public class Node<D> {
     }
 
     public <C> Node<D> addChildren(
-            @Nonnull Function<? super D, ? extends List<C>> getChildrenData,
-            @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
+        @Nonnull Function<? super D, ? extends List<C>> getChildrenData,
+        @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
         this.childrenBuilders.add(new ChildrenNodeBuilder<>(getChildrenData, buildChildNode));
+        return this;
+    }
+
+    public <C> Node<D> addChild(
+        @Nonnull Function<? super D, ? extends C> getChildData,
+        @Nonnull BiFunction<C, Node<D>, Node<?>> buildChildNode) {
+        this.childrenBuilders.add(new ChildrenNodeBuilder<>(d -> Collections.singletonList(getChildData.apply(d)), buildChildNode));
         return this;
     }
 

@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.arm.ArmExplorerContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.arm.ArmNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.arm.ArmActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.arm.IntellijArmActionsContributor"/>
     </extensions>

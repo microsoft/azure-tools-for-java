@@ -1,6 +1,6 @@
 <idea-plugin>
     <extensionPoints>
-        <extensionPoint name="azureExplorerContributor" interface="com.microsoft.azure.toolkit.ide.common.IExplorerContributor"/>
+        <extensionPoint name="explorerNodeProvider" interface="com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider"/>
     </extensionPoints>
 <!--    <extensions defaultExtensionNs="com.intellij">-->
 <!--        <toolWindow id="New Azure Explorer" secondary="true" icon="AllIcons.General.Modified" anchor="right"-->

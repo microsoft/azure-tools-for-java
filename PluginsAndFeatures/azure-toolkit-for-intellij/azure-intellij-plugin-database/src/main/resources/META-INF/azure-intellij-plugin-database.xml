@@ -1,12 +1,12 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlExplorerContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.postgre.PostgreSqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.postgre.IntellijPostgreSqlActionsContributor"/>
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlExplorerContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.mysql.MySqlActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.mysql.IntellijMySqlActionsContributor"/>
-        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerExplorerContributor"/>
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.database.sqlserver.SqlServerActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.database.sqlserver.IntellijSqlServerActionsContributor"/>
     </extensions>

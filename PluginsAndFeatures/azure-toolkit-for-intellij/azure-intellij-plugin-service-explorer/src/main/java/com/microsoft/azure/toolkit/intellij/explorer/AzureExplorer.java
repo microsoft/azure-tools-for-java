@@ -11,7 +11,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.common.IExplorerContributor;
+import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
@@ -21,13 +21,14 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
-    private static final ExtensionPointName<IExplorerContributor> explorerExtensionPoint =
-            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.azureExplorerContributor");
+    private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
     public static final String ICON = "/icons/Common/Azure.svg";
 
     private AzureExplorer() {
@@ -56,10 +57,7 @@ public class AzureExplorer extends Tree {
 
     @Nonnull
     public static List<Node<?>> getModules() {
-        return explorerExtensionPoint.getExtensionList().stream()
-                .map(IExplorerContributor::getModuleNode)
-                .sorted(Comparator.comparing(Node::order))
-                .collect(Collectors.toList());
+        return manager.getRootNodes();
     }
 
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
@@ -69,6 +67,29 @@ public class AzureExplorer extends Tree {
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(windowPanel, null, false);
             toolWindow.getContentManager().addContent(content);
+        }
+    }
+
+    private static class AzureExplorerNodeProviderManager implements IExplorerNodeProvider.Manager {
+        private static final ExtensionPointName<IExplorerNodeProvider> providers =
+            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.explorerNodeProvider");
+
+        @Nonnull
+        public List<Node<?>> getRootNodes() {
+            return providers.getExtensionList().stream()
+                .map(p -> p.getModuleNode(null, this))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(Node::order))
+                .collect(Collectors.toList());
+        }
+
+        @Nullable
+        @Override
+        public Node<?> createNode(@Nonnull Object o, Node<?> parent) {
+            return providers.getExtensionList().stream()
+                .filter(p -> p.accept(o, parent))
+                .findAny().map(p -> p.createNode(o, parent, this))
+                .orElse(null);
         }
     }
 }
