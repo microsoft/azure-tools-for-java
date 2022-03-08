@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -29,20 +30,26 @@ import java.util.stream.Collectors;
 
 public class AzureExplorer extends Tree {
     private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
-    public static final String ICON = "/icons/Common/Azure.svg";
+    public static final String AZURE_ICON = "/icons/Common/Azure.svg";
+    public static final String FAVORITE_ICON = "/icons/Common/favorite.svg";
 
     private AzureExplorer() {
         super();
-        this.root = buildRoot();
+        this.root = buildAzureRoot();
         this.init(this.root);
     }
 
-    private Node<Azure> buildRoot() {
+    private static Node<Azure> buildAzureRoot() {
         final List<Node<?>> modules = getModules();
-        return new Node<>(Azure.az(), new NodeView.Static(getTitle(), ICON)).lazy(false).addChildren(modules);
+        return new Node<>(Azure.az(), new NodeView.Static(getTitle(), AZURE_ICON)).lazy(false).addChildren(modules);
     }
 
-    private String getTitle() {
+    public static Node<String> buildFavoriteRoot() {
+        final List<Node<?>> favorites = Collections.emptyList();
+        return new Node<>("Favorites", new NodeView.Static("Favorites", FAVORITE_ICON)).lazy(false).addChildren(favorites);
+    }
+
+    private static String getTitle() {
         try {
             final AzureAccount az = Azure.az(AzureAccount.class);
             final Account account = az.account();
@@ -53,6 +60,11 @@ public class AzureExplorer extends Tree {
         } catch (final Exception ignored) {
         }
         return "Azure";
+    }
+
+    @Nonnull
+    public static List<Node<?>> getFavorites() {
+        return manager.getRootNodes();
     }
 
     @Nonnull

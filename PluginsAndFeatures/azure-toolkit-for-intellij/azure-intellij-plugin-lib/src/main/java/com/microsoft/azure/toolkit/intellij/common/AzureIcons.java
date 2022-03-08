@@ -27,6 +27,7 @@ public class AzureIcons {
 
     private static final Map<String, Icon> icons = new ConcurrentHashMap<>() {
         {
+            put("/icons/Common/favorite.svg", AllIcons.Nodes.Favorite);
             put("/icons/action/restart.svg", AllIcons.Actions.Restart);
             put("/icons/action/start.svg", AllIcons.Actions.Execute);
             put("/icons/action/stop.svg", AllIcons.Actions.Suspend);
