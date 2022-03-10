@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.ide.common.action;
 
+import com.microsoft.azure.toolkit.ide.common.favorite.FavoriteDraft;
+import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -15,13 +17,14 @@ import com.microsoft.azure.toolkit.lib.common.entity.Removable;
 import com.microsoft.azure.toolkit.lib.common.entity.Startable;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.microsoft.azure.toolkit.lib.common.operation.AzureOperationBundle.title;
 
@@ -39,6 +42,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<IAzureBaseResource<?, ?>> DEPLOY = Action.Id.of("action.resource.deploy");
     public static final Action.Id<IAzureBaseResource<?, ?>> CONNECT = Action.Id.of("action.resource.connect");
     public static final Action.Id<Object> CREATE = Action.Id.of("action.resource.create");
+    public static final Action.Id<AbstractAzResource<?, ?, ?>> PIN = Action.Id.of("action.resource.pin");
     public static final Action.Id<AzService> SERVICE_REFRESH = Action.Id.of("action.service.refresh");
     public static final Action.Id<String> OPEN_URL = Action.Id.of("action.open_url");
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("action.open_azure_settings");
@@ -150,6 +154,23 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
         final Action<Object> createAction = new Action<>(createView);
         createAction.setShortcuts(shortcuts.add());
         am.registerAction(CREATE, createAction);
+
+        final Favorites favorites = Favorites.getInstance();
+        final Function<Object, String> title = s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+            "Unmark As Favorite" : "Mark As Favorite";
+        final ActionView.Builder pinView = new ActionView.Builder(title).enabled(s -> s instanceof AbstractAzResource);
+        pinView.iconPath(s -> favorites.exists(((AbstractAzResource<?, ?, ?>) s).getId(), null) ?
+            "/icons/Common/pin.svg" : "/icons/Common/unpin.svg");
+        final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>((r) -> {
+            if (favorites.exists(r.getId(), null)) {
+                favorites.delete(r.getId(), null);
+            } else {
+                final FavoriteDraft draft = favorites.create(r.getId(), null);
+                draft.setResource(r);
+                draft.commit();
+            }
+        }, pinView);
+        am.registerAction(PIN, pinAction);
     }
 
     public int getOrder() {
