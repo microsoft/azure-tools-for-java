@@ -16,6 +16,7 @@ import lombok.Setter;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+// TODO: merge with AzureModuleLabelView
 public class AzureServiceLabelView<T extends AzService> implements NodeView {
     @Nonnull
     @Getter
