@@ -31,6 +31,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,9 +48,12 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -176,7 +180,9 @@ public class Tree extends SimpleTree implements DataProvider {
         return null;
     }
 
+    @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
     public static class TreeNode<T> extends DefaultMutableTreeNode implements NodeView.Refresher {
+        @EqualsAndHashCode.Include
         protected final Node<T> inner;
         protected final JTree tree;
         private Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
@@ -212,11 +218,10 @@ public class Tree extends SimpleTree implements DataProvider {
 
         @Override
         public synchronized void refreshChildren() {
-            if (this.getAllowsChildren()) {
-                this.removeAllChildren();
-                this.add(new LoadingNode());
+            if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
+                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                model.insertNodeInto(new LoadingNode(), this, 0);
                 this.loaded = null;
-                ((DefaultTreeModel) this.tree.getModel()).reload(this);
                 this.loadChildren();
             }
         }
@@ -239,10 +244,27 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         private synchronized void setChildren(Stream<? extends DefaultMutableTreeNode> children) {
-            this.removeAllChildren();
-            children.forEach(this::add);
+            final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+            final List<? extends MutableTreeNode> ordered = children.collect(Collectors.toList());
+            final Set<? extends MutableTreeNode> newChildren = new HashSet<>(ordered);
+            final Set<javax.swing.tree.TreeNode> oldChildren = new HashSet<>();
+            final int count = this.getChildCount();
+            for (int i = count - 1; i > 0; i--) {
+                final javax.swing.tree.TreeNode node = this.getChildAt(i);
+                if (node instanceof MutableTreeNode && !newChildren.contains(node)) {
+                    model.removeNodeFromParent((MutableTreeNode) node);
+                } else {
+                    oldChildren.add(node);
+                }
+            }
+            for (int i = 0; i < ordered.size(); i++) {
+                final MutableTreeNode node = ordered.get(i);
+                if (!oldChildren.contains(node)) {
+                    model.insertNodeInto(node, this, i + 1);
+                }
+            }
+            model.removeNodeFromParent((MutableTreeNode) this.getChildAt(0));
             this.loaded = true;
-            ((DefaultTreeModel) this.tree.getModel()).reload(this);
         }
 
         public synchronized void clearChildren() {

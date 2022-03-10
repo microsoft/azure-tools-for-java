@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,8 +27,10 @@ import java.util.stream.Collectors;
 
 @Getter
 @Accessors(chain = true, fluent = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Node<D> {
     @Nonnull
+    @EqualsAndHashCode.Include
     private final D data;
     @Nonnull
     @Getter(AccessLevel.NONE)
