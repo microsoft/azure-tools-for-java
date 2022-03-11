@@ -56,6 +56,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.SERVICE_REFRESH,
             "---",
             ResourceCommonActionsContributor.CREATE
@@ -63,6 +65,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 
         final ActionGroup clusterActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
@@ -71,6 +75,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         am.registerGroup(CLUSTER_ACTIONS, clusterActionGroup);
 
         final ActionGroup appActionGroup = new ActionGroup(
+            ResourceCommonActionsContributor.PIN,
+            "---",
             ResourceCommonActionsContributor.REFRESH,
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             SpringCloudActionsContributor.OPEN_PUBLIC_URL,

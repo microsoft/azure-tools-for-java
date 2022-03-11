@@ -49,9 +49,6 @@ public class AzureExplorer extends Tree {
 
     public static Node<Favorites> buildFavoriteRoot() {
         final AzureModuleLabelView<Favorites> view = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
-        AzureEventBus.on("account.subscription_changed.account", (e) -> {
-            view.refreshChildren();
-        });
         return new Node<>(Favorites.getInstance(), view).lazy(false)
             .addChildren(Favorites::list, (o, parent) -> {
                 final Node<?> node = manager.createNode(o.getResource(), parent);

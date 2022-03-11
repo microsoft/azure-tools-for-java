@@ -46,8 +46,8 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         type = AzureOperation.Type.SERVICE
     )
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
-        // TODO: persist.
-        Favorites.storage.add(0, this.resource.getId());
+        Favorites.getInstance().favorites.add(0, this.resource.getId());
+        Favorites.getInstance().persist();
         return this.resource;
     }
 
