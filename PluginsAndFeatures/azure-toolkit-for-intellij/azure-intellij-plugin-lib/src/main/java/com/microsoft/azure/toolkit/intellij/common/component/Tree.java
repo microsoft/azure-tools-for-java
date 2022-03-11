@@ -182,12 +182,13 @@ public class Tree extends SimpleTree implements DataProvider {
 
     @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
     public static class TreeNode<T> extends DefaultMutableTreeNode implements NodeView.Refresher {
+        @Nonnull
         @EqualsAndHashCode.Include
         protected final Node<T> inner;
         protected final JTree tree;
         private Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
-        public TreeNode(Node<T> n, JTree tree) {
+        public TreeNode(@Nonnull Node<T> n, JTree tree) {
             super(n.data(), n.hasChildren());
             this.inner = n;
             this.tree = tree;
@@ -288,17 +289,15 @@ public class Tree extends SimpleTree implements DataProvider {
 
     public static class NodeRenderer extends com.intellij.ide.util.treeView.NodeRenderer {
         public static void renderMyTreeNode(@Nonnull TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {
-            final IView.Label view = node.inner.view();
+            final NodeView view = node.inner.view();
             if (BooleanUtils.isFalse(node.loaded)) {
                 renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-            } else if (view instanceof NodeView) {
-                renderer.setIcon(AzureIcons.getIcon(((NodeView) view).getIcon()));
-            } else if (StringUtils.isNotBlank(view.getIconPath())) {
-                renderer.setIcon(AzureIcons.getIcon(view.getIconPath(), Tree.class));
+            } else {
+                renderer.setIcon(AzureIcons.getIcon(view.getIcon()));
             }
-            renderer.append(view.getLabel());
-            renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ATTRIBUTES, true);
-            renderer.setToolTipText(Optional.ofNullable(view.getDescription()).map(d -> view.getLabel() + ":" + d).orElse(view.getLabel()));
+            renderer.append(view.getLabel(), view.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES);
+            renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
+            renderer.setToolTipText(Optional.ofNullable(view.getTips()).orElse(view.getLabel()));
         }
 
         @Override

@@ -31,6 +31,10 @@ public interface NodeView extends IView.Label {
         return StringUtils.isEmpty(getIconPath()) ? null : AzureIcon.builder().iconPath(getIconPath()).build();
     }
 
+    default String getTips() {
+        return this.getDescription();
+    }
+
     void setRefresher(Refresher refresher);
 
     @Nullable

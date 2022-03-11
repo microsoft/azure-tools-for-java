@@ -38,6 +38,8 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     @Setter
     @Getter
     private Refresher refresher;
+    @Getter
+    private boolean enabled = true;
 
     private final AzureEventBus.EventListener<Object, AzureEvent<Object>> listener;
     private final Function<T, String> descriptionLoader;
@@ -81,6 +83,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                     tm.runOnPooledThread(() -> {
                         this.icon = iconProvider.getIcon((T) source);
                         this.description = descriptionLoader.apply((T) source);
+                        this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
                         tm.runLater(this::refreshView);
                     });
                     break;
