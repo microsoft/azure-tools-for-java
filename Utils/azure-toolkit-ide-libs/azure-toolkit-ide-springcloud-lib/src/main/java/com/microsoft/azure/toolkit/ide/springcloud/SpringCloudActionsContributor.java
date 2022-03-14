@@ -42,7 +42,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getTestUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", "/icons/action/browser.svg")
                 .title(s -> Optional.ofNullable(s).map(r -> title("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp);
+                .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).exists());
         final Action<SpringCloudApp> openTestUrlAction = new Action<>(openTestUrl, openTestUrlView);
         openTestUrlAction.setShortcuts("control alt T");
         am.registerAction(OPEN_TEST_URL, openTestUrlAction);

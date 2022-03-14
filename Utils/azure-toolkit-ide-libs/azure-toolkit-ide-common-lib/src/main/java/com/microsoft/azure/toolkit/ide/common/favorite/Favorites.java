@@ -37,7 +37,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Getter
     private static final Favorites instance = new Favorites();
     public static final String NAME = "toolkitFavorites";
-    public List<String> favorites = new LinkedList<>();
+    List<String> favorites = new LinkedList<>();
 
     private Favorites() {
         super(NAME, AzResource.NONE);
@@ -62,6 +62,10 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         return result;
     }
 
+    public boolean exists(@Nonnull String resourceId) {
+        return this.favorites.contains(resourceId);
+    }
+
     @Nonnull
     @Override
     protected Stream<AbstractAzResource<?, ?, ?>> loadResourcesFromAzure() {
@@ -84,16 +88,16 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     @Nullable
     @Override
-    protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String resourceId, @Nullable String resourceGroup) {
-        if (this.favorites.contains(resourceId)) {
-            return Azure.az().getOrDraftById(resourceId);
+    protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
+        if (this.favorites.contains(name)) {
+            return Azure.az().getOrDraftById(name);
         }
         return null;
     }
 
     @Override
     protected void deleteResourceFromAzure(@Nonnull String resourceId) {
-        this.favorites.remove(resourceId);
+        this.favorites.remove(resourceId.substring("$NONE$/toolkitFavorites/".length()));
         this.persist();
     }
 

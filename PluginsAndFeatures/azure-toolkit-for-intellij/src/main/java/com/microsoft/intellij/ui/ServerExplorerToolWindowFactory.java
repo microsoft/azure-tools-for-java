@@ -7,6 +7,7 @@ package com.microsoft.intellij.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -21,12 +22,14 @@ import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
 import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.hover.TreeHoverListener;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.azure.toolkit.ide.common.component.NodeView;
+import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -58,8 +61,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -72,6 +73,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
@@ -113,12 +115,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         new TreeSpeedSearch(tree);
         final List<? extends com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>> modules = AzureExplorer.getModules().stream()
-                .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
+            .map(m -> new com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<>(m, tree)).collect(Collectors.toList());
         modules.stream().sorted(Comparator.comparing(treeNode -> treeNode.getLabel())).forEach(azureRootNode::add);
         azureModule.setClearResourcesListener(() -> modules.forEach(m -> m.clearChildren()));
-        com.microsoft.azure.toolkit.intellij.common.component.Tree.installSelectionListener(tree);
-        com.microsoft.azure.toolkit.intellij.common.component.Tree.installExpandListener(tree);
-        com.microsoft.azure.toolkit.intellij.common.component.Tree.installPopupMenu(tree);
+        TreeUtils.installSelectionListener(tree);
+        TreeUtils.installExpandListener(tree);
+        TreeUtils.installMouseListener(tree);
+        TreeHoverListener.DEFAULT.addTo(tree);
         treeModel.reload();
         DataManager.registerDataProvider(tree, dataId -> {
             if (StringUtils.equals(dataId, Action.SOURCE)) {
@@ -131,6 +134,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         });
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
@@ -337,11 +341,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private class NodeTreeCellRenderer extends NodeRenderer {
-        @Override
-        protected void doPaint(Graphics2D g) {
-            super.doPaint(g);
-            setOpaque(false);
-        }
+        private Icon inlineActionIcon = null;
 
         @Override
         public void customizeCellRenderer(@NotNull JTree jtree,
@@ -352,9 +352,18 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                           int row,
                                           boolean focused) {
             Object value = v;
+            inlineActionIcon = null;
             if (value instanceof com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode) {
-                com.microsoft.azure.toolkit.intellij.common.component.Tree.NodeRenderer
-                    .renderMyTreeNode((com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value, this);
+                final com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?> node =
+                    (com.microsoft.azure.toolkit.intellij.common.component.Tree.TreeNode<?>) value;
+                final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
+                inlineActionIcon = Optional.ofNullable(node.getInlineActionView())
+                    .map(av -> AzureIcons.getIcon(av.getIconPath())).orElse(null);
+                if (hoveredRow != row && inlineActionIcon == AllIcons.Nodes.NotFavoriteOnHover) {
+                    // TODO: should not check the value of inlineActionIcon
+                    inlineActionIcon = null;
+                }
+                TreeUtils.renderMyTreeNode(node, this);
                 return;
             } else if (value instanceof LoadingNode) {
                 super.customizeCellRenderer(jtree, value, selected, expanded, isLeaf, row, focused);
@@ -385,6 +394,31 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
             // setup a tooltip
             setToolTipText(node.getToolTip());
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            UISettings.setupAntialiasing(g);
+            Shape clip = null;
+            int width = this.myTree.getWidth() - this.getX();
+            final int height = this.getHeight();
+            if (isOpaque()) {
+                // paint background for expanded row
+                g.setColor(getBackground());
+                g.fillRect(0, 0, width, height);
+            }
+            if (Objects.nonNull(inlineActionIcon)) {
+                width -= TreeUtils.INLINE_ACTION_ICON_OFFSET;
+                if (width > 0 && height > 0) {
+                    paintIcon(g, inlineActionIcon, width);
+                    clip = g.getClip();
+                    g.clipRect(0, 0, width, height);
+                }
+            }
+
+            super.paintComponent(g);
+            // restore clip area if needed
+            if (clip != null) g.setClip(clip);
         }
     }
 

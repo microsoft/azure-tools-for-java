@@ -5,29 +5,15 @@
 
 package com.microsoft.azure.toolkit.intellij.common.component;
 
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPopupMenu;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataProvider;
-import com.intellij.openapi.actionSystem.EmptyAction;
-import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.LoadingNode;
-import com.intellij.ui.SimpleColoredComponent;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.treeStructure.SimpleTree;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.intellij.common.AzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
@@ -39,15 +25,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -82,91 +64,9 @@ public class Tree extends SimpleTree implements DataProvider {
         TreeUIHelper.getInstance().installEditSourceOnEnterKeyHandler(this);
         this.setCellRenderer(new NodeRenderer());
         this.setModel(new DefaultTreeModel(new TreeNode<>(root, this)));
-        installExpandListener(this);
-        installSelectionListener(this);
-        installPopupMenu(this);
-    }
-
-    public static void installSelectionListener(JTree tree) {
-        tree.addTreeSelectionListener(e -> {
-            final Object node = tree.getLastSelectedPathComponent();
-            Disposable selectionDisposable = (Disposable) tree.getClientProperty("SELECTION_DISPOSABLE");
-            if (selectionDisposable != null) {
-                selectionDisposable.dispose();
-            }
-            if (node instanceof TreeNode) {
-                final String place = "azure.component.tree";
-                final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
-                if (Objects.nonNull(actions)) {
-                    final ActionManager am = ActionManager.getInstance();
-                    selectionDisposable = Disposer.newDisposable();
-                    tree.putClientProperty("SELECTION_DISPOSABLE", selectionDisposable);
-                    final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
-                    group.registerCustomShortcutSetForActions(tree, selectionDisposable);
-                }
-            }
-        });
-    }
-
-    public static void installExpandListener(JTree tree) {
-        final TreeWillExpandListener listener = new TreeWillExpandListener() {
-            @Override
-            public void treeWillExpand(TreeExpansionEvent event) {
-                final Object component = event.getPath().getLastPathComponent();
-                if (component instanceof TreeNode) {
-                    final TreeNode<?> treeNode = (TreeNode<?>) component;
-                    if (treeNode.getAllowsChildren()) {
-                        treeNode.loadChildren();
-                    }
-                }
-            }
-
-            @Override
-            public void treeWillCollapse(TreeExpansionEvent event) {
-
-            }
-        };
-        tree.addTreeWillExpandListener(listener);
-    }
-
-    public static void installPopupMenu(JTree tree) {
-        final MouseAdapter popupHandler = new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                final TreePath path = tree.getClosestPathForLocation(e.getX(), e.getY());
-                if (path == null) {
-                    return;
-                }
-                final Object node = path.getLastPathComponent();
-                if (node instanceof TreeNode) {
-                    final String place = "azure.component.tree";
-                    if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
-                        final ActionGroup actions = ((TreeNode<?>) node).inner.actions();
-                        if (Objects.nonNull(actions)) {
-                            final ActionManager am = ActionManager.getInstance();
-                            final IntellijAzureActionManager.ActionGroupWrapper group = toIntellijActionGroup(actions);
-                            final ActionPopupMenu menu = am.createActionPopupMenu(place, group);
-                            menu.setTargetComponent(tree);
-                            final JPopupMenu popupMenu = menu.getComponent();
-                            popupMenu.show(tree, e.getX(), e.getY());
-                        }
-                    } else if (e.getClickCount() == 2) {
-                        final DataContext context = DataManager.getInstance().getDataContext(tree);
-                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        ((TreeNode<?>) node).inner.doubleClick(event);
-                    }
-                }
-            }
-        };
-        tree.addMouseListener(popupHandler);
-    }
-
-    private static IntellijAzureActionManager.ActionGroupWrapper toIntellijActionGroup(ActionGroup actions) {
-        final ActionManager am = ActionManager.getInstance();
-        if (actions.getOrigin() instanceof IntellijAzureActionManager.ActionGroupWrapper) {
-            return (IntellijAzureActionManager.ActionGroupWrapper) actions.getOrigin();
-        }
-        return new IntellijAzureActionManager.ActionGroupWrapper(actions);
+        TreeUtils.installExpandListener(this);
+        TreeUtils.installSelectionListener(this);
+        TreeUtils.installMouseListener(this);
     }
 
     @Override
@@ -186,7 +86,7 @@ public class Tree extends SimpleTree implements DataProvider {
         @EqualsAndHashCode.Include
         protected final Node<T> inner;
         protected final JTree tree;
-        private Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
+        Boolean loaded = null; //null:not loading/loaded, false: loading: true: loaded
 
         public TreeNode(@Nonnull Node<T> n, JTree tree) {
             super(n.data(), n.hasChildren());
@@ -208,6 +108,14 @@ public class Tree extends SimpleTree implements DataProvider {
 
         public String getLabel() {
             return this.inner.view().getLabel();
+        }
+
+        @Nullable
+        public IView.Label getInlineActionView() {
+            return Optional.ofNullable(this.inner.inlineAction())
+                .map(a -> a.getView(this.inner.data()))
+                .filter(IView.Label::isEnabled)
+                .orElse(null);
         }
 
         @Override
@@ -288,22 +196,11 @@ public class Tree extends SimpleTree implements DataProvider {
     }
 
     public static class NodeRenderer extends com.intellij.ide.util.treeView.NodeRenderer {
-        public static void renderMyTreeNode(@Nonnull TreeNode<?> node, @Nonnull SimpleColoredComponent renderer) {
-            final NodeView view = node.inner.view();
-            if (BooleanUtils.isFalse(node.loaded)) {
-                renderer.setIcon(AnimatedIcon.Default.INSTANCE);
-            } else {
-                renderer.setIcon(AzureIcons.getIcon(view.getIcon()));
-            }
-            renderer.append(view.getLabel(), view.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES);
-            renderer.append(Optional.ofNullable(view.getDescription()).map(d -> " " + d).orElse(""), SimpleTextAttributes.GRAY_ITALIC_ATTRIBUTES, true);
-            renderer.setToolTipText(Optional.ofNullable(view.getTips()).orElse(view.getLabel()));
-        }
 
         @Override
         public void customizeCellRenderer(@Nonnull JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             if (value instanceof TreeNode) {
-                renderMyTreeNode((TreeNode<?>) value, this);
+                TreeUtils.renderMyTreeNode((TreeNode<?>) value, this);
             } else {
                 super.customizeCellRenderer(tree, value, selected, expanded, leaf, row, hasFocus);
             }

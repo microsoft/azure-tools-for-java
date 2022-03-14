@@ -43,7 +43,8 @@ public class Node<D> {
     @Nullable
     private ActionGroup actions;
     private int order;
-    private Action<D> doubleClickAction;
+    private Action<? super D> doubleClickAction;
+    private Action<? super D> inlineAction;
 
     public Node(@Nonnull D data) {
         this(data, null);
@@ -88,14 +89,25 @@ public class Node<D> {
         return !this.childrenBuilders.isEmpty();
     }
 
-    public void doubleClick(final Object event) {
+    public void triggerDoubleClickAction(final Object event) {
         if (this.doubleClickAction != null) {
             this.doubleClickAction.handle(this.data, event);
         }
     }
 
-    public Node<D> doubleClickAction(Action.Id<D> actionId) {
+    public Node<D> doubleClickAction(Action.Id<? super D> actionId) {
         this.doubleClickAction = AzureActionManager.getInstance().getAction(actionId);
+        return this;
+    }
+
+    public void triggerInlineAction(final Object event) {
+        if (this.inlineAction != null) {
+            this.inlineAction.handle(this.data, event);
+        }
+    }
+
+    public Node<D> inlineAction(Action.Id<? super D> actionId) {
+        this.inlineAction = AzureActionManager.getInstance().getAction(actionId);
         return this;
     }
 
