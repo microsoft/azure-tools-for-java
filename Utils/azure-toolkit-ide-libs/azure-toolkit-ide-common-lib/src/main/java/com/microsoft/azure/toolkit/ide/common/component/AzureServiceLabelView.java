@@ -61,15 +61,12 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
         final Object source = event.getSource();
         if (source instanceof AzService && ((AzService) source).getName().equals(this.service.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            switch (type) {
-                case "service.refresh.service":
-                    if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                        tm.runLater(this::refreshChildren);
-                    }
-                    break;
-                case "service.children_changed.service":
+            if ("service.refresh.service".equals(type)) {
+                if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                     tm.runLater(this::refreshChildren);
-                    break;
+                }
+            } else if ("service.children_changed.service".equals(type)) {
+                tm.runLater(this::refreshChildren);
             }
         }
     }

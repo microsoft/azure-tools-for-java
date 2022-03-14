@@ -69,28 +69,24 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     public void onEvent(AzureEvent<Object> event) {
         final String type = event.getType();
         final Object source = event.getSource();
-        if (source instanceof IAzureBaseResource && ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId())) {
+        if (source instanceof IAzureBaseResource &&
+            ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId()) &&
+            ((IAzureBaseResource<?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            switch (type) {
-                case "resource.refresh.resource":
-                    tm.runLater(this::refreshView);
-                    if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                        tm.runLater(this::refreshChildren);
-                    }
-                    break;
-                case "common|resource.status_changed":
-                case "resource.status_changed.resource":
-                    tm.runOnPooledThread(() -> {
-                        this.icon = iconProvider.getIcon((T) source);
-                        this.description = descriptionLoader.apply((T) source);
-                        this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
-                        tm.runLater(this::refreshView);
-                    });
-                    break;
-                case "resource.children_changed.resource":
-                case "module.children_changed.module":
+            if ("resource.refresh.resource".equals(type)) {
+                tm.runLater(this::refreshView);
+                if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
                     tm.runLater(this::refreshChildren);
-                    break;
+                }
+            } else if ("common|resource.status_changed".equals(type) || "resource.status_changed.resource".equals(type)) {
+                tm.runOnPooledThread(() -> {
+                    this.icon = iconProvider.getIcon((T) source);
+                    this.description = descriptionLoader.apply((T) source);
+                    this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
+                    tm.runLater(this::refreshView);
+                });
+            } else if ("resource.children_changed.resource".equals(type) || "module.children_changed.module".equals(type)) {
+                tm.runLater(this::refreshChildren);
             }
         }
     }
