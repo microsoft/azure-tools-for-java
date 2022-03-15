@@ -126,16 +126,22 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
-        public synchronized void refreshChildren() {
+        public synchronized void refreshChildren(boolean... incremental) {
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
-                final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
-                model.insertNodeInto(new LoadingNode(), this, 0);
+                if (incremental.length > 0 && incremental[0]) {
+                    final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
+                    model.insertNodeInto(new LoadingNode(), this, 0);
+                } else {
+                    this.removeAllChildren();
+                    this.add(new LoadingNode());
+                    ((DefaultTreeModel) this.tree.getModel()).reload(this);
+                }
                 this.loaded = null;
-                this.loadChildren();
+                this.loadChildren(incremental);
             }
         }
 
-        protected synchronized void loadChildren() {
+        protected synchronized void loadChildren(boolean... incremental) {
             if (loaded != null) {
                 return; // return if loading/loaded
             }
@@ -144,7 +150,12 @@ public class Tree extends SimpleTree implements DataProvider {
             tm.runOnPooledThread(() -> {
                 try {
                     final List<Node<?>> children = this.inner.getChildren();
-                    tm.runLater(() -> setChildren(children.stream().map(c -> new TreeNode<>(c, this.tree))));
+                    final Stream<? extends DefaultMutableTreeNode> nodes = children.stream().map(c -> new TreeNode<>(c, this.tree));
+                    if (incremental.length > 0 && incremental[0]) {
+                        tm.runLater(() -> updateChildren(nodes));
+                    } else {
+                        tm.runLater(() -> setChildren(nodes));
+                    }
                 } catch (final Exception e) {
                     this.setChildren(Stream.empty());
                     AzureMessager.getMessager().error(e);
@@ -153,6 +164,13 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         private synchronized void setChildren(Stream<? extends DefaultMutableTreeNode> children) {
+            this.removeAllChildren();
+            children.forEach(this::add);
+            this.loaded = true;
+            ((DefaultTreeModel) this.tree.getModel()).reload(this);
+        }
+
+        private synchronized void updateChildren(Stream<? extends DefaultMutableTreeNode> children) {
             final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
             final List<? extends MutableTreeNode> ordered = children.collect(Collectors.toList());
             final Set<? extends MutableTreeNode> newChildren = new HashSet<>(ordered);
@@ -170,6 +188,9 @@ public class Tree extends SimpleTree implements DataProvider {
                 final MutableTreeNode node = ordered.get(i);
                 if (!oldChildren.contains(node)) {
                     model.insertNodeInto(node, this, i + 1);
+                    // this.tree.expandPath(new TreePath(this.getPath()));
+                    // TreeUtil.selectInTree((DefaultMutableTreeNode) node, true, this.tree, true);
+                    TreeUtil.selectPath(this.tree, new TreePath(((DefaultMutableTreeNode) node).getPath()), true);
                 }
             }
             model.removeNodeFromParent((MutableTreeNode) this.getChildAt(0));

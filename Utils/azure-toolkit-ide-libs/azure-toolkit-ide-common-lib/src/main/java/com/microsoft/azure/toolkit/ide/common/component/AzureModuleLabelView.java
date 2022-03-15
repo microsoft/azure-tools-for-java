@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,11 +58,13 @@ public class AzureModuleLabelView<T extends AzResourceModule<?, ?, ?>> implement
     }
 
     public void onEvent(AzureEvent<Object> event) {
+        final String type = event.getType();
         final Object source = event.getSource();
+        final boolean childrenChanged = StringUtils.equalsIgnoreCase(type, "module.children_changed.module");
         if (source instanceof AzResourceModule) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             if (Objects.equals(source, this.module)) {
-                tm.runLater(this::refreshChildren);
+                tm.runLater(() -> this.refreshChildren(childrenChanged));
             }
         }
     }

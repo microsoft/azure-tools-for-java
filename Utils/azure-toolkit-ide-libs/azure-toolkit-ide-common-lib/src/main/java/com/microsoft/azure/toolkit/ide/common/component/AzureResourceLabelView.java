@@ -95,7 +95,7 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
                 });
             } else if (StringUtils.equalsAny(type,
                 "resource.children_changed.resource")) {
-                tm.runLater(this::refreshChildren);
+                tm.runLater(() -> this.refreshChildren(true));
             }
         }
     }

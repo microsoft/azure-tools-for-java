@@ -61,7 +61,7 @@ public class ResourceConnectionExplorer extends Tree {
             connection.subscribe(CONNECTION_CHANGED, (p, conn, action) -> {
                 final Resource<?> consumer = conn.getConsumer();
                 if ((consumer instanceof ModuleResource) && ((ModuleResource) consumer).getModuleName().equals(module.getName())) {
-                    this.view().refreshChildren();
+                    this.view().refreshChildren(true);
                 }
             });
             connection.subscribe(CONNECTIONS_REFRESHED, () -> this.view().refreshChildren());

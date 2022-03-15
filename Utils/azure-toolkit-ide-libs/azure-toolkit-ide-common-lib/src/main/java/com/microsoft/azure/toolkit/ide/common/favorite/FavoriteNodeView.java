@@ -52,8 +52,8 @@ public class FavoriteNodeView implements NodeView {
     }
 
     @Override
-    public void refreshChildren() {
-        view.refreshChildren();
+    public void refreshChildren(boolean... incremental) {
+        view.refreshChildren(incremental);
     }
 
     @Override

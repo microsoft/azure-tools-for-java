@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent.Stage;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,11 +64,13 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
     }
 
     public void onEvent(AzureEvent<Object> event) {
+        final String type = event.getType();
         final Object source = event.getSource();
+        final boolean childrenChanged = StringUtils.equalsAnyIgnoreCase(type, "module.children_changed.module", "service.children_changed.service");
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         if (source instanceof AzService && ((AzService) source).getName().equals(this.service.getName())) {
             if (!(event instanceof AzureOperationEvent) || (((AzureOperationEvent) event).getStage() == Stage.AFTER)) {
-                tm.runLater(this::refreshChildren);
+                tm.runLater(() -> this.refreshChildren(childrenChanged));
             }
         }
     }
