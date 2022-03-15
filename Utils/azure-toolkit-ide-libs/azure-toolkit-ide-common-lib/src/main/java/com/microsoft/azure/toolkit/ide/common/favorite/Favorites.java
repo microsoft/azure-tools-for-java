@@ -7,11 +7,19 @@ package com.microsoft.azure.toolkit.ide.common.favorite;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
+import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
+import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IMachineStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -30,10 +38,13 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Slf4j
 public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
+    private static final String FAVORITE_ICON = "/icons/Common/favorite.svg";
+
     @Getter
     private static final Favorites instance = new Favorites();
     public static final String NAME = "toolkitFavorites";
@@ -46,9 +57,13 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             this.favorites.clear();
             this.refresh();
         });
-        AzureEventBus.on("account.login.account", (e) -> {
-            this.refresh();
-        });
+        AzureEventBus.on("account.login.account", (e) -> this.refresh());
+    }
+
+    @Override
+    public synchronized void clear() {
+        super.clear();
+        this.favorites.clear();
     }
 
     @Nonnull
@@ -60,10 +75,6 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final List<Favorite> result = new LinkedList<>(super.list());
         result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName())));
         return result;
-    }
-
-    public boolean exists(@Nonnull String resourceId) {
-        return this.favorites.contains(resourceId);
     }
 
     @Nonnull
@@ -119,6 +130,24 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         return "Favorites";
     }
 
+    public boolean exists(@Nonnull String resourceId) {
+        return this.favorites.contains(resourceId);
+    }
+
+    public void unpinAll() {
+        this.clear();
+        this.persist();
+        this.refresh();
+    }
+
+    public void pin(@Nonnull String resourceId) {
+        this.create(resourceId, null).commit();
+    }
+
+    public void unpin(@Nonnull String resourceId) {
+        this.delete(resourceId, null);
+    }
+
     public void persist() {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
@@ -131,5 +160,32 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 AzureMessager.getMessager().error("failed to persist favorites.");
             }
         });
+    }
+
+    public static Node<Favorites> buildFavoriteRoot(IExplorerNodeProvider.Manager manager) {
+        final AzureActionManager.Shortcuts shortcuts = AzureActionManager.getInstance().getIDEDefaultShortcuts();
+
+        final ActionView.Builder unpinAllView = new ActionView.Builder("Unmark All As Favorite", "/icons/Common/unpin.svg")
+            .enabled(s -> s instanceof Favorites);
+        final Consumer<Favorites> unpinAllHandler = Favorites::unpinAll;
+        final Action<Favorites> unpinAllAction = new Action<>(unpinAllHandler, unpinAllView);
+        unpinAllAction.setShortcuts("control F11");
+
+        final ActionView.Builder refreshView = new ActionView.Builder("Refresh", "/icons/action/refresh.svg")
+            .enabled(s -> s instanceof Favorites);
+        final Consumer<Favorites> refreshHandler = Favorites::refresh;
+        final Action<Favorites> refreshAction = new Action<>(refreshHandler, refreshView);
+        refreshAction.setShortcuts(shortcuts.refresh());
+
+        final AzureModuleLabelView<Favorites> rootView = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
+        return new Node<>(Favorites.getInstance(), rootView).lazy(false)
+            .actions(new ActionGroup(unpinAllAction, "---", refreshAction))
+            .addChildren(Favorites::list, (o, parent) -> {
+                final Node<?> node = manager.createNode(o.getResource(), parent);
+                if (Objects.nonNull(node) && node.view() instanceof AzureResourceLabelView) {
+                    node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
+                }
+                return node;
+            });
     }
 }

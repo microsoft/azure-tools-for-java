@@ -12,11 +12,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
-import com.microsoft.azure.toolkit.ide.common.component.AzureModuleLabelView;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
-import com.microsoft.azure.toolkit.ide.common.favorite.FavoriteNodeView;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -34,7 +31,6 @@ import java.util.stream.Collectors;
 public class AzureExplorer extends Tree {
     private static final AzureExplorerNodeProviderManager manager = new AzureExplorerNodeProviderManager();
     public static final String AZURE_ICON = "/icons/Common/Azure.svg";
-    public static final String FAVORITE_ICON = "/icons/Common/favorite.svg";
 
     private AzureExplorer() {
         super();
@@ -47,16 +43,8 @@ public class AzureExplorer extends Tree {
         return new Node<>(Azure.az(), new NodeView.Static(getTitle(), AZURE_ICON)).lazy(false).addChildren(modules);
     }
 
-    public static Node<Favorites> buildFavoriteRoot() {
-        final AzureModuleLabelView<Favorites> view = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
-        return new Node<>(Favorites.getInstance(), view).lazy(false)
-            .addChildren(Favorites::list, (o, parent) -> {
-                final Node<?> node = manager.createNode(o.getResource(), parent);
-                if (Objects.nonNull(node) && node.view() instanceof AzureResourceLabelView) {
-                    node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
-                }
-                return node;
-            });
+    public static Node<?> buildFavoriteRoot() {
+        return Favorites.buildFavoriteRoot(manager);
     }
 
     private static String getTitle() {
