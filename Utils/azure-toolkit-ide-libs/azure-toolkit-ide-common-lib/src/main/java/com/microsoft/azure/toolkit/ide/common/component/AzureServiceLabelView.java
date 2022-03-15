@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent;
+import com.microsoft.azure.toolkit.lib.common.event.AzureOperationEvent.Stage;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,27 +47,26 @@ public class AzureServiceLabelView<T extends AzService> implements NodeView {
         this.label = label;
         this.iconPath = iconPath;
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
+        AzureEventBus.on("module.refreshed.module", listener);
+        AzureEventBus.on("module.children_changed.module", listener);
         AzureEventBus.on("service.refresh.service", listener);
         AzureEventBus.on("service.children_changed.service", listener);
         this.refreshView();
     }
 
     public void dispose() {
+        AzureEventBus.off("module.refreshed.module", listener);
+        AzureEventBus.off("module.children_changed.module", listener);
         AzureEventBus.off("service.refresh.service", listener);
         AzureEventBus.off("service.children_changed.service", listener);
         this.refresher = null;
     }
 
     public void onEvent(AzureEvent<Object> event) {
-        final String type = event.getType();
         final Object source = event.getSource();
+        final AzureTaskManager tm = AzureTaskManager.getInstance();
         if (source instanceof AzService && ((AzService) source).getName().equals(this.service.getName())) {
-            final AzureTaskManager tm = AzureTaskManager.getInstance();
-            if ("service.refresh.service".equals(type)) {
-                if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                    tm.runLater(this::refreshChildren);
-                }
-            } else if ("service.children_changed.service".equals(type)) {
+            if (!(event instanceof AzureOperationEvent) || (((AzureOperationEvent) event).getStage() == Stage.AFTER)) {
                 tm.runLater(this::refreshChildren);
             }
         }

@@ -60,9 +60,9 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
         this.icon = iconProvider.getIcon(resource);
         AzureEventBus.on("resource.refresh.resource", listener);
         AzureEventBus.on("common|resource.status_changed", listener);
-        AzureEventBus.on("resource.children_changed.resource", listener);
+        AzureEventBus.on("resource.refreshed.resource", listener);
         AzureEventBus.on("resource.status_changed.resource", listener);
-        AzureEventBus.on("module.children_changed.module", listener);
+        AzureEventBus.on("resource.children_changed.resource", listener);
         this.refreshView();
     }
 
@@ -73,19 +73,28 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
             ((IAzureBaseResource<?, ?>) source).getId().equals(this.resource.getId()) &&
             ((IAzureBaseResource<?, ?>) source).getName().equals(this.resource.getName())) {
             final AzureTaskManager tm = AzureTaskManager.getInstance();
-            if ("resource.refresh.resource".equals(type)) {
-                tm.runLater(this::refreshView);
-                if (((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
-                    tm.runLater(this::refreshChildren);
-                }
-            } else if ("common|resource.status_changed".equals(type) || "resource.status_changed.resource".equals(type)) {
+            if (StringUtils.equalsAny(type,
+                "resource.refresh.resource", "resource.refreshed.resource")) {
                 tm.runOnPooledThread(() -> {
                     this.icon = iconProvider.getIcon((T) source);
                     this.description = descriptionLoader.apply((T) source);
                     this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
                     tm.runLater(this::refreshView);
                 });
-            } else if ("resource.children_changed.resource".equals(type) || "module.children_changed.module".equals(type)) {
+                if (!(event instanceof AzureOperationEvent) ||
+                    ((AzureOperationEvent) event).getStage() == AzureOperationEvent.Stage.AFTER) {
+                    tm.runLater(this::refreshChildren);
+                }
+            } else if (StringUtils.equalsAny(type,
+                "common|resource.status_changed", "resource.status_changed.resource")) {
+                tm.runOnPooledThread(() -> {
+                    this.icon = iconProvider.getIcon((T) source);
+                    this.description = descriptionLoader.apply((T) source);
+                    this.enabled = !StringUtils.equalsIgnoreCase(IAzureBaseResource.Status.DISCONNECTED, ((T) source).getStatus());
+                    tm.runLater(this::refreshView);
+                });
+            } else if (StringUtils.equalsAny(type,
+                "resource.children_changed.resource")) {
                 tm.runLater(this::refreshChildren);
             }
         }
@@ -94,9 +103,9 @@ public class AzureResourceLabelView<T extends IAzureBaseResource<?, ?>> implemen
     public void dispose() {
         AzureEventBus.off("resource.refresh.resource", listener);
         AzureEventBus.off("common|resource.status_changed", listener);
+        AzureEventBus.off("resource.refreshed.resource", listener);
         AzureEventBus.off("resource.children_changed.resource", listener);
         AzureEventBus.off("resource.status_changed.resource", listener);
-        AzureEventBus.off("module.children_changed.module", listener);
         this.refresher = null;
     }
 

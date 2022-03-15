@@ -32,6 +32,7 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
         this.manager = virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_EDITOR_MANAGER_KEY);
         this.listener = new AzureEventBus.EventListener<>(this::onEvent);
         AzureEventBus.on("resource.status_changed.resource", listener);
+        AzureEventBus.on("resource.refreshed.resource", listener);
         this.debouncer = new TailingDebouncer(this::rerender, 500);
     }
 
@@ -62,6 +63,7 @@ public abstract class AzResourcePropertiesEditor<T extends AzResourceBase> exten
     @Override
     public void dispose() {
         AzureEventBus.off("resource.status_changed.resource", listener);
+        AzureEventBus.off("resource.refreshed.resource", listener);
     }
 
     protected abstract void rerender();
