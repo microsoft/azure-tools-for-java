@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.arm;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -52,12 +53,14 @@ public class ArmNodeProvider implements IExplorerNodeProvider {
             final ResourceGroup rg = (ResourceGroup) data;
             return new Node<>(rg)
                 .view(new AzureResourceLabelView<>(rg))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(ArmActionsContributor.RESOURCE_GROUP_ACTIONS)
                 .addChildren(g -> g.deployments().list(), (d, p) -> this.createNode(d, p, manager));
         } else if (data instanceof ResourceDeployment) {
             final ResourceDeployment deployment = (ResourceDeployment) data;
             return new Node<>(deployment)
                 .view(new AzureResourceLabelView<>(deployment))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(ArmActionsContributor.RESOURCE_DEPLOYMENT_ACTIONS);
         }
         return null;

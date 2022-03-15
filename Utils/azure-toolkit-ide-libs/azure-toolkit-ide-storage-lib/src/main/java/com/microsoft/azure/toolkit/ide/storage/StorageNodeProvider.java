@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.storage;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -49,6 +50,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
             final StorageAccount account = (StorageAccount) data;
             return new Node<>(account)
                 .view(new AzureResourceLabelView<>(account))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(StorageActionsContributor.ACCOUNT_ACTIONS);
         }
         return null;

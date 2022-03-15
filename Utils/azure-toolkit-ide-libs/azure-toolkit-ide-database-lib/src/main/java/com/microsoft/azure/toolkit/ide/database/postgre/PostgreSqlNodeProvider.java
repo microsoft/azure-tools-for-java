@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.database.postgre;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -49,6 +50,7 @@ public class PostgreSqlNodeProvider implements IExplorerNodeProvider {
             final PostgreSqlServer server = (PostgreSqlServer) data;
             return new Node<>(server)
                 .view(new AzureResourceLabelView<>(server))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(PostgreSqlActionsContributor.SERVER_ACTIONS);
         }
         return null;

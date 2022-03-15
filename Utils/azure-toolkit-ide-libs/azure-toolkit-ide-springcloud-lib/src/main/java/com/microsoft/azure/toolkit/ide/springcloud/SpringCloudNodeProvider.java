@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.springcloud;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -53,12 +54,14 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
             final SpringCloudCluster cluster = (SpringCloudCluster) data;
             return new Node<>(cluster)
                 .view(new AzureResourceLabelView<>(cluster))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(SpringCloudActionsContributor.CLUSTER_ACTIONS)
                 .addChildren(c -> c.apps().list(), (app, clusterNode) -> this.createNode(app, clusterNode, manager));
         } else if (data instanceof SpringCloudApp) {
             final SpringCloudApp app = (SpringCloudApp) data;
             return new Node<>(app)
                 .view(new AzureResourceLabelView<>(app))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(SpringCloudActionsContributor.APP_ACTIONS);
         }
         return null;

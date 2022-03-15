@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.redis;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -50,6 +51,7 @@ public class RedisNodeProvider implements IExplorerNodeProvider {
             final RedisCache redis = (RedisCache) data;
             return new Node<>(redis)
                 .view(new AzureResourceLabelView<>(redis))
+                .inlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(RedisActionsContributor.REDIS_ACTIONS);
         }
         return null;
