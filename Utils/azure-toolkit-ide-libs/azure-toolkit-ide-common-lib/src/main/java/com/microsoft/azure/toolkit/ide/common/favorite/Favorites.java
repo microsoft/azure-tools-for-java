@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
@@ -92,7 +93,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 this.favorites = new LinkedList<>();
             }
         }
-        return this.favorites.stream().map(id -> Azure.az().getOrDraftById(id)).filter(Objects::nonNull)
+        return this.favorites.stream().map(id -> Azure.az().getById(id)).filter(Objects::nonNull)
             .map(c -> ((AbstractAzResource<?, ?, ?>) c));
     }
 
@@ -100,7 +101,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Override
     protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
         if (this.favorites.contains(name)) {
-            return Azure.az().getOrDraftById(name);
+            return Azure.az().getById(name);
         }
         return null;
     }
@@ -183,6 +184,8 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
                 final Node<?> node = manager.createNode(o.getResource(), parent);
                 if (Objects.nonNull(node) && node.view() instanceof AzureResourceLabelView) {
                     node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
+                } else if (Objects.isNull(node)) {
+                    throw new AzureToolkitRuntimeException("failed to render Favorite node from " + o.getResource());
                 }
                 return node;
             });

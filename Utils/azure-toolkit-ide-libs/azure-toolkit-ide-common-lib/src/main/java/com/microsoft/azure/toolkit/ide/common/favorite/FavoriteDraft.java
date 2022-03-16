@@ -43,6 +43,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
     )
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
         Favorites.getInstance().favorites.add(0, this.getName());
+        Favorites.getInstance().persist();
         return Objects.requireNonNull(Favorites.getInstance().loadResourceFromAzure(this.getName(), null));
     }
 
