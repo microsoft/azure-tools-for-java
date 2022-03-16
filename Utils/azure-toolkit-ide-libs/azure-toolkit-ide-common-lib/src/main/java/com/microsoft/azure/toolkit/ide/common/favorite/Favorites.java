@@ -54,7 +54,6 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         super(NAME, AzResource.NONE);
         AzureEventBus.on("account.logout.account", (e) -> {
             this.clear();
-            this.favorites.clear();
             this.refresh();
         });
         AzureEventBus.on("account.login.account", (e) -> this.refresh());

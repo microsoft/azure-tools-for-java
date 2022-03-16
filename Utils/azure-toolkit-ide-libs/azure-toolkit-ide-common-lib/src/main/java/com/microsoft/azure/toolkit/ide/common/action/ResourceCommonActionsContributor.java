@@ -5,9 +5,8 @@
 
 package com.microsoft.azure.toolkit.ide.common.action;
 
-import com.microsoft.azure.toolkit.ide.common.favorite.FavoriteDraft;
-import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -163,13 +162,12 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             "/icons/Common/pin.svg" : "/icons/Common/unpin.svg");
         final Action<AbstractAzResource<?, ?, ?>> pinAction = new Action<>((r) -> {
             if (favorites.exists(r.getId(), null)) {
-                favorites.delete(r.getId(), null);
+                favorites.unpin(r.getId());
             } else {
-                final FavoriteDraft draft = favorites.create(r.getId(), null);
-                draft.setResource(r);
-                draft.commit();
+                favorites.pin(r.getId());
             }
         }, pinView);
+        pinAction.setShortcuts("F11");
         am.registerAction(PIN, pinAction);
     }
 

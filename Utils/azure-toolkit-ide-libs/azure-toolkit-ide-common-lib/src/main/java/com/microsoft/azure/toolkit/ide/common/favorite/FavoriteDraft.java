@@ -10,7 +10,6 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,8 +19,6 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
     @Getter
     @Nullable
     private final Favorite origin;
-    @Setter
-    private AbstractAzResource<?, ?, ?> resource;
 
     FavoriteDraft(@Nonnull String resourceId, @Nonnull Favorites module) {
         super(resourceId, module);
@@ -35,7 +32,6 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
 
     @Override
     public void reset() {
-        this.resource = null;
     }
 
     @Nonnull
@@ -46,20 +42,14 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         type = AzureOperation.Type.SERVICE
     )
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
-        Favorites.getInstance().favorites.add(0, this.resource.getId());
-        Favorites.getInstance().persist();
-        return this.resource;
+        Favorites.getInstance().favorites.add(0, this.getName());
+        return Objects.requireNonNull(Favorites.getInstance().loadResourceFromAzure(this.getName(), null));
     }
 
     @Nonnull
     @Override
     public AbstractAzResource<?, ?, ?> updateResourceInAzure(@Nonnull AbstractAzResource<?, ?, ?> origin) {
         throw new AzureToolkitRuntimeException("not supported");
-    }
-
-    @Override
-    public AbstractAzResource<?, ?, ?> getResource() {
-        return Objects.nonNull(this.resource) ? this.resource : super.getResource();
     }
 
     @Override
