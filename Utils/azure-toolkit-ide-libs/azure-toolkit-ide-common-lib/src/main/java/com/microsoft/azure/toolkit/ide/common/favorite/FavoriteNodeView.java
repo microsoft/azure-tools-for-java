@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import lombok.RequiredArgsConstructor;
 
@@ -27,12 +27,12 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getTips() {
-        final IAzureBaseResource<?, ?> resource = view.getResource();
+        final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) view.getResource();
         final ResourceId id = ResourceId.fromString(resource.getId());
         final Subscription subs = Azure.az(AzureAccount.class).account().getSubscription(id.subscriptionId());
         final String rg = id.resourceGroupName();
-        final String type = id.resourceType();
-        return String.format("Type:%s | Subscription: %s | Resource Group:%s", type, subs.getName(), rg) +
+        final String typeName = resource.getModule().getResourceTypeName();
+        return String.format("Type:%s | Subscription: %s | Resource Group:%s", typeName, subs.getName(), rg) +
             Optional.ofNullable(id.parent()).map(p -> " | Parent:" + p.name()).orElse("");
     }
 
