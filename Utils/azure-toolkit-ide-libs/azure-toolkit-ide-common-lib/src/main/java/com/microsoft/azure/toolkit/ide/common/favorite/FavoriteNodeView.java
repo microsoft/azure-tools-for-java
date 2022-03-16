@@ -27,6 +27,9 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getTips() {
+        if (!Azure.az(AzureAccount.class).isSignedIn()) {
+            return "";
+        }
         final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) view.getResource();
         final ResourceId id = ResourceId.fromString(resource.getId());
         final Subscription subs = Azure.az(AzureAccount.class).account().getSubscription(id.subscriptionId());
