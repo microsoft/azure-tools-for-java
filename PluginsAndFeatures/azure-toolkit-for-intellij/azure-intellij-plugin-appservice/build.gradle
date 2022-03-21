@@ -8,6 +8,8 @@ intellij {
 
 dependencies {
     compile project(':azure-intellij-plugin-lib')
+    compile project(':azure-intellij-plugin-containerregistry')
+    compile 'com.spotify:docker-client:8.16.0'
     compile 'com.microsoft.azure:azure-toolkit-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.jcraft:jsch:0.1.55'

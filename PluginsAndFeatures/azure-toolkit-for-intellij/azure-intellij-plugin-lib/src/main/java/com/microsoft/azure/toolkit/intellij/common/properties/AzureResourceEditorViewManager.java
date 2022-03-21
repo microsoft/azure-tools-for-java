@@ -26,8 +26,8 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 public class AzureResourceEditorViewManager {
-    private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
-    private static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
+    public static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
+    public static final String CANNOT_GET_FILE_EDITOR_MANAGER = "Cannot get FileEditorManager";
     public static final Key<AzResourceBase> AZURE_RESOURCE_KEY = new Key<>("AzureResource");
     public static final Key<AzureResourceEditorViewManager> AZURE_RESOURCE_EDITOR_MANAGER_KEY = new Key<>("AzureResourceEditorManager");
     private final Function<AzResourceBase, FileType> getFileType;

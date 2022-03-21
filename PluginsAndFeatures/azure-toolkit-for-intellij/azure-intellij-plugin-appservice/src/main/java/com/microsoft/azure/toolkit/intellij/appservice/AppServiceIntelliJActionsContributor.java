@@ -13,12 +13,14 @@ import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsCont
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.AppServiceFileAction;
 import com.microsoft.azure.toolkit.intellij.appservice.actions.OpenAppServicePropertyViewAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.ProfileFlightRecordAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.SSHIntoWebAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StartStreamingLogsAction;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.action.StopStreamingLogsAction;
+import com.microsoft.azure.toolkit.intellij.legacy.docker.action.PushToContainerRegistryAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.CreateFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.action.CreateWebAppAction;
@@ -40,6 +42,7 @@ import com.microsoft.azure.toolkit.lib.common.entity.IAzureBaseResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,7 +51,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
 public class AppServiceIntelliJActionsContributor implements IActionsContributor {
-    public static final int INITIALIZE_ORDER = AppServiceActionsContributor.INITIALIZE_ORDER + 1;
+    public static final int INITIALIZE_ORDER =
+            Math.max(AppServiceActionsContributor.INITIALIZE_ORDER, ContainerRegistryActionsContributor.INITIALIZE_ORDER) + 1;
     private static final String UNABLE_TO_OPEN_EXPLORER = "Unable to open explorer";
 
     @Override
@@ -145,6 +149,12 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
             functionApp.triggerFunction(entity.getName(), request);
         };
         am.registerHandler(FunctionAppActionsContributor.TRIGGER_FUNCTION, triggerPredicate, triggerFunctionHandler);
+
+        // keep push docker image in app service library as form is shared between appservice/container repository but could not split into different project
+        final BiPredicate<ContainerRegistry, AnActionEvent> pushImageCondition = (r, e) -> r instanceof ContainerRegistry;
+        final BiConsumer<ContainerRegistry, AnActionEvent> pushImageHandler =
+            (c, e) -> PushToContainerRegistryAction.execute(c, e.getProject());
+        am.registerHandler(ContainerRegistryActionsContributor.PUSH_IMAGE, pushImageCondition, pushImageHandler);
     }
 
     @Override

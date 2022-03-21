@@ -9,7 +9,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
 import com.intellij.openapi.fileChooser.FileSaverDialog;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
@@ -23,9 +22,6 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
-import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyView;
-import com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -39,7 +35,6 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureIconSymbol;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
@@ -189,33 +184,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
-        final String registryName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
-        final String sid = node.getSubscriptionId();
-        final String resId = node.getResourceId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
-        }
-        final Project project = (Project) node.getProject();
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                                                              ContainerRegistryPropertyViewProvider.TYPE, resId);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(registryName, sid, resId);
-            final AzureFileType fileType = new AzureFileType(ContainerRegistryPropertyViewProvider.TYPE,
-                AzureIconLoader.loadIcon(AzureIconSymbol.ContainerRegistry.MODULE));
-            itemVirtualFile.setFileType(fileType);
-        }
-        final FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
-        for (final FileEditor editor: editors) {
-            if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
-                editor instanceof ContainerRegistryPropertyView) {
-                ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
-            }
-        }
+        throw new UnsupportedOperationException("this method should not be called");
     }
 
     protected FileEditorManager getFileEditorManager(@NotNull final String sid, @NotNull final String webAppId,

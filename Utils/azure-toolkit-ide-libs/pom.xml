@@ -40,6 +40,7 @@
         <module>azure-toolkit-ide-storage-lib</module>
         <module>azure-toolkit-ide-vm-lib</module>
         <module>azure-toolkit-ide-redis-lib</module>
+        <module>azure-toolkit-ide-containerregistry-lib</module>
         <module>azure-toolkit-ide-appservice-lib</module>
         <module>azure-toolkit-ide-database-lib</module>
         <module>azure-toolkit-ide-arm-lib</module>
@@ -97,6 +98,11 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-vm-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-containerregistry-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

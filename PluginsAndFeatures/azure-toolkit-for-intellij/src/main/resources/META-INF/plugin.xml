@@ -77,6 +77,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-database.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-appservice.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-arm.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-containerregistry.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -100,7 +101,6 @@
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-    <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.docker.ContainerRegistryPropertyViewProvider"/>
     <toolWindow
             anchor="left"
             factoryClass="com.microsoft.intellij.ui.ServerExplorerToolWindowFactory"
@@ -136,7 +136,6 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner" />
-    <configurationType implementation="com.microsoft.azure.toolkit.intellij.docker.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
     <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
@@ -200,23 +199,6 @@
     <action class="com.microsoft.intellij.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
     <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback"
             icon="/icons/Common/feedback.svg"/>
-
-    <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.docker.action.AddDockerSupportAction"
-            text="Add Docker Support" description="Add Docker Support"
-            icon="/icons/DockerSupport/DockerSupport.svg">
-    </action>
-    <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.docker.action.RunOnDockerHostAction"
-            text="Docker Run" description="Docker Run"
-            icon="/icons/DockerSupport/Run.svg">
-    </action>
-    <action id="Actions.PushImage" class="com.microsoft.azure.toolkit.intellij.docker.action.PushImageAction"
-            text="Push Image" description="Push Image"
-            icon="/icons/DockerSupport/PushImage.svg">
-    </action>
-    <action id="Actions.WebAppOnLinux" class="com.microsoft.azure.toolkit.intellij.docker.action.WebAppOnLinuxAction"
-            text="Run on Web App for Containers" description="Run on Web App for Containers"
-            icon="/icons/DockerSupport/RunOnWebApp.svg">
-    </action>
     <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">

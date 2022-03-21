@@ -160,8 +160,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-containerregistry-lib</artifactId>
-            <version>0.19.0-SNAPSHOT</version>
+            <artifactId>azure-toolkit-ide-containerregistry-lib</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>

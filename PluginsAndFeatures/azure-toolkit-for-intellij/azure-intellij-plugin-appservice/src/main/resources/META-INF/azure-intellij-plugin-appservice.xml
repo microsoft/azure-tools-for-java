@@ -16,6 +16,7 @@
 
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType"/>
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType"/>
+        <configurationType implementation="com.microsoft.azure.toolkit.intellij.legacy.docker.AzureDockerSupportConfigurationType"/>
 
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentRunner"/>
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionLocalRunner"/>
@@ -48,5 +49,21 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
         </action>
         <!-- Functions End -->
+        <action id="Actions.AddDockerSupport" class="com.microsoft.azure.toolkit.intellij.legacy.docker.action.AddDockerSupportAction"
+                text="Add Docker Support" description="Add Docker Support"
+                icon="/icons/DockerSupport/DockerSupport.svg">
+        </action>
+        <action id="Actions.RunOnDockerHost" class="com.microsoft.azure.toolkit.intellij.legacy.docker.action.RunOnDockerHostAction"
+                text="Docker Run" description="Docker Run"
+                icon="/icons/DockerSupport/Run.svg">
+        </action>
+        <action id="Actions.PushImage" class="com.microsoft.azure.toolkit.intellij.legacy.docker.action.PushImageAction"
+                text="Push Image" description="Push Image"
+                icon="/icons/DockerSupport/PushImage.svg">
+        </action>
+        <action id="Actions.WebAppOnLinux" class="com.microsoft.azure.toolkit.intellij.legacy.docker.action.WebAppOnLinuxAction"
+                text="Run on Web App for Containers" description="Run on Web App for Containers"
+                icon="/icons/DockerSupport/RunOnWebApp.svg">
+        </action>
     </actions>
 </idea-plugin>

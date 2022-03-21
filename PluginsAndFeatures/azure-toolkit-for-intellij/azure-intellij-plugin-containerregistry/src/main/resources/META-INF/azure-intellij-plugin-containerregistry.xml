@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <azureExplorerContributor implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryExplorerContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.containerregistry.IntelliJContainerRegistryActionsContributor"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.legacy.docker.ContainerRegistryPropertyViewProvider"/>
+    </extensions>
+</idea-plugin>
