@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.19.0-SNAPSHOT"
+    azureToolkitVersion = "0.19.1-SNAPSHOT"
 }
 
 compileKotlin {
@@ -83,7 +83,7 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.19.0-SNAPSHOT"
+        azureToolkitVersion = "0.19.1-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
