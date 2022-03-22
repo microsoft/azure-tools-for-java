@@ -70,7 +70,7 @@ public class VirtualMachineImageDialog extends AzureDialog<VmImage> implements A
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(cbPublisher, cbOffer, cbSku, cbImage);
+        return Arrays.asList(cbImage, cbPublisher, cbOffer, cbSku);
     }
 
     private void createUIComponents() {

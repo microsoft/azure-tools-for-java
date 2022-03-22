@@ -90,7 +90,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(subscriptionBox, displayNameInput, callbackUrlsTable, domainInput, clientIdInput);
+        return Arrays.asList(displayNameInput, subscriptionBox, callbackUrlsTable, domainInput, clientIdInput);
     }
 
     @Override

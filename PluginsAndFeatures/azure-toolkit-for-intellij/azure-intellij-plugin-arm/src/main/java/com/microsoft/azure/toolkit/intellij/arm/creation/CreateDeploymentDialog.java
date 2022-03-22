@@ -231,4 +231,10 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
         this.subscriptionCombobox = new SubscriptionComboBox();
         this.regionCb = new RegionComboBox();
     }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.deploymentNameTextField;
+    }
 }

@@ -104,8 +104,8 @@ public class MySqlCreationBasicPanel extends JPanel implements AzureFormPanel<Da
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            serverNameTextField,
             adminUsernameTextField,
+            serverNameTextField,
             passwordFieldInput,
             confirmPasswordFieldInput
         };

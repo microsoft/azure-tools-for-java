@@ -15,24 +15,22 @@ import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import org.apache.commons.collections.ListUtils;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPanel<WebAppConfig> {
+    private final Project project;
     private JTabbedPane tabPane;
     private JPanel pnlRoot;
-    private Project project;
     private AppServiceInfoAdvancedPanel<WebAppConfig> appServiceConfigPanelAdvanced;
     private AppServiceMonitorPanel appServiceMonitorPanel;
     private JPanel pnlMonitoring;
     private JPanel pnlAppService;
-
-    public WebAppConfigFormPanelAdvance(final Project project) {
-        this.project = project;
-    }
 
     @Override
     public void setVisible(final boolean visible) {
@@ -67,7 +65,7 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, WebAppConfig::getWebAppDefaultConfig);
+        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel<>(project, WebAppConfig::getWebAppDefaultConfig);
         final List<PricingTier> validPricing = new ArrayList<>(PricingTier.WEB_APP_PRICING);
         appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, WebAppConfig.DEFAULT_PRICING_TIER);
 

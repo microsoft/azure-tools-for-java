@@ -135,4 +135,10 @@ public class SignInWindow extends AzureDialogWrapper {
     protected JComponent createCenterPanel() {
         return contentPane;
     }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.cliBtn;
+    }
 }

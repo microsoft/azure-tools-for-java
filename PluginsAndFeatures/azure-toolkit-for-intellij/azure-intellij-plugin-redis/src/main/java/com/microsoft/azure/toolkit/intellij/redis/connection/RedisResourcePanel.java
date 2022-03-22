@@ -74,8 +74,8 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(
-                this.subscriptionComboBox,
-                this.redisComboBox
+            this.redisComboBox,
+            this.subscriptionComboBox
         );
     }
 

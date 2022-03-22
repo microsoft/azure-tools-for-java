@@ -94,4 +94,9 @@ public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
             throw new IllegalArgumentException(message("function.applicationInsights.validate.invalidChar", String.join(",", invalidCharacters)));
         }
     }
+
+    @Override
+    public @Nullable JComponent getPreferredFocusedComponent() {
+        return this.txtInsightsName;
+    }
 }

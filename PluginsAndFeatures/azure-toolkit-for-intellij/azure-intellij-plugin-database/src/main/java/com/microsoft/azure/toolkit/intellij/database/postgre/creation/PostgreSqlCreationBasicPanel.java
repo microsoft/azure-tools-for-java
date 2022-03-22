@@ -104,8 +104,8 @@ public class PostgreSqlCreationBasicPanel extends JPanel implements AzureFormPan
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            serverNameTextField,
             adminUsernameTextField,
+            serverNameTextField,
             passwordFieldInput,
             confirmPasswordFieldInput
         };

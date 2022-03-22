@@ -180,6 +180,11 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
         }
 
         @Override
+        public @Nullable JComponent getPreferredFocusedComponent() {
+            return environmentVariableTable.getTableView();
+        }
+
+        @Override
         protected void doOKAction() {
             environmentVariableTable.stopEditing();
             environmentVariables = environmentVariableTable.getEnv();

@@ -13,6 +13,7 @@ import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.intellij.AzureSettings;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -81,5 +82,11 @@ public class ApplicationInsightsAddDialog extends AzureDialogWrapper {
         if (isValid) {
             super.doOKAction();
         }
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.txtName;
     }
 }

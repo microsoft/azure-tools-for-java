@@ -158,8 +158,8 @@ public class SqlServerCreationAdvancedPanel extends JPanel implements AzureFormP
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            this.serverNameTextField,
             this.adminUsernameTextField,
+            this.serverNameTextField,
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
             this.regionComboBox,

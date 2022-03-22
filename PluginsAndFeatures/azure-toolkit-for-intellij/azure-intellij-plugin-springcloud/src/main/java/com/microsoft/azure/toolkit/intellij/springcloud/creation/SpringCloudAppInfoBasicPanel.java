@@ -34,9 +34,9 @@ public class SpringCloudAppInfoBasicPanel extends AbstractSpringCloudAppInfoPane
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(
-                this.getSelectorSubscription(),
-                this.getSelectorCluster(),
-                this.getTextName()
+            this.getTextName(),
+            this.getSelectorSubscription(),
+            this.getSelectorCluster()
         );
     }
 }

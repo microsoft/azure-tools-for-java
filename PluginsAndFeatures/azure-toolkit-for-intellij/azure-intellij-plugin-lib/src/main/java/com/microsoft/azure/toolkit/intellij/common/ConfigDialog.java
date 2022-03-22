@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.extern.java.Log;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 
 @Log

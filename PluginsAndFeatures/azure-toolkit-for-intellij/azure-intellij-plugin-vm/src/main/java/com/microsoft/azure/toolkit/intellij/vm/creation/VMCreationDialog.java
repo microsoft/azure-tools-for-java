@@ -486,8 +486,8 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
-                txtUserName, txtVisualMachineName, passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
+        return Arrays.asList(txtUserName, txtVisualMachineName, cbSubscription, cbImage, cbSize, cbAvailabilityOptions, cbVirtualNetwork, cbSubnet, cbSecurityGroup, cbPublicIp, cbStorageAccount,
+                passwordFieldInput, confirmPasswordFieldInput, txtCertificate, txtMaximumPrice);
     }
 
     @Override

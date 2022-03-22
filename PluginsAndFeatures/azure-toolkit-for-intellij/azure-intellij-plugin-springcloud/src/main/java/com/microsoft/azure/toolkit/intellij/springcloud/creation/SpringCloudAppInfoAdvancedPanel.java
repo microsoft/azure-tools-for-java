@@ -58,9 +58,9 @@ public class SpringCloudAppInfoAdvancedPanel extends AbstractSpringCloudAppInfoP
     public List<AzureFormInput<?>> getInputs() {
         final List<AzureFormInput<?>> inputs = this.formConfig.getInputs();
         inputs.addAll(Arrays.asList(
-                this.getSelectorSubscription(),
-                this.getSelectorCluster(),
-                this.getTextName()
+            this.getTextName(),
+            this.getSelectorSubscription(),
+            this.getSelectorCluster()
         ));
         return inputs;
     }

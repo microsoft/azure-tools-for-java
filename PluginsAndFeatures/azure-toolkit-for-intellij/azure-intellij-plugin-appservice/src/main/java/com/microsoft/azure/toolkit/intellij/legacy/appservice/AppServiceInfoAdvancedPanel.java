@@ -114,9 +114,9 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
+            this.textName,
             this.selectorSubscription,
             this.selectorGroup,
-            this.textName,
             this.selectorRuntime,
             this.selectorRegion,
             this.selectorApplication,

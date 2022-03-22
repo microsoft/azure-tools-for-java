@@ -24,6 +24,7 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -183,5 +184,11 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
 
     public void setOnCreate(Runnable onCreate) {
         this.onCreate = onCreate;
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.txtName;
     }
 }

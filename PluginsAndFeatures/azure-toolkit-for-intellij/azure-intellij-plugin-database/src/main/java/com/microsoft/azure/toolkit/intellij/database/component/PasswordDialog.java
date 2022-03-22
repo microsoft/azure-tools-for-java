@@ -161,8 +161,6 @@ public class PasswordDialog extends AzureDialog<Password> implements AzureForm<P
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        final AzureFormInput<?>[] inputs = {this.passwordSaveComboBox};
-        return Arrays.asList(inputs);
+        return List.of(this.passwordSaveComboBox);
     }
-
 }

@@ -123,4 +123,10 @@ public class UpdateDeploymentDialog extends AzureDialogWrapper {
     protected JComponent createCenterPanel() {
         return contentPane;
     }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.templateTextField;
+    }
 }

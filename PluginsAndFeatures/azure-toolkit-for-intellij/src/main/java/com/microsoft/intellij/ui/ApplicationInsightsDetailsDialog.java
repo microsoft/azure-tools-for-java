@@ -7,6 +7,7 @@ package com.microsoft.intellij.ui;
 
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -47,5 +48,11 @@ public class ApplicationInsightsDetailsDialog extends AzureDialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         return contentPane;
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.txtName;
     }
 }

@@ -85,7 +85,7 @@ public abstract class AbstractSpringCloudAppInfoPanel extends JPanel implements 
             final SpringCloudCluster c = this.getSelectorCluster().getValue();
             final String appName = StringUtils.firstNonBlank(this.getTextName().getName(), this.defaultAppName);
             if (Objects.nonNull(c)) {
-                final SpringCloudApp app = c.apps().updateOrCreate(appName, c.getResourceGroupName());
+                final SpringCloudApp app = c.apps().create(appName, c.getResourceGroupName());
                 this.onAppChanged(app);
             }
         }

@@ -166,9 +166,9 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
+            this.redisNameTextField,
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
-            this.redisNameTextField,
             this.pricingComboBox,
             this.regionComboBox
         };

@@ -249,10 +249,10 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-            this.subscriptionComboBox,
             this.serverComboBox,
             this.databaseComboBox,
-            this.usernameComboBox
+            this.usernameComboBox,
+            this.subscriptionComboBox
         };
         return Arrays.asList(inputs);
     }

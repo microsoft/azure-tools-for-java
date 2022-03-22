@@ -51,9 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SubscriptionsDialog extends AzureDialogWrapper {
     private static final int CHECKBOX_COLUMN = 0;
@@ -242,6 +240,12 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     @Override
     protected String getDimensionServiceKey() {
         return "SubscriptionsDialog";
+    }
+
+    @Nullable
+    @Override
+    public JComponent getPreferredFocusedComponent() {
+        return this.table;
     }
 
     private static class SubscriptionTableModel extends DefaultTableModel {

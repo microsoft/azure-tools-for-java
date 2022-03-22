@@ -126,9 +126,9 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
+            this.accountNameTextField,
             this.subscriptionComboBox,
             this.resourceGroupComboBox,
-            this.accountNameTextField,
             this.kindComboBox,
             this.performanceComboBox,
             this.redundancyComboBox,

@@ -6,18 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.jfr;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.legacy.appservice.ProcessComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.ProcessComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderConfiguration;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfiguration>
@@ -28,7 +27,7 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
     private ProcessComboBox processComboBox1;
     private DurationPanel durationPanel;
 
-    private AppServiceAppBase<?, ?, ?> appService;
+    private final AppServiceAppBase<?, ?, ?> appService;
 
     public RunFlightRecorderDialog(final Project project, AppServiceAppBase<?, ?, ?> appService) {
         super(project);
@@ -43,7 +42,7 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
 
     @Override
     protected String getDialogTitle() {
-        return null;
+        return "Flight Recorder";
     }
 
     @Nullable
@@ -57,7 +56,7 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
         final FlightRecorderConfiguration.FlightRecorderConfigurationBuilder builder =
                 FlightRecorderConfiguration.builder();
         builder.duration(this.durationPanel.getValue());
-        ProcessInfo pi = this.processComboBox1.getValue();
+        final ProcessInfo pi = this.processComboBox1.getValue();
         if (pi != null) {
             builder.pid(pi.getId());
             builder.processName(pi.getName());
@@ -73,8 +72,8 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        List<AzureFormInput<?>> res = new ArrayList<>(this.durationPanel.getInputs());
-        res.addAll(Collections.singletonList(this.processComboBox1));
+        final List<AzureFormInput<?>> res = new LinkedList<>(this.durationPanel.getInputs());
+        res.add(0, this.processComboBox1);
         return res;
     }
 

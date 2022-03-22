@@ -91,7 +91,7 @@ public class VirtualNetworkDialog extends AzureDialog<NetworkDraft> implements A
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(txtAddressSpace, txtName, txtSubnetAddressRange, txtSubnetName);
+        return Arrays.asList(txtName, txtAddressSpace, txtSubnetAddressRange, txtSubnetName);
     }
 
     private void createUIComponents() {

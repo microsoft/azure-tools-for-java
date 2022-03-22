@@ -164,9 +164,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     public List<AzureFormInput<?>> getInputs() {
         final ArrayList<AzureFormInput<?>> inputs = new ArrayList<>();
         //noinspection unchecked
-        inputs.addAll(consumerPanel.getInputs());
-        //noinspection unchecked
         inputs.addAll(resourcePanel.getInputs());
+        //noinspection unchecked
+        inputs.addAll(consumerPanel.getInputs());
         return inputs;
     }
 

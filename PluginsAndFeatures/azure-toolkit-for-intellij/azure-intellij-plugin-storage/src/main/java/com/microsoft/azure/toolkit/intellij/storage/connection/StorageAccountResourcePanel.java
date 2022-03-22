@@ -74,8 +74,8 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(
-                this.subscriptionComboBox,
-                this.accountComboBox
+            this.accountComboBox,
+            this.subscriptionComboBox
         );
     }
 

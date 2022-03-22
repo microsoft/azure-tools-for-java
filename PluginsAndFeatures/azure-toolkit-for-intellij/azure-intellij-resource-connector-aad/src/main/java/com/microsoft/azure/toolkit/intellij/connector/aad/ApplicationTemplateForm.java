@@ -165,7 +165,7 @@ class ApplicationTemplateForm implements AzureForm<Application> {
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return List.of(subscriptionBox, applicationsBox);
+        return List.of(applicationsBox, subscriptionBox);
     }
 
     public JPanel getContentPanel() {
