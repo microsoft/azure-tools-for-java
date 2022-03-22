@@ -13,7 +13,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
-import com.intellij.ui.TableSpeedSearch;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -149,15 +148,14 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         model.addColumn("Subscription name");
         model.addColumn("Subscription ID");
 
-        table = new JBTable();
-        table.setModel(model);
+        table = new JBTable(model);
         TableColumn column = table.getColumnModel().getColumn(CHECKBOX_COLUMN);
         column.setHeaderValue(""); // Don't show title text
         column.setMinWidth(23);
         column.setMaxWidth(23);
         JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN);
         table.getTableHeader().setReorderingAllowed(false);
-        new TableSpeedSearch(table);
+        // new TableSpeedSearch(table);
         AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -249,18 +247,14 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     }
 
     private static class SubscriptionTableModel extends DefaultTableModel {
-        final Class[] columnClass = new Class[]{
-            Boolean.class, String.class, String.class
-        };
-
         @Override
         public boolean isCellEditable(int row, int col) {
-            return (col == CHECKBOX_COLUMN);
+            return col == CHECKBOX_COLUMN;
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnClass[columnIndex];
+        public Class<?> getColumnClass(int col) {
+            return col == CHECKBOX_COLUMN ? Boolean.class : super.getColumnClass(col);
         }
     }
 
