@@ -28,6 +28,7 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.CONSUMER;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition.RESOURCE;
@@ -162,11 +163,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        final ArrayList<AzureFormInput<?>> inputs = new ArrayList<>();
+        final List<AzureFormInput<?>> inputs = new ArrayList<>();
         //noinspection unchecked
-        inputs.addAll(resourcePanel.getInputs());
+        Optional.ofNullable(resourcePanel).ifPresent(p -> inputs.addAll(p.getInputs()));
         //noinspection unchecked
-        inputs.addAll(consumerPanel.getInputs());
+        Optional.ofNullable(consumerPanel).ifPresent(p -> inputs.addAll(p.getInputs()));
         return inputs;
     }
 
