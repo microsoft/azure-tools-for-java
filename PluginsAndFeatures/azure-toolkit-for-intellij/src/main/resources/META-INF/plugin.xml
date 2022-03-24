@@ -189,7 +189,7 @@
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.intellij.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.intellij.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
-            description="ShowSubscriptionsAction" />
+            description="ShowSubscriptionsAction" icon="AllIcons.General.Filter" />
     <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
       <action id="AzureToolkit.DisableSSLCertificateValidation"
               class="com.microsoft.intellij.actions.DisableSslCertificateValidationAction"

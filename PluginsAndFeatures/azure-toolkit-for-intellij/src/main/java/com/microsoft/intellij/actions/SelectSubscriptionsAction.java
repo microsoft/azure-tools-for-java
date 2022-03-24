@@ -51,9 +51,8 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
     @Override
     public void update(AnActionEvent e) {
         try {
-            boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
             e.getPresentation().setEnabled(isSignIn);
-            e.getPresentation().setIcon(UIHelperImpl.loadIcon(ManageSubscriptionsAction.getIcon()));
         } catch (Exception ex) {
             ex.printStackTrace();
             LOGGER.error("update", ex);

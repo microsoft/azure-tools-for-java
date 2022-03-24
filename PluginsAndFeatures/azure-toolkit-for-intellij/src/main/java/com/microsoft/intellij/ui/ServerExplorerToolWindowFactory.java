@@ -439,7 +439,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final AnAction feedbackAction = ActionManager.getInstance().getAction("AzureToolkit.Survey");
         final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
-        toolWindow.setTitleActions(Arrays.asList(refreshAction, signInAction, selectSubscriptionsAction, Separator.create(), feedbackAction));
+        toolWindow.setTitleActions(Arrays.asList(feedbackAction, Separator.create(), refreshAction, selectSubscriptionsAction, signInAction));
     }
 
     private boolean isOutdatedModule(Node node) {
