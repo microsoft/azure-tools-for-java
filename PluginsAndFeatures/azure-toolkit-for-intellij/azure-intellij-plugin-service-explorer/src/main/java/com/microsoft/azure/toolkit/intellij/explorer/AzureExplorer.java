@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import javax.annotation.Nonnull;
@@ -65,6 +66,12 @@ public class AzureExplorer extends Tree {
         return manager.getRootNodes();
     }
 
+    public static void refreshAll() {
+        AzureExplorer.manager.getRoots().stream().filter(r -> r instanceof AbstractAzResourceModule)
+            .forEach(r -> ((AbstractAzResourceModule<?, ?, ?>) r).refresh());
+        Favorites.getInstance().refresh();
+    }
+
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
         public void createToolWindowContent(@Nonnull Project project, @Nonnull ToolWindow toolWindow) {
             final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
@@ -85,6 +92,14 @@ public class AzureExplorer extends Tree {
                 .map(p -> p.getModuleNode(null, this))
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(Node::order))
+                .collect(Collectors.toList());
+        }
+
+        @Nonnull
+        public List<Object> getRoots() {
+            return providers.getExtensionList().stream()
+                .map(IExplorerNodeProvider::getRoot)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         }
 

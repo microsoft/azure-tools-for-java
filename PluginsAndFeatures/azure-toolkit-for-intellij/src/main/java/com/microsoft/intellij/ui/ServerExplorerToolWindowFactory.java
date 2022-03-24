@@ -424,25 +424,35 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
-        final AnAction refreshAction = new AnAction("Refresh", "Refresh Azure nodes list", AllIcons.Actions.Refresh) {
-            @Override
-            public void actionPerformed(AnActionEvent event) {
-                azureModule.load(true);
-            }
-
-            @Override
-            public void update(@NotNull AnActionEvent e) {
-                final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
-                e.getPresentation().setEnabled(isSignIn);
-            }
-        };
+        final AnAction refreshAction = new RefreshAllAction(azureModule);
         final AnAction feedbackAction = ActionManager.getInstance().getAction("AzureToolkit.Survey");
         final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
-        toolWindow.setTitleActions(Arrays.asList(feedbackAction, Separator.create(), refreshAction, selectSubscriptionsAction, signInAction));
+        toolWindow.setTitleActions(Arrays.asList(refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
     }
 
     private boolean isOutdatedModule(Node node) {
         return node instanceof StorageModule || node instanceof VMArmModule || node instanceof RedisCacheModule || node instanceof ContainerRegistryModule;
+    }
+
+    private static class RefreshAllAction extends AnAction implements DumbAware {
+        private final AzureModule azureModule;
+
+        public RefreshAllAction(AzureModule azureModule) {
+            super("Refresh All", "Refresh Azure nodes list", AllIcons.Actions.Refresh);
+            this.azureModule = azureModule;
+        }
+
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+            azureModule.load(true);
+            AzureExplorer.refreshAll();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            e.getPresentation().setEnabled(isSignIn);
+        }
     }
 }
