@@ -40,7 +40,7 @@
         <azure.toolkit-lib.version>0.20.0-SNAPSHOT</azure.toolkit-lib.version>
         <azure.toolkit-ide-lib.version>0.20.0-SNAPSHOT</azure.toolkit-ide-lib.version>
         <powermock.version>2.0.9</powermock.version>
-        <jetty.version>9.4.40.v20210413</jetty.version>
+        <jetty.version>9.4.41.v20210516</jetty.version><!--CVE-2021-28169-->
     </properties>
     <modules>
         <module>azure-toolkit-ide-libs</module>
@@ -258,6 +258,10 @@
                     <exclusion><!--WS-2018-0629-->
                         <groupId>com.fasterxml.woodstox</groupId>
                         <artifactId>woodstox-core</artifactId>
+                    </exclusion>
+                    <exclusion><!--CVE-2014-3643-->
+                        <groupId>com.sun.jersey</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
