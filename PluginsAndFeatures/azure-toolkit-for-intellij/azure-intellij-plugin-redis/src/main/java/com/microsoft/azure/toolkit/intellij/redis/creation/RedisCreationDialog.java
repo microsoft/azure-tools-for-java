@@ -139,6 +139,9 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
         };
         this.redisNameTextField = new AzureTextInput();
         this.pricingComboBox = new AzureComboBoxSimple<>(PricingTier::values);
+        this.subscriptionComboBox.setRequired(true);
+        this.resourceGroupComboBox.setRequired(true);
+        this.regionComboBox.setRequired(true);
     }
 
     @Override

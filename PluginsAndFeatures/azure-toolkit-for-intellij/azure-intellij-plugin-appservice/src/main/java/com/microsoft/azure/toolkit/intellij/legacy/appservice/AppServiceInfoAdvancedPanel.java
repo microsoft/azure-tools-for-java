@@ -166,6 +166,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         this.textName.setRequired(true);
         this.selectorServicePlan.setRequired(true);
         this.selectorSubscription.setRequired(true);
+        this.selectorGroup.setRequired(true);
         this.selectorRuntime.setRequired(true);
         this.selectorRegion.setRequired(true);
 
