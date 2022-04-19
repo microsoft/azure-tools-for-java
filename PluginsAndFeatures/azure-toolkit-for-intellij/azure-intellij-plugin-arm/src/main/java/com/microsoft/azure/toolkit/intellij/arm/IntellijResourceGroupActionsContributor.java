@@ -30,7 +30,7 @@ public class IntellijResourceGroupActionsContributor implements IActionsContribu
             dialog.setOkActionListener((group) -> {
                 if (Objects.nonNull(group)) {
                     dialog.close();
-                    group.createIfNotExist();
+                    AzureTaskManager.getInstance().runOnPooledThread(group::createIfNotExist);
                 }
             });
             dialog.show();
