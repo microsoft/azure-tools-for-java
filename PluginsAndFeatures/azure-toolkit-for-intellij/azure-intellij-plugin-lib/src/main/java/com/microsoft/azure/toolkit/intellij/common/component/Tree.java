@@ -15,7 +15,6 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.EqualsAndHashCode;
@@ -31,7 +30,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -158,16 +156,11 @@ public class Tree extends SimpleTree implements DataProvider {
             this.loaded = false;
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             tm.runOnPooledThread(() -> {
-                try {
-                    final List<Node<?>> children = this.inner.getChildren();
-                    if (incremental.length > 0 && incremental[0]) {
-                        tm.runLater(() -> updateChildren(children));
-                    } else {
-                        tm.runLater(() -> setChildren(children));
-                    }
-                } catch (final Exception e) {
-                    this.setChildren(Collections.emptyList());
-                    AzureMessager.getMessager().error(e);
+                final List<Node<?>> children = this.inner.getChildren();
+                if (incremental.length > 0 && incremental[0]) {
+                    tm.runLater(() -> updateChildren(children));
+                } else {
+                    tm.runLater(() -> setChildren(children));
                 }
             });
         }

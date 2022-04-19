@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.common.component;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Accessors(chain = true, fluent = true)
@@ -86,7 +88,14 @@ public class Node<D> {
     }
 
     public List<Node<?>> getChildren() {
-        return this.childrenBuilders.stream().flatMap((builder) -> builder.build(this).stream()).collect(Collectors.toList());
+        return this.childrenBuilders.stream().flatMap((builder) -> {
+            try {
+                return builder.build(this).stream();
+            } catch (final Exception e) {
+                AzureMessager.getMessager().error(e);
+                return Stream.empty();
+            }
+        }).collect(Collectors.toList());
     }
 
     public boolean hasChildren() {
