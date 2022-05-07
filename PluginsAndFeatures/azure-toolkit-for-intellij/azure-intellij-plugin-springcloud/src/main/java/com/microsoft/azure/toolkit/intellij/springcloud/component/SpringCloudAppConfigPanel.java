@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
+import com.azure.resourcemanager.appplatform.models.RuntimeVersion;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
@@ -21,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudPersistentDisk;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudSku;
 import lombok.Getter;
@@ -51,6 +51,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     private JButton toggleStorage;
     private JRadioButton useJava8;
     private JRadioButton useJava11;
+    private JRadioButton useJava17;
     private JTextField txtJvmOptions;
     private EnvironmentVariablesTextFieldWithBrowseButton envTable;
     private ComboBox<Double> numCpu;
@@ -83,6 +84,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.txtStorage.setBorder(JBUI.Borders.empty(0, 2));
         this.useJava8.addActionListener((e) -> debouncer.debounce());
         this.useJava11.addActionListener((e) -> debouncer.debounce());
+        this.useJava17.addActionListener((e) -> debouncer.debounce());
         this.txtJvmOptions.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(DocumentEvent documentEvent) {
@@ -183,7 +185,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = Optional.ofNullable(appConfig.getDeployment())
             .orElse(SpringCloudDeploymentConfig.builder().build());
-        final String javaVersion = this.useJava11.isSelected() ? SpringCloudJavaVersion.JAVA_11 : SpringCloudJavaVersion.JAVA_8;
+        final String javaVersion = this.useJava17.isSelected() ? RuntimeVersion.JAVA_17.toString() :
+            this.useJava11.isSelected() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
         deploymentConfig.setRuntimeVersion(javaVersion);
         deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
@@ -202,9 +205,9 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         final SpringCloudDeploymentConfig deployment = config.getDeployment();
         this.toggleStorage(deployment.getEnablePersistentStorage());
         this.toggleEndpoint(config.getIsPublic());
-        final boolean java11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), SpringCloudJavaVersion.JAVA_11);
-        this.useJava11.setSelected(java11);
-        this.useJava8.setSelected(!java11);
+        this.useJava17.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_17.toString()));
+        this.useJava11.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString()));
+        this.useJava8.setSelected(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_8.toString()));
 
         this.txtJvmOptions.setText(deployment.getJvmOptions());
         final Map<String, String> env = deployment.getEnvironment();
@@ -228,6 +231,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public void setEnabled(boolean enable) {
         this.useJava8.setEnabled(enable);
         this.useJava11.setEnabled(enable);
+        this.useJava17.setEnabled(enable);
         this.toggleEndpoint.setEnabled(enable);
         this.toggleStorage.setEnabled(enable);
         numCpu.setEnabled(enable);
