@@ -60,6 +60,7 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     private JBLabel statusEndpoint;
     private JBLabel statusStorage;
     private JLabel lblTestEndpoint;
+    private JLabel lblRuntime;
 
     private Consumer<? super SpringCloudAppConfig> listener = (config) -> {
     };
@@ -163,6 +164,11 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
             }, AzureTask.Modality.ANY);
         });
         final SpringCloudSku sku = app.getParent().getSku();
+        final boolean enterprise = sku.getTier().toLowerCase().startsWith("e");
+        this.useJava8.setVisible(!enterprise);
+        this.useJava11.setVisible(!enterprise);
+        this.useJava17.setVisible(!enterprise);
+        this.lblRuntime.setVisible(!enterprise);
         final boolean basic = sku.getTier().toLowerCase().startsWith("b");
         final Double cpu = this.numCpu.getItem();
         final Double mem = this.numMemory.getItem();
@@ -185,10 +191,14 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = Optional.ofNullable(appConfig.getDeployment())
             .orElse(SpringCloudDeploymentConfig.builder().build());
-        final String javaVersion = this.useJava17.isSelected() ? RuntimeVersion.JAVA_17.toString() :
-            this.useJava11.isSelected() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
+        if (this.useJava17.isVisible()) {
+            final String javaVersion = this.useJava17.isSelected() ? RuntimeVersion.JAVA_17.toString() :
+                this.useJava11.isSelected() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
+            deploymentConfig.setRuntimeVersion(javaVersion);
+        } else {
+            deploymentConfig.setRuntimeVersion(null);
+        }
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
-        deploymentConfig.setRuntimeVersion(javaVersion);
         deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
