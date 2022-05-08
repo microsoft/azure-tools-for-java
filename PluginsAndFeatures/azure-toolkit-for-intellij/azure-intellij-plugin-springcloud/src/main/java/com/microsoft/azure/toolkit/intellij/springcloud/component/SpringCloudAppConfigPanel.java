@@ -23,7 +23,6 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudPersistentDisk;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudSku;
 import lombok.Getter;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -163,13 +162,13 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
                 }
             }, AzureTask.Modality.ANY);
         });
-        final SpringCloudSku sku = app.getParent().getSku();
-        final boolean enterprise = sku.getTier().toLowerCase().startsWith("e");
+        final String sku = app.getParent().getSku();
+        final boolean enterprise = sku.toLowerCase().startsWith("e");
         this.useJava8.setVisible(!enterprise);
         this.useJava11.setVisible(!enterprise);
         this.useJava17.setVisible(!enterprise);
         this.lblRuntime.setVisible(!enterprise);
-        final boolean basic = sku.getTier().toLowerCase().startsWith("b");
+        final boolean basic = sku.toLowerCase().startsWith("b");
         final Double cpu = this.numCpu.getItem();
         final Double mem = this.numMemory.getItem();
         final Double[] cpus = basic ? new Double[]{0.5, 1.0} : new Double[]{0.5, 1.0, 2.0, 3.0, 4.0};
