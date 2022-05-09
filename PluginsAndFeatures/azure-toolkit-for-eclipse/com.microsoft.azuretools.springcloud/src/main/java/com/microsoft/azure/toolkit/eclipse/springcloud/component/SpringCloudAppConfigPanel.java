@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 
+import com.azure.resourcemanager.appplatform.models.RuntimeVersion;
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureTextInput;
 import com.microsoft.azure.toolkit.eclipse.common.form.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -34,8 +35,6 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudAppConfig;
 import com.microsoft.azure.toolkit.lib.springcloud.config.SpringCloudDeploymentConfig;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudJavaVersion;
-import com.microsoft.azure.toolkit.lib.springcloud.model.SpringCloudSku;
 
 public class SpringCloudAppConfigPanel extends Composite implements AzureFormPanel<SpringCloudAppConfig> {
 	private Button useJava8;
@@ -95,8 +94,8 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 	}
 
 	public synchronized void updateForm(@Nonnull SpringCloudApp app) {
-		final SpringCloudSku sku = app.getParent().getSku();
-		final boolean basic = sku.getTier().toLowerCase().startsWith("b");
+		final String sku = app.getParent().getSku();
+		final boolean basic = sku.toLowerCase().startsWith("b");
 		final int cpu = this.numCpu.getSelection();
 		final int mem = this.numMemory.getSelection();
 		final int maxCpu = basic ? 1 : 4;
@@ -116,13 +115,13 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 
 	public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
 		final SpringCloudDeploymentConfig deploymentConfig = appConfig.getDeployment();
-		final String javaVersion = this.useJava11.getSelection() ? SpringCloudJavaVersion.JAVA_11
-				: SpringCloudJavaVersion.JAVA_8;
+		final String javaVersion = this.useJava11.getSelection() ? RuntimeVersion.JAVA_11.toString()
+				: RuntimeVersion.JAVA_8.toString();
 		appConfig.setIsPublic(this.toggleEndpoint.getSelection());
 		deploymentConfig.setRuntimeVersion(javaVersion);
 		deploymentConfig.setEnablePersistentStorage(this.toggleStorage.getSelection());
-		deploymentConfig.setCpu(numCpu.getSelection());
-		deploymentConfig.setMemoryInGB(numMemory.getSelection());
+        deploymentConfig.setCpu(numCpu.getSelection() * 1.0);
+        deploymentConfig.setMemoryInGB(numMemory.getSelection() * 1.0);
 		deploymentConfig.setInstanceCount(numInstance.getValue());
 		deploymentConfig.setJvmOptions(Optional.ofNullable(this.txtJvmOptions.getText()).map(String::trim).orElse(""));
 		deploymentConfig.setEnvironment(getEnvironmentVariables());
@@ -142,7 +141,7 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		this.toggle(this.toggleEndpoint, config.getIsPublic());
 		this.toggle(this.toggleStorage, deployment.getEnablePersistentStorage());
 		final boolean java11 = StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(),
-				SpringCloudJavaVersion.JAVA_11);
+		        RuntimeVersion.JAVA_11.toString());
 		this.useJava11.setSelection(java11);
 		this.useJava8.setSelection(!java11);
 
@@ -152,8 +151,8 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 				.map(e -> String.format("%s=%s", e.getKey(), e.getValue())).collect(Collectors.joining(";"));
 		this.envTable.setText(strEnv);
 
-		this.numCpu.setSelection(Optional.ofNullable(deployment.getCpu()).orElse(1));
-		this.numMemory.setSelection(Optional.ofNullable(deployment.getMemoryInGB()).orElse(1));
+        this.numCpu.setSelection(Optional.ofNullable(deployment.getCpu()).map(d -> d.intValue()).orElse(1));
+        this.numMemory.setSelection(Optional.ofNullable(deployment.getMemoryInGB()).map(d -> d.intValue()).orElse(1));
 		this.numInstance.setValue(Optional.ofNullable(deployment.getInstanceCount()).orElse(1));
 	}
 
