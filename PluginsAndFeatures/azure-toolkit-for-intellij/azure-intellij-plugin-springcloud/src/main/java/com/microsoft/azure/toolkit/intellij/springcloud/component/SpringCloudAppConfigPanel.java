@@ -60,6 +60,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     private JBLabel statusStorage;
     private JLabel lblTestEndpoint;
     private JLabel lblRuntime;
+    private JLabel lblDisk;
+    private JPanel pnlDisk;
 
     private Consumer<? super SpringCloudAppConfig> listener = (config) -> {
     };
@@ -168,6 +170,8 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
         this.useJava11.setVisible(!enterprise);
         this.useJava17.setVisible(!enterprise);
         this.lblRuntime.setVisible(!enterprise);
+        this.lblDisk.setVisible(!enterprise);
+        this.pnlDisk.setVisible(!enterprise);
         final boolean basic = sku.toLowerCase().startsWith("b");
         final Double cpu = this.numCpu.getItem();
         final Double mem = this.numMemory.getItem();
@@ -190,15 +194,17 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     public SpringCloudAppConfig getValue(@Nonnull SpringCloudAppConfig appConfig) { // get config from form
         final SpringCloudDeploymentConfig deploymentConfig = Optional.ofNullable(appConfig.getDeployment())
             .orElse(SpringCloudDeploymentConfig.builder().build());
-        if (this.useJava17.isVisible()) {
+        final boolean isEnterpriseTier = this.useJava17.isVisible();
+        if (isEnterpriseTier) {
             final String javaVersion = this.useJava17.isSelected() ? RuntimeVersion.JAVA_17.toString() :
                 this.useJava11.isSelected() ? RuntimeVersion.JAVA_11.toString() : RuntimeVersion.JAVA_8.toString();
             deploymentConfig.setRuntimeVersion(javaVersion);
+            deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
         } else {
             deploymentConfig.setRuntimeVersion(null);
+            deploymentConfig.setEnablePersistentStorage(false);
         }
         appConfig.setIsPublic("disable".equals(this.toggleEndpoint.getActionCommand()));
-        deploymentConfig.setEnablePersistentStorage("disable".equals(this.toggleStorage.getActionCommand()));
         deploymentConfig.setCpu(numCpu.getItem());
         deploymentConfig.setMemoryInGB(numMemory.getItem());
         deploymentConfig.setInstanceCount(numInstance.getValue());
