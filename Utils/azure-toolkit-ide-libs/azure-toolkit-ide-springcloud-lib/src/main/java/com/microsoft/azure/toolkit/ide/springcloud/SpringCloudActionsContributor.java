@@ -57,7 +57,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
 
-        final ActionView.Builder createClusterView = new ActionView.Builder("Spring Cloud Service")
+        final ActionView.Builder createClusterView = new ActionView.Builder("Spring Apps")
             .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup);
         am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(GROUP_CREATE_CLUSTER, createClusterView));
