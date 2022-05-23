@@ -440,7 +440,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
         final AnAction refreshAction = new RefreshAllAction(azureModule);
-        final AnAction feedbackAction = ActionManager.getInstance().getAction("AzureToolkit.Survey");
+        final AnAction feedbackAction = ActionManager.getInstance().getAction("Actions.ProvideFeedback");
         final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
         toolWindow.setTitleActions(Arrays.asList(refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));

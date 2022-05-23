@@ -15,6 +15,7 @@
                     id="Azure Streaming Log" canCloseContents="true"/>
         <webHelpProvider implementation="com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider"/>
         <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore"/>
+        <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.common.feedback.ProvideFeedbackEditorProvider" />
     </extensions>
     <actions>
         <action id="Actions.WhatsNew"
@@ -25,5 +26,7 @@
                 text="Never Show Again"
                 description="Never show again">
         </action>
+        <action id="Actions.ProvideFeedback" class="com.microsoft.azure.toolkit.intellij.common.feedback.ProvideFeedbackAction"
+                text="Provide Feedback" icon="/icons/Common/feedback.svg"/>
     </actions>
 </idea-plugin>
