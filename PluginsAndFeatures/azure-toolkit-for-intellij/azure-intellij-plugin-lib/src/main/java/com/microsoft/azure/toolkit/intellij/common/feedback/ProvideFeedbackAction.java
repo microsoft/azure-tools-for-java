@@ -16,14 +16,16 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFileType;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class ProvideFeedbackAction extends AnAction implements DumbAware {
     public static final Key<String> ID = new Key<>("ProvideFeedbackAction");
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent anActionEvent) {
-        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(anActionEvent.getProject());
+    public void actionPerformed(@Nonnull AnActionEvent anActionEvent) {
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(Objects.requireNonNull(anActionEvent.getProject()));
         if (fileEditorManager == null) {
             return;
         }
@@ -39,10 +41,10 @@ public class ProvideFeedbackAction extends AnAction implements DumbAware {
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager) {
         LightVirtualFile virtualFile = null;
-        for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
-            String fileResourceId = editedFile.getUserData(ID);
+        for (final VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
+            final String fileResourceId = editedFile.getUserData(ID);
             if (fileResourceId != null && fileResourceId.equals(ProvideFeedbackAction.class.getCanonicalName()) &&
-                    editedFile.getFileType().getName().equals(ProvideFeedbackEditorProvider.TYPE)) {
+                editedFile.getFileType().getName().equals(ProvideFeedbackEditorProvider.TYPE)) {
                 virtualFile = (LightVirtualFile) editedFile;
                 break;
             }
