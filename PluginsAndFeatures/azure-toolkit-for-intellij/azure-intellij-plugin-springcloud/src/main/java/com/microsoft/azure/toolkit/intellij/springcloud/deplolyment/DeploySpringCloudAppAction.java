@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class DeploySpringCloudAppAction extends AnAction {
-    private static final String DEPLOY_SPRING_CLOUD_APP_TITLE = "Deploy Azure Spring app";
+    private static final String DEPLOY_SPRING_CLOUD_APP_TITLE = "Deploy Azure Spring App";
     private static final SpringCloudDeploymentConfigurationType configType = SpringCloudDeploymentConfigurationType.getInstance();
 
     @ExceptionNotification
