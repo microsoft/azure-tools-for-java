@@ -1,0 +1,13 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow anchor="right"
+                    icon="/icons/Common/Azure.svg"
+                    factoryClass="com.microsoft.azure.toolkit.ide.guideline.GuidanceViewManager$GuidanceViewFactory"
+                    id="Azure Get Started" canCloseContents="false"/>
+    </extensions>
+    <actions>
+        <action id="Actions.GettingStart" class="com.microsoft.azure.toolkit.ide.guideline.action.ShowGettingStartAction"
+                text="Show Get Started" description="Show get start tutorials">
+        </action>
+    </actions>
+</idea-plugin>

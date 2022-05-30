@@ -183,6 +183,7 @@ dependencies {
     compile project(':azure-intellij-plugin-arm')
     compile project(':azure-intellij-plugin-containerregistry')
     compile project(':azure-intellij-plugin-applicationinsights')
+    compile project(':azure-intellij-plugin-guideline')
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     compile 'com.microsoft.azure:azure-toolkit-storage-lib'
