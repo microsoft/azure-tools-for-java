@@ -6,16 +6,12 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.microsoft.azure.toolkit.ide.guideline.Context;
 import com.microsoft.azure.toolkit.ide.guideline.InputComponent;
-import com.microsoft.azure.toolkit.ide.guideline.Process;
-import com.microsoft.azure.toolkit.ide.guideline.Step;
 import com.microsoft.azure.toolkit.ide.guideline.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -30,11 +26,6 @@ public class SignInTask implements Task {
 
     public SignInTask(Project project) {
         this.project = project;
-    }
-
-    @Override
-    public Step create(Process process) {
-        return null;
     }
 
     @Override

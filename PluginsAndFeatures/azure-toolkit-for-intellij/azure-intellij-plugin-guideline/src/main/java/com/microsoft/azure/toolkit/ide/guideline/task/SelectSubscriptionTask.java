@@ -22,11 +22,6 @@ public class SelectSubscriptionTask implements Task {
     }
 
     @Override
-    public Step create(Process process) {
-        return null;
-    }
-
-    @Override
     public InputComponent getInputComponent() {
         return null;
     }

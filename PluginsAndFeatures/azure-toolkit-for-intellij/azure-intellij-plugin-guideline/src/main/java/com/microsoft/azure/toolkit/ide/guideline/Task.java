@@ -6,8 +6,6 @@
 package com.microsoft.azure.toolkit.ide.guideline;
 
 public interface Task {
-    Step create(Process process);
-
     InputComponent getInputComponent();
 
     default void executeWithUI(Context context) {
