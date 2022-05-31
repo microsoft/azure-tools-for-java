@@ -11,8 +11,6 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,24 +23,31 @@ public class Process {
     private String name;
     private String title;
     private String description;
-    private URL repository;
+    private String repository;
     private List<Phase> phases;
 
     private Project project;
     private Context context;
 
-    public Process (@Nonnull final ProcessConfig processConfig){
+    public Process(@Nonnull final ProcessConfig processConfig, @Nonnull Project project) {
         this.id = UUID.randomUUID().toString();
+        this.project = project;
         this.status = Status.INITIAL;
         this.name = processConfig.getName();
         this.title = processConfig.getTitle();
         this.description = processConfig.getDescription();
-        try {
-            this.repository = new URL(processConfig.getRepository());
-        } catch (MalformedURLException e) {
-            // test
-        }
+        this.repository = processConfig.getRepository();
         this.context = new Context();
+
+        createPhases(processConfig);
+    }
+
+    private void createPhases(@Nonnull final ProcessConfig processConfig) {
         this.phases = processConfig.getPhases().stream().map(config -> new Phase(config, this)).collect(Collectors.toList());
+        this.phases.add(0, new GitClonePhase(this));
+        for (int i = 0; i < phases.size(); i++) {
+            phases.get(i).setPrevious(i > 0 ? phases.get(i - 1) : null);
+            phases.get(i).setFollowing(i < phases.size() - 1 ? phases.get(i + 1) : null);
+        }
     }
 }

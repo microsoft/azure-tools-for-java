@@ -4,7 +4,11 @@
                     icon="/icons/Common/Azure.svg"
                     factoryClass="com.microsoft.azure.toolkit.ide.guideline.GuidanceViewManager$GuidanceViewFactory"
                     id="Azure Get Started" canCloseContents="false"/>
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.ide.guideline.GuidanceStartupListener"/>
     </extensions>
+    <applicationListeners>
+        <listener class="com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistrationListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
     <actions>
         <action id="Actions.GettingStart" class="com.microsoft.azure.toolkit.ide.guideline.action.ShowGettingStartAction"
                 text="Show Get Started" description="Show get start tutorials">

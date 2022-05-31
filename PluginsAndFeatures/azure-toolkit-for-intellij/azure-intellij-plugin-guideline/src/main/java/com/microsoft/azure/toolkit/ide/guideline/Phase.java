@@ -6,14 +6,19 @@
 package com.microsoft.azure.toolkit.ide.guideline;
 
 import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Data
@@ -29,6 +34,9 @@ public class Phase {
     private String description;
     private List<Step> steps;
 
+    private Phase previous;
+    private Phase following;
+
     public Phase(@Nonnull final PhaseConfig config, @Nonnull Process parent) {
         this.process = parent;
         this.id = UUID.randomUUID().toString();
@@ -39,18 +47,57 @@ public class Phase {
         this.steps = config.getSteps().stream().map(stepConfig -> new Step(stepConfig, this)).collect(Collectors.toList());
     }
 
+    // todo: clean previous listener
+    public void setPrevious(final Phase previous) {
+        this.previous = previous;
+        if (previous != null) {
+            previous.addStatusListener(previousStatus -> {
+                if (previousStatus == Status.SUCCEED) {
+                    this.prepareLaunch();
+                }
+            });
+        }
+    }
+
+    public void prepareLaunch() {
+        this.setStatus(Status.READY);
+    }
+
     public List<InputComponent> getInputComponent() {
         return steps.stream().map(Step::getInputComponent).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
-    public void execute(final Context context) {
-        AzureEventBus.emit("phase.run_phase", this);
-        try {
-            steps.forEach(step -> step.execute(context));
-            AzureEventBus.emit("phase.run_phase_succeed", this);
-        } catch (Exception e) {
-            AzureEventBus.emit("phase.run_phase_failed", this);
-            throw e;
-        }
+    public void setStatus(final Status status) {
+//        AzureEventBus.emit("phase.update_status", this);
+        this.status = status;
+        this.listenerList.forEach(listener -> listener.accept(status));
     }
+
+    public void execute() {
+        execute(process.getContext());
+    }
+
+    public void execute(final Context context) {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getName()), () -> {
+            setStatus(Status.RUNNING);
+            try {
+                steps.forEach(step -> step.execute(context));
+                setStatus(Status.SUCCEED);
+            } catch (Exception e) {
+                setStatus(Status.FAILED);
+                AzureMessager.getMessager().error(e);
+            }
+        }));
+    }
+
+    private List<Consumer<Status>> listenerList = new ArrayList<>();
+
+    public void addStatusListener(Consumer<Status> listener) {
+        listenerList.add(listener);
+    }
+
+    public void removeStatusListener(Consumer<Status> listener) {
+        listenerList.remove(listener);
+    }
+
 }

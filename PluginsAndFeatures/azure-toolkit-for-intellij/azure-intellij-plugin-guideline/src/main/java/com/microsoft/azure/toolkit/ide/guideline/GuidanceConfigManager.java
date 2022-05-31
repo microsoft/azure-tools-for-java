@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.jr.ob.JSON;
+import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guideline.config.ProcessConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -19,10 +24,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class GuidanceConfigManager {
+    public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.yml";
+
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
 
     public static GuidanceConfigManager getInstance() {
         return instance;
+    }
+
+    public ProcessConfig getProcessConfigFromWorkspace(@Nonnull Project project) throws FileNotFoundException {
+        final File file = new File(project.getBasePath(), GETTING_START_CONFIGURATION_NAME);
+        return file.exists() ? getConfigFromStream(new FileInputStream(file)) : null;
     }
 
     @Cacheable(value = "guidance/process")

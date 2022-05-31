@@ -44,6 +44,7 @@ public class ProcessView {
     }
 
     private void fillPhase(@Nonnull Process process) {
+        this.pnlPhase.removeAll();
         this.process = process;
         final List<Phase> phases = process.getPhases();
         pnlPhase.setLayout(new GridLayoutManager(phases.size(), 1));

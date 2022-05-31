@@ -7,9 +7,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guideline.config.ProcessConfig;
-import com.microsoft.azure.toolkit.ide.guideline.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guideline.view.GuidanceView;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
@@ -61,27 +59,9 @@ public class GuidanceViewManager {
         }
     }
 
-    public static Process createProcess(@Nonnull final ProcessConfig config, Project project) {
-        final Process process = new Process(config);
-        process.setProject(project);
-        process.getPhases().add(0, getClonePhase(process));
-        process.getPhases().get(0).setStatus(Status.READY);
+    public static Process createProcess(@Nonnull final ProcessConfig config, @Nonnull Project project) {
+        final Process process = new Process(config, project);
+        process.getPhases().get(1).prepareLaunch();
         return process;
-    }
-
-    public static Phase getClonePhase(Process process) {
-        StepConfig stepConfig = new StepConfig();
-        stepConfig.setDescription("Clone demo project to your local machine.");
-        stepConfig.setName("Clone");
-        stepConfig.setTitle("Clone");
-        stepConfig.setTask("tasks.clone");
-
-        PhaseConfig phaseConfig = new PhaseConfig();
-        phaseConfig.setDescription("Clone demo project to your local machine.");
-        phaseConfig.setName("Clone");
-        phaseConfig.setTitle("Clone");
-        phaseConfig.setSteps(Arrays.asList(stepConfig));
-
-        return new Phase(phaseConfig, process);
     }
 }

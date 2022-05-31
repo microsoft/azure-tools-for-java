@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.ide.guideline.Step;
 import com.microsoft.azure.toolkit.ide.guideline.Task;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 
 import java.nio.file.Paths;

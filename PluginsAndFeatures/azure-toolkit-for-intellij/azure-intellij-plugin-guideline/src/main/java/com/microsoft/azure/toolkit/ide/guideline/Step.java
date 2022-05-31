@@ -7,11 +7,8 @@ package com.microsoft.azure.toolkit.ide.guideline;
 
 import com.microsoft.azure.toolkit.ide.guideline.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guideline.task.TaskManager;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import rx.Observable;
 
 import javax.annotation.Nonnull;
 import java.util.UUID;
@@ -53,15 +50,13 @@ public class Step {
         if (getTask() == null) {
             return;
         }
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString(this.getTitle()), true,
-                () -> getTask().execute(context));
+        getTask().execute(context);
     }
 
     public void executeWithUI(final Context context) {
         if (getTask() == null) {
             return;
         }
-        AzureTaskManager.getInstance().runInBackground(AzureString.fromString(this.getTitle()), true,
-                () -> getTask().executeWithUI(context));
+        getTask().executeWithUI(context);
     }
 }
