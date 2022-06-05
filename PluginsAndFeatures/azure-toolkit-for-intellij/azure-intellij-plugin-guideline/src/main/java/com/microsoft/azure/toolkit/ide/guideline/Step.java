@@ -46,14 +46,14 @@ public class Step {
         return getTask() == null ? null : getTask().getInputComponent();
     }
 
-    public void execute(final Context context) {
+    public void execute(final Context context) throws Exception {
         if (getTask() == null) {
             return;
         }
         getTask().execute(context);
     }
 
-    public void executeWithUI(final Context context) {
+    public void executeWithUI(final Context context) throws Exception {
         if (getTask() == null) {
             return;
         }

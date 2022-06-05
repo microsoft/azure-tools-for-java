@@ -8,6 +8,9 @@ package com.microsoft.azure.toolkit.ide.guideline;
 import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Data;
@@ -29,6 +32,7 @@ public class Phase {
     private String id;
     private Status status;
     private String name;
+    private String type;
     @Nonnull
     private String title;
     private String description;
@@ -36,6 +40,7 @@ public class Phase {
 
     private Phase previous;
     private Phase following;
+    private IAzureMessager messager;
 
     public Phase(@Nonnull final PhaseConfig config, @Nonnull Process parent) {
         this.process = parent;
@@ -43,6 +48,7 @@ public class Phase {
         this.status = Status.INITIAL;
         this.name = config.getName();
         this.title = config.getTitle();
+        this.type = config.getType();
         this.description = config.getDescription();
         this.steps = config.getSteps().stream().map(stepConfig -> new Step(stepConfig, this)).collect(Collectors.toList());
     }
@@ -68,7 +74,6 @@ public class Phase {
     }
 
     public void setStatus(final Status status) {
-//        AzureEventBus.emit("phase.update_status", this);
         this.status = status;
         this.listenerList.forEach(listener -> listener.accept(status));
     }
@@ -78,14 +83,20 @@ public class Phase {
     }
 
     public void execute(final Context context) {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getName()), () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getTitle()), () -> {
+            final IAzureMessager currentMessager = AzureMessager.getMessager();
+            OperationContext.current().setMessager(messager);
             setStatus(Status.RUNNING);
             try {
-                steps.forEach(step -> step.execute(context));
+                for (Step step : steps) {
+                    step.execute(context);
+                }
                 setStatus(Status.SUCCEED);
             } catch (Exception e) {
                 setStatus(Status.FAILED);
                 AzureMessager.getMessager().error(e);
+            } finally {
+                OperationContext.current().setMessager(currentMessager);
             }
         }));
     }

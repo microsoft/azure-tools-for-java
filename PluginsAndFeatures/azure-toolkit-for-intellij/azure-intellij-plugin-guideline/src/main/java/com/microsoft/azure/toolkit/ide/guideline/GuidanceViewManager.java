@@ -61,7 +61,7 @@ public class GuidanceViewManager {
 
     public static Process createProcess(@Nonnull final ProcessConfig config, @Nonnull Project project) {
         final Process process = new Process(config, project);
-        process.getPhases().get(1).prepareLaunch();
+        AzureTaskManager.getInstance().runOnPooledThread(() -> process.getPhases().get(0).prepareLaunch());
         return process;
     }
 }

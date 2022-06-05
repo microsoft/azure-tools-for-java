@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.guideline;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guideline.config.ProcessConfig;
+import com.microsoft.azure.toolkit.ide.guideline.phase.GitClonePhase;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,7 @@ public class Process {
     private String title;
     private String description;
     private String repository;
+    private String uri;
     private List<Phase> phases;
 
     private Project project;
@@ -38,7 +40,7 @@ public class Process {
         this.description = processConfig.getDescription();
         this.repository = processConfig.getRepository();
         this.context = new Context();
-
+        this.uri = processConfig.getUri();
         createPhases(processConfig);
     }
 

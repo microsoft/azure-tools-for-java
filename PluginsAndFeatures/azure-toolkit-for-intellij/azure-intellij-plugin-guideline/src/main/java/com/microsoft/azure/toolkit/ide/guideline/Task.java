@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.ide.guideline;
 public interface Task {
     InputComponent getInputComponent();
 
-    default void executeWithUI(Context context) {
+    default void executeWithUI(Context context) throws Exception {
         execute(context);
     }
 
-    void execute(Context context);
+    void execute(Context context) throws Exception;
 }

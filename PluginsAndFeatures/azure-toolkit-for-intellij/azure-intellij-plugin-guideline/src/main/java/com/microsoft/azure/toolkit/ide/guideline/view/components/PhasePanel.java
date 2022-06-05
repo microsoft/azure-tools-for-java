@@ -5,25 +5,18 @@ import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.StringUtils;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guideline.InputComponent;
 import com.microsoft.azure.toolkit.ide.guideline.Phase;
 import com.microsoft.azure.toolkit.ide.guideline.Status;
-import com.microsoft.azure.toolkit.ide.guideline.Step;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import io.jsonwebtoken.lang.Collections;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,9 +28,11 @@ public class PhasePanel extends JPanel {
     private JPanel pnlInputs;
     private JButton runButton;
     private JTextPane paneDescription;
+    private JTextArea txtOutput;
     private JPanel pnlStepsHolder;
     private JPanel pnlSteps;
     private JPanel pnlOutput;
+    private JPanel pnlRootContentHolder;
 
     private Phase phase;
     private HideableDecorator phaseDecorator;
@@ -56,49 +51,74 @@ public class PhasePanel extends JPanel {
         this.add(pnlRoot, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
 
         renderPhase();
+        txtOutput.setVisible(false);
     }
 
     private void renderPhase() {
         lblStatusIcon.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-        lblTitle.setText(phase.getTitle());
         paneDescription.setText(phase.getDescription());
 
-        phaseDecorator = new HideableDecorator(pnlRoot, phase.getTitle(), false);
+        phaseDecorator = new HideableDecorator(pnlRootContentHolder, phase.getTitle(), false);
         phaseDecorator.setOn(phase.getStatus() == Status.READY);
         phaseDecorator.setContentComponent(pnlRootContent);
         // Render Steps
-        fillSteps();
+//        fillSteps();
         renderInputs();
+        prepareOutput();
         update(phase.getStatus());
         runButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Action.START));
         phase.addStatusListener(phaseStatus -> update(phaseStatus));
 
         runButton.addActionListener(e -> {
+            txtOutput.setVisible(true);
             inputComponents.forEach(component -> component.apply(phase.getProcess().getContext()));
             phase.execute();
         });
     }
 
+    private IAzureMessager messager;
+
+    private void prepareOutput() {
+        this.messager = new ConsoleTextMessager();
+        phase.setMessager(messager);
+        txtOutput.setBackground(new Color(40, 40, 40));
+    }
+
+    class ConsoleTextMessager implements IAzureMessager {
+        @Override
+        public boolean show(IAzureMessage message) {
+            txtOutput.setText(message.getContent());
+            return true;
+        }
+    }
+
     private void update(final Status status) {
         // update icon
         lblStatusIcon.setIcon(getStatusIcons(status));
-//        runButton.setEnabled(status == Status.READY || status == Status.FAILED);
+        if (status == Status.INITIAL) {
+            this.runButton.setVisible(false);
+        }
         if (status == Status.READY) {
-            this.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-//            this.setBackgroundColor(this, JBColor.lightGray);
+            this.setBackgroundColor(this, new Color(69, 73, 74));
             this.phaseDecorator.setOn(true);
+            this.runButton.setVisible(true);
+            this.runButton.setEnabled(true);
+        }
+        if (status == Status.RUNNING) {
+            this.runButton.setEnabled(false);
         }
         if (status == Status.SUCCEED) {
-            this.setBorder(null);
-//            this.setBackgroundColor(this, JBColor.darkGray);
+            this.runButton.setVisible(false);
+            this.setBackgroundColor(this, JBColor.background());
             this.phaseDecorator.setOn(false);
         }
         // update enable/disable
     }
 
-    private void setBackgroundColor(JPanel panel, JBColor color) {
+    private void setBackgroundColor(JPanel panel, Color color) {
         panel.setBackground(color);
         Arrays.stream(panel.getComponents()).filter(component -> component instanceof JPanel).forEach(child -> setBackgroundColor((JPanel) child, color));
+        Arrays.stream(panel.getComponents()).filter(component -> component instanceof JTextPane || component instanceof JButton).forEach(child -> child.setBackground(color));
     }
 
     private Icon getStatusIcons(final Status status) {
@@ -109,7 +129,7 @@ public class PhasePanel extends JPanel {
         } else if (status == Status.FAILED) {
             return AllIcons.RunConfigurations.ToolbarError;
         } else {
-            return IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE);
+            return null;
         }
     }
 
@@ -127,20 +147,20 @@ public class PhasePanel extends JPanel {
     }
 
     private void fillSteps() {
-        final List<Step> steps = phase.getSteps();
-        if (Collections.isEmpty(steps) || steps.size() == 1) {
-            // skip render steps panel for single task
-            return;
-        }
-        stepDecorator = new HideableDecorator(pnlStepsHolder, "Steps", false);
-        stepDecorator.setContentComponent(pnlSteps);
-        pnlSteps.setLayout(new GridLayoutManager(steps.size(), 1));
-        for (int i = 0; i < steps.size(); i++) {
-            final Step step = steps.get(i);
-            final StepPanel stepPanel = new StepPanel(step);
-            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-            pnlSteps.add(stepPanel, gridConstraints);
-        }
+//        final List<Step> steps = phase.getSteps();
+//        if (Collections.isEmpty(steps) || steps.size() == 1) {
+//            // skip render steps panel for single task
+//            return;
+//        }
+//        stepDecorator = new HideableDecorator(pnlStepsHolder, "Steps", false);
+//        stepDecorator.setContentComponent(pnlSteps);
+//        pnlSteps.setLayout(new GridLayoutManager(steps.size(), 1));
+//        for (int i = 0; i < steps.size(); i++) {
+//            final Step step = steps.get(i);
+//            final StepPanel stepPanel = new StepPanel(step);
+//            final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
+//            pnlSteps.add(stepPanel, gridConstraints);
+//        }
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

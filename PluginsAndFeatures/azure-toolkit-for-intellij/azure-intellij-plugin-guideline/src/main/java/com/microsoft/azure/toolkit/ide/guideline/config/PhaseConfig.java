@@ -11,6 +11,7 @@ import java.util.List;
 
 @Data
 public class PhaseConfig {
+    private String type;
     private String name;
     private String title;
     private String description;

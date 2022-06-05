@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 public class SignInTask implements Task {
 
+    public static final String SUBSCRIPTION_ID = "subscriptionId";
     private Project project;
 
     public SignInTask(Project project) {
@@ -42,6 +43,7 @@ public class SignInTask implements Task {
         } else {
             final Subscription subscription = az.getSubscriptions().get(0);
             az.account().selectSubscription(Arrays.asList(subscription.getId()));
+            context.setProperty(SUBSCRIPTION_ID, subscription.getId());
             AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
         }
     }

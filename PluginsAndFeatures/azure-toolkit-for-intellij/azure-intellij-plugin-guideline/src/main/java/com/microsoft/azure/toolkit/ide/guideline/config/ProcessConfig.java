@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Data
 public class ProcessConfig {
+    private String uri;
     private String name;
     private String title;
     private String description;

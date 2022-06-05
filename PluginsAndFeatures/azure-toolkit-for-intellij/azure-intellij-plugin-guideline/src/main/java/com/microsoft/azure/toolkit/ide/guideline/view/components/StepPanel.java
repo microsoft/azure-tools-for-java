@@ -37,7 +37,7 @@ public class StepPanel extends JPanel {
         this.lblTitle.setText(step.getTitle());
 
         runButton.setIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.START));
-        runButton.addActionListener(e -> step.executeWithUI(step.getPhase().getProcess().getContext()));
+//        runButton.addActionListener(e -> step.executeWithUI(step.getPhase().getProcess().getContext()));
     }
 
     void $$$setupUI$$$() {

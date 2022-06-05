@@ -1,15 +1,15 @@
 package com.microsoft.azure.toolkit.ide.guideline.view;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.ide.guideline.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guideline.Phase;
 import com.microsoft.azure.toolkit.ide.guideline.Process;
-import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
-import com.microsoft.azure.toolkit.ide.guideline.config.ProcessConfig;
-import com.microsoft.azure.toolkit.ide.guideline.view.components.PhasePanel;
+import com.microsoft.azure.toolkit.ide.guideline.view.components.PhasePanelFactory;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 
 import javax.annotation.Nonnull;
@@ -22,6 +22,7 @@ public class ProcessView {
     private JLabel lblTitle;
     private JPanel pnlPhase;
     private JPanel pnlDoc;
+    private HyperlinkLabel lblHome;
 
     private final Project project;
 
@@ -50,7 +51,7 @@ public class ProcessView {
         pnlPhase.setLayout(new GridLayoutManager(phases.size(), 1));
         for (int i = 0; i < phases.size(); i++) {
             final Phase phase = phases.get(i);
-            final PhasePanel phasePanel = new PhasePanel(phase);
+            final JPanel phasePanel = PhasePanelFactory.createPhase(phase);
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
             pnlPhase.add(phasePanel, gridConstraints);
         }
@@ -62,5 +63,11 @@ public class ProcessView {
 
     public void setVisible(boolean visible) {
         this.pnlRoot.setVisible(visible);
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        lblHome = new HyperlinkLabel("← Back");
+        lblHome.addHyperlinkListener(e -> GuidanceViewManager.getInstance().showGuidanceWelcome(project));
     }
 }

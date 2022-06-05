@@ -16,9 +16,12 @@ phases:
   - title: Prepare
     description: Prepare dependent resources
     steps:
-      - title: select default subscription
+      - title: Create web app
         description:
-        task: task.select_subscription
+        task: task.webapp.create
+      - title: Create application insight app
+        description:
+        task: task.application_insights.create
   - title: Build & Deploy
     description: Build artifacts, prepare dependent resources and deploy to Azure Web App
     steps:
@@ -27,12 +30,16 @@ phases:
         task: task.webapp.build
       - title: Deploy
         description: Deploy to Azure Web App ${context.webapp.name}
-        task: task.webapp.build
+        task: task.webapp.deploy
   - title: Done
-    description:
+    type: summary
+    description: Your project has been deployed to Aure Web App, enjoy your Azure experience!
     steps:
-      - title: select default subscription
+      - title: view your web app in browser
         description:
-        task: task.select_subscription
+        task: task.resource.open_in_portal
+      - title: clean up resources
+        description:
+        task: task.resource.clean_up
 
 

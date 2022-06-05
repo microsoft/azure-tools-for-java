@@ -1,5 +1,8 @@
-package com.microsoft.azure.toolkit.ide.guideline;
+package com.microsoft.azure.toolkit.ide.guideline.phase;
 
+import com.microsoft.azure.toolkit.ide.guideline.Phase;
+import com.microsoft.azure.toolkit.ide.guideline.Process;
+import com.microsoft.azure.toolkit.ide.guideline.Status;
 import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
 import com.microsoft.azure.toolkit.ide.guideline.config.StepConfig;
 
@@ -18,13 +21,8 @@ public class GitClonePhase extends Phase {
     @Override
     public void prepareLaunch() {
         // Check whether project was clone to local
-//        final File file = new File(getProcess().getProject().getBasePath(), GETTING_START_CONFIGURATION_NAME);
-//        if (file.exists()) {
-//            setStatus(Status.SUCCEED);
-//        } else {
-//            setStatus(Status.READY);
-//        }
-        setStatus(Status.READY);
+        final File file = new File(getProcess().getProject().getBasePath(), GETTING_START_CONFIGURATION_NAME);
+        setStatus(file.exists() ? Status.SUCCEED : Status.READY);
     }
 
     private static PhaseConfig getClonePhaseConfig() {
