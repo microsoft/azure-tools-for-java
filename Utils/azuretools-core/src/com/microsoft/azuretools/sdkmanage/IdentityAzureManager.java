@@ -6,6 +6,7 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.azure.identity.implementation.util.IdentityConstants;
+import com.microsoft.aad.msal4jextensions.persistence.mac.ISecurityLibrary;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
@@ -35,6 +36,7 @@ import okhttp3.Authenticator;
 import okhttp3.Credentials;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -213,16 +215,14 @@ public class IdentityAzureManager implements AzureManager {
     }
 
     public static boolean shallEnablePersistence() {
-        // TODO: @miller `ISecurityLibrary.library.CFRelease(null)` cause CRASH on mac !!!
+        if (SystemUtils.IS_OS_MAC) {
+            try {
+                ISecurityLibrary.library.CFRelease(null);
+            } catch (final Throwable ex) {
+                return false;
+            }
+        }
         return true;
-        //        if (SystemUtils.IS_OS_MAC) {
-        //            try {
-        //                ISecurityLibrary.library.CFRelease(null); // !!! CRASH on mac !!!
-        //            } catch (Throwable ex) {
-        //                return false;
-        //            }
-        //        }
-        //        return true;
     }
 
     public Mono<AuthMethodDetails> restoreSignIn(AuthMethodDetails authMethodDetails) {
