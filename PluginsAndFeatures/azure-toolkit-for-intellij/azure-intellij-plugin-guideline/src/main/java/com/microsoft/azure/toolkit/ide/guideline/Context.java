@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.guideline;
 
+import com.intellij.openapi.project.Project;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -12,7 +13,8 @@ import java.util.Map;
 
 @Getter
 public class Context {
-    public Map<String, Object> parameters = new HashMap();
+//    private final Project project;
+    public Map<String, Object> parameters = new HashMap<>();
 
     public Object getProperty(String key) {
         return parameters.get(key);

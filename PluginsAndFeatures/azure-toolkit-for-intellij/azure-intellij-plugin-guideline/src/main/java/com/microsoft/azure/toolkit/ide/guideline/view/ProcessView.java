@@ -9,7 +9,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guideline.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guideline.Phase;
 import com.microsoft.azure.toolkit.ide.guideline.Process;
-import com.microsoft.azure.toolkit.ide.guideline.view.components.PhasePanelFactory;
+import com.microsoft.azure.toolkit.ide.guideline.view.components.PhaseManager;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 
 import javax.annotation.Nonnull;
@@ -51,7 +51,7 @@ public class ProcessView {
         pnlPhase.setLayout(new GridLayoutManager(phases.size(), 1));
         for (int i = 0; i < phases.size(); i++) {
             final Phase phase = phases.get(i);
-            final JPanel phasePanel = PhasePanelFactory.createPhase(phase);
+            final JPanel phasePanel = PhaseManager.createPhase(phase);
             final GridConstraints gridConstraints = new GridConstraints(i, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
             pnlPhase.add(phasePanel, gridConstraints);
         }

@@ -9,7 +9,6 @@ import com.microsoft.azure.toolkit.ide.guideline.config.PhaseConfig;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -17,6 +16,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,26 +27,34 @@ import java.util.stream.Collectors;
 @Data
 @RequiredArgsConstructor
 public class Phase {
-    private Process process;
-
-    private String id;
-    private Status status;
-    private String name;
-    private String type;
     @Nonnull
-    private String title;
-    private String description;
-    private List<Step> steps;
+    private final Process process;
 
+    @Nonnull
+    private final String id;
+    @Nonnull
+    private final String type;
+    @Nonnull
+    private final String title;
+
+    @Nullable
+    private final String description;
+    @Nonnull
+    private final List<Step> steps;
+    @Nonnull
+    private Status status;
+
+    @Nullable
     private Phase previous;
+    @Nullable
     private Phase following;
-    private IAzureMessager messager;
+    @Nullable
+    private IAzureMessager output;
 
     public Phase(@Nonnull final PhaseConfig config, @Nonnull Process parent) {
         this.process = parent;
         this.id = UUID.randomUUID().toString();
         this.status = Status.INITIAL;
-        this.name = config.getName();
         this.title = config.getTitle();
         this.type = config.getType();
         this.description = config.getDescription();
@@ -69,13 +77,18 @@ public class Phase {
         this.setStatus(Status.READY);
     }
 
-    public List<InputComponent> getInputComponent() {
-        return steps.stream().map(Step::getInputComponent).filter(Objects::nonNull).collect(Collectors.toList());
+    // toso: -> getInputs
+    public List<InputComponent> getInputs() {
+        return steps.stream().map(Step::getInput).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public void setStatus(final Status status) {
         this.status = status;
         this.listenerList.forEach(listener -> listener.accept(status));
+    }
+
+    public void execute(Step step) {
+
     }
 
     public void execute() {
@@ -85,7 +98,7 @@ public class Phase {
     public void execute(final Context context) {
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("Running phase : %s", this.getTitle()), () -> {
             final IAzureMessager currentMessager = AzureMessager.getMessager();
-            OperationContext.current().setMessager(messager);
+            OperationContext.current().setMessager(output);
             setStatus(Status.RUNNING);
             try {
                 for (Step step : steps) {

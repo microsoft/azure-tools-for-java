@@ -15,6 +15,7 @@ phases:
         task: task.select_subscription
   - title: Prepare
     description: Prepare dependent resources
+    doc: ./resources/aa_bb
     steps:
       - title: Create web app
         description:
@@ -37,6 +38,7 @@ phases:
     steps:
       - title: view your web app in browser
         description:
+
         task: task.resource.open_in_portal
       - title: clean up resources
         description:

@@ -20,7 +20,7 @@ public class CreateWebAppTask implements Task {
     public static final String RESOURCE_ID = "webappId";
 
     @Override
-    public InputComponent getInputComponent() {
+    public InputComponent getInput() {
         return new CreateWebAppInputPanel();
     }
 

@@ -7,56 +7,49 @@ package com.microsoft.azure.toolkit.ide.guideline;
 
 import com.microsoft.azure.toolkit.ide.guideline.config.StepConfig;
 import com.microsoft.azure.toolkit.ide.guideline.task.TaskManager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @Data
 @RequiredArgsConstructor
 public class Step {
-    private String id;
-    private Status status;
     @Nonnull
-    private String title;
-    private String description;
-    private String taskId;
-    private Task task;
+    private final String id;
+    @Nonnull
+    private final String title;
 
-    private Phase phase;
+    @Nullable
+    private final String description;
+
+    @Nonnull
+    private final Task task;
+
+    @Nonnull
+    private final Phase phase;
+
+    @Nonnull
+    private Status status = Status.INITIAL;
+
+    private IAzureMessager output;
 
     public Step(@Nonnull final StepConfig config, @Nonnull Phase phase) {
         this.phase = phase;
         this.id = UUID.randomUUID().toString();
-        this.status = Status.INITIAL;
         this.title = config.getTitle();
         this.description = config.getDescription();
-        this.taskId = config.getTask();
+        this.task = TaskManager.getTaskById(config.getTask(), phase.getProcess());
     }
 
-    public Task getTask() {
-        if (task == null) {
-            task = TaskManager.getTaskById(taskId, phase.getProcess());
-        }
-        return task;
-    }
-
-    public InputComponent getInputComponent() {
-        return getTask() == null ? null : getTask().getInputComponent();
+    public InputComponent getInput() {
+        return getTask().getInput();
     }
 
     public void execute(final Context context) throws Exception {
-        if (getTask() == null) {
-            return;
-        }
         getTask().execute(context);
-    }
-
-    public void executeWithUI(final Context context) throws Exception {
-        if (getTask() == null) {
-            return;
-        }
-        getTask().executeWithUI(context);
     }
 }

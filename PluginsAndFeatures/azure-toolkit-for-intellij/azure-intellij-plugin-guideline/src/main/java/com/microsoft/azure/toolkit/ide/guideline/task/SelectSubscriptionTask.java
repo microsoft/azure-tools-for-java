@@ -22,7 +22,7 @@ public class SelectSubscriptionTask implements Task {
     }
 
     @Override
-    public InputComponent getInputComponent() {
+    public InputComponent getInput() {
         return null;
     }
 

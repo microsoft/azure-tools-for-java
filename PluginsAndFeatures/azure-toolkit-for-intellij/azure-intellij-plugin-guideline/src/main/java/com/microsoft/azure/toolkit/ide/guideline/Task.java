@@ -5,12 +5,21 @@
 
 package com.microsoft.azure.toolkit.ide.guideline;
 
-public interface Task {
-    InputComponent getInputComponent();
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 
-    default void executeWithUI(Context context) throws Exception {
-        execute(context);
+import java.net.URL;
+
+public interface Task {
+    InputComponent getInput();
+
+    default void execute(Context context) throws Exception{
+        execute(context, AzureMessager.getMessager());
     }
 
-    void execute(Context context) throws Exception;
+    default URL getDocUrl() {
+        return null;
+    }
+
+    void execute(Context context, IAzureMessager messager) throws Exception;
 }

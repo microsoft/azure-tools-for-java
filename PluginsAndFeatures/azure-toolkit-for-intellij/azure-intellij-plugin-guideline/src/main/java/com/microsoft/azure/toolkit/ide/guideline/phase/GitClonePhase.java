@@ -19,6 +19,7 @@ public class GitClonePhase extends Phase {
     }
 
     @Override
+    // -> move to step
     public void prepareLaunch() {
         // Check whether project was clone to local
         final File file = new File(getProcess().getProject().getBasePath(), GETTING_START_CONFIGURATION_NAME);

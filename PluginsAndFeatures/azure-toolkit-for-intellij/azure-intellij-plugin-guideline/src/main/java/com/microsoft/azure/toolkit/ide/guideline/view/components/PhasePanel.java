@@ -80,7 +80,7 @@ public class PhasePanel extends JPanel {
 
     private void prepareOutput() {
         this.messager = new ConsoleTextMessager();
-        phase.setMessager(messager);
+        phase.setOutput(messager);
         txtOutput.setBackground(new Color(40, 40, 40));
     }
 
@@ -134,7 +134,7 @@ public class PhasePanel extends JPanel {
     }
 
     private void renderInputs() {
-        inputComponents = phase.getInputComponent();
+        inputComponents = phase.getInputs();
         if (CollectionUtils.isEmpty(inputComponents)) {
             return;
         }

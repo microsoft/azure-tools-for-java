@@ -44,7 +44,7 @@ public class DeployWebAppTask implements Task {
     }
 
     @Override
-    public InputComponent getInputComponent() {
+    public InputComponent getInput() {
         return null;
     }
 

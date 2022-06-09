@@ -6,7 +6,7 @@ import com.microsoft.azure.toolkit.ide.guideline.Task;
 
 public class CleanUpResourceTask implements Task {
     @Override
-    public InputComponent getInputComponent() {
+    public InputComponent getInput() {
         return null;
     }
 

@@ -6,7 +6,10 @@ import com.microsoft.azure.toolkit.ide.guideline.task.clone.GitCloneTask;
 import com.microsoft.azure.toolkit.ide.guideline.task.create.webapp.CreateWebAppTask;
 import com.microsoft.azure.toolkit.ide.guideline.task.deploy.DeployWebAppTask;
 
+import javax.annotation.Nonnull;
+
 public class TaskManager {
+    @Nonnull
     public static Task getTaskById(String id, Process process) {
         switch (id) {
             case "tasks.clone":

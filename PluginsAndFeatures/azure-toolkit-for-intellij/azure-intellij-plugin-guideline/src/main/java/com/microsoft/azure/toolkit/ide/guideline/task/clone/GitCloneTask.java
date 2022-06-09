@@ -25,7 +25,7 @@ public class GitCloneTask implements Task {
     }
 
     @Override
-    public InputComponent getInputComponent() {
+    public InputComponent getInput() {
         return new CloneTaskInputPanel(process);
     }
 
