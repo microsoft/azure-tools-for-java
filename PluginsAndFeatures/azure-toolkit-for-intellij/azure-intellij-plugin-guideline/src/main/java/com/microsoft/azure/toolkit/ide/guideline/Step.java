@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Data
 @RequiredArgsConstructor
@@ -45,11 +48,34 @@ public class Step {
         this.task = TaskManager.getTaskById(config.getTask(), phase.getProcess());
     }
 
+    public void setStatus(final Status status) {
+        this.status = status;
+        this.listenerList.forEach(listener -> listener.accept(status));
+    }
+
     public InputComponent getInput() {
         return getTask().getInput();
     }
 
     public void execute(final Context context) throws Exception {
-        getTask().execute(context);
+        try {
+            setStatus(Status.RUNNING);
+            this.task.execute(context, this.output);
+            setStatus(Status.SUCCEED);
+        } catch (Exception e) {
+            setStatus(Status.FAILED);
+            throw e;
+        }
     }
+
+    private List<Consumer<Status>> listenerList = new ArrayList<>();
+
+    public void addStatusListener(Consumer<Status> listener) {
+        listenerList.add(listener);
+    }
+
+    public void removeStatusListener(Consumer<Status> listener) {
+        listenerList.remove(listener);
+    }
+
 }
