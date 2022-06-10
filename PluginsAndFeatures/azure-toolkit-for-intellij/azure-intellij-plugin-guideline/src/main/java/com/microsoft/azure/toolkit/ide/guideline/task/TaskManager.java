@@ -1,33 +1,35 @@
 package com.microsoft.azure.toolkit.ide.guideline.task;
 
-import com.microsoft.azure.toolkit.ide.guideline.Process;
+import com.intellij.openapi.extensions.ExtensionPointName;
+import com.microsoft.azure.toolkit.ide.guideline.Phase;
 import com.microsoft.azure.toolkit.ide.guideline.Task;
-import com.microsoft.azure.toolkit.ide.guideline.task.clone.GitCloneTask;
-import com.microsoft.azure.toolkit.ide.guideline.task.create.webapp.CreateWebAppTask;
-import com.microsoft.azure.toolkit.ide.guideline.task.deploy.DeployWebAppTask;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TaskManager {
-    @Nonnull
-    public static Task getTaskById(String id, Process process) {
-        switch (id) {
-            case "tasks.clone":
-                return new GitCloneTask(process);
-            case "task.signin":
-                return new SignInTask(process.getProject());
-            case "task.select_subscription":
-                return new SelectSubscriptionTask(process.getProject());
-            case "task.webapp.create":
-                return new CreateWebAppTask();
-            case "task.webapp.deploy":
-                return new DeployWebAppTask(process);
-            case "task.resource.open_in_portal":
-                return new OpenResourceInAzureAction();
-            case "task.resource.clean_up":
-                return new CleanUpResourceTask();
-            default:
-                return null;
+
+    private static final ExtensionPointName<GuidanceTaskProvider> exPoints =
+            ExtensionPointName.create(" com.microsoft.azure.toolkit.ide.guideline.task.GuidanceTaskProvider");
+    private static List<GuidanceTaskProvider> providers;
+
+    public synchronized static List<GuidanceTaskProvider> getTaskProviders() {
+        if (CollectionUtils.isEmpty(providers)) {
+            providers = exPoints.extensions().collect(Collectors.toList());
         }
+        return providers;
+    }
+
+    @Nonnull
+    public static Task createTask(String id, Phase phase) {
+        return getTaskProviders().stream()
+                .map(provider -> provider.createTask(id, phase))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new AzureToolkitRuntimeException("Unsupported task id"));
     }
 }

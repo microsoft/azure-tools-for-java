@@ -45,7 +45,7 @@ public class Step {
         this.id = UUID.randomUUID().toString();
         this.title = config.getTitle();
         this.description = config.getDescription();
-        this.task = TaskManager.getTaskById(config.getTask(), phase.getProcess());
+        this.task = TaskManager.createTask(config.getTask(), phase);
     }
 
     public void setStatus(final Status status) {

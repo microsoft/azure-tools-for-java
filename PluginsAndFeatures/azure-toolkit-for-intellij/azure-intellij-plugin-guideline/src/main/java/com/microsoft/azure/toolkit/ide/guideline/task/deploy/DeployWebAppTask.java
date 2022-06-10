@@ -31,12 +31,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class DeployWebAppTask implements Task {
-    private Project project;
-    private Process process;
+    private final Project project;
+    private final Process process;
 
     public DeployWebAppTask(@Nonnull Process process) {
         this.process = process;
@@ -81,7 +82,7 @@ public class DeployWebAppTask implements Task {
             // todo: change to use artifact build by maven in last step if not exist
             final AzureArtifact azureArtifact = allSupportedAzureArtifacts.get(0);
             ((WebAppConfiguration) runConfiguration).saveArtifact(azureArtifact);
-            final List<BeforeRunTask> beforeRunTasks = Arrays.asList(BuildArtifactBeforeRunTaskUtils.createBuildTask(azureArtifact, runConfiguration));
+            final List<BeforeRunTask> beforeRunTasks = Collections.singletonList(BuildArtifactBeforeRunTaskUtils.createBuildTask(azureArtifact, runConfiguration));
             beforeRunTasks.addAll(runConfiguration.getBeforeRunTasks());
             manager.setBeforeRunTasks(runConfiguration, beforeRunTasks);
             ((WebAppConfiguration) runConfiguration).setOpenBrowserAfterDeployment(false);

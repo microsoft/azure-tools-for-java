@@ -1,15 +1,11 @@
 package com.microsoft.azure.toolkit.ide.guideline.task;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.guideline.Context;
 import com.microsoft.azure.toolkit.ide.guideline.InputComponent;
 import com.microsoft.azure.toolkit.ide.guideline.Task;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.account.IAccount;
-import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 import static com.microsoft.azure.toolkit.ide.guideline.task.create.webapp.CreateWebAppTask.RESOURCE_ID;

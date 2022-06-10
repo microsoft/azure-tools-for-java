@@ -44,10 +44,7 @@ public class Phase {
     @Nonnull
     private Status status;
 
-    @Nullable
-    private Phase previous;
-    @Nullable
-    private Phase following;
+    private Step currentStep;
     @Nullable
     private IAzureMessager output;
 
@@ -59,18 +56,6 @@ public class Phase {
         this.type = config.getType();
         this.description = config.getDescription();
         this.steps = config.getSteps().stream().map(stepConfig -> new Step(stepConfig, this)).collect(Collectors.toList());
-    }
-
-    // todo: clean previous listener
-    public void setPrevious(final Phase previous) {
-        this.previous = previous;
-        if (previous != null) {
-            previous.addStatusListener(previousStatus -> {
-                if (previousStatus == Status.SUCCEED) {
-                    this.prepareLaunch();
-                }
-            });
-        }
     }
 
     public void prepareLaunch() {
@@ -85,10 +70,6 @@ public class Phase {
     public void setStatus(final Status status) {
         this.status = status;
         this.listenerList.forEach(listener -> listener.accept(status));
-    }
-
-    public void execute(Step step) {
-
     }
 
     public void execute() {

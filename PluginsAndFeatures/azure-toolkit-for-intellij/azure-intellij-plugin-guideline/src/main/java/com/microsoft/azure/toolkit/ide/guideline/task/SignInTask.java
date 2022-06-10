@@ -47,11 +47,4 @@ public class SignInTask implements Task {
             AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
         }
     }
-
-    @Override
-    public void executeWithUI(Context context) {
-        final AnAction action = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
-        final DataContext dataContext = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-        AzureTaskManager.getInstance().runLater(() -> ActionUtil.invokeAction(action, dataContext, "AzurePluginStartupActivity", null, null));
-    }
 }
