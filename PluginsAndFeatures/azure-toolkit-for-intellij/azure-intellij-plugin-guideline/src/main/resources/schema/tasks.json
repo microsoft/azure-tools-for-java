@@ -1,0 +1,170 @@
+{
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.signin"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "required": [
+            "accountConfig"
+          ],
+          "properties": {
+            "accountConfig": {
+              "type": "string"
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.select_subscription"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "subscriptionId": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.webapp.create",
+          "title": "create webapp in Azure",
+          "description": "create an web application in Azure."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "webAppConfig": {
+              "title": "WebAppConfig",
+              "description": "config used to create webapp in Azure",
+              "type": "string"
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.application_insights.create"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.webapp.build"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.webapp.deploy"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.resource.open_in_portal"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "name": {
+          "const": "task.resource.clean_up"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    }
+  ]
+}

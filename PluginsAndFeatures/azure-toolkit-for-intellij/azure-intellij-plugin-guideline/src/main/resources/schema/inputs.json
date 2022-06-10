@@ -1,0 +1,36 @@
+{
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "input webapp name",
+      "properties": {
+        "name": {
+          "const": "input.webapp.name",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "subscriptionId": {
+              "type": "string",
+              "description": "id of the subscription where this webapp will be created."
+            },
+            "resourceGroupName": {
+              "type": "string",
+              "description": "name of the resource group this webapp will be created."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "webappName": {
+              "type": "string",
+              "description": "user provided webapp name."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

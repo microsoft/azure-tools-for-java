@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Guidance",
+  "description": "****",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "repository",
+    "phases"
+  ],
+  "properties": {
+    "name": {
+      "description": "The deployment name",
+      "type": "string"
+    },
+    "title": {
+      "description": "Display title of this guidance",
+      "type": "string"
+    },
+    "description": {
+      "description": "Description message for this course",
+      "type": "string"
+    },
+    "repository": {
+      "description": "Git repository of the project to be used in this course",
+      "type": "string",
+      "format": "uri"
+    },
+    "context": {
+      "description": "shared data context among phases and steps, you can config default values here",
+      "type": "object",
+      "default": {}
+    },
+    "phases": {
+      "description": "phases of this guidance",
+      "type": "array",
+      "items": { "$ref": "Phase.json" },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase",
+  "description": "****",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "task"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "autoPlay": {
+      "description": "`true` if this step should execute automatically when ready, `false` otherwise",
+      "type": "boolean",
+      "default": false
+    },
+    "title": {
+      "description": "Display title of this step",
+      "type": "string"
+    },
+    "description": {
+      "description": "Description message for this step",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "input": {
+      "description": "Inputs for user to update configuration",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "$ref": "inputs.json"
+    },
+    "task": {
+      "description": "task to be executed at this step",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "$ref": "tasks.json"
+    }
+  }
+}

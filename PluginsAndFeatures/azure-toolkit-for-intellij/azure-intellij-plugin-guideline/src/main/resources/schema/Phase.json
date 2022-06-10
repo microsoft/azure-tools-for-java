@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase",
+  "description": "****",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "steps"
+  ],
+  "properties": {
+    "title": {
+      "description": "Display title of this phase",
+      "type": "string",
+      "pattern": "^.*$"
+    },
+    "description": {
+      "description": "Description message for this phase",
+      "type": "string",
+      "pattern": "^.*$"
+    },
+    "help": {
+      "description": "uri of help doc in markdown/html format for this phase",
+      "type": "string",
+      "format": "uri"
+    },
+    "steps": {
+      "description": "steps of this phase",
+      "type": "array",
+      "items": { "$ref": "Step.json" },
+      "minItems": 0,
+      "uniqueItems": true
+    }
+  }
+}
