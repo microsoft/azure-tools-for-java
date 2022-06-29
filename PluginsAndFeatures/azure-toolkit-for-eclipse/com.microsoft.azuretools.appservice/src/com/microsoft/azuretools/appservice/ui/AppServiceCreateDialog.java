@@ -291,6 +291,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     protected Control createDialogArea(Composite parent) {
         setMessage(DIALOG_MESSAGE);
         setTitle(DIALOG_TITLE);
+        getShell().setText(DIALOG_TITLE);
 
         ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
         scrolledComposite.setLayout(new GridLayout(1, false));

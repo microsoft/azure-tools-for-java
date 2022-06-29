@@ -203,6 +203,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     protected Control createDialogArea(Composite parent) {
         setMessage("Select App Service to deploy to:");
         setTitle("Deploy Web App");
+        getShell().setText("Deploy Web App");
 
         ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
         scrolledComposite.setLayout(new GridLayout(2, false));
