@@ -11,6 +11,8 @@ import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
+
 import lombok.SneakyThrows;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -82,17 +84,16 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         group.setLayout(new GridLayout(1, false));
 
         btnAzureCli = createRadioButton(group, "Azure CLI (checking...)", AuthType.AZURE_CLI);
-        lblAzureCli = createDescriptionLabel(group, "Consume your existing Azure CLI credential.");
+        lblAzureCli = createDescriptionLabel(group, btnAzureCli, "Consume your existing Azure CLI credential.");
 
         this.btnOAuth = createRadioButton(group, "OAuth2", AuthType.OAUTH2);
-        this.lblOAuth = createDescriptionLabel(group, "You will need to open an external browser and sign in.");
+        this.lblOAuth = createDescriptionLabel(group, btnOAuth, "You will need to open an external browser and sign in.");
 
         btnDeviceCode = createRadioButton(group, "Device Login", AuthType.DEVICE_CODE);
-        lblDeviceInfo = createDescriptionLabel(group, "You will need to open an external browser and sign in with a generated device code.");
+        lblDeviceInfo = createDescriptionLabel(group, btnDeviceCode, "You will need to open an external browser and sign in with a generated device code.");
 
         btnSPRadio = createRadioButton(group, "Service Principal", AuthType.SERVICE_PRINCIPAL);
-
-        lblSP = createDescriptionLabel(group, "Use Azure Active Directory service principal for sign in.");
+        lblSP = createDescriptionLabel(group, btnSPRadio, "Use Azure Active Directory service principal for sign in.");
 
         btnAzureCli.setEnabled(false);
         checkAccountAvailability();
@@ -170,18 +171,19 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         return radioButton;
     }
 
-    private Label createDescriptionLabel(Composite parent, String description) {
+    private Label createDescriptionLabel(Composite parent, Button button, String description) {
         Composite compositeDevice = new Composite(parent, SWT.NONE);
         GridData gdCompositeDevice = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdCompositeDevice.heightHint = 38;
         gdCompositeDevice.widthHint = 66;
         compositeDevice.setLayoutData(gdCompositeDevice);
-        compositeDevice.setLayout(new GridLayout(1, false));
-        Label label = new Label(compositeDevice, SWT.WRAP);
+        compositeDevice.setLayout(new GridLayout(1, false)          );
+        Label label = new Label(compositeDevice, SWT.WRAP); 
         GridData gdLblDeviceInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdLblDeviceInfo.horizontalIndent = 11;
         label.setLayoutData(gdLblDeviceInfo);
         label.setText(description);
+        AccessibilityUtils.addAccessibilityNameForUIComponent(button, button.getText() + " "+ description);
         return label;
         //
     }
