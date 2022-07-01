@@ -249,7 +249,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 this.buildBeforeDeploy.setVisible(MavenUtils.isMavenProject(value));
             }
         });
-        AccessibilityUtils.addAccessibilityNameForUIComponent(projectCombo, projectLabel.getText());
+        AccessibilityUtils.addAccessibilityNameForUIComponent(projectCombo.getInputControl(), projectLabel.getText());
 
         Optional.ofNullable(project)
                 .ifPresent(value -> projectCombo.setValue(new ItemReference<>(item -> Objects.equals(value, item))));
