@@ -117,7 +117,10 @@ public class SignInWindow extends AzureDialogWrapper {
             cliBtn.setEnabled(available);
             cliBtn.setText(available ? "Azure CLI" : "Azure CLI (Not logged in)");
             cliDesc.setIcon(null);
-            oauthBtn.setSelected(cliBtn.isSelected() && !available);
+            if (cliBtn.isSelected() && !available) {
+                oauthBtn.setSelected(true);
+                oauthBtn.requestFocus(); // also need to move focus in case accessibility exception
+            }
             updateSelection();
         });
     }
