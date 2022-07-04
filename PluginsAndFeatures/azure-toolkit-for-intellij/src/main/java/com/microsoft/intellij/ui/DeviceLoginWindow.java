@@ -46,7 +46,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
             editorPanel.setFont(font);
             editorPanel.setForeground(foregroundColor);
         }
-
+        getWindow().getAccessibleContext().setAccessibleDescription(editorPanel.getText());
         init();
     }
 
