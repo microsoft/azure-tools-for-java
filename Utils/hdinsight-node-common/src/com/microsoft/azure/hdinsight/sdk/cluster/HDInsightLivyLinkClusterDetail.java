@@ -8,7 +8,7 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -78,8 +78,8 @@ public class HDInsightLivyLinkClusterDetail implements IClusterDetail, LivyClust
 
     @Override
     @NotNull
-    public SubscriptionDetail getSubscription() {
-        return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
+    public Subscription getSubscription() {
+        return new Subscription("[LinkedCluster]", "[NoSubscription]", "", false);
     }
 
     @Override

@@ -15,7 +15,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -43,7 +43,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 
-    private SubscriptionDetail subscription;
+    private Subscription subscription;
     private ClusterRawInfo clusterRawInfo;
     private IClusterOperation clusterOperation;
 
@@ -58,9 +58,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     @Nullable
     private Map<String, String> coresiteMap = null;
 
-    public ClusterDetail(SubscriptionDetail paramSubscription,
+    public ClusterDetail(Subscription paramSubscription,
                          ClusterRawInfo paramClusterRawInfo,
-                         IClusterOperation clusterOperation){
+                         IClusterOperation clusterOperation) {
         this.subscription = paramSubscription;
         this.clusterRawInfo = paramClusterRawInfo;
         this.clusterOperation = clusterOperation;
@@ -182,7 +182,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         return clusterProperties == null ? null : clusterProperties.getClusterVersion();
     }
 
-    public SubscriptionDetail getSubscription(){
+    public Subscription getSubscription() {
         return subscription;
     }
 

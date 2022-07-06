@@ -6,10 +6,10 @@
 package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -29,7 +29,7 @@ public class AzureHttpObservable extends OAuthTokenHttpObservable {
     private final List<NameValuePair> azureDefaultParameters;
 
 
-    public AzureHttpObservable(@NotNull SubscriptionDetail subscription, @NotNull String apiVersion) {
+    public AzureHttpObservable(@NotNull Subscription subscription, @NotNull String apiVersion) {
         this(subscription.getTenantId(), apiVersion);
     }
 

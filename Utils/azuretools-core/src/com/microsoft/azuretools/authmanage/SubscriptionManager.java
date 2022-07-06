@@ -6,13 +6,11 @@
 package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azuretools.adauth.JsonHelper;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -23,13 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +33,7 @@ public class SubscriptionManager {
 
     private static final String FILE_NAME_SUBSCRIPTIONS_DETAILS = "subscriptionsDetails.json";
 
-    public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
+    public void setSubscriptionDetails(List<Subscription> subscriptionDetails) {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.setSubscriptionDetails()");
         synchronized (this) {
             try {
@@ -61,7 +53,7 @@ public class SubscriptionManager {
     }
 
     @AzureOperation(name = "account.load_subscription_cache", type = AzureOperation.Type.TASK)
-    public static List<SubscriptionDetail> loadSubscriptions() {
+    public static List<Subscription> loadSubscriptions() {
         System.out.println("SubscriptionManager.loadSubscriptions()");
         try {
             String json = AzureStoreManager.getInstance().getIdeStore().getProperty(TelemetryConstants.ACCOUNT, "subscription_details");
@@ -76,7 +68,7 @@ public class SubscriptionManager {
                 System.out.println("subscription details is empty");
                 return Collections.emptyList();
             }
-            final SubscriptionDetail[] sda = JsonHelper.deserialize(SubscriptionDetail[].class, json);
+            final Subscription[] sda = JsonHelper.deserialize(Subscription[].class, json);
             return new ArrayList<>(Arrays.asList(sda));
         } catch (final IOException e) {
             final String error = "Failed to load local cached subscriptions";
@@ -86,32 +78,32 @@ public class SubscriptionManager {
     }
 
     @AzureOperation(name = "account.persist_subscription", type = AzureOperation.Type.TASK)
-    private static void saveSubscriptions(List<SubscriptionDetail> sdl)
+    private static void saveSubscriptions(List<Subscription> sdl)
             throws IOException {
         System.out.println("SubscriptionManager.saveSubscriptions()");
         AzureStoreManager.getInstance().getIdeStore().setProperty(TelemetryConstants.ACCOUNT, "subscription_details", JsonHelper.serialize(sdl));
     }
 
-    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() {
+    public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionDetailsMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionDetailsMap()");
         updateSubscriptionDetailsIfNull();
-        return Utils.groupByIgnoreDuplicate(IdentityAzureManager.getInstance().getSubscriptionDetails(), d -> d.getSubscriptionId());
+        return Utils.groupByIgnoreDuplicate(IdentityAzureManager.getInstance().getSubscriptionDetails(), Subscription::getId);
     }
 
     @AzureOperation(name = "account.get_subscription_details", type = AzureOperation.Type.TASK)
-    public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
+    public synchronized List<Subscription> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return IdentityAzureManager.getInstance().getSubscriptionDetails();
     }
 
     @AzureOperation(name = "account.get_subscription_detail", type = AzureOperation.Type.TASK)
-    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
+    public synchronized List<Subscription> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
 
-        final List<SubscriptionDetail> selectedSubscriptions =
-                IdentityAzureManager.getInstance().getSubscriptionDetails().stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
+        final List<Subscription> selectedSubscriptions =
+                IdentityAzureManager.getInstance().getSubscriptionDetails().stream().filter(Subscription::isSelected).collect(Collectors.toList());
 
         return selectedSubscriptions;
     }

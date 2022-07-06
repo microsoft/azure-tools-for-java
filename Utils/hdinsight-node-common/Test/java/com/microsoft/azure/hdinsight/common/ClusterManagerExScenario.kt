@@ -25,8 +25,8 @@ package com.microsoft.azure.hdinsight.common
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.toolkit.lib.common.model.Subscription
 import com.microsoft.azuretools.authmanage.SubscriptionManager
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.helpers.IDEHelper
@@ -54,7 +54,7 @@ class ClusterManagerExScenario {
     private var additionalClusters: List<HDInsightAdditionalClusterDetail> = ArrayList()
     private var emulatedClusters: List<EmulatorClusterDetail> = ArrayList()
     private var subscriptionClusters: List<ClusterDetail> = ArrayList()
-    private var selectedSubscriptions = mapOf<String, SubscriptionDetail>()
+    private var selectedSubscriptions = mapOf<String, Subscription>()
     private val mockedApplicationProperties = mutableMapOf<String, String>()
 
     @Before
@@ -133,8 +133,8 @@ class ClusterManagerExScenario {
     fun mockSubscriptions(subscriptionsMock: DataTable) {
         selectedSubscriptions = subscriptionsMock.asList(SimpleSubscription::class.java)
                 .map {
-                    val subMock = mock(SubscriptionDetail::class.java)
-                    Mockito.`when`(subMock.subscriptionName).thenReturn(it.name)
+                    val subMock = mock(Subscription::class.java)
+                    Mockito.`when`(subMock.name).thenReturn(it.name)
                     Mockito.`when`(subMock.isSelected).thenReturn(it.isSelected)
 
                     it.name to subMock

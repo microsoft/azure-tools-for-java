@@ -17,7 +17,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -316,7 +316,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
         this.storageAccount = storageRootPath == null ? null : new StorageAccount(
                 azureSparkServerlessAccount.getName(),
                 storageRootPath,
-                azureSparkServerlessAccount.getSubscription().getSubscriptionId());
+                azureSparkServerlessAccount.getSubscription().getId());
 
         this.http = new AzureDataLakeHttpObservable(azureSparkServerlessAccount.getSubscription().getTenantId(), ApiVersion.VERSION);
 
@@ -492,7 +492,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     @NotNull
     @Override
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return account.getSubscription();
     }
 

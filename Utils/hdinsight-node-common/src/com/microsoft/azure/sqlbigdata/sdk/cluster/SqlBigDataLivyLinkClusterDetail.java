@@ -12,7 +12,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -96,7 +96,7 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
 
     @Override
     @Nullable
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return null;
     }
 

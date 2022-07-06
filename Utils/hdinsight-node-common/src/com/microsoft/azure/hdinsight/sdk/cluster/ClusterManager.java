@@ -11,7 +11,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
 import com.microsoft.azure.hdinsight.sdk.common.AuthType;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -19,11 +19,7 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class ClusterManager implements ILogger {
     // Singleton Instance
@@ -63,7 +59,7 @@ public class ClusterManager implements ILogger {
      * @return detailed cluster info list with specific cluster type
      */
     public synchronized Observable<List<ClusterDetail>> getHDInsightClustersWithSpecificType(
-            List<SubscriptionDetail> subscriptions,
+            List<Subscription> subscriptions,
             String osType) {
         return Observable.from(subscriptions)
                 .flatMap(subscriptionDetail ->
@@ -101,7 +97,7 @@ public class ClusterManager implements ILogger {
                 .doOnNext(clusterDetail -> {
                     String debugMsg = String.format("Thread: %s. Sub: %s. Cluster: %s",
                             Thread.currentThread().getName(),
-                            clusterDetail.getSubscription().getSubscriptionName(),
+                            clusterDetail.getSubscription().getName(),
                             clusterDetail.getName());
                     log().info(debugMsg);
                 })

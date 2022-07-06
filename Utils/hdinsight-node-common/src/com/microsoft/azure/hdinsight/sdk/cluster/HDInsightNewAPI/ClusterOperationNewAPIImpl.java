@@ -14,9 +14,9 @@ import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpError
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.GatewayTimeoutErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.NotFoundHttpErrorStatus;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -29,17 +29,19 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements ILogger {
     private static final String VERSION = "2015-03-01-preview";
     private HDInsightUserRoleType roleType;
     @NotNull
-    private final SubscriptionDetail subscription;
+    private final Subscription subscription;
     @NotNull
     private final AzureManagementHttpObservable http;
 
-    public ClusterOperationNewAPIImpl(@NotNull SubscriptionDetail subscription) {
+    public ClusterOperationNewAPIImpl(@NotNull Subscription subscription) {
         this.subscription = subscription;
         this.http = new AzureManagementHttpObservable(subscription, VERSION);
     }
@@ -172,7 +174,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     @Nullable
     @Override
     public com.microsoft.azure.hdinsight.sdk.cluster.ClusterConfiguration getClusterConfiguration(
-            final SubscriptionDetail subscription,
+            final Subscription subscription,
             final String clusterId) throws AzureCmdException {
         assert roleType != null : "isProbeGetConfigurationSucceed() should be called first to determine role type";
 

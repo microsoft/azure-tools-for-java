@@ -5,12 +5,12 @@
 
 package com.microsoft.azure.hdinsight.sdk.common;
 
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class AzureManagementHttpObservable extends AzureHttpObservable {
-    public AzureManagementHttpObservable(@NotNull SubscriptionDetail subscription, @NotNull String apiVersion) {
+    public AzureManagementHttpObservable(@NotNull Subscription subscription, @NotNull String apiVersion) {
         super(subscription, apiVersion);
     }
 

@@ -11,9 +11,9 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.table.JBTable;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.intellij.util.JTableUtils;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,14 +30,14 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     private JTable table;
     private JTextPane selectSubscriptionCommentTextPane;
     private TextFieldWithBrowseButton destinationFolderTextField;
-    private final List<SubscriptionDetail> sdl;
+    private final List<Subscription> sdl;
     private final Project project;
 
     public String getDestinationFolder() {
         return destinationFolderTextField.getText();
     }
 
-    public List<SubscriptionDetail> getSubscriptionDetails() {
+    public List<Subscription> getSubscriptionDetails() {
         return sdl;
     }
 
@@ -55,7 +55,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         }
     };
 
-    public static SrvPriSettingsDialog go(List<SubscriptionDetail> sdl, Project project) throws Exception {
+    public static SrvPriSettingsDialog go(List<Subscription> sdl, Project project) throws Exception {
         final SrvPriSettingsDialog d = new SrvPriSettingsDialog(sdl, project);
         d.show();
         if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
@@ -65,7 +65,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         return null;
     }
 
-    private SrvPriSettingsDialog(List<SubscriptionDetail> sdl, Project project) {
+    private SrvPriSettingsDialog(List<Subscription> sdl, Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.sdl = sdl;
         this.project = project;
@@ -106,8 +106,8 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     }
 
     private void setSubscriptions() {
-        for (final SubscriptionDetail sd : sdl) {
-            model.addRow(new Object[] {sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
+        for (final Subscription sd : sdl) {
+            model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd.getId()});
         }
         model.fireTableDataChanged();
     }

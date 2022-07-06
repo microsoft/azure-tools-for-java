@@ -18,12 +18,12 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -59,9 +59,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JPanel panelTable;
     private JBTable table;
-    private List<SubscriptionDetail> sdl;
+    private List<Subscription> sdl;
 
-    private SubscriptionsDialog(List<SubscriptionDetail> sdl, Project project) {
+    private SubscriptionsDialog(List<Subscription> sdl, Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.sdl = sdl;
         this.project = project;
@@ -79,7 +79,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     /**
      * Open select-subscription dialog.
      */
-    public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
+    public static SubscriptionsDialog go(List<Subscription> sdl, Project project) {
         if (CollectionUtils.isEmpty(sdl)) {
             final String message = "No subscription in current account";
             final int result = Messages.showOkCancelDialog(message, "No Subscription", "Try Azure for Free", Messages.getCancelButton(), Messages.getWarningIcon());
@@ -97,7 +97,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         return null;
     }
 
-    public List<SubscriptionDetail> getSubscriptionDetails() {
+    public List<Subscription> getSubscriptionDetails() {
         return sdl;
     }
 
@@ -131,10 +131,10 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private void setSubscriptions() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        sdl.sort((sub1, sub2) -> StringUtils.compareIgnoreCase(sub1.getSubscriptionName(), sub2.getSubscriptionName()));
-        sdl.sort(Comparator.comparing(SubscriptionDetail::isSelected).reversed());
-        for (SubscriptionDetail sd : sdl) {
-            model.addRow(new Object[]{sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
+        sdl.sort((sub1, sub2) -> StringUtils.compareIgnoreCase(sub1.getName(), sub2.getName()));
+        sdl.sort(Comparator.comparing(Subscription::isSelected).reversed());
+        for (Subscription sd : sdl) {
+            model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd.getId()});
         }
         model.fireTableDataChanged();
     }
@@ -205,8 +205,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
         if (rc != 0 && unselectedCount == rc) {
             DefaultLoader.getUIHelper().showMessageDialog(
-                contentPane, "Please select at least one subscription",
-                "Subscription dialog info", Messages.getInformationIcon());
+                    contentPane, "Please select at least one subscription",
+                    "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 
@@ -215,8 +215,8 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             this.sdl.get(ri).setSelected(selected);
         }
 
-        List<String> selectedIds = this.sdl.stream().filter(SubscriptionDetail::isSelected)
-            .map(SubscriptionDetail::getSubscriptionId).collect(Collectors.toList());
+        List<String> selectedIds = this.sdl.stream().filter(Subscription::isSelected)
+                .map(Subscription::getId).collect(Collectors.toList());
         IdentityAzureManager.getInstance().selectSubscriptionByIds(selectedIds);
         IdentityAzureManager.getInstance().getSubscriptionManager().notifySubscriptionListChanged();
         AzureTaskManager.getInstance().runOnPooledThread(() -> {

@@ -10,12 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.compute.AvailabilitySet;
-import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
-import com.microsoft.azure.management.compute.KnownWindowsVirtualMachineImage;
-import com.microsoft.azure.management.compute.OperatingSystemTypes;
-import com.microsoft.azure.management.compute.VirtualMachine;
-import com.microsoft.azure.management.compute.VirtualMachineImage;
+import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.PublicIPAddress;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -29,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -158,16 +152,16 @@ public class AzureSDKManager {
         return com.microsoft.azure.toolkit.lib.Azure.az(AzureApplicationInsights.class).applicationInsights(subscriptionId).list();
     }
 
-    public static List<ApplicationInsight> getInsightsResources(@NotNull SubscriptionDetail subscription) {
-        return getInsightsResources(subscription.getSubscriptionId());
+    public static List<ApplicationInsight> getInsightsResources(@NotNull Subscription subscription) {
+        return getInsightsResources(subscription.getId());
     }
 
     // SDK will return existing application insights component when you create new one with existing name
     // Use this method in case SDK service update their behavior
     public static ApplicationInsight getOrCreateApplicationInsights(@NotNull String subscriptionId,
-                                                                              @NotNull String resourceGroupName,
-                                                                              @NotNull String resourceName,
-                                                                              @NotNull String location) throws IOException {
+                                                                    @NotNull String resourceGroupName,
+                                                                    @NotNull String resourceName,
+                                                                    @NotNull String location) throws IOException {
         return new GetOrCreateApplicationInsightsTask(subscriptionId, resourceGroupName, Region.fromName(location), resourceName).execute();
     }
 
@@ -220,7 +214,7 @@ public class AzureSDKManager {
 
     // TODO: AI SDK doesn't provide a method to list regions which are available regions to create AI,
     // we are requiring the SDK to provide that API, before SDK side fix, we will use our own impl
-    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws IOException {
-        return getLocationsForInsights(subscription.getSubscriptionId());
+    public static List<String> getLocationsForInsights(Subscription subscription) throws IOException {
+        return getLocationsForInsights(subscription.getId());
     }
 }

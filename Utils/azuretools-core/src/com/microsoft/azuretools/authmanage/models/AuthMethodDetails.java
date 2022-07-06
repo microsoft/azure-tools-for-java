@@ -7,7 +7,7 @@ package com.microsoft.azuretools.authmanage.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethod;
 import lombok.Getter;

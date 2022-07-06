@@ -12,19 +12,17 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.intellij.ui.SubscriptionsDialog;
-import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.intellij.helpers.UIHelperImpl;
-import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
+import com.microsoft.intellij.AzureAnAction;
+import com.microsoft.intellij.ui.SubscriptionsDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
@@ -59,7 +57,7 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
         }
     }
 
-    public static Single<List<SubscriptionDetail>> selectSubscriptions(Project project) {
+    public static Single<List<Subscription>> selectSubscriptions(Project project) {
         final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
         final AzureManager manager = authMethodManager.getAzureManager();
         if (manager == null) {
@@ -69,12 +67,12 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
         final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
 
         return loadSubscriptions(subscriptionManager, project)
-            .switchMap((subs) -> selectSubscriptions(project, subs))
+                .switchMap((subs) -> selectSubscriptions(project, subs))
             .toSingle()
             .doOnSuccess((subs) -> Optional.ofNullable(subs).ifPresent(subscriptionManager::setSubscriptionDetails));
     }
 
-    private static Observable<List<SubscriptionDetail>> selectSubscriptions(final Project project, List<SubscriptionDetail> subs) {
+    private static Observable<List<Subscription>> selectSubscriptions(final Project project, List<Subscription> subs) {
         return AzureTaskManager.getInstance().runLaterAsObservable(new AzureTask<>(() -> {
             final SubscriptionsDialog d = SubscriptionsDialog.go(subs, project);
             return Objects.nonNull(d) ? d.getSubscriptionDetails() : null;
@@ -82,7 +80,7 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
     }
 
     @AzureOperation(name = "account.load_all_subscriptions", type = AzureOperation.Type.SERVICE)
-    public static Observable<List<SubscriptionDetail>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
+    public static Observable<List<Subscription>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
         final AzureString title = OperationBundle.description("account.load_all_subscriptions");
         return AzureTaskManager.getInstance().runInModalAsObservable(new AzureTask<>(project, title, false, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);

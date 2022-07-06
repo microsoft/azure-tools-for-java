@@ -25,8 +25,8 @@ import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -175,7 +175,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
                 final String adlsAccountName = destinationRootPath.split("\\.")[0].split("//")[1];
 
-                Optional<SubscriptionDetail> subscriptionDetail = Optional.empty();
+                Optional<Subscription> subscriptionDetail = Optional.empty();
                 try {
                     subscriptionDetail = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager()
                                                           .getSelectedSubscriptionDetails()

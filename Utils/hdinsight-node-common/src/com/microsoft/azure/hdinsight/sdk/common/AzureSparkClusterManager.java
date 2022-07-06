@@ -7,10 +7,10 @@ package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -38,7 +38,7 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
         return Collections.emptyList();
     }
 
-    public Observable<SubscriptionDetail> getSubscriptionDetailByStoreAccountName(String storeAccountName) {
+    public Observable<Subscription> getSubscriptionDetailByStoreAccountName(String storeAccountName) {
         return get()
                 .map(clusterManager -> clusterManager.getAccounts())
                 .flatMap(Observable::from)

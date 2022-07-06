@@ -12,8 +12,8 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.*;
 import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +27,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
     private static final String REST_SEGMENT_SPARK_COMPUTES = "/bigDataPools";
 
     @NotNull
-    private final SubscriptionDetail subscription;
+    private final Subscription subscription;
 
     @NotNull
     private Workspace workspaceResponse;
@@ -44,7 +44,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
     @NotNull
     private final AzureHttpObservable http;
 
-    public ArcadiaWorkSpace(@NotNull SubscriptionDetail subscription, @NotNull Workspace workspaceResponse) {
+    public ArcadiaWorkSpace(@NotNull Subscription subscription, @NotNull Workspace workspaceResponse) {
         this.subscription = subscription;
         this.workspaceResponse = workspaceResponse;
         this.name = workspaceResponse.name();
@@ -165,7 +165,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
     }
 
     @NotNull
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 

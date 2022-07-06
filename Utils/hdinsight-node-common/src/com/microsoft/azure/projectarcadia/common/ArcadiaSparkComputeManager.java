@@ -12,10 +12,10 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceInfoListResult;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -147,7 +147,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 .flatMap(Observable::from)
                 .map(sub -> Pair.of(
                         sub,
-                        URI.create(getSubscriptionsUri(sub.getSubscriptionId()).toString() + "/")
+                        URI.create(getSubscriptionsUri(sub.getId()).toString() + "/")
                                 .resolve(REST_SEGMENT_RESOURCES))
                 )
                 .doOnNext(subAndWorkspaceUriPair -> log().debug("Pair(Subscription, WorkSpaceListUri): " + subAndWorkspaceUriPair.toString()))
@@ -184,7 +184,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     }
 
     @NotNull
-    private AzureHttpObservable buildHttp(@NotNull SubscriptionDetail subscriptionDetail) {
+    private AzureHttpObservable buildHttp(@NotNull Subscription subscriptionDetail) {
         return new AzureHttpObservable(subscriptionDetail, LIST_WORKSPACE_API_VERSION);
     }
 

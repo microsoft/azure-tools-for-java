@@ -19,10 +19,10 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -179,7 +179,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .defaultIfEmpty(this);
     }
 
-    private Observable<List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>> getAzureDataLakeAccountsRequest() {
+    private Observable<List<Triple<Subscription, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>>> getAzureDataLakeAccountsRequest() {
         if (getAzureManager() == null) {
             return Observable.error(new AuthException(
                     "Can't get Azure Data Lake account since the user isn't signed in, please sign in by Azure Explorer."));
@@ -191,7 +191,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .flatMap(Observable::from)             // Get Subscription details one by one
                 .map(sub -> Pair.of(
                         sub,
-                        URI.create(getSubscriptionsUri(sub.getSubscriptionId()).toString() + "/")
+                        URI.create(getSubscriptionsUri(sub.getId()).toString() + "/")
                            .resolve(REST_SEGMENT_ADL_ACCOUNT)))
                 .doOnNext(pair -> log().debug("Pair(Subscription, AccountsListUri): " + pair.toString()))
                 .map(subUriPair -> Pair.of(
@@ -207,8 +207,8 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
                                 .onErrorResumeNext(err -> {
                                     log().warn(String.format("Ignore subscription %s(%s) with exception",
-                                                             subAccountsObPair.getLeft().getSubscriptionName(),
-                                                             subAccountsObPair.getLeft().getSubscriptionId()),
+                                                    subAccountsObPair.getLeft().getName(),
+                                                    subAccountsObPair.getLeft().getId()),
                                             err);
 
                                     return empty();
@@ -236,13 +236,13 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     }
 
     @NotNull
-    private synchronized AzureHttpObservable getHttp(SubscriptionDetail subscriptionDetail) {
-        if (httpMap.containsKey(subscriptionDetail.getSubscriptionId())) {
-            return httpMap.get(subscriptionDetail.getSubscriptionId());
+    private synchronized AzureHttpObservable getHttp(Subscription subscriptionDetail) {
+        if (httpMap.containsKey(subscriptionDetail.getId())) {
+            return httpMap.get(subscriptionDetail.getId());
         }
 
         AzureHttpObservable subHttp = new AzureManagementHttpObservable(subscriptionDetail, ApiVersion.VERSION);
-        httpMap.put(subscriptionDetail.getSubscriptionId(), subHttp);
+        httpMap.put(subscriptionDetail.getId(), subHttp);
 
         return subHttp;
     }
@@ -261,7 +261,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
     @NotNull
     private AzureSparkCosmosClusterManager updateWithResponse(
-            List<Triple<SubscriptionDetail, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>> accountsResponse) {
+            List<Triple<Subscription, DataLakeAnalyticsAccountBasic, DataLakeAnalyticsAccount>> accountsResponse) {
         accounts = ImmutableSortedSet.copyOf(accountsResponse
                 .stream()
                 .map(subAccountBasicDetailTriple ->     // Triple: subscription, accountBasic, accountDetail
@@ -269,9 +269,9 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                 subAccountBasicDetailTriple.getLeft(),
                                 // endpoint property is account's base URI
                                 URI.create("https://" + subAccountBasicDetailTriple.getMiddle().endpoint()),
-                                           subAccountBasicDetailTriple.getMiddle().name())
-                                   .setBasicResponse(subAccountBasicDetailTriple.getMiddle())
-                                   .setDetailResponse(subAccountBasicDetailTriple.getRight()))
+                                subAccountBasicDetailTriple.getMiddle().name())
+                                .setBasicResponse(subAccountBasicDetailTriple.getMiddle())
+                                .setDetailResponse(subAccountBasicDetailTriple.getRight()))
                 .iterator());
 
         return this;

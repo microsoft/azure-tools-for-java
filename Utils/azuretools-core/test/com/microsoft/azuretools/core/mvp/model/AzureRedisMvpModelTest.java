@@ -10,7 +10,6 @@ import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.rediscache.AzureRedisMvpModel;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.junit.After;
@@ -59,7 +58,7 @@ public class AzureRedisMvpModelTest {
     private Subscription subscriptionMock;
 
     @Mock
-    private SubscriptionDetail subscriptionDetailMock;
+    private Subscription subscriptionDetailMock;
 
     @Mock
     private SubscriptionManager subscriptionManagerMock;
@@ -96,11 +95,11 @@ public class AzureRedisMvpModelTest {
         final int expectKeySetSize = 1;
         final Map<String, Subscription> mockSidToSubscriptionMap = new HashMap<>();
         mockSidToSubscriptionMap.put(MOCK_SUBSCRIPTION, subscriptionMock);
-        final Map<String, SubscriptionDetail> mockSidToSubDetailMap = new HashMap<>();
+        final Map<String, Subscription> mockSidToSubDetailMap = new HashMap<>();
         mockSidToSubDetailMap.put(MOCK_SUBSCRIPTION, subscriptionDetailMock);
 
         when(subscriptionDetailMock.isSelected()).thenReturn(true);
-        when(subscriptionDetailMock.getSubscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
+        when(subscriptionDetailMock.getId()).thenReturn(MOCK_SUBSCRIPTION);
         when(subscriptionMock.getId()).thenReturn(MOCK_SUBSCRIPTION);
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
 

@@ -8,14 +8,14 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.util.regex.Pattern;
 
 public class MfaClusterDetail extends ClusterDetail implements MfaEspCluster, ILogger {
 
-    public MfaClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo, IClusterOperation clusterOperation) {
+    public MfaClusterDetail(Subscription paramSubscription, ClusterRawInfo paramClusterRawInfo, IClusterOperation clusterOperation) {
         super(paramSubscription, paramClusterRawInfo, clusterOperation);
     }
 

@@ -12,7 +12,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -80,8 +80,8 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    public SubscriptionDetail getSubscription() {
-        return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
+    public Subscription getSubscription() {
+        return new Subscription("[LinkedCluster]", "[NoSubscription]", "", false);
     }
 
     @Override

@@ -7,15 +7,15 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheEvict;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -256,10 +256,10 @@ public class AuthMethodManager {
                     targetAuthMethodDetails.setAuthMethod(AuthMethod.IDENTITY);
                 }
                 authMethodDetails = this.identityAzureManager.restoreSignIn(targetAuthMethodDetails).block();
-                final List<SubscriptionDetail> persistSubscriptions = SubscriptionManager.loadSubscriptions();
+                final List<Subscription> persistSubscriptions = SubscriptionManager.loadSubscriptions();
                 if (CollectionUtils.isNotEmpty(persistSubscriptions)) {
                     final List<String> savedSubscriptionList = persistSubscriptions.stream()
-                            .filter(SubscriptionDetail::isSelected).map(SubscriptionDetail::getSubscriptionId).distinct().collect(Collectors.toList());
+                            .filter(Subscription::isSelected).map(Subscription::getId).distinct().collect(Collectors.toList());
                     identityAzureManager.selectSubscriptionByIds(savedSubscriptionList);
                 }
                 initFuture.complete(true);

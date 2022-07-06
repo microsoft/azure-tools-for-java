@@ -16,19 +16,20 @@ import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -166,8 +167,8 @@ public class ClusterManagerEx implements ILogger {
                 clusterDetail instanceof EmulatorClusterDetail;
     }
 
-    synchronized Observable<List<ClusterDetail>> getSubscriptionHDInsightClustersOfType(List<SubscriptionDetail> list) {
-        setSelectedSubscriptionExist(list.stream().anyMatch(SubscriptionDetail::isSelected));
+    synchronized Observable<List<ClusterDetail>> getSubscriptionHDInsightClustersOfType(List<Subscription> list) {
+        setSelectedSubscriptionExist(list.stream().anyMatch(Subscription::isSelected));
         return ClusterManager.getInstance().getHDInsightClustersWithSpecificType(list, OSTYPE)
                 .doOnNext(clusters -> isListClusterSuccess = true)
                 .doOnError(err -> {

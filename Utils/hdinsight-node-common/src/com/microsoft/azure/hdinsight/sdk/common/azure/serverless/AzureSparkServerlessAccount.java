@@ -22,8 +22,8 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.model
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -50,7 +50,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     private static final String REST_SEGMENT_JOB_MANAGEMENT_SUFFIX = "/jobManagement";
 
     @NotNull
-    private final SubscriptionDetail subscription;
+    private final Subscription subscription;
 
     @NotNull
     private final AzureHttpObservable http;
@@ -76,7 +76,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     @Nullable
     private DataLakeAnalyticsAccount detailResponse;
 
-    public AzureSparkServerlessAccount(@NotNull SubscriptionDetail subscription, @NotNull URI uri, @NotNull String name) {
+    public AzureSparkServerlessAccount(@NotNull Subscription subscription, @NotNull URI uri, @NotNull String name) {
         this.subscription = subscription;
         this.http = new AzureDataLakeHttpObservable(subscription.getTenantId(), this.apiVersion);
         this.uri = uri;
@@ -88,7 +88,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     //
 
     @NotNull
-    public SubscriptionDetail getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 

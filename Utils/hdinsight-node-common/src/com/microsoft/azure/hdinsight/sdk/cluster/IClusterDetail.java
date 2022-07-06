@@ -11,7 +11,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -58,7 +58,7 @@ public interface IClusterDetail extends ComparableCluster {
         return null;
     }
 
-    SubscriptionDetail getSubscription();
+    Subscription getSubscription();
 
     default int getDataNodes() {
         return 0;
