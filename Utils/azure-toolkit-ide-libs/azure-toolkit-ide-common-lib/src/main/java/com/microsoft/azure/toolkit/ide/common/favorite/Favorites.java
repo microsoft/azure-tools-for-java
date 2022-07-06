@@ -61,11 +61,11 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     private Favorites() {
         super(NAME, AzResource.NONE);
-        AzureEventBus.on("account.logout.account", new AzureEventBus.EventListener((e) -> {
+        AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener((e) -> {
             this.clear();
             this.refresh();
         }));
-        AzureEventBus.on("account.login.account", new AzureEventBus.EventListener((e) -> this.refresh()));
+        AzureEventBus.on("account.logged_in.account", new AzureEventBus.EventListener((e) -> this.refresh()));
     }
 
     @Override
