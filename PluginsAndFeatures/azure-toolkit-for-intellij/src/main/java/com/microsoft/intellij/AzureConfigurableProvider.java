@@ -7,15 +7,9 @@ package com.microsoft.intellij;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurableProvider;
-import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
 public class AzureConfigurableProvider extends ConfigurableProvider {
-    private final Project myProject;
-
-    public AzureConfigurableProvider(Project project) {
-        myProject = project;
-    }
 
     @Override
     public boolean canCreateConfigurable() {
@@ -25,6 +19,6 @@ public class AzureConfigurableProvider extends ConfigurableProvider {
     @Nullable
     @Override
     public Configurable createConfigurable() {
-        return new AzureConfigurable(myProject);
+        return new AzureConfigurable();
     }
 }

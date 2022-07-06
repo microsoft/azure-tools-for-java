@@ -87,7 +87,7 @@
           id="Azure Activity Log"
           canCloseContents="true"
           icon="/icons/Common/AzureActivityLog.svg"/>
-    <projectConfigurable groupId="root"
+    <applicationConfigurable groupId="tools"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"
                          dynamic="true"/>
