@@ -16,7 +16,11 @@ import com.intellij.ui.jcef.JBCefBrowserBase;
 import com.intellij.ui.jcef.JBCefClient;
 import com.intellij.ui.jcef.JBCefJSQuery;
 import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.util.IconUtil;
+import com.intellij.util.ui.JBFont;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -42,15 +46,21 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
     private final JBCefJSQuery myJSQueryOpenInBrowser;
     private final JBCefBrowser jbCefBrowser;
     private JPanel pnlRoot;
+    private JLabel loadingLabel;
+    private JPanel pnlLoading;
+    private JPanel pnlBrowser;
     private Project project;
 
     public ProvideFeedbackEditor(final Project project, VirtualFile virtualFile) {
         super(virtualFile);
         this.project = project;
+        this.loadingLabel.setIcon(IconUtil.scale(IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON), loadingLabel, 1.5f));
+        this.loadingLabel.setFont(JBFont.h2());
         this.jbCefBrowser = new JBCefBrowser("https://www.surveymonkey.com/r/PNB5NBL?mode=simple");
         final CefBrowser browser = jbCefBrowser.getCefBrowser();
         final JBCefClient client = jbCefBrowser.getJBCefClient();
-        pnlRoot.add(jbCefBrowser.getComponent(), new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 3, 3, null, null, null, 0));
+        pnlBrowser.add(jbCefBrowser.getComponent(), new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 3, 3, null, null, null, 0));
+        browser.createImmediately();
         // Create a JS query instance
         this.myJSQueryOpenInBrowser = JBCefJSQuery.create((JBCefBrowserBase) jbCefBrowser);
         myJSQueryOpenInBrowser.addHandler((e) -> {
@@ -59,6 +69,7 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
         });
         client.addRequestHandler(openLinkWithLocalBrowser(), browser);
         client.addLoadHandler(modifySubmitButtonInSurveyCollectionPage(), browser);
+        pnlBrowser.setVisible(false);
     }
 
     @AzureOperation(name = "common.complete_feedback", type = AzureOperation.Type.ACTION)
@@ -72,6 +83,8 @@ public class ProvideFeedbackEditor extends BaseEditor implements DumbAware {
         return new CefLoadHandlerAdapter() {
             @Override
             public void onLoadEnd(CefBrowser browser, CefFrame frame, int httpStatusCode) {
+                ProvideFeedbackEditor.this.pnlLoading.setVisible(false);
+                ProvideFeedbackEditor.this.pnlBrowser.setVisible(true);
                 if (!browser.getURL().contains("www.surveymonkey.com/r/PNB5NBL")) {
                     return;
                 }
