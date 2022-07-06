@@ -35,7 +35,7 @@ public class AppCentricRootLabelView extends AzureServiceLabelView<AzureResource
 
     private void onLogin(AzureEvent azureEvent) {
         final AzureAccount az = Azure.az(AzureAccount.class);
-        if (!az.isSignedIn()) {
+        if (!az.isLoggedIn()) {
             this.label = NAME;
         } else {
             final Account account = az.account();

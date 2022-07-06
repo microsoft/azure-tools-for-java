@@ -29,7 +29,7 @@ public class FavoriteNodeView implements NodeView {
 
     @Override
     public String getTips() {
-        if (!Azure.az(AzureAccount.class).isSignedIn()) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return "";
         }
         final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) view.getResource();

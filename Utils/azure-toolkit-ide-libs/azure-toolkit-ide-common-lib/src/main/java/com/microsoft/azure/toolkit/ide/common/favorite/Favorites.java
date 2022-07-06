@@ -77,7 +77,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Nonnull
     @Override
     public synchronized List<Favorite> list() {
-        if (!Azure.az(AzureAccount.class).isSignedIn()) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return Collections.emptyList();
         }
         final List<Favorite> result = new LinkedList<>(super.list());
@@ -89,7 +89,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Override
     protected Stream<AbstractAzResource<?, ?, ?>> loadResourcesFromAzure() {
         final Account account = Azure.az(AzureAccount.class).account();
-        final String user = account.getEntity().getEmail();
+        final String user = account.getUsername();
         final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
         final String favorites = store.getProperty(this.getName(), user);
         if (StringUtils.isNotBlank(favorites)) {
@@ -185,7 +185,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
             final Account account = Azure.az(AzureAccount.class).account();
-            final String user = account.getEntity().getEmail();
+            final String user = account.getUsername();
             final ObjectMapper mapper = new ObjectMapper();
             try {
                 store.setProperty(this.getName(), user, mapper.writeValueAsString(this.favorites));
