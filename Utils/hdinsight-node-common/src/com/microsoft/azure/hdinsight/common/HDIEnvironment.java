@@ -5,10 +5,11 @@
 
 package com.microsoft.azure.hdinsight.common;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -97,13 +98,10 @@ public final class HDIEnvironment implements IEnvironment {
     }
 
     public static HDIEnvironment getHDIEnvironment() {
-        AzureManager azureManager = null;
         Environment env = Environment.GLOBAL;
 
-        azureManager = AuthMethodManager.getInstance().getAzureManager();
-
-        if (azureManager != null) {
-            env = azureManager.getEnvironment();
+        if (Azure.az(AzureAccount.class).isLoggedIn()) {
+            env = CommonSettings.getEnvironment();
         }
         if (Environment.GLOBAL.equals(env)) {
             return HDIEnvironment.GLOBAL;

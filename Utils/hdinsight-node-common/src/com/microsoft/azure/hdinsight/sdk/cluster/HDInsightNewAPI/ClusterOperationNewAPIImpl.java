@@ -14,13 +14,12 @@ import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpError
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.GatewayTimeoutErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.NotFoundHttpErrorStatus;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.entity.StringEntity;
@@ -50,18 +49,8 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         return this.http;
     }
 
-    private AzureManager getAzureManager() throws IOException {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-
-        if (azureManager == null) {
-            throw new AuthException("Not signed in. Can't send out the request.");
-        }
-
-        return azureManager;
-    }
-
     public Observable<Map> getClusterCoreSiteRequest(@NotNull final String clusterId) throws IOException {
-        String managementURI = getAzureManager().getManagementURI();
+        String managementURI = Azure.az(AzureCloud.class).getOrDefault().getManagementEndpoint();
         String url = URI.create(managementURI)
                 .resolve(clusterId.replaceAll("/+$", "") + "/configurations/core-site").toString();
         return getHttp()
@@ -71,20 +60,14 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
 
     private Observable<ClusterConfiguration> getClusterConfigurationRequest(
             @NotNull final String clusterId) {
-        try {
-            String managementURI = getAzureManager().getManagementURI();
-            String url = URI.create(managementURI)
-                    .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
-            StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
-            entity.setContentType("application/json");
-            return getHttp()
-                    .withUuidUserAgent()
-                    .post(url, entity, null, null, ClusterConfiguration.class);
-        } catch (IOException ex) {
-            log().info("Cluster ID: " + clusterId);
-            log().warn("Error getting Azure Manager when probe new HDInsight API. " + ExceptionUtils.getStackTrace(ex));
-            return Observable.empty();
-        }
+        String managementURI = Azure.az(AzureCloud.class).getOrDefault().getManagementEndpoint();
+        String url = URI.create(managementURI)
+                .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
+        StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
+        entity.setContentType("application/json");
+        return getHttp()
+                .withUuidUserAgent()
+                .post(url, entity, null, null, ClusterConfiguration.class);
     }
 
     public Observable<Boolean> isProbeGetConfigurationSucceed(final ClusterRawInfo clusterRawInfo) {

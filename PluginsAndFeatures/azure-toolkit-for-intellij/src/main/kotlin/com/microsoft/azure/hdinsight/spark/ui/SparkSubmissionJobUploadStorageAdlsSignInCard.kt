@@ -33,7 +33,7 @@ class SparkSubmissionJobUploadStorageAdlsSignInCard: JPanel() {
     val signInLink = JXHyperLinkWithUri().apply {
         name = "adlsCardSignInHyperLink"
         text = "Sign In"
-        addActionListener { AzureSignInAction.onAzureSignIn(null) }
+        addActionListener { AzureSignInAction.authActionPerformed(null) }
     }
 
     init {

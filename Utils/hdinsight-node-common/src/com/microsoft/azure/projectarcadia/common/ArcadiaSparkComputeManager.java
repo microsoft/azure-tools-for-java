@@ -12,13 +12,13 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceInfoListResult;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.NameValuePair;
@@ -49,23 +49,15 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     @NotNull
     private ImmutableSortedSet<? extends ArcadiaWorkSpace> workSpaces = ImmutableSortedSet.of();
 
-    @Nullable
-    public AzureManager getAzureManager() {
-        return AuthMethodManager.getInstance().getAzureManager();
-    }
-
     public ArcadiaSparkComputeManager() {
-        AuthMethodManager.getInstance().addSignOutEventListener(() -> workSpaces = ImmutableSortedSet.of());
-        AzureManager azureManager = getAzureManager();
-        if (azureManager != null) {
-            azureManager.getSubscriptionManager().addListener(ev -> workSpaces = ImmutableSortedSet.of());
-        }
+        AzureEventBus.once("account.logged_out.account", (t, e) -> workSpaces = ImmutableSortedSet.of());
+        AzureEventBus.on("account.subscription_changed.account", new AzureEventBus.EventListener(e -> workSpaces = ImmutableSortedSet.of()));
     }
 
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
-        if (getAzureManager() == null) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return ImmutableSortedSet.of();
         }
 
@@ -79,7 +71,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     @NotNull
     @Override
     public ClusterContainer refresh() {
-        if (getAzureManager() == null) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return this;
         }
 
@@ -137,13 +129,12 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
 
     @NotNull
     private Observable<List<ArcadiaWorkSpace>> getWorkSpacesRequest() {
-        AzureManager azureManager = getAzureManager();
-        if (azureManager == null) {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
             return Observable.error(new AuthException(
                     "Can't get Synapse workspaces since user doesn't sign in, please sign in by Azure Explorer."));
         }
 
-        return Observable.fromCallable(() -> azureManager.getSubscriptionManager().getSelectedSubscriptionDetails())
+        return Observable.fromCallable(() -> Azure.az(AzureAccount.class).account().getSelectedSubscriptions())
                 .flatMap(Observable::from)
                 .map(sub -> Pair.of(
                         sub,

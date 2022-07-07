@@ -57,7 +57,7 @@ import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
-import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.authmanage.IdeAzureAccount
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.lang.containsInvisibleChars
@@ -97,7 +97,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     private val isSignedIn: Boolean
         get() = try {
-            AuthMethodManager.getInstance().isSignedIn
+            IdeAzureAccount.getInstance().isLoggedIn
         } catch (ignored: IOException) {
             false
         }

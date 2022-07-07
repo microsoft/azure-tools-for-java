@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
-import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.authmanage.IdeAzureAccount
 import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.ui.util.UIUtils
@@ -92,7 +92,7 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
 
             val rootPath = config.gen2RootPath ?: throw RuntimeConfigurationError("ADLS GEN2 Root Path is invalid")
 
-            if (!AuthMethodManager.getInstance().isSignedIn) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn) {
                 throw RuntimeConfigurationError("Need to use azure account to login in first")
             }
 

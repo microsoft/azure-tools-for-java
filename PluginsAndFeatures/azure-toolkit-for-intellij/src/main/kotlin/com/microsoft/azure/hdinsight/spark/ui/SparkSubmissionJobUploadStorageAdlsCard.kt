@@ -38,7 +38,8 @@ import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN1
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
-import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azure.toolkit.lib.Azure
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.HintTextField
@@ -182,7 +183,7 @@ class SparkSubmissionJobUploadStorageAdlsCard
             // There are IO operations
             UIUtils.assertInPooledThread()
 
-            if (!AzureSparkClusterManager.getInstance().isSignedIn) {
+            if (!AzureSparkClusterManager.getInstance().isLoggedIn) {
                 throw RuntimeConfigurationError("ADLS Gen 1 storage type requires user to sign in first")
             }
 
@@ -199,7 +200,7 @@ class SparkSubmissionJobUploadStorageAdlsCard
         override fun onSelected() {
             // show sign in/out panel based on whether user has signed in or not
             val curLayout = azureAccountCards.layout as CardLayout
-            if (AzureSparkClusterManager.getInstance().isSignedIn) {
+            if (AzureSparkClusterManager.getInstance().isLoggedIn) {
                 curLayout.show(azureAccountCards, signOutCard.title)
                 signOutCard.azureAccountLabel.text = AzureSparkClusterManager.getInstance().azureAccountEmail
             } else {
@@ -217,14 +218,13 @@ class SparkSubmissionJobUploadStorageAdlsCard
                     // set error message to prevent user from applying the change when refreshing is not completed
                     .observeOn(Schedulers.io())
                     .map { config ->
-                        if (!AzureSparkClusterManager.getInstance().isSignedIn) {
+                        if (!AzureSparkClusterManager.getInstance().isLoggedIn) {
                             throw RuntimeConfigurationError("ADLS Gen 1 storage type requires user to sign in first")
                         }
 
-                        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
-                        val subscriptionNameList = subscriptionManager.selectedSubscriptionDetails
-                                .sortedBy { it.subscriptionName }
-                                .map { subDetail -> subDetail.subscriptionName as Any }
+                        val subscriptionNameList = Azure.az(AzureAccount::class.java).account().selectedSubscriptions
+                                .sortedBy { it.name }
+                                .map { subDetail -> subDetail.name as Any }
                                 .toTypedArray()
 
                         if (subscriptionNameList.isEmpty()) {

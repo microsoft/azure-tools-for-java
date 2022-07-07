@@ -38,7 +38,7 @@ class SparkSubmissionJobUploadStorageAdlsSignOutCard: JPanel() {
     val signOutLink = JXHyperLinkWithUri().apply {
         name = "adlsCardSignOutHyperLink"
         text = "Sign Out"
-        addActionListener { AzureSignInAction.onAzureSignIn(null) }
+        addActionListener { AzureSignInAction.authActionPerformed(null) }
     }
 
     init {

@@ -25,8 +25,9 @@ import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -177,12 +178,10 @@ public class SparkBatchJobDeployFactory implements ILogger {
 
                 Optional<Subscription> subscriptionDetail = Optional.empty();
                 try {
-                    subscriptionDetail = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager()
-                                                          .getSelectedSubscriptionDetails()
-                                                          .stream()
-                                                          .filter((detail) -> detail.getSubscriptionName()
-                                                                                    .equals(subscription))
-                                                          .findFirst();
+                    subscriptionDetail = Azure.az(AzureAccount.class).account().getSelectedSubscriptions()
+                        .stream()
+                        .filter((detail) -> detail.getName().equals(subscription))
+                        .findFirst();
 
                 } catch (final Exception ignore) {
                 }

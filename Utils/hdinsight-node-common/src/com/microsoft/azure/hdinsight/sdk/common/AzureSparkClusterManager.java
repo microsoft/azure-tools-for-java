@@ -7,13 +7,14 @@ package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.NameValuePair;
 import rx.Observable;
@@ -40,7 +41,7 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
 
     public Observable<Subscription> getSubscriptionDetailByStoreAccountName(String storeAccountName) {
         return get()
-                .map(clusterManager -> clusterManager.getAccounts())
+                .map(AzureSparkCosmosClusterManager::getAccounts)
                 .flatMap(Observable::from)
                 .filter(account -> account.getDetailResponse() != null &&
                         account.getDetailResponse().dataLakeStoreAccounts() != null &&
@@ -60,18 +61,12 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
 
     @NotNull
     public String getAccessToken(String tenantId) throws IOException {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        // not signed in
-        if (azureManager == null) {
-            throw new AuthException("Not signed in. Can't send out the request.");
-        }
-
-        return azureManager.getAccessToken(tenantId, getResourceEndpoint());
+        return IdeAzureAccount.getInstance().getCredentialForTrack1(tenantId).getToken(getResourceEndpoint());
     }
 
-    public boolean isSignedIn() {
+    public boolean isLoggedIn() {
         try {
-            return AuthMethodManager.getInstance().isSignedIn();
+            return IdeAzureAccount.getInstance().isLoggedIn();
         } catch (Exception ex) {
             log().warn("Exception happens when we try to know if user signed in. " + ExceptionUtils.getStackTrace(ex));
             return false;
@@ -80,12 +75,13 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
 
     @Nullable
     public String getAzureAccountEmail() {
-        if (AuthMethodManager.getInstance() == null) {
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isLoggedIn()) {
             return null;
-        } else if (AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail() == null) {
-            return AuthMethodManager.getInstance().getAuthMethodDetails().getCredFilePath();
+        } else if (StringUtils.isBlank(az.account().getUsername())) {
+            return "Unknown";
         } else {
-            return AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+            return az.account().getUsername();
         }
     }
 }

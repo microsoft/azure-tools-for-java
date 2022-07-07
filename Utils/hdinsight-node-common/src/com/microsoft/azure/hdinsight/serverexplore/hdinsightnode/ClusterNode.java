@@ -93,7 +93,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
                     if (resourceGroupName != null) {
 
                         String webPortHttpLink = String.format(HDIEnvironment.getHDIEnvironment().getPortal() + "#resource/subscriptions/%s/resourcegroups/%s/providers/Microsoft.HDInsight/clusters/%s",
-                                clusterDetail.getSubscription().getSubscriptionId(),
+                                clusterDetail.getSubscription().getId(),
                                 resourceGroupName,
                                 clusterDetail.getName());
                         openUrlLink(webPortHttpLink);
@@ -164,7 +164,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, this.clusterDetail.getSubscription().getSubscriptionId());
+        properties.put(AppInsightsConstants.SubscriptionId, this.clusterDetail.getSubscription().getId());
         properties.put(AppInsightsConstants.Region, this.clusterDetail.getLocation());
         return properties;
     }

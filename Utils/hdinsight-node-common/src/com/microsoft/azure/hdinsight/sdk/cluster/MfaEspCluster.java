@@ -6,15 +6,16 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 
 public interface MfaEspCluster extends AzureAdAccountDetail, ILogger {
     // get path suffix user/<user_name>
     default String getUserPath() {
-        if (AuthMethodManager.getInstance().isSignedIn()) {
+        if (IdeAzureAccount.getInstance().isLoggedIn()) {
             // FIXME!!! since this is only a workaround to get user folder name
-            String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+            String loginUserEmail = Azure.az(AzureAccount.class).account().getUsername();
             String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
             return String.format("%s/%s", "user", loginUser);
         }

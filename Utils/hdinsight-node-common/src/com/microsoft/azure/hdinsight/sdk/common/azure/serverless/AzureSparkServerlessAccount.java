@@ -22,11 +22,11 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.model
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -109,13 +109,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
                     subscription.getTenantId()));
             return null;
         }
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            log().warn("Azure manager is null");
-            return null;
-        }
-
-        final String url = azureManager.getPortalUrl()
+        final String url = Azure.az(AzureAccount.class).account().getPortalUrl()
             + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
             + subscription.getTenantId()
             + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE

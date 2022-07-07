@@ -29,9 +29,9 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
     private static final String DEFAULT_STORAGE_FLAG = "(default)";
     private static final String REST_SEGMENT_STORAGE_ACCOUNT = "/storageaccounts";
 
-    private IHDIStorageAccount storageAccount;
+    private final IHDIStorageAccount storageAccount;
     @NotNull
-    private IClusterDetail clusterDetail;
+    private final IClusterDetail clusterDetail;
 
     public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, @NotNull IClusterDetail clusterDetail, boolean isDefaultStorageAccount) {
         super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent,
@@ -46,7 +46,7 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
             addAction("Open Storage in Azure Management Portal", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
-                    final String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
+                    final String subscriptionId = clusterDetail.getSubscription().getId();
                     final String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
                     openResourcesInPortal(subscriptionId, storageRelativePath);
                 }

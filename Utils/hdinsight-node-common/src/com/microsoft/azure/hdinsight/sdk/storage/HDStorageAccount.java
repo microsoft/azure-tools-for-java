@@ -30,7 +30,7 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
 
     @Override
     public String getSubscriptionId() {
-        return this.clusterDetail == null ? "" : this.clusterDetail.getSubscription().getSubscriptionId();
+        return this.clusterDetail == null ? "" : this.clusterDetail.getSubscription().getId();
     }
 
     @Override

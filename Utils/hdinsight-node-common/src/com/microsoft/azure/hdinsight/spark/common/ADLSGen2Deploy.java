@@ -12,7 +12,8 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.HttpStatus;
 import rx.Observable;
@@ -81,7 +82,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     }
 
     public static String getForbiddenErrorHints(String fileSystemRootPath) {
-        final String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        final String signInUserEmail = Azure.az(AzureAccount.class).account().getUsername();
         return " Please verify if\n"
                 + "1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n"
                 + "2. The signed in user "

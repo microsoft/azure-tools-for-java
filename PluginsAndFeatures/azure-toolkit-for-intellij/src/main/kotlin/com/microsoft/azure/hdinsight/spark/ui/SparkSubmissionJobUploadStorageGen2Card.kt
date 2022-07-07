@@ -34,7 +34,7 @@ import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageBasicCard.StorageCheckEvent.PathInputFocusLostEvent
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
-import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.authmanage.IdeAzureAccount
 import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
@@ -128,7 +128,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
 
             val rootPath = config.gen2RootPath ?: throw RuntimeConfigurationError("ADLS GEN2 Root Path is invalid")
 
-            if (!AuthMethodManager.getInstance().isSignedIn) {
+            if (!IdeAzureAccount.getInstance().isLoggedIn) {
                 throw RuntimeConfigurationError("Need to use azure account to login in first")
             }
 

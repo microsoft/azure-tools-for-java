@@ -51,7 +51,7 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
 
     @Override
     public String getSubscriptionId() {
-        return this.clusterDetail.getSubscription().getSubscriptionId();
+        return this.clusterDetail.getSubscription().getId();
     }
 
     @Override

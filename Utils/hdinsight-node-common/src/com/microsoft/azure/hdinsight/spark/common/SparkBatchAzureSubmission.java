@@ -5,12 +5,10 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azuretools.adauth.AuthException;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -51,13 +49,7 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
 
     @NotNull
     String getAccessToken() throws IOException {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        // not signed in
-        if (azureManager == null) {
-            throw new AuthException("Not signed in. Can't send out the request.");
-        }
-
-        return azureManager.getAccessToken(getTenantId(), getResourceEndpoint());
+        return IdeAzureAccount.getInstance().getCredentialForTrack1(getTenantId()).getToken(getResourceEndpoint());
     }
 
     @NotNull

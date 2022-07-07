@@ -16,12 +16,13 @@ import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -64,11 +65,7 @@ public class ClusterManagerEx implements ILogger {
             synchronized (ClusterManagerEx.class) {
                 if (instance == null) {
                     instance = new ClusterManagerEx();
-
-                    AuthMethodManager.getInstance().addSignOutEventListener(() -> {
-                        // Clean cached clusters
-                        instance.setCachedClusters(instance.additionalClusterDetails);
-                    });
+                    AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener(e -> instance.setCachedClusters(instance.additionalClusterDetails)));
                 }
             }
         }
@@ -193,21 +190,14 @@ public class ClusterManagerEx implements ILogger {
         this.emulatorClusterDetails = emulatorClusterDetails;
     }
 
-    AzureManager getAzureManager() {
-        try {
-            return AuthMethodManager.getInstance().getAzureManager();
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
     @NotNull
-    List<ClusterDetail> getSubscriptionHDInsightClusters(@Nullable AzureManager manager) {
-        if (manager == null) {
+    List<ClusterDetail> getSubscriptionHDInsightClusters() {
+        final AzureAccount az = Azure.az(AzureAccount.class);
+        if (!az.isLoggedIn()) {
             return new ArrayList<>();
         }
 
-        return Observable.fromCallable(() -> manager.getSubscriptionManager().getSelectedSubscriptionDetails())
+        return Observable.fromCallable(() -> az.account().getSelectedSubscriptions())
                 .doOnError(err -> log().warn("Failed to list HDInsight Clusters: {}", err.getMessage()))
                 .flatMap(this::getSubscriptionHDInsightClustersOfType)
                 .onErrorResumeNext(Observable.just(new ArrayList<>()))
@@ -247,7 +237,7 @@ public class ClusterManagerEx implements ILogger {
         }
 
         // Get clusters from Subscription, an empty list for non-logged in user.
-        List<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters(getAzureManager());
+        List<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters();
 
         // Sort the merged clusters before set it to cache, sorting algorithm is based on cluster name
         ImmutableSortedSet<IClusterDetail> mergedClusters =
