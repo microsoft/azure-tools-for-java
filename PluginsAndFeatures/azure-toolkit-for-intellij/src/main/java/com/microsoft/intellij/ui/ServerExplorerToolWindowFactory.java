@@ -80,6 +80,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.AnimatedIcon.ANIMATION_IN_RENDERER_ALLOWED;
+import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener, DumbAware {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -447,14 +448,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
         toolWindow.setTitleActions(Arrays.asList(getStartAction, refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
         if (toolWindow instanceof ToolWindowEx) {
-            final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("AzureToolkit.OpenSdkReferenceBook");
-            final AnAction azureRegisterAppAction = ActionManager.getInstance().getAction("AzureToolkit.AD.AzureRegisterApp");
-            final AnAction azureAppTemplatesAction = ActionManager.getInstance().getAction("AzureToolkit.AD.AzureAppTemplates");
+            final AnAction devBlogsAction = ActionManager.getInstance().getAction("AzureToolkit.ViewDevBlogs");
+            final AnAction documentAction = ActionManager.getInstance().getAction("AzureToolkit.ViewToolingDocument");
+            final AnAction whatsNewAction = ActionManager.getInstance().getAction("Actions.WhatsNew");
             final AnAction reportIssueAction = ActionManager.getInstance().getAction("AzureToolkit.GithubIssue");
             final AnAction featureRequestAction = ActionManager.getInstance().getAction("AzureToolkit.FeatureRequest");
-            final AnAction whatsNewAction = ActionManager.getInstance().getAction("Actions.WhatsNew");
-            ((ToolWindowEx) toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, azureRegisterAppAction,
-                    azureAppTemplatesAction, Separator.create(), reportIssueAction, featureRequestAction, whatsNewAction));
+            final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("AzureToolkit.OpenSdkReferenceBook");
+            final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
+            ((ToolWindowEx) toolWindow).setAdditionalGearActions(new DefaultActionGroup(documentAction, devBlogsAction, whatsNewAction, reportIssueAction,
+                    featureRequestAction, Separator.create(), openSdkReferenceBookAction, openAzureSettingsAction));
         }
     }
 

@@ -263,6 +263,8 @@
       <separator/>
       <reference ref="AzureToolkit.OpenSdkReferenceBook"/>
       <separator/>
+      <reference ref="AzureToolkit.ViewDevBlogs"/>
+      <reference ref="AzureToolkit.ViewToolingDocument"/>
       <reference ref="AzureToolkit.GithubIssue"/>
       <reference ref="AzureToolkit.FeatureRequest"/>
       <reference ref="Actions.ProvideFeedback"/>

@@ -19,7 +19,7 @@
     </extensions>
     <actions>
         <action id="Actions.WhatsNew"
-                class="com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction" text="What's New in Azure Toolkit for Java"
+                class="com.microsoft.azure.toolkit.intellij.common.action.WhatsNewAction" text="What's New in Azure Toolkit"
                 description="Show new features of Azure Toolkit for Java"/>
         <action id="AzureToolkit.AzureSDK.DeprecatedNotification.NeverShowAgain"
                 class="com.microsoft.azure.toolkit.intellij.common.messager.IntellijNeverShowAgainAction"
@@ -28,5 +28,9 @@
         </action>
         <action id="Actions.ProvideFeedback" class="com.microsoft.azure.toolkit.intellij.common.feedback.ProvideFeedbackAction"
                 text="Provide Feedback" icon="/icons/Common/feedback.svg"/>
+        <action id="AzureToolkit.ViewToolingDocument" class="com.microsoft.azure.toolkit.intellij.common.action.ViewToolingDocumentAction"
+                text="View Documentation"/>
+        <action id="AzureToolkit.ViewDevBlogs" class="com.microsoft.azure.toolkit.intellij.common.action.ViewDevBlogsAction"
+                text="View Dev Blogs"/>
     </actions>
 </idea-plugin>

@@ -25,8 +25,9 @@ package com.microsoft.intellij.feedback
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.extensions.PluginId
+import com.intellij.openapi.project.DumbAware
 
-open class Reportable(private val shortMessage: String) {
+open class Reportable(private val shortMessage: String) : DumbAware {
     val plugin = PluginManagerCore.getPlugin(
         PluginId.getId("com.microsoft.tooling.msservices.intellij.azure")
     )!!
