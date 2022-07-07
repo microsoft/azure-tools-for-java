@@ -21,12 +21,13 @@ import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.auth.util.AzureEnvironmentUtils;
+import com.microsoft.azure.toolkit.lib.auth.AzureEnvironmentUtils;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.legacy.function.FunctionCoreToolsCombobox;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import lombok.extern.slf4j.Slf4j;
@@ -155,17 +156,15 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     }
 
     private void displayDescriptionForAzureEnv() {
-        if (AuthMethodManager.getInstance().isSignedIn()) {
-            final String azureEnv = AuthMethodManager.getInstance().getAuthMethodDetails().getAzureEnv();
-            final AzureEnvironment currentEnv =
-                    AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+        if (IdeAzureAccount.getInstance().isLoggedIn()) {
+            final AzureEnvironment currentEnv = Azure.az(AzureCloud.class).getOrDefault();
             final String currentEnvStr = azureEnvironmentToString(currentEnv);
             if (Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
                 setTextToLabel(azureEnvDesc, "You are currently signed in with environment: " + currentEnvStr);
                 azureEnvDesc.setIcon(AllIcons.General.Information);
             } else {
                 setTextToLabel(azureEnvDesc,
-                        String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
+                    String.format("You are currently signed in to environment: %s, your change will sign out your account.", currentEnvStr));
                 azureEnvDesc.setIcon(AllIcons.General.Warning);
             }
         } else {
@@ -206,19 +205,17 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setDatabasePasswordSaveType(newConfig.getDatabasePasswordSaveType());
         this.originalConfig.setFunctionCoreToolsPath(newConfig.getFunctionCoreToolsPath());
         final String userAgent = String.format(AzurePlugin.USER_AGENT, AzurePlugin.PLUGIN_VERSION,
-                this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
+            this.originalConfig.getTelemetryEnabled() ? this.originalConfig.getMachineId() : StringUtils.EMPTY);
         this.originalConfig.setUserAgent(userAgent);
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
         // apply changes
         // we need to get rid of AuthMethodManager, using az.azure_account
-        if (AuthMethodManager.getInstance().isSignedIn()) {
-            final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            final String azureEnv = authMethodManager.getAuthMethodDetails().getAzureEnv();
-            final AzureEnvironment currentEnv = AzureEnvironmentUtils.stringToAzureEnvironment(azureEnv);
+        if (IdeAzureAccount.getInstance().isLoggedIn()) {
+            final AzureEnvironment currentEnv = Azure.az(AzureCloud.class).getOrDefault();
             if (!Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
                 EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                    authMethodManager.signOut();
+                    Azure.az(AzureAccount.class).logout();
                 });
             }
         }

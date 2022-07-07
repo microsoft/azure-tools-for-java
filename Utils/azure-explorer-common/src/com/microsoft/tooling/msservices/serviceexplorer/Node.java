@@ -9,15 +9,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.BasicTelemetryProperty;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -123,7 +122,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     }
 
     public void setName(String name) {
-        String oldValue = this.name;
+        final String oldValue = this.name;
         this.name = name;
         propertyChangeSupport.firePropertyChange("name", oldValue, name);
     }
@@ -183,7 +182,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
 
     public void removeAllChildNodes() {
         while (!childNodes.isEmpty()) {
-            Node node = childNodes.get(0);
+            final Node node = childNodes.get(0);
 
             // sometimes node can be null if multiple threads access this method; safer to check than make it synchronized
             if (node != null) {
@@ -211,7 +210,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     }
 
     public void setIconPath(String iconPath) {
-        String oldValue = this.iconPath;
+        final String oldValue = this.iconPath;
         this.iconPath = iconPath;
         propertyChangeSupport.firePropertyChange("iconPath", oldValue, iconPath);
     }
@@ -261,7 +260,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     }
 
     public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, int group, int priority) {
-        NodeAction nodeAction = addAction(name, actionListener);
+        final NodeAction nodeAction = addAction(name, actionListener);
         nodeAction.setIconPath(iconPath);
         nodeAction.setGroup(group);
         nodeAction.setPriority(priority);
@@ -278,14 +277,14 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
         });
 
         // add the other actions
-        Map<String, Class<? extends NodeActionListener>> actions = initActions();
+        final Map<String, Class<? extends NodeActionListener>> actions = initActions();
 
         if (actions != null) {
-            for (Map.Entry<String, Class<? extends NodeActionListener>> entry : actions.entrySet()) {
+            for (final Map.Entry<String, Class<? extends NodeActionListener>> entry : actions.entrySet()) {
                 try {
                     // get default constructor
-                    Class<? extends NodeActionListener> listenerClass = entry.getValue();
-                    NodeActionListener actionListener = createNodeActionListener(listenerClass);
+                    final Class<? extends NodeActionListener> listenerClass = entry.getValue();
+                    final NodeActionListener actionListener = createNodeActionListener(listenerClass);
                     addAction(entry.getKey(), actionListener);
                 } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     DefaultLoader.getUIHelper().showException(e.getMessage(), e, "MS Services - Error", true, false);
@@ -296,7 +295,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
 
     protected NodeActionListener createNodeActionListener(Class<? extends NodeActionListener> listenerClass)
             throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        Constructor constructor = listenerClass.getDeclaredConstructor(getClass());
+        final Constructor constructor = listenerClass.getDeclaredConstructor(getClass());
 
         // create an instance passing this object as a constructor argument
         // since we assume that this is an inner class
@@ -310,16 +309,16 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     // NOTE: The Class<?> objects returned by this method MUST be
     // public inner classes of the sub-class. We assume that they are.
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        List<Class<? extends NodeActionListener>> actions = node2Actions.get(this.getClass());
+        final List<Class<? extends NodeActionListener>> actions = node2Actions.get(this.getClass());
         if (actions != null) {
             try {
-                for (Class<? extends NodeActionListener> actionClazz : actions) {
-                    NodeActionListener actionListener = createNodeActionListener(actionClazz);
+                for (final Class<? extends NodeActionListener> actionClazz : actions) {
+                    final NodeActionListener actionListener = createNodeActionListener(actionClazz);
                     if (Objects.nonNull(actionListener.getAction())) {
                         addAction(new DelegateActionListener.BasicActionListener(actionListener, actionListener.getAction()));
                         continue;
                     }
-                    Name nameAnnotation = actionClazz.getAnnotation(Name.class);
+                    final Name nameAnnotation = actionClazz.getAnnotation(Name.class);
                     if (nameAnnotation != null) {
                         addAction(nameAnnotation.value(), actionListener);
                     }
@@ -353,7 +352,7 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
     }
 
     public void addActions(Iterable<NodeAction> actions) {
-        for (NodeAction action : actions) {
+        for (final NodeAction action : actions) {
             addAction(action);
         }
     }
@@ -427,13 +426,9 @@ public class Node implements MvpView, BasicTelemetryProperty, Sortable {
 
     @AzureOperation(name = "common.open_portal.resource", params = {"nameFromResourceId(resourceId)"}, type = AzureOperation.Type.ACTION)
     public void openResourcesInPortal(String subscriptionId, String resourceId) {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        // not signed in
-        if (azureManager == null) {
-            return;
-        }
-        final String portalUrl = azureManager.getPortalUrl();
-        Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+        final Account account = Azure.az(AzureAccount.class).account();
+        final String portalUrl = account.getPortalUrl();
+        final Subscription subscription = account.getSubscription(subscriptionId);
         final String url = portalUrl
                 + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
                 + subscription.getTenantId()

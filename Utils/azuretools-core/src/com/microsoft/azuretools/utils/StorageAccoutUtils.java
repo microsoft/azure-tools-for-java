@@ -8,8 +8,14 @@ package com.microsoft.azuretools.utils;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.*;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azure.storage.blob.BlobContainerPermissions;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.MalformedURLException;
@@ -17,7 +23,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidKeyException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 /**
  * Created by vlashch on 1/19/17.
@@ -99,8 +109,8 @@ public class StorageAccoutUtils {
     public static String getEndpointSuffix() {
         String endpointSuffix;
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
-                endpointSuffix = AuthMethodManager.getInstance().getAzureManager().getStorageEndpointSuffix();
+            if (IdeAzureAccount.getInstance().isLoggedIn()) {
+                endpointSuffix = Azure.az(AzureCloud.class).getOrDefault().getStorageEndpointSuffix();
             } else {
                 endpointSuffix = AzureEnvironment.AZURE.storageEndpointSuffix();
             }

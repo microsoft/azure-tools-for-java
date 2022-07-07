@@ -39,7 +39,7 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         final BiPredicate<Object, AnActionEvent> condition = (r, e) -> r instanceof AzureSpringCloud;
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> {
             final IAccount account = Azure.az(IAzureAccount.class).account();
-            final String url = String.format("%s/#create/Microsoft.AppPlatform", account.portalUrl());
+            final String url = String.format("%s/#create/Microsoft.AppPlatform", account.getPortalUrl());
             am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(url, null);
         };
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);

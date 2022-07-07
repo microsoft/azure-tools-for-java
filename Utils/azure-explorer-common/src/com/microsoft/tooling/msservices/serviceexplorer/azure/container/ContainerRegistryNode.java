@@ -7,8 +7,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -67,9 +68,9 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     @AzureOperation(name = "container.open_portal.container", params = {"this.name"}, type = AzureOperation.Type.ACTION)
     private void openInPortal() {
-        String portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+        final String portalUrl = Azure.az(AzureAccount.class).account().getPortalUrl();
         DefaultLoader.getUIHelper().openInBrowser(String.format(AZURE_PORTAL_LINK_FORMAT, portalUrl,
-                ContainerRegistryNode.this.resourceId));
+            ContainerRegistryNode.this.resourceId));
     }
 
     @Override

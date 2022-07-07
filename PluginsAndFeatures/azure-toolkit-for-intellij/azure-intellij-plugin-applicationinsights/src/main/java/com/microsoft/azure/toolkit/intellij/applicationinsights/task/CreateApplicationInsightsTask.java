@@ -40,7 +40,7 @@ public class CreateApplicationInsightsTask implements Task {
         final String resourceGroupName = (String) context.getParameter(RESOURCE_GROUP);
         final Subscription subscription = Optional.ofNullable(subscriptionId)
                 .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
-                .orElseGet(() -> Azure.az(AzureAccount.class).getSubscriptions().get(0));
+                .orElseGet(() -> Azure.az(AzureAccount.class).account().getSelectedSubscriptions().get(0));
         final ResourceGroup resourceGroup = Optional.ofNullable(resourceGroupName)
                 .map(rg -> Azure.az(AzureResources.class).groups(subscription.getId()).get(rg, rg))
                 .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get resource group to create application insight"));

@@ -29,9 +29,9 @@ import com.intellij.psi.PsiNameHelper;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.util.IncorrectOperationException;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
+import com.microsoft.azure.management.eventhub.implementation.EventHubManager;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -42,7 +42,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -199,8 +199,9 @@ public class CreateFunctionAction extends CreateElementActionBase {
     }
 
     private String getEventHubNamespaceConnectionString(EventHubNamespace eventHubNamespace) {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
-        EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
+        final String sid = eventHubNamespace.id().split("/")[2];
+        final EventHubManager manager = IdeAzureAccount.getInstance().authenticateForTrack1(sid, EventHubManager.configure(), (t, c) -> c.authenticate(t, sid));
+        EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = manager.namespaces().
             authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
             "RootManageSharedAccessKey");
         return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();

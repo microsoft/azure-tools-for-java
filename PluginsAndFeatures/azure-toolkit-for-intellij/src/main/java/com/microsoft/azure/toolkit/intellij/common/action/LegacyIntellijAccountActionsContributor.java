@@ -14,6 +14,8 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -22,7 +24,6 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.AzureConfigurable;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.intellij.actions.SelectSubscriptionsAction;
@@ -45,16 +46,16 @@ public class LegacyIntellijAccountActionsContributor implements IActionsContribu
         final AzureString authnTitle = OperationBundle.description("account.authenticate");
         final ActionView.Builder authnView = new ActionView.Builder("Sign in").title((s) -> authnTitle);
         final BiConsumer<Object, AnActionEvent> authnHandler = (Object v, AnActionEvent e) -> {
-            final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            if (authMethodManager.isSignedIn()) authMethodManager.signOut();
-            AzureSignInAction.onAzureSignIn(e.getProject());
+            final AzureAccount az = Azure.az(AzureAccount.class);
+            if (az.isLoggedIn()) az.logout();
+            AzureSignInAction.authActionPerformed(e.getProject());
         };
         am.registerAction(Action.AUTHENTICATE, new Action<>(Action.AUTHENTICATE, authnHandler, authnView).setAuthRequired(false));
 
         final ActionView.Builder selectSubsView = new ActionView.Builder("Select Subscriptions", AzureIcons.Action.SELECT_SUBSCRIPTION.getIconPath())
             .title((s) -> authnTitle);
         final BiConsumer<Object, AnActionEvent> selectSubsHandler = (Object v, AnActionEvent e) ->
-            SelectSubscriptionsAction.selectSubscriptions(e.getProject()).subscribe();
+            SelectSubscriptionsAction.selectSubscriptions(e.getProject());
         am.registerAction(IAccountActions.SELECT_SUBS, new Action<>(IAccountActions.SELECT_SUBS, selectSubsHandler, selectSubsView).setAuthRequired(true));
     }
 

@@ -7,7 +7,9 @@ package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Deployment;
+import com.microsoft.azure.management.resources.fluentcore.arm.implementation.ManagerBase;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
+import com.microsoft.azure.management.resources.implementation.ResourceManager;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -16,8 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -75,8 +76,7 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public Subscription getSubscriptionById(String sid) {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        return azureManager.getSubscriptionById(sid);
+        return az(AzureAccount.class).account().getSubscription(sid);
     }
 
     /**
@@ -89,10 +89,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<Subscription> getSelectedSubscriptions() {
-        final List<Subscription> ret = new ArrayList<>();
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        ret.addAll(azureManager.getSelectedSubscriptions());
-        Collections.sort(ret, getComparator(Subscription::getName));
+        final List<Subscription> ret = new ArrayList<>(az(AzureAccount.class).account().getSelectedSubscriptions());
+        ret.sort(getComparator(Subscription::getName));
         return ret;
     }
 
@@ -194,7 +192,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> listDeploymentsBySid(String sid) {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        final ResourceManager.Configurable configurable = ResourceManager.configure();
+        final ResourceManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t).withSubscription(sid));
         List<Deployment> deployments = azure.deployments().list();
         Collections.sort(deployments, getComparator(Deployment::name));
         return deployments;
@@ -211,7 +210,8 @@ public class AzureMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<Deployment> getDeploymentByRgName(String sid, String rgName) {
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        final ResourceManager.Configurable configurable = ResourceManager.configure();
+        final ResourceManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t).withSubscription(sid));
         final List<Deployment> res = azure.deployments().listByResourceGroup(rgName);
         res.sort(getComparator(HasName::name));
         return res;

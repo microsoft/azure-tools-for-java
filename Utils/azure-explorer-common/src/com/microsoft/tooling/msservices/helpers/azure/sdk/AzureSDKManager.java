@@ -9,12 +9,15 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
+import com.microsoft.azure.management.compute.implementation.ComputeManager;
 import com.microsoft.azure.management.network.Network;
 import com.microsoft.azure.management.network.PublicIPAddress;
+import com.microsoft.azure.management.network.implementation.NetworkManager;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
+import com.microsoft.azure.management.resources.implementation.ResourceManager;
+import com.microsoft.azure.management.storage.implementation.StorageManager;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.applicationinsights.task.GetOrCreateApplicationInsightsTask;
@@ -23,10 +26,9 @@ import com.microsoft.azure.toolkit.lib.common.logging.Log;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -55,38 +57,41 @@ public class AzureSDKManager {
                                                       boolean withNewAvailabilitySet, @NotNull final String username,
                                                       @Nullable final String password, @Nullable String publicKey)
             throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        Azure azure = azureManager.getAzure(subscriptionId);
-        boolean isWindows;
+        final boolean isWindows;
         if (isKnownImage) {
             isWindows = knownImage instanceof KnownWindowsVirtualMachineImage;
         } else {
             isWindows = vmImage.osDiskImage().operatingSystem() == OperatingSystemTypes.WINDOWS;
         }
         // ------ Resource Group ------
-        VirtualMachine.DefinitionStages.WithGroup withGroup = azure.virtualMachines().define(name)
-                .withRegion(region);
+        final ComputeManager.Configurable vc = ComputeManager.configure();
+        final ComputeManager va = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, vc, (t, c) -> c.authenticate(t, subscriptionId));
+        final VirtualMachine.DefinitionStages.WithGroup withGroup = va.virtualMachines().define(name).withRegion(region);
         Creatable<ResourceGroup> newResourceGroup = null;
-        VirtualMachine.DefinitionStages.WithNetwork withNetwork;
+        final VirtualMachine.DefinitionStages.WithNetwork withNetwork;
         if (withNewResourceGroup) {
-            newResourceGroup = azure.resourceGroups().define(resourceGroup).withRegion(region);
+            final ResourceManager.Configurable rc = ResourceManager.configure();
+            final ResourceManager ra = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, rc, (t, c) -> c.authenticate(t).withSubscription(subscriptionId));
+            newResourceGroup = ra.resourceGroups().define(resourceGroup).withRegion(region);
             withNetwork = withGroup.withNewResourceGroup(newResourceGroup);
         } else {
             withNetwork = withGroup.withExistingResourceGroup(resourceGroup);
         }
         // ------ Virtual Network -----
-        VirtualMachine.DefinitionStages.WithPublicIPAddress withPublicIpAddress;
+        final VirtualMachine.DefinitionStages.WithPublicIPAddress withPublicIpAddress;
         if (withNewNetwork) {
-            Network.DefinitionStages.WithGroup networkWithGroup = azure.networks().define(newNetwork.name).withRegion(region);
-            Creatable<Network> newVirtualNetwork;
+            final NetworkManager.Configurable nc = NetworkManager.configure();
+            final NetworkManager na = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, nc, (t, c) -> c.authenticate(t, subscriptionId));
+            final Network.DefinitionStages.WithGroup networkWithGroup = na.networks().define(newNetwork.name).withRegion(region);
+            final Creatable<Network> newVirtualNetwork;
             if (withNewResourceGroup) {
                 newVirtualNetwork = networkWithGroup.withNewResourceGroup(newResourceGroup)
-                        .withAddressSpace(newNetwork.addressSpace)
-                        .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
+                    .withAddressSpace(newNetwork.addressSpace)
+                    .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
             } else {
                 newVirtualNetwork = networkWithGroup.withExistingResourceGroup(resourceGroup)
-                        .withAddressSpace(newNetwork.addressSpace)
-                        .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
+                    .withAddressSpace(newNetwork.addressSpace)
+                    .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
             }
             withPublicIpAddress = withNetwork.withNewPrimaryNetwork(newVirtualNetwork).withPrimaryPrivateIPAddressDynamic();
             //withPublicIpAddress = withNetwork.withNewPrimaryNetwork("10.0.0.0/28").
@@ -97,7 +102,7 @@ public class AzureSDKManager {
                     .withPrimaryPrivateIPAddressDynamic();
         }
         // ------ Public IP Address------
-        VirtualMachine.DefinitionStages.WithOS withOS;
+        final VirtualMachine.DefinitionStages.WithOS withOS;
         if (pip == null) {
             if (withNewPip) {
                 withOS = withPublicIpAddress.withNewPrimaryPublicIPAddress(name + "pip");
@@ -110,7 +115,7 @@ public class AzureSDKManager {
         // ------ OS and credentials -----
         VirtualMachine.DefinitionStages.WithCreate withCreate;
         if (isWindows) {
-            VirtualMachine.DefinitionStages.WithWindowsAdminUsernameManagedOrUnmanaged withWindowsAdminUsername;
+            final VirtualMachine.DefinitionStages.WithWindowsAdminUsernameManagedOrUnmanaged withWindowsAdminUsername;
             if (isKnownImage) {
                 withWindowsAdminUsername = withOS.withPopularWindowsImage((KnownWindowsVirtualMachineImage) knownImage);
             } else {
@@ -118,7 +123,7 @@ public class AzureSDKManager {
             }
             withCreate = withWindowsAdminUsername.withAdminUsername(username).withAdminPassword(password).withUnmanagedDisks();
         } else {
-            VirtualMachine.DefinitionStages.WithLinuxRootPasswordOrPublicKeyManagedOrUnmanaged withLinuxRootPasswordOrPublicKey;
+            final VirtualMachine.DefinitionStages.WithLinuxRootPasswordOrPublicKeyManagedOrUnmanaged withLinuxRootPasswordOrPublicKey;
             if (isKnownImage) {
                 withLinuxRootPasswordOrPublicKey = withOS.withPopularLinuxImage((KnownLinuxVirtualMachineImage) knownImage).withRootUsername(username);
             } else {
@@ -138,7 +143,9 @@ public class AzureSDKManager {
         }
         withCreate = withCreate.withSize(size);
         // ---- Storage Account --------
-        com.microsoft.azure.management.storage.StorageAccount existedStorageAccount = azure.storageAccounts().getById(storageAccount.id());
+        final StorageManager.Configurable sc = StorageManager.configure();
+        final StorageManager sa = IdeAzureAccount.getInstance().authenticateForTrack1(subscriptionId, sc, (t, c) -> c.authenticate(t, subscriptionId));
+        final com.microsoft.azure.management.storage.StorageAccount existedStorageAccount = sa.storageAccounts().getById(storageAccount.id());
         withCreate = withCreate.withExistingStorageAccount(existedStorageAccount);
         if (withNewAvailabilitySet) {
             withCreate = withCreate.withNewAvailabilitySet(name + "as");
@@ -182,12 +189,8 @@ public class AzureSDKManager {
 
     public static List<String> getLocationsForInsights(String subscriptionId) throws IOException {
         final HttpGet request = new HttpGet(INSIGHTS_REGION_LIST_URL);
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) {
-            return Collections.emptyList();
-        }
-        Subscription subscription = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
-        final String accessToken = azureManager.getAccessToken(subscription.getTenantId());
+        final Subscription subscription = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+        final String accessToken = IdeAzureAccount.getInstance().getAccessTokenForTrack1(subscription.getTenantId());
         request.setHeader("Authorization", String.format("Bearer %s", accessToken));
         final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
         final InputStream responseStream = response.getEntity().getContent();
@@ -196,17 +199,17 @@ public class AzureSDKManager {
             final JsonObject jsonContent = (gson).fromJson(isr, JsonObject.class);
             final JsonArray jsonResourceTypes = jsonContent.getAsJsonArray("resourceTypes");
             for (int i = 0; i < jsonResourceTypes.size(); ++i) {
-                Object obj = jsonResourceTypes.get(i);
+                final Object obj = jsonResourceTypes.get(i);
                 if (obj instanceof JsonObject) {
-                    JsonObject jsonResourceType = (JsonObject) obj;
-                    String resourceType = jsonResourceType.get("resourceType").getAsString();
+                    final JsonObject jsonResourceType = (JsonObject) obj;
+                    final String resourceType = jsonResourceType.get("resourceType").getAsString();
                     if (resourceType.equalsIgnoreCase("components")) {
-                        JsonArray jsonLocations = jsonResourceType.getAsJsonArray("locations");
+                        final JsonArray jsonLocations = jsonResourceType.getAsJsonArray("locations");
                         return gson.fromJson(jsonLocations, new ArrayList().getClass());
                     }
                 }
             }
-        } catch (IOException | JsonParseException e) {
+        } catch (final IOException | JsonParseException e) {
             Log.error(e);
         }
         return Collections.emptyList();

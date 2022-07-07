@@ -63,7 +63,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.setResourceId(appService.getId());
         config.setName(appService.getName());
         config.setRuntime(null);
-        config.setSubscription(com.microsoft.azure.toolkit.lib.common.model.Subscription.builder().id(appService.getSubscriptionId()).build());
+        config.setSubscription(new com.microsoft.azure.toolkit.lib.common.model.Subscription(appService.getSubscriptionId()));
         AzureTaskManager.getInstance()
             .runOnPooledThreadAsObservable(new AzureTask<>(() -> {
                 config.setResourceGroup(ResourceGroupConfig.fromResource(appService.getResourceGroup()));

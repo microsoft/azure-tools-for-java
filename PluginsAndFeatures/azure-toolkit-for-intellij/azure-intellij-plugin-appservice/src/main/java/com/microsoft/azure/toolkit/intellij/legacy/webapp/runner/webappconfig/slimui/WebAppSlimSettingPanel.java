@@ -91,7 +91,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configuration.getWebAppId(), configuration.getWebAppName())) {
             return;
         }
-        final Subscription subscription = Subscription.builder().id(configuration.getSubscriptionId()).build();
+        final Subscription subscription = new Subscription(configuration.getSubscriptionId());
         final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
         final String rgName = configuration.getResourceGroup();
         final ResourceGroupConfig resourceGroup = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(region).build();

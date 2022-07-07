@@ -39,7 +39,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.AzureModuleImpl;
 import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
@@ -480,7 +480,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         @Override
         public void update(@NotNull AnActionEvent e) {
-            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            final boolean isSignIn = IdeAzureAccount.getInstance().isLoggedIn();
             e.getPresentation().setEnabled(isSignIn);
         }
     }

@@ -14,7 +14,7 @@ public class Constants {
     public static int connection_read_timeout_ms = 10000;
 
     public static final String FILE_NAME_AAD_PROVIDER = "AadProvider.json";
-    public static final String FILE_NAME_AUTH_METHOD_DETAILS = "AuthMethodDetails.json";
+    public static final String FILE_AUTH_AUTH_CACHE = "AuthMethodDetails.json";
     public static final String FILE_NAME_CORE_LIB_LOG = "corelibs.log";
     public static final String FILE_NAME_SURVEY_CONFIG = "SurveyConfig.json";
 }

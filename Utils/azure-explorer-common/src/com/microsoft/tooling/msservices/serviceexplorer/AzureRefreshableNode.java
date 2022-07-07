@@ -5,7 +5,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 public abstract class AzureRefreshableNode extends RefreshableNode {
@@ -24,7 +24,7 @@ public abstract class AzureRefreshableNode extends RefreshableNode {
     @Override
     protected void onNodeClick(NodeActionEvent e) {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
+            if (IdeAzureAccount.getInstance().isLoggedIn()) {
                 super.onNodeClick(e);
             }
         } catch (Exception ex) {

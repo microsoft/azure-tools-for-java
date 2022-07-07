@@ -213,7 +213,7 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
 
     protected ValidationInfo validateAzureSubs(JComponent component) {
         try {
-            Azure.az(AzureAccount.class).getSubscriptions();
+            Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
             AzureLoginHelper.ensureAzureSubsAvailable();
             return null;
         } catch (AzureExecutionException e) {

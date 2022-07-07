@@ -7,8 +7,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -117,7 +118,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     private void openInPortal() {
         String portalUrl = "";
         try {
-            portalUrl = AuthMethodManager.getInstance().getAzureManager().getPortalUrl();
+            portalUrl = Azure.az(AzureAccount.class).account().getPortalUrl();
         } catch (Exception exception) {
             Lombok.sneakyThrow(exception);
         }

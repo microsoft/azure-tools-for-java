@@ -43,7 +43,7 @@ public class OpenLiveMetricsTask implements Task {
     }
 
     private ApplicationInsight getInsightsByInstrumentKey(@Nonnull final String instrumentKey) {
-        final List<Subscription> subscriptions = Azure.az(AzureAccount.class).getSubscriptions();
+        final List<Subscription> subscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
         return subscriptions.stream().map(subscription -> Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list())
                 .flatMap(List::stream)
                 .filter(insight -> StringUtils.equalsIgnoreCase(insight.getInstrumentationKey(), instrumentKey))

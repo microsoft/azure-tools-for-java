@@ -6,31 +6,19 @@
 package com.microsoft.intellij.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.ui.SubscriptionsDialog;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import rx.Observable;
-import rx.Single;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 public class SelectSubscriptionsAction extends AzureAnAction implements DumbAware {
     private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
@@ -41,50 +29,29 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
     @Override
     @AzureOperation(name = "account.select_subscription", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
-        Project project = DataKeys.PROJECT.getData(e.getDataContext());
-        selectSubscriptions(project).subscribe();
+        selectSubscriptions(e.getProject());
         return true;
     }
 
     @Override
     public void update(AnActionEvent e) {
         try {
-            final boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
+            final boolean isSignIn = Azure.az(AzureAccount.class).isLoggedIn();
             e.getPresentation().setEnabled(isSignIn);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
             LOGGER.error("update", ex);
         }
     }
 
-    public static Single<List<Subscription>> selectSubscriptions(Project project) {
-        final AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-        final AzureManager manager = authMethodManager.getAzureManager();
-        if (manager == null) {
-            return Single.fromCallable(() -> null);
+    public static void selectSubscriptions(Project project) {
+        if (!IdeAzureAccount.getInstance().isLoggedIn()) {
+            return;
         }
-
-        final SubscriptionManager subscriptionManager = manager.getSubscriptionManager();
-
-        return loadSubscriptions(subscriptionManager, project)
-                .switchMap((subs) -> selectSubscriptions(project, subs))
-            .toSingle()
-            .doOnSuccess((subs) -> Optional.ofNullable(subs).ifPresent(subscriptionManager::setSubscriptionDetails));
-    }
-
-    private static Observable<List<Subscription>> selectSubscriptions(final Project project, List<Subscription> subs) {
-        return AzureTaskManager.getInstance().runLaterAsObservable(new AzureTask<>(() -> {
-            final SubscriptionsDialog d = SubscriptionsDialog.go(subs, project);
-            return Objects.nonNull(d) ? d.getSubscriptionDetails() : null;
-        }));
-    }
-
-    @AzureOperation(name = "account.load_all_subscriptions", type = AzureOperation.Type.SERVICE)
-    public static Observable<List<Subscription>> loadSubscriptions(final SubscriptionManager subscriptionManager, Project project) {
-        final AzureString title = OperationBundle.description("account.load_all_subscriptions");
-        return AzureTaskManager.getInstance().runInModalAsObservable(new AzureTask<>(project, title, false, () -> {
-            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            return subscriptionManager.getSubscriptionDetails();
-        }));
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
+        manager.runLater(() -> {
+            final SubscriptionsDialog dialog = new SubscriptionsDialog(project);
+            dialog.select(selected -> manager.runOnPooledThread(() -> Azure.az(AzureAccount.class).account().setSelectedSubscriptions(selected)));
+        });
     }
 }

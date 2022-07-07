@@ -44,7 +44,7 @@ public class SelectSubscriptionTask implements Task {
 
     private void selectSubscription() {
         final AzureAccount az = Azure.az(AzureAccount.class);
-        final Subscription subscription = az.getSubscriptions().get(0);
+        final Subscription subscription = az.account().getSelectedSubscriptions().get(0);
         context.applyResult(SUBSCRIPTION_ID, subscription.getId());
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription %s", subscription.getId()));
     }

@@ -37,7 +37,7 @@ public class CreateFunctionAppTask implements Task {
         final String name = (String) context.getParameter(FUNCTION_APP_NAME);
         final Subscription subscription = Optional.ofNullable((String) context.getParameter(SignInTask.SUBSCRIPTION_ID))
                 .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
-                .orElseGet(() -> Azure.az(AzureAccount.class).getSubscriptions().get(0));
+                .orElseGet(() -> Azure.az(AzureAccount.class).account().getSelectedSubscriptions().get(0));
         final FunctionAppConfig functionAppConfig = FunctionAppConfig.getFunctionAppDefaultConfig(name);
         functionAppConfig.setName(name);
         functionAppConfig.setSubscription(subscription);

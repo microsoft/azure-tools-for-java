@@ -36,7 +36,7 @@ public class CommonSettings {
     private static final String CLEAN_DEPRECATED_FOLDER_FAIL = "Fail to clean deprecated folder %s";
     private static final List<String> RESOURCE_FILE_LIST = Arrays.asList(
             FILE_NAME_AAD_PROVIDER,
-            FILE_NAME_AUTH_METHOD_DETAILS,
+            FILE_AUTH_AUTH_CACHE,
             FILE_NAME_CORE_LIB_LOG,
             FILE_NAME_SURVEY_CONFIG
     );

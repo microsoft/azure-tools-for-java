@@ -5,15 +5,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azure.management.compute.implementation.ComputeManager;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -22,7 +23,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,40 +43,32 @@ public class VMArmModule extends AzureRefreshableNode {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        List<Pair<String, String>> failedSubscriptions = new ArrayList<>();
+        final List<Pair<String, String>> failedSubscriptions = new ArrayList<>();
         try {
-            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null) {
-                return;
-            }
-
-            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            Set<String> sidList = subscriptionManager.getSelectedSubscriptionDetails()
-                    .stream()
-                    .filter(subscriptionDetail -> Objects.nonNull(subscriptionDetail) && subscriptionDetail.isSelected())
-                    .map(subscriptionDetail -> subscriptionDetail.getSubscriptionId())
-                    .collect(Collectors.toSet());
-            for (String sid : sidList) {
+            final Account account = com.microsoft.azure.toolkit.lib.Azure.az(AzureAccount.class).account();
+            final Set<String> sidList = account.getSelectedSubscriptions().stream()
+                .map(Subscription::getId)
+                .collect(Collectors.toSet());
+            for (final String sid : sidList) {
                 try {
-                    Azure azure = azureManager.getAzure(sid);
-                    List<VirtualMachine> virtualMachines = azure.virtualMachines().list();
+                    final ComputeManager.Configurable configurable = ComputeManager.configure();
+                    final ComputeManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t, sid));
+                    final List<VirtualMachine> virtualMachines = azure.virtualMachines().list();
 
-                    for (VirtualMachine vm : virtualMachines) {
+                    for (final VirtualMachine vm : virtualMachines) {
                         addChildNode(new VMNode(this, sid, vm));
                     }
 
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     failedSubscriptions.add(new ImmutablePair<>(sid, ex.getMessage()));
-                    continue;
                 }
             }
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Virtual Machines\n\n" + ex.getMessage(), ex);
         }
         if (!failedSubscriptions.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder("An error occurred when trying to load Storage Accounts for the subscriptions:\n\n");
-            for (Pair error : failedSubscriptions) {
+            final StringBuilder errorMessage = new StringBuilder("An error occurred when trying to load Storage Accounts for the subscriptions:\n\n");
+            for (final Pair<String, String> error : failedSubscriptions) {
                 errorMessage.append(error.getKey()).append(": ").append(error.getValue()).append("\n");
             }
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Storage Accounts\n\n" + errorMessage.toString(), null);

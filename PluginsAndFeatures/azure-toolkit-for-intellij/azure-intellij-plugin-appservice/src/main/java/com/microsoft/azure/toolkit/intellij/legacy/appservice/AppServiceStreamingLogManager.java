@@ -203,7 +203,7 @@ public enum AppServiceStreamingLogManager {
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
                     .findFirst()
                     .orElseThrow(() -> new AzureToolkitRuntimeException(message("appService.logStreaming.error.aiNotFound", subscriptionId)));
-            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, Azure.az(AzureAccount.class).account().portalUrl());
+            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, Azure.az(AzureAccount.class).account().getPortalUrl());
             BrowserUtil.browse(aiUrl);
         }
 

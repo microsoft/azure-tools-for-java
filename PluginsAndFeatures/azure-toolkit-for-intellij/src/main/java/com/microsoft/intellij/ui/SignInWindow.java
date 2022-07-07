@@ -12,14 +12,11 @@ import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAccountActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import javax.accessibility.AccessibleContext;
 import javax.annotation.Nonnull;
@@ -112,18 +109,16 @@ public class SignInWindow extends AzureDialogWrapper {
         this.oauthBtn.setEnabled(true);
         this.deviceBtn.setEnabled(true);
         this.spBtn.setEnabled(true);
-        Azure.az(AzureAccount.class).accounts().stream().filter(a -> a.getAuthType() == AuthType.AZURE_CLI).findAny().ifPresent(az -> {
-            this.cliBtn.setText("Azure CLI (checking...)");
-            this.cliDesc.setIcon(new AnimatedIcon.Default());
-            this.cliBtn.setEnabled(false);
-            Mono.just(az).subscribeOn(Schedulers.boundedElastic())
-                .flatMap(a -> a.checkAvailable().onErrorResume(e -> Mono.just(false)))
-                .doFinally((s) -> {
-                    cliBtn.setText(cliBtn.isEnabled() ? "Azure CLI" : "Azure CLI (Not logged in)");
-                    cliDesc.setIcon(null);
-                    oauthBtn.setSelected(cliBtn.isSelected() && !cliBtn.isEnabled());
-                    updateSelection();
-                }).subscribe(cliBtn::setEnabled);
+        this.cliBtn.setText("Azure CLI (checking...)");
+        this.cliDesc.setIcon(new AnimatedIcon.Default());
+        this.cliBtn.setEnabled(false);
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final boolean available = AuthType.AZURE_CLI.checkAvailable();
+            cliBtn.setEnabled(available);
+            cliBtn.setText(available ? "Azure CLI" : "Azure CLI (Not logged in)");
+            cliDesc.setIcon(null);
+            oauthBtn.setSelected(cliBtn.isSelected() && !available);
+            updateSelection();
         });
     }
 

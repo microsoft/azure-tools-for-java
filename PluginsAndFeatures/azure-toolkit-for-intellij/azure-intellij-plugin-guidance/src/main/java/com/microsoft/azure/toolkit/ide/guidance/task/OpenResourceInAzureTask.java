@@ -28,7 +28,7 @@ public class OpenResourceInAzureTask implements Task {
         final ResourceId resourceId = ResourceId.fromString(id);
         final IAccount account = Azure.az(IAzureAccount.class).account();
         final Subscription subscription = account.getSubscription(resourceId.subscriptionId());
-        final String url = String.format("%s/#@%s/resource%s", account.portalUrl(), subscription.getTenantId(), id);
+        final String url = String.format("%s/#@%s/resource%s", account.getPortalUrl(), subscription.getTenantId(), id);
         AzureActionManager.getInstance().getAction(OPEN_URL).handle(url);
     }
 

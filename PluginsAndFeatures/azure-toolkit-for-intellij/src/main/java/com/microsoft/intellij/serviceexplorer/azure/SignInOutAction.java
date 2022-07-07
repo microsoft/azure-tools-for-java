@@ -7,7 +7,7 @@ package com.microsoft.intellij.serviceexplorer.azure;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.actions.AzureSignInAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -25,7 +25,7 @@ public class SignInOutAction extends NodeAction {
         addListener(new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                AzureSignInAction.onAzureSignIn((Project) azureModule.getProject());
+                AzureSignInAction.authActionPerformed((Project) azureModule.getProject());
             }
 
             @Override
@@ -38,7 +38,7 @@ public class SignInOutAction extends NodeAction {
     @Override
     public String getName() {
         try {
-            return AuthMethodManager.getInstance().isSignedIn() ? "Sign Out" : "Sign In";
+            return IdeAzureAccount.getInstance().isLoggedIn() ? "Sign Out" : "Sign In";
         } catch (final Exception e) {
             AzurePlugin.log("Error signing in", e);
             return "";
@@ -52,7 +52,7 @@ public class SignInOutAction extends NodeAction {
 
     public static AzureIcon getIcon() {
         try {
-            return AuthMethodManager.getInstance().isSignedIn() ? SIGN_OUT : SIGN_IN;
+            return IdeAzureAccount.getInstance().isLoggedIn() ? SIGN_OUT : SIGN_IN;
         } catch (final Exception e) {
             return SIGN_IN;
         }

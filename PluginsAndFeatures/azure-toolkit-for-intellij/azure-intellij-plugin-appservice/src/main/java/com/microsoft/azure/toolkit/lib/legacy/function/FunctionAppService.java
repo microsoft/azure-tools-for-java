@@ -176,7 +176,7 @@ public class FunctionAppService {
         if (!StringUtils.equalsIgnoreCase(functionApp.getStatus(), RUNNING)) {
             functionApp.start();
         }
-        final String resourceUrl = String.format(PORTAL_URL_PATTERN, Azure.az(AzureAccount.class).account().portalUrl(), functionApp.id());
+        final String resourceUrl = String.format(PORTAL_URL_PATTERN, Azure.az(AzureAccount.class).account().getPortalUrl(), functionApp.id());
         AzureMessager.getMessager().info(String.format(DEPLOY_FINISH, resourceUrl));
     }
 

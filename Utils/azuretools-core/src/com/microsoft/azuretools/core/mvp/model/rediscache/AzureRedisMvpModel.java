@@ -5,13 +5,12 @@
 
 package com.microsoft.azuretools.core.mvp.model.rediscache;
 
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
+import com.microsoft.azure.management.redis.implementation.RedisManager;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +38,13 @@ public class AzureRedisMvpModel {
         HashMap<String, RedisCaches> redisCacheMaps = new HashMap<>();
         List<Subscription> subscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
         for (Subscription subscription : subscriptions) {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(subscription.getId());
+            final RedisManager.Configurable configurable = RedisManager.configure();
+            final String sid = subscription.getId();
+            final RedisManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t, sid));
             if (azure.redisCaches() == null) {
                 continue;
             }
-            redisCacheMaps.put(subscription.getId(), azure.redisCaches());
+            redisCacheMaps.put(sid, azure.redisCaches());
         }
         return redisCacheMaps;
     }
@@ -55,8 +56,9 @@ public class AzureRedisMvpModel {
      * @return Redis Cache Object
      */
     public RedisCache getRedisCache(String sid, String id) {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        RedisCaches redisCaches = azure.redisCaches();
+        final RedisManager.Configurable configurable = RedisManager.configure();
+        final RedisManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t, sid));
+        final RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
             return null;
         }
@@ -69,7 +71,8 @@ public class AzureRedisMvpModel {
      * @param id Redis cache's id
      */
     public void deleteRedisCache(String sid, String id) {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        final RedisManager.Configurable configurable = RedisManager.configure();
+        final RedisManager azure = IdeAzureAccount.getInstance().authenticateForTrack1(sid, configurable, (t, c) -> c.authenticate(t, sid));
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
             return;

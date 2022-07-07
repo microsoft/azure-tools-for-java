@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -75,21 +75,20 @@ public class AzureModule extends AzureRefreshableNode {
         AzureEventBus.on("account.logged_in.account", accountListener);
         AzureEventBus.on("account.subscription_changed.account", accountListener);
         AzureEventBus.on("account.logged_out.account", accountListener);
-        AzureEventBus.on("account.restore_sign_in", accountListener);
+        AzureEventBus.on("account.account.restoring_auth", accountListener);
         handleSubscriptionChange();
     }
 
-    private static String composeName() {
+    private synchronized static String composeName() {
         try {
-            if (Azure.az(AzureAccount.class).isSignedIn()) {
-                final List<Subscription> selectedSubscriptions = Azure.az(AzureAccount.class).account().getSelectedSubscriptions();
+            final AzureAccount az = Azure.az(AzureAccount.class);
+            if (az.isLoggedIn()) {
+                final List<Subscription> selectedSubscriptions = az.account().getSelectedSubscriptions();
                 return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
+            } else if (az.isLoggingIn()) {
+                return BASE_MODULE_NAME + " (Signing In...)";
             } else {
-                if (AuthMethodManager.getInstance().isRestoringSignIn()) {
-                    return BASE_MODULE_NAME + " (Signing In...)";
-                } else {
-                    return BASE_MODULE_NAME + " (Not Signed In)";
-                }
+                return BASE_MODULE_NAME + " (Not Signed In)";
             }
         } catch (AzureRuntimeException e) {
             DefaultLoader.getUIHelper().showInfoNotification(
@@ -150,7 +149,7 @@ public class AzureModule extends AzureRefreshableNode {
     @Override
     protected void refreshFromAzure() throws AzureCmdException {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn() && hasSubscription()) {
+            if (IdeAzureAccount.getInstance().isLoggedIn() && hasSubscription()) {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);

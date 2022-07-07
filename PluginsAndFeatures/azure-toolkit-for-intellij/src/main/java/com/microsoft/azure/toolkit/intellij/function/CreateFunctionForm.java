@@ -15,17 +15,17 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHub;
 import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
+import com.microsoft.azure.management.eventhub.implementation.EventHubManager;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
 import com.microsoft.azure.toolkit.ide.appservice.function.AzureFunctionsUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.FunctionTriggerChooserStep;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +91,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         setTitle("Create Function Class");
 
         this.project = project;
-        this.isSignedIn = AuthMethodManager.getInstance().isSignedIn();
+        this.isSignedIn = IdeAzureAccount.getInstance().isLoggedIn();
         initComponentOfTriggers();
 
         cbFunctionModule.setRenderer(new SimpleListCellRenderer<Module>() {
@@ -347,8 +347,9 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             eventHubNamespaces = new ArrayList<>();
             final List<Subscription> subs = az(AzureAccount.class).account().getSelectedSubscriptions();
             for (final Subscription subscriptionId : subs) {
-                final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.getId());
-                final PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
+                final String sid = subscriptionId.getId();
+                final EventHubManager manager = IdeAzureAccount.getInstance().authenticateForTrack1(sid, EventHubManager.configure(), (t, c) -> c.authenticate(t, sid));
+                final PagedList<EventHubNamespace> pagedList = manager.namespaces().list();
                 pagedList.loadAll();
                 eventHubNamespaces.addAll(pagedList);
                 eventHubNamespaces.sort(Comparator.comparing(HasName::name));

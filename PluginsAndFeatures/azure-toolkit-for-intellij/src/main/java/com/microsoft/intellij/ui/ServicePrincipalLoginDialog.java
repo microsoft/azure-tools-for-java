@@ -28,8 +28,8 @@ import com.intellij.ui.SoftWrapsEditorCustomization;
 import com.microsoft.azure.toolkit.intellij.common.AzureCommentLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthConfiguration;
-import com.microsoft.azure.toolkit.lib.auth.model.AuthType;
+import com.microsoft.azure.toolkit.lib.auth.AuthConfiguration;
+import com.microsoft.azure.toolkit.lib.auth.AuthType;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -78,8 +78,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     private TextFieldWithBrowseButton certFileTextField;
     private AzureCommentLabel comment;
     private final Project project;
-    private AuthConfiguration auth = new AuthConfiguration();
-    private AtomicBoolean intermediateState = new AtomicBoolean(false);
+    private final AtomicBoolean intermediateState = new AtomicBoolean(false);
 
     public ServicePrincipalLoginDialog(@Nonnull Project project) {
         super(project);
@@ -192,7 +191,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     public AuthConfiguration getValue() {
-        AuthConfiguration data = new AuthConfiguration();
+        AuthConfiguration data = new AuthConfiguration(AuthType.SERVICE_PRINCIPAL);
 
         data.setClient(clientIdTextField.getText());
         data.setTenant(tenantIdTextField.getText());
@@ -207,7 +206,6 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     @Override
     public void setValue(AuthConfiguration data) {
-        this.auth = data;
     }
 
     @Override
