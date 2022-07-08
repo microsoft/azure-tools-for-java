@@ -34,21 +34,22 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Authenticator;
 import okhttp3.Credentials;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
@@ -63,24 +64,22 @@ public class IdeAzureAccount {
 
     static {
         // fix the class load problem for intellij plugin
-        disableLogLevelFor("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
-            "com.microsoft.aad.msal4j.ConfidentialClientApplication");
+        disableLog("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
+                "com.microsoft.aad.msal4j.ConfidentialClientApplication");
     }
 
-    private static void disableLogLevelFor(String... classes) {
-        try {
-            final Class<?> loggerClz = Class.forName("org.apache.log4j.Logger");
-            final Class<?> loggerLevelClz = Class.forName("org.apache.log4j.Level");
-            final Object offLevel = FieldUtils.readDeclaredStaticField(loggerLevelClz, "OFF");
-            final Method getLoggerMethod = ClassUtils.getPublicMethod(loggerClz, "getLogger", String.class);
-            if (getLoggerMethod != null) {
-                for (final String className : classes) {
-                    final Object logger2 = getLoggerMethod.invoke(loggerClz, className);
-                    FieldUtils.writeField(logger2, "level", offLevel, true);
+    private static void disableLog(String... classes) {
+        for (final String className : classes) {
+            try {
+                final Logger logger = LoggerFactory.getLogger(className);
+                final Field innerLoggerField = FieldUtils.getDeclaredField(logger.getClass(), "logger", true);
+                final Object innerLogger = innerLoggerField.get(logger);
+                if (innerLogger instanceof java.util.logging.Logger) {
+                    ((java.util.logging.Logger) innerLogger).setLevel(Level.OFF);
                 }
+            } catch (final Throwable e) {
+                // swallow exceptions here
             }
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            // ignore
         }
     }
 
