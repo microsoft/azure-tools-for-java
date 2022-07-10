@@ -39,7 +39,6 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
     @Override
     @Nullable
     @ExceptionNotification
-    @AzureOperation(name = "connector.detect_connections", type = AzureOperation.Type.ACTION)
     public LineMarkerInfo<PsiElement> getLineMarkerInfo(@Nonnull PsiElement element) {
         if (!(element instanceof PropertyImpl)) {
             return null;

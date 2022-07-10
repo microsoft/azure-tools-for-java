@@ -33,7 +33,6 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     @NotNull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     public ConfigurationFactory getConfigurationFactory() {
         return Arrays.stream(AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories())
                     .filter(configurationFactory -> configurationFactory instanceof FunctionRunConfigurationFactory)
@@ -86,7 +85,6 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "function.setup_run_configuration", type = AzureOperation.Type.ACTION)
     public boolean isConfigurationFromContext(AzureRunConfigurationBase appConfiguration, ConfigurationContext context) {
         if (!(appConfiguration instanceof FunctionRunConfiguration)) {
             return false;

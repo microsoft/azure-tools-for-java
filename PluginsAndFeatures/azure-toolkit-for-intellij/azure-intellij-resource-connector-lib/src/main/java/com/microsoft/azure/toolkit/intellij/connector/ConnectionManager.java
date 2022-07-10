@@ -117,7 +117,6 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
 
         @Override
         @ExceptionNotification
-        @AzureOperation(name = "connector.persist_resource_connections", type = AzureOperation.Type.ACTION)
         public Element getState() {
             final Element connectionsEle = new Element(ELEMENT_NAME_CONNECTIONS);
             for (final Connection<?, ?> connection : this.connections) {
