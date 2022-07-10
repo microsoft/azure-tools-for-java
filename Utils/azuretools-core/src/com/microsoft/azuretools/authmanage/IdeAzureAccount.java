@@ -97,15 +97,14 @@ public class IdeAzureAccount {
                 this.cacheAuthConfiguration(account.getConfig());
             }
         }));
-        AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener((a) -> this.invalidateCache()));
+        AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener((a) -> this.invalidateCache((Account) a.getSource())));
     }
 
-    private void invalidateCache() {
+    private void invalidateCache(@Nonnull final Account account) {
         final AzureStoreManager manager = AzureStoreManager.getInstance();
         final Optional<ISecureStore> secureStore = Optional.ofNullable(manager.getSecureStore());
         final Optional<IIdeStore> ideStore = Optional.ofNullable(manager.getIdeStore());
-        final AzureAccount az = az(AzureAccount.class);
-        secureStore.ifPresent(s -> s.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, az.account().getClientId(), null));
+        secureStore.ifPresent(s -> s.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, account.getClientId(), null));
         ideStore.ifPresent(s -> s.setProperty(ACCOUNT, AUTH_CONFIG_CACHE, null));
     }
 
