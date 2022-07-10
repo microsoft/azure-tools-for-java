@@ -30,7 +30,6 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.JTableUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,21 +123,23 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         });
     }
 
-    private void setCandidates(@Nonnull List<Subscription> candidates) {
-        this.candidates = candidates;
+    private void setCandidates(@Nonnull List<Subscription> subs) {
         final DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
-        candidates.sort((sub1, sub2) -> StringUtils.compareIgnoreCase(sub1.getName(), sub2.getName()));
-        candidates.sort(Comparator.comparing(Subscription::isSelected).reversed());
-        for (final Subscription sd : candidates) {
-            model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd.getId()});
+        this.candidates = subs.stream().sorted(Comparator
+                .comparing(Subscription::isSelected).reversed()
+                .thenComparing(s -> s.getName().toLowerCase()))
+            .collect(Collectors.toList());
+        final boolean noneSelected = this.candidates.size() > 0 && !this.candidates.get(0).isSelected();
+        for (final Subscription sd : this.candidates) {
+            model.addRow(new Object[]{noneSelected || sd.isSelected(), sd.getName(), sd.getId()});
         }
         model.fireTableDataChanged();
     }
 
     private void createUIComponents() {
         contentPane = new JPanel();
-        contentPane.setPreferredSize(new Dimension(350, 200));
+        contentPane.setPreferredSize(new Dimension(460, 500));
 
         final DefaultTableModel model = new SubscriptionTableModel();
         model.addColumn("Selected"); // Set the text read by JAWS

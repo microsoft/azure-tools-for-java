@@ -6,7 +6,7 @@
       <xy x="26" y="18" width="651" height="437"/>
     </constraints>
     <properties>
-      <preferredSize width="350" height="200"/>
+      <preferredSize width="460" height="500"/>
     </properties>
     <border type="none"/>
     <children>
