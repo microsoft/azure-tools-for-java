@@ -90,36 +90,18 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
         }
     }
 
-    private static String getSignOutWarningMessage(@Nonnull Account account) {
-        final AuthType authType = account.getType();
-        final String warningMessage;
-        switch (authType) {
-            case SERVICE_PRINCIPAL:
-                warningMessage = String.format("Signed in using service principal \"%s\"", account.getClientId());
-                break;
-            case OAUTH2:
-            case DEVICE_CODE:
-                warningMessage = String.format("Signed in as %s(%s)", account.getUsername(), authType.toString());
-                break;
-            case AZURE_CLI:
-                warningMessage = "Signed in with Azure CLI";
-                break;
-            default:
-                warningMessage = "Signed in by unknown authentication method.";
-                break;
-        }
-        return String.format("%s\nDo you really want to sign out? %s",
-            warningMessage, authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "");
-    }
-
     public static void authActionPerformed(Project project) {
         final JFrame frame = WindowManager.getInstance().getFrame(project);
         final AzureAccount az = Azure.az(AzureAccount.class);
         if (az.isLoggedIn()) {
-            final String msg = getSignOutWarningMessage(az.account());
-            final boolean toLoggout = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), msg,
+            final Account account = az.account();
+            final AuthType authType = account.getType();
+            final String warningMessage = String.format("Signed in as \"%s\" with %s", account.getUsername(), authType.getLabel());
+            final String additionalMsg = authType == AuthType.AZURE_CLI ? "(This will not sign you out from Azure CLI)" : "";
+            final String msg = String.format("%s\nDo you really want to sign out? %s", warningMessage, additionalMsg);
+            final boolean toLogout = DefaultLoader.getUIHelper().showYesNoDialog(frame.getRootPane(), msg,
                 "Azure Sign Out", IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE));
-            if (toLoggout) {
+            if (toLogout) {
                 az.logout();
             }
         } else {
