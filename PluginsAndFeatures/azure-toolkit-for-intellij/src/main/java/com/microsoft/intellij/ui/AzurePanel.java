@@ -198,6 +198,14 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
 
     @Override
     public boolean doOKAction() {
+        if (IdeAzureAccount.getInstance().isLoggedIn()) {
+            final AzureEnvironment currentEnv = Azure.az(AzureCloud.class).getOrDefault();
+            if (!Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
+                EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
+                    Azure.az(AzureAccount.class).logout();
+                });
+            }
+        }
         final AzureConfiguration newConfig = getData();
         // set partial config to global config
         this.originalConfig.setCloud(newConfig.getCloud());
@@ -209,16 +217,6 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         this.originalConfig.setUserAgent(userAgent);
         this.originalConfig.setStorageExplorerPath(newConfig.getStorageExplorerPath());
         CommonSettings.setUserAgent(newConfig.getUserAgent());
-        // apply changes
-        // we need to get rid of AuthMethodManager, using az.azure_account
-        if (IdeAzureAccount.getInstance().isLoggedIn()) {
-            final AzureEnvironment currentEnv = Azure.az(AzureCloud.class).getOrDefault();
-            if (!Objects.equals(currentEnv, azureEnvironmentComboBox.getSelectedItem())) {
-                EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                    Azure.az(AzureAccount.class).logout();
-                });
-            }
-        }
 
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
             Azure.az(AzureCloud.class).setByName(newConfig.getCloud());
