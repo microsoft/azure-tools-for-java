@@ -15,6 +15,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.component.NodeView;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
@@ -127,6 +128,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
+        @AzureOperation(name = "common.refresh_view.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public void refreshView() {
             synchronized (this.tree) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
@@ -146,6 +148,7 @@ public class Tree extends SimpleTree implements DataProvider {
         }
 
         @Override
+        @AzureOperation(name = "common.load_children.node", params = "this.getLabel()", type = AzureOperation.Type.ACTION)
         public synchronized void refreshChildren(boolean... incremental) {
             if (this.getAllowsChildren() && BooleanUtils.isNotFalse(this.loaded)) {
                 final DefaultTreeModel model = (DefaultTreeModel) this.tree.getModel();
