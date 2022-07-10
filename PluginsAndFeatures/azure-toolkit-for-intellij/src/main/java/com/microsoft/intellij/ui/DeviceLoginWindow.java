@@ -7,36 +7,31 @@ package com.microsoft.intellij.ui;
 
 import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
+import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.WindowEvent;
+import java.util.Optional;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private static final String TITLE = "Azure Device Login";
     private JPanel panel;
     private JEditorPane editorPanel;
     private DeviceCodeInfo deviceCode;
-    private IDeviceLoginUI deviceLoginUI;
+    private Runnable onCancel;
 
-
-    public DeviceLoginWindow(DeviceCodeInfo deviceCode, IDeviceLoginUI deviceLoginUI) {
-        super(null, false, IdeModalityType.PROJECT);
+    public DeviceLoginWindow(Project project) {
+        super(project, false, IdeModalityType.PROJECT);
         super.setOKButtonText("Copy&&Open");
-        this.deviceCode = deviceCode;
-        this.deviceLoginUI = deviceLoginUI;
         setModal(true);
         setTitle(TITLE);
         editorPanel.setBackground(panel.getBackground());
-        editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.open(e.getURL().toString());
@@ -55,12 +50,14 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         init();
     }
 
-    private String createHtmlFormatMessage() {
-        final String verificationUrl = deviceCode.getVerificationUrl();
-        return "<p>"
-            + deviceCode.getMessage().replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl,
-            verificationUrl))
+    public void show(@Nonnull final DeviceCodeInfo deviceCode) {
+        this.deviceCode = deviceCode;
+        final String url = deviceCode.getVerificationUrl();
+        final String message = "<p>"
+            + deviceCode.getMessage().replace(url, String.format("<a href=\"%s\">%s</a>", url, url))
             + "</p><p>Waiting for signing in with the code ...</p>";
+        editorPanel.setText(message);
+        this.show();
     }
 
     @Override
@@ -73,14 +70,16 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
 
     @Override
     public void doCancelAction() {
-        deviceLoginUI.cancel();
+        Optional.ofNullable(onCancel).ifPresent(Runnable::run);
         super.doCancelAction();
     }
-    public void closeDialog() {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            final Window w = getWindow();
-            w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
-        }, ModalityState.stateForComponent(panel));
+
+    public void setDoOnCancel(Runnable onCancel) {
+        this.onCancel = onCancel;
+    }
+
+    public void close() {
+        this.close(0, true);
     }
 
     @Nullable

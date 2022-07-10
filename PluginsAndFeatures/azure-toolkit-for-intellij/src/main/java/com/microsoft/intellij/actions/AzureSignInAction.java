@@ -5,7 +5,6 @@
 
 package com.microsoft.intellij.actions;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
@@ -26,13 +25,12 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.authmanage.IdeAzureAccount;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
-import com.microsoft.intellij.ui.DeviceLoginUI;
+import com.microsoft.intellij.ui.DeviceLoginWindow;
 import com.microsoft.intellij.ui.ServicePrincipalLoginDialog;
 import com.microsoft.intellij.ui.SignInWindow;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -43,9 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 
@@ -118,18 +114,11 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             if (Objects.isNull(auth)) {
                 return;
             }
-            IDeviceLoginUI deviceLoginUI = null;
+            final DeviceLoginWindow[] dcWindow = new DeviceLoginWindow[1];
             if (auth.getType() == AuthType.DEVICE_CODE) {
-                final ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("azure-toolkit-auth-%d").build();
-                final ExecutorService executorService = Executors.newFixedThreadPool(1, namedThreadFactory);
-                auth.setExecutorService(executorService);
-                deviceLoginUI = new DeviceLoginUI(executorService::shutdownNow);
-                final IDeviceLoginUI finalDeviceLoginUI = deviceLoginUI;
-                auth.setDeviceCodeConsumer(info -> manager.runLater(() -> finalDeviceLoginUI.promptDeviceCode(info)));
-                auth.setDoAfterLogin(() -> manager.runLater(finalDeviceLoginUI::closePrompt, AzureTask.Modality.ANY));
+                dcWindow[0] = setupDeviceCodeAuth(project, auth);
             }
             final AzureString title = OperationBundle.description("account.sign_in");
-            final IDeviceLoginUI finalDeviceLoginUI = deviceLoginUI;
             final AzureTask<Void> task = new AzureTask<>(null, title, false, () -> {
                 final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                 indicator.setIndeterminate(true);
@@ -140,9 +129,8 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
                         manager.runLater(callback);
                     }
                 } catch (final Throwable t) {
-                    Optional.ofNullable(auth.getExecutorService()).filter(s -> !s.isShutdown()).ifPresent(ExecutorService::shutdown);
                     final Throwable cause = ExceptionUtils.getRootCause(t);
-                    Optional.ofNullable(finalDeviceLoginUI).ifPresent(IDeviceLoginUI::closePrompt);
+                    Optional.ofNullable(dcWindow[0]).ifPresent(w -> manager.runLater(w::doCancelAction));
                     if (!(cause instanceof InterruptedException)) {
                         throw t;
                     }
@@ -150,6 +138,20 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
             });
             manager.runInBackground(task);
         });
+    }
+
+    private static DeviceLoginWindow setupDeviceCodeAuth(Project project, AuthConfiguration auth) {
+        final AzureTaskManager manager = AzureTaskManager.getInstance();
+        auth.setExecutorService(Executors.newFixedThreadPool(1));
+        final DeviceLoginWindow dcWindow = new DeviceLoginWindow(project);
+        dcWindow.setDoOnCancel(() -> {
+            if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+                auth.getExecutorService().shutdownNow();
+            }
+        });
+        auth.setDeviceCodeConsumer(info -> manager.runLater(() -> dcWindow.show(info)));
+        auth.setDoAfterLogin(() -> manager.runLater(dcWindow::close, AzureTask.Modality.ANY));
+        return dcWindow;
     }
 
     @Nullable

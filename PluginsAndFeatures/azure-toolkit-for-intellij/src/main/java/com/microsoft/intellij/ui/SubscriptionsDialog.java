@@ -70,7 +70,6 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         setOKButtonText("Select");
         init();
         table.setAutoCreateRowSorter(true);
-        this.loadSubscriptions();
     }
 
     /**
@@ -121,7 +120,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         manager.runOnPooledThread(() -> {
             final Account account = az.account();
             final List<Subscription> candidates = account.reloadSubscriptions();
-            manager.runLater(() -> setCandidates(candidates));
+            manager.runLater(() -> setCandidates(candidates), AzureTask.Modality.ANY);
         });
     }
 
