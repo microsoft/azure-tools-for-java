@@ -7,16 +7,16 @@ package com.microsoft.intellij.ui;
 
 import com.azure.identity.DeviceCodeInfo;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
-import java.util.concurrent.Future;
+import javax.annotation.Nonnull;
 
 
+@RequiredArgsConstructor
 public class DeviceLoginUI implements IDeviceLoginUI {
+    @Nonnull
+    private final Runnable onCancel;
     private DeviceLoginWindow deviceLoginWindow;
-
-    @Setter
-    private Future future;
 
     public void promptDeviceCode(DeviceCodeInfo challenge) {
         deviceLoginWindow = new DeviceLoginWindow(challenge, this);
@@ -27,13 +27,12 @@ public class DeviceLoginUI implements IDeviceLoginUI {
     public void closePrompt() {
         if (deviceLoginWindow != null) {
             deviceLoginWindow.closeDialog();
+            deviceLoginWindow = null;
         }
     }
 
     @Override
     public void cancel() {
-        if (future != null) {
-            this.future.cancel(true);
-        }
+        onCancel.run();
     }
 }
