@@ -90,6 +90,8 @@
     <applicationConfigurable parentId="tools"
                          id="com.microsoft.intellij.AzureConfigurable"
                          provider="com.microsoft.intellij.AzureConfigurableProvider"/>
+    <projectConfigurable parentId="root" instance="com.microsoft.intellij.DeprecatedAzureConfigurable"
+                             id="com.microsoft.intellij.DeprecatedAzureConfigurable"/>
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />

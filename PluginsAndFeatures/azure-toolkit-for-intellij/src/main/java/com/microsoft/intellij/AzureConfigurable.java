@@ -19,8 +19,7 @@ import javax.swing.*;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AzureConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
-    public static final String AZURE_PLUGIN_NAME = "Microsoft Tools";
-    public static final String AZURE_PLUGIN_ID = "com.microsoft.intellij";
+    public static final String AZURE_CONFIGURABLE_ID = "com.microsoft.intellij.AzureConfigurable";
 
     private java.util.List<Configurable> myPanels;
     private final AzurePanel azurePanel;
@@ -32,7 +31,7 @@ public class AzureConfigurable implements SearchableConfigurable, Configurable.N
     @NotNull
     @Override
     public String getId() {
-        return AZURE_PLUGIN_ID;
+        return AZURE_CONFIGURABLE_ID;
     }
 
     @Nls
