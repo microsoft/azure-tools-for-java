@@ -334,6 +334,10 @@
                     <groupId>org.jpmml</groupId>
                     <artifactId>pmml-model</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

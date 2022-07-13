@@ -237,6 +237,10 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-module-scala_2.11</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
