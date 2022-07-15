@@ -90,7 +90,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void init() {
         this.loadingSpinner = new AzureComboBoxLoadingSpinner();
         this.inputEditor = new AzureComboBoxEditor();
-        this.setEditable(true);
         this.toggleLoadingSpinner(false);
         this.setRenderer(new SimpleListCellRenderer<>() {
             @Override
