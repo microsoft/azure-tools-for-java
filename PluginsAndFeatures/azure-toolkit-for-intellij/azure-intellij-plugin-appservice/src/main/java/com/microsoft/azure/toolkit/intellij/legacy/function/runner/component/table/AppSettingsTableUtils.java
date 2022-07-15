@@ -28,11 +28,11 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -74,6 +74,7 @@ public class AppSettingsTableUtils {
                 appSettingsTable.repaint();
             }
         };
+        btnAdd.registerCustomShortcutSet(KeyEvent.VK_ADD, InputEvent.ALT_DOWN_MASK, result);
 
         final AnActionButton btnRemove = new AnActionButton(message("common.remove"), AllIcons.General.Remove) {
             @Override
@@ -81,11 +82,12 @@ public class AppSettingsTableUtils {
                 try {
                     appSettingsTable.removeAppSettings(appSettingsTable.getSelectedRow());
                     appSettingsTable.repaint();
-                } catch (IllegalArgumentException iae) {
+                } catch (final IllegalArgumentException iae) {
                     AzureMessager.getMessager().error(message("function.appSettings.remove.error.title"), iae.getMessage());
                 }
             }
         };
+        btnRemove.registerCustomShortcutSet(KeyEvent.VK_SUBTRACT, InputEvent.ALT_DOWN_MASK, result);
 
         final AnActionButton importButton = new AnActionButton(message("common.import"), AllIcons.ToolbarDecorator.Import) {
             @Override
@@ -110,6 +112,7 @@ public class AppSettingsTableUtils {
                 importAppSettingsDialog.setVisible(true);
             }
         };
+        importButton.registerCustomShortcutSet(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK, result);
 
         final AnActionButton exportButton = new AnActionButton(message("function.appSettings.export.title"), AllIcons.ToolbarDecorator.Export) {
             @Override
@@ -124,20 +127,18 @@ public class AppSettingsTableUtils {
                         AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
                         AzureMessager.getMessager().info(message("function.appSettings.export.succeed.title"), message("function.appSettings.export.succeed.message"));
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     final String title = message("function.appSettings.export.error.title");
                     final String message = message("function.appSettings.export.error.failedToSave", e.getMessage());
                     AzureMessager.getMessager().error(title, message);
                 }
             }
         };
+        exportButton.registerCustomShortcutSet(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK, result);
 
-        appSettingsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                final String prompt = AzureFunctionsConstants.getAppSettingHint(appSettingsTable.getSelectedKey());
-                promptPanel.setText(prompt);
-            }
+        appSettingsTable.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
+            final String prompt = AzureFunctionsConstants.getAppSettingHint(appSettingsTable.getSelectedKey());
+            promptPanel.setText(prompt);
         });
 
         appSettingsTable.addFocusListener(new FocusListener() {
@@ -189,7 +190,7 @@ public class AppSettingsTableUtils {
             jsonObject = JsonUtils.fromJsonString(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
         }
         final JsonObject valueObject = new JsonObject();
-        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
+        appSettings.forEach(valueObject::addProperty);
         jsonObject.add(LOCAL_SETTINGS_VALUES, valueObject);
         JsonUtils.writeJsonToFile(target, jsonObject);
     }
