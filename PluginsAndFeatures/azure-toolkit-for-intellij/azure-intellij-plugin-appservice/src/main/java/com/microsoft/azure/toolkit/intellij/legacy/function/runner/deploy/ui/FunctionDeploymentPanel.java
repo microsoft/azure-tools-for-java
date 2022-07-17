@@ -50,6 +50,9 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
     private FunctionAppComboBox functionAppComboBox;
+    private JLabel lblModule;
+    private JLabel lblFunction;
+    private JLabel lblAppSettings;
     private AppSettingsTable appSettingsTable;
     private FunctionAppConfig appSettingsFunctionApp;
     private String appSettingsKey = UUID.randomUUID().toString();
@@ -57,6 +60,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
+        $$$setupUI$$$();
         this.presenter = new FunctionDeployViewPresenter<>();
         this.presenter.onAttachView(this);
 
@@ -69,7 +73,9 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         });
-
+        lblModule.setLabelFor(cbFunctionModule);
+        lblFunction.setLabelFor(functionAppComboBox);
+        lblAppSettings.setLabelFor(appSettingsTable);
         fillModules();
     }
 
@@ -207,5 +213,9 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 break;
             }
         }
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 }

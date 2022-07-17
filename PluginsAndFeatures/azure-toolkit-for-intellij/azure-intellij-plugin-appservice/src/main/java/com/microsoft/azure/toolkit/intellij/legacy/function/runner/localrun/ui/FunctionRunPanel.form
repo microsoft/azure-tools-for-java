@@ -24,7 +24,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="841e9" class="javax.swing.JLabel">
+              <component id="841e9" class="javax.swing.JLabel" binding="lblFunctionCli">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -38,7 +38,7 @@
                 </constraints>
                 <properties/>
               </component>
-              <component id="ae00f" class="javax.swing.JLabel">
+              <component id="ae00f" class="javax.swing.JLabel" binding="lblAppSettings">
                 <constraints>
                   <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -46,7 +46,7 @@
                   <text value="App Settings:"/>
                 </properties>
               </component>
-              <component id="aa591" class="javax.swing.JLabel">
+              <component id="aa591" class="javax.swing.JLabel" binding="lblModule">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -95,7 +95,7 @@
                   </component>
                 </children>
               </grid>
-              <component id="238aa" class="javax.swing.JLabel">
+              <component id="238aa" class="javax.swing.JLabel" binding="lblPort">
                 <constraints>
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>

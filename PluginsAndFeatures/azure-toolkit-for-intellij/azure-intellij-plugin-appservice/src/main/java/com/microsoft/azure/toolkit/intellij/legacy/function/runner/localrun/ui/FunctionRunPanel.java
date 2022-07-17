@@ -43,6 +43,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private JComboBox<Module> cbFunctionModule;
     private JTextField txtPort;
     private JCheckBox chkAuto;
+    private JLabel lblModule;
+    private JLabel lblFunctionCli;
+    private JLabel lblPort;
+    private JLabel lblAppSettings;
     private AppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -52,7 +56,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     public FunctionRunPanel(@NotNull Project project, FunctionRunConfiguration functionRunConfiguration) {
         super(project);
         this.functionRunConfiguration = functionRunConfiguration;
-
+        $$$setupUI$$$();
         cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
             @Override
             public void customize(JList list, Module module, int i, boolean b, boolean b1) {
@@ -62,8 +66,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 }
             }
         });
-
         chkAuto.addItemListener(e -> txtPort.setEnabled(!chkAuto.isSelected()));
+        lblModule.setLabelFor(cbFunctionModule);
+        lblFunctionCli.setLabelFor(txtFunc);
+        lblPort.setLabelFor(txtPort);
+        lblAppSettings.setLabelFor(appSettingsTable);
         fillModules();
     }
 
@@ -174,5 +181,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    void $$$setupUI$$$() {
     }
 }
