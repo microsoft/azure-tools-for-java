@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.redis.creation;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
@@ -138,7 +137,7 @@ public class RedisCreationDialog extends AzureDialog<RedisConfig> implements Azu
             }
         };
         this.redisNameTextField = new AzureTextInput();
-        this.pricingComboBox = new AzureComboBoxSimple<>(PricingTier::values);
+        this.pricingComboBox = new AzureComboBox<>(PricingTier::values);
         this.subscriptionComboBox.setRequired(true);
         this.resourceGroupComboBox.setRequired(true);
         this.regionComboBox.setRequired(true);

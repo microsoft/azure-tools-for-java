@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.storage.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -86,7 +85,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
                 .map(Subscription::getId)
                 .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
                 .orElse(Collections.emptyList());
-        this.accountComboBox = new AzureComboBoxSimple<>(loader) {
+        this.accountComboBox = new AzureComboBox<>(loader) {
             @Override
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);

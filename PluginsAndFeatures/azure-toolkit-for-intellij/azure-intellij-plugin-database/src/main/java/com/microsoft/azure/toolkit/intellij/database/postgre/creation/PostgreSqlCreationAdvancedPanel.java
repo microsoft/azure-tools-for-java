@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.database.postgre.creation;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
@@ -184,6 +183,6 @@ public class PostgreSqlCreationAdvancedPanel extends JPanel implements AzureForm
     }
 
     private void createUIComponents() {
-        this.versionComboBox = new AzureComboBoxSimple<>(() -> Azure.az(AzurePostgreSql.class).listSupportedVersions());
+        this.versionComboBox = new AzureComboBox<>(() -> Azure.az(AzurePostgreSql.class).listSupportedVersions());
     }
 }

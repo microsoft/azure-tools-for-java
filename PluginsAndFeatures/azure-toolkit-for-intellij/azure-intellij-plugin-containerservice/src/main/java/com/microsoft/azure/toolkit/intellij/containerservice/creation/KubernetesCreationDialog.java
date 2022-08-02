@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerservice.creation;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -68,8 +68,8 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
     private JLabel lblKubernetesVersion;
     private JLabel lblRegion;
     private JLabel lblName;
-    private AzureComboBoxSimple<String> cbKubernetesVersion;
-    private AzureComboBoxSimple<VirtualMachineSize> cbNodeSize;
+    private AzureComboBox<String> cbKubernetesVersion;
+    private AzureComboBox<VirtualMachineSize> cbNodeSize;
 
     public KubernetesCreationDialog(@Nullable Project project) {
         super(project);
@@ -221,9 +221,9 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             }
             return new ArrayList<>(Azure.az(AzureContainerService.class).kubernetes(subscription.getId()).listVirtualMachineVersion(region));
         };
-        this.cbKubernetesVersion = new AzureComboBoxSimple<>(kubernetesVersionSupplier);
+        this.cbKubernetesVersion = new AzureComboBox<>(kubernetesVersionSupplier);
         this.cbKubernetesVersion.setRequired(true);
-        this.cbNodeSize = new AzureComboBoxSimple<>(VirtualMachineSize::values) {
+        this.cbNodeSize = new AzureComboBox<>(VirtualMachineSize::values) {
             @Override
             protected String getItemText(Object item) {
                 return item instanceof VirtualMachineSize ? ((VirtualMachineSize) item).getValue() : super.getItemText(item);

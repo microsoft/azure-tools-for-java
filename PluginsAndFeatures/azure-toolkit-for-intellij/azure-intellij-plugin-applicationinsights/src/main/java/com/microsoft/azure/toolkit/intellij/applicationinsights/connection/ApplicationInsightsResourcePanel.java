@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.applicationinsights.connection;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -86,7 +85,7 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
                 .map(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).list()
                         .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
-        this.insightComboBox = new AzureComboBoxSimple<>(loader) {
+        this.insightComboBox = new AzureComboBox<>(loader) {
             @Override
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((ApplicationInsight) i).getName()).orElse(StringUtils.EMPTY);

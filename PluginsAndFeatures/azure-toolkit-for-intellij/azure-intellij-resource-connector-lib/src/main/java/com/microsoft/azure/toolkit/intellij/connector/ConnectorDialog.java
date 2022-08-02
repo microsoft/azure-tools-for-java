@@ -12,7 +12,6 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox.ItemReference;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -234,7 +233,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     }
 
     private void createUIComponents() {
-        this.consumerTypeSelector = new AzureComboBoxSimple<>(() -> ResourceManager.getDefinitions(CONSUMER));
-        this.resourceTypeSelector = new AzureComboBoxSimple<>(() -> ResourceManager.getDefinitions(RESOURCE));
+        this.consumerTypeSelector = new AzureComboBox<>(() -> ResourceManager.getDefinitions(CONSUMER));
+        this.resourceTypeSelector = new AzureComboBox<>(() -> ResourceManager.getDefinitions(RESOURCE));
     }
 }

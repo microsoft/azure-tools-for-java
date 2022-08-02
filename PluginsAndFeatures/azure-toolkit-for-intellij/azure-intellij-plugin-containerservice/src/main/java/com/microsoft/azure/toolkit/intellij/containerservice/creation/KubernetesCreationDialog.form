@@ -242,13 +242,13 @@
         </constraints>
         <properties/>
       </component>
-      <component id="aa62f" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple" binding="cbKubernetesVersion" custom-create="true">
+      <component id="aa62f" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBox" binding="cbKubernetesVersion" custom-create="true">
         <constraints>
           <grid row="6" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
-      <component id="82061" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBoxSimple" binding="cbNodeSize" custom-create="true">
+      <component id="82061" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBox" binding="cbNodeSize" custom-create="true">
         <constraints>
           <grid row="8" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
