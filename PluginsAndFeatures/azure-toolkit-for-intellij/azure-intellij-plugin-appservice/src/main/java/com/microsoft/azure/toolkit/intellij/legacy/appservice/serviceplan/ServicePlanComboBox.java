@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
@@ -22,7 +23,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -136,11 +139,16 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         return plans;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, message("appService.servicePlan.create.tooltip"), this::showServicePlanCreationPopup);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("%s (%s)", message("appService.servicePlan.create.tooltip"), KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension addEx = Extension.create(AllIcons.General.Add, tooltip, this::showServicePlanCreationPopup);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
     private void showServicePlanCreationPopup() {

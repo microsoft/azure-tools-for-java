@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.SpringCloudAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -14,8 +15,11 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,9 +57,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     @NotNull
     @Override
     @AzureOperation(
-            name = "springcloud.list_apps.cluster",
-            params = {"this.cluster.name()"},
-            type = AzureOperation.Type.SERVICE
+        name = "springcloud.list_apps.cluster",
+        params = {"this.cluster.name()"},
+        type = AzureOperation.Type.SERVICE
     )
     protected List<? extends SpringCloudApp> loadItems() throws Exception {
         final List<SpringCloudApp> apps = new ArrayList<>();
@@ -68,11 +72,16 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         return apps;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, "Create Azure Spring App", this::showAppCreationPopup);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("Create Azure Spring App (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension addEx = Extension.create(AllIcons.General.Add, tooltip, this::showAppCreationPopup);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
     private void showAppCreationPopup() {

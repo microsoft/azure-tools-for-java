@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -17,6 +18,9 @@ import lombok.Setter;
 import org.apache.commons.collections4.ListUtils;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -29,8 +33,14 @@ public class VirtualMachineImageComboBox extends AzureComboBox<VmImage> {
     private VmImage customImage;
 
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(AllIcons.General.OpenDisk, "Select marketplace image", this::selectImage);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+        final String tooltip = String.format("Select marketplace image (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension openEx = Extension.create(AllIcons.General.Add, tooltip, this::selectImage);
+        this.registerShortcut(keyStroke, openEx);
+        extensions.add(openEx);
+        return extensions;
     }
 
     private void selectImage() {

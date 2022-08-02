@@ -6,9 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
@@ -25,6 +26,8 @@ import rx.Subscription;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,7 +52,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     protected List<? extends T> loadItems() throws Exception {
         final List<T> items = loadAppServiceModels();
         final boolean isConfigResourceCreated = !isDraftResource(configModel) ||
-                items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
+            items.stream().anyMatch(item -> AppServiceConfig.isSameApp(item, configModel));
         if (isConfigResourceCreated) {
             this.configModel = null;
         } else {
@@ -86,8 +89,14 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
 
     @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(AllIcons.General.Add, "Create", this::createResource);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("Create (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension addEx = Extension.create(AllIcons.General.Add, tooltip, this::createResource);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
     @Override
@@ -108,7 +117,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         public void customize(JList<? extends AppServiceConfig> list, AppServiceConfig app, int index, boolean isSelected, boolean cellHasFocus) {
             if (app != null) {
                 final boolean isJavaApp = Optional.ofNullable(app.getRuntime()).map(Runtime::getJavaVersion)
-                        .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
+                    .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
                 setEnabled(isJavaApp);
                 setFocusable(isJavaApp);
 
@@ -123,12 +132,12 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
 
         private String getAppServiceLabel(AppServiceConfig appServiceModel) {
             final String appServiceName = isDraftResource(appServiceModel) ?
-                    String.format("(New) %s", appServiceModel.getName()) : appServiceModel.getName();
+                String.format("(New) %s", appServiceModel.getName()) : appServiceModel.getName();
             final String runtime = appServiceModel.getRuntime() == null ?
                 "Loading:" : WebAppService.getInstance().getRuntimeDisplayName(appServiceModel.getRuntime());
             final String resourceGroup = Optional.ofNullable(appServiceModel.getResourceGroupName()).orElse(StringUtils.EMPTY);
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
-                    appServiceName, runtime, resourceGroup);
+                appServiceName, runtime, resourceGroup);
         }
     }
 

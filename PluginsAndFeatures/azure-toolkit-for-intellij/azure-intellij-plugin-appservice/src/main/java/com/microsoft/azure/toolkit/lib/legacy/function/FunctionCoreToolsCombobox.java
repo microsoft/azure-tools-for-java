@@ -12,13 +12,14 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -31,8 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -156,9 +159,15 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         });
     }
 
-    @Nullable
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(AllIcons.General.OpenDisk, "Open file", () -> onSelectFile(getItem()));
+    @Nonnull
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
+        final String tooltip = String.format("Open file (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension openEx = Extension.create(AllIcons.General.OpenDisk, tooltip, () -> onSelectFile(getItem()));
+        this.registerShortcut(keyStroke, openEx);
+        extensions.add(openEx);
+        return extensions;
     }
 
     private void addOrSelectExistingVirtualFile(VirtualFile virtualFile) {

@@ -5,7 +5,8 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.insights;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.CreateApplicationInsightsDialog;
@@ -16,7 +17,9 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections.ListUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -57,20 +60,25 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     )
     protected List<? extends ApplicationInsightsConfig> loadItems() throws Exception {
         final List<ApplicationInsightsConfig> newItems =
-                getItems().stream().filter(ApplicationInsightsConfig::isNewCreate).collect(Collectors.toList());
+            getItems().stream().filter(ApplicationInsightsConfig::isNewCreate).collect(Collectors.toList());
         final List<ApplicationInsightsConfig> existingItems =
-                subscription == null ? Collections.emptyList() :
-                        Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list().stream()
-                                .map(instance -> new ApplicationInsightsConfig(instance.getName(), instance.getInstrumentationKey()))
-                                .collect(Collectors.toList());
+            subscription == null ? Collections.emptyList() :
+                Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).list().stream()
+                    .map(instance -> new ApplicationInsightsConfig(instance.getName(), instance.getInstrumentationKey()))
+                    .collect(Collectors.toList());
         return ListUtils.union(newItems, existingItems);
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, message("appService.insights.create.tooltip"), this::onCreateApplicationInsights);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("%s (%s)", message("appService.insights.create.tooltip"), KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension addEx = Extension.create(AllIcons.General.Add, tooltip, this::onCreateApplicationInsights);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
     @Override

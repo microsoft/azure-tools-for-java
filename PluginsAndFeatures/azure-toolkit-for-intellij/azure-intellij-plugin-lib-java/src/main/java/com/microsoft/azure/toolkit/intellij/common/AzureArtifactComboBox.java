@@ -9,10 +9,11 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
@@ -23,6 +24,8 @@ import rx.Subscription;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -67,21 +70,27 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nonnull
     @Override
     @AzureOperation(
-            name = "common.list_artifacts.project",
-            params = {"this.project.getName()"},
-            type = AzureOperation.Type.SERVICE
+        name = "common.list_artifacts.project",
+        params = {"this.project.getName()"},
+        type = AzureOperation.Type.SERVICE
     )
     protected List<? extends AzureArtifact> loadItems() throws Exception {
         final List<AzureArtifact> collect = fileArtifactOnly ?
-                new ArrayList<>() : AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+            new ArrayList<>() : AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
         Optional.ofNullable(cachedArtifact).filter(artifact -> artifact.getType() == AzureArtifactType.File).ifPresent(collect::add);
         return collect;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(AllIcons.General.OpenDisk, "Open file", this::onSelectFile);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("Open file (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension openEx = Extension.create(AllIcons.General.OpenDisk, tooltip, this::onSelectFile);
+        this.registerShortcut(keyStroke, openEx);
+        extensions.add(openEx);
+        return extensions;
     }
 
     protected String getItemText(Object item) {
@@ -104,7 +113,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
             if (Objects.nonNull(this.fileFilter) && !this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
                 return builder.input(this).message(AzureMessageBundle.message("common.artifact.artifactNotSupport").toString())
-                        .type(Type.ERROR).build();
+                    .type(Type.ERROR).build();
             }
         }
         return AzureValidationInfo.success(this);

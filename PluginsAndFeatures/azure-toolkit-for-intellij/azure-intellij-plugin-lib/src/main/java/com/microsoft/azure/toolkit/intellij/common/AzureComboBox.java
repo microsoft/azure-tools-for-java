@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.keymap.KeymapUtil;
@@ -14,7 +15,7 @@ import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -25,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -192,9 +194,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     @AzureOperation(
-            name = "common.load_combobox_items.type",
-            params = {"this.getLabel()"},
-            type = AzureOperation.Type.ACTION
+        name = "common.load_combobox_items.type",
+        params = {"this.getLabel()"},
+        type = AzureOperation.Type.ACTION
     )
     private void doRefreshItems() {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
@@ -230,11 +232,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     protected void setLoading(final boolean loading) {
         SwingUtilities.invokeLater(() -> {
-            if (loading) {
-                this.toggleLoadingSpinner(true);
-            } else {
-                this.toggleLoadingSpinner(false);
-            }
+            this.toggleLoadingSpinner(loading);
             this.repaint();
         });
     }
@@ -267,9 +265,31 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         return null;
     }
 
-    @Nullable
-    protected ExtendableTextComponent.Extension getExtension() {
-        return null;
+    @Nonnull
+    protected List<Extension> getExtensions() {
+        final ArrayList<Extension> list = new ArrayList<>();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK);
+        final String tooltip = String.format("Refresh (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension refreshEx = Extension.create(AllIcons.Actions.Refresh, tooltip, this::refreshItems);
+        this.registerShortcut(keyStroke, refreshEx);
+        list.add(refreshEx);
+        return list;
+    }
+
+    protected void registerShortcut(@Nonnull final KeyStroke keyStroke, @Nonnull final Extension ex) {
+        // Add shot cut for extension, refers https://github.com/JetBrains/intellij-community/blob/idea/212.4746.92/platform/platform-api/
+        // src/com/intellij/ui/components/fields/ExtendableTextField.java#L117
+        final Runnable action = () -> {
+            this.hidePopup();
+            ex.getActionOnClick().run();
+        };
+        new DumbAwareAction() {
+            @Override
+            public void actionPerformed(@Nonnull AnActionEvent e) {
+                action.run();
+            }
+        }.registerCustomShortcutSet(new CustomShortcutSet(keyStroke), this);
+
     }
 
     protected final List<? extends T> loadItemsInner() {
@@ -327,36 +347,16 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         @Override
         protected JTextField createEditorComponent() {
             final ExtendableTextField textField = new ExtendableTextField();
-            final ExtendableTextComponent.Extension extension = this.getExtension();
-            if (extension != null) {
-                textField.addExtension(extension);
-            }
+            final List<Extension> extensions = ObjectUtils.firstNonNull(this.getExtensions(), Collections.emptyList());
+            extensions.stream().filter(Objects::nonNull).forEach(textField::addExtension);
             textField.setBorder(null);
             textField.setEditable(false);
             return textField;
         }
 
         @Nullable
-        protected ExtendableTextComponent.Extension getExtension() {
-            final ExtendableTextComponent.Extension extension = AzureComboBox.this.getExtension();
-            if (extension == null) {
-                return null;
-            }
-            // Add shot cut for extension, refers https://github.com/JetBrains/intellij-community/blob/idea/212.4746.92/platform/platform-api/
-            // src/com/intellij/ui/components/fields/ExtendableTextField.java#L117
-            final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
-            final String tooltip = String.format("%s (%s)", extension.getTooltip(), KeymapUtil.getKeystrokeText(keyStroke));
-            final Runnable action = () -> {
-                AzureComboBox.this.hidePopup();
-                extension.getActionOnClick().run();
-            };
-            new DumbAwareAction() {
-                @Override
-                public void actionPerformed(@Nonnull AnActionEvent e) {
-                    action.run();
-                }
-            }.registerCustomShortcutSet(new CustomShortcutSet(keyStroke), AzureComboBox.this);
-            return ExtendableTextComponent.Extension.create(extension.getIcon(true), tooltip, action);
+        protected List<Extension> getExtensions() {
+            return AzureComboBox.this.getExtensions();
         }
     }
 
@@ -371,9 +371,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             }
         }
 
-        protected ExtendableTextComponent.Extension getExtension() {
-            return ExtendableTextComponent.Extension.create(
-                    new AnimatedIcon.Default(), null, null);
+        protected List<Extension> getExtensions() {
+            return List.of(Extension.create(new AnimatedIcon.Default(), "Loading...", null));
         }
     }
 
@@ -388,7 +387,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                    (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 

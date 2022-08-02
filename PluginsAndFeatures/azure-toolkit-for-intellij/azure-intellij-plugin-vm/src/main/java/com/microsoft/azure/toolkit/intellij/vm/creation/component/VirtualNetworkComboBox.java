@@ -6,7 +6,8 @@
 package com.microsoft.azure.toolkit.intellij.vm.creation.component;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent.Extension;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -21,7 +22,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -61,10 +64,16 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         this.refreshItems();
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(AllIcons.General.Add, "Create new virtual network", this::createVirtualNetwork);
+    protected List<Extension> getExtensions() {
+        final List<Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("Create new virtual network (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final Extension addEx = Extension.create(AllIcons.General.Add, tooltip, this::createVirtualNetwork);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
     private void resetToDraft() {

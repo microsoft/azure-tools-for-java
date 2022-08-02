@@ -6,31 +6,27 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
-import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.model.ProcessInfo;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Setter
     @Getter
     private AppServiceAppBase<?, ?, ?> appService;
 
-    @NotNull
+    @Nonnull
     @Override
     @AzureOperation(
         name = "appservice.list_flight_recorders.app",
@@ -44,19 +40,12 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
         return FlightRecorderManager.getFlightRecorderStarter(appService).listProcess();
     }
 
-    @Nullable
-    @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-            AllIcons.Actions.Refresh, message("common.refresh"), this::refreshItems);
-    }
-
     protected String getItemText(Object item) {
         if (item == null) {
             return StringUtils.EMPTY;
         }
         if (item instanceof ProcessInfo) {
-            ProcessInfo processInfo = (ProcessInfo) item;
+            final ProcessInfo processInfo = (ProcessInfo) item;
             return String.format("[%d] %s", processInfo.getId(), StringUtils.abbreviate(processInfo.getName(), 50));
         }
         return item.toString();
