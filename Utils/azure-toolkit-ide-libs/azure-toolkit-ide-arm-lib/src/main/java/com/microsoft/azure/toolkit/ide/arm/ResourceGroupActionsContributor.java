@@ -22,6 +22,7 @@ public class ResourceGroupActionsContributor implements IActionsContributor {
     public void registerGroups(AzureActionManager am) {
         final ActionGroup appCentricResourceGroupsActions = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
             IAccountActions.SELECT_SUBS,
             ResourceCommonActionsContributor.CREATE
@@ -30,6 +31,7 @@ public class ResourceGroupActionsContributor implements IActionsContributor {
 
         final ActionGroup typeCentricResourceGroupsActions = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
             ResourceCommonActionsContributor.CREATE
         );

@@ -55,6 +55,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
             ResourceCommonActionsContributor.REFRESH,
+            ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             "---",
             ResourceCommonActionsContributor.CREATE
         );
