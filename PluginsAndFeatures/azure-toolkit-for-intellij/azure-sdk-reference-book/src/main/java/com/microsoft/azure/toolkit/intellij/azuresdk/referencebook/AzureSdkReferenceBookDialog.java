@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 
 public class AzureSdkReferenceBookDialog extends DialogWrapper {
@@ -20,6 +21,10 @@ public class AzureSdkReferenceBookDialog extends DialogWrapper {
         this.setTitle("Azure SDK Reference Book");
         this.setModal(true);
         this.init();
+    }
+
+    public void initDialog(@Nonnull final String feature) {
+        this.bookPanel.init(feature);
     }
 
     @Override

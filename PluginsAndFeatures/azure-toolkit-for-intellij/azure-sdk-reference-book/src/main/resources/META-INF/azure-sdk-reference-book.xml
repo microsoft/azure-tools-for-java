@@ -5,6 +5,11 @@
         <dependencySupport displayName="Azure SDK client libraries" coordinate="com.microsoft.azure:azure-client-runtime" kind="java"/>
         <dependencySupport displayName="Library for Azure Java Functions" coordinate="com.microsoft.azure.functions:azure-functions-java-library" kind="java"/>
     </extensions>
+
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.azuresdk.IntelliJReferenceBookActionContributor"/>
+    </extensions>
+
     <actions>
         <action id="AzureToolkit.OpenSdkReferenceBook"
                 class="com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.OpenReferenceBookAction"
