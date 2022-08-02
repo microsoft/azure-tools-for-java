@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public class VirtualMachineImageComboBox extends AzureComboBox<VmImage> {
 
     @Override
     protected List<Extension> getExtensions() {
-        final List<Extension> extensions = super.getExtensions();
+        final List<Extension> extensions = new ArrayList<>();
         final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
         final String tooltip = String.format("Select marketplace image (%s)", KeymapUtil.getKeystrokeText(keyStroke));
         final Extension openEx = Extension.create(AllIcons.General.Add, tooltip, this::selectImage);

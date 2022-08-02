@@ -5,11 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.database.component;
 
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Password;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PasswordSaveComboBox extends AzureComboBox<Password.SaveType> {
@@ -31,6 +33,12 @@ public class PasswordSaveComboBox extends AzureComboBox<Password.SaveType> {
             return ((Password.SaveType) item).title();
         }
         return super.getItemText(item);
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        return Collections.emptyList();
     }
 
     @Override

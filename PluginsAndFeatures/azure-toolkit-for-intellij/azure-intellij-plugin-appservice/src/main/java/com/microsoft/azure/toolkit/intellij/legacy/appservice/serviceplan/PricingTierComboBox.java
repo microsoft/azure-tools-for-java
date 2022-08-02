@@ -5,8 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan;
 
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -38,12 +39,18 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
         }
         final PricingTier pricingTier = (PricingTier) item;
         return Objects.equals(pricingTier, PricingTier.CONSUMPTION) ?
-                message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
+            message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
     }
 
     @Nonnull
     @Override
     protected List<? extends PricingTier> loadItems() throws Exception {
         return pricingTierList;
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        return Collections.emptyList();
     }
 }

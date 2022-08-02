@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerservice.creation;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
@@ -227,6 +228,12 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             @Override
             protected String getItemText(Object item) {
                 return item instanceof VirtualMachineSize ? ((VirtualMachineSize) item).getValue() : super.getItemText(item);
+            }
+
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                return Collections.emptyList();
             }
         };
         this.cbNodeSize.setRequired(true);
