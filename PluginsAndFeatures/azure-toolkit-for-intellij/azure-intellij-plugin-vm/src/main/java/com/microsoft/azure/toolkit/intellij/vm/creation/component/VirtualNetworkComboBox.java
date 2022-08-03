@@ -43,7 +43,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
         this.subscription = subscription;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setResourceGroup(ResourceGroup resourceGroup) {
@@ -52,7 +52,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
         this.resourceGroup = resourceGroup;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setRegion(Region region) {
@@ -61,7 +61,7 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
         }
         this.region = region;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Nonnull

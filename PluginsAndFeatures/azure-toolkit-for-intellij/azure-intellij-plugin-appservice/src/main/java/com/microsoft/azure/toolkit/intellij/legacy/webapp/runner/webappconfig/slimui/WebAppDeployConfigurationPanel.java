@@ -182,14 +182,14 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
         comboBoxWebApp = new WebAppComboBox(project);
-        comboBoxWebApp.refreshItems();
+        comboBoxWebApp.reloadItems();
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
         comboBoxArtifact.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
-        comboBoxArtifact.refreshItems();
+        comboBoxArtifact.reloadItems();
     }
 
     private void loadDeploymentSlot(WebAppConfig selectedWebApp) {

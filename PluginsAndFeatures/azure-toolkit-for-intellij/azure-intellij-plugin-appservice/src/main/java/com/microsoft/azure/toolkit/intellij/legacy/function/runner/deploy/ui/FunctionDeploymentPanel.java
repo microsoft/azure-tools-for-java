@@ -166,7 +166,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
         functionAppComboBox = new FunctionAppComboBox(project);
         functionAppComboBox.addActionListener(event -> onSelectFunctionApp());
-        functionAppComboBox.refreshItems();
+        functionAppComboBox.reloadItems();
     }
 
     private void onSelectFunctionApp() {

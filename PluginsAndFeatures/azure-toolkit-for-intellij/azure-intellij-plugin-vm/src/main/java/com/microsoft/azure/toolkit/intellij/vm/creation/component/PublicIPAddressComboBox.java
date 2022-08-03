@@ -54,7 +54,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         }
         this.subscription = subscription;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setResourceGroup(ResourceGroup resourceGroup) {
@@ -63,7 +63,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         }
         this.resourceGroup = resourceGroup;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setRegion(Region region) {
@@ -72,7 +72,7 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         }
         this.region = region;
         resetToDraft();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

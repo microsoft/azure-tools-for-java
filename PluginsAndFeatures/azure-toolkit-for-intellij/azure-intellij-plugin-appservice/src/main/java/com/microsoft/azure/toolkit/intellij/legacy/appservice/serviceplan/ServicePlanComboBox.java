@@ -64,7 +64,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         } catch (final ExecutionException ignored) {
             // swallow exception while clean up cache
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setOperatingSystem(OperatingSystem os) {
@@ -76,7 +76,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setRegion(Region region) {
@@ -85,7 +85,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setValidPricingTierList(@Nonnull final List<PricingTier> pricingTierList, @Nonnull final PricingTier defaultPricingTier) {

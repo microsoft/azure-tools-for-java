@@ -80,7 +80,7 @@ public class RunFlightRecorderDialog extends AzureDialog<FlightRecorderConfigura
     private void createUIComponents() {
         this.processComboBox1 = new ProcessComboBox();
         this.processComboBox1.setAppService(this.appService);
-        this.processComboBox1.refreshItems();
+        this.processComboBox1.reloadItems();
         this.durationPanel = new DurationPanel(1, MAX_DURATION_SECONDS, DEFAULT_DURATION_SECONDS);
     }
 }

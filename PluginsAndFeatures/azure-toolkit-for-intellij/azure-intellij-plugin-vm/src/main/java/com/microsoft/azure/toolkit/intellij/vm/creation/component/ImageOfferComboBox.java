@@ -20,7 +20,7 @@ public class ImageOfferComboBox extends AzureComboBox<VmImageOffer> {
     public void setPublisher(VmImagePublisher publisher) {
         this.publisher = publisher;
         this.clear();
-        refreshItems();
+        reloadItems();
     }
 
     @Override

@@ -43,7 +43,7 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         this.accountComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                this.accountComboBox.refreshItems();
+                this.accountComboBox.reloadItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.accountComboBox.clear();
             }

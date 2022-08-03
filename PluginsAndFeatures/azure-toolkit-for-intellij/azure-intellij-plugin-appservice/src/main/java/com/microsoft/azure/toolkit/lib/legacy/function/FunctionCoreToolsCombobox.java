@@ -134,7 +134,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
         if (StringUtils.isNotEmpty(defaultFuncPath)) {
             this.setValue(defaultFuncPath);
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

@@ -101,7 +101,7 @@ public class VirtualMachineImageDialog extends AzureDialog<VmImage> implements A
             }
         });
 
-        cbPublisher.refreshItems();
+        cbPublisher.reloadItems();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

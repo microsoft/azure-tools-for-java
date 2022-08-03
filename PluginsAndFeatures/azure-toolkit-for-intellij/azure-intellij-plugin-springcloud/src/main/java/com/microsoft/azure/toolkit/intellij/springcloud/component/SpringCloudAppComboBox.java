@@ -51,7 +51,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @NotNull

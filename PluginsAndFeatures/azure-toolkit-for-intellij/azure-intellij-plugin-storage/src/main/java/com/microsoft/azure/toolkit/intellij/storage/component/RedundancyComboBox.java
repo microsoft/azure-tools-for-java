@@ -32,7 +32,7 @@ public class RedundancyComboBox extends AzureComboBox<Redundancy> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setKind(Kind kind) {
@@ -44,7 +44,7 @@ public class RedundancyComboBox extends AzureComboBox<Redundancy> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Nonnull

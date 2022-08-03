@@ -36,7 +36,7 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
 
     public void setSubscription(final Subscription subscription) {
         this.subscription = subscription;
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

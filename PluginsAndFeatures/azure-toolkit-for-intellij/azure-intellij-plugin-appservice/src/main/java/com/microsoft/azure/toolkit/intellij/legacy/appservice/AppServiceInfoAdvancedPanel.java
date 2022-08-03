@@ -239,7 +239,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.selectorApplication = new AzureArtifactComboBox(project, true);
-        this.selectorApplication.refreshItems();
+        this.selectorApplication.reloadItems();
     }
 
     public void setValidPricingTier(List<PricingTier> pricingTier, PricingTier defaultPricingTier) {

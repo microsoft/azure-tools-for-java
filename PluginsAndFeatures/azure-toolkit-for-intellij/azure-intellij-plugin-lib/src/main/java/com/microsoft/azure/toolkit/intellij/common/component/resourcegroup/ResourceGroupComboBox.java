@@ -54,7 +54,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Nonnull

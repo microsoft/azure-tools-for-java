@@ -39,7 +39,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @NotNull

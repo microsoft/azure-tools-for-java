@@ -349,7 +349,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         this.txtConfirmPassword = new JPasswordField();
         this.confirmPasswordFieldInput = new AzurePasswordFieldInput(txtConfirmPassword);
 
-        this.cbSubscription.refreshItems();
+        this.cbSubscription.reloadItems();
     }
 
     @Override

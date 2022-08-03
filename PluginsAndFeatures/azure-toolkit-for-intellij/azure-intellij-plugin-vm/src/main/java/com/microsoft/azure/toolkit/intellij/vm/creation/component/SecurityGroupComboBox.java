@@ -25,12 +25,12 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
-        this.refreshItems();
+        this.reloadItems();
     }
 
     public void setRegion(Region region) {
         this.region = region;
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

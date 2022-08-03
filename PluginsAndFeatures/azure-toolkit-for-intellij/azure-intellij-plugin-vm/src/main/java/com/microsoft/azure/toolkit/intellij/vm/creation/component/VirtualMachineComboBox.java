@@ -38,7 +38,7 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
 //    @Nullable

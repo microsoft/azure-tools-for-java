@@ -54,7 +54,7 @@ import java.util.function.Supplier;
 public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final int DEBOUNCE_DELAY = 500;
-    private final TailingDebouncer refresher;
+    private final TailingDebouncer reloader;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
     private boolean valueNotSet = true;
@@ -73,10 +73,10 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     public AzureComboBox(boolean refresh) {
         super();
         this.init();
-        this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
+        this.reloader = new TailingDebouncer(this::doReloadItems, DEBOUNCE_DELAY);
         this.valueDebouncer = new TailingDebouncer(this::fireValueChangedEvent, DEBOUNCE_DELAY);
         if (refresh) {
-            this.refreshItems();
+            this.reloadItems();
         }
     }
 
@@ -189,8 +189,8 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.setValue((T) value);
     }
 
-    public void refreshItems() {
-        this.refresher.debounce();
+    public void reloadItems() {
+        this.reloader.debounce();
     }
 
     @AzureOperation(
@@ -198,7 +198,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         params = {"this.getLabel()"},
         type = AzureOperation.Type.ACTION
     )
-    private void doRefreshItems() {
+    private void doReloadItems() {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             this.setLoading(true);
             this.setItems(this.loadItemsInner());
@@ -270,7 +270,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         final ArrayList<Extension> list = new ArrayList<>();
         final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK);
         final String tooltip = String.format("Refresh (%s)", KeymapUtil.getKeystrokeText(keyStroke));
-        final Extension refreshEx = Extension.create(AllIcons.Actions.Refresh, tooltip, this::refreshItems);
+        final Extension refreshEx = Extension.create(AllIcons.Actions.Refresh, tooltip, this::reloadItems);
         this.registerShortcut(keyStroke, refreshEx);
         list.add(refreshEx);
         return list;

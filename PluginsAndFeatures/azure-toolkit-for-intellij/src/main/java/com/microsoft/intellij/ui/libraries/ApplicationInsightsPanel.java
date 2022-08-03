@@ -61,7 +61,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
     }
 
     private void init() {
-        comboInstrumentation.refreshItems();
+        comboInstrumentation.reloadItems();
         initLink(lnkAIPrivacy, message("lnkAIPrivacy"), message("AIPrivacy"));
         try {
             String webXmlFilePath = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, webxmlPath);

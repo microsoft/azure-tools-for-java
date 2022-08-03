@@ -20,7 +20,7 @@ public class ImageSkuComboBox extends AzureComboBox<VmImageSku> {
     public void setOffer(VmImageOffer offer) {
         this.offer = offer;
         this.clear();
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

@@ -170,6 +170,6 @@ public class SpringCloudDeploymentConfigurationPanel extends JPanel implements A
 
     private void createUIComponents() {
         this.selectorArtifact = new AzureArtifactComboBox(project);
-        this.selectorArtifact.refreshItems();
+        this.selectorArtifact.reloadItems();
     }
 }

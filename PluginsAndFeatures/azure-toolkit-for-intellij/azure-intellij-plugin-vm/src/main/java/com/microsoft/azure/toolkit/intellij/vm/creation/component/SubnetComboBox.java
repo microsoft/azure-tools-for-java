@@ -23,7 +23,7 @@ public class SubnetComboBox extends AzureComboBox<Subnet> {
         if (network instanceof AzResource.Draft) {
             this.setValue(network.getSubnets().get(0));
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

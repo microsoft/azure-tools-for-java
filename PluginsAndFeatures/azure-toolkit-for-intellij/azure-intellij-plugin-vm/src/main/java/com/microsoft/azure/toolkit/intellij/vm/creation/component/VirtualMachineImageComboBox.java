@@ -51,7 +51,7 @@ public class VirtualMachineImageComboBox extends AzureComboBox<VmImage> {
         final VirtualMachineImageDialog dialog = new VirtualMachineImageDialog(subscription, region);
         if (dialog.showAndGet()) {
             customImage = dialog.getValue();
-            refreshItems();
+            reloadItems();
             setValue(customImage);
         }
     }

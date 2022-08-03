@@ -30,7 +30,7 @@ public class KindComboBox extends AzureComboBox<Kind> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Nonnull

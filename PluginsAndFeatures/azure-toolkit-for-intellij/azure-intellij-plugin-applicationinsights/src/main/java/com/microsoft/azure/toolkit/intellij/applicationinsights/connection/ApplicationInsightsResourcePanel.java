@@ -22,7 +22,6 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -42,7 +41,7 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
         this.insightComboBox.trackValidation();
         this.subscriptionComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                this.insightComboBox.refreshItems();
+                this.insightComboBox.reloadItems();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 this.insightComboBox.clear();
             }

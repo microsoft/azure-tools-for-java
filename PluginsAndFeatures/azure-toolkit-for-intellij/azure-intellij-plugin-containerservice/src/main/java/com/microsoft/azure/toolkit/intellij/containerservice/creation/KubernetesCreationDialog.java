@@ -153,7 +153,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
         // todo: add validator for k8s name
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbResourceGroup.addItemListener(e -> this.txtName.validateValueAsync()); // trigger validation after resource group changed
-        this.cbRegion.addItemListener(e -> this.cbKubernetesVersion.refreshItems());
+        this.cbRegion.addItemListener(e -> this.cbKubernetesVersion.reloadItems());
 
         this.manualRadioButton.addItemListener(e -> toggleScaleMethod(!manualRadioButton.isSelected()));
         this.autoScaleRadioButton.addItemListener(e -> toggleScaleMethod(autoScaleRadioButton.isSelected()));
@@ -207,7 +207,7 @@ public class KubernetesCreationDialog extends AzureDialog<KubernetesClusterDraft
             final Subscription subscription = (Subscription) e.getItem();
             this.cbResourceGroup.setSubscription(subscription);
             this.cbRegion.setSubscription(subscription);
-            this.cbKubernetesVersion.refreshItems();
+            this.cbKubernetesVersion.reloadItems();
             this.txtName.validateValueAsync(); // trigger validation after subscription changed
         }
     }

@@ -45,14 +45,14 @@ class AzureApplicationComboBox extends AzureComboBox<Application> {
         this.predefinedItems = items;
         this.subscription = null;
         clear();
-        refreshItems();
+        reloadItems();
     }
 
     public void setSubscription(@Nullable Subscription subscription) {
         this.predefinedItems = null;
         this.subscription = subscription;
         clear();
-        refreshItems();
+        reloadItems();
     }
 
     @NotNull

@@ -25,7 +25,7 @@ public class NetworkAvailabilityOptionsComboBox extends AzureComboBox<String> {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

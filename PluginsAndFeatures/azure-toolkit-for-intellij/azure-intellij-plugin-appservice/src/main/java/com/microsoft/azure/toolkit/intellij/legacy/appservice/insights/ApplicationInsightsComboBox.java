@@ -40,7 +40,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override
