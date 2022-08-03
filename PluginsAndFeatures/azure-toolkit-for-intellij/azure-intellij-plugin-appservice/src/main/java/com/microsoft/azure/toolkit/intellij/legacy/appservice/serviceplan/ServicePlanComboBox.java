@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -137,6 +138,12 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             return stream.collect(Collectors.toList());
         }
         return plans;
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureAppService.class).plans(s.getId()).refresh());
+        super.refreshItems();
     }
 
     @Nonnull

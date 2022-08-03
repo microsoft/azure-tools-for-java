@@ -90,6 +90,15 @@ public class RedisResourcePanel implements AzureFormJPanel<Resource<RedisCache>>
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((RedisCache) i).name()).orElse(StringUtils.EMPTY);
             }
+
+            @Override
+            protected void refreshItems() {
+                Optional.ofNullable(RedisResourcePanel.this.subscriptionComboBox)
+                    .map(AzureComboBox::getValue)
+                    .map(Subscription::getId)
+                    .ifPresent(id -> Azure.az(AzureRedis.class).caches(id).refresh());
+                super.refreshItems();
+            }
         };
     }
 }

@@ -27,6 +27,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -84,13 +85,11 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nonnull
     @Override
     protected List<Extension> getExtensions() {
-        final List<Extension> extensions = super.getExtensions();
         final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
         final String tooltip = String.format("Open file (%s)", KeymapUtil.getKeystrokeText(keyStroke));
         final Extension openEx = Extension.create(AllIcons.General.OpenDisk, tooltip, this::onSelectFile);
         this.registerShortcut(keyStroke, openEx);
-        extensions.add(openEx);
-        return extensions;
+        return Collections.singletonList(openEx);
     }
 
     protected String getItemText(Object item) {

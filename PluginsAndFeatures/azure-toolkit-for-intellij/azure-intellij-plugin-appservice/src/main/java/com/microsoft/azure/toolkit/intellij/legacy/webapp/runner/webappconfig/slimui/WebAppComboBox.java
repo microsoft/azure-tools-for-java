@@ -23,12 +23,18 @@ public class WebAppComboBox extends AppServiceComboBox<WebAppConfig> {
     }
 
     @Override
+    protected void refreshItems() {
+        Azure.az(AzureWebApp.class).refresh();
+        super.refreshItems();
+    }
+
+    @Override
     protected List<WebAppConfig> loadAppServiceModels() {
         final List<WebApp> webApps = Azure.az(AzureWebApp.class).webApps();
         return webApps.stream().parallel()
-                .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
-                .map(webApp -> convertAppServiceToConfig(WebAppConfig::new, webApp))
-                .collect(Collectors.toList());
+            .sorted((a, b) -> a.name().compareToIgnoreCase(b.name()))
+            .map(webApp -> convertAppServiceToConfig(WebAppConfig::new, webApp))
+            .collect(Collectors.toList());
     }
 
     @Override

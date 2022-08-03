@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
@@ -48,6 +49,12 @@ public class SecurityGroupComboBox extends AzureComboBox<NetworkSecurityGroup> {
             return az.networkSecurityGroups(subscription.getId()).list().stream()
                 .filter(group -> Objects.equals(group.getRegion(), region)).collect(Collectors.toList());
         }
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(subscription).ifPresent(s -> Azure.az(AzureNetwork.class).networkSecurityGroups(s.getId()).refresh());
+        super.refreshItems();
     }
 
     public void setData(NetworkSecurityGroup networkSecurityGroup) {

@@ -90,6 +90,15 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((StorageAccount) i).name()).orElse(StringUtils.EMPTY);
             }
+
+            @Override
+            protected void refreshItems() {
+                Optional.ofNullable(StorageAccountResourcePanel.this.subscriptionComboBox)
+                    .map(AzureComboBox::getValue)
+                    .map(Subscription::getId)
+                    .ifPresent(id -> Azure.az(AzureStorageAccount.class).accounts(id).refresh());
+                super.refreshItems();
+            }
         };
     }
 }

@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster> {
 
@@ -49,12 +50,18 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends SpringCloudCluster> loadItems() throws Exception {
+    protected List<? extends SpringCloudCluster> loadItems() {
         if (Objects.nonNull(this.subscription)) {
             final String sid = this.subscription.getId();
             final SpringCloudClusterModule az = Azure.az(AzureSpringCloud.class).clusters(sid);
             return az.list();
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureSpringCloud.class).clusters(s.getId()).refresh());
+        super.refreshItems();
     }
 }

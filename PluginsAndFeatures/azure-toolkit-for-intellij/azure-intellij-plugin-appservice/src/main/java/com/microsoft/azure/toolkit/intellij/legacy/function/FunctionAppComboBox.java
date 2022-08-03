@@ -24,6 +24,12 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppConfig> {
     }
 
     @Override
+    protected void refreshItems() {
+        Azure.az(AzureFunctions.class).refresh();
+        super.refreshItems();
+    }
+
+    @Override
     protected void createResource() {
         final FunctionAppCreationDialog functionAppCreationDialog = new FunctionAppCreationDialog(project);
         functionAppCreationDialog.setOkActionListener(functionAppConfig -> {

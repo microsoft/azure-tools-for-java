@@ -89,6 +89,12 @@ public class AzureStorageAccountComboBox extends AzureComboBox<StorageAccountCon
         }
     }
 
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(subscription).ifPresent(s -> Azure.az(AzureStorageAccount.class).accounts(s.getId()).refresh());
+        super.refreshItems();
+    }
+
     @Nonnull
     @Override
     protected List<? extends StorageAccountConfig> loadItems() {

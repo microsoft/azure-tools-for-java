@@ -189,7 +189,12 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.setValue((T) value);
     }
 
+    protected void refreshItems() {
+        this.reloadItems();
+    }
+
     public void reloadItems() {
+        this.setLoading(true);
         this.reloader.debounce();
     }
 
@@ -270,7 +275,7 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         final ArrayList<Extension> list = new ArrayList<>();
         final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK);
         final String tooltip = String.format("Refresh (%s)", KeymapUtil.getKeystrokeText(keyStroke));
-        final Extension refreshEx = Extension.create(AllIcons.Actions.Refresh, tooltip, this::reloadItems);
+        final Extension refreshEx = Extension.create(AllIcons.Actions.Refresh, tooltip, this::refreshItems);
         this.registerShortcut(keyStroke, refreshEx);
         list.add(refreshEx);
         return list;

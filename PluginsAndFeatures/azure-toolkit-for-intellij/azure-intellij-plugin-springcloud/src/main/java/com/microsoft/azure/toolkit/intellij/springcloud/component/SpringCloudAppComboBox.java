@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
@@ -61,7 +62,7 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         params = {"this.cluster.name()"},
         type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends SpringCloudApp> loadItems() throws Exception {
+    protected List<? extends SpringCloudApp> loadItems() {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
             if (!this.localItems.isEmpty()) {
@@ -70,6 +71,12 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
             apps.addAll(cluster.apps().list());
         }
         return apps;
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.cluster).ifPresent(c -> c.apps().refresh());
+        super.refreshItems();
     }
 
     @Nonnull

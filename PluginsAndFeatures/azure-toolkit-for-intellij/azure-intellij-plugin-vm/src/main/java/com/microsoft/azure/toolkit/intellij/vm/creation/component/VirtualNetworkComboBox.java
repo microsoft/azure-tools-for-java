@@ -129,4 +129,10 @@ public class VirtualNetworkComboBox extends AzureComboBox<Network> {
                 .list().stream().filter(network -> Objects.equals(network.getRegion(), region)).collect(Collectors.toList());
         return draft == null ? networks : ListUtils.union(List.of(draft), networks);
     }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureNetwork.class).virtualNetworks(s.getId()).refresh());
+        super.refreshItems();
+    }
 }

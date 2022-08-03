@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
@@ -78,6 +79,12 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
             groups.addAll(remoteGroups);
         }
         return groups;
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureResources.class).groups(s.getId()).refresh());
+        super.refreshItems();
     }
 
     @Nonnull

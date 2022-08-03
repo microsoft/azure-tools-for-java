@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import rx.Subscription;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -36,7 +35,6 @@ import java.util.function.Supplier;
 public abstract class AppServiceComboBox<T extends AppServiceConfig> extends AzureComboBox<T> {
 
     protected Project project;
-    protected Subscription subscription;
 
     @Setter
     protected T configModel;

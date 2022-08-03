@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.component;
 
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -54,6 +55,12 @@ public class RegionComboBox extends AzureComboBox<Region> {
             final String sid = this.subscription.getId();
             return az(AzureAccount.class).listRegions(sid);
         }
+        return Collections.emptyList();
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
         return Collections.emptyList();
     }
 }

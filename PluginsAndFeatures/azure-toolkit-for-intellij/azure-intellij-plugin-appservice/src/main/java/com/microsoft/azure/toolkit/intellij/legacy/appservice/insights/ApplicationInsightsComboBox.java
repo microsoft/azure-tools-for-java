@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -58,7 +59,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         params = {"this.subscription.getId()"},
         type = AzureOperation.Type.SERVICE
     )
-    protected List<? extends ApplicationInsightsConfig> loadItems() throws Exception {
+    protected List<? extends ApplicationInsightsConfig> loadItems() {
         final List<ApplicationInsightsConfig> newItems =
             getItems().stream().filter(ApplicationInsightsConfig::isNewCreate).collect(Collectors.toList());
         final List<ApplicationInsightsConfig> existingItems =
@@ -67,6 +68,12 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
                     .map(instance -> new ApplicationInsightsConfig(instance.getName(), instance.getInstrumentationKey()))
                     .collect(Collectors.toList());
         return ListUtils.union(newItems, existingItems);
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(subscription).ifPresent(s -> Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId()).refresh());
+        super.refreshItems();
     }
 
     @Nonnull

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
@@ -59,10 +60,16 @@ public class VirtualMachineComboBox extends AzureComboBox<VirtualMachine> {
             final List<VirtualMachine> remoteVms = Azure.az(AzureCompute.class)
                 .virtualMachines(subscription.getId()).list().stream()
                 .sorted(Comparator.comparing(VirtualMachine::getName)).collect(Collectors.toList());
-            remoteVms.parallelStream().forEach(v -> v.getHostIp()); // pre-load host ip
+            remoteVms.parallelStream().forEach(VirtualMachine::getHostIp); // pre-load host ip
             vms.addAll(remoteVms);
         }
         return vms;
+    }
+
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureCompute.class).virtualMachines(s.getId()).refresh());
+        super.refreshItems();
     }
 
     private void showVirtualMachineCreationPopup() {

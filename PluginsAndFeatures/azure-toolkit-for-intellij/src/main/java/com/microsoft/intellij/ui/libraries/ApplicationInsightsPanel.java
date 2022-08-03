@@ -273,11 +273,17 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
         this.comboInstrumentation = new AzureComboBox<>() {
             @Nonnull
             @Override
-            protected List<? extends ApplicationInsight> loadItems() throws Exception {
+            protected List<? extends ApplicationInsight> loadItems() {
                 return Azure.az(AzureApplicationInsights.class).list().stream()
                         .flatMap((m) -> m.getApplicationInsightsModule().list().stream())
                         .sorted((first, second) -> StringUtils.compare(first.getName(), second.getName()))
                         .collect(Collectors.toList());
+            }
+
+            @Override
+            protected void refreshItems() {
+                Azure.az(AzureApplicationInsights.class).refresh();
+                super.refreshItems();
             }
 
             @Override

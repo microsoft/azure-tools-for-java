@@ -113,6 +113,12 @@ public class PublicIPAddressComboBox extends AzureComboBox<PublicIpAddress> {
         return ListUtils.union(additionalList, list);
     }
 
+    @Override
+    protected void refreshItems() {
+        Optional.ofNullable(this.subscription).ifPresent(s -> Azure.az(AzureNetwork.class).publicIpAddresses(subscription.getId()).refresh());
+        super.refreshItems();
+    }
+
     @Nonnull
     @Override
     protected List<Extension> getExtensions() {

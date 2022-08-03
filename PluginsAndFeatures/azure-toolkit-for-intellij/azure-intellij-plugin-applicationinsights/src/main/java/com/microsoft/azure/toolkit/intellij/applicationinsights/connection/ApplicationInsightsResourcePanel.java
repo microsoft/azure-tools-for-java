@@ -89,6 +89,15 @@ public class ApplicationInsightsResourcePanel implements AzureFormJPanel<Resourc
             protected String getItemText(Object item) {
                 return Optional.ofNullable(item).map(i -> ((ApplicationInsight) i).getName()).orElse(StringUtils.EMPTY);
             }
+
+            @Override
+            protected void refreshItems() {
+                Optional.ofNullable(ApplicationInsightsResourcePanel.this.subscriptionComboBox)
+                    .map(AzureComboBox::getValue)
+                    .map(Subscription::getId)
+                    .ifPresent(id -> Azure.az(AzureApplicationInsights.class).applicationInsights(id).refresh());
+                super.refreshItems();
+            }
         };
     }
 
