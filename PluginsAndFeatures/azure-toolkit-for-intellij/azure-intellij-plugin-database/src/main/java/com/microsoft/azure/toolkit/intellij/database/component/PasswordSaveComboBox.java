@@ -18,7 +18,7 @@ public class PasswordSaveComboBox extends AzureComboBox<Password.SaveType> {
 
     public PasswordSaveComboBox() {
         super(false);
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

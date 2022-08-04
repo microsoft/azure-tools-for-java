@@ -29,7 +29,7 @@ public class UsernameComboBox extends AzureComboBox<String> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

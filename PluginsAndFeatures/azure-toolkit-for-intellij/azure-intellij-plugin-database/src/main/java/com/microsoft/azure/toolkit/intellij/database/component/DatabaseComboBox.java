@@ -30,7 +30,7 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

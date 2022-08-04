@@ -28,7 +28,7 @@ public class ServerComboBox<T extends IDatabaseServer<?>> extends AzureComboBox<
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override

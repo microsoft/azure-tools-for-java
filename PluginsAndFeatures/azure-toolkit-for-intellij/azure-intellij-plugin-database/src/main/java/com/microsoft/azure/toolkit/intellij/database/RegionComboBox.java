@@ -26,7 +26,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
             this.clear();
             return;
         }
-        this.refreshItems();
+        this.reloadItems();
     }
 
     @Override
