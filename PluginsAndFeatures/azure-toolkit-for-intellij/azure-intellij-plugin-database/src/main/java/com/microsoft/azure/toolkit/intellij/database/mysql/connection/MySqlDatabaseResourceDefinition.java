@@ -10,14 +10,20 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.database.component.ServerComboBox;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.database.connection.SqlDatabaseResourcePanel;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import com.microsoft.azure.toolkit.lib.mysql.AzureMySql;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlDatabase;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 
+import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefinition<MySqlDatabase> {
     public static final MySqlDatabaseResourceDefinition INSTANCE = new MySqlDatabaseResourceDefinition();
@@ -38,7 +44,27 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
 
     @Override
     public AzureFormJPanel<Resource<MySqlDatabase>> getResourcePanel(Project project) {
-        return new SqlDatabaseResourcePanel<>(this, s -> Azure.az(AzureMySql.class).servers(s).list());
+        return new SqlDatabaseResourcePanel<>(this) {
+            @Override
+            protected ServerComboBox<IDatabaseServer<MySqlDatabase>> initServerComboBox() {
+                return new ServerComboBox<>() {
+                    @Nonnull
+                    @Override
+                    protected List<? extends IDatabaseServer<MySqlDatabase>> loadItems() {
+                        return Optional.ofNullable(this.getSubscription())
+                            .map(s -> Azure.az(AzureMySql.class).servers(s.getId()).list())
+                            .orElse(Collections.emptyList());
+                    }
+
+                    @Override
+                    protected void refreshItems() {
+                        Optional.ofNullable(this.getSubscription())
+                            .ifPresent(s -> Azure.az(AzureMySql.class).servers(s.getId()).refresh());
+                        super.refreshItems();
+                    }
+                };
+            }
+        };
     }
 }
 

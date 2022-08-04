@@ -46,9 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
-public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJPanel<Resource<T>> {
+public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJPanel<Resource<T>> {
     private final SqlDatabaseResourceDefinition<T> definition;
     private JPanel contentPanel;
     private SubscriptionComboBox subscriptionComboBox;
@@ -64,14 +63,11 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
 
     private JdbcUrl jdbcUrl;
 
-    public SqlDatabaseResourcePanel(final SqlDatabaseResourceDefinition<T> definition, final Function<String, List<? extends IDatabaseServer<T>>> serversLoader) {
+    public SqlDatabaseResourcePanel(final SqlDatabaseResourceDefinition<T> definition) {
         super();
         this.definition = definition;
         init();
         initListeners();
-
-        this.serverComboBox.setItemsLoader(() -> Objects.isNull(this.serverComboBox.getSubscription()) ? Collections.emptyList() :
-            serversLoader.apply(this.serverComboBox.getSubscription().getId()));
     }
 
     @Override
@@ -258,10 +254,12 @@ public class SqlDatabaseResourcePanel<T extends IDatabase> implements AzureFormJ
     }
 
     protected void createUIComponents() {
-        this.serverComboBox = new ServerComboBox<>();
+        this.serverComboBox = this.initServerComboBox();
         this.databaseComboBox = new DatabaseComboBox<>();
         this.usernameComboBox = new UsernameComboBox();
     }
+
+    protected abstract ServerComboBox<IDatabaseServer<T>> initServerComboBox();
 
     protected Database createDatabase() {
         final IDatabaseServer<T> server = this.databaseComboBox.getServer();
