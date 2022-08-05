@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
 import com.microsoft.azure.toolkit.intellij.vm.ssh.AddSshConfigAction;
+import com.microsoft.azure.toolkit.intellij.vm.ssh.ConnectBySshAction;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 
@@ -20,7 +21,10 @@ public class IntelliJVMActionsContributorForUltimate implements IActionsContribu
     public void registerHandlers(AzureActionManager am) {
         final BiConsumer<VirtualMachine, AnActionEvent> addSshConfigHandler = (c, e) -> AddSshConfigAction
             .addSshConfig(c, Objects.requireNonNull(e.getProject()));
+        final BiConsumer<VirtualMachine, AnActionEvent> connectBySshHandler = (c, e) -> ConnectBySshAction
+                .connectBySsh(c, Objects.requireNonNull(e.getProject()));
         am.registerHandler(VirtualMachineActionsContributor.ADD_SSH_CONFIG, (c, e) -> c instanceof VirtualMachine, addSshConfigHandler);
+        am.registerHandler(VirtualMachineActionsContributor.CONNECT_SSH,  (c, e) -> c instanceof VirtualMachine, connectBySshHandler);
     }
 
     @Override
