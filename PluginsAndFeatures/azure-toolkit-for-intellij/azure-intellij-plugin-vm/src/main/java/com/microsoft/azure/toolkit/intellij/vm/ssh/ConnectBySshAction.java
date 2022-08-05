@@ -5,19 +5,29 @@
 
 package com.microsoft.azure.toolkit.intellij.vm.ssh;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.NlsSafe;
 import com.intellij.remote.AuthType;
+import com.intellij.remote.RemoteCredentials;
+import com.intellij.remote.RemoteCredentialsHolder;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ssh.config.unified.SshConfigManager;
 import com.intellij.ssh.ui.unified.SshConfigConfigurable;
 import com.intellij.ssh.ui.unified.SshUiData;
+import com.jetbrains.plugins.remotesdk.console.OpenPredefinedTerminalSshSessionActionProvider;
+import com.jetbrains.plugins.remotesdk.console.RunSshConsoleAction;
+import com.jetbrains.plugins.remotesdk.console.SshConsoleOptionsProvider;
+import com.jetbrains.plugins.remotesdk.console.SshTerminalCachingRunner;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalView;
 
@@ -40,31 +50,26 @@ public class ConnectBySshAction {
 
     @AzureOperation(name = "vm.connect_virtual_machine_ssh_ultimate", params = "vm.name()", type = AzureOperation.Type.TASK)
     public static void connectBySshUltimate(VirtualMachine vm, @Nonnull Project project) {
-        String configKey = String.format("Azure: %s", vm.getName());
-        SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
-        SshConfigManager manager = SshConfigManager.getInstance(project);
-        SshConfig existingConfigs = manager.findConfigByName(configKey);
-        if (Objects.isNull(existingConfigs)) {
-            // add default config
-            String name = String.format("Azure: %s", vm.name());
-            SshUiData uiData = new SshUiData(toSshConfig(vm, name), true);
-            SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
-            SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
-            try {
-                MethodUtils.invokeMethod(configurable, true, "resetFromData", merged);
-                configurable.apply();
-            } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException |
-                           ConfigurationException e) {
-                AzureMessager.getMessager().error(e);
-            }
-            existingConfigs = toSshConfig(vm, name);
-        }
-        if (Objects.isNull(existingConfigs)) {
-            // create config failed, use default key-pair
-            connectBySshCommunity(vm, project);
-        } else {
-            // todo intellij action OpenRemoteConnectionAction
-        }
+//        String configKey = String.format("Azure: %s", vm.getName());
+//        SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
+//        SshConfigManager manager = SshConfigManager.getInstance(project);
+//        SshConfig existingConfigs = manager.findConfigByName(configKey);
+//        if (Objects.isNull(existingConfigs)) {
+//            // add default config
+//            String name = String.format("Azure: %s", vm.name());
+//            SshUiData uiData = new SshUiData(toSshConfig(vm, name), true);
+//            SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
+//            SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
+//            try {
+//                MethodUtils.invokeMethod(configurable, true, "resetFromData", merged);
+//                configurable.apply();
+//            } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+//                           ConfigurationException e) {
+//                AzureMessager.getMessager().error(e);
+//            }
+//            existingConfigs = toSshConfig(vm, name);
+//        }
+        OpenPredefinedTerminalSshSessionAction(vm, project);
     }
 
     @AzureOperation(name = "vm.connect_virtual_machine_ssh_community", params = "vm.name()", type = AzureOperation.Type.TASK)
@@ -102,6 +107,19 @@ public class ConnectBySshAction {
         config.setAuthType(AuthType.KEY_PAIR);
         config.setHost(vm.getHostIp());
         config.setKeyPath(getDefaultSshPrivateKeyPath());
+        config.setPort(22);
         return config;
+    }
+
+    private static void OpenPredefinedTerminalSshSessionAction(VirtualMachine vm, @Nonnull Project project) {
+        SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
+        String name = String.format("Azure: %s", vm.name());
+        RemoteCredentials sshCredential = new SshUiData(toSshConfig(vm, name), true);
+        SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
+        ApplicationManager.getApplication().invokeLater((Runnable)(new Runnable() {
+            public final void run() {
+                RunSshConsoleAction.connectToSshUnderProgress(project, runner, sshCredential);
+            }
+        }));
     }
 }
