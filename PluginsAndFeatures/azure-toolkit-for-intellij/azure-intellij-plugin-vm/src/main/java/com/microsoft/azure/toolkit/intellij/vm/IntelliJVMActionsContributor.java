@@ -9,7 +9,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.PluginUtils;
 import com.microsoft.azure.toolkit.intellij.vm.creation.CreateVirtualMachineAction;
+import com.microsoft.azure.toolkit.intellij.vm.ssh.ConnectBySshAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -19,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachineDraf
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -51,6 +54,13 @@ public class IntelliJVMActionsContributor implements IActionsContributor {
             CreateVirtualMachineAction.create(e.getProject(), draft);
         };
         am.registerHandler(VirtualMachineActionsContributor.GROUP_CREATE_VM, (r, e) -> true, groupCreateVmHandler);
+
+        if (PluginUtils.isIdeaCommunity()) {
+            final BiConsumer<VirtualMachine, AnActionEvent> connectBySshHandler = (c, e) -> ConnectBySshAction
+                    .connectBySshCommunity(c, Objects.requireNonNull(e.getProject()));
+            am.registerHandler(VirtualMachineActionsContributor.CONNECT_SSH,  (c, e) -> c instanceof VirtualMachine, connectBySshHandler);
+        }
+
     }
 
     @Override
