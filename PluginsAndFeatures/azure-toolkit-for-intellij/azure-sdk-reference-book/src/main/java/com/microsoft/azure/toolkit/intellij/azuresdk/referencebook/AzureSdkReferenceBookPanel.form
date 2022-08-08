@@ -22,7 +22,7 @@
         </properties>
         <border type="none"/>
         <children>
-          <nested-form id="efa15" form-file="com/microsoft/azure/toolkit/intellij/azuresdk/referencebook/AzureSdkFeatureDetailPanel.form" binding="featureDetailPanel">
+          <nested-form id="efa15" form-file="com/microsoft/azure/toolkit/intellij/azuresdk/referencebook/AzureSdkFeatureDetailPanel.form" binding="featureDetailPanel" custom-create="true">
             <constraints/>
           </nested-form>
         </children>

@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTabbedPane;
@@ -31,6 +32,12 @@ public class AzureSdkFeatureDetailPanel {
     private JBTabbedPane tabPane;
     private HyperlinkLabel featureDocLink;
     private JBLabel descLabel;
+
+    private final Project project;
+
+    public AzureSdkFeatureDetailPanel(Project project) {
+        this.project = project;
+    }
 
     public void setData(final AzureSdkFeatureEntity feature) {
         this.titleLabel.setText(feature.getName());
@@ -67,7 +74,7 @@ public class AzureSdkFeatureDetailPanel {
 
     private int addGroup(final String title, final String tooltip, final List<? extends AzureSdkArtifactEntity> clientArtifacts) {
         final int index = this.tabPane.getTabCount();
-        final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel();
+        final AzureSdkArtifactGroupPanel clientPanel = new AzureSdkArtifactGroupPanel(this.project);
         this.tabPane.insertTab(title, null, clientPanel.getContentPanel(), tooltip, index);
         clientPanel.setData(clientArtifacts);
         return index;

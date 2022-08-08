@@ -5,12 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
@@ -23,8 +23,12 @@ public class AzureSdkReferenceBookPanel {
     private AzureSdkFeatureDetailPanel featureDetailPanel;
     private JPanel leftPanel;
 
-    public AzureSdkReferenceBookPanel() {
-        this.contentPanel.setPreferredSize(new Dimension(840, 600));
+    private final Project project;
+
+    public AzureSdkReferenceBookPanel(@Nullable Project project) {
+        this.project = project;
+        $$$setupUI$$$();
+        this.contentPanel.setPreferredSize(new Dimension(960, 600));
         this.initListeners();
     }
 
@@ -34,5 +38,14 @@ public class AzureSdkReferenceBookPanel {
 
     private void initListeners() {
         this.servicesTreePanel.setOnSdkFeatureNodeSelected(feature -> this.featureDetailPanel.setData(feature));
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.featureDetailPanel = new AzureSdkFeatureDetailPanel(project);
+    }
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    private void $$$setupUI$$$() {
     }
 }
