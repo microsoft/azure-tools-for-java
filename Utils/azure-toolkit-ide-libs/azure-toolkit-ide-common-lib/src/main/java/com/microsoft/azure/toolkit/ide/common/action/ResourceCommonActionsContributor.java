@@ -161,7 +161,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .title((s) -> OperationBundle.description("common.highlight_resource_in_explorer"));
         am.registerAction(HIGHLIGHT_RESOURCE_IN_EXPLORER, new Action<>(HIGHLIGHT_RESOURCE_IN_EXPLORER, highlightResourceView).setAuthRequired(false));
 
-        final ActionView.Builder openReferenceBookView = new ActionView.Builder("Open Azure Reference Book")
+        final ActionView.Builder openReferenceBookView = new ActionView.Builder("Open in Azure SDK Reference Book")
                 .title((s) -> OperationBundle.description("common.open_azure_reference_book"));
         am.registerAction(OPEN_AZURE_REFERENCE_BOOK, new Action<>(OPEN_AZURE_REFERENCE_BOOK, openReferenceBookView));
 
