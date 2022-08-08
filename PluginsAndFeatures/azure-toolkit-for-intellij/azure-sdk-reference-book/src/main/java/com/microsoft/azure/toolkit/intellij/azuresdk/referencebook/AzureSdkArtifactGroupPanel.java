@@ -277,7 +277,6 @@ public class AzureSdkArtifactGroupPanel {
         @Override
         public boolean show(IAzureMessage message) {
             paneMessage.setText(message.getMessage().toString());
-            AzureMessager.getDefaultMessager().show(message);
             return true;
         }
 
