@@ -35,6 +35,7 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
             put("Microsoft.AppPlatform", "Spring Cloud");
             put("Microsoft.Sql", "SQL");
             put("Microsoft.Storage", "Storage - Blobs");
+            put("Microsoft.Insights", "Monitor Ingestion");
         }
     };
 

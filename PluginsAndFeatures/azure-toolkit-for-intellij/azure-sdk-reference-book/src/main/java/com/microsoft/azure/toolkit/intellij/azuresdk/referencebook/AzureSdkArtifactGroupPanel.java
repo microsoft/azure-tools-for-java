@@ -198,6 +198,7 @@ public class AzureSdkArtifactGroupPanel {
 
     private void updateDependencyStatus(final ProjectModule module, final String currentVersion) {
         if (StringUtils.isEmpty(currentVersion)) {
+            AzureMessager.getMessager().info(AzureString.format("Library %s was not found in module %s", pkg.getArtifactId(), module.getName()));
             btnAddDependency.setEnabled(true);
             btnAddDependency.setText(ADD_DEPENDENCY);
         } else {
