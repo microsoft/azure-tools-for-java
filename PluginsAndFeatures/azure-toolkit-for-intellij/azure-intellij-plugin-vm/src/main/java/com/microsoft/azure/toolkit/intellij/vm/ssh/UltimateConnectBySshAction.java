@@ -5,11 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.vm.ssh;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.remote.AuthType;
@@ -20,11 +16,11 @@ import com.intellij.ssh.config.unified.SshConfigManager;
 import com.intellij.ssh.ui.unified.SshConfigConfigurable;
 import com.intellij.ssh.ui.unified.SshUiData;
 import com.intellij.ui.AppUIUtil;
-import com.jetbrains.plugins.remotesdk.RemoteSdkBundle;
 import com.jetbrains.plugins.remotesdk.console.SshConsoleOptionsProvider;
 import com.jetbrains.plugins.remotesdk.console.SshTerminalCachingRunner;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -43,6 +39,7 @@ import java.util.UUID;
  * connect to selected machine by SSH in Intellij Ultimate.
  */
 public class UltimateConnectBySshAction {
+    private static final String SSH_CONNECTION_TITLE = "Connect using SSH";
 
     @AzureOperation(name = "vm.connect_virtual_machine_ssh_ultimate", params = "vm.name()", type = AzureOperation.Type.TASK)
     public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
@@ -71,41 +68,33 @@ public class UltimateConnectBySshAction {
         SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
         RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
         SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
-        ApplicationManager.getApplication().invokeLater((Runnable)(new Runnable() {
-            public final void run() {
-                connectToSshUnderProgress(project, runner, sshCredential);
-            }
-        }));
+        AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
+                connectToSshUnderProgress(project, runner, sshCredential)
+        );
     }
 
     private static void connectToSshUnderProgress(final @NotNull Project project, final @NotNull SshTerminalCachingRunner runner, final @NotNull RemoteCredentials data) {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, RemoteSdkBundle.message("progress.title.connecting.to", new Object[]{runner.runningTargetName()}), true) {
-            public void run(@NotNull ProgressIndicator indicator) {
-                try {
-                    runner.connect();
-                    AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
-                        TerminalView.getInstance(project).createNewSession(runner);
-                    });
-                } catch (RemoteSdkException e) {
-                    if (!indicator.isCanceled()) {
-                        AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
-                            Messages.showErrorDialog(project, e.getMessage(), this.getTitle());
-                        });
-                        // invoke ssh config window
-                        AzureTaskManager.getInstance().runLater(() -> {
-                            SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
-                            ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
-                                try {
-                                    MethodUtils.invokeMethod(configurable, true, "select", data);
-                                } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
-                                    AzureMessager.getMessager().error(e2);
-                                }
-                            });
-                        });
+        try {
+            runner.connect();
+            AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
+                TerminalView.getInstance(project).createNewSession(runner);
+            });
+        } catch (RemoteSdkException e) {
+            AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
+                Messages.showErrorDialog(project, e.getMessage(), SSH_CONNECTION_TITLE);
+            });
+            // invoke ssh config window
+            AzureTaskManager.getInstance().runLater(() -> {
+                SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
+                ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
+                    try {
+                        MethodUtils.invokeMethod(configurable, true, "select", data);
+                    } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
+                        AzureMessager.getMessager().error(e2);
                     }
-                }
-            }
-        });
+                });
+            });
+        }
     }
 
     @Nonnull
