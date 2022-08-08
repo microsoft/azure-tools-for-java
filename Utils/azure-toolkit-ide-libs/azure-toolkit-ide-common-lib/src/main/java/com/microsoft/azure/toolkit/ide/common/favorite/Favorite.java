@@ -32,7 +32,6 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
     protected Favorite(@Nonnull AbstractAzResource<?, ?, ?> remote, @Nonnull Favorites module) {
         // favorite's name is exactly the id of the resource.
         super(remote.getId(), remote.getResourceGroupName(), module);
-        this.setRemote(remote);
     }
 
     @Override
