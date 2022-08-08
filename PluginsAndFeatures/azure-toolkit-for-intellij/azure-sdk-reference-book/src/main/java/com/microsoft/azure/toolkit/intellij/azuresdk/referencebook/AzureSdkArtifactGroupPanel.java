@@ -117,6 +117,7 @@ public class AzureSdkArtifactGroupPanel {
         this.pkg = pkg;
         this.version = version;
         this.viewer.setText(pkg.getDependencySnippet(type, version));
+        refreshDependencyButton();
     }
 
     private void onDependencyTypeSelected(DependencyType type) {
