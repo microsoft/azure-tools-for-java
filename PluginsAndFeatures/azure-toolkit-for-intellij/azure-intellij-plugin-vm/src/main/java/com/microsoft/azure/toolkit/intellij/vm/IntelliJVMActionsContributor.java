@@ -6,10 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.vm;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.vm.VirtualMachineActionsContributor;
-import com.microsoft.azure.toolkit.intellij.common.PluginUtils;
 import com.microsoft.azure.toolkit.intellij.vm.creation.CreateVirtualMachineAction;
 import com.microsoft.azure.toolkit.intellij.vm.ssh.CommunityConnectBySshAction;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -55,7 +55,7 @@ public class IntelliJVMActionsContributor implements IActionsContributor {
         };
         am.registerHandler(VirtualMachineActionsContributor.GROUP_CREATE_VM, (r, e) -> true, groupCreateVmHandler);
 
-        if (PluginUtils.isIdeaCommunity()) {
+        if (PlatformUtils.isIdeaCommunity()) {
             final BiConsumer<VirtualMachine, AnActionEvent> connectBySshHandler = (c, e) -> CommunityConnectBySshAction
                     .connectBySsh(c, Objects.requireNonNull(e.getProject()));
             am.registerHandler(VirtualMachineActionsContributor.CONNECT_SSH,  (c, e) -> c instanceof VirtualMachine, connectBySshHandler);
