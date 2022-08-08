@@ -48,6 +48,7 @@ public final class AzureIcons {
         public static final AzureIcon BROWSER = AzureIcon.builder().iconPath("/icons/action/browser").build();
         public static final AzureIcon PROPERTIES = AzureIcon.builder().iconPath("/icons/action/properties").build();
         public static final AzureIcon LOG = AzureIcon.builder().iconPath("/icons/action/log").build();
+        public static final AzureIcon SFTP = AzureIcon.builder().iconPath("/icons/action/sftp").build();
     }
 
     public static final class MySQL {
