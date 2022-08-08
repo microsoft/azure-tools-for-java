@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.vm.ssh;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
@@ -24,23 +23,18 @@ public class CommunityConnectBySshAction {
     @AzureOperation(name = "vm.connect_virtual_machine_ssh_community", params = "vm.name()", type = AzureOperation.Type.TASK)
     public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
-        final String userName = vm.getAdminUserName();
-        final String hostIp = vm.getHostIp();
-        final String privateKeyPath = getDefaultSshPrivateKeyPath();
-        AzureTaskManager.getInstance().runAndWait(() -> {
+        final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
+        AzureTaskManager.getInstance().runInBackground(terminalTitle, () -> {
             // create a new terminal tab
             TerminalView terminalView = TerminalView.getInstance(project);
-            String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
             ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);
-            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, terminalTitle, false, () -> {
-                try {
-                    // create ssh connection in terminal
-                    shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, userName, hostIp, privateKeyPath));
-                } catch (IOException e) {
-                    AzureMessager.getMessager().error(e);
-                }
-            }));
-        }, AzureTask.Modality.ANY);
+            try {
+                // create ssh connection in terminal
+                shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp(), getDefaultSshPrivateKeyPath()));
+            } catch (IOException e) {
+                AzureMessager.getMessager().error(e);
+            }
+        });
     }
 
     private static String getDefaultSshPrivateKeyPath() {

@@ -56,7 +56,7 @@ public class UltimateConnectBySshAction {
             SshUiData uiData = new SshUiData(defaultConfig, true);
             SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
             SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
-            SshConfigManager.getInstance(project).setCurrentData(merged.getCurrentData(), new SshConfigManager.Listener() {
+            manager.applyData(merged.getCurrentData(), new SshConfigManager.Listener() {
                 @Override
                 public void sshConfigsChanged() {
                     SshConfigManager.Listener.super.sshConfigsChanged();
@@ -64,10 +64,10 @@ public class UltimateConnectBySshAction {
             });
             existingConfig = defaultConfig;
         }
-        OpenPredefinedTerminalSshSessionAction(existingConfig, project);
+        openPredefinedTerminalSshSessionAction(existingConfig, project);
     }
 
-    private static void OpenPredefinedTerminalSshSessionAction(SshConfig existingConfig, Project project) {
+    private static void openPredefinedTerminalSshSessionAction(SshConfig existingConfig, Project project) {
         SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
         RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
         SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
