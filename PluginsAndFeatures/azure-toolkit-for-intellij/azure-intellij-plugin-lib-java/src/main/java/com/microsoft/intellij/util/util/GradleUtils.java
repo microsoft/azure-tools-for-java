@@ -8,12 +8,17 @@ package com.microsoft.intellij.util;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.plugins.gradle.GradleManager;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class GradleUtils {
 
@@ -22,6 +27,9 @@ public class GradleUtils {
         Map<ExternalProjectPojo, Collection<ExternalProjectPojo>> projects =
                 manager.getLocalSettingsProvider().fun(project).getAvailableProjects();
         return new ArrayList(projects.keySet());
+    }
+    public static boolean isGradleProject(Project project) {
+        return CollectionUtils.isNotEmpty(listGradleProjects(project));
     }
 
     public static String getTargetFile(Project project, ExternalProjectPojo gradleProjectPojo) {
