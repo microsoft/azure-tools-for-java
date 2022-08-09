@@ -193,6 +193,8 @@ public class AzureSdkArtifactGroupPanel {
                 final ExternalDependency gradleDependency = ((GradleProjectModule) module).getGradleDependency(pkg.getGroupId(), pkg.getArtifactId());
                 final String currentVersion = Optional.ofNullable(gradleDependency).map(ExternalDependency::getVersion).orElse(null);
                 updateDependencyStatus(module, currentVersion);
+            } else {
+                btnAddDependency.setEnabled(false);
             }
         });
     }

@@ -11,10 +11,12 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.GradleProjectM
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.MavenProjectModule;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.ProjectModule;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,7 +38,9 @@ public class ModuleComboBox extends AzureComboBox<ProjectModule> {
     protected List<ProjectModule> loadItems() {
         final List<GradleProjectModule> gradleProjectModules = GradleProjectModule.listGradleModules(project);
         final List<MavenProjectModule> mavenProjectModules = MavenProjectModule.listMavenModules(project);
-        return Stream.of(mavenProjectModules, gradleProjectModules).flatMap(List::stream).collect(Collectors.toList());
+        return Stream.of(mavenProjectModules, gradleProjectModules).flatMap(List::stream)
+                .sorted((Comparator<ProjectModule>) (first, second) -> StringUtils.compare(first.getName(), second.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override

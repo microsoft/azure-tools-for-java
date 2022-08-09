@@ -158,7 +158,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
     }
 
     private void listGradleProjects(final Project project) {
-        final List<ExternalProjectPojo> externalProjects = GradleUtils.listGradleProjects(project);
+        final List<ExternalProjectPojo> externalProjects = GradleUtils.listGradleRootProjectPojo(project);
         Collections.sort(externalProjects, (project1, project2) -> StringUtils.compare(project1.getName(), project2.getName()));
         final CollectionComboBoxModel<ExternalProjectPojo> gradleModel = new CollectionComboBoxModel<>(externalProjects);
         parentComboBox.setModel(gradleModel);

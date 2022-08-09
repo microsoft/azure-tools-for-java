@@ -165,7 +165,7 @@ public class AzureArtifactManager {
 
     private List<AzureArtifact> prepareAzureArtifacts(Predicate<String> packagingFilter) {
         final List<AzureArtifact> azureArtifacts = new ArrayList<>();
-        final List<ExternalProjectPojo> gradleProjects = GradleUtils.listGradleProjects(project);
+        final List<ExternalProjectPojo> gradleProjects = GradleUtils.listGradleRootProjectPojo(project);
         if (Objects.nonNull(gradleProjects)) {
             azureArtifacts.addAll(gradleProjects.stream()
                                                 .map(AzureArtifact::createFromGradleProject)

@@ -40,7 +40,7 @@ public class MavenUtils {
     }
 
     public static List<MavenProject> getMavenProjects(Project project) {
-        return MavenProjectsManager.getInstance(project).getRootProjects();
+        return MavenProjectsManager.getInstance(project).getProjects();
     }
 
     public static String getTargetFile(@NotNull MavenProject mavenProject) {

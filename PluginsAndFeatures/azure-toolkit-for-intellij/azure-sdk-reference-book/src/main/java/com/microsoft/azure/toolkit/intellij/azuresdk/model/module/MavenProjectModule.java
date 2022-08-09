@@ -39,7 +39,7 @@ public class MavenProjectModule implements ProjectModule {
 
     @Override
     public String getName() {
-        return mavenProject.getName();
+        return mavenProject.getDisplayName();
     }
 
     @Override

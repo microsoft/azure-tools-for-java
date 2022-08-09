@@ -28,9 +28,9 @@ public class GradleProjectModule implements ProjectModule {
     private final Project project;
     private final ExternalProject externalProject;
 
-    public GradleProjectModule(@Nonnull final Project project, @Nonnull final ExternalProjectPojo projectPojo) {
+    public GradleProjectModule(@Nonnull final Project project, @Nonnull final ExternalProject externalProject) {
         this.project = project;
-        this.externalProject = ExternalProjectDataCache.getInstance(project).getRootExternalProject(projectPojo.getPath());
+        this.externalProject = externalProject;
     }
 
     public static List<GradleProjectModule> listGradleModules(@Nonnull Project project) {
