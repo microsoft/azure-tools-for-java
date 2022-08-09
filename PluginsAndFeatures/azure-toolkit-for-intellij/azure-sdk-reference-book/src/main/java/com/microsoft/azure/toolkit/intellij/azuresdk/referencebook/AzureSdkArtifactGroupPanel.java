@@ -40,6 +40,7 @@ import icons.GradleIcons;
 import icons.OpenapiIcons;
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.plugins.gradle.model.ExternalDependency;
@@ -207,8 +208,10 @@ public class AzureSdkArtifactGroupPanel {
         } else {
             AzureMessager.getMessager().info(AzureString.format("Library %s was found in module %s with version %s",
                     pkg.getArtifactId(), module.getName(), currentVersion));
-            btnAddDependency.setText(StringUtils.equals(currentVersion, version) ? DEPENDENCY_ADDED : UPDATE_DEPENDENCY);
-            btnAddDependency.setEnabled(!StringUtils.equals(currentVersion, version));
+            final ComparableVersion current = new ComparableVersion(currentVersion);
+            final ComparableVersion targetVersion = new ComparableVersion(version);
+            btnAddDependency.setText(current.compareTo(targetVersion) >= 0 ? DEPENDENCY_ADDED : UPDATE_DEPENDENCY);
+            btnAddDependency.setEnabled(current.compareTo(targetVersion) < 0);
         }
     }
 
