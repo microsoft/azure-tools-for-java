@@ -43,16 +43,16 @@ public class UltimateConnectBySshAction {
 
     @AzureOperation(name = "vm.connect_virtual_machine_ssh_ultimate", params = "vm.name()", type = AzureOperation.Type.TASK)
     public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
-        String configKey = String.format("Azure: %s", vm.getName());
-        SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
-        SshConfigManager manager = SshConfigManager.getInstance(project);
+        final String configKey = String.format("Azure: %s", vm.getName());
+        final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
+        final SshConfigManager manager = SshConfigManager.getInstance(project);
         SshConfig existingConfig = manager.findConfigByName(configKey);
         if (Objects.isNull(existingConfig)) {
             // add default config
-            SshConfig defaultConfig = toSshConfig(vm, String.format("Azure: %s", vm.name()));
-            SshUiData uiData = new SshUiData(defaultConfig, true);
-            SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
-            SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
+            final SshConfig defaultConfig = toSshConfig(vm, String.format("Azure: %s", vm.getName()));
+            final SshUiData uiData = new SshUiData(defaultConfig, true);
+            final SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
+            final SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
             manager.applyData(merged.getCurrentData(), new SshConfigManager.Listener() {
                 @Override
                 public void sshConfigsChanged() {
@@ -65,9 +65,9 @@ public class UltimateConnectBySshAction {
     }
 
     private static void openPredefinedTerminalSshSessionAction(SshConfig existingConfig, Project project) {
-        SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
-        RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
-        SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
+        final SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
+        final RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
+        final SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
         AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
                 connectToSshUnderProgress(project, runner, sshCredential)
         );
@@ -76,16 +76,14 @@ public class UltimateConnectBySshAction {
     private static void connectToSshUnderProgress(final @NotNull Project project, final @NotNull SshTerminalCachingRunner runner, final @NotNull RemoteCredentials data) {
         try {
             runner.connect();
-            AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
-                TerminalView.getInstance(project).createNewSession(runner);
-            });
-        } catch (RemoteSdkException e) {
-            AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
-                Messages.showErrorDialog(project, e.getMessage(), SSH_CONNECTION_TITLE);
-            });
+            AppUIUtil.invokeLaterIfProjectAlive(project, () ->
+                    TerminalView.getInstance(project).createNewSession(runner));
+        } catch (final RemoteSdkException e) {
+            AppUIUtil.invokeLaterIfProjectAlive(project, () ->
+                    Messages.showErrorDialog(project, e.getMessage(), SSH_CONNECTION_TITLE));
             // invoke ssh config window
             AzureTaskManager.getInstance().runLater(() -> {
-                SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
+                final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
                 ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
                     try {
                         MethodUtils.invokeMethod(configurable, true, "select", data);

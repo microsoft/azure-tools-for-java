@@ -26,12 +26,12 @@ public class CommunityConnectBySshAction {
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
         AzureTaskManager.getInstance().runInBackground(terminalTitle, () -> {
             // create a new terminal tab
-            TerminalView terminalView = TerminalView.getInstance(project);
-            ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);
+            final TerminalView terminalView = TerminalView.getInstance(project);
+            final ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);
             try {
                 // create ssh connection in terminal
                 shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp(), getDefaultSshPrivateKeyPath()));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 AzureMessager.getMessager().error(e);
             }
         });
