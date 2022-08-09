@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.gradle.model.ExternalDependency;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.model.ExternalSourceSet;
+import org.jetbrains.plugins.gradle.model.UnresolvedExternalDependency;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
 
 import javax.annotation.Nonnull;
@@ -40,8 +41,10 @@ public class GradleProjectModule implements ProjectModule {
     public ExternalDependency getGradleDependency(final String groupId, final String artifactId) {
         final ExternalSourceSet main = externalProject.getSourceSets().get("main");
         final Collection<ExternalDependency> externalDependencies = Optional.ofNullable(main).map(ExternalSourceSet::getDependencies).orElse(Collections.emptyList());
-        return externalDependencies.stream().filter(dependency -> StringUtils.equalsIgnoreCase(groupId, dependency.getGroup()) &&
-                StringUtils.equalsIgnoreCase(artifactId, dependency.getName())).findFirst().orElse(null);
+        return externalDependencies.stream()
+                .filter(dependency -> StringUtils.equalsIgnoreCase(groupId, dependency.getGroup()) &&
+                        StringUtils.equalsIgnoreCase(artifactId, dependency.getName()))
+                .filter(dependency -> !(dependency instanceof UnresolvedExternalDependency)).findFirst().orElse(null);
     }
 
     @Override
