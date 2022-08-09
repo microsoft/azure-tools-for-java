@@ -12,7 +12,7 @@ import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ssh.config.unified.SshConfigManager;
 import com.intellij.ui.content.Content;
 import com.jetbrains.plugins.webDeployment.config.AccessType;
-import com.jetbrains.plugins.webDeployment.config.GroupedServersConfigManagerImpl;
+import com.jetbrains.plugins.webDeployment.config.GroupedServersConfigManager;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowFactory;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowPanel;
@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Objects;
@@ -29,9 +30,9 @@ import java.util.Objects;
 
 public class sftpRemoteHostAction {
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
-        String sshConfigKey = String.format("Azure: %s", vm.name());
-        SshConfig curSshConfig = SshConfigManager.getInstance(project).findConfigByName(sshConfigKey);
-        GroupedServersConfigManagerImpl manager = new GroupedServersConfigManagerImpl(project);
+        final String sshConfigKey = String.format("Azure: %s", vm.getName());
+        final SshConfig curSshConfig = SshConfigManager.getInstance(project).findConfigByName(sshConfigKey);
+        final GroupedServersConfigManager manager = GroupedServersConfigManager.getInstance(project);
 
         // get webserver config of current machine
         WebServerConfig server = getWebServerConfigBySsh(curSshConfig, manager, project);
@@ -42,43 +43,44 @@ public class sftpRemoteHostAction {
         }
 
         // open remote host plugin tool windows
-        WebServerConfig finalServer = server;
+        final WebServerConfig finalServer = server;
         AzureTaskManager.getInstance().runLater(() -> {
-            ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
+            final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             // select current machine's config
-            Content[] contentList = toolWindow.getContentManager().getContents();
-            for (int i=0; i<contentList.length; i++) {
-                if (contentList[i].getComponent() instanceof WebServerToolWindowPanel) {
+            final Content[] contentList = toolWindow.getContentManager().getContents();
+            for (final Content content : contentList) {
+                if (content.getComponent() instanceof WebServerToolWindowPanel) {
                     try {
-                        WebServerToolWindowPanel panel =  ((WebServerToolWindowPanel) contentList[i].getComponent());
-                        panel.selectInServerByName(project, finalServer.getName(), finalServer.getRootPath());
+                        final WebServerToolWindowPanel panel = ((WebServerToolWindowPanel) content.getComponent());
+                        panel.selectInServerByName(project, Objects.requireNonNull(finalServer.getName()), finalServer.getRootPath());
                         MethodUtils.invokeMethod(panel, true, "constructTree");
-                    } catch (NoSuchMethodException | IllegalAccessException |
-                             InvocationTargetException e) {
+                    } catch (final NoSuchMethodException | IllegalAccessException |
+                                   InvocationTargetException e) {
                         AzureMessager.getMessager().error(e);
                     }
                     break;
                 }
             }
             if (!toolWindow.isActive()) {
-                toolWindow.show((Runnable)null);
-                toolWindow.activate((Runnable)null);
+                toolWindow.show(null);
+                toolWindow.activate(null);
             }
         });
     }
 
-    private static WebServerConfig getWebServerConfigBySsh(SshConfig ssh, GroupedServersConfigManagerImpl manager, @Nonnull Project project) {
-        List<WebServerConfig> webServerConfigList = manager.getFlattenedServers();
-        for (int i=0; i<webServerConfigList.size(); i++) {
-            if (webServerConfigList.get(i).findSshConfig(project).equals(ssh)) {
-                return webServerConfigList.get(i);
+    @Nullable
+    private static WebServerConfig getWebServerConfigBySsh(SshConfig ssh, GroupedServersConfigManager manager, @Nonnull Project project) {
+        final List<WebServerConfig> webServerConfigList = manager.getFlattenedServers();
+        for (final WebServerConfig webServerConfig : webServerConfigList) {
+            if (Objects.requireNonNull(webServerConfig.findSshConfig(project)).equals(ssh)) {
+                return webServerConfig;
             }
         }
         return null;
     }
 
     private static WebServerConfig createWebServerConfigBySsh(String serverName, SshConfig ssh) {
-        WebServerConfig serverConfig = new WebServerConfig(WebServerConfig.getNextId());
+        final WebServerConfig serverConfig = new WebServerConfig(WebServerConfig.getNextId());
         serverConfig.initializeNewCreatedServer(false);
         serverConfig.setName(serverName);
         serverConfig.getFileTransferConfig().setAccessType(AccessType.SFTP);

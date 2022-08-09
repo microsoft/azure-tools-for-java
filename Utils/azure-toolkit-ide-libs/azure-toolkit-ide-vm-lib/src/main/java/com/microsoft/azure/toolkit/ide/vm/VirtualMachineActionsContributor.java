@@ -33,12 +33,12 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
     @Override
     public void registerActions(AzureActionManager am) {
         final ActionView.Builder addSshConfigView = new ActionView.Builder("Add SSH Configuration", AzureIcons.Action.ADD.getIconPath())
-            .title(s -> Optional.ofNullable(s).map(r -> description("vm.add_ssh_config.vm", ((VirtualMachine) r).name())).orElse(null))
+            .title(s -> Optional.ofNullable(s).map(r -> description("vm.add_ssh_config.vm", ((VirtualMachine) r).getName())).orElse(null))
             .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(ADD_SSH_CONFIG, new Action<>(ADD_SSH_CONFIG, addSshConfigView));
 
         final ActionView.Builder sftpConnectionView = new ActionView.Builder("SFTP using SSH", AzureIcons.Action.SFTP.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("vm.sftp_ssh.vm", ((VirtualMachine) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("vm.sftp_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(SFTP_CONNECTION, new Action<>(SFTP_CONNECTION, sftpConnectionView));
 
