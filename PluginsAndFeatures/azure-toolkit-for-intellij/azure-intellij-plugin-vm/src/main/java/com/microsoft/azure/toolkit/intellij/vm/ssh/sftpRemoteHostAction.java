@@ -46,24 +46,25 @@ public class sftpRemoteHostAction {
         final WebServerConfig finalServer = server;
         AzureTaskManager.getInstance().runLater(() -> {
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
-            // select current machine's config
-            final Content[] contentList = toolWindow.getContentManager().getContents();
-            for (final Content content : contentList) {
-                if (content.getComponent() instanceof WebServerToolWindowPanel) {
-                    try {
-                        final WebServerToolWindowPanel panel = ((WebServerToolWindowPanel) content.getComponent());
-                        panel.selectInServerByName(project, Objects.requireNonNull(finalServer.getName()), finalServer.getRootPath());
-                        MethodUtils.invokeMethod(panel, true, "constructTree");
-                    } catch (final NoSuchMethodException | IllegalAccessException |
-                                   InvocationTargetException e) {
-                        AzureMessager.getMessager().error(e);
-                    }
-                    break;
-                }
-            }
             if (!toolWindow.isActive()) {
                 toolWindow.show(null);
-                toolWindow.activate(null);
+                toolWindow.activate(() -> {
+                    // select current machine's config
+                    final Content[] contentList = toolWindow.getContentManager().getContents();
+                    for (final Content content : contentList) {
+                        if (content.getComponent() instanceof WebServerToolWindowPanel) {
+                            try {
+                                final WebServerToolWindowPanel panel = ((WebServerToolWindowPanel) content.getComponent());
+                                panel.selectInServerByName(project, Objects.requireNonNull(finalServer.getName()), finalServer.getRootPath());
+                                MethodUtils.invokeMethod(panel, true, "constructTree");
+                            } catch (final NoSuchMethodException | IllegalAccessException |
+                                           InvocationTargetException e) {
+                                AzureMessager.getMessager().error(e);
+                            }
+                            break;
+                        }
+                    }
+                });
             }
         });
     }
