@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.vm.ssh;
 
 import com.intellij.openapi.project.Project;
 
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.remote.AuthType;
 import com.intellij.ssh.config.unified.SshConfig;
@@ -16,6 +17,7 @@ import com.intellij.ui.content.Content;
 import com.jetbrains.plugins.webDeployment.config.AccessType;
 import com.jetbrains.plugins.webDeployment.config.GroupedServersConfigManager;
 import com.jetbrains.plugins.webDeployment.config.WebServerConfig;
+import com.jetbrains.plugins.webDeployment.config.WebServerGroupingWrap;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowFactory;
 import com.jetbrains.plugins.webDeployment.ui.WebServerToolWindowPanel;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -25,6 +27,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -48,7 +51,7 @@ public class sftpRemoteHostAction {
         }
 
         // open remote host plugin tool windows
-        final WebServerConfig finalServer = server;
+        final String serverName = server.getName();
         AzureTaskManager.getInstance().runLater(() -> {
             final ToolWindow toolWindow = WebServerToolWindowFactory.getWebServerToolWindow(project);
             if (!toolWindow.isActive()) {
@@ -60,10 +63,15 @@ public class sftpRemoteHostAction {
                         if (content.getComponent() instanceof WebServerToolWindowPanel) {
                             try {
                                 final WebServerToolWindowPanel panel = ((WebServerToolWindowPanel) content.getComponent());
-                                panel.selectInServerByName(project, Objects.requireNonNull(finalServer.getName()), finalServer.getRootPath());
-                                MethodUtils.invokeMethod(panel, true, "constructTree");
-                            } catch (final NoSuchMethodException | IllegalAccessException |
-                                           InvocationTargetException e) {
+                                final Field webServerCombo = WebServerToolWindowPanel.class.getDeclaredField("myServerCombo");
+                                webServerCombo.setAccessible(true);
+                                final Pair<WebServerGroupingWrap, WebServerConfig> finalServer = GroupedServersConfigManager.getInstance(project).findByName(serverName);
+                                if (!Objects.isNull(finalServer)) {
+                                    MethodUtils.invokeMethod(webServerCombo.get(panel), true, "selectServer", finalServer.getSecond());
+                                    MethodUtils.invokeMethod(webServerCombo.get(panel), true, "fireChanged");
+                                }
+                            } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                                           NoSuchFieldException e) {
                                 AzureMessager.getMessager().error(e);
                             }
                             break;
