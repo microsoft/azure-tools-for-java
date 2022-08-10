@@ -15,12 +15,11 @@ import org.jetbrains.plugins.terminal.TerminalView;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class CommunityConnectBySshAction {
-    private static final String SSH_TERMINAL_TABLE_NAME = "SSH - %s";
-    private static final String CMD_SSH_KEY_PAIR = "ssh %s@%s -i %s";
-    @AzureOperation(name = "vm.connect_virtual_machine_ssh_community", params = "vm.name()", type = AzureOperation.Type.TASK)
+    private static final String SSH_TERMINAL_TABLE_NAME = "%s";
+    private static final String CMD_SSH_KEY_PAIR = "ssh %s@%s";
+    @AzureOperation(name = "vm.connect_using_ssh_community", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
@@ -30,14 +29,11 @@ public class CommunityConnectBySshAction {
             final ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);
             try {
                 // create ssh connection in terminal
-                shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp(), getDefaultSshPrivateKeyPath()));
+                shellTerminalWidget.executeCommand(String.format(CMD_SSH_KEY_PAIR, vm.getAdminUserName(), vm.getHostIp()));
             } catch (final IOException e) {
                 AzureMessager.getMessager().error(e);
             }
         });
     }
 
-    private static String getDefaultSshPrivateKeyPath() {
-        return Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toString();
-    }
 }

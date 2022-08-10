@@ -7,17 +7,16 @@ package com.microsoft.azure.toolkit.intellij.vm.ssh;
 
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.remote.AuthType;
 import com.intellij.remote.RemoteCredentials;
 import com.intellij.remote.RemoteSdkException;
 import com.intellij.ssh.config.unified.SshConfig;
-import com.intellij.ssh.config.unified.SshConfigManager;
 import com.intellij.ssh.ui.unified.SshConfigConfigurable;
 import com.intellij.ssh.ui.unified.SshUiData;
 import com.intellij.ui.AppUIUtil;
 import com.jetbrains.plugins.remotesdk.console.SshConsoleOptionsProvider;
 import com.jetbrains.plugins.remotesdk.console.SshTerminalCachingRunner;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 
@@ -30,41 +29,16 @@ import org.jetbrains.plugins.terminal.TerminalView;
 import javax.annotation.Nonnull;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * connect to selected machine by SSH in Intellij Ultimate.
  */
 public class UltimateConnectBySshAction {
-    private static final String SSH_CONNECTION_TITLE = "Connect using SSH";
+    private static final String SSH_CONNECTION_TITLE = "Connect Using SSH";
 
-    @AzureOperation(name = "vm.connect_virtual_machine_ssh_ultimate", params = "vm.name()", type = AzureOperation.Type.TASK)
+    @AzureOperation(name = "vm.connect_using_ssh_community_ultimate", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
-        final String configKey = String.format("Azure: %s", vm.getName());
-        final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
-        final SshConfigManager manager = SshConfigManager.getInstance(project);
-        SshConfig existingConfig = manager.findConfigByName(configKey);
-        if (Objects.isNull(existingConfig)) {
-            // add default config
-            final SshConfig defaultConfig = toSshConfig(vm, String.format("Azure: %s", vm.getName()));
-            final SshUiData uiData = new SshUiData(defaultConfig, true);
-            final SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
-            final SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
-            manager.applyData(merged.getCurrentData(), new SshConfigManager.Listener() {
-                @Override
-                public void sshConfigsChanged() {
-                    SshConfigManager.Listener.super.sshConfigsChanged();
-                }
-            });
-            existingConfig = defaultConfig;
-        }
-        openPredefinedTerminalSshSessionAction(existingConfig, project);
-    }
-
-    private static void openPredefinedTerminalSshSessionAction(SshConfig existingConfig, Project project) {
+        final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         final SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
         final RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
         final SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
@@ -79,10 +53,8 @@ public class UltimateConnectBySshAction {
             AppUIUtil.invokeLaterIfProjectAlive(project, () ->
                     TerminalView.getInstance(project).createNewSession(runner));
         } catch (final RemoteSdkException e) {
-            AppUIUtil.invokeLaterIfProjectAlive(project, () ->
-                    Messages.showErrorDialog(project, e.getMessage(), SSH_CONNECTION_TITLE));
-            // invoke ssh config window
-            AzureTaskManager.getInstance().runLater(() -> {
+            final Action.Id<Void> id = Action.Id.of("vm.open_ssh_configuration");
+            final Action<?> openSshConfigurationAction = new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> {
                 final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
                 ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
                     try {
@@ -91,25 +63,9 @@ public class UltimateConnectBySshAction {
                         AzureMessager.getMessager().error(e2);
                     }
                 });
-            });
+            }), new ActionView.Builder("Modify SSH Configuration"));
+            AzureMessager.getMessager().warning(e.getMessage(), SSH_CONNECTION_TITLE, openSshConfigurationAction);
         }
-    }
-
-    @Nonnull
-    private static SshConfig toSshConfig(VirtualMachine vm, String name) {
-        final SshConfig config = new SshConfig(true);
-        config.setCustomName(name);
-        config.setId(UUID.nameUUIDFromBytes(name.getBytes()).toString());
-        config.setUsername(vm.getAdminUserName());
-        config.setAuthType(AuthType.KEY_PAIR);
-        config.setHost(vm.getHostIp());
-        config.setKeyPath(getDefaultSshPrivateKeyPath());
-        config.setPort(22);
-        return config;
-    }
-
-    private static String getDefaultSshPrivateKeyPath() {
-        return Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toString();
     }
 
 }
