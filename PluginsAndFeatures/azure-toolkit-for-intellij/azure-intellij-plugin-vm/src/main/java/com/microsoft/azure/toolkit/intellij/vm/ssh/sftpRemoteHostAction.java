@@ -8,8 +8,10 @@ package com.microsoft.azure.toolkit.intellij.vm.ssh;
 import com.intellij.openapi.project.Project;
 
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.remote.AuthType;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ssh.config.unified.SshConfigManager;
+import com.intellij.ssh.ui.unified.SshUiData;
 import com.intellij.ui.content.Content;
 import com.jetbrains.plugins.webDeployment.config.AccessType;
 import com.jetbrains.plugins.webDeployment.config.GroupedServersConfigManager;
@@ -24,14 +26,17 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 
 public class sftpRemoteHostAction {
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
-        final String sshConfigKey = String.format("Azure: %s", vm.getName());
-        final SshConfig curSshConfig = SshConfigManager.getInstance(project).findConfigByName(sshConfigKey);
+        final String sshConfigName = String.format("Azure: %s", vm.getName());
+        final SshConfig curSshConfig = getOrCreateSshConfig(project, vm);
         final GroupedServersConfigManager manager = GroupedServersConfigManager.getInstance(project);
 
         // get webserver config of current machine
@@ -73,7 +78,7 @@ public class sftpRemoteHostAction {
     private static WebServerConfig getWebServerConfigBySsh(SshConfig ssh, GroupedServersConfigManager manager, @Nonnull Project project) {
         final List<WebServerConfig> webServerConfigList = manager.getFlattenedServers();
         for (final WebServerConfig webServerConfig : webServerConfigList) {
-            if (Objects.requireNonNull(webServerConfig.findSshConfig(project)).equals(ssh)) {
+            if (ssh.equals(webServerConfig.findSshConfig(project))) {
                 return webServerConfig;
             }
         }
@@ -88,6 +93,39 @@ public class sftpRemoteHostAction {
         serverConfig.getFileTransferConfig().setPort(AccessType.SFTP.getDefaultPort());
         serverConfig.getFileTransferConfig().setSshConfig(ssh);
         return serverConfig;
+    }
+
+    @Nonnull
+    private static SshConfig getOrCreateSshConfig(@Nonnull Project project, VirtualMachine vm) {
+        final String sshConfigName = String.format("Azure: %s", vm.getName());
+        final SshConfigManager manager = SshConfigManager.getInstance(project);
+        SshConfig result = manager.findConfigByName(sshConfigName);
+        if (Objects.isNull(result)) {
+            result = toSshConfig(vm, sshConfigName);
+            final SshUiData uiData = new SshUiData(result, true);
+            final SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
+            final SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
+            manager.applyData(merged.getCurrentData(), new SshConfigManager.Listener() {
+                @Override
+                public void sshConfigsChanged() {
+                    SshConfigManager.Listener.super.sshConfigsChanged();
+                }
+            });
+        }
+        return result;
+    }
+
+    @Nonnull
+    private static SshConfig toSshConfig(VirtualMachine vm, String name) {
+        final SshConfig config = new SshConfig(true);
+        config.setCustomName(name);
+        config.setId(UUID.nameUUIDFromBytes(name.getBytes()).toString());
+        config.setUsername(vm.getAdminUserName());
+        config.setAuthType(AuthType.KEY_PAIR);
+        config.setHost(vm.getHostIp());
+        config.setKeyPath(Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toString());
+        config.setPort(22);
+        return config;
     }
 
 }
