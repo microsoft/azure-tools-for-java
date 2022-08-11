@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.terminal.TerminalTabState;
 import org.jetbrains.plugins.terminal.TerminalView;
 
 import javax.annotation.Nonnull;
@@ -44,26 +45,29 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     @AzureOperation(name = "vm.connect_using_ssh_community_ultimate", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
-        final SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
-        final RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
-        final SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
         AzureTaskManager.getInstance().runInBackground(SSH_CONNECTION_TITLE,() ->
-                connectToSshUnderProgress(project, runner, sshCredential)
+                connectToSshUnderProgress(project, existingConfig)
         );
     }
 
-    private void connectToSshUnderProgress(final @NotNull Project project, final @NotNull SshTerminalCachingRunner runner, final @NotNull RemoteCredentials data) {
+    private void connectToSshUnderProgress(final @NotNull Project project, SshConfig ssh) {
+        final SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
+        final RemoteCredentials sshCredential = new SshUiData(ssh, true);
+        final SshTerminalCachingRunner runner = new SshTerminalCachingRunner(project, sshCredential, provider.getCharset());
         try {
             runner.connect();
-            AppUIUtil.invokeLaterIfProjectAlive(project, () ->
-                    TerminalView.getInstance(project).createNewSession(runner));
+            AppUIUtil.invokeLaterIfProjectAlive(project, () -> {
+                final TerminalTabState tabState = new TerminalTabState();
+                tabState.myTabName = ssh.getName();
+                TerminalView.getInstance(project).createNewSession(runner, tabState);
+            });
         } catch (final RemoteSdkException e) {
             final Action.Id<Void> id = Action.Id.of("vm.open_ssh_configuration");
             final Action<?> openSshConfigurationAction = new Action<>(id, v -> AzureTaskManager.getInstance().runLater(() -> {
                 final SshConfigConfigurable configurable = new SshConfigConfigurable.Main(project);
                 ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
                     try {
-                        MethodUtils.invokeMethod(configurable, true, "select", data);
+                        MethodUtils.invokeMethod(configurable, true, "select", sshCredential);
                     } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
                         AzureMessager.getMessager().error(e2);
                     }
