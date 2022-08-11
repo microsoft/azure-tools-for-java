@@ -33,11 +33,16 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * connect to selected machine by SSH in Intellij Ultimate.
  */
-public class UltimateConnectBySshAction {
+public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction {
+    private static final ConnectUsingSshAction instance = new ConnectUsingSshActionUltimateImpl();
     private static final String SSH_CONNECTION_TITLE = "Connect Using SSH";
 
+    public static ConnectUsingSshAction getInstance() {
+        return instance;
+    }
+
     @AzureOperation(name = "vm.connect_using_ssh_community_ultimate", params = "vm.getName()", type = AzureOperation.Type.ACTION)
-    public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
+    public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final SshConfig existingConfig = AddSshConfigAction.getOrCreateSshConfig(vm, project);
         final SshConsoleOptionsProvider provider = SshConsoleOptionsProvider.getInstance(project);
         final RemoteCredentials sshCredential = new SshUiData(existingConfig, true);
@@ -47,7 +52,7 @@ public class UltimateConnectBySshAction {
         );
     }
 
-    private static void connectToSshUnderProgress(final @NotNull Project project, final @NotNull SshTerminalCachingRunner runner, final @NotNull RemoteCredentials data) {
+    private void connectToSshUnderProgress(final @NotNull Project project, final @NotNull SshTerminalCachingRunner runner, final @NotNull RemoteCredentials data) {
         try {
             runner.connect();
             AppUIUtil.invokeLaterIfProjectAlive(project, () ->

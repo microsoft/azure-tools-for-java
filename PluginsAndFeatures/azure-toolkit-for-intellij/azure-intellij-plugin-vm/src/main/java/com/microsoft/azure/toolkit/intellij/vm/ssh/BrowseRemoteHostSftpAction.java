@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.remote.AuthType;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ui.content.Content;
 import com.jetbrains.plugins.webDeployment.config.AccessType;
@@ -26,11 +27,12 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
 
-public class sftpRemoteHostAction {
+public class BrowseRemoteHostSftpAction {
 
     @AzureOperation(name = "vm.browse_files_sftp", params = "vm.getName()", type = AzureOperation.Type.ACTION)
     public static void browseRemoteHost(VirtualMachine vm, @Nonnull Project project) {
@@ -75,17 +77,21 @@ public class sftpRemoteHostAction {
             }
         }
         // create a new webServer config for current machine
-        final WebServerConfig server = createWebServerConfigBySsh(ssh.getName(), ssh);
+        final WebServerConfig server = createWebServerConfigBySsh(ssh);
         manager.addServer(server);
         return server;
     }
 
-    private static WebServerConfig createWebServerConfigBySsh(String serverName, SshConfig ssh) {
+    private static WebServerConfig createWebServerConfigBySsh(SshConfig ssh) {
         final WebServerConfig serverConfig = new WebServerConfig(WebServerConfig.getNextId());
         serverConfig.initializeNewCreatedServer(false);
-        serverConfig.setName(serverName);
+        serverConfig.setName(ssh.getName());
         serverConfig.getFileTransferConfig().setAccessType(AccessType.SFTP);
         serverConfig.getFileTransferConfig().setPort(AccessType.SFTP.getDefaultPort());
+        // key-pair mode, need to check private key path
+        if (AuthType.KEY_PAIR == ssh.getAuthType() && ssh.getKeyPath().isEmpty()) {
+            ssh.setKeyPath(Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toString());
+        }
         serverConfig.getFileTransferConfig().setSshConfig(ssh);
         return serverConfig;
     }

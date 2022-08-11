@@ -16,11 +16,17 @@ import org.jetbrains.plugins.terminal.TerminalView;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 
-public class CommunityConnectBySshAction {
+public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction {
+    private static final ConnectUsingSshAction instance = new ConnectUsingSshActionCommunityImpl();
     private static final String SSH_TERMINAL_TABLE_NAME = "%s";
     private static final String CMD_SSH_KEY_PAIR = "ssh %s@%s";
+
+    public static ConnectUsingSshAction getInstance() {
+        return instance;
+    }
+
     @AzureOperation(name = "vm.connect_using_ssh_community", params = "vm.getName()", type = AzureOperation.Type.ACTION)
-    public static void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
+    public void connectBySsh(VirtualMachine vm, @Nonnull Project project) {
         final String machineName = vm.getName();
         final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
         AzureTaskManager.getInstance().runInBackground(terminalTitle, () -> {
