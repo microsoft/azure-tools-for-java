@@ -43,8 +43,8 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT_SSH, new Action<>(CONNECT_SSH, connectSshView));
 
-        final ActionView.Builder sftpConnectionView = new ActionView.Builder("SFTP using SSH", AzureIcons.Action.SFTP.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("vm.sftp_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
+        final ActionView.Builder sftpConnectionView = new ActionView.Builder("Browse Files Using SFTP", AzureIcons.Action.SFTP.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("vm.browse_files_sftp.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(SFTP_CONNECTION, new Action<>(SFTP_CONNECTION, sftpConnectionView));
 
@@ -70,8 +70,8 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             VirtualMachineActionsContributor.ADD_SSH_CONFIG,
-            VirtualMachineActionsContributor.SFTP_CONNECTION,
             VirtualMachineActionsContributor.CONNECT_SSH,
+            VirtualMachineActionsContributor.SFTP_CONNECTION,
             "---",
             ResourceCommonActionsContributor.START,
             ResourceCommonActionsContributor.STOP,
