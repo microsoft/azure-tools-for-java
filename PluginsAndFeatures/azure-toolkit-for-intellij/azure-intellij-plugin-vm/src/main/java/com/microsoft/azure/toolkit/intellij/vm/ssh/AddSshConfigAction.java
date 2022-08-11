@@ -43,11 +43,40 @@ public class AddSshConfigAction {
         AzureTaskManager.getInstance().runLater(() -> openConfigDialog(vm, project, configurable));
     }
 
-    @AzureOperation(name = "vm.open_ssh_config_dialog", params = "vm.name()", type = AzureOperation.Type.TASK)
+    @Nonnull
+    public static SshConfig toSshConfig(VirtualMachine vm) {
+        final String customName = String.format("Azure: %s", vm.getName());
+        final SshConfig config = new SshConfig(true);
+        config.setCustomName(customName);
+        config.setId(UUID.nameUUIDFromBytes(customName.getBytes()).toString());
+        config.setUsername(vm.getAdminUserName());
+        config.setAuthType(vm.isPasswordAuthenticationDisabled() ? AuthType.KEY_PAIR : AuthType.PASSWORD);
+        config.setHost(vm.getHostIp());
+        // fixme get port info from vm
+        config.setPort(22);
+        return config;
+    }
+
+    @Nonnull
+    public static SshConfig getOrCreateSshConfig(VirtualMachine vm, @Nonnull Project project) {
+        final String sshConfigName = String.format("Azure: %s", vm.getName());
+        final SshConfigManager manager = SshConfigManager.getInstance(project);
+        SshConfig result = manager.findConfigByName(sshConfigName);
+        if (Objects.isNull(result)) {
+            result = toSshConfig(vm);
+            final SshUiData uiData = new SshUiData(result, true);
+            final SshConfigManager.ConfigsData newConfigs = new SshConfigManager.ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
+            final SshConfigManager.ConfigsData merged = manager.getLastSavedAndCurrentData().createMerged(newConfigs);
+            manager.applyData(merged.getCurrentData(), null);
+        }
+        return result;
+    }
+
+    @AzureOperation(name = "vm.open_ssh_config_dialog", params = "vm.name()", type = AzureOperation.Type.ACTION)
     private static void openConfigDialog(VirtualMachine vm, @Nonnull Project project, Configurable configurable) {
         ShowSettingsUtil.getInstance().editConfigurable(project, configurable, () -> {
-            final String name = String.format("Azure: %s", vm.name());
-            final SshUiData uiData = new SshUiData(toSshConfig(vm, name), true);
+            final String name = String.format("Azure: %s", vm.getName());
+            final SshUiData uiData = new SshUiData(toSshConfig(vm), true);
             final SshConfigManager manager = SshConfigManager.getInstance(project);
             final SshConfig existingConfigs = manager.findConfigByName(name);
             final ConfigsData newConfigs = new ConfigsData(Collections.emptyList(), Collections.singletonList(uiData));
@@ -64,14 +93,4 @@ public class AddSshConfigAction {
         });
     }
 
-    @Nonnull
-    private static SshConfig toSshConfig(VirtualMachine vm, String name) {
-        final SshConfig config = new SshConfig(true);
-        config.setCustomName(name);
-        config.setId(UUID.nameUUIDFromBytes(name.getBytes()).toString());
-        config.setUsername(vm.getAdminUserName());
-        config.setAuthType(vm.isPasswordAuthenticationDisabled() ? AuthType.KEY_PAIR : AuthType.PASSWORD);
-        config.setHost(vm.getHostIp());
-        return config;
-    }
 }
