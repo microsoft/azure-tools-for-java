@@ -28,6 +28,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
 
     public static final Action.Id<VirtualMachine> ADD_SSH_CONFIG = Action.Id.of("vm.add_ssh_configuration");
     public static final Action.Id<VirtualMachine> CONNECT_SSH = Action.Id.of("vm.connect_ssh");
+    public static final Action.Id<VirtualMachine> SFTP_CONNECTION =  Action.Id.of("vm.sftp_connection");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_VM = Action.Id.of("group.create_vm");
 
     @Override
@@ -41,6 +42,11 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> description("vm.connect_by_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
                 .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
         am.registerAction(CONNECT_SSH, new Action<>(CONNECT_SSH, connectSshView));
+
+        final ActionView.Builder sftpConnectionView = new ActionView.Builder("SFTP using SSH", AzureIcons.Action.SFTP.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("vm.sftp_ssh.vm", ((VirtualMachine) r).getName())).orElse(null))
+                .enabled(s -> s instanceof VirtualMachine && ((VirtualMachine) s).getFormalStatus().isRunning());
+        am.registerAction(SFTP_CONNECTION, new Action<>(SFTP_CONNECTION, sftpConnectionView));
 
         final ActionView.Builder createVmView = new ActionView.Builder("Virtual Machine")
             .title(s -> Optional.ofNullable(s).map(r -> description("vm.create_vm.group", ((ResourceGroup) r).getName())).orElse(null))
@@ -64,6 +70,7 @@ public class VirtualMachineActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_PORTAL_URL,
             "---",
             VirtualMachineActionsContributor.ADD_SSH_CONFIG,
+            VirtualMachineActionsContributor.SFTP_CONNECTION,
             VirtualMachineActionsContributor.CONNECT_SSH,
             "---",
             ResourceCommonActionsContributor.START,

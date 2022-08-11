@@ -60,6 +60,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Common.SHOW_PROPERTIES, AllIcons.Actions.Properties);
             put(AzureIcons.Common.UNKNOWN_ICON, AllIcons.Nodes.Unknown);
             put(AzureIcons.Action.CONSOLE, AllIcons.Nodes.Console);
+            put(AzureIcons.Action.SFTP, AllIcons.Actions.ListFiles);
         }
     };
 
