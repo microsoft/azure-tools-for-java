@@ -176,7 +176,7 @@ public class AzureSdkArtifactGroupPanel {
         this.toolbar.setForceMinimumSize(true);
         this.toolbar.setTargetComponent(this.viewer);
         this.cbModule = new ModuleComboBox(this.project);
-        cbModule.refreshItems();
+        cbModule.reloadItems();
     }
 
     @AzureOperation(name = "sdk.refresh_dependency", type = AzureOperation.Type.ACTION)
