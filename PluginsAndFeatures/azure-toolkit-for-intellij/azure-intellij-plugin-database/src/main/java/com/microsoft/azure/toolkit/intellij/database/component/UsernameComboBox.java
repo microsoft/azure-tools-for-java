@@ -5,14 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.database.component;
 
-import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
 
-import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public class UsernameComboBox extends AzureComboBox<String> {
@@ -35,11 +31,5 @@ public class UsernameComboBox extends AzureComboBox<String> {
     @Override
     public boolean isRequired() {
         return true;
-    }
-
-    @Nonnull
-    @Override
-    protected List<ExtendableTextComponent.Extension> getExtensions() {
-        return Collections.emptyList();
     }
 }

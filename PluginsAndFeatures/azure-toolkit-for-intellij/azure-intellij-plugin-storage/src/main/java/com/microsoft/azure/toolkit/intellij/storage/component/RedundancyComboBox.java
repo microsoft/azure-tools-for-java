@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.component;
 
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -56,6 +57,12 @@ public class RedundancyComboBox extends AzureComboBox<Redundancy> {
     protected List<? extends Redundancy> loadItems() {
         return Objects.isNull(this.performance) ? Collections.emptyList() :
                 Azure.az(AzureStorageAccount.class).listSupportedRedundancies(this.performance, this.kind);
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        return Collections.emptyList();
     }
 
     @Override

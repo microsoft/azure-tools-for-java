@@ -85,7 +85,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nonnull
     @Override
     protected List<Extension> getExtensions() {
-        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
         final String tooltip = String.format("Open file (%s)", KeymapUtil.getKeystrokeText(keyStroke));
         final Extension openEx = Extension.create(AllIcons.General.OpenDisk, tooltip, this::onSelectFile);
         this.registerShortcut(keyStroke, openEx);

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.component;
 
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -41,6 +42,12 @@ public class KindComboBox extends AzureComboBox<Kind> {
     )
     protected List<? extends Kind> loadItems() {
         return Objects.isNull(this.performance) ? Collections.emptyList() : Azure.az(AzureStorageAccount.class).listSupportedKinds(this.performance);
+    }
+
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        return Collections.emptyList();
     }
 
     @Override
