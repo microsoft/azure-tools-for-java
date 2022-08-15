@@ -135,7 +135,8 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
     static class CosmosDBAccountLabelView<T extends CosmosDBAccount> extends AzureResourceLabelView<T> {
 
         public CosmosDBAccountLabelView(@NotNull T resource) {
-            super(resource, account -> Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown"), DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
+            super(resource, account -> account.getFormalStatus().isRunning() ?
+                    Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
         }
     }
 }
