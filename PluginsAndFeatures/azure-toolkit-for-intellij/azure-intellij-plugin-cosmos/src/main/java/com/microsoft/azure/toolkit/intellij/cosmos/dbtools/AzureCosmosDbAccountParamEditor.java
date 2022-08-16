@@ -12,10 +12,21 @@ import com.intellij.database.dataSource.url.DataInterchange;
 import com.intellij.database.dataSource.url.FieldSize;
 import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
+import com.intellij.ui.ComponentUtil;
+import com.intellij.ui.HyperlinkAdapter;
+import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.util.Consumer;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -29,10 +40,13 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -41,8 +55,11 @@ import java.util.stream.Collectors;
 
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
-    public static final String KEY_USERNAME = "username";
     public static final String NONE = "<NONE>";
+    public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s) found in selected subscriptions, " +
+        "create one in <a href=''>Azure Explorer</a> or " +
+        "<a href='https://ms.portal.azure.com/#create/Microsoft.DocumentDB'>Azure Portal</a>.</html>";
+    public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
     @Getter
     @Setter
     private String text = "";
@@ -50,12 +67,11 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     private CosmosDBAccountConnectionString connectionString;
     private boolean updating;
 
-    public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @NotNull String label, @NotNull DataInterchange interchange) {
+    public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
 
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
-        interchange.addPersistentProperty(KEY_USERNAME);
         final String initialAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
         if (StringUtils.isNotBlank(initialAccountId)) {
             combox.setValue(new AzureComboBox.ItemReference<>(i -> i.getId().equals(initialAccountId)));
@@ -63,6 +79,63 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
 
         interchange.addPropertyChangeListener((evt -> onPropertiesChanged(evt.getPropertyName(), evt.getNewValue())), this);
         combox.addValueChangedListener(this::setAccount);
+    }
+
+    @Override
+    protected @Nonnull JComponent createComponent(CosmosDbAccountComboBox combox) {
+        final JPanel container = new JPanel();
+        final BoxLayout layout = new BoxLayout(container, BoxLayout.Y_AXIS);
+        container.setLayout(layout);
+
+        combox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        container.add(combox);
+
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+            final HyperlinkLabel notSignInTips = new HyperlinkLabel();
+            notSignInTips.setForeground(UIUtil.getContextHelpForeground());
+            notSignInTips.setHtmlText(NOT_SIGNIN_TIPS);
+            notSignInTips.setIcon(AllIcons.General.Information);
+            notSignInTips.addHyperlinkListener(e -> AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
+                notSignInTips.setVisible(false);
+                combox.reloadItems();
+            }));
+            notSignInTips.setAlignmentX(Component.LEFT_ALIGNMENT);
+            container.add(notSignInTips);
+        }
+
+        final JBLabel noAccountsTips = initNoAccountTipsLabel(combox);
+        container.add(noAccountsTips);
+        return container;
+    }
+
+    private JBLabel initNoAccountTipsLabel(CosmosDbAccountComboBox combox) {
+        final JBLabel label = new JBLabel(String.format(NO_ACCOUNT_TIPS_TEMPLATE, combox.getKind().getValue())) {
+            @Override
+            protected @Nonnull HyperlinkListener createHyperlinkListener() {
+                return new HyperlinkAdapter() {
+                    @Override
+                    protected void hyperlinkActivated(HyperlinkEvent e) {
+                        if (Objects.nonNull(e.getURL()) && e.getURL().toString().startsWith("https")) {
+                            BrowserUtil.browse(e.getURL());
+                        } else {
+                            final Window window = ComponentUtil.getActiveWindow();
+                            window.setVisible(false);
+                            window.dispose();
+                            CreateCosmosDBAccountAction.create(null, null);
+                        }
+                    }
+                };
+            }
+        };
+        label.setFocusable(false);
+        label.setCopyable(true);
+        label.setVisible(false);
+        label.setVerticalAlignment(SwingConstants.TOP);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setForeground(UIUtil.getContextHelpForeground());
+        label.setIcon(AllIcons.General.Information);
+        combox.setAccountsListener(label::setVisible);
+        return label;
     }
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
@@ -102,7 +175,6 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                 this.setUseSsl(true);
                 interchange.putProperties(consumer -> {
                     consumer.consume(KEY_COSMOS_ACCOUNT_ID, account.getId());
-                    consumer.consume(KEY_USERNAME, user);
                     consumer.consume("host", host);
                     consumer.consume("user", user);
                     consumer.consume("port", port);
@@ -131,9 +203,12 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         return (DataSourceConfigurable) FieldUtils.readField(this.getInterchange(), "myConfigurable", true);
     }
 
+    @Getter
     @RequiredArgsConstructor
     static class CosmosDbAccountComboBox extends AzureComboBox<CosmosDBAccount> {
         private final DatabaseAccountKind kind;
+        private boolean noAccounts;
+        private Consumer<Boolean> accountsListener;
 
         @Nonnull
         @Override
@@ -141,8 +216,16 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                 return Collections.emptyList();
             }
-            return Azure.az(AzureCosmosService.class).getDatabaseAccounts(kind).stream()
+            final List<CosmosDBAccount> accounts = Azure.az(AzureCosmosService.class).getDatabaseAccounts(kind).stream()
                 .filter(m -> !m.isDraftForCreating()).collect(Collectors.toList());
+            this.noAccounts = accounts.size() == 0;
+            Optional.ofNullable(this.accountsListener).ifPresent(l -> l.consume(this.noAccounts));
+            return accounts;
+        }
+
+        public void setAccountsListener(@Nonnull Consumer<Boolean> accountsListener) {
+            this.accountsListener = accountsListener;
+            accountsListener.consume(this.noAccounts);
         }
 
         @Override
