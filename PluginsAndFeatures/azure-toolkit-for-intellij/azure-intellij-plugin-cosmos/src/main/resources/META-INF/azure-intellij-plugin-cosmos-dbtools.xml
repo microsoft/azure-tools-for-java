@@ -1,0 +1,17 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij.database">
+        <dbms id="AZ_COSMOS_MONGO" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_MONGO"/>
+        <dbms id="AZ_COSMOS_CASSANDRA" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_CASSANDRA"/>
+        <addToHSet item="AZ_COSMOS_MONGO" set="MONGO"/>
+        <addToHSet item="AZ_COSMOS_CASSANDRA" set="CASSANDRA"/>
+        <extensionFallback dbms="AZ_COSMOS_MONGO" fallbackDbms="MONGO"/>
+        <extensionFallback dbms="AZ_COSMOS_CASSANDRA" fallbackDbms="CASSANDRA"/>
+        <driversConfig config="databaseDrivers/azure-cosmos-mongo-drivers.xml"/>
+        <driversConfig config="databaseDrivers/azure-cosmos-cassandra-drivers.xml"/>
+        <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeFactory" order="first"/>
+        <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.cosmos.IntelliJCosmosActionsContributorForUltimate"/>
+    </extensions>
+</idea-plugin>

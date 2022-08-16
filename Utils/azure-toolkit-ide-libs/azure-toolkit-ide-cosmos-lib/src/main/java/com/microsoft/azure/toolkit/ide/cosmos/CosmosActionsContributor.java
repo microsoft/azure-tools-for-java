@@ -7,11 +7,14 @@ package com.microsoft.azure.toolkit.ide.cosmos;
 
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 
 import java.awt.*;
@@ -36,11 +39,19 @@ public class CosmosActionsContributor implements IActionsContributor {
     public static final String MONGO_COLLECTION_ACTIONS = "actions.cosmos.mongo_collection";
     public static final String CASSANDRA_TABLE_ACTIONS = "actions.cosmos.cassandra_table";
 
+    public static final Action.Id<CosmosDBAccount> OPEN_DATABASE_TOOL = Action.Id.of("cosmos.open_database_tool");
     public static final Action.Id<CosmosDBAccount> OPEN_DATA_EXPLORER = Action.Id.of("cosmos.open_data_explorer.account");
     public static final Action.Id<CosmosDBAccount> COPY_CONNECTION_STRING = Action.Id.of("cosmos.copy_connection_string.account");
 
     @Override
     public void registerActions(AzureActionManager am) {
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
+            .title(s -> Optional.ofNullable(s).map(r -> description("cosmos.open_database_tool.account", ((AzResource<?, ?, ?>) r).getName())).orElse(null))
+            .enabled(s -> s instanceof CosmosDBAccount && ((AzResourceBase) s).getFormalStatus().isRunning());
+        final Action<CosmosDBAccount> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
+        action.setShortcuts("control alt D");
+        am.registerAction(OPEN_DATABASE_TOOL, action);
+
         final Consumer<CosmosDBAccount> copyConnectionString = resource -> {
             final String connectionString = resource.listConnectionStrings().getPrimaryConnectionString();
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(connectionString), null);
@@ -76,6 +87,8 @@ public class CosmosActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 CosmosActionsContributor.OPEN_DATA_EXPLORER,
+                "---",
+                CosmosActionsContributor.OPEN_DATABASE_TOOL,
                 "---",
                 ResourceCommonActionsContributor.CREATE,
                 ResourceCommonActionsContributor.DELETE,

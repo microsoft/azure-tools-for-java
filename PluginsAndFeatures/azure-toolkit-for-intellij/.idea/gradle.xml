@@ -17,6 +17,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerregistry" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerservice" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-cosmos" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-guidance" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />

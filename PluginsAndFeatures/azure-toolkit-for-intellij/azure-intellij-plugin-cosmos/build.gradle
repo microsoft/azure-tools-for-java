@@ -1,4 +1,13 @@
 intellij {
+    plugins = ['com.intellij.database']
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
 }
 
 dependencies {

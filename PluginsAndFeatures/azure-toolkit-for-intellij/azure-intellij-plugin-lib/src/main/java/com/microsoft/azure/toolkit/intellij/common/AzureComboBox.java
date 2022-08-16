@@ -251,6 +251,11 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     public void setEnabled(boolean b) {
         this.enabled = b;
         super.setEnabled(b);
+        if (b) {
+            this.toggleLoadingSpinner(this.isRefreshing);
+        } else {
+            this.setEditor(null);
+        }
     }
 
     @Override
