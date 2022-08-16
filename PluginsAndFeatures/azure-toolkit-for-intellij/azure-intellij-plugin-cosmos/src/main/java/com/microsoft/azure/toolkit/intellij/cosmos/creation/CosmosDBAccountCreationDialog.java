@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.creation;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -146,6 +147,12 @@ public class CosmosDBAccountCreationDialog extends AzureDialog<CosmosDBAccountDr
             protected List<? extends Region> loadItems() {
                 return Objects.isNull(this.subscription) ? Collections.emptyList() :
                         Azure.az(AzureCosmosService.class).forSubscription(this.subscription.getId()).listSupportedRegions();
+            }
+
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                return Collections.emptyList();
             }
         };
     }

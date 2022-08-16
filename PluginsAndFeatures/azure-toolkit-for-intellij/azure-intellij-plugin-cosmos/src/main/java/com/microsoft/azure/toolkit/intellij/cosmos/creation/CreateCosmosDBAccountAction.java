@@ -6,7 +6,6 @@ package com.microsoft.azure.toolkit.intellij.cosmos.creation;
 
 import com.google.common.base.Preconditions;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -23,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import org.apache.commons.collections4.CollectionUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +29,7 @@ import java.util.Objects;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class CreateCosmosDBAccountAction {
-    public static void create(@Nonnull Project project, @Nullable CosmosDBAccountDraft.Config data) {
-        Azure.az(AzureAccount.class).account();
+    public static void create(@Nullable Project project, @Nullable CosmosDBAccountDraft.Config data) {
         AzureTaskManager.getInstance().runLater(() -> {
             final CosmosDBAccountCreationDialog dialog = new CosmosDBAccountCreationDialog(project);
             if (Objects.nonNull(data)) {
@@ -62,9 +59,9 @@ public class CreateCosmosDBAccountAction {
         return config;
     }
 
-    @AzureOperation(name = "kubernetes.create_service.service", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "cosmos.create_account.account", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final CosmosDBAccountDraft.Config config, final Project project) {
-        final AzureString title = OperationBundle.description("kubernetes.create_service.service", config.getName());
+        final AzureString title = OperationBundle.description("cosmos.create_account.account", config.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ResourceGroup rg = config.getResourceGroup();
             if (rg.isDraftForCreating()) {
