@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraKeyspace;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraTable;
+import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseAccountKind;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCollection;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoDatabase;
@@ -27,8 +28,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider.DEFAULT_AZURE_RESOURCE_ICON_PROVIDER;
 
 public class CosmosNodeProvider implements IExplorerNodeProvider {
 
@@ -60,21 +64,21 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof SqlCosmosDBAccount) {
             final SqlCosmosDBAccount sqlCosmosDBAccount = (SqlCosmosDBAccount) data;
             return new Node<>(sqlCosmosDBAccount)
-                    .view(new AzureResourceLabelView<>(sqlCosmosDBAccount))
+                    .view(new CosmosDBAccountLabelView<>(sqlCosmosDBAccount))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(CosmosActionsContributor.SQL_ACCOUNT_ACTIONS)
                     .addChildren(account -> account.sqlDatabases().list(), (database, accountNode) -> this.createNode(database, accountNode, manager));
         } else if (data instanceof MongoCosmosDBAccount) {
             final MongoCosmosDBAccount mongoCosmosDBAccount = (MongoCosmosDBAccount) data;
             return new Node<>(mongoCosmosDBAccount)
-                    .view(new AzureResourceLabelView<>(mongoCosmosDBAccount))
+                    .view(new CosmosDBAccountLabelView<>(mongoCosmosDBAccount))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(CosmosActionsContributor.MONGO_ACCOUNT_ACTIONS)
                     .addChildren(account -> account.mongoDatabases().list(), (database, accountNode) -> this.createNode(database, accountNode, manager));
         } else if (data instanceof CassandraCosmosDBAccount) {
             final CassandraCosmosDBAccount cassandraCosmosDBAccount = (CassandraCosmosDBAccount) data;
             return new Node<>(cassandraCosmosDBAccount)
-                    .view(new AzureResourceLabelView<>(cassandraCosmosDBAccount))
+                    .view(new CosmosDBAccountLabelView<>(cassandraCosmosDBAccount))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(CosmosActionsContributor.CASSANDRA_ACCOUNT_ACTIONS)
                     .addChildren(account -> account.keySpaces().list(), (keyspace, accountNode) -> this.createNode(keyspace, accountNode, manager));
@@ -82,7 +86,7 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
             // for other cosmos db account (table/graph...)
             final CosmosDBAccount account = (CosmosDBAccount) data;
             return new Node<>(account)
-                    .view(new AzureResourceLabelView<>(account))
+                    .view(new CosmosDBAccountLabelView<>(account))
                     .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(CosmosActionsContributor.ACCOUNT_ACTIONS);
         } else if (data instanceof MongoDatabase) {
@@ -126,5 +130,13 @@ public class CosmosNodeProvider implements IExplorerNodeProvider {
                     .actions(CosmosActionsContributor.CASSANDRA_TABLE_ACTIONS);
         }
         return null;
+    }
+
+    static class CosmosDBAccountLabelView<T extends CosmosDBAccount> extends AzureResourceLabelView<T> {
+
+        public CosmosDBAccountLabelView(@NotNull T resource) {
+            super(resource, account -> account.getFormalStatus().isRunning() ?
+                    Optional.ofNullable(account.getKind()).map(DatabaseAccountKind::getValue).orElse("Unknown") : account.getStatus(), DEFAULT_AZURE_RESOURCE_ICON_PROVIDER);
+        }
     }
 }

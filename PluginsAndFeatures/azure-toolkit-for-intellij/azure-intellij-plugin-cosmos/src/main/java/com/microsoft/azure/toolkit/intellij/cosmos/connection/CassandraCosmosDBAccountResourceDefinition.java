@@ -10,10 +10,8 @@ import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
-import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraKeyspace;
-import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -24,6 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<CassandraKeyspace> implements SpringSupported<CassandraKeyspace> {
+    public static final CassandraCosmosDBAccountResourceDefinition INSTANCE = new CassandraCosmosDBAccountResourceDefinition();
+
     public CassandraCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Cassandra", "Azure Cosmos DB account (Cassandra)", AzureIcons.Cosmos.MODULE.getIconPath());
     }

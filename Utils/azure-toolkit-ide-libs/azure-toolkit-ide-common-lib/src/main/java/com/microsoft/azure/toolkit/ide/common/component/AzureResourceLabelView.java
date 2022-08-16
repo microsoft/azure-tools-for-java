@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +32,8 @@ public class AzureResourceLabelView<T extends AzResource<?, ?, ?>> implements No
     @Getter
     protected final T resource;
     @Getter
-    private final String label;
+    @Setter(value = AccessLevel.PROTECTED)
+    private String label;
     @Getter
     private String description;
     @Getter

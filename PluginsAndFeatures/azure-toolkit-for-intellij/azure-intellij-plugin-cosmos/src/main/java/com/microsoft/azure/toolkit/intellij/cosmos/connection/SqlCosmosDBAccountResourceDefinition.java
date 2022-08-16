@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<SqlDatabase> implements SpringSupported<SqlDatabase> {
+    public static final SqlCosmosDBAccountResourceDefinition INSTANCE = new SqlCosmosDBAccountResourceDefinition();
     public SqlCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Sql", "Azure Cosmos DB account (SQL)", AzureIcons.Cosmos.MODULE.getIconPath());
     }

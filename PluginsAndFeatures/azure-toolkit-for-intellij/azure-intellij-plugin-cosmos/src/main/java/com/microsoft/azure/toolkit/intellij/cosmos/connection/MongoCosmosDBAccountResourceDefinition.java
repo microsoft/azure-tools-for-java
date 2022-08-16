@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<MongoDatabase> implements SpringSupported<MongoDatabase> {
+    public static final MongoCosmosDBAccountResourceDefinition INSTANCE = new MongoCosmosDBAccountResourceDefinition();
     public MongoCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Mongo", "Azure Cosmos DB account (Mongo)", AzureIcons.Cosmos.MODULE.getIconPath());
     }
