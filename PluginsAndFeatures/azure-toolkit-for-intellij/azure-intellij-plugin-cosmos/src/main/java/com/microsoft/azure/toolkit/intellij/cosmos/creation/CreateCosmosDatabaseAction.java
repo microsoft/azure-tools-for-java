@@ -44,7 +44,7 @@ public class CreateCosmosDatabaseAction {
     private static <T extends CosmosDBAccount> void doCreate(@Nonnull T account,
                                                              @Nonnull BiFunction<T, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> draftSupplier,
                                                              @Nullable final DatabaseConfig config) {
-        final AzureString title = OperationBundle.description("cosmos.create_database.database|account", Objects.requireNonNull(config).getName());
+        final AzureString title = OperationBundle.description("cosmos.create_database.database|account", Objects.requireNonNull(config).getName(), account.getName());
         AzureTaskManager.getInstance().runInBackground(title, () -> {
             final ICosmosDatabaseDraft<?, ?> draft = draftSupplier.apply(account, config);
             draft.setConfig(config);

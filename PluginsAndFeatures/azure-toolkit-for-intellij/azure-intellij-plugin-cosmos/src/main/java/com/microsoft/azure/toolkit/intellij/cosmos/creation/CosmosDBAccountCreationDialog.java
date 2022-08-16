@@ -140,19 +140,19 @@ public class CosmosDBAccountCreationDialog extends AzureDialog<CosmosDBAccountDr
     }
 
     private void createUIComponents() {
-        this.cbKind = new AzureComboBox<>(DatabaseAccountKind::values, true);
+        this.cbKind = new AzureComboBox<>(DatabaseAccountKind::values, true) {
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                return Collections.emptyList();
+            }
+        };
         this.cbRegion = new RegionComboBox() {
             @Nonnull
             @Override
             protected List<? extends Region> loadItems() {
                 return Objects.isNull(this.subscription) ? Collections.emptyList() :
                         Azure.az(AzureCosmosService.class).forSubscription(this.subscription.getId()).listSupportedRegions();
-            }
-
-            @Nonnull
-            @Override
-            protected List<ExtendableTextComponent.Extension> getExtensions() {
-                return Collections.emptyList();
             }
         };
     }
