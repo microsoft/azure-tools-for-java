@@ -45,7 +45,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runOnPooledThread(() -> {
             getMvpView().beforeFillAppSettings();
-            final Map<String, String> settings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJsonPath.toFile());
+            final Map<String, String> settings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJsonPath.toFile());
             tm.runLater(() -> {
                 if (isViewDetached()) {
                     return;

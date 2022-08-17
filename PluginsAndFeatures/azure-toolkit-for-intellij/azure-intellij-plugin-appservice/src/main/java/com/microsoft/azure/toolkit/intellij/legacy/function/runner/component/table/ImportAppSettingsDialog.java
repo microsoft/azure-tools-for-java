@@ -11,7 +11,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionsConstants;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     private JPanel contentPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox cbAppSettingsSource;
+    private JComboBox<Object> cbAppSettingsSource;
     private AppSettingsTable tblAppSettings;
     private JLabel lblAppSettingsSource;
     private JPanel pnlAppSettings;
@@ -60,12 +60,12 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
         buttonCancel.addActionListener(e -> onCancel());
 
-        cbAppSettingsSource.setRenderer(new ListCellRendererWrapper() {
+        cbAppSettingsSource.setRenderer(new ListCellRendererWrapper<>() {
             @Override
             public void customize(JList list, Object object, int index, boolean isSelected, boolean cellHasFocus) {
                 if (object instanceof FunctionApp) {
                     setIcon(IntelliJAzureIcons.getIcon(AzureIcons.FunctionApp.MODULE));
-                    setText(((FunctionApp) object).name());
+                    setText(((FunctionApp) object).getName());
                 } else if (LOCAL_SETTINGS_JSON.equals(object)) {
                     setText(object.toString());
                     setIcon(AllIcons.FileTypes.Json);
@@ -135,7 +135,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     }
 
     private void createUIComponents() {
-        tblAppSettings = new AppSettingsTable("");
+        tblAppSettings = new FunctionAppSettingsTable("");
         tblAppSettings.getEmptyText().setText(LOADING_TEXT);
         pnlAppSettings = ToolbarDecorator.createDecorator(tblAppSettings).createPanel();
     }

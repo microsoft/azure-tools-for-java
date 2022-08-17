@@ -12,8 +12,8 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTable;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTableUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -47,7 +47,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private JLabel lblFunctionCli;
     private JLabel lblPort;
     private JLabel lblAppSettings;
-    private AppSettingsTable appSettingsTable;
+    private FunctionAppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
     private final FunctionRunConfiguration functionRunConfiguration;
@@ -155,8 +155,8 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private void createUIComponents() {
         txtFunc = new FunctionCoreToolsCombobox(project, true);
         final String localSettingPath = Paths.get(Objects.requireNonNull(project.getBasePath()), "local.settings.json").toString();
-        appSettingsTable = new AppSettingsTable(localSettingPath);
-        pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
+        appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
+        pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
         appSettingsTable.loadLocalSetting();
     }
 

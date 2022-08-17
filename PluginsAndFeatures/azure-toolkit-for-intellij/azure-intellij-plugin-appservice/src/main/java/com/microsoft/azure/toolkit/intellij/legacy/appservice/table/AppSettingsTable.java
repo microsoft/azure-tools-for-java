@@ -3,25 +3,21 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
+package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
 
 import com.intellij.ui.table.JBTable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 public class AppSettingsTable extends JBTable {
 
-    private String localSettingPath;
-    private AppSettingModel appSettingModel = new AppSettingModel();
+    protected final AppSettingModel appSettingModel = new AppSettingModel();
 
-    public AppSettingsTable(String localSettingPath) {
+    public AppSettingsTable(){
         super();
-        this.localSettingPath = localSettingPath;
         this.setModel(appSettingModel);
         this.setCellSelectionEnabled(true);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -30,13 +26,8 @@ public class AppSettingsTable extends JBTable {
         this.setPreferredScrollableViewportSize(null);
     }
 
-    public void loadRequiredSettings() {
-        appSettingModel.loadRequiredAttributes();
-    }
-
-    public void loadLocalSetting() {
-        final Map<String, String> appSettings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(localSettingPath));
-        setAppSettings(appSettings);
+    public int addRequiredAppSettings(@Nonnull final String key, final String value) {
+        return appSettingModel.addAppSettings(key, value);
     }
 
     public void addAppSettings(String key, String value) {
@@ -72,10 +63,6 @@ public class AppSettingsTable extends JBTable {
 
     public Map<String, String> getAppSettings() {
         return appSettingModel.getAppSettings();
-    }
-
-    public Path getLocalSettingsPath() {
-        return Paths.get(localSettingPath);
     }
 
     public boolean isEmpty() {

@@ -3,33 +3,34 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
+package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
 
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AppSettingModel implements TableModel {
 
     private static final String[] TITLE = {"Key", "Value"};
-    private static final String FUNCTIONS_WORKER_RUNTIME_KEY = "FUNCTIONS_WORKER_RUNTIME";
-    private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
-    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
-    private static final String AZURE_WEB_JOB_STORAGE_VALUE = "";
 
-    private List<Pair<String, String>> appSettings = new ArrayList<>();
-    private List<TableModelListener> tableModelListenerList = new ArrayList<>();
+    private final List<Pair<String, String>> appSettings = new ArrayList<>();
+    private final Set<String> requiredKeys = new HashSet<>();
+    private final List<TableModelListener> tableModelListenerList = new ArrayList<>();
 
     public AppSettingModel() {
     }
@@ -56,17 +57,17 @@ public class AppSettingModel implements TableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        if (!isRowValid(row)) {
+        if (isRowInvalid(row)) {
             return false;
         }
         final Pair<String, String> target = appSettings.get(row);
-        // Should not modify FUNCTIONS_WORKER_RUNTIME and AzureWebJobsStorage
-        return !(FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || (AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey()) && col == 0));
+        return requiredKeys.contains(target.getKey()) && col == 0;
     }
 
     @Override
+    @Nullable
     public Object getValueAt(int row, int col) {
-        if (!isRowValid(row)) {
+        if (isRowInvalid(row)) {
             return null;
         }
         final Pair<String, String> target = appSettings.get(row);
@@ -87,7 +88,7 @@ public class AppSettingModel implements TableModel {
     }
 
     public int addAppSettings(String key, String value) {
-        final Pair result = Pair.of(key, value);
+        final Pair<String, String> result = Pair.of(key, value);
         final int index = ListUtils.indexOf(appSettings, pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key));
         if (index >= 0) {
             appSettings.set(index, result);
@@ -98,12 +99,17 @@ public class AppSettingModel implements TableModel {
         return index > 0 ? index : appSettings.size() - 1;
     }
 
+    public int addRequiredAppSettings(@Nonnull final String key, final String value) {
+        this.requiredKeys.add(key);
+        return addAppSettings(key, value);
+    }
+
     public void removeAppSettings(int row) {
-        if (!isRowValid(row)) {
+        if (isRowInvalid(row)) {
             return;
         }
         final Pair<String, String> target = appSettings.get(row);
-        if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey())) {
+        if (requiredKeys.contains(target.getKey())) {
             throw new IllegalArgumentException(message("function.appSettings.validate.requiredParameter", target.getKey()));
         }
         appSettings.remove(row);
@@ -111,7 +117,7 @@ public class AppSettingModel implements TableModel {
     }
 
     public String getAppSettingsKey(int row) {
-        if (appSettings == null || !isRowValid(row)) {
+        if (isRowInvalid(row)) {
             return null;
         }
         return appSettings.get(row).getKey();
@@ -119,7 +125,7 @@ public class AppSettingModel implements TableModel {
 
     public Map<String, String> getAppSettings() {
         final Map<String, String> result = new HashMap<>();
-        appSettings.stream().forEach(pair -> result.put(pair.getKey(), pair.getValue()));
+        appSettings.forEach(pair -> result.put(pair.getKey(), pair.getValue()));
         return result;
     }
 
@@ -129,7 +135,7 @@ public class AppSettingModel implements TableModel {
     }
 
     public void fireTableChanged() {
-        tableModelListenerList.stream().forEach(listener ->
+        tableModelListenerList.forEach(listener ->
                 AzureTaskManager.getInstance().runLater(() -> listener.tableChanged(new TableModelEvent(this))));
     }
 
@@ -143,17 +149,7 @@ public class AppSettingModel implements TableModel {
         tableModelListenerList.remove(tableModelListener);
     }
 
-    public void loadRequiredAttributes() {
-        final Map<String, String> appSettingsMap = getAppSettings();
-        if (!appSettingsMap.containsKey(FUNCTIONS_WORKER_RUNTIME_KEY)) {
-            appSettings.add(Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, FUNCTIONS_WORKER_RUNTIME_VALUE));
-        }
-        if (!appSettingsMap.containsKey(AZURE_WEB_JOB_STORAGE_KEY)) {
-            appSettings.add(Pair.of(AZURE_WEB_JOB_STORAGE_KEY, AZURE_WEB_JOB_STORAGE_VALUE));
-        }
-    }
-
-    private boolean isRowValid(int row) {
-        return row >= 0 && row < appSettings.size();
+    private boolean isRowInvalid(int row) {
+        return row < 0 || row >= appSettings.size();
     }
 }
