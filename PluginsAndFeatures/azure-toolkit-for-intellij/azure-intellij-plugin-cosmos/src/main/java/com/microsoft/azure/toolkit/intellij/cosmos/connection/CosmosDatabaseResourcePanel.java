@@ -6,6 +6,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceBase;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
@@ -14,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.cosmos.ICosmosDatabase;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -34,6 +37,9 @@ public class CosmosDatabaseResourcePanel<T extends ICosmosDatabase, E extends Co
         this.databaseLoader = databaseLoader;
         this.resourceDefinition = resourceDefinition;
         $$$setupUI$$$();
+        this.cbSubscription.setRequired(true);
+        this.cbAccount.setRequired(true);
+        this.cbDatabase.setRequired(true);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbAccount.addItemListener(this::onAccountChanged);
     }
@@ -63,7 +69,9 @@ public class CosmosDatabaseResourcePanel<T extends ICosmosDatabase, E extends Co
 
     @Override
     public Resource<T> getValue() {
-        return Optional.ofNullable(cbDatabase.getValue()).map(resourceDefinition::define).orElse(null);
+        final List<AzureValidationInfo> allValidationInfos = this.getAllValidationInfos(true);
+        final boolean invalid = allValidationInfos.stream().anyMatch(info -> !info.isValid());
+        return invalid ? null : Optional.ofNullable(cbDatabase.getValue()).map(resourceDefinition::define).orElse(null);
     }
 
     @Override
@@ -80,5 +88,10 @@ public class CosmosDatabaseResourcePanel<T extends ICosmosDatabase, E extends Co
         // TODO: place custom component creation code here
         this.cbAccount = new CosmosDBAccountComboBox<>(accountLoader);
         this.cbDatabase = new CosmosDatabaseComboBox<>(databaseLoader);
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Arrays.asList(cbDatabase, cbSubscription, cbAccount);
     }
 }

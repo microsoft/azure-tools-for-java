@@ -30,6 +30,7 @@ public class CosmosDatabaseComboBox<T extends ICosmosDatabase, E extends CosmosD
             this.clear();
             return;
         }
+        this.setValidationInfo(null);
         this.refreshItems();
     }
 
