@@ -55,7 +55,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.Id.of("common.open_azure_settings");
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("common.open_azure_explorer");
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("common.open_azure_reference_book");
-    public static final Action.Id<AzResource<?, ?, ?>> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("common.highlight_resource_in_explorer");
+    public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("common.highlight_resource_in_explorer");
 
     public static final String RESOURCE_GROUP_CREATE_ACTIONS = "actions.resource.create.group";
 

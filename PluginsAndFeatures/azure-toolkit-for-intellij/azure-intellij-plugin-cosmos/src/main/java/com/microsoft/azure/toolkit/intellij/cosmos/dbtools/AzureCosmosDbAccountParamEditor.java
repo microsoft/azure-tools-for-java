@@ -14,6 +14,14 @@ import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.HyperlinkAdapter;
 import com.intellij.ui.HyperlinkLabel;
@@ -21,6 +29,7 @@ import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -49,6 +58,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -59,9 +69,8 @@ import java.util.stream.Collectors;
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
     public static final String NONE = "<NONE>";
-    public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s) found in selected subscriptions, " +
-        "create one in <a href=''>Azure Explorer</a> or " +
-        "<a href='https://ms.portal.azure.com/#create/Microsoft.DocumentDB'>Azure Portal</a>.</html>";
+    public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s) found, You can create in <a href=''>Azure Explorer</a> or " +
+        "<a href='https://ms.portal.azure.com/#create/Microsoft.DocumentDB'>Azure Portal</a> first.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
     private final DatabaseAccountKind kind;
     @Getter
@@ -128,7 +137,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                         if (Objects.nonNull(e.getURL()) && e.getURL().toString().startsWith("https")) {
                             createAccountInPortal(e.getURL());
                         } else {
-                            createAccountInIde();
+                            createAccountInIde(e.getInputEvent());
                         }
                     }
                 };
@@ -137,6 +146,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         label.setFocusable(false);
         label.setCopyable(true);
         label.setVisible(false);
+        label.setAllowAutoWrapping(true);
         label.setVerticalAlignment(SwingConstants.TOP);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         label.setForeground(UIUtil.getContextHelpForeground());
@@ -152,12 +162,19 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     }
 
     @AzureOperation(name = "cosmos.create_account_ide_from_dbtools", type = AzureOperation.Type.ACTION)
-    private void createAccountInIde() {
+    private void createAccountInIde(InputEvent e) {
         OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
+        final DataContext context = DataManager.getInstance().getDataContext(e.getComponent());
+        final Project project = context.getData(CommonDataKeys.PROJECT);
         final Window window = ComponentUtil.getActiveWindow();
         window.setVisible(false);
         window.dispose();
-        CreateCosmosDBAccountAction.create(null, null);
+        final ToolWindow explorer = ToolWindowManager.getInstance(Objects.requireNonNull(project)).getToolWindow("Azure Explorer");
+        Objects.requireNonNull(explorer).activate(() -> {
+            final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "cosmos.dbtools", context);
+            AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureCosmosService.class), event);
+            CreateCosmosDBAccountAction.create(null, null);
+        });
     }
 
     private void onPropertiesChanged(String propertyName, Object newValue) {
