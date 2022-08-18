@@ -13,7 +13,6 @@ import com.intellij.database.dataSource.url.FieldSize;
 import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -23,10 +22,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ComponentUtil;
-import com.intellij.ui.HyperlinkAdapter;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.components.JBCheckBox;
-import com.intellij.ui.components.JBLabel;
 import com.intellij.util.Consumer;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -55,11 +52,8 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.InputEvent;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -69,8 +63,7 @@ import java.util.stream.Collectors;
 public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmosDbAccountParamEditor.CosmosDbAccountComboBox> {
     public static final String KEY_COSMOS_ACCOUNT_ID = "AZURE_COSMOS_ACCOUNT";
     public static final String NONE = "<NONE>";
-    public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s) found, You can create in <a href=''>Azure Explorer</a> or " +
-        "<a href='https://ms.portal.azure.com/#create/Microsoft.DocumentDB'>Azure Portal</a> first.</html>";
+    public static final String NO_ACCOUNT_TIPS_TEMPLATE = "<html>No Azure Cosmos DB accounts (%s). You can <a href=''>create one</a> first.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
     private final DatabaseAccountKind kind;
     @Getter
@@ -104,16 +97,11 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         container.add(combox);
 
         if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-            final HyperlinkLabel notSignInTips = new HyperlinkLabel();
-            notSignInTips.setForeground(UIUtil.getContextHelpForeground());
-            notSignInTips.setHtmlText(NOT_SIGNIN_TIPS);
-            notSignInTips.setIcon(AllIcons.General.Information);
-            notSignInTips.addHyperlinkListener(e -> signInAndReloadItems(combox, notSignInTips));
-            notSignInTips.setAlignmentX(Component.LEFT_ALIGNMENT);
+            final HyperlinkLabel notSignInTips = initNotSignInTipsLabel(combox);
             container.add(notSignInTips);
         }
 
-        final JBLabel noAccountsTips = initNoAccountTipsLabel(combox);
+        final HyperlinkLabel noAccountsTips = initNoAccountTipsLabel(combox);
         container.add(noAccountsTips);
         return container;
     }
@@ -127,41 +115,29 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         });
     }
 
-    private JBLabel initNoAccountTipsLabel(CosmosDbAccountComboBox combox) {
-        final JBLabel label = new JBLabel(String.format(NO_ACCOUNT_TIPS_TEMPLATE, combox.getKind().getValue())) {
-            @Override
-            protected @Nonnull HyperlinkListener createHyperlinkListener() {
-                return new HyperlinkAdapter() {
-                    @Override
-                    protected void hyperlinkActivated(HyperlinkEvent e) {
-                        if (Objects.nonNull(e.getURL()) && e.getURL().toString().startsWith("https")) {
-                            createAccountInPortal(e.getURL());
-                        } else {
-                            createAccountInIde(e.getInputEvent());
-                        }
-                    }
-                };
-            }
-        };
-        label.setFocusable(false);
-        label.setCopyable(true);
-        label.setVisible(false);
-        label.setAllowAutoWrapping(true);
-        label.setVerticalAlignment(SwingConstants.TOP);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+    @Nonnull
+    private HyperlinkLabel initNotSignInTipsLabel(CosmosDbAccountComboBox combox) {
+        final HyperlinkLabel label = new HyperlinkLabel();
         label.setForeground(UIUtil.getContextHelpForeground());
+        label.setHtmlText(NOT_SIGNIN_TIPS);
         label.setIcon(AllIcons.General.Information);
+        label.addHyperlinkListener(e -> signInAndReloadItems(combox, label));
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return label;
+    }
+
+    private HyperlinkLabel initNoAccountTipsLabel(CosmosDbAccountComboBox combox) {
+        final HyperlinkLabel label = new HyperlinkLabel();
+        label.setForeground(UIUtil.getContextHelpForeground());
+        label.setHtmlText(String.format(NO_ACCOUNT_TIPS_TEMPLATE, combox.getKind().getValue()));
+        label.setIcon(AllIcons.General.Information);
+        label.addHyperlinkListener(e -> createAccountInIde(e.getInputEvent()));
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
         combox.setAccountsListener(label::setVisible);
         return label;
     }
 
-    @AzureOperation(name = "cosmos.create_account_portal_from_dbtools", type = AzureOperation.Type.ACTION)
-    private void createAccountInPortal(URL url) {
-        OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
-        BrowserUtil.browse(url);
-    }
-
-    @AzureOperation(name = "cosmos.create_account_ide_from_dbtools", type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "cosmos.create_account_from_dbtools", type = AzureOperation.Type.ACTION)
     private void createAccountInIde(InputEvent e) {
         OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
         final DataContext context = DataManager.getInstance().getDataContext(e.getComponent());

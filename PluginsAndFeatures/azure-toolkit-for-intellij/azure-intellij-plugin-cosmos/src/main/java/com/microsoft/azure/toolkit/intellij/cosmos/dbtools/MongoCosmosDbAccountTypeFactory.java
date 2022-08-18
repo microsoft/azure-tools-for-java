@@ -38,7 +38,6 @@ public class MongoCosmosDbAccountTypeFactory implements TypesRegistry.TypeDescri
                     heads.set(i + 1, (String) old[i]);
                 }
             }
-            System.out.println(heads.size());
         } catch (final Throwable ignored) {
         }
     }

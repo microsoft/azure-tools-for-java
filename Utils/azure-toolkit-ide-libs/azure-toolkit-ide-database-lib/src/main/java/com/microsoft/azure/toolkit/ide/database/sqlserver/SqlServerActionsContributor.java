@@ -34,7 +34,7 @@ public class SqlServerActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
-        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open by Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
+        final ActionView.Builder openDatabaseTool = new ActionView.Builder("Open with Database Tools", AzureIcons.Action.OPEN_DATABASE_TOOL.getIconPath())
             .title(s -> Optional.ofNullable(s).map(r -> description("sqlserver.connect_server.server", ((AzResource<?, ?, ?>) r).name())).orElse(null))
             .enabled(s -> s instanceof MicrosoftSqlServer && ((AzResourceBase) s).getFormalStatus().isRunning());
         final Action<AzResource<?, ?, ?>> action = new Action<>(OPEN_DATABASE_TOOL, openDatabaseTool);
