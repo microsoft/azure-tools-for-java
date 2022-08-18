@@ -1,5 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij.database">
+        <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountConnectionInterceptor"/>
         <dbms id="AZ_COSMOS_MONGO" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_MONGO"/>
         <dbms id="AZ_COSMOS_CASSANDRA" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_CASSANDRA"/>
         <addToHSet item="AZ_COSMOS_MONGO" set="MONGO"/>

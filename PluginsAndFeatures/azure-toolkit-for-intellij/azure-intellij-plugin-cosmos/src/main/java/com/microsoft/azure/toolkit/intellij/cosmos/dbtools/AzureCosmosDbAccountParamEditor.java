@@ -28,6 +28,8 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
@@ -47,6 +49,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import java.awt.*;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -60,6 +63,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         "create one in <a href=''>Azure Explorer</a> or " +
         "<a href='https://ms.portal.azure.com/#create/Microsoft.DocumentDB'>Azure Portal</a>.</html>";
     public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Cosmos DB account.</html>";
+    private final DatabaseAccountKind kind;
     @Getter
     @Setter
     private String text = "";
@@ -69,7 +73,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
 
     public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
-
+        this.kind = kind;
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
         final String initialAccountId = interchange.getProperty(KEY_COSMOS_ACCOUNT_ID);
@@ -95,10 +99,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
             notSignInTips.setForeground(UIUtil.getContextHelpForeground());
             notSignInTips.setHtmlText(NOT_SIGNIN_TIPS);
             notSignInTips.setIcon(AllIcons.General.Information);
-            notSignInTips.addHyperlinkListener(e -> AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
-                notSignInTips.setVisible(false);
-                combox.reloadItems();
-            }));
+            notSignInTips.addHyperlinkListener(e -> signInAndReloadItems(combox, notSignInTips));
             notSignInTips.setAlignmentX(Component.LEFT_ALIGNMENT);
             container.add(notSignInTips);
         }
@@ -106,6 +107,15 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         final JBLabel noAccountsTips = initNoAccountTipsLabel(combox);
         container.add(noAccountsTips);
         return container;
+    }
+
+    @AzureOperation(name = "cosmos.signin_from_dbtools", type = AzureOperation.Type.ACTION)
+    private void signInAndReloadItems(CosmosDbAccountComboBox combox, HyperlinkLabel notSignInTips) {
+        OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
+        AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle(() -> {
+            notSignInTips.setVisible(false);
+            combox.reloadItems();
+        });
     }
 
     private JBLabel initNoAccountTipsLabel(CosmosDbAccountComboBox combox) {
@@ -116,12 +126,9 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                     @Override
                     protected void hyperlinkActivated(HyperlinkEvent e) {
                         if (Objects.nonNull(e.getURL()) && e.getURL().toString().startsWith("https")) {
-                            BrowserUtil.browse(e.getURL());
+                            createAccountInPortal(e.getURL());
                         } else {
-                            final Window window = ComponentUtil.getActiveWindow();
-                            window.setVisible(false);
-                            window.dispose();
-                            CreateCosmosDBAccountAction.create(null, null);
+                            createAccountInIde();
                         }
                     }
                 };
@@ -138,6 +145,21 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         return label;
     }
 
+    @AzureOperation(name = "cosmos.create_account_portal_from_dbtools", type = AzureOperation.Type.ACTION)
+    private void createAccountInPortal(URL url) {
+        OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
+        BrowserUtil.browse(url);
+    }
+
+    @AzureOperation(name = "cosmos.create_account_ide_from_dbtools", type = AzureOperation.Type.ACTION)
+    private void createAccountInIde() {
+        OperationContext.action().setTelemetryProperty("kind", this.kind.getValue());
+        final Window window = ComponentUtil.getActiveWindow();
+        window.setVisible(false);
+        window.dispose();
+        CreateCosmosDBAccountAction.create(null, null);
+    }
+
     private void onPropertiesChanged(String propertyName, Object newValue) {
         if (!this.updating && Objects.nonNull(this.connectionString) && StringUtils.isNotEmpty((String) newValue)) {
             if (StringUtils.equals(propertyName, "host") && !Objects.equals(this.connectionString.getHost(), newValue) ||
@@ -148,7 +170,13 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         }
     }
 
+    @AzureOperation(name = "cosmos.select_account_dbtools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
     private void setAccount(@Nullable CosmosDBAccount account) {
+        Optional.ofNullable(account).ifPresent(a -> {
+            OperationContext.action().setTelemetryProperty("subscriptionId", a.getSubscriptionId());
+            OperationContext.action().setTelemetryProperty("resourceType", a.getFullResourceType());
+            OperationContext.action().setTelemetryProperty("kind", a.getKind().getValue());
+        });
         if (this.updating || Objects.equals(this.account, account)) {
             return;
         }

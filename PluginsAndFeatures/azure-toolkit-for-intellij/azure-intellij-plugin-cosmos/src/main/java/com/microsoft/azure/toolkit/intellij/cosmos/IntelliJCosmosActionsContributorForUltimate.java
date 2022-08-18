@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount;
@@ -45,6 +46,7 @@ public class IntelliJCosmosActionsContributorForUltimate implements IActionsCont
         am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || r instanceof CassandraCosmosDBAccount, openDatabaseHandler);
     }
 
+    @AzureOperation(name = "cosmos.open_by_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
     private void openDatabaseTool(Project project, CosmosDBAccount account) {
         if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
             final Consumer<Object> handler = (r) -> FUSEventSource.NOTIFICATION.openDownloadPageAndLog(project, IDE_DOWNLOAD_URL);
