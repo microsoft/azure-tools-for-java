@@ -122,7 +122,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             .servicePlan(plan)
             .deploymentSlot(slotConfig);
         final WebAppConfig webAppConfig = !configuration.isCreatingNew() ? configBuilder.build() :
-                configBuilder.region(region).pricingTier(pricingTier).monitorConfig(monitorConfig).build();
+                configBuilder.region(region).pricingTier(pricingTier).monitorConfig(monitorConfig).appSettings(configuration.getApplicationSettings()).build();
         final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder()
                 .artifactIdentifier(configuration.getArtifactIdentifier())
                 .artifactType(Optional.ofNullable(configuration.getAzureArtifactType()).map(AzureArtifactType::name).orElse(null)).build();
@@ -144,6 +144,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             configuration.setResourceGroup(webAppConfig.getResourceGroupName());
             configuration.setWebAppName(webAppConfig.getName());
             configuration.saveRuntime(webAppConfig.getRuntime());
+            configuration.setApplicationSettings(webAppConfig.getAppSettings());
             configuration.setCreatingNew(StringUtils.isEmpty(webAppConfig.getResourceId()));
             if (configuration.isCreatingNew()) {
                 configuration.setRegion(webAppConfig.getRegion().getName());

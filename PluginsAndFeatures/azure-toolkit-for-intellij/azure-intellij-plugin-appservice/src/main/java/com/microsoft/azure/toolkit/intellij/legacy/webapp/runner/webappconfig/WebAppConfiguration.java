@@ -21,7 +21,10 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IJavaAgentRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.IConnectionSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
@@ -40,11 +43,12 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel>
-        implements IWebAppRunConfiguration, IJavaAgentRunConfiguration {
+        implements IWebAppRunConfiguration, IJavaAgentRunConfiguration, IConnectionSupported {
 
     // const string
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
@@ -55,8 +59,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private final IntelliJWebAppSettingModel webAppSettingModel;
     @Getter
     @Setter
-    private Map<String, String> applicationSettings;
-
+    private Connection<?, ?> connection;
     private File javaAgent;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -73,6 +76,23 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new WebAppSettingEditor(getProject(), this);
+    }
+
+    @Override
+    public void setApplicationSettings(Map<String, String> env) {
+        FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), env);
+    }
+
+    @Override
+    public Map<String, String> getApplicationSettings() {
+        return FunctionUtils.loadAppSettingsFromSecurityStorage(getAppSettingsKey());
+    }
+
+    private String getAppSettingsKey() {
+        if (StringUtils.isEmpty(webAppSettingModel.getAppSettingsKey())) {
+            webAppSettingModel.setAppSettingsKey(UUID.randomUUID().toString());
+        }
+        return webAppSettingModel.getAppSettingsKey();
     }
 
     public Module getModule() {

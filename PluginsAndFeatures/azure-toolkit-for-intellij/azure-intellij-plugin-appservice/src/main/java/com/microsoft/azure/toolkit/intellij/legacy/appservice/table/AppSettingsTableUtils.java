@@ -11,7 +11,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.nimbusds.jose.util.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,7 @@ import java.awt.event.KeyEvent;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AppSettingsTableUtils {
-    public static JPanel createAppSettingPanel(FunctionAppSettingsTable appSettingsTable, AnActionButton... additionalActions) {
+    public static JPanel createAppSettingPanel(AppSettingsTable appSettingsTable, AnActionButton... additionalActions) {
         final AnActionButton btnAdd = new AnActionButton(message("common.add"), AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
@@ -46,7 +45,7 @@ public class AppSettingsTableUtils {
         return tableToolbarDecorator.createPanel();
     }
 
-    private static void removeProperty(FunctionAppSettingsTable appSettingsTable) {
+    private static void removeProperty(@Nonnull final AppSettingsTable appSettingsTable) {
         try {
             appSettingsTable.removeAppSettings(appSettingsTable.getSelectedRow());
             appSettingsTable.repaint();
@@ -55,7 +54,7 @@ public class AppSettingsTableUtils {
         }
     }
 
-    private static void addNewProperty(@Nonnull final FunctionAppSettingsTable appSettingsTable) {
+    private static void addNewProperty(@Nonnull final AppSettingsTable appSettingsTable) {
         final String key = Messages.showInputDialog(appSettingsTable, message("function.appSettings.add.key.message"),
                 message("function.appSettings.add.key.title"), null);
         if (StringUtils.isEmpty(key)) {

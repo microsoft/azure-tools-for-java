@@ -61,7 +61,7 @@ public class AppSettingModel implements TableModel {
             return false;
         }
         final Pair<String, String> target = appSettings.get(row);
-        return requiredKeys.contains(target.getKey()) && col == 0;
+        return !requiredKeys.contains(target.getKey()) || col != 0;
     }
 
     @Override

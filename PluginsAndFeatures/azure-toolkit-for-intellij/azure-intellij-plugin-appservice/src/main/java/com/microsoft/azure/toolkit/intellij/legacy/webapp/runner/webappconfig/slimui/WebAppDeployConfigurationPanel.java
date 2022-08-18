@@ -20,6 +20,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
+import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
@@ -48,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -60,14 +63,14 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
 
     private JPanel pnlSlotCheckBox;
     private JTextField txtNewSlotName;
-    private JComboBox cbxSlotConfigurationSource;
+    private JComboBox<Object> cbxSlotConfigurationSource;
     private JCheckBox chkDeployToSlot;
     private JCheckBox chkToRoot;
     private JPanel pnlRoot;
     private JPanel pnlSlotDetails;
     private JRadioButton rbtNewSlot;
     private JRadioButton rbtExistingSlot;
-    private JComboBox cbxSlotName;
+    private JComboBox<Object> cbxSlotName;
     private JPanel pnlSlot;
     private JPanel pnlSlotHolder;
     private JPanel pnlCheckBox;
@@ -82,8 +85,11 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     private JLabel lblArtifact;
     private JLabel lblWebApp;
     private WebAppComboBox comboBoxWebApp;
-    private final HideableDecorator slotDecorator;
+    private JPanel pnlAppSettings;
+    private JLabel lblAppSettings;
+    private AppSettingsTable appSettingsTable;
 
+    private final HideableDecorator slotDecorator;
     private final Project project;
 
     public WebAppDeployConfigurationPanel(@NotNull Project project) {
@@ -134,9 +140,12 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);
+
+        comboBoxWebApp.addItemListener(ignore -> Optional.ofNullable(comboBoxWebApp.getValue()).map(WebAppConfig::getAppSettings)
+                .ifPresent(map -> appSettingsTable.setAppSettings(map)));
     }
 
-    private void setComboBoxDefaultValue(JComboBox comboBox, Object value) {
+    private void setComboBoxDefaultValue(JComboBox<?> comboBox, Object value) {
         UIUtils.listComboBoxItems(comboBox).stream().filter(item -> item.equals(value)).findFirst().ifPresent(defaultItem -> comboBox.setSelectedItem(value));
     }
 
@@ -190,6 +199,9 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
         comboBoxArtifact.reloadItems();
+
+        appSettingsTable = new AppSettingsTable();
+        pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
     }
 
     private void loadDeploymentSlot(WebAppConfig selectedWebApp) {
@@ -201,9 +213,10 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
             chkDeployToSlot.setSelected(false);
         } else {
             chkDeployToSlot.setEnabled(true);
-            Mono.fromCallable(() -> Azure.az(AzureWebApp.class).webApp(selectedWebApp.getResourceId()).slots().list())
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(slots -> AzureTaskManager.getInstance().runLater(() -> fillDeploymentSlots(slots, selectedWebApp), AzureTask.Modality.ANY));
+            Mono.fromCallable(() -> Azure.az(AzureWebApp.class).webApp(selectedWebApp.getResourceId()))
+                    .map(webapp -> webapp.slots().list())
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe(slots -> AzureTaskManager.getInstance().runLater(() -> fillDeploymentSlots(slots, selectedWebApp), AzureTask.Modality.ANY));
         }
     }
 
@@ -215,8 +228,8 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         cbxSlotConfigurationSource.addItem(AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION);
         cbxSlotConfigurationSource.addItem(selectedWebApp.getName());
         slotList.stream().filter(Objects::nonNull).forEach(slot -> {
-            cbxSlotName.addItem(slot.name());
-            cbxSlotConfigurationSource.addItem(slot.name());
+            cbxSlotName.addItem(slot.getName());
+            cbxSlotConfigurationSource.addItem(slot.getName());
         });
         setComboBoxDefaultValue(cbxSlotName, defaultSlot);
         setComboBoxDefaultValue(cbxSlotConfigurationSource, defaultConfigurationSource);
@@ -237,6 +250,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         Optional.ofNullable(data.getWebAppConfig()).ifPresent(webApp -> {
             comboBoxWebApp.setConfigModel(webApp);
             comboBoxWebApp.setValue(new AzureComboBox.ItemReference<>(item -> WebAppConfig.isSameApp(item, webApp)));
+            appSettingsTable.setAppSettings(webApp.getAppSettings());
             toggleSlotPanel(webApp.getDeploymentSlot() != null);
             Optional.ofNullable(webApp.getDeploymentSlot()).ifPresent(slot -> {
                 chkDeployToSlot.setSelected(true);
@@ -262,6 +276,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
     @Override
     public WebAppDeployRunConfigurationModel getValue() {
         final AzureArtifact artifact = comboBoxArtifact.getValue();
+        final Map<String, String> appSettings = appSettingsTable.getAppSettings();
         final AzureArtifactConfig artifactConfig = artifact == null ? null :
                 AzureArtifactConfig.builder().artifactType(artifact.getType().name())
                         .artifactIdentifier(AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)).build();
@@ -271,6 +286,7 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
                         .configurationSource(Objects.toString(cbxSlotConfigurationSource.getSelectedItem(), null)).build() : null;
         final WebAppConfig webAppConfig = comboBoxWebApp.getValue();
         if (webAppConfig != null) {
+            webAppConfig.setAppSettings(appSettings);
             webAppConfig.setDeploymentSlot(slotConfig);
         }
         return WebAppDeployRunConfigurationModel.builder()

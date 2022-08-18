@@ -6,23 +6,27 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
 
 import com.intellij.ui.table.JBTable;
+import lombok.Getter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AppSettingsTable extends JBTable {
-
+    @Getter
+    protected final Set<String> removedKeys = new HashSet<>();
     protected final AppSettingModel appSettingModel = new AppSettingModel();
 
-    public AppSettingsTable(){
+    public AppSettingsTable() {
         super();
         this.setModel(appSettingModel);
         this.setCellSelectionEnabled(true);
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.setAutoscrolls(true);
-        this.setMinimumSize(new Dimension(-1, 100));
+        this.setMinimumSize(new Dimension(-1, 150));
         this.setPreferredScrollableViewportSize(null);
     }
 
@@ -43,6 +47,7 @@ public class AppSettingsTable extends JBTable {
     }
 
     public void removeAppSettings(int row) {
+        removedKeys.add(appSettingModel.getAppSettingsKey(row));
         appSettingModel.removeAppSettings(row);
         this.refresh();
     }
