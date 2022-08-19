@@ -43,22 +43,6 @@ public class CreateCosmosDBAccountAction {
         });
     }
 
-    public static CosmosDBAccountDraft.Config getDefaultConfig(final ResourceGroup resourceGroup) {
-        final List<Subscription> selectedSubscriptions = az(AzureAccount.class).account().getSelectedSubscriptions();
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(selectedSubscriptions), "There are no subscriptions in your account.");
-        final String name = String.format("cosmos-db-%s", Utils.getTimestamp());
-        final String defaultResourceGroupName = String.format("rg-%s", name);
-        final Subscription subscription = resourceGroup == null ? selectedSubscriptions.get(0) : resourceGroup.getSubscription();
-        final ResourceGroup group = resourceGroup == null ? az(AzureResources.class).groups(subscription.getId())
-                .create(defaultResourceGroupName, defaultResourceGroupName) : resourceGroup;
-        final CosmosDBAccountDraft.Config config = new CosmosDBAccountDraft.Config();
-        config.setName(name);
-        config.setSubscription(subscription);
-        config.setResourceGroup(group);
-        config.setKind(DatabaseAccountKind.SQL);
-        return config;
-    }
-
     @AzureOperation(name = "cosmos.create_account.account", params = {"config.getName()"}, type = AzureOperation.Type.ACTION)
     private static void doCreate(final CosmosDBAccountDraft.Config config, final Project project) {
         final AzureString title = OperationBundle.description("cosmos.create_account.account", config.getName());

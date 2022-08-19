@@ -42,8 +42,9 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
-import static com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction.getDefaultConfig;
-import static com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDatabaseAction.getDefaultDatabaseConfig;
+import static com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccountDraft.Config.getDefaultConfig;
+import static com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig.getDefaultDatabaseConfig;
+
 
 public class IntelliJCosmosActionsContributor implements IActionsContributor {
     @Override
