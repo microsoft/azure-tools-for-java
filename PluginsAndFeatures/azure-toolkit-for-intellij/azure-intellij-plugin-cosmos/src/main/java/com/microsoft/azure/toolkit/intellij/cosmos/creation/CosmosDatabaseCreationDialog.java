@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig;
 
 import javax.annotation.Nonnull;
@@ -52,10 +53,17 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         txtThroughputRu.setMinValue(400);
         txtThroughputRu.setMaxValue(1000000);
         txtThroughputRu.setValue(400);
+        txtThroughputRu.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
         txtMaxThroughput.setMinValue(1000);
         txtMaxThroughput.setValue(4000);
+        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
 
         autoscaleRadioButton.setSelected(true);
+    }
+
+    private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input) {
+        final Integer value = input.getValue();
+        return Objects.nonNull(value) && value % 100 == 0 ? AzureValidationInfo.success(input) : AzureValidationInfo.error("Throughput must be in multiples of 100", input);
     }
 
     private void toggleThroughputStatus() {
