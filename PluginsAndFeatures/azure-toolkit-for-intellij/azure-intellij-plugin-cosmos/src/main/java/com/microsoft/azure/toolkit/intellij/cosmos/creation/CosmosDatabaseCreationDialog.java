@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +50,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         buttonGroup.add(manualRadioButton);
         autoscaleRadioButton.addItemListener(e -> toggleThroughputStatus());
         manualRadioButton.addItemListener(e -> toggleThroughputStatus());
-
+        txtName.addValidator(() -> validateDatabaseName());
         txtThroughputRu.setMinValue(400);
         txtThroughputRu.setMaxValue(1000000);
         txtThroughputRu.setValue(400);
@@ -59,6 +60,12 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
 
         autoscaleRadioButton.setSelected(true);
+    }
+
+    private AzureValidationInfo validateDatabaseName() {
+            final String value = txtName.getValue();
+            return StringUtils.endsWith(value, StringUtils.SPACE) || StringUtils.containsAny(value, "\\", "/","#", "?", "%") ?
+                    AzureValidationInfo.error("Database name not end with space nor contains characters '\\', '/', '#', '?', '%'", txtName) : AzureValidationInfo.success(txtName);
     }
 
     private AzureValidationInfo validateThroughputIncrements(@Nonnull AzureIntegerInput input) {
