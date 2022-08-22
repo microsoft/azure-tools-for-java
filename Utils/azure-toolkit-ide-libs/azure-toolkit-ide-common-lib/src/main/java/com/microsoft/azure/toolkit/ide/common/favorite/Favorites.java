@@ -81,7 +81,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             return Collections.emptyList();
         }
         final List<Favorite> result = new LinkedList<>(super.list());
-        result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName())));
+        result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName().toLowerCase())));
         return result;
     }
 
@@ -96,7 +96,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             final ObjectMapper mapper = new ObjectMapper();
             try {
                 this.favorites = new LinkedList<>(Arrays.asList(mapper.readValue(favorites, String[].class))).stream()
-                    .distinct().collect(Collectors.toList());
+                    .map(String::toLowerCase).distinct().collect(Collectors.toList());
             } catch (final JsonProcessingException ex) {
                 AzureMessager.getMessager().error("failed to load favorites.");
                 this.favorites = new LinkedList<>();
@@ -109,7 +109,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Nullable
     @Override
     protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
-        if (this.favorites.contains(name)) {
+        if (this.favorites.contains(name.toLowerCase())) {
             return Azure.az().getById(name);
         }
         return null;
@@ -119,7 +119,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @SneakyThrows
     protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
         final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
-        this.favorites.remove(resourceId);
+        this.favorites.remove(resourceId.toLowerCase());
         this.persist();
     }
 
@@ -157,7 +157,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
     public boolean exists(@Nonnull String resourceId) {
-        return this.favorites.contains(resourceId);
+        return this.favorites.contains(resourceId.toLowerCase());
     }
 
     public void unpinAll() {

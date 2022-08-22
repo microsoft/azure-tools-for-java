@@ -14,7 +14,7 @@ import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Objects;
+import java.util.Optional;
 
 public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite, AbstractAzResource<?, ?, ?>> {
     @Getter
@@ -48,7 +48,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
         type = AzureOperation.Type.SERVICE
     )
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
-        Favorites.getInstance().favorites.add(0, resource.getId());
+        Favorites.getInstance().favorites.add(0, resource.getId().toLowerCase());
         Favorites.getInstance().persist();
         return this.resource;
     }
@@ -66,5 +66,10 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
 
     public void setResource(AbstractAzResource<?, ?, ?> resource) {
         this.resource = resource;
+    }
+
+    public AbstractAzResource<?, ?, ?> getResource() {
+        //noinspection unchecked,rawtypes
+        return Optional.ofNullable(this.resource).orElseGet(() -> (AbstractAzResource) super.getResource());
     }
 }
