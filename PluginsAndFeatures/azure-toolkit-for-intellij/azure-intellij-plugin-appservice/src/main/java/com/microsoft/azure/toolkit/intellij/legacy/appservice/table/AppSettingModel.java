@@ -26,7 +26,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AppSettingModel implements TableModel {
 
-    private static final String[] TITLE = {"Key", "Value"};
+    private static final String[] TITLE = {"Name", "Value"};
 
     private final List<Pair<String, String>> appSettings = new ArrayList<>();
     private final Set<String> requiredKeys = new HashSet<>();
@@ -89,7 +89,7 @@ public class AppSettingModel implements TableModel {
 
     public int addAppSettings(String key, String value) {
         final Pair<String, String> result = Pair.of(key, value);
-        final int index = ListUtils.indexOf(appSettings, pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key));
+        final int index = getAppSettingsRow(key);
         if (index >= 0) {
             appSettings.set(index, result);
         } else {
@@ -121,6 +121,10 @@ public class AppSettingModel implements TableModel {
             return null;
         }
         return appSettings.get(row).getKey();
+    }
+
+    public int getAppSettingsRow(@Nullable String key) {
+        return ListUtils.indexOf(appSettings, pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key));
     }
 
     public Map<String, String> getAppSettings() {

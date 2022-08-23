@@ -5,15 +5,17 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import lombok.Data;
 
+import java.util.Map;
 import java.util.Set;
 
 @Data
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
     private String appSettingsKey;
+    private Map<String,String> appSettings;
     private Set<String> appSettingsToRemove;
     private AzureArtifactType azureArtifactType;
     private boolean openBrowserAfterDeployment = true;

@@ -6,19 +6,32 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
 
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.intellij.CommonConst;
 import lombok.Getter;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class AppSettingsTable extends JBTable {
     @Getter
-    protected final Set<String> removedKeys = new HashSet<>();
+    protected final Set<String> appSettingsKeyToRemove = new HashSet<>();
     protected final AppSettingModel appSettingModel = new AppSettingModel();
+    protected AppServiceConfig config;
 
     public AppSettingsTable() {
         super();
@@ -34,27 +47,60 @@ public class AppSettingsTable extends JBTable {
         return appSettingModel.addAppSettings(key, value);
     }
 
-    public void addAppSettings(String key, String value) {
+    public void setAppService(@Nonnull final AppServiceConfig config) {
+        final Map<String, String> values = this.getAppSettings();
+        if (AppServiceConfig.isSameApp(config, this.config)) {
+            return;
+        }
+        this.config = config;
+        AzureTaskManager.getInstance().runInBackground("Loading app settings", () -> {
+            this.getEmptyText().setText(CommonConst.LOADING_TEXT);
+            this.setEnabled(false);
+            this.clear();
+            final Map<String, String> remoteAppSettings = StringUtils.isNoneBlank(config.getResourceId()) ?
+                    ((AppServiceAppBase<?, ?, ?>) Objects.requireNonNull(Azure.az(AzureAppService.class).getById(config.getResourceId()))).getAppSettings() : Collections.emptyMap();
+            AzureTaskManager.getInstance().runLater(() -> {
+                AppSettingsTable.this.setAppSettings(remoteAppSettings);
+                config.getAppSettingsToRemove().forEach(this::removeAppSettings);
+                AppSettingsTable.this.addAppSettings(config.getAppSettings());
+                this.getEmptyText().setText("No app settings configured");
+                this.setEnabled(true);
+            }, AzureTask.Modality.ANY);
+        });
+    }
+
+    public void addAppSettings(@Nonnull String key, String value) {
+        appSettingsKeyToRemove.remove(key);
         final int index = appSettingModel.addAppSettings(key, value);
         this.refresh();
         scrollToRow(index);
     }
 
-    public void addAppSettings(Map<String, String> appSettingMap) {
-        appSettingMap.entrySet().stream().forEach(entry -> addAppSettings(entry.getKey(), entry.getValue()));
+    public void addAppSettings(@Nullable final Map<String, String> appSettingMap) {
+        if (MapUtils.isEmpty(appSettingMap)) {
+            return;
+        }
+        appSettingMap.entrySet().forEach(entry -> addAppSettings(entry.getKey(), entry.getValue()));
         this.refresh();
         scrollToRow(0);
     }
 
     public void removeAppSettings(int row) {
-        removedKeys.add(appSettingModel.getAppSettingsKey(row));
+        appSettingsKeyToRemove.add(appSettingModel.getAppSettingsKey(row));
         appSettingModel.removeAppSettings(row);
         this.refresh();
     }
 
-    public void setAppSettings(Map<String, String> appSettingMap) {
+    public void removeAppSettings(@Nonnull String key) {
+        final int row = appSettingModel.getAppSettingsRow(key);
+        this.removeAppSettings(row);
+    }
+
+    public void setAppSettings(@Nullable final Map<String, String> appSettingMap) {
         clear();
-        addAppSettings(appSettingMap);
+        if (MapUtils.isNotEmpty(appSettingMap)) {
+            addAppSettings(appSettingMap);
+        }
     }
 
     public void clear() {

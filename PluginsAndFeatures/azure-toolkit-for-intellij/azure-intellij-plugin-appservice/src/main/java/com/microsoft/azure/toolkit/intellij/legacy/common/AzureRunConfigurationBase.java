@@ -5,7 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.common;
 
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.JavaRunConfigurationModule;
+import com.intellij.execution.configurations.LocatableConfiguration;
+import com.intellij.execution.configurations.LocatableConfigurationBase;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
@@ -16,6 +20,7 @@ import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
 import com.microsoft.intellij.util.AzureLoginHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,10 +68,7 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
         XmlSerializer.serializeInto(getModel(), element, new SerializationFilterBase() {
             @Override
             protected boolean accepts(@NotNull Accessor accessor, @NotNull Object bean, @Nullable Object beanValue) {
-                if (accessor == null || bean == null) {
-                    return false;
-                }
-                return !(accessor.getName() instanceof String && accessor.getName().equalsIgnoreCase("password"));
+                return !StringUtils.equalsAnyIgnoreCase(accessor.getName(), "password", "appSettings");
             }
         });
     }

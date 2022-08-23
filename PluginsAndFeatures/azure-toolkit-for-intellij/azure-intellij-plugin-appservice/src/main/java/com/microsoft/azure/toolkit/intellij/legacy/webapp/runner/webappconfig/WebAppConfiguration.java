@@ -19,12 +19,10 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
-import com.microsoft.azure.toolkit.intellij.common.runconfig.IJavaAgentRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.IConnectionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
@@ -38,17 +36,16 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Set;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel>
-        implements IWebAppRunConfiguration, IJavaAgentRunConfiguration, IConnectionSupported {
+        implements IWebAppRunConfiguration, IConnectionAware {
 
     // const string
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
@@ -60,11 +57,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Getter
     @Setter
     private Connection<?, ?> connection;
-    private File javaAgent;
+
+    private String appSettingsKey;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        webAppSettingModel = new IntelliJWebAppSettingModel();
+        this.webAppSettingModel = new IntelliJWebAppSettingModel();
     }
 
     @Override
@@ -80,19 +78,20 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     @Override
     public void setApplicationSettings(Map<String, String> env) {
-        FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), env);
+        webAppSettingModel.setAppSettings(env);
     }
 
     @Override
     public Map<String, String> getApplicationSettings() {
-        return FunctionUtils.loadAppSettingsFromSecurityStorage(getAppSettingsKey());
+        return webAppSettingModel.getAppSettings();
     }
 
-    private String getAppSettingsKey() {
-        if (StringUtils.isEmpty(webAppSettingModel.getAppSettingsKey())) {
-            webAppSettingModel.setAppSettingsKey(UUID.randomUUID().toString());
-        }
+    public String getAppSettingsKey() {
         return webAppSettingModel.getAppSettingsKey();
+    }
+
+    public void setAppSettingKey(final String appSettingsKey) {
+        this.webAppSettingModel.setAppSettingsKey(appSettingsKey);
     }
 
     public Module getModule() {
@@ -374,14 +373,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         webAppSettingModel.saveRuntime(runtime);
     }
 
-    @Nullable
-    public File getJavaAgent() {
-        return javaAgent;
+    public Set<String> getAppSettingsToRemove() {
+        return webAppSettingModel.getAppSettingsToRemove();
     }
 
-    @Override
-    public void setJavaAgent(@Nullable File javaAgent) {
-        this.javaAgent = javaAgent;
+    public void setAppSettingsToRemove(@Nonnull Set<String> appSettingsToRemove) {
+        webAppSettingModel.setAppSettingsToRemove(appSettingsToRemove);
     }
 
     public void setWebApp(@Nonnull WebApp webApp) {
