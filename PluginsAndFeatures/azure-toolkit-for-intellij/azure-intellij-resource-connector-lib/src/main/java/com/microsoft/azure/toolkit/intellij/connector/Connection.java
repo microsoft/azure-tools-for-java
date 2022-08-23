@@ -12,7 +12,6 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.runconfig.IJavaAgentRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -29,7 +28,6 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -79,6 +77,11 @@ public class Connection<R, C> {
         return false;
     }
 
+    public Map<String, String> getEnvironmentVariables(final Project project) {
+        return this.resource.initEnv(project).entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()), Map.Entry::getValue));
+    }
+
     /**
      * do some preparation in the {@code Connect Azure Resource} before run task
      * of the {@code configuration}<br>
@@ -86,18 +89,9 @@ public class Connection<R, C> {
     @AzureOperation(name = "connector.prepare_before_run", type = AzureOperation.Type.ACTION)
     public boolean prepareBeforeRun(@Nonnull RunConfiguration configuration, DataContext dataContext) {
         try {
-            this.env = this.resource.initEnv(configuration.getProject()).entrySet().stream()
-                .collect(Collectors.toMap(
-                    e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()),
-                    Map.Entry::getValue));
-            if (configuration instanceof IWebAppRunConfiguration) { // set envs for remote deploy
-                final IWebAppRunConfiguration webAppConfiguration = (IWebAppRunConfiguration) configuration;
-                final Map<String, String> settings = Optional.ofNullable(webAppConfiguration.getApplicationSettings()).orElse(new HashMap<>());
-                settings.putAll(this.env);
-                webAppConfiguration.setApplicationSettings(settings);
-            }
-            if (resource.getDefinition() instanceof IJavaAgentSupported && configuration instanceof IJavaAgentRunConfiguration) {
-                ((IJavaAgentRunConfiguration) configuration).setJavaAgent(((IJavaAgentSupported) resource.getDefinition()).getJavaAgent());
+            this.env = getEnvironmentVariables(configuration.getProject());
+            if (configuration instanceof IConnectionAware) { // set envs for remote deploy
+                ((IConnectionAware) configuration).setConnection(this);
             }
             return true;
         } catch (final Throwable e) {

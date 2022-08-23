@@ -16,8 +16,8 @@ import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.function.FunctionAppComboBox;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTable;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.AppSettingsTableUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -53,7 +53,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JLabel lblModule;
     private JLabel lblFunction;
     private JLabel lblAppSettings;
-    private AppSettingsTable appSettingsTable;
+    private FunctionAppSettingsTable appSettingsTable;
     private FunctionAppConfig appSettingsFunctionApp;
     private String appSettingsKey = UUID.randomUUID().toString();
     private Module previousModule = null;
@@ -161,8 +161,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     private void createUIComponents() {
         final String localSettingPath = Paths.get(project.getBasePath(), "local.settings.json").toString();
-        appSettingsTable = new AppSettingsTable(localSettingPath);
-        pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
+        appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
+        pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
 
         functionAppComboBox = new FunctionAppComboBox(project);
         functionAppComboBox.addActionListener(event -> onSelectFunctionApp());

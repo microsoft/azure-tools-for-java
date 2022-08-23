@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactType;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.IntelliJWebAppSettingModel;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
@@ -35,12 +36,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> {
     private JPanel pnlRoot;
     private WebAppDeployConfigurationPanel pnlDeployment;
-
+    private String appSettingsKey = UUID.randomUUID().toString();
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project, false);
         $$$setupUI$$$();
@@ -91,6 +95,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configuration.getWebAppId(), configuration.getWebAppName())) {
             return;
         }
+        Map<String, String> appSettings = Collections.emptyMap();
+        if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
+            this.appSettingsKey = configuration.getAppSettingsKey();
+            appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
+        }
         final Subscription subscription = new Subscription(configuration.getSubscriptionId());
         final Region region = StringUtils.isEmpty(configuration.getRegion()) ? null : Region.fromName(configuration.getRegion());
         final String rgName = configuration.getResourceGroup();
@@ -120,9 +129,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             .resourceGroup(resourceGroup)
             .runtime(runtime)
             .servicePlan(plan)
-            .deploymentSlot(slotConfig);
-        final WebAppConfig webAppConfig = !configuration.isCreatingNew() ? configBuilder.build() :
-                configBuilder.region(region).pricingTier(pricingTier).monitorConfig(monitorConfig).build();
+            .deploymentSlot(slotConfig)
+            .appSettings(appSettings)
+            .appSettingsToRemove(configuration.getAppSettingsToRemove());
+        final WebAppConfig webAppConfig = !configuration.isCreatingNew() ? configBuilder.build() : configBuilder.region(region).pricingTier(pricingTier)
+                .monitorConfig(monitorConfig).build();
         final AzureArtifactConfig artifactConfig = AzureArtifactConfig.builder()
                 .artifactIdentifier(configuration.getArtifactIdentifier())
                 .artifactType(Optional.ofNullable(configuration.getAzureArtifactType()).map(AzureArtifactType::name).orElse(null)).build();
@@ -138,12 +149,16 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @Override
     protected void apply(@NotNull WebAppConfiguration configuration) {
         final WebAppDeployRunConfigurationModel runConfigurationModel = pnlDeployment.getValue();
+        configuration.setAppSettingKey(appSettingsKey);
         Optional.ofNullable(runConfigurationModel.getWebAppConfig()).ifPresent(webAppConfig -> {
             configuration.setWebAppId(webAppConfig.getResourceId());
             configuration.setSubscriptionId(webAppConfig.getSubscriptionId());
             configuration.setResourceGroup(webAppConfig.getResourceGroupName());
             configuration.setWebAppName(webAppConfig.getName());
             configuration.saveRuntime(webAppConfig.getRuntime());
+            FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, webAppConfig.getAppSettings());
+            configuration.setApplicationSettings(webAppConfig.getAppSettings());
+            configuration.setAppSettingsToRemove(webAppConfig.getAppSettingsToRemove());
             configuration.setCreatingNew(StringUtils.isEmpty(webAppConfig.getResourceId()));
             if (configuration.isCreatingNew()) {
                 configuration.setRegion(webAppConfig.getRegion().getName());

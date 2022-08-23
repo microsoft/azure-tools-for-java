@@ -28,9 +28,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -51,6 +53,8 @@ public abstract class AppServiceConfig {
     private AppServicePlanConfig servicePlan;
     private Region region;
     private PricingTier pricingTier;
+    @Builder.Default
+    private Set<String> appSettingsToRemove = new HashSet<>();
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
     private DeploymentSlotConfig deploymentSlot;

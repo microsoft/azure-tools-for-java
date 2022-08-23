@@ -71,6 +71,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
                 config.setRuntime(appService.getRuntime());
                 config.setRegion(appService.getRegion());
                 config.setServicePlan(AppServicePlanConfig.fromResource(appService.getAppServicePlan()));
+                config.setAppSettings(appService.getAppSettings());
             })).subscribe();
         return config;
     }
