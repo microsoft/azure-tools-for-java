@@ -57,7 +57,7 @@ public class CosmosDatabaseCreationDialog extends AzureDialog<DatabaseConfig> im
         txtThroughputRu.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
         txtMaxThroughput.setMinValue(1000);
         txtMaxThroughput.setValue(4000);
-        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtThroughputRu));
+        txtMaxThroughput.addValidator(() -> validateThroughputIncrements(txtMaxThroughput));
 
         autoscaleRadioButton.setSelected(true);
     }
