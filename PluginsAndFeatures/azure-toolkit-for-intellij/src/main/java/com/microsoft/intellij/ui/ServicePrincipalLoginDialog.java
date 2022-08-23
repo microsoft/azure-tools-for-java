@@ -93,7 +93,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         initJsonData();
 
         // initialize cert file select
-        FileChooserDescriptor pem = FileChooserDescriptorFactory.createSingleFileDescriptor("pem");
+        final FileChooserDescriptor pem = FileChooserDescriptorFactory.createSingleFileDescriptor("pem");
         pem.withFileFilter(file -> StringUtils.equalsIgnoreCase(file.getExtension(), "pem"));
         certFileTextField.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Certificate File", null, certFileTextField, null,
             pem, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT) {
@@ -131,20 +131,20 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
 
     @Override
     protected @NotNull List<ValidationInfo> doValidateAll() {
-        List<ValidationInfo> res = new ArrayList<>();
-        AuthConfiguration data = getValue();
+        final List<ValidationInfo> res = new ArrayList<>();
+        final AuthConfiguration data = getValue();
         if (StringUtils.isBlank(data.getTenant())) {
-            res.add(new ValidationInfo("tenant is required.", tenantIdTextField));
+            res.add(new ValidationInfo("Tenant is required.", tenantIdTextField));
         }
-        if (!isGuid(data.getTenant())) {
-            res.add(new ValidationInfo("tenant should be a valid guid.", tenantIdTextField));
+        if (notGuid(data.getTenant())) {
+            res.add(new ValidationInfo("Tenant should be a valid guid.", tenantIdTextField));
         }
 
         if (StringUtils.isBlank(data.getClient())) {
-            res.add(new ValidationInfo("clientId(appId) is required.", clientIdTextField));
+            res.add(new ValidationInfo("ClientId(appId) is required.", clientIdTextField));
         }
-        if (!isGuid(data.getClient())) {
-            res.add(new ValidationInfo("clientId(appId) should be a valid guid.", clientIdTextField));
+        if (notGuid(data.getClient())) {
+            res.add(new ValidationInfo("ClientId(appId) should be a valid guid.", clientIdTextField));
         }
 
         if (this.passwordRadioButton.isSelected()) {
@@ -182,17 +182,17 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     private EditorTextField buildCodeViewer() {
-        EditorTextFieldProvider service = ApplicationManager.getApplication().getService(EditorTextFieldProvider.class);
-        Set<EditorCustomization> editorFeatures = new HashSet<>();
+        final EditorTextFieldProvider service = ApplicationManager.getApplication().getService(EditorTextFieldProvider.class);
+        final Set<EditorCustomization> editorFeatures = new HashSet<>();
         editorFeatures.add(SoftWrapsEditorCustomization.ENABLED);
         editorFeatures.add(SpellCheckingEditorCustomization.getInstance(false));
-        EditorTextField editorTextField = service.getEditorField(Objects.requireNonNull(Language.findLanguageByID("JSON")), project, editorFeatures);
+        final EditorTextField editorTextField = service.getEditorField(Objects.requireNonNull(Language.findLanguageByID("JSON")), project, editorFeatures);
         editorTextField.setMinimumSize(new Dimension(200, 100));
         return editorTextField;
     }
 
     public AuthConfiguration getValue() {
-        AuthConfiguration data = new AuthConfiguration(AuthType.SERVICE_PRINCIPAL);
+        final AuthConfiguration data = new AuthConfiguration(AuthType.SERVICE_PRINCIPAL);
 
         data.setClient(clientIdTextField.getText());
         data.setTenant(tenantIdTextField.getText());
@@ -220,7 +220,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
     }
 
     private void initJsonData() {
-        String textFromClip = findTextInClipboard(str ->
+        final String textFromClip = findTextInClipboard(str ->
             StringUtils.contains(str, "appId") && StringUtils.contains(str, "tenant") &&
                 (StringUtils.contains(str, "password") || StringUtils.contains(str, "fileWithCertAndPrivateKey"))
         );
@@ -235,14 +235,14 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         if (func == null) {
             return null;
         }
-        for (Transferable currentItem : CopyPasteManager.getInstance().getAllContents()) {
+        for (final Transferable currentItem : CopyPasteManager.getInstance().getAllContents()) {
             if (currentItem.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 try {
-                    String itemStr = currentItem.getTransferData(DataFlavor.stringFlavor).toString();
+                    final String itemStr = currentItem.getTransferData(DataFlavor.stringFlavor).toString();
                     if (func.test(itemStr)) {
                         return itemStr;
                     }
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -258,18 +258,18 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
             return;
         }
         try {
-            Map<String, String> map = new LinkedHashMap<>();
-            AuthConfiguration data = getValue();
+            final Map<String, String> map = new LinkedHashMap<>();
+            final AuthConfiguration data = getValue();
 
             if (this.certificateRadioButton.isSelected()) {
                 map.put("fileWithCertAndPrivateKey", data.getCertificate());
             } else {
-                String password = StringUtils.isNotBlank(data.getKey()) ? "<hidden>" : "<empty>";
+                final String password = StringUtils.isNotBlank(data.getKey()) ? "<hidden>" : "<empty>";
                 map.put("password", password);
             }
             map.put("appId", data.getClient());
             map.put("tenant", data.getTenant());
-            String text = JsonUtils.toJson(map);
+            final String text = JsonUtils.toJson(map);
             if (!StringUtils.equals(jsonDataEditor.getText(), text)) {
                 this.jsonDataEditor.setText(text);
                 this.jsonDataEditor.setCaretPosition(0);
@@ -314,7 +314,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
                 });
             }
 
-        } catch (JsonSyntaxException ex) {
+        } catch (final JsonSyntaxException ex) {
             // ignore all json errors
         }
     }
@@ -323,11 +323,11 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         return Arrays.asList("<hidden>", "<empty>").contains(password);
     }
 
-    private static boolean isGuid(String str) {
+    private static boolean notGuid(String str) {
         if (StringUtils.isBlank(str)) {
-            return false;
+            return true;
         }
-        return GUID_PATTERN.matcher(str).matches();
+        return !GUID_PATTERN.matcher(str).matches();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

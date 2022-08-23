@@ -32,7 +32,7 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
     @Override
     default boolean needValidation() {
         final JComponent comp = this.getInputComponent();
-        return AzureFormInput.super.needValidation() && comp.isEnabled() && comp.isVisible();
+        return AzureFormInput.super.needValidation() && comp.isVisible();
     }
 
     @Override
