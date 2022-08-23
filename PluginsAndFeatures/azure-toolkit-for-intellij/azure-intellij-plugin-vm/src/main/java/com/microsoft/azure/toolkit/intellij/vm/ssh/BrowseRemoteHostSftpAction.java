@@ -56,7 +56,7 @@ public class BrowseRemoteHostSftpAction {
     private static void tryConnecting(@Nonnull Project project, SshConfig sshConfig, Runnable callback) {
         final SshUiData sshUiData = new SshUiData(sshConfig);
         final AzureString title = OperationBundle.description("vm.connecting.vm", sshConfig.getName());
-        AzureTaskManager.getInstance().runInModal(title, () -> {
+        AzureTaskManager.getInstance().runInConditionalModal(title, () -> {
             try {
                 RemoteCredentialsUtil.connectionBuilder(sshUiData, project)
                     .withConnectionTimeout(10L, TimeUnit.SECONDS)
