@@ -7,11 +7,12 @@ package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.util.PathUtil;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -24,10 +25,11 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlotDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDraft;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppModule;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -56,6 +58,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -64,8 +67,10 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String CATALINA_OPTS = "CATALINA_OPTS";
     private File artifact;
-    private WebAppConfiguration webAppConfiguration;
+    private final WebAppConfiguration webAppConfiguration;
     private final IntelliJWebAppSettingModel webAppSettingModel;
+
+    private final Map<String, String> appSettingsForResourceConnection = new HashMap<>();
 
     /**
      * Place to execute the Web App deployment task.
@@ -88,17 +93,22 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
         final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
         applyResourceConnection(deployTarget, processHandler);
+        updateApplicationSettings(deployTarget, processHandler);
         AzureWebAppMvpModel.getInstance().deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 
     private void applyResourceConnection(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
-        uploadJavaAgent(deployTarget);
-        updateApplicationSettings(deployTarget, processHandler);
+        final Connection<?, ?> connection = webAppConfiguration.getConnection();
+        if (Objects.nonNull(connection)) {
+            Optional.ofNullable(connection.getEnvironmentVariables(this.project)).ifPresent(appSettingsForResourceConnection::putAll);
+        }
+        if (Objects.nonNull(connection) && connection.getResource().getDefinition() instanceof IJavaAgentSupported) {
+            uploadJavaAgent(deployTarget, ((IJavaAgentSupported) connection.getResource().getDefinition()).getJavaAgent());
+        }
     }
 
-    private void uploadJavaAgent(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget) {
-        final File javaAgent = webAppConfiguration.getJavaAgent();
+    private void uploadJavaAgent(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, @Nullable File javaAgent) {
         if (javaAgent == null || !javaAgent.exists()) {
             return;
         }
@@ -111,7 +121,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         AppServiceFile file;
         try {
             file = deployTarget.getFileByPath(targetPath);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             file = null;
         }
         if (file == null) {
@@ -124,7 +134,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
 
     private void updateAppServiceVMOptions(AppServiceAppBase<?, ?, ?> deployTarget, String targetPath) {
         final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
-        final WebContainer webContainer = deployTarget.getRuntime().getWebContainer();
+        final WebContainer webContainer = Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer();
         final String javaOptsParameter = (webContainer == WebContainer.JAVA_SE || webContainer == WebContainer.JBOSS_7) ? JAVA_OPTS : CATALINA_OPTS;
         final String javaOpts = applicationSettings.get(javaOptsParameter);
         final String javaAgentValue = String.format("-javaagent:%s", targetPath);
@@ -132,23 +142,28 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
             return;
         }
         final String value = StringUtils.isEmpty(javaOpts) ? javaAgentValue : javaOpts + " " + javaAgentValue;
-        applicationSettings.put(javaOptsParameter, value);
+        appSettingsForResourceConnection.put(javaOptsParameter, value);
     }
 
     private void updateApplicationSettings(AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
-        final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
+        final Map<String, String> applicationSettings = new HashMap<>(webAppConfiguration.getApplicationSettings());
+        applicationSettings.putAll(appSettingsForResourceConnection);
         if (MapUtils.isEmpty(applicationSettings)) {
             return;
         }
         if (deployTarget instanceof WebApp) {
             processHandler.setText("Updating application settings...");
             final WebAppDraft draft = (WebAppDraft) deployTarget.update();
+            webAppConfiguration.getAppSettingsToRemove().forEach(draft::removeAppSetting);
             draft.setAppSettings(applicationSettings);
             draft.updateIfExist();
             processHandler.setText("Update application settings successfully.");
         } else if (deployTarget instanceof WebAppDeploymentSlot) {
             processHandler.setText("Updating deployment slot application settings...");
-            AzureWebAppMvpModel.getInstance().updateDeploymentSlotAppSettings((WebAppDeploymentSlot) deployTarget, applicationSettings);
+            final WebAppDeploymentSlotDraft update = (WebAppDeploymentSlotDraft) deployTarget.update();
+            update.setAppSettings(applicationSettings);
+            webAppConfiguration.getAppSettingsToRemove().forEach(update::removeAppSetting);
+            update.updateIfExist();
             processHandler.setText("Update deployment slot application settings successfully.");
         }
     }
@@ -232,13 +247,13 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         params = {"this.webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private String getTargetPath() throws AzureExecutionException {
+    private String getTargetPath() {
         final AzureArtifact azureArtifact =
                 AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
                                                                                webAppConfiguration.getArtifactIdentifier());
         if (Objects.isNull(azureArtifact)) {
             final String error = String.format("selected artifact[%s] not found", webAppConfiguration.getArtifactIdentifier());
-            throw new AzureExecutionException(error);
+            throw new AzureToolkitRuntimeException(error);
         }
         return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
     }
@@ -262,7 +277,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     @NotNull
     private String getUrl(@NotNull AppServiceAppBase<?, ?, ?> webApp, @NotNull String fileName, @NotNull String fileType) {
         String url = "https://" + webApp.getHostName();
-        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR) && !webAppSettingModel.isDeployToRoot()) {
+        if (Objects.equals(fileType, MavenConstants.TYPE_WAR) && !webAppSettingModel.isDeployToRoot()) {
             url += "/" + WebAppUtils.encodeURL(fileName.replaceAll("#", StringUtils.EMPTY)).replaceAll("\\+", "%20");
         }
         return url;
@@ -272,12 +287,12 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         webAppSettingModel.setCreatingNew(false);
         // todo: add flag to indicate create new slot or not
         if (app instanceof WebAppDeploymentSlot) {
-            webAppSettingModel.setSlotName(app.name());
+            webAppSettingModel.setSlotName(app.getName());
             webAppSettingModel.setNewSlotConfigurationSource(AzureWebAppMvpModel.DO_NOT_CLONE_SLOT_CONFIGURATION);
             webAppSettingModel.setNewSlotName("");
-            webAppSettingModel.setWebAppId(((WebAppDeploymentSlot) app).getParent().id());
+            webAppSettingModel.setWebAppId(((WebAppDeploymentSlot) app).getParent().getId());
         } else {
-            webAppSettingModel.setWebAppId(app.id());
+            webAppSettingModel.setWebAppId(app.getId());
         }
         webAppSettingModel.setWebAppName("");
         webAppSettingModel.setResourceGroup("");
