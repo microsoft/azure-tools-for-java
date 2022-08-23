@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 public class FunctionRunLineMarkerProvider extends RunLineMarkerContributor {
     @Nullable
     @Override
-    @ExceptionNotification
     public Info getInfo(@NotNull PsiElement e) {
         if (isIdentifier(e)) {
             final PsiElement parentElement = e.getParent();

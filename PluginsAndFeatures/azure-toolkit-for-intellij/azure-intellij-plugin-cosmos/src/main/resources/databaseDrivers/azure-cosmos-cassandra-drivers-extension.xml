@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+    <artifact name="Azure Cosmos Extensions for Apache Cassandra">
+        <version version="1.1.2">
+            <item type="maven" url="com.azure:azure-cosmos-cassandra-driver-4-extensions:1.1.2"/>
+        </version>
+        <version version="1.1.1">
+            <item type="maven" url="com.azure:azure-cosmos-cassandra-driver-4-extensions:1.1.1"/>
+        </version>
+        <version version="1.1.0">
+            <item type="maven" url="com.azure:azure-cosmos-cassandra-driver-4-extensions:1.1.0"/>
+        </version>
+        <version version="1.0.1">
+            <item type="maven" url="com.azure:azure-cosmos-cassandra-driver-4-extensions:1.0.1"/>
+        </version>
+        <version version="1.0.0">
+            <item type="maven" url="com.azure:azure-cosmos-cassandra-driver-4-extensions:1.0.0"/>
+        </version>
+    </artifact>
+</artifacts>
