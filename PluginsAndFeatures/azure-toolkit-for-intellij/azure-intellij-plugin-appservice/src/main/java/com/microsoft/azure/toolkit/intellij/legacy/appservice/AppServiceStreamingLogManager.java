@@ -189,7 +189,7 @@ public enum AppServiceStreamingLogManager {
             return functionApp.streamAllLogsAsync();
         }
 
-        // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
+        // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0.JAVA17/src/
         // commands/logstream/startStreamingLogs.ts#L53
         private void openLiveMetricsStream() {
             final String aiKey = Optional.ofNullable(functionApp.getAppSettings()).map(settings -> settings.get(APPINSIGHTS_INSTRUMENTATIONKEY)).orElse(null);

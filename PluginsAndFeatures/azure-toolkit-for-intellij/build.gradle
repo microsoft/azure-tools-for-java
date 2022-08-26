@@ -1,6 +1,6 @@
 plugins {
-    id "org.jetbrains.intellij" version "1.5.2"
-    id "org.jetbrains.kotlin.jvm" version "1.6.10"
+    id "org.jetbrains.intellij" version "1.6.0"
+    id "org.jetbrains.kotlin.jvm" version "1.6.21"
     id "de.undercouch.download" version "4.1.1"
     id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.0.0-m2"

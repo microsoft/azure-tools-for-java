@@ -125,7 +125,7 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
     }
 
     @Override
-    public @NotNull <T extends Component> ActionListener createBrowser(@NotNull Project project, @NlsContexts.DialogTitle String title, @NotNull TextComponentAccessor<T> textComponentAccessor, @NotNull T component, @NotNull Supplier<TargetEnvironmentConfiguration> configurationSupplier) {
+    public @NotNull <T extends Component> ActionListener createBrowser(@NotNull Project project, @NlsContexts.DialogTitle String title, @NotNull TextComponentAccessor<T> textComponentAccessor, @NotNull T component, @NotNull Supplier<? extends TargetEnvironmentConfiguration> configurationSupplier) {
         return new ActionListener() {
             public final void actionPerformed(ActionEvent it) {
                 final TargetEnvironmentConfiguration configuration = configurationSupplier.get();
