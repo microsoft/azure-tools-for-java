@@ -27,11 +27,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.68.0-SNAPSHOT</version>
+    <version>3.68.0</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azuretool.version>3.68.0-SNAPSHOT</azuretool.version>
+        <azuretool.version>3.68.0</azuretool.version>
         <azure.version>1.41.3</azure.version>
         <kotlin.version>1.6.21</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
