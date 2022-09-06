@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -47,6 +48,9 @@ public class CreateWebAppTask implements Task {
         webAppConfig.setName(name);
         webAppConfig.setSubscription(subscription);
         webAppConfig.setRuntime(Runtime.LINUX_JAVA11);
+        final String rgName = Utils.generateRandomResourceName(String.format("rg-%s", name), 90);
+        final ResourceGroupConfig newGroupConfig = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(webAppConfig.getRegion()).build();
+        webAppConfig.setResourceGroup(newGroupConfig);
         final WebApp webApp = WebAppService.getInstance().createWebApp(webAppConfig);
         context.applyResult(WEBAPP_ID, webApp.getId());
         context.applyResult(RESOURCE_GROUP, webApp.getResourceGroupName());
