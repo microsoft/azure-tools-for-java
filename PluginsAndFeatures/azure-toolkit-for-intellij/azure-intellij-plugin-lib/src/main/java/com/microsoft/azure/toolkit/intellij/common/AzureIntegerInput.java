@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
@@ -23,6 +22,12 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
     @Getter
     @Setter
     private Integer maxValue;
+
+    public AzureIntegerInput() {
+        super();
+        this.addValidator(this::doValidateValue);
+        this.setRequired(true);
+    }
 
     @Nullable
     @Override
@@ -43,8 +48,8 @@ public class AzureIntegerInput extends BaseAzureTextInput<Integer> {
         setText(val == null ? StringUtils.EMPTY : String.valueOf(val));
     }
 
-    @Nonnull
-    public AzureValidationInfo doValidate(Integer value) {
+    public AzureValidationInfo doValidateValue() {
+        final Integer value = this.getValue();
         if (Objects.isNull(value)) {
             return AzureValidationInfo.none(this);
         }
