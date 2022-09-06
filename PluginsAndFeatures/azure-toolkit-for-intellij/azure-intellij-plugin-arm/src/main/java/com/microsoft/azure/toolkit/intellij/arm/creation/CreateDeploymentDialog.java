@@ -87,7 +87,7 @@ public class CreateDeploymentDialog extends AzureDialogWrapper {
         lblTemplateHover.setHyperlinkText("Browse for samples");
         lblTemplateHover.setHyperlinkTarget(ARM_DOC);
         deploymentNameTextField.setText("deployment" + System.currentTimeMillis());
-        rgNameTextFiled.setText("resouregroup" + System.currentTimeMillis());
+        rgNameTextFiled.setText("resourcegroup" + System.currentTimeMillis());
         initListeners();
         updateResourceGroupPanel();
         init();
