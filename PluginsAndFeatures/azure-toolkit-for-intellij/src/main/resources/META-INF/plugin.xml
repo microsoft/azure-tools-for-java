@@ -268,6 +268,7 @@
         <reference ref="Actions.WebAppOnLinux"/>
       </group>
       <reference ref="Actions.AzureExplorerOpenAction"/>
+      <reference ref="AzureToolkit.OpenResourceConnectionExplorerAction"/>
       <reference ref="Actions.AzureCodeSamples"/>
     </group>
 

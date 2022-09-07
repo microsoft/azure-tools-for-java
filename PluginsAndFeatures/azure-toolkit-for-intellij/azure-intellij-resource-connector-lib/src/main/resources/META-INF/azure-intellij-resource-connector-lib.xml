@@ -8,7 +8,7 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Resource Connections" anchor="right" icon="/icons/Common/AzureResourceConnector.svg"
+        <toolWindow id="Resource Connections" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" canCloseContents="false"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"
@@ -38,5 +38,7 @@
             text="Connect to Azure Resource"
             icon="/icons/connector/connect.svg"
             description="To consume azure resources in your project"/>
+        <action class="com.microsoft.azure.toolkit.intellij.connector.actions.OpenResourceConnectionExplorerAction" id="AzureToolkit.OpenResourceConnectionExplorerAction"
+                text="Open Azure Resource Connection Explorer" description="Open Azure Resource Connection Explorer" icon="/icons/Common/AzureResourceConnector.svg"/>
     </actions>
 </idea-plugin>
