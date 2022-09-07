@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -149,10 +150,10 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
-                stream = stream.filter(p -> Objects.equals(p.getRegion(), this.region));
+                stream = stream.filter(p -> p instanceof AppServicePlanDraft || Objects.equals(p.getRegion(), this.region));
             }
             if (Objects.nonNull(this.os)) {
-                stream = stream.filter(p -> p.getOperatingSystem() == this.os);
+                stream = stream.filter(p -> p instanceof AppServicePlanDraft || p.getOperatingSystem() == this.os);
             }
             if (Objects.nonNull(this.servicePlanFilter)) {
                 stream = stream.filter(servicePlanFilter);
