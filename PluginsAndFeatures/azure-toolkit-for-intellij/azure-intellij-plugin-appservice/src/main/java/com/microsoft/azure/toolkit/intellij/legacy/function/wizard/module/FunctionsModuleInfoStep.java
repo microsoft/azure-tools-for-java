@@ -188,6 +188,9 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
         validateProperties("Artifact id", artifactIdField.getText(), ValidationUtils::isValidGroupIdArtifactId);
         validateProperties("Version", versionField.getText(), ValidationUtils::isValidVersion);
         validateProperties("Package name", packageNameField.getText(), ValidationUtils::isValidJavaPackageName);
+        if (!context.isCreatingNewProject() && Objects.isNull(parentComboBox.getItem())) {
+            throw new ConfigurationException("Parent module must be specified");
+        }
         validateDuplicatedArtifacts();
         return true;
     }
