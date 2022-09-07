@@ -90,6 +90,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         } else {
             setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
         }
+        this.currentArtifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
 
         resetFromConfig(configuration);
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
