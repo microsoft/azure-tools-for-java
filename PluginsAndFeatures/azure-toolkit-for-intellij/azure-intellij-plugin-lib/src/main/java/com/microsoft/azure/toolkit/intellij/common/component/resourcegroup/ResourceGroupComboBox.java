@@ -68,7 +68,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
 
     @Override
     public void setValue(ResourceGroup val) {
-        if (val.isDraftForCreating() && !this.draftItems.contains(val)) {
+        if (val.isDraftForCreating() && !val.exists() && !this.draftItems.contains(val)) {
             this.draftItems.add(0, val);
         }
         this.reloadItems();
@@ -92,15 +92,16 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     protected List<? extends ResourceGroup> loadItems() {
         final List<ResourceGroup> groups = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            if (CollectionUtils.isNotEmpty(this.draftItems)) {
-                groups.addAll(this.draftItems.stream()
-                    .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
-                    .collect(Collectors.toList()));
-            }
             final String sid = subscription.getId();
             final List<ResourceGroup> remoteGroups = Azure.az(AzureResources.class).groups(sid).list().stream()
                 .sorted(Comparator.comparing(ResourceGroup::getName)).collect(Collectors.toList());
             groups.addAll(remoteGroups);
+            if (CollectionUtils.isNotEmpty(this.draftItems)) {
+                this.draftItems.stream()
+                        .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()))
+                        .filter(i -> !remoteGroups.contains(i)) // filter out the draft item which has been created
+                        .forEach(groups::add);
+            }
         }
         return groups;
     }
