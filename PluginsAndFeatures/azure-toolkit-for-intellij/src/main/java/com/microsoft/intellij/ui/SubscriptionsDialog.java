@@ -82,7 +82,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
     public SubscriptionsDialog(@Nonnull Project project) {
         super(project, true, IdeModalityType.PROJECT);
         this.project = project;
-        this.filter = new TailingDebouncer(this::updateTableView, 300);
+        this.filter = new TailingDebouncer(() -> AzureTaskManager.getInstance().runLater(this::updateTableView, AzureTask.Modality.ANY), 300);
         this.updateSelectionInfo = new TailingDebouncer(this::updateSelectionInfoInner, 300);
         $$$setupUI$$$();
         setModal(true);
