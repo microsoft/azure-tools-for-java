@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.68.1](#3681)
   - [3.68.0](#3680)
   - [3.67.0](#3670)
   - [3.66.0](#3660)
@@ -86,6 +87,14 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.68.1
+### Fixed
+- Fix data connection issue for Azure Cosmos DB accounts with Mongo.
+
+### Changed
+- Remove data connection support for Azure Cosmos DB accounts with Cassandra.
+
 ## 3.68.0
 ### Added
 - Added support for resource management of `Azure Cosmos DB accounts` in Azure Explorer.

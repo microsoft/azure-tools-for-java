@@ -1,5 +1,11 @@
 <!-- Version: 3.68.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.68.1
+### Fixed
+- Fix data connection issue for Azure Cosmos DB accounts with Mongo.
+
+### Changed
+- Remove data connection support for Azure Cosmos DB accounts with Cassandra.
 
 ## 3.68.0
 ### Added

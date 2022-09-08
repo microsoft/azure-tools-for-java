@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.68.0</version>
+  <version>3.68.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -25,41 +25,14 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>3.68.0</h3>
-      <h4>Added</h4>
+      <h3>3.68.1</h3>
+      <h4>Fixed</h4>
       <ul>
-        <li>Added support for resource management of <code>Azure Cosmos DB accounts</code> in Azure Explorer.</li>
-        <li>Added support for resource connection to <code>Azure Cosmos DB accounts</code>.</li>
-        <li>Added support for creating data source of the Mongo and Cassandra API for <code>Azure Cosmos DB</code> from both Azure Explorer and <code>Database</code> tool window (<code>IntelliJ IDEA Ultimate Edition</code> only).<br>
-          <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.datasource.gif" alt="screenshot of 'cosmos datasource'" width="1200"/>
-        </li>
-        <li>Added support for connecting an <code>Azure Virtual Machine</code> using SSH directly from an <code>Azure Virtual Machine</code> resource node in Azure Explorer.</li>
-        <li>Added support for browsing files of an <code>Azure Virtual Machine</code> from an <code>Azure Virtual Machine</code> resource node in Azure Explorer (<code>IntelliJ IDEA Ultimate Edition</code> only).<br>
-          <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.vm.gif" alt="screenshot of 'virtual machine'" width="1200"/>
-        </li>
-        <li>Added support for adding dependencies to current local project from <code>Azure SDK reference book</code>.</li>
-        <li>Added support for jumping to corresponding Azure SDK page in <code>Azure SDK reference book</code> from Azure Explorer nodes.<br>
-          <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202208/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202208.sdk.gif" alt="screenshot of 'sdk reference book'" width="1200"/>
-        </li>
-        <li>Added support for configuring environment variables when deploy artifacts to an <code>Azure Web App</code>.</li>
-        <li>Added support for Java 17 for <code>Azure Functions</code>.</li>
-        <li>Added support for refreshing items (when needed) of combobox components at place.</li>
+        <li>Fix data connection issue for Azure Cosmos DB accounts with Mongo.</li>
       </ul>
       <h4>Changed</h4>
       <ul>
-        <li>Default values of most input components in Azure resource creation/deployment dialogs are now learnt from history usage records.</li>
-        <li>Local meta-data files of Azure SDK reference book is updated to latest.</li>
-      </ul>
-      <h4>Fixed</h4>
-      <ul>
-        <li>Loading spring apps take more time than normal.</li>
-        <li>Creating resources shows repeatedly in ComboBox components sometimes.</li>
-        <li>Stopped Azure Function app won't be the default app in deploy dialog.</li>
-        <li>App settings of a newly deployed Azure Function app won't be updated in Properties view until sign-out and sign-in again.</li>
-        <li>Validation error message doesn't popup when hovering on the input components.</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6790">#6790</a>: Uncaught Exception com.intellij.serviceContainer.AlreadyDisposedException: Already disposed: Project(*) (disposed).</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6784">#6784</a>: Uncaught Exception com.intellij.openapi.util.TraceableDisposable$DisposalException: Library LibraryId(*) already disposed.</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/6813">#6813</a>: Uncaught Exception com.microsoft.azure.toolkit.lib.common.operation.OperationException: setup run configuration for Azure Functions.</li>
+        <li>Remove data connection support for Azure Cosmos DB accounts with Cassandra.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
