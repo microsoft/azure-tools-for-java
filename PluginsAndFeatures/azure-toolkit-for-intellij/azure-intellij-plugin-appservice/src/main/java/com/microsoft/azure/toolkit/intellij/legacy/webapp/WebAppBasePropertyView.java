@@ -14,8 +14,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
@@ -46,11 +44,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppBasePropertyMvpView {
-    public final String id;
+    protected final String id;
+    protected boolean loading = false;
     protected final WebAppBasePropertyViewPresenter<WebAppBasePropertyMvpView> presenter;
     private final Map<String, String> cachedAppSettings;
     private final Map<String, String> editedAppSettings;
-    private final StatusBar statusBar;
 
     private static final String PNL_OVERVIEW = "Overview";
     private static final String PNL_APP_SETTING = "App Settings";
@@ -118,16 +116,15 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
         cachedAppSettings = new LinkedHashMap<>();
         editedAppSettings = new LinkedHashMap<>();
-        statusBar = WindowManager.getInstance().getStatusBar(project);
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
 
         // initialize widgets...
-        HideableDecorator overviewDecorator = new HideableDecorator(pnlOverviewHolder, PNL_OVERVIEW,
+        final HideableDecorator overviewDecorator = new HideableDecorator(pnlOverviewHolder, PNL_OVERVIEW,
                 false /*adjustWindow*/);
         overviewDecorator.setContentComponent(pnlOverview);
         overviewDecorator.setOn(true);
 
-        HideableDecorator appSettingDecorator = new HideableDecorator(pnlAppSettingsHolder, PNL_APP_SETTING,
+        final HideableDecorator appSettingDecorator = new HideableDecorator(pnlAppSettingsHolder, PNL_APP_SETTING,
                 false /*adjustWindow*/);
         appSettingDecorator.setContentComponent(pnlAppSettings);
         appSettingDecorator.setOn(true);
@@ -136,7 +133,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.GET_PUBLISH_FILE, operation -> {
-                    FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
+                    final FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
                         false /*chooseFiles*/,
                         true /*chooseFolders*/,
                         false /*chooseJars*/,
@@ -158,7 +155,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             public void actionPerformedFunc(ActionEvent event) {
                 updateMapStatus(editedAppSettings, cachedAppSettings);
                 tableModel.getDataVector().removeAllElements();
-                for (String key : editedAppSettings.keySet()) {
+                for (final String key : editedAppSettings.keySet()) {
                     tableModel.addRow(new String[]{key, editedAppSettings.get(key)});
                 }
                 tableModel.fireTableDataChanged();
@@ -169,7 +166,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             @Override
             public void actionPerformedFunc(ActionEvent event) {
                 EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.SAVE_APP_SERVICE, operation -> {
-                    setBtnEnableStatus(false);
+                    setLoading(true);
                     presenter.onUpdateWebAppProperty(sid, appServiceId, slotName, cachedAppSettings, editedAppSettings);
                 });
             }
@@ -185,24 +182,22 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
     protected void onStatusChangeEvent(AzureEvent event) {
         final Object source = event.getSource();
-        if (source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(this.resourceId, ((AppServiceAppBase<?, ?, ?>) source).id())) {
-            onAppServiceStatusChanged((AppServiceAppBase<?, ?, ?>) source);
+        if (source instanceof AppServiceAppBase && StringUtils.equalsIgnoreCase(this.resourceId, ((AppServiceAppBase<?, ?, ?>) source).getId())) {
+            final AppServiceAppBase<?, ?, ?> app = (AppServiceAppBase<?, ?, ?>) source;
+            if (app.getFormalStatus().isDeleted()) {
+                closeEditor(app);
+                return;
+            }
+            if (!loading) {
+                presenter.onLoadWebAppProperty(app);
+            }
         }
-    }
-
-    protected void onAppServiceStatusChanged(AppServiceAppBase<?, ?, ?> app) {
-        if (app.getFormalStatus().isDeleted()) {
-            closeEditor(app);
-            return;
-        }
-        // todo: @hanli refactor to load property directly from app in Azure event
-        presenter.onLoadWebAppProperty(this.subscriptionId, this.appServiceId, this.slotName);
     }
 
     protected void closeEditor(AppServiceAppBase<?, ?, ?> app) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(virtualFile));
-        final String message = String.format("Close editor of app '%s', because the app is deleted.", app.name());
+        final String message = String.format("Close editor of app '%s', because the app is deleted.", app.getName());
         AzureMessager.getMessager().info(message);
     }
 
@@ -250,7 +245,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                     editedAppSettings.clear();
                     int row = 0;
                     while (row < tableModel.getRowCount()) {
-                        Object keyObj = tableModel.getValueAt(row, 0);
+                        final Object keyObj = tableModel.getValueAt(row, 0);
                         String key = "";
                         String value = "";
                         if (keyObj != null) {
@@ -260,7 +255,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                             tableModel.removeRow(row);
                             continue;
                         }
-                        Object valueObj = tableModel.getValueAt(row, 1);
+                        final Object valueObj = tableModel.getValueAt(row, 1);
                         if (valueObj != null) {
                             value = (String) valueObj;
                         }
@@ -289,7 +284,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         btnRemove = new AnActionButton(BUTTON_REMOVE, AllIcons.General.Remove) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                int selectedRow = tblAppSetting.getSelectedRow();
+                final int selectedRow = tblAppSetting.getSelectedRow();
                 if (selectedRow == -1) {
                     return;
                 }
@@ -302,8 +297,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         btnEdit = new AnActionButton(BUTTON_EDIT, AllIcons.Actions.Edit) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                int selectedRow = tblAppSetting.getSelectedRow();
-                int selectedCol = tblAppSetting.getSelectedColumn();
+                final int selectedRow = tblAppSetting.getSelectedRow();
+                final int selectedCol = tblAppSetting.getSelectedColumn();
                 if (selectedRow == -1 || selectedCol == -1) {
                     return;
                 }
@@ -311,7 +306,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             }
         };
 
-        ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(tblAppSetting)
+        final ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(tblAppSetting)
                 .addExtraActions(btnAdd, btnRemove, btnEdit).setToolbarPosition(ActionToolbarPosition.RIGHT);
         pnlAppSettings = tableToolbarDecorator.createPanel();
     }
@@ -328,7 +323,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_SUB_ID));
         txtAppServicePlan.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PLAN));
-        Object url = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL);
+        final Object url = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_URL);
         if (url == null) {
             lnkUrl.setHyperlinkText(TXT_NA);
         } else {
@@ -337,8 +332,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         }
         txtPricingTier.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING) == null ? TXT_NA
                 : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_PRICING));
-        Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
-        if (os != null && os instanceof OperatingSystem) {
+        final Object os = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_OPERATING_SYS);
+        if (os instanceof OperatingSystem) {
             switch ((OperatingSystem) os) {
                 case WINDOWS:
                 case LINUX:
@@ -365,10 +360,10 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         tableModel.getDataVector().removeAllElements();
         cachedAppSettings.clear();
         tblAppSetting.getEmptyText().setText(TABLE_EMPTY_MESSAGE);
-        Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
-        if (appSettingsObj != null && appSettingsObj instanceof Map) {
-            Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
-            for (String key : appSettings.keySet()) {
+        final Object appSettingsObj = webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_APP_SETTING);
+        if (appSettingsObj instanceof Map) {
+            final Map<String, String> appSettings = (Map<String, String>) appSettingsObj;
+            for (final String key : appSettings.keySet()) {
                 tableModel.addRow(new String[]{key, appSettings.get(key)});
                 cachedAppSettings.put(key, appSettings.get(key));
             }
@@ -380,7 +375,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
     @Override
     public void showPropertyUpdateResult(boolean isSuccess) {
-        setBtnEnableStatus(true);
+        setLoading(false);
         if (isSuccess) {
             updateMapStatus(cachedAppSettings, editedAppSettings);
             AzureMessager.getMessager().success(NOTIFY_PROPERTY_UPDATE_SUCCESS);
@@ -402,13 +397,14 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         updateSaveAndDiscardBtnStatus();
     }
 
-    private void setBtnEnableStatus(boolean enabled) {
-        btnSave.setEnabled(enabled);
-        btnDiscard.setEnabled(enabled);
-        btnAdd.setEnabled(enabled);
-        btnRemove.setEnabled(enabled);
-        btnEdit.setEnabled(enabled);
-        tblAppSetting.setEnabled(enabled);
+    private void setLoading(boolean loading) {
+        this.loading = loading;
+        btnSave.setEnabled(!loading);
+        btnDiscard.setEnabled(!loading);
+        btnAdd.setEnabled(!loading);
+        btnRemove.setEnabled(!loading);
+        btnEdit.setEnabled(!loading);
+        tblAppSetting.setEnabled(!loading);
     }
 
     private void updateSaveAndDiscardBtnStatus() {

@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -31,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,15 +56,16 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_APP_SETTING = "appSetting";
     public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
 
+    public void onLoadWebAppProperty(AppServiceAppBase<?, ?, ?> app) {
+        final WebAppProperty property = Objects.isNull(app) || app.isDraftForCreating() ? new WebAppProperty(new HashMap<>()) :
+                generateProperty(app, Objects.requireNonNull(app.getAppServicePlan()));
+        AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(getMvpView()).ifPresent(v -> v.showProperty(property)));
+    }
+
     public void onLoadWebAppProperty(@Nonnull final String sid, @Nonnull final String appId, @Nullable final String slotName) {
         final String appName = ResourceId.fromString(appId).name();
         final AzureString title = AzureString.format("load properties of App Service '{0}'", appName);
-        AzureTaskManager.getInstance().runInBackground(title, () -> {
-            final AppServiceAppBase<?, ?, ?> app = getWebAppBase(sid, appId, slotName);
-            final WebAppProperty property = Objects.isNull(app) || app.isDraftForCreating() ? new WebAppProperty(new HashMap<>()) :
-                generateProperty(app, Objects.requireNonNull(app.getAppServicePlan()));
-            AzureTaskManager.getInstance().runLater(() -> Optional.ofNullable(getMvpView()).ifPresent(v -> v.showProperty(property)));
-        });
+        AzureTaskManager.getInstance().runInBackground(title, () -> onLoadWebAppProperty(getWebAppBase(sid, appId, slotName)));
     }
 
     protected WebAppProperty generateProperty(@Nonnull final AppServiceAppBase<?, ?, ?> appService, @Nonnull final AppServicePlan plan) {
@@ -70,20 +73,20 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         final Map<String, Object> propertyMap = new HashMap<>();
         propertyMap.put(KEY_NAME, appService.getName());
         propertyMap.put(KEY_RESOURCE_GRP, appService.getResourceGroupName());
-        propertyMap.put(KEY_LOCATION, appService.getRegion().getLabel());
+        propertyMap.put(KEY_LOCATION, Optional.ofNullable(appService.getRegion()).map(Region::getLabel).orElse("N/A"));
         propertyMap.put(KEY_SUB_ID, appService.getSubscriptionId());
         propertyMap.put(KEY_STATUS, StringUtils.capitalize(StringUtils.lowerCase(appService.getStatus())));
-        propertyMap.put(KEY_PLAN, plan.name());
+        propertyMap.put(KEY_PLAN, plan.getName());
         propertyMap.put(KEY_URL, appService.getHostName());
         final PricingTier pricingTier = plan.getPricingTier();
         propertyMap.put(KEY_PRICING, String.format("%s_%s", pricingTier.getTier(), pricingTier.getSize()));
         final Runtime runtime = appService.getRuntime();
-        final JavaVersion javaVersion = runtime.getJavaVersion();
+        final JavaVersion javaVersion = Optional.ofNullable(runtime).map(Runtime::getJavaVersion).orElse(null);
         if (javaVersion != null && ObjectUtils.notEqual(javaVersion, JavaVersion.OFF)) {
             propertyMap.put(KEY_JAVA_VERSION, javaVersion.getValue());
             propertyMap.put(KEY_JAVA_CONTAINER, runtime.getWebContainer().getValue());
         }
-        propertyMap.put(KEY_OPERATING_SYS, runtime.getOperatingSystem());
+        propertyMap.put(KEY_OPERATING_SYS, Optional.ofNullable(runtime).map(Runtime::getOperatingSystem).orElse(null));
         propertyMap.put(KEY_APP_SETTING, appSettingsMap);
 
         return new WebAppProperty(propertyMap);
@@ -107,7 +110,7 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         }
         final AppServiceAppBase<?, ?, ?> resource = getWebAppBase(sid, webAppId, name);
         try (final InputStream inputStream = resource.listPublishingProfileXmlWithSecrets();
-             final OutputStream outputStream = new FileOutputStream(file)) {
+             final OutputStream outputStream = Files.newOutputStream(file.toPath())) {
             IOUtils.copy(inputStream, outputStream);
             return true;
         } catch (final IOException e) {
