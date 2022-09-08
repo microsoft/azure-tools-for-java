@@ -18,7 +18,7 @@ import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +34,15 @@ public interface ResourceManager {
     }
 
     static List<ResourceDefinition<?>> getDefinitions() {
-        return new ArrayList<>(Impl.getDefinitions().values());
+        return Impl.getDefinitions().values().stream()
+            .sorted(Comparator.comparing(ResourceDefinition::getTitle))
+            .collect(Collectors.toList());
     }
 
     static List<ResourceDefinition<?>> getDefinitions(int role) {
         return Impl.getDefinitions().values().stream()
             .filter(d -> (d.getRole() & role) == role)
+            .sorted(Comparator.comparing(ResourceDefinition::getTitle))
             .collect(Collectors.toList());
     }
 

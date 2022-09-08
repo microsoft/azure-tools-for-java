@@ -339,8 +339,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 case LINUX:
                     txtJavaVersion.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION) == null
                             ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_VERSION));
-                    txtContainer.setText(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
-                            ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER));
+                    txtContainer.setText(StringUtils.capitalize(webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER) == null
+                            ? TXT_NA : (String) webAppProperty.getValue(WebAppPropertyViewPresenter.KEY_JAVA_CONTAINER)));
                     txtJavaVersion.setVisible(true);
                     txtContainer.setVisible(true);
                     lblJavaVersion.setVisible(true);
