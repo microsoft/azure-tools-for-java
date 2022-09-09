@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
+import com.intellij.database.Dbms;
 import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.DatabaseDriverManager;
 import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel;
@@ -29,7 +30,10 @@ public class DbToolsWorkaround extends PreloadingActivity {
             Optional.ofNullable(manager.getDriver("az_cosmos_cassandra")).map(d -> ((DatabaseDriverImpl) d))
                 .ifPresent(manager::removeDriver);
             Optional.ofNullable(manager.getDriver("az_cosmos_mongo")).map(d -> ((DatabaseDriverImpl) d))
-                .ifPresent(d -> d.setIcon(IntelliJAzureIcons.getIcon("icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg")));
+                .ifPresent(d -> {
+                    d.setForcedDbms(Dbms.MONGO);
+                    d.setIcon(IntelliJAzureIcons.getIcon("icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg"));
+                });
             DbToolsWorkaround.makeAccountShowAtTop();
         });
     }
