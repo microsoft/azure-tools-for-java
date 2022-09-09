@@ -1,7 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij.database">
         <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountConnectionInterceptor"/>
-        <driversConfig config="databaseDrivers/azure-cosmos-mongo-drivers.xml"/>
         <artifactsConfig config="databaseDrivers/azure-cosmos-cassandra-drivers-extension.xml"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeFactory" order="first"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>

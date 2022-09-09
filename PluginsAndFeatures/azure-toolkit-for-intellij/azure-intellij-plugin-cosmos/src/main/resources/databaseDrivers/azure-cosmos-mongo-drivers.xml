@@ -2,9 +2,11 @@
 <drivers>
     <!--driver will use same icon as that of DBMS if not configured according to com/intellij/database/dataSource/DatabaseDriverImpl.class:644-->
     <!--set forced-dbms to prevent `Better Driver` warning, refer to com.intellij.database.dataSource.validation.BestDriverValidator.collectProblems-->
-    <driver id="az_cosmos_mongo" name="Azure Cosmos DB (MongoDB)" icon="AllIcons.Providers.MongoDB" based-on="mongo" forced-dbms="mongo">
-        <url-template/>
+    <driver id="az_cosmos_mongo" name="Azure Cosmos DB (MongoDB)" forced-dbms="MONGO"
+            dialect="MongoDB" driver-class="com.dbschema.MongoJdbcDriver">
         <url-template name="default" template="[jdbc:]mongodb[+srv]://[{user:identifier}[:{password:param}]@]&lt;\,,{host::localhost}?[:{port::27017}]&gt;[/{database}?[/{account:cosmos_account_mongo}?][\?&lt;&amp;,{:identifier}={:param}&gt;]]"/>
-        <remarks>Azure Cosmos DB drivers.xml</remarks>
+        <artifact name="MongoDB" use="true" rolling="true"/>
+        <option name="auto-sync" value="true"/>
+        <property name="appName" value="DataGrip"/>
     </driver>
 </drivers>
