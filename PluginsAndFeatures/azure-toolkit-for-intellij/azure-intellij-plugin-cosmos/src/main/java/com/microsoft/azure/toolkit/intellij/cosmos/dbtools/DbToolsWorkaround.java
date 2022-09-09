@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
+import com.intellij.database.dataSource.DatabaseDriver;
 import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.DatabaseDriverManager;
 import com.intellij.database.dataSource.DatabaseDriverManagerImpl;
@@ -38,17 +39,16 @@ public class DbToolsWorkaround extends PreloadingActivity {
             DbToolsWorkaround.makeAccountShowAtTop();
             final DatabaseDriverManager manager = DatabaseDriverManager.getInstance();
             Optional.ofNullable(manager.getDriver(COSMOS_CASSANDRA_DRIVER_ID)).ifPresent(manager::removeDriver);
-            Optional.ofNullable(manager.getDriver(COSMOS_MONGO_DRIVER_ID)).ifPresent(manager::removeDriver);
-            DatabaseDriverImpl driver = (DatabaseDriverImpl) manager.getDriver(COSMOS_MONGO_DRIVER_ID);
-            if (Objects.isNull(driver)) {
-                driver = loadDriver();
+            final DatabaseDriver oldDriver = manager.getDriver(COSMOS_MONGO_DRIVER_ID);
+            if (Objects.isNull(oldDriver) || oldDriver.isPredefined()) { // remove if old driver is not user defined.
+                Optional.ofNullable(oldDriver).ifPresent(manager::removeDriver);
+                addAsUserDriver();
             }
-            driver.setIcon(IntelliJAzureIcons.getIcon(COSMOS_MONGO_ICON));
         });
     }
 
     @SneakyThrows
-    private static DatabaseDriverImpl loadDriver() {
+    private static void addAsUserDriver() {
         final DatabaseDriverManagerImpl manager = (DatabaseDriverManagerImpl) DatabaseDriverManager.getInstance();
         final URL driverUrl = DbToolsWorkaround.class.getClassLoader().getResource(COSMOS_MONGO_DRIVER_CONFIG);
         final Element config = JDOMUtil.load(Objects.requireNonNull(driverUrl)).getChildren().get(0);
@@ -58,7 +58,7 @@ public class DbToolsWorkaround extends PreloadingActivity {
         manager.loadBaseState(baseId, driver);
         manager.updateDriver(driver);
         driver.loadState(config, true, false, 221, null);
-        return driver;
+        driver.setIcon(IntelliJAzureIcons.getIcon(COSMOS_MONGO_ICON));
     }
 
     @SuppressWarnings("unchecked")
