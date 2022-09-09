@@ -24,9 +24,14 @@ public class DbToolsWorkaround extends PreloadingActivity {
 
     @Override
     public void preload(@NotNull ProgressIndicator indicator) {
-        AzureTaskManager.getInstance().runOnPooledThread(() -> Optional.of(DatabaseDriverManager.getInstance().getDriver("az_cosmos_mongo")).map(d -> ((DatabaseDriverImpl) d))
-            .ifPresent(d -> d.setIcon(IntelliJAzureIcons.getIcon("icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg"))));
-        AzureTaskManager.getInstance().runOnPooledThread(DbToolsWorkaround::makeAccountShowAtTop);
+        AzureTaskManager.getInstance().runOnPooledThread(() -> {
+            final DatabaseDriverManager manager = DatabaseDriverManager.getInstance();
+            Optional.ofNullable(manager.getDriver("az_cosmos_cassandra")).map(d -> ((DatabaseDriverImpl) d))
+                .ifPresent(manager::removeDriver);
+            Optional.ofNullable(manager.getDriver("az_cosmos_mongo")).map(d -> ((DatabaseDriverImpl) d))
+                .ifPresent(d -> d.setIcon(IntelliJAzureIcons.getIcon("icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg")));
+            DbToolsWorkaround.makeAccountShowAtTop();
+        });
     }
 
     @SuppressWarnings("unchecked")
