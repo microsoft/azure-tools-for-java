@@ -5,9 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos;
 
-import com.intellij.database.autoconfig.DataSourceDetector;
 import com.intellij.database.autoconfig.DataSourceRegistry;
+import com.intellij.database.dataSource.DatabaseDriverManager;
+import com.intellij.database.dataSource.LocalDataSource;
+import com.intellij.database.dataSource.LocalDataSourceManager;
+import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbPsiFacade;
+import com.intellij.database.psi.DbPsiFacadeImpl;
 import com.intellij.database.view.ui.DataSourceManagerDialog;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -24,7 +28,6 @@ import com.microsoft.azure.toolkit.intellij.cosmos.connection.MongoCosmosDBAccou
 import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDatabaseAction;
-import com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -101,7 +104,7 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
                 CreateCosmosDatabaseAction.create(e.getProject(), (CassandraCosmosDBAccount) r, cassandraDraftSupplier, getDefaultDatabaseConfig()));
 
         final BiConsumer<CosmosDBAccount, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), c);
-        am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || r instanceof CassandraCosmosDBAccount, openDatabaseHandler);
+        am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount, openDatabaseHandler);
     }
 
     @AzureOperation(name = "cosmos.open_database_tools.account", params = {"account.getName()"}, type = AzureOperation.Type.ACTION)
@@ -114,15 +117,13 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
         }
         AzureTaskManager.getInstance().runLater(() -> {
             final DataSourceRegistry registry = new DataSourceRegistry(project);
-            final com.intellij.database.Dbms dbms =
-                account instanceof MongoCosmosDBAccount ? Dbms.AZ_COSMOS_MONGO :
-                    account instanceof CassandraCosmosDBAccount ? Dbms.AZ_COSMOS_CASSANDRA :
-                        com.intellij.database.Dbms.UNKNOWN;
-            final DataSourceDetector.Builder builder = registry.getBuilder()
-                .withDbms(dbms)
-                .withJdbcAdditionalProperty(KEY_COSMOS_ACCOUNT_ID, account.getId())
-                .commit();
-            DataSourceManagerDialog.showDialog(DbPsiFacade.getInstance(project), registry);
+            final String driver = account instanceof MongoCosmosDBAccount ? "az_cosmos_mongo" : "az_cosmos_cassandra";
+            final LocalDataSource ds = DatabaseDriverManager.getInstance().getDriver(driver).createDataSource(null);
+            final DbPsiFacade facade = DbPsiFacade.getInstance(project);
+            final LocalDataSourceManager manager = LocalDataSourceManager.getInstance(project);
+            final DbDataSource newElement = ((DbPsiFacadeImpl) facade).createDataSourceWrapperElement(ds, manager);
+            ds.setAdditionalProperty(KEY_COSMOS_ACCOUNT_ID, account.getId());
+            DataSourceManagerDialog.showDialog(facade, newElement, null, null, null);
         });
     }
 

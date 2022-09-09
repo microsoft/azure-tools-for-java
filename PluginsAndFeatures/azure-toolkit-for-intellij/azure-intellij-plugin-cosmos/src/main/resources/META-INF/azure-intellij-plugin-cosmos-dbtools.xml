@@ -1,16 +1,13 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij.database">
         <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.AzureCosmosDbAccountConnectionInterceptor"/>
-        <dbms id="AZ_COSMOS_MONGO" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_MONGO"/>
-        <dbms id="AZ_COSMOS_CASSANDRA" instance="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.Dbms.AZ_COSMOS_CASSANDRA"/>
-        <addToHSet item="AZ_COSMOS_MONGO" set="MONGO"/>
-        <addToHSet item="AZ_COSMOS_CASSANDRA" set="CASSANDRA"/>
-        <extensionFallback dbms="AZ_COSMOS_MONGO" fallbackDbms="MONGO"/>
-        <extensionFallback dbms="AZ_COSMOS_CASSANDRA" fallbackDbms="CASSANDRA"/>
         <driversConfig config="databaseDrivers/azure-cosmos-mongo-drivers.xml"/>
         <driversConfig config="databaseDrivers/azure-cosmos-cassandra-drivers.xml"/>
         <artifactsConfig config="databaseDrivers/azure-cosmos-cassandra-drivers-extension.xml"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeFactory" order="first"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.DbToolsWorkaround"/>
     </extensions>
 </idea-plugin>

@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.intellij.database.Dbms;
 import com.intellij.database.dataSource.DatabaseConnectionInterceptor;
 import com.intellij.database.dataSource.DatabaseConnectionPoint;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -30,15 +29,13 @@ public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnec
     @Nullable
     public CompletionStage<ProtoConnection> intercept(@NotNull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
-        final Dbms dbms = point.getDbms();
-        if (StringUtils.startsWithIgnoreCase(dbms.getName(), "AZ_COSMOS")) {
-            final String accountId = point.getAdditionalProperty(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
+        final String accountId = point.getAdditionalProperty(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
+        if (StringUtils.isNotBlank(accountId)) {
             final Map<String, String> properties = new HashMap<>();
-            if (StringUtils.isNotBlank(accountId) && !StringUtils.equals(accountId, AzureCosmosDbAccountParamEditor.NONE)) {
+            if (!StringUtils.equals(accountId, AzureCosmosDbAccountParamEditor.NONE)) {
                 final ResourceId id = ResourceId.fromString(accountId);
                 properties.put("subscriptionId", id.subscriptionId());
             }
-            properties.put("kind", dbms.getName());
             properties.put(SERVICE_NAME, "cosmos");
             properties.put(OPERATION_NAME, "connect_jdbc_from_dbtools");
             properties.put(OP_NAME, "cosmos.connect_jdbc_from_dbtools");
