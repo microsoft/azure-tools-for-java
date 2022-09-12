@@ -6,6 +6,9 @@
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <registryKey key="azure.toolkit.cosmos_cassandra.dbtools.enabled"
+                     description="Enables DB tools related features of Azure cosmos DB API for cassandra"
+                     restartRequired="true" defaultValue="false"/>
         <preloadingActivity implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.DbToolsWorkaround"/>
     </extensions>
 </idea-plugin>
