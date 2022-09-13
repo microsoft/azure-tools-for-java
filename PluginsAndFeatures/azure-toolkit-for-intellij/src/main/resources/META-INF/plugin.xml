@@ -28,11 +28,16 @@
       <h3>3.68.1</h3>
       <h4>Fixed</h4>
       <ul>
-        <li>Fix data connection issue for Azure Cosmos DB accounts with Mongo.</li>
+        <li>Fixed the data modification failure issue of <code>Azure Cosmos DB API for Mongo</code> data sources.</li>
       </ul>
       <h4>Changed</h4>
       <ul>
-        <li>Remove data connection support for Azure Cosmos DB accounts with Cassandra.</li>
+        <li>
+          Added feature toggle for creating data source of <code>Azure Cosmos DB API for Cassandra</code>, the toggle is <b>off</b> in default.
+          <ul>
+            <li>Support for creating data source of the <code>Azure Cosmos DB API for Cassandra</code> from both Azure Explorer and <code>Database</code> tool window is disabled in default.<li>
+          </ul>
+        </li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

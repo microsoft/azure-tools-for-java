@@ -90,10 +90,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.68.1
 ### Fixed
-- Fix data connection issue for Azure Cosmos DB accounts with Mongo.
+- Fixed the data modification failure issue of `Azure Cosmos DB API for Mongo` data sources.
 
 ### Changed
-- Remove data connection support for Azure Cosmos DB accounts with Cassandra.
+- Added feature toggle for creating data source of `Azure Cosmos DB (Cassandra)`, the toggle is **off** in default.
+  - Support for creating data source of the `Azure Cosmos DB` API for Cassandra from both Azure Explorer and `Database` tool window is disabled in default.
 
 ## 3.68.0
 ### Added
