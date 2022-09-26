@@ -13,10 +13,9 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class SpringCloudEnableDebuggingAction {
+public class SpringCloudDebuggingAction {
     private static final String FAILED_TO_ENABLE_REMOTE_DEBUGGING = "Failed to enable remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app.";
-    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app.";
     private static final int DEFAULT_PORT = 5005;
 
 
@@ -31,6 +30,7 @@ public class SpringCloudEnableDebuggingAction {
                     return;
                 }
                 app.enableDebugging(DEFAULT_PORT);
+                messager.success(String.format("Enable remote debugging for spring app %s successfully.", app.getName()));
             } catch (final Exception e) {
                 final String errorMessage = e.getMessage();
                 messager.error(errorMessage, FAILED_TO_ENABLE_REMOTE_DEBUGGING);
@@ -48,7 +48,8 @@ public class SpringCloudEnableDebuggingAction {
                     messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_ENABLE_REMOTE_DEBUGGING);
                     return;
                 }
-                app.enableDebugging(DEFAULT_PORT);
+                app.disableDebugging();
+                messager.success(String.format("Disable remote debugging for spring app %s successfully.", app.getName()));
             } catch (final Exception e) {
                 final String errorMessage = e.getMessage();
                 messager.error(errorMessage, FAILED_TO_ENABLE_REMOTE_DEBUGGING);

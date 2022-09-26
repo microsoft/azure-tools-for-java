@@ -34,7 +34,9 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
     public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
     public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
+    public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
     public static final Action.Id<DeploymentInstance> OPEN_PORT_FORWARDING = Action.Id.of("springcloud.open_port_forwarding");
+    public static final Action.Id<DeploymentInstance> CLOSE_PORT_FORWARDING = Action.Id.of("springcloud.close_port_forwarding");
 
     public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
@@ -71,10 +73,20 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(ENABLE_REMOTE_DEBUGGING, new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
 
+        final ActionView.Builder disableRemoteDebuggingView = new ActionView.Builder("Disable Remote Debugging")
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.disable_remote_debugging.app", ((SpringCloudApp) r).getName())).orElse(null))
+                .enabled(s -> s instanceof SpringCloudApp);
+        am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
+
         final ActionView.Builder openPortForwardingView = new ActionView.Builder("Open Port Forwarding", AzureIcons.Action.REMOTE.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_port_forwarding.instance", ((DeploymentInstance) r).name())).orElse(null))
                 .enabled(s -> s instanceof DeploymentInstance);
         am.registerAction(OPEN_PORT_FORWARDING, new Action<>(OPEN_PORT_FORWARDING, openPortForwardingView));
+
+        final ActionView.Builder closePortForwardingView = new ActionView.Builder("Close Port Forwarding")
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.close_port_forwarding.instance", ((DeploymentInstance) r).name())).orElse(null))
+                .enabled(s -> s instanceof DeploymentInstance);
+        am.registerAction(CLOSE_PORT_FORWARDING, new Action<>(CLOSE_PORT_FORWARDING, closePortForwardingView));
     }
 
     @Override
@@ -115,12 +127,14 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE,
             "---",
             SpringCloudActionsContributor.STREAM_LOG,
-            SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING
+            SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
+            SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
 
         final ActionGroup appInstanceGroup = new ActionGroup(
-                SpringCloudActionsContributor.OPEN_PORT_FORWARDING
+                SpringCloudActionsContributor.OPEN_PORT_FORWARDING,
+                SpringCloudActionsContributor.CLOSE_PORT_FORWARDING
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
 
