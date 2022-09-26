@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud;
 
+import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
@@ -12,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.CreateSpringCloudAppAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.remotedebug.SpringCloudEnableDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
@@ -33,6 +35,8 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
         this.registerStreamLogActionHandler(am);
+        this.registerEnableRemoteDebuggingHandler(am);
+        this.registerOpenPortForwardingHandler(am);
     }
 
     private void registerCreateServiceActionHandler(AzureActionManager am) {
@@ -65,6 +69,19 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
+    }
+
+    private void registerEnableRemoteDebuggingHandler(AzureActionManager am) {
+        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudEnableDebuggingAction.enableRemoteDebugging(c, e.getProject());
+        am.registerHandler(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING, condition, handler);
+    }
+
+    private void registerOpenPortForwardingHandler(AzureActionManager am) {
+        final BiPredicate<DeploymentInstance, AnActionEvent> condition = (r, e) -> true;
+        // todo add handler for port forwarding
+        final BiConsumer<DeploymentInstance, AnActionEvent> handler = (c, e) -> {};
+        am.registerHandler(SpringCloudActionsContributor.OPEN_PORT_FORWARDING, condition, handler);
     }
 
     @Override

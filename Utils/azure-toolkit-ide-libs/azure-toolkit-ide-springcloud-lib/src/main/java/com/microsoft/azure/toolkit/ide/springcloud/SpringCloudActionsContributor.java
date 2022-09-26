@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.springcloud;
 
+import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -28,9 +29,12 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final String APP_ACTIONS = "actions.springcloud.app";
     public static final String CLUSTER_ACTIONS = "actions.springcloud.cluster";
     public static final String SERVICE_ACTIONS = "actions.springcloud.service";
+    public static final String APP_INSTANCE_ACTIONS = "actions.springcould.appInstance";
     public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url");
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
     public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
+    public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
+    public static final Action.Id<DeploymentInstance> OPEN_PORT_FORWARDING = Action.Id.of("springcloud.open_port_forwarding");
 
     public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
@@ -38,7 +42,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public void registerActions(AzureActionManager am) {
         final Consumer<SpringCloudApp> openPublicUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getApplicationUrl());
         final ActionView.Builder openPublicUrlView = new ActionView.Builder("Access Public Endpoint", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_public_url.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_public_url.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected() && ((SpringCloudApp) s).isPublicEndpointEnabled());
         final Action<SpringCloudApp> openPublicUrlAction = new Action<>(OPEN_PUBLIC_URL, openPublicUrl, openPublicUrlView);
         openPublicUrlAction.setShortcuts("control alt P");
@@ -46,14 +50,14 @@ public class SpringCloudActionsContributor implements IActionsContributor {
 
         final Consumer<SpringCloudApp> openTestUrl = s -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(s.getTestUrl());
         final ActionView.Builder openTestUrlView = new ActionView.Builder("Access Test Endpoint", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_test_url.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_test_url.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((SpringCloudApp) s).getFormalStatus().isConnected());
         final Action<SpringCloudApp> openTestUrlAction = new Action<>(OPEN_TEST_URL, openTestUrl, openTestUrlView);
         openTestUrlAction.setShortcuts("control alt T");
         am.registerAction(OPEN_TEST_URL, openTestUrlAction);
 
         final ActionView.Builder streamLogView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.app", ((SpringCloudApp) r).name())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
 
@@ -61,6 +65,16 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
             .enabled(s -> s instanceof ResourceGroup && ((ResourceGroup) s).getFormalStatus().isConnected());
         am.registerAction(GROUP_CREATE_CLUSTER, new Action<>(GROUP_CREATE_CLUSTER, createClusterView));
+
+        final ActionView.Builder enableRemoteDebuggingView = new ActionView.Builder("Enable Remote Debugging", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.enable_remote_debugging.app", ((SpringCloudApp) r).getName())).orElse(null))
+                .enabled(s -> s instanceof SpringCloudApp);
+        am.registerAction(ENABLE_REMOTE_DEBUGGING, new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
+
+        final ActionView.Builder openPortForwardingView = new ActionView.Builder("Open Port Forwarding", AzureIcons.Action.REMOTE.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_port_forwarding.instance", ((DeploymentInstance) r).name())).orElse(null))
+                .enabled(s -> s instanceof DeploymentInstance);
+        am.registerAction(OPEN_PORT_FORWARDING, new Action<>(OPEN_PORT_FORWARDING, openPortForwardingView));
     }
 
     @Override
@@ -100,9 +114,15 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.RESTART,
             ResourceCommonActionsContributor.DELETE,
             "---",
-            SpringCloudActionsContributor.STREAM_LOG
+            SpringCloudActionsContributor.STREAM_LOG,
+            SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING
         );
         am.registerGroup(APP_ACTIONS, appActionGroup);
+
+        final ActionGroup appInstanceGroup = new ActionGroup(
+                SpringCloudActionsContributor.OPEN_PORT_FORWARDING
+        );
+        am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
 
         final IActionGroup group = am.getGroup(ResourceCommonActionsContributor.RESOURCE_GROUP_CREATE_ACTIONS);
         group.addAction(GROUP_CREATE_CLUSTER);

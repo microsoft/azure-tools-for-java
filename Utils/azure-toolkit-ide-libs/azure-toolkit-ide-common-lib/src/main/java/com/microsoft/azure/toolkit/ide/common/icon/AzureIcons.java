@@ -50,6 +50,8 @@ public final class AzureIcons {
         public static final AzureIcon LOG = AzureIcon.builder().iconPath("/icons/action/log").build();
         public static final AzureIcon CONSOLE = AzureIcon.builder().iconPath("/icons/action/console").build();
         public static final AzureIcon SFTP = AzureIcon.builder().iconPath("/icons/action/sftp").build();
+        public static final AzureIcon DEBUG = AzureIcon.builder().iconPath("icons/action/debug").build();
+        public static final AzureIcon REMOTE = AzureIcon.builder().iconPath("icons/action/remote").build();
     }
 
     public static final class MySQL {
