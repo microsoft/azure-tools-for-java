@@ -1,5 +1,17 @@
 <!-- Version: 3.68.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.69.0
+### Fixed
+- Fixed No response when click on Open `Azure Storage Expolrer for storage` while the computer does not install Azure Storage Explorer.
+- Fixed The shortcut keys for the browser and expansion are the same.
+- Fixed All the roles of the HDInsight cluster are reader.
+- Fixed Local console and Livy console run failed.
+- Fixed Job view page: The two links in the job view page open the related pages very slowly.
+- Fixed Click on Job node, show IDE error occurred.
+
+### Changed
+- Remove menu `Submit Apache Spark Application`
+
 ## 3.68.1
 ### Fixed
 - Fixed the data modification failure issue of `Azure Cosmos DB API for MongoDB` Data Sources.

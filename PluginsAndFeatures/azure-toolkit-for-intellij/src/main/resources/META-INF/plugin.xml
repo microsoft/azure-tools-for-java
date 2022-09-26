@@ -25,19 +25,20 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>3.68.1</h3>
+      <h3>3.69.0</h3>
       <h4>Fixed</h4>
       <ul>
-        <li>Fixed the data modification failure issue of <code>Azure Cosmos DB API for Mongo</code> Data Sources.</li>
+        <li>Fixed No response when click on Open <code>Azure Storage Expolrer for storage</code> while the computer does not install Azure Storage Explorer.</li>
+        <li>Fixed The shortcut keys for the browser and expansion are the same.</li>
+        <li>Fixed All the roles of the HDInsight cluster are reader.</li>
+        <li>Fixed Local console and Livy console run failed.</li>
+        <li>Fixed Job view page: The two links in the job view page open the related pages very slowly.</li>
+        <li>Fixed Click on Job node, show IDE error occurred.</li>
       </ul>
       <h4>Changed</h4>
       <ul>
         <li>
-          Added feature toggle for creating Data Source of <code>Azure Cosmos DB API for Cassandra</code>, the toggle is <b>off</b> in default.
-          <ul>
-            <li>Support for opening <code>Azure Cosmos DB API for Cassandra</code> with <code>Database Tools and SQL</code> plugin from <code>Azure Explorer</code> is disabled by default.</li>
-            <li>Support for creating Data Source of the <code>Azure Cosmos DB API for Cassandra</code> from <code>Database Tools and SQL</code> plugin is disabled by default.</li>
-          </ul>
+          Remove menu <code>Submit Apache Spark Application</code>
         </li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
