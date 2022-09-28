@@ -144,6 +144,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         this.awaitMoreRequest();
         if (this.alive.get()) {
             this.closeForwarder();
+            this.future.cancel(true);
         }
     }
 
