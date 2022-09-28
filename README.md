@@ -1,4 +1,5 @@
 # Azure Toolkits for Java 
+
 [![Build Status](https://dev.azure.com/mseng/VSJava/_apis/build/status/Azure-Toolkits-For-Java/Azure-Toolkits-for-Java-CI-IntelliJ-Java11?branchName=develop)](https://dev.azure.com/mseng/VSJava/_build/latest?definitionId=10753&branchName=develop)
 [![Gitter](https://badges.gitter.im/Microsoft/azure-tools-for-java.svg)](https://gitter.im/Microsoft/azure-tools-for-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
