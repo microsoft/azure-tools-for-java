@@ -15,19 +15,14 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class PortForwarder {
-    private final OkHttpClient okHttpClient;
 
-    public PortForwarder() {
-        okHttpClient = new OkHttpClient();
-    }
-
-    public void startForward(String url, String token, int localPort) {
+    public static void startForward(String url, String token, int localPort) {
         try {
             final URL resourceBaseUrl = new URL(url);
             final ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
                 try {
-                    this.forward(resourceBaseUrl, token, server);
+                    forward(resourceBaseUrl, token, server);
                 } catch (final IOException e) {
                     throw new AzureToolkitRuntimeException("Error while deugging.", e);
                 }
@@ -37,10 +32,11 @@ public class PortForwarder {
         }
     }
 
-    private void forward(URL resourceBaseUrl, String token, ServerSocketChannel server) throws IOException {
+    private static void forward(URL resourceBaseUrl, String token, ServerSocketChannel server) throws IOException {
         final SocketChannel socketChannel = server.accept();
+        final OkHttpClient okHttpClient = new OkHttpClient();
         final PortForwarderWebSocketListener listener = new PortForwarderWebSocketListener(socketChannel, socketChannel);
-        final CompletableFuture<WebSocket> future = new WebSocketBuilder(this.okHttpClient).uri(URI.create(resourceBaseUrl.toString()))
+        final CompletableFuture<WebSocket> future = new WebSocketBuilder(okHttpClient).uri(URI.create(resourceBaseUrl.toString()))
                 .header("Authorization", String.format("Bearer %s", token))
                 .buildAsync(listener);
         future.whenComplete((socket, throwable) -> {
