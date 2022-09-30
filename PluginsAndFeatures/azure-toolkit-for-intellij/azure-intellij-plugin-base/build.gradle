@@ -7,8 +7,8 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 ext {
-    azureToolkitVersion = "0.25.0"
-    azureToolkitUtilsVersion = "3.69.0"
+    azureToolkitVersion = "0.26.0-SNAPSHOT"
+    azureToolkitUtilsVersion = "3.70.0-SNAPSHOT"
 }
 
 group 'com.microsoft.azure.toolkit'
@@ -48,8 +48,8 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.25.0"
-        azureToolkitUtilsVersion = "3.69.0"
+        azureToolkitVersion = "0.26.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.70.0-SNAPSHOT"
     }
 
     sourceCompatibility = javaVersion
