@@ -1,7 +1,6 @@
 package com.microsoft.azure.toolkit.ide.common.util.remotedebugging;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import okhttp3.OkHttpClient;
 import okhttp3.WebSocket;
 
@@ -20,13 +19,7 @@ public class PortForwarder {
         try {
             final URL resourceBaseUrl = new URL(url);
             final ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
-            AzureTaskManager.getInstance().runOnPooledThread(() -> {
-                try {
-                    forward(resourceBaseUrl, token, server);
-                } catch (final IOException e) {
-                    throw new AzureToolkitRuntimeException("Error while deugging.", e);
-                }
-            });
+            forward(resourceBaseUrl, token, server);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException("Unable to start debugging.", e);
         }
@@ -40,13 +33,6 @@ public class PortForwarder {
                 .header("Authorization", String.format("Bearer %s", token))
                 .buildAsync(listener);
         future.whenComplete((socket, throwable) -> {
-            if (server.isOpen()) {
-                try {
-                    server.close();
-                } catch (final IOException e) {
-                    throw new AzureToolkitRuntimeException("Unable to close server.", e);
-                }
-            }
             if (throwable != null) {
                 listener.onError(socket, throwable);
             }

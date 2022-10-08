@@ -24,10 +24,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
     private boolean more = true;
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition moreRequested;
-
     private final CompletableFuture<WebSocket> future;
-
-
     private final ExecutorService pumperService = Executors.newSingleThreadExecutor();
     private final AtomicBoolean alive = new AtomicBoolean(true);
     private final ReadableByteChannel in;
@@ -35,7 +32,6 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
     private int messagesRead = 0;
 
     public PortForwarderWebSocketListener(ReadableByteChannel in, WritableByteChannel out) {
-        super();
         this.in = in;
         this.out = out;
         this.future = new CompletableFuture<>();
@@ -88,55 +84,12 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
 
     @Override
     public void onMessage(WebSocket webSocket, String text) {
-        this.awaitMoreRequest();
-        this.onMessage(webSocket, ByteString.of(text.getBytes(StandardCharsets.UTF_8)));
+        this.writeMessage(webSocket, ByteString.of(text.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
     public void onMessage(WebSocket webSocket, ByteString bytes) {
-        this.awaitMoreRequest();
-        ++this.messagesRead;
-        final ByteBuffer buffer = bytes.asByteBuffer();
-        if (this.messagesRead <= 2) {
-            this.request();
-            return;
-        }
-        if (!buffer.hasRemaining()) {
-            this.closeWebSocket(webSocket, 1002, "Protocol error");
-            throw new AzureToolkitRuntimeException("Received an empty message.");
-        }
-        final byte channel = buffer.get();
-        if (channel < 0 || channel > 1) {
-            this.closeWebSocket(webSocket, 1002, "Protocol error");
-            throw new AzureToolkitRuntimeException("Received a wrong channel from the remote socket.");
-        }
-        if (channel == 1) {
-            this.closeForwarder();
-            throw new AzureToolkitRuntimeException("Received an error from the remote socket.");
-        }
-        if (this.out != null) {
-            while (true) {
-                try {
-                    if (buffer.hasRemaining()) {
-                        final int written = this.out.write(buffer);
-                        if (written == 0) {
-                            Thread.sleep(50L);
-                        }
-                        continue;
-                    }
-                    this.request();
-                } catch (final InterruptedException | IOException e) {
-                    if (e instanceof InterruptedException) {
-                        Thread.currentThread().interrupt();
-                    }
-                    if (this.alive.get()) {
-                        this.closeWebSocket(webSocket, 1002, "Protocol error");
-                        throw new AzureToolkitRuntimeException("Error while forwarding data from remote to the client.", e);
-                    }
-                }
-                return;
-            }
-        }
+        this.writeMessage(webSocket, bytes);
     }
 
     @Override
@@ -221,6 +174,52 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
             Thread.currentThread().interrupt();
         } finally {
             this.lock.unlock();
+        }
+    }
+
+    private void writeMessage(WebSocket webSocket, ByteString bytes) {
+        this.awaitMoreRequest();
+        ++this.messagesRead;
+        final ByteBuffer buffer = bytes.asByteBuffer();
+        if (this.messagesRead <= 2) {
+            this.request();
+            return;
+        }
+        if (!buffer.hasRemaining()) {
+            this.closeWebSocket(webSocket, 1002, "Protocol error");
+            throw new AzureToolkitRuntimeException("Received an empty message.");
+        }
+        final byte channel = buffer.get();
+        if (channel < 0 || channel > 1) {
+            this.closeWebSocket(webSocket, 1002, "Protocol error");
+            throw new AzureToolkitRuntimeException("Received a wrong channel from the remote socket.");
+        }
+        if (channel == 1) {
+            this.closeForwarder();
+            throw new AzureToolkitRuntimeException("Received an error from the remote socket.");
+        }
+        if (this.out != null) {
+            while (true) {
+                try {
+                    if (buffer.hasRemaining()) {
+                        final int written = this.out.write(buffer);
+                        if (written == 0) {
+                            Thread.sleep(50L);
+                        }
+                        continue;
+                    }
+                    this.request();
+                } catch (final InterruptedException | IOException e) {
+                    if (e instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    if (this.alive.get()) {
+                        this.closeWebSocket(webSocket, 1002, "Protocol error");
+                        throw new AzureToolkitRuntimeException("Error while forwarding data from remote to the client.", e);
+                    }
+                }
+                return;
+            }
         }
     }
 }
