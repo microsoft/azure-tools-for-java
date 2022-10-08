@@ -3,7 +3,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.implementation.util.ScopeUtil;
 import com.intellij.execution.*;
-import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
@@ -37,12 +37,12 @@ public class AppInstanceDebuggingAction {
             final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
             final RunManagerImpl managerImpl = new RunManagerImpl(project);
             final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(managerImpl, remoteConfiguration, false);
-            if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+            if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultDebugExecutor.getDebugExecutorInstance())) {
                 final RunManagerEx runManager = RunManagerEx.getInstanceEx(project);
                 settings.storeInLocalWorkspace();
                 runManager.addConfiguration(settings);
                 runManager.setSelectedConfiguration(settings);
-                ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
+                ProgramRunnerUtil.executeConfiguration(settings, DefaultDebugExecutor.getDebugExecutorInstance());
             }
         });
     }
@@ -76,7 +76,7 @@ public class AppInstanceDebuggingAction {
         remoteConfig.HOST = "localhost";
         remoteConfig.USE_SOCKET_TRANSPORT = true;
         remoteConfig.SERVER_MODE = false;
-        remoteConfig.setName("spring remote debug");
+        remoteConfig.setName(String.format("remote-debug-%s", appInstance.getName()));
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         if (modules.length > 0) {
             remoteConfig.setModule(modules[0]);
