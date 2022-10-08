@@ -10,18 +10,30 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 
 public class PortForwarder {
+    private ServerSocketChannel server;
 
-    public static void startForward(String url, String token, int localPort) {
+    public void startForward(String url, String token, int localPort) {
         try {
             final URL resourceBaseUrl = new URL(url);
-            final ServerSocketChannel server = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
+            server = ServerSocketChannel.open().bind(new InetSocketAddress(localPort));
             forward(resourceBaseUrl, token, server);
         } catch (final IOException e) {
             throw new AzureToolkitRuntimeException("Unable to start debugging.", e);
+        }
+    }
+
+    public void stopForward() {
+        if (Objects.nonNull(server) && server.isOpen()) {
+            try {
+                server.close();
+            } catch (final IOException e) {
+                throw new AzureToolkitRuntimeException(e);
+            }
         }
     }
 

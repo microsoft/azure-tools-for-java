@@ -7,21 +7,23 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.remote.RemoteConfigurationType;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.ide.common.util.remotedebugging.PortForwarder;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -29,14 +31,15 @@ public class AppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
     private static final String DIALOG_TITLE = "Remote Debug";
-    private static PortForwarder portForwarder;
-    public static void startDebugging(@Nonnull SpringCloudDeploymentInstanceEntity appInstance, @Nullable Project project) {
+    public static void startDebugging(@Nonnull SpringCloudDeploymentInstanceEntity appInstance, Project project) {
+        addExecutionListener(project);
         AzureTaskManager.getInstance().runLater(() -> {
             final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
-            final RunManagerImpl runManager = new RunManagerImpl(project);
-            final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(runManager, remoteConfiguration, false);
+            final RunManagerImpl managerImpl = new RunManagerImpl(project);
+            final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(managerImpl, remoteConfiguration, false);
             if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
-                System.out.println("editConfiguration success");
+                final RunManagerEx runManager = RunManagerEx.getInstanceEx(project);
+                settings.storeInLocalWorkspace();
                 runManager.addConfiguration(settings);
                 runManager.setSelectedConfiguration(settings);
                 ProgramRunnerUtil.executeConfiguration(settings, DefaultRunExecutor.getRunExecutorInstance());
@@ -46,6 +49,25 @@ public class AppInstanceDebuggingAction {
 
     public static int getDefaultPort() {
         return DEFAULT_PORT;
+    }
+
+    private static void addExecutionListener(Project project) {
+        project.getMessageBus().connect().subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
+            @Override
+            public void processTerminated(@NotNull String executorId, @NotNull ExecutionEnvironment env, @NotNull ProcessHandler handler, int exitCode) {
+                ExecutionListener.super.processTerminated(executorId, env, handler, exitCode);
+                Optional.ofNullable(env.getRunnerAndConfigurationSettings()).ifPresent(settings -> {
+                    if (settings.getConfiguration() instanceof RemoteConfiguration) {
+                        final List<BeforeRunTask<?>> beforeRunTaskList = settings.getConfiguration().getBeforeRunTasks();
+                        beforeRunTaskList.forEach(beforeRunTask -> {
+                            if (beforeRunTask instanceof PortForwardingTaskProvider.PortForwarderBeforeRunTask) {
+                                ((PortForwardingTaskProvider.PortForwarderBeforeRunTask) beforeRunTask).getForwarder().stopForward();
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     private static RemoteConfiguration generateRemoteConfiguration(Project project, SpringCloudDeploymentInstanceEntity appInstance) {
@@ -66,9 +88,9 @@ public class AppInstanceDebuggingAction {
         return remoteConfig;
     }
 
-    private static PortForwardingTaskProvider.MyBeforeRunTask createPortForwardingTask(RemoteConfiguration runConfiguration, SpringCloudDeploymentInstanceEntity appInstance) {
+    private static PortForwardingTaskProvider.PortForwarderBeforeRunTask createPortForwardingTask(RemoteConfiguration runConfiguration, SpringCloudDeploymentInstanceEntity appInstance) {
         final PortForwardingTaskProvider provider = new PortForwardingTaskProvider();
-        final PortForwardingTaskProvider.MyBeforeRunTask runTask = provider.createTask(runConfiguration);
+        final PortForwardingTaskProvider.PortForwarderBeforeRunTask runTask = provider.createTask(runConfiguration);
         final Account account = az(AzureAccount.class).account();
         final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
         final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);
