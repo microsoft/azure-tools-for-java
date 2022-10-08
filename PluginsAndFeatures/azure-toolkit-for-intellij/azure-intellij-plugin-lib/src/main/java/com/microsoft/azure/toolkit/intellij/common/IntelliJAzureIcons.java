@@ -61,7 +61,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Common.UNKNOWN_ICON, AllIcons.Nodes.Unknown);
             put(AzureIcons.Action.CONSOLE, AllIcons.Nodes.Console);
             put(AzureIcons.Action.SFTP, AllIcons.Nodes.Servlet);
-            put(AzureIcons.Action.DEBUG, AllIcons.Actions.StartDebugger);
+            put(AzureIcons.Action.DEBUG, AllIcons.Debugger.AttachToProcess);
             put(AzureIcons.Action.REMOTE, AllIcons.RunConfigurations.Remote);
         }
     };

@@ -1,4 +1,5 @@
 intellij {
+    plugins = ['java']
 }
 
 dependencies {

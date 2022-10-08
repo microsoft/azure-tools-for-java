@@ -8,6 +8,7 @@
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider"/>
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentConfigurationType"/>
         <programRunner implementation="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.SpringCloudDeploymentRunner"/>
+        <stepsBeforeRunProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.remotedebug.PortForwardingTaskProvider" id="PortForwardingTaskProviderId"/>
     </extensions>
     <actions>
         <action id="Actions.DeploySpringCloud" class="com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpringCloudAppAction"
