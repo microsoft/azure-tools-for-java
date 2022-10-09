@@ -53,7 +53,6 @@ public class SpringAppInstanceNode extends Node<SpringCloudDeploymentInstanceEnt
 
         @Override
         public String getDescription() {
-            // todo show debugging port/debugging status
             return "";
         }
 

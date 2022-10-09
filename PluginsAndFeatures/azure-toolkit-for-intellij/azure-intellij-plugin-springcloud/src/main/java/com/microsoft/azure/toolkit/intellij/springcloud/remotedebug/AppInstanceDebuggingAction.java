@@ -4,7 +4,6 @@ import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.implementation.util.ScopeUtil;
 import com.intellij.execution.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
-import com.intellij.execution.impl.RunDialog;
 import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.execution.process.ProcessHandler;
@@ -16,7 +15,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,18 +31,14 @@ public class AppInstanceDebuggingAction {
     private static final String DIALOG_TITLE = "Remote Debug";
     public static void startDebugging(@Nonnull SpringCloudDeploymentInstanceEntity appInstance, Project project) {
         addExecutionListener(project);
-        AzureTaskManager.getInstance().runLater(() -> {
-            final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
-            final RunManagerImpl managerImpl = new RunManagerImpl(project);
-            final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(managerImpl, remoteConfiguration, false);
-            if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultDebugExecutor.getDebugExecutorInstance())) {
-                final RunManagerEx runManager = RunManagerEx.getInstanceEx(project);
-                settings.storeInLocalWorkspace();
-                runManager.addConfiguration(settings);
-                runManager.setSelectedConfiguration(settings);
-                ProgramRunnerUtil.executeConfiguration(settings, DefaultDebugExecutor.getDebugExecutorInstance());
-            }
-        });
+        final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
+        final RunManagerImpl managerImpl = new RunManagerImpl(project);
+        final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(managerImpl, remoteConfiguration, false);
+        final RunManagerEx runManager = RunManagerEx.getInstanceEx(project);
+        settings.storeInLocalWorkspace();
+        runManager.addConfiguration(settings);
+        runManager.setSelectedConfiguration(settings);
+        ProgramRunnerUtil.executeConfiguration(settings, DefaultDebugExecutor.getDebugExecutorInstance());
     }
 
     public static int getDefaultPort() {
@@ -97,6 +91,7 @@ public class AppInstanceDebuggingAction {
         final String accessToken = account.getTokenCredential(appInstance.getDeployment().getSubscriptionId()).getToken(request).block().getToken();
         runTask.setRemoteUrl(String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), runConfiguration.PORT));
         runTask.setAccessToken(accessToken);
+        runTask.setTaskDescription(String.format("Connect to %s", appInstance.getName()));
         return runTask;
     }
 }

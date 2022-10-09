@@ -13,6 +13,8 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -20,14 +22,15 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
-    private static final String NAME = "Connect to remote";
+    private static final String NAME = "Connect to spring app instance";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
+    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE);
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
     @Getter
     public String name = NAME;
     @Getter
-    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE);
+    public Icon icon = ICON;
 
     @Override
     public @Nullable
@@ -43,7 +46,15 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
 
     @Override
     public boolean executeTask(@NotNull DataContext context, @NotNull RunConfiguration configuration, @NotNull ExecutionEnvironment environment, @Nonnull PortForwarderBeforeRunTask task) {
-        return task.startPortForwarding();
+        if (configuration instanceof RemoteConfiguration) {
+            return task.startPortForwarding(Integer.parseInt(((RemoteConfiguration) configuration).PORT));
+        }
+        return false;
+    }
+
+    @Override
+    public @Nls(capitalization = Nls.Capitalization.Sentence) String getDescription(PortForwarderBeforeRunTask task) {
+        return StringUtils.isEmpty(task.taskDescription) ? NAME : task.taskDescription;
     }
 
     @Getter
@@ -53,15 +64,15 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
         private String remoteUrl;
         private String accessToken;
         private PortForwarder forwarder;
+        private String taskDescription;
 
         protected PortForwarderBeforeRunTask(RunConfiguration config) {
             super(ID);
             this.config = config;
         }
 
-        public boolean startPortForwarding() {
+        public boolean startPortForwarding(int localPort) {
             if (this.config instanceof RemoteConfiguration) {
-                final int localPort = Integer.parseInt(((RemoteConfiguration) this.config).PORT);
                 this.forwarder = new PortForwarder();
                 AzureTaskManager.getInstance().runOnPooledThread(() ->  this.forwarder.startForward(remoteUrl, accessToken, localPort));
                 return true;
