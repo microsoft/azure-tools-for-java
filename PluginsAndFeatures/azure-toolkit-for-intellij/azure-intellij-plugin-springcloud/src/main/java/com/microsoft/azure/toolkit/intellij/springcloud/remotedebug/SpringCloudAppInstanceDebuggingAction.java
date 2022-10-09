@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
 import com.azure.core.credential.TokenRequestContext;
@@ -13,8 +18,15 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.messages.MessageBusConnection;
+import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,16 +37,27 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
-public class AppInstanceDebuggingAction {
+public class SpringCloudAppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
-    private static final String DIALOG_TITLE = "Remote Debug";
+    private static final String FAILED_TO_ATTACH_DEBUGGER = "Failed to attach debugger";
+    @AzureOperation(name = "springcloud.attach_debugger.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudDeploymentInstanceEntity appInstance, Project project) {
-        addExecutionListener(project);
+        if (!appInstance.getDeployment().getParent().isRemoteDebuggingEnabled()) {
+            final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
+            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_ATTACH_DEBUGGER, new Action<>(Action.Id.of("springcloud.enable_remote_debugging"), enableDebuggingAction.getViewBuilder()) {
+                @Override
+                public void handle(Object source, Object e) {
+                    enableDebuggingAction.handle(appInstance.getDeployment().getParent(), project);
+                }
+            });
+            return;
+        }
         final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
         final RunManagerImpl managerImpl = new RunManagerImpl(project);
         final RunnerAndConfigurationSettings settings = new RunnerAndConfigurationSettingsImpl(managerImpl, remoteConfiguration, false);
         final RunManagerEx runManager = RunManagerEx.getInstanceEx(project);
+        addExecutionListener(project);
         settings.storeInLocalWorkspace();
         runManager.addConfiguration(settings);
         runManager.setSelectedConfiguration(settings);
@@ -46,10 +69,10 @@ public class AppInstanceDebuggingAction {
     }
 
     private static void addExecutionListener(Project project) {
-        project.getMessageBus().connect().subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
+        final MessageBusConnection messageBusConnection = project.getMessageBus().connect();
+        messageBusConnection.subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
             @Override
             public void processTerminated(@NotNull String executorId, @NotNull ExecutionEnvironment env, @NotNull ProcessHandler handler, int exitCode) {
-                ExecutionListener.super.processTerminated(executorId, env, handler, exitCode);
                 Optional.ofNullable(env.getRunnerAndConfigurationSettings()).ifPresent(settings -> {
                     if (settings.getConfiguration() instanceof RemoteConfiguration) {
                         final List<BeforeRunTask<?>> beforeRunTaskList = settings.getConfiguration().getBeforeRunTasks();
@@ -60,6 +83,7 @@ public class AppInstanceDebuggingAction {
                         });
                     }
                 });
+                messageBusConnection.disconnect();
             }
         });
     }

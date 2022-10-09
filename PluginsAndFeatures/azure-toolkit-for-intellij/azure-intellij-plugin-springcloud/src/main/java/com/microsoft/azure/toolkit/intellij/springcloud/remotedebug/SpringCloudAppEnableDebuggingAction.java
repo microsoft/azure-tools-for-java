@@ -1,9 +1,15 @@
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -13,10 +19,11 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class SpringCloudDebuggingAction {
+public class SpringCloudAppEnableDebuggingAction {
     private static final String FAILED_TO_ENABLE_REMOTE_DEBUGGING = "Failed to enable remote debugging";
     private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app.";
 
+    @AzureOperation(name = "springcloud.enable_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
     public static void enableRemoteDebugging(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();
         final AzureString title = OperationBundle.description("springcloud.enable_remote_debugging.app", app.getName());
@@ -27,7 +34,7 @@ public class SpringCloudDebuggingAction {
                     messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_ENABLE_REMOTE_DEBUGGING);
                     return;
                 }
-                app.enableRemoteDebugging(AppInstanceDebuggingAction.getDefaultPort());
+                app.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
                 messager.success(String.format("Enable remote debugging for spring app %s successfully.", app.getName()));
             } catch (final Exception e) {
                 final String errorMessage = e.getMessage();
