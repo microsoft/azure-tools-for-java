@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
-    private static final String NAME = "Connect to spring app instance";
+    private static final String NAME = "Attach to spring app instance";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
     private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE);
     @Getter

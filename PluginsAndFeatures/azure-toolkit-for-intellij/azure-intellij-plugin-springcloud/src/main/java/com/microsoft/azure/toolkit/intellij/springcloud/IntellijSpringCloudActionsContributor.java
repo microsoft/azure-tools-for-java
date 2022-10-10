@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -86,8 +86,8 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     }
 
     private void registerStartDebuggingHandler(AzureActionManager am) {
-        final BiPredicate<SpringCloudDeploymentInstanceEntity, AnActionEvent> condition = (r, e) -> true;
-        final BiConsumer<SpringCloudDeploymentInstanceEntity, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebugging(c, e.getProject());
+        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebugging(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.ATTACH_DEBUGGER, condition, handler);
     }
 

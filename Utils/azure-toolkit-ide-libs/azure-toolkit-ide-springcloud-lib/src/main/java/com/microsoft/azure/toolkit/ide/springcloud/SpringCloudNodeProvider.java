@@ -11,11 +11,11 @@ import com.microsoft.azure.toolkit.ide.common.component.AzureResourceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.AzureServiceLabelView;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.springcloud.node.SpringAppInstanceNode;
 import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,8 +69,13 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(SpringCloudActionsContributor.APP_ACTIONS)
-                .addChildren(c -> Optional.ofNullable(c.getActiveDeployment()).map(SpringCloudDeployment::getInstances).orElse(Collections.emptyList()),
-                        (appInstance, appNode) -> new SpringAppInstanceNode(appInstance, appNode.data()));
+                .addChildren(c -> Optional.ofNullable(c.getActiveDeployment()).map(SpringCloudDeployment::getInstanceResources).orElse(Collections.emptyList()),
+                        (appInstance, appNode) -> this.createNode(appInstance, appNode, manager));
+        } else if (data instanceof SpringCloudAppInstance) {
+            final SpringCloudAppInstance appInstance = (SpringCloudAppInstance) data;
+            return new Node<>(appInstance)
+                    .view(new AzureResourceLabelView<>(appInstance))
+                    .actions(SpringCloudActionsContributor.APP_INSTANCE_ACTIONS);
         }
         return null;
     }

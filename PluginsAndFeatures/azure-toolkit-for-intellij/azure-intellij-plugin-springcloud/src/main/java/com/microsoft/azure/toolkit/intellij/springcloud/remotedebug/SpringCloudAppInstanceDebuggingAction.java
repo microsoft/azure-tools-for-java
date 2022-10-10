@@ -23,11 +23,12 @@ import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -42,13 +43,13 @@ public class SpringCloudAppInstanceDebuggingAction {
     private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
     private static final String FAILED_TO_ATTACH_DEBUGGER = "Failed to attach debugger";
     @AzureOperation(name = "springcloud.attach_debugger.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
-    public static void startDebugging(@Nonnull SpringCloudDeploymentInstanceEntity appInstance, Project project) {
-        if (!appInstance.getDeployment().getParent().isRemoteDebuggingEnabled()) {
+    public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
+        if (!appInstance.getParent().getParent().isRemoteDebuggingEnabled()) {
             final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
-            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_ATTACH_DEBUGGER, new Action<>(Action.Id.of("springcloud.enable_remote_debugging"), enableDebuggingAction.getViewBuilder()) {
+            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_ATTACH_DEBUGGER, new Action<>(Action.Id.of("springcloud.enable_remote_debugging"), new ActionView.Builder("Enable Remote Debugging")) {
                 @Override
                 public void handle(Object source, Object e) {
-                    enableDebuggingAction.handle(appInstance.getDeployment().getParent(), project);
+                    enableDebuggingAction.handle(appInstance.getParent().getParent(), project);
                 }
             });
             return;
@@ -88,7 +89,7 @@ public class SpringCloudAppInstanceDebuggingAction {
         });
     }
 
-    private static RemoteConfiguration generateRemoteConfiguration(Project project, SpringCloudDeploymentInstanceEntity appInstance) {
+    private static RemoteConfiguration generateRemoteConfiguration(Project project, SpringCloudAppInstance appInstance) {
         final RemoteConfiguration remoteConfig = (RemoteConfiguration) RemoteConfigurationType.getInstance().createTemplateConfiguration(project);
         remoteConfig.PORT = String.valueOf(DEFAULT_PORT);
         remoteConfig.HOST = "localhost";
@@ -106,16 +107,16 @@ public class SpringCloudAppInstanceDebuggingAction {
         return remoteConfig;
     }
 
-    private static PortForwardingTaskProvider.PortForwarderBeforeRunTask createPortForwardingTask(RemoteConfiguration runConfiguration, SpringCloudDeploymentInstanceEntity appInstance) {
+    private static PortForwardingTaskProvider.PortForwarderBeforeRunTask createPortForwardingTask(RemoteConfiguration runConfiguration, SpringCloudAppInstance appInstance) {
         final PortForwardingTaskProvider provider = new PortForwardingTaskProvider();
         final PortForwardingTaskProvider.PortForwarderBeforeRunTask runTask = provider.createTask(runConfiguration);
         final Account account = az(AzureAccount.class).account();
         final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
         final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);
-        final String accessToken = account.getTokenCredential(appInstance.getDeployment().getSubscriptionId()).getToken(request).block().getToken();
+        final String accessToken = account.getTokenCredential(appInstance.getSubscriptionId()).getToken(request).block().getToken();
         runTask.setRemoteUrl(String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), runConfiguration.PORT));
         runTask.setAccessToken(accessToken);
-        runTask.setTaskDescription(String.format("Connect to %s", appInstance.getName()));
+        runTask.setTaskDescription(String.format("Attach to %s", appInstance.getName()));
         return runTask;
     }
 }
