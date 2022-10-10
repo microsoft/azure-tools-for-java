@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.implementation.util.ScopeUtil;
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -15,25 +17,32 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.util.remotedebugging.PortForwarder;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.lib.auth.Account;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.concurrency.Promise;
+import org.jetbrains.concurrency.Promises;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
 
+import java.util.Objects;
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
-    private static final String NAME = "Attach to spring app instance";
+    private static final String NAME_TEMPLATE = "Attach to %s";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
     private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE);
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
     @Getter
-    public String name = NAME;
+    public String name = String.format(NAME_TEMPLATE, "spring app instance");
     @Getter
     public Icon icon = ICON;
 
@@ -58,18 +67,38 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
     }
 
     @Override
+    public Promise<Boolean> configureTask(@NotNull DataContext context, @NotNull RunConfiguration configuration, @NotNull PortForwarderBeforeRunTask task) {
+        final PortForwardingDialog dialog = new PortForwardingDialog(configuration.getProject());
+        dialog.setTitle("Select Spring App Instance");
+        if (Objects.nonNull(task.appInstance)) {
+            dialog.setSelectedAppInstance(task.appInstance);
+        }
+        if (!dialog.showAndGet()) {
+            return Promises.resolvedPromise(false);
+        }
+        task.setAppInstance(dialog.getSelectedAppInstance());
+        return super.configureTask(context, configuration, task);
+    }
+
+    @Override
+    public boolean isConfigurable() {
+        return true;
+    }
+
+    @Override
     public @Nls(capitalization = Nls.Capitalization.Sentence) String getDescription(PortForwarderBeforeRunTask task) {
-        return StringUtils.isEmpty(task.taskDescription) ? NAME : task.taskDescription;
+        return Objects.isNull(task.appInstance) ? name : String.format(NAME_TEMPLATE, task.appInstance.getName());
     }
 
     @Getter
     @Setter
     public static class PortForwarderBeforeRunTask extends BeforeRunTask<PortForwarderBeforeRunTask> {
+        private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
         private final RunConfiguration config;
         private String remoteUrl;
         private String accessToken;
         private PortForwarder forwarder;
-        private String taskDescription;
+        private SpringCloudAppInstance appInstance;
 
         protected PortForwarderBeforeRunTask(RunConfiguration config) {
             super(ID);
@@ -84,5 +113,15 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
             }
             return false;
         }
+
+        public void setAppInstance(SpringCloudAppInstance appInstance) {
+            this.appInstance = appInstance;
+            this.remoteUrl = String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), SpringCloudAppInstanceDebuggingAction.getDefaultPort());
+            final Account account = az(AzureAccount.class).account();
+            final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
+            final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);
+            this.accessToken = account.getTokenCredential(appInstance.getSubscriptionId()).getToken(request).block().getToken();
+        }
+
     }
 }

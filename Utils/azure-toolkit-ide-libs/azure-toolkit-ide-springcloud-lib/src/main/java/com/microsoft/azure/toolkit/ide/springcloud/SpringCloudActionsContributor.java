@@ -129,7 +129,6 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.PIN,
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
-                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 SpringCloudActionsContributor.ATTACH_DEBUGGER
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);

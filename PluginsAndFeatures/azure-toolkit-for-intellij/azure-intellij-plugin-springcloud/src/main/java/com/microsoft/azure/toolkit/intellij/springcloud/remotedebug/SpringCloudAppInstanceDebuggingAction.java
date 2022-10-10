@@ -5,8 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
-import com.azure.core.credential.TokenRequestContext;
-import com.azure.identity.implementation.util.ScopeUtil;
 import com.intellij.execution.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
@@ -20,8 +18,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
-import com.microsoft.azure.toolkit.lib.auth.Account;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -35,8 +31,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class SpringCloudAppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
@@ -110,13 +104,7 @@ public class SpringCloudAppInstanceDebuggingAction {
     private static PortForwardingTaskProvider.PortForwarderBeforeRunTask createPortForwardingTask(RemoteConfiguration runConfiguration, SpringCloudAppInstance appInstance) {
         final PortForwardingTaskProvider provider = new PortForwardingTaskProvider();
         final PortForwardingTaskProvider.PortForwarderBeforeRunTask runTask = provider.createTask(runConfiguration);
-        final Account account = az(AzureAccount.class).account();
-        final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
-        final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);
-        final String accessToken = account.getTokenCredential(appInstance.getSubscriptionId()).getToken(request).block().getToken();
-        runTask.setRemoteUrl(String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), runConfiguration.PORT));
-        runTask.setAccessToken(accessToken);
-        runTask.setTaskDescription(String.format("Attach to %s", appInstance.getName()));
+        Optional.ofNullable(runTask).ifPresent(task -> task.setAppInstance(appInstance));
         return runTask;
     }
 }
