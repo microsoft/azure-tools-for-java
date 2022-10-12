@@ -35,15 +35,15 @@ import java.util.Optional;
 public class SpringCloudAppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
-    private static final String FAILED_TO_ATTACH_DEBUGGER = "Failed to attach debugger";
+    private static final String FAILED_TO_START_REMOTE_DEBUGGING = "Failed to start remote debugging";
     @AzureOperation(name = "springcloud.attach_debugger.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
         if (!appInstance.getParent().getParent().isRemoteDebuggingEnabled()) {
             final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
-            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_ATTACH_DEBUGGER, new Action<>(Action.Id.of("springcloud.enable_remote_debugging"), new ActionView.Builder("Enable Remote Debugging")) {
+            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_START_REMOTE_DEBUGGING, new Action<>(Action.Id.of("springcloud.enable_remote_debugging"), new ActionView.Builder("Enable Remote Debugging")) {
                 @Override
                 public void handle(Object source, Object e) {
-                    enableDebuggingAction.handle(appInstance.getParent().getParent(), project);
+                    enableDebuggingAction.handle(appInstance.getParent().getParent(), e);
                 }
             });
             return;

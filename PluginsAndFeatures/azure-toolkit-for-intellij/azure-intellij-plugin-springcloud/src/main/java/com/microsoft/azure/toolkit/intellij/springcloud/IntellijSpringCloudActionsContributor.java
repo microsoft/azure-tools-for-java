@@ -88,7 +88,7 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     private void registerStartDebuggingHandler(AzureActionManager am) {
         final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebugging(c, e.getProject());
-        am.registerHandler(SpringCloudActionsContributor.ATTACH_DEBUGGER, condition, handler);
+        am.registerHandler(SpringCloudActionsContributor.REMOTE_DEBUGGING, condition, handler);
     }
 
     @Override

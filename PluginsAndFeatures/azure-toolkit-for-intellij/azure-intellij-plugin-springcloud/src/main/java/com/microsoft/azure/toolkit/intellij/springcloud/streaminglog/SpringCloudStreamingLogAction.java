@@ -13,8 +13,8 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -41,7 +41,7 @@ public class SpringCloudStreamingLogAction {
                     messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_START_LOG_STREAMING);
                     return;
                 }
-                final List<SpringCloudDeploymentInstanceEntity> instances = deployment.getInstances();
+                final List<SpringCloudAppInstance> instances = deployment.getInstanceResources();
                 if (CollectionUtils.isEmpty(instances)) {
                     messager.warning(NO_AVAILABLE_INSTANCES, FAILED_TO_START_LOG_STREAMING);
                 } else {
@@ -55,11 +55,11 @@ public class SpringCloudStreamingLogAction {
         }));
     }
 
-    private static void showLogStreamingDialog(List<SpringCloudDeploymentInstanceEntity> instances, SpringCloudApp app, Project project) {
+    private static void showLogStreamingDialog(List<SpringCloudAppInstance> instances, SpringCloudApp app, Project project) {
         AzureTaskManager.getInstance().runLater(() -> {
             final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
             if (dialog.showAndGet()) {
-                final SpringCloudDeploymentInstanceEntity target = dialog.getInstance();
+                final SpringCloudAppInstance target = dialog.getInstance();
                 SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, app, target.getName());
             }
         });

@@ -35,7 +35,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
     public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
     public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
-    public static final Action.Id<SpringCloudAppInstance> ATTACH_DEBUGGER = Action.Id.of("springcloud.attach_debugger");
+    public static final Action.Id<SpringCloudAppInstance> REMOTE_DEBUGGING = Action.Id.of("springcloud.remote_debug");
     public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
     @Override
@@ -76,10 +76,10 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof SpringCloudApp);
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
-        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Attach Debugger", AzureIcons.Action.DEBUG.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.attach_debugger.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
+        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Remote Debug", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudAppInstance);
-        am.registerAction(ATTACH_DEBUGGER, new Action<>(ATTACH_DEBUGGER, attachDebuggerView));
+        am.registerAction(REMOTE_DEBUGGING, new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
     }
 
     @Override
@@ -129,7 +129,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.PIN,
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
-                SpringCloudActionsContributor.ATTACH_DEBUGGER
+                SpringCloudActionsContributor.REMOTE_DEBUGGING
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
 
