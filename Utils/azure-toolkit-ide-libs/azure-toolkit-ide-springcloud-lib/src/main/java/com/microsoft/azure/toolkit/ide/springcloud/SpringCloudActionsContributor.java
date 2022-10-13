@@ -33,6 +33,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final Action.Id<SpringCloudApp> OPEN_PUBLIC_URL = Action.Id.of("springcloud.open_public_url");
     public static final Action.Id<SpringCloudApp> OPEN_TEST_URL = Action.Id.of("springcloud.open_test_url");
     public static final Action.Id<SpringCloudApp> STREAM_LOG = Action.Id.of("springcloud.stream_log");
+    public static final Action.Id<SpringCloudAppInstance> STREAM_LOG_INSTANCE = Action.Id.of("springcloud.stream_log_instance");
     public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
     public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
     public static final Action.Id<SpringCloudAppInstance> REMOTE_DEBUGGING = Action.Id.of("springcloud.remote_debug");
@@ -60,6 +61,11 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.app", ((SpringCloudApp) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(STREAM_LOG, new Action<>(STREAM_LOG, streamLogView));
+
+        final ActionView.Builder streamLogInstanceView = new ActionView.Builder("Streaming Log", AzureIcons.Action.LOG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.open_stream_log.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
+                .enabled(s -> s instanceof SpringCloudAppInstance && ((AzResourceBase) s).getFormalStatus().isRunning());
+        am.registerAction(STREAM_LOG_INSTANCE, new Action<>(STREAM_LOG_INSTANCE, streamLogInstanceView));
 
         final ActionView.Builder createClusterView = new ActionView.Builder("Spring Apps")
             .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.create_cluster.group", ((ResourceGroup) r).getName())).orElse(null))
@@ -129,7 +135,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 ResourceCommonActionsContributor.PIN,
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
-                SpringCloudActionsContributor.REMOTE_DEBUGGING
+                SpringCloudActionsContributor.REMOTE_DEBUGGING,
+                SpringCloudActionsContributor.STREAM_LOG_INSTANCE
         );
         am.registerGroup(APP_INSTANCE_ACTIONS, appInstanceGroup);
 

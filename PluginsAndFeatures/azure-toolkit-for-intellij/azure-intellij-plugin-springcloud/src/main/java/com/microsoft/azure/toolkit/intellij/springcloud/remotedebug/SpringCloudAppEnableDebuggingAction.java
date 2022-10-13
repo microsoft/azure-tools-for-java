@@ -7,7 +7,7 @@ package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
-import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogDialog;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceSelectionDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -47,7 +47,7 @@ public class SpringCloudAppEnableDebuggingAction {
                 }
                 app.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
                 final Action<SpringCloudAppInstance> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING);
-                messager.success(String.format("Enable remote debugging for spring app %s successfully.", app.getName()), "", new Action<>(Action.Id.of("springcloud.remote_debug"), new ActionView.Builder("Enable Remote Debugging")) {
+                messager.success(String.format("Enable remote debugging for spring app %s successfully.", app.getName()), "", new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Start Remote Debugging")) {
                     @Override
                     public void handle(Object source, Object e) {
                         final SpringCloudDeployment deployment = app.getActiveDeployment();
@@ -61,7 +61,7 @@ public class SpringCloudAppEnableDebuggingAction {
                             return;
                         }
                         AzureTaskManager.getInstance().runLater(() -> {
-                            final SpringCloudStreamingLogDialog dialog = new SpringCloudStreamingLogDialog(project, instances);
+                            final SpringCloudAppInstanceSelectionDialog dialog = new SpringCloudAppInstanceSelectionDialog(project, instances);
                             if (dialog.showAndGet()) {
                                 final SpringCloudAppInstance target = dialog.getInstance();
                                 remoteDebuggingAction.handle(target, e);

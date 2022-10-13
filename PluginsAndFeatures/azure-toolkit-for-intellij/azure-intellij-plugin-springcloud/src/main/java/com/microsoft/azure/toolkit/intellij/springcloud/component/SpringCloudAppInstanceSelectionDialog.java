@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.springcloud.streaminglog;
+package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -14,14 +14,14 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.List;
 
-public class SpringCloudStreamingLogDialog extends DialogWrapper {
+public class SpringCloudAppInstanceSelectionDialog extends DialogWrapper {
 
     private JPanel pnlRoot;
     private JComboBox<SpringCloudAppInstance> cbInstances;
 
     private SpringCloudAppInstance instance;
 
-    public SpringCloudStreamingLogDialog(@Nullable final Project project, List<SpringCloudAppInstance> instances) {
+    public SpringCloudAppInstanceSelectionDialog(@Nullable final Project project, List<SpringCloudAppInstance> instances) {
         super(project, false);
         setTitle("Select Instance");
         instances.forEach(instance -> cbInstances.addItem(instance));
