@@ -17,6 +17,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
@@ -36,16 +37,11 @@ public class SpringCloudAppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
     private static final String REMOTE_URL_TEMPLATE = "%s?port=%s";
     private static final String FAILED_TO_START_REMOTE_DEBUGGING = "Failed to start remote debugging";
+    private static final String REMOTE_DEBUG_TITLE = "Failed to start remote debugging";
     @AzureOperation(name = "springcloud.attach_debugger.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
         if (!appInstance.getParent().getParent().isRemoteDebuggingEnabled()) {
-            final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
-            AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_START_REMOTE_DEBUGGING, new Action<>(Action.Id.of("springcloud.enable_remote_debugging_dialog"), new ActionView.Builder("Enable Remote Debugging")) {
-                @Override
-                public void handle(Object source, Object e) {
-                    enableDebuggingAction.handle(appInstance.getParent().getParent(), e);
-                }
-            });
+            showEnableDebuggingMessage(appInstance);
             return;
         }
         final RemoteConfiguration remoteConfiguration = generateRemoteConfiguration(project, appInstance);
@@ -57,6 +53,7 @@ public class SpringCloudAppInstanceDebuggingAction {
         runManager.addConfiguration(settings);
         runManager.setSelectedConfiguration(settings);
         ProgramRunnerUtil.executeConfiguration(settings, DefaultDebugExecutor.getDebugExecutorInstance());
+        showOpenUrlMessage(appInstance);
     }
 
     public static int getDefaultPort() {
@@ -106,5 +103,28 @@ public class SpringCloudAppInstanceDebuggingAction {
         final PortForwardingTaskProvider.PortForwarderBeforeRunTask runTask = provider.createTask(runConfiguration);
         Optional.ofNullable(runTask).ifPresent(task -> task.setAppInstance(appInstance));
         return runTask;
+    }
+
+    private static void showEnableDebuggingMessage(@Nonnull SpringCloudAppInstance appInstance) {
+        final Action<SpringCloudApp> enableDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING);
+        AzureMessager.getMessager().warning("Failed to attach debugger because remote debugging is not enabled.", FAILED_TO_START_REMOTE_DEBUGGING,
+                new Action<>(Action.Id.of("springcloud.enable_remote_debugging_dialog"), new ActionView.Builder("Enable Remote Debugging")) {
+                    @Override
+                    public void handle(Object source, Object e) {
+                        enableDebuggingAction.handle(appInstance.getParent().getParent(), e);
+                    }
+        });
+    }
+
+    private static void showOpenUrlMessage(@Nonnull SpringCloudAppInstance appInstance) {
+        AzureMessager.getMessager().success("Start remote debugging successfully", REMOTE_DEBUG_TITLE,
+                new Action<>(Action.Id.of("springcloud.open_url_dialog"), new ActionView.Builder("Access Endpoint")) {
+                    @Override
+                    public void handle(Object source, Object e) {
+                        final SpringCloudApp app = appInstance.getParent().getParent();
+                        final String portalUrl = app.isPublicEndpointEnabled() ? app.getApplicationUrl() : app.getTestUrl();
+                        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(portalUrl);
+                    }
+        });
     }
 }

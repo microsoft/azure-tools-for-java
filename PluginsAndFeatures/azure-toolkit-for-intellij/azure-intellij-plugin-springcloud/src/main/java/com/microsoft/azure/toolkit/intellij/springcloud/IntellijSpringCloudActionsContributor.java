@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.springcloud.deplolyment.DeploySpring
 import com.microsoft.azure.toolkit.intellij.springcloud.remotedebug.SpringCloudAppEnableDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.remotedebug.SpringCloudAppInstanceDebuggingAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogAction;
+import com.microsoft.azure.toolkit.intellij.springcloud.streaminglog.SpringCloudStreamingLogManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
@@ -36,6 +37,7 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         this.registerCreateAppActionHandler(am);
         this.registerDeployAppActionHandler(am);
         this.registerStreamLogActionHandler(am);
+        this.registerStreamLogInstanceActionHandler(am);
         this.registerEnableRemoteDebuggingHandler(am);
         this.registerDisableRemoteDebuggingHandler(am);
         this.registerStartDebuggingHandler(am);
@@ -71,6 +73,12 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogAction.startLogStreaming(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.STREAM_LOG, condition, handler);
+    }
+
+    private void registerStreamLogInstanceActionHandler(AzureActionManager am) {
+        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> true;
+        final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogManager.getInstance().showStreamingLog(e.getProject(), c.getParent().getParent(), c.getName());
+        am.registerHandler(SpringCloudActionsContributor.STREAM_LOG_INSTANCE, condition, handler);
     }
 
     private void registerEnableRemoteDebuggingHandler(AzureActionManager am) {

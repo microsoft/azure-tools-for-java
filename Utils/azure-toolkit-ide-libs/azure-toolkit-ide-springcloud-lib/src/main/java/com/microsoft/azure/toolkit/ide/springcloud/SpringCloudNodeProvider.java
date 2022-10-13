@@ -75,6 +75,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
             final SpringCloudAppInstance appInstance = (SpringCloudAppInstance) data;
             return new Node<>(appInstance)
                     .view(new AzureResourceLabelView<>(appInstance))
+                    .inlineAction(ResourceCommonActionsContributor.PIN)
                     .actions(SpringCloudActionsContributor.APP_INSTANCE_ACTIONS);
         }
         return null;
