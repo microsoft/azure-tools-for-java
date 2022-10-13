@@ -66,8 +66,8 @@ public class SpringCloudAppEnableDebuggingAction {
                     showSuccessMessage(app, project);
                 } else {
                     app.disableRemoteDebugging();
+                    messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()));
                 }
-                messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()));
             } catch (final Exception e) {
                 final String errorMessage = e.getMessage();
                 messager.error(errorMessage, String.format(FAILED_TITLE, action));
