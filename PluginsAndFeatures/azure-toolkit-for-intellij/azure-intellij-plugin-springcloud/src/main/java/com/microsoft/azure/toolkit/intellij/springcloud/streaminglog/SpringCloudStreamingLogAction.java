@@ -42,7 +42,7 @@ public class SpringCloudStreamingLogAction {
                     messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_START_LOG_STREAMING);
                     return;
                 }
-                final List<SpringCloudAppInstance> instances = deployment.getInstanceResources();
+                final List<SpringCloudAppInstance> instances = deployment.getInstances();
                 if (CollectionUtils.isEmpty(instances)) {
                     messager.warning(NO_AVAILABLE_INSTANCES, FAILED_TO_START_LOG_STREAMING);
                 } else {

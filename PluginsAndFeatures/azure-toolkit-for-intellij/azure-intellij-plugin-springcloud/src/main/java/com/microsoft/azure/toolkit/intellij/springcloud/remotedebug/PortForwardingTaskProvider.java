@@ -25,8 +25,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.concurrency.Promise;
-import org.jetbrains.concurrency.Promises;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,25 +62,6 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
             return task.startPortForwarding(Integer.parseInt(((RemoteConfiguration) configuration).PORT));
         }
         return false;
-    }
-
-    @Override
-    public Promise<Boolean> configureTask(@NotNull DataContext context, @NotNull RunConfiguration configuration, @NotNull PortForwarderBeforeRunTask task) {
-        final PortForwardingDialog dialog = new PortForwardingDialog(configuration.getProject());
-        dialog.setTitle("Select Spring App Instance");
-        if (Objects.nonNull(task.appInstance)) {
-            dialog.setSelectedAppInstance(task.appInstance);
-        }
-        if (!dialog.showAndGet()) {
-            return Promises.resolvedPromise(false);
-        }
-        task.setAppInstance(dialog.getSelectedAppInstance());
-        return super.configureTask(context, configuration, task);
-    }
-
-    @Override
-    public boolean isConfigurable() {
-        return true;
     }
 
     @Override

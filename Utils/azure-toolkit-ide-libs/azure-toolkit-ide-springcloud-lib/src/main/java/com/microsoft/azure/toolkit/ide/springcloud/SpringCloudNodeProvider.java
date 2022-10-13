@@ -69,7 +69,7 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
                 .inlineAction(ResourceCommonActionsContributor.PIN)
                 .doubleClickAction(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .actions(SpringCloudActionsContributor.APP_ACTIONS)
-                .addChildren(c -> Optional.ofNullable(c.getActiveDeployment()).map(SpringCloudDeployment::getInstanceResources).orElse(Collections.emptyList()),
+                .addChildren(c -> Optional.ofNullable(c.getActiveDeployment()).map(SpringCloudDeployment::getInstances).orElse(Collections.emptyList()),
                         (appInstance, appNode) -> this.createNode(appInstance, appNode, manager));
         } else if (data instanceof SpringCloudAppInstance) {
             final SpringCloudAppInstance appInstance = (SpringCloudAppInstance) data;

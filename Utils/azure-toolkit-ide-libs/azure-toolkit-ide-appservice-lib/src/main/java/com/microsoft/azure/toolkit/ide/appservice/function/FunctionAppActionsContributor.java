@@ -124,7 +124,7 @@ public class FunctionAppActionsContributor implements IActionsContributor {
         final Consumer<FunctionApp> refresh = functionApp -> AzureEventBus.emit("appservice|function.functions.refresh", functionApp);
         final ActionView.Builder refreshView = new ActionView.Builder("Refresh", AzureIcons.Action.REFRESH.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("function.refresh_funcs")).orElse(null))
-                .enabled(s -> s instanceof FunctionAppDeploymentSlotModule);
+                .enabled(s -> s instanceof FunctionApp);
         final Action<FunctionApp> refreshAction = new Action<>(REFRESH_FUNCTIONS, refresh, refreshView);
         refreshAction.setShortcuts(am.getIDEDefaultShortcuts().refresh());
         am.registerAction(REFRESH_FUNCTIONS, refreshAction);
