@@ -5,8 +5,11 @@
 
 package com.microsoft.azure.toolkit.intellij.springcloud.remotedebug;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceComboBox;
@@ -15,10 +18,18 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.swing.*;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PortForwardingDialog extends DialogWrapper {
     private JPanel contentPanel;
@@ -76,5 +87,30 @@ public class PortForwardingDialog extends DialogWrapper {
             final SpringCloudApp app = this.appComboBox.getValue();
             this.appInstanceComboBox.setApp(app);
         }
+    }
+
+    private void createUIComponents() {
+        this.appComboBox = new SpringCloudAppComboBox() {
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                final ArrayList<ExtendableTextComponent.Extension> list = new ArrayList<>();
+                final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK);
+                final String tooltip = String.format("Refresh (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+                final ExtendableTextComponent.Extension refreshEx = ExtendableTextComponent.Extension.create(AllIcons.Actions.Refresh, tooltip, this::refreshItems);
+                this.registerShortcut(keyStroke, refreshEx);
+                list.add(refreshEx);
+                return list;
+            }
+
+            @Override
+            protected @NotNull List<? extends SpringCloudApp> loadItems() {
+                final SpringCloudCluster cluster = appServiceComboBox.getValue();
+                final List<SpringCloudApp> apps = new ArrayList<>();
+                Optional.ofNullable(cluster).ifPresent(springCloudCluster ->
+                        apps.addAll(cluster.apps().list().stream().filter(SpringCloudApp::isRemoteDebuggingEnabled).collect(Collectors.toList())));
+                return apps;
+            }
+        };
     }
 }
