@@ -28,54 +28,49 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class SpringCloudAppEnableDebuggingAction {
-    private static final String FAILED_TO_ENABLE_REMOTE_DEBUGGING_TITLE = "Failed to enable remote debugging";
-    private static final String FAILED_TO_DISABLE_REMOTE_DEBUGGING_TITLE = "Failed to disable remote debugging";
-    private static final String ENABLE_REMOTE_DEBUGGING_TITLE = "Enable remote debugging";
-    private static final String DISABLE_REMOTE_DEBUGGING_TITLE = "Disable remote debugging";
-    private static final String SUCCEED_TO_ENABLE_REMOTE_DEBUGGING = "Enable remote debugging for spring app %s successfully.";
-    private static final String SUCCEED_TO_DISABLE_REMOTE_DEBUGGING = "Disable remote debugging for spring app %s successfully.";
-    private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app.";
-    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app.";
-
-    private static final String FAILED_TO_START_DEBUG_TITLE = "Failed to debug";
+    private static final String FAILED_TITLE = "Failed to %s remote debugging";
+    private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app %s.";
+    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app %s.";
+    private static final String CONFIRM_MESSAGE = "Are you sure to %s remote debugging for %s?";
+    private static final String CONFIRM_DIALOG_TITLE = "%s Remote Debugging";
+    private static final String SUCCESS_MESSAGE = "Remote debugging is successfully %s for app %s";
 
     @AzureOperation(name = "springcloud.enable_remote_debugging.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
     public static void enableRemoteDebugging(@Nonnull SpringCloudApp app, @Nullable Project project) {
-        final IAzureMessager messager = AzureMessager.getMessager();
-        final AzureString title = OperationBundle.description("springcloud.enable_remote_debugging.app", app.getName());
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
-            try {
-                final SpringCloudDeployment deployment = app.getActiveDeployment();
-                if (deployment == null || !deployment.exists()) {
-                    messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_ENABLE_REMOTE_DEBUGGING_TITLE);
-                    return;
-                }
-                app.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
-                showSuccessMessage(app, project);
-            } catch (final Exception e) {
-                final String errorMessage = e.getMessage();
-                messager.error(errorMessage, FAILED_TO_ENABLE_REMOTE_DEBUGGING_TITLE);
-            } finally {
-                app.refresh();
-            }
-        }));
+        toggleDebuggingAction(true, app, project);
     }
 
     public static void disableRemoteDebugging(@Nonnull SpringCloudApp app, @Nullable Project project) {
+        toggleDebuggingAction(false, app, project);
+    }
+
+    private static void toggleDebuggingAction(boolean isEnabled, @Nonnull SpringCloudApp app, @Nullable Project project) {
         final IAzureMessager messager = AzureMessager.getMessager();
-        final AzureString title = OperationBundle.description("springcloud.disable_remote_debugging.app", app.getName());
+        final String action = isEnabled ? "enable" : "disable";
+        final AzureString title = isEnabled ? OperationBundle.description("springcloud.enable_remote_debugging.app", app.getName()) :
+                OperationBundle.description("springcloud.disable_remote_debugging.app", app.getName());
+        final boolean userInput = AzureMessager.getMessager().confirm(String.format(CONFIRM_MESSAGE, action, app.getName()),
+                String.format(CONFIRM_DIALOG_TITLE, Character.toUpperCase(action.charAt(0)) + action.substring(1)));
+        if (!userInput) {
+            return;
+        }
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false, () -> {
             try {
                 final SpringCloudDeployment deployment = app.getActiveDeployment();
                 if (deployment == null || !deployment.exists()) {
-                    messager.warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_DISABLE_REMOTE_DEBUGGING_TITLE);
+                    messager.error(NO_ACTIVE_DEPLOYMENT, String.format(FAILED_TITLE, action));
                     return;
                 }
-                app.disableRemoteDebugging();
-                messager.success(String.format(SUCCEED_TO_DISABLE_REMOTE_DEBUGGING, app.getName()), DISABLE_REMOTE_DEBUGGING_TITLE);
+                if (isEnabled) {
+                    app.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
+                    showSuccessMessage(app, project);
+                } else {
+                    app.disableRemoteDebugging();
+                }
+                messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()));
             } catch (final Exception e) {
                 final String errorMessage = e.getMessage();
-                messager.error(errorMessage, FAILED_TO_DISABLE_REMOTE_DEBUGGING_TITLE);
+                messager.error(errorMessage, String.format(FAILED_TITLE, action));
             } finally {
                 app.refresh();
             }
@@ -84,18 +79,14 @@ public class SpringCloudAppEnableDebuggingAction {
 
     private static void showSuccessMessage(@Nonnull SpringCloudApp app, @Nullable Project project) {
         final Action<SpringCloudAppInstance> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING);
-        AzureMessager.getMessager().success(String.format(SUCCEED_TO_ENABLE_REMOTE_DEBUGGING, app.getName()), ENABLE_REMOTE_DEBUGGING_TITLE,
-                new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Start Remote Debugging")) {
+        AzureMessager.getMessager().success(String.format(SUCCESS_MESSAGE, "enable", app.getName()), null,
+                new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Debug")) {
                     @Override
                     public void handle(Object source, Object e) {
                         final SpringCloudDeployment deployment = app.getActiveDeployment();
-                        if (deployment == null || !deployment.exists()) {
-                            AzureMessager.getMessager().warning(NO_ACTIVE_DEPLOYMENT, FAILED_TO_START_DEBUG_TITLE);
-                            return;
-                        }
                         final List<SpringCloudAppInstance> instances = deployment.getInstances();
                         if (CollectionUtils.isEmpty(instances)) {
-                            AzureMessager.getMessager().warning(NO_AVAILABLE_INSTANCES, FAILED_TO_START_DEBUG_TITLE);
+                            AzureMessager.getMessager().error(String.format(NO_AVAILABLE_INSTANCES, app.getName()));
                             return;
                         }
                         AzureTaskManager.getInstance().runLater(() -> {

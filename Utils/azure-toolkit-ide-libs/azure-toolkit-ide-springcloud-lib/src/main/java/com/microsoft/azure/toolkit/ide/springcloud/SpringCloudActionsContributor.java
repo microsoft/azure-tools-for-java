@@ -74,15 +74,15 @@ public class SpringCloudActionsContributor implements IActionsContributor {
 
         final ActionView.Builder enableRemoteDebuggingView = new ActionView.Builder("Enable Remote Debugging")
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.enable_remote_debugging.app", ((SpringCloudApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp);
+                .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(ENABLE_REMOTE_DEBUGGING, new Action<>(ENABLE_REMOTE_DEBUGGING, enableRemoteDebuggingView));
 
         final ActionView.Builder disableRemoteDebuggingView = new ActionView.Builder("Disable Remote Debugging")
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.disable_remote_debugging.app", ((SpringCloudApp) r).getName())).orElse(null))
-                .enabled(s -> s instanceof SpringCloudApp);
+                .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
-        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Remote Debug", AzureIcons.Action.DEBUG.getIconPath())
+        final ActionView.Builder attachDebuggerView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudAppInstance);
         am.registerAction(REMOTE_DEBUGGING, new Action<>(REMOTE_DEBUGGING, attachDebuggerView));
