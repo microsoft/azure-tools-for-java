@@ -10,14 +10,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import org.eclipse.swt.widgets.Composite;
 
 import com.microsoft.azure.toolkit.eclipse.common.component.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
-import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeploymentInstanceEntity;
-import com.azure.resourcemanager.appplatform.models.DeploymentInstance;
 
-public class SpringCloudDeploymentComboBox extends AzureComboBox<DeploymentInstance> {
+public class SpringCloudDeploymentComboBox extends AzureComboBox<SpringCloudAppInstance> {
 
     private SpringCloudApp app;
 
@@ -38,15 +37,15 @@ public class SpringCloudDeploymentComboBox extends AzureComboBox<DeploymentInsta
     }
 
     @Override
-    protected List<? extends DeploymentInstance> loadItems() {
+    protected List<? extends SpringCloudAppInstance> loadItems() {
         return Optional.ofNullable(app).map(SpringCloudApp::getActiveDeployment)
                 .map(deployment -> deployment.getInstances()).orElse(Collections.emptyList());
     }
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof DeploymentInstance
-                ? ((DeploymentInstance) item).name()
+        return item instanceof SpringCloudAppInstance
+                ? ((SpringCloudAppInstance) item).name()
                 : super.getItemText(item);
     }
 
