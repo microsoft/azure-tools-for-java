@@ -120,7 +120,7 @@ public class SpringCloudAppInstanceDebuggingAction {
     }
 
     private static void showOpenUrlMessage(@Nonnull SpringCloudAppInstance appInstance) {
-        final String attachSuccessMessage = "Debugger is successfully attached to Azure Spring Apps app instance %s";
+        final String attachSuccessMessage = "Debugger is attached to Azure Spring Apps app instance %s successfully";
         final SpringCloudApp app = appInstance.getParent().getParent();
         AzureMessager.getMessager().success(String.format(attachSuccessMessage, appInstance.getName()), null,
                 new Action<>(Action.Id.of("springcloud.open_public_url_dialog"), new ActionView.Builder("Access Public Endpoint").enabled(s -> app.isPublicEndpointEnabled())) {

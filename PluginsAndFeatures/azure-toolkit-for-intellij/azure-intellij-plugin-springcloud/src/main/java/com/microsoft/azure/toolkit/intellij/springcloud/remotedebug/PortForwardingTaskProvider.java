@@ -36,7 +36,7 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
     private static final String NAME_TEMPLATE = "Attach to %s";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
-    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE);
+    private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.ATTACH);
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
     @Getter
