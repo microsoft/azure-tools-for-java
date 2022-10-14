@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.springcloud.portforwarder;
+package com.microsoft.azure.toolkit.ide.common.portforwarder;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,6 +22,11 @@ public class WebSocketBuilder {
 
     public WebSocketBuilder uri(URI uri) {
         this.builder.url(uri.toString());
+        return this;
+    }
+
+    public WebSocketBuilder uri(String uri) {
+        this.builder.url(uri);
         return this;
     }
 

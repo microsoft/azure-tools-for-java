@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.springcloud.portforwarder;
+package com.microsoft.azure.toolkit.ide.common.portforwarder;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,20 +26,21 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 
 public class PortForwarderWebSocketListener extends WebSocketListener {
-    private volatile boolean opened;
-    private boolean more = true;
-    private final ReentrantLock lock = new ReentrantLock();
-    private final Condition moreRequested;
-    private final CompletableFuture<WebSocket> future;
-    private final ExecutorService pumperService = Executors.newSingleThreadExecutor();
-    private final AtomicBoolean alive = new AtomicBoolean(true);
-    private final ReadableByteChannel in;
-    private final WritableByteChannel out;
-    private int messagesRead = 0;
+    protected volatile boolean opened;
+    protected boolean more = true;
+    protected final ReentrantLock lock = new ReentrantLock();
+    protected final Condition moreRequested;
+    protected final CompletableFuture<WebSocket> future;
+    protected final ExecutorService pumperService = Executors.newSingleThreadExecutor();
+    protected final AtomicBoolean alive = new AtomicBoolean(true);
+    protected final ReadableByteChannel in;
+    protected final WritableByteChannel out;
+    protected final AbstractPortForwarder forwarder;
 
-    public PortForwarderWebSocketListener(ReadableByteChannel in, WritableByteChannel out) {
+    public PortForwarderWebSocketListener(ReadableByteChannel in, WritableByteChannel out, AbstractPortForwarder forwarder) {
         this.in = in;
         this.out = out;
+        this.forwarder = forwarder;
         this.future = new CompletableFuture<>();
         this.moreRequested = this.lock.newCondition();
     }
@@ -48,7 +50,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
     }
 
     @Override
-    public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+    public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, Response response) {
         if (response != null) {
             response.close();
         }
@@ -64,7 +66,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
     }
 
     @Override
-    public void onOpen(WebSocket webSocket, Response response) {
+    public void onOpen(@NotNull WebSocket webSocket, Response response) {
         this.opened = true;
         if (response != null) {
             response.close();
@@ -89,11 +91,13 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
 
     @Override
     public void onMessage(WebSocket webSocket, String text) {
+        this.awaitMoreRequest();
         this.writeMessage(webSocket, ByteString.of(text.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Override
     public void onMessage(WebSocket webSocket, ByteString bytes) {
+        this.awaitMoreRequest();
         this.writeMessage(webSocket, bytes);
     }
 
@@ -113,7 +117,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         }
     }
 
-    private void request() {
+    protected void request() {
         this.lock.lock();
         try {
             this.more = true;
@@ -123,7 +127,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         }
     }
 
-    private void closeWebSocket(WebSocket webSocket, int code, String message) {
+    protected void closeWebSocket(WebSocket webSocket, int code, String message) {
         this.alive.set(false);
         try {
             webSocket.close(code, message);
@@ -133,7 +137,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         this.closeForwarder();
     }
 
-    private void closeForwarder() {
+    protected void closeForwarder() {
         this.alive.set(false);
         if (this.in != null) {
             try {
@@ -149,10 +153,11 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
                 throw new AzureToolkitRuntimeException("Error while stop debugger.", e);
             }
         }
+        this.forwarder.stopForward();
         this.pumperService.shutdownNow();
     }
 
-    private void pipe(ReadableByteChannel in, WebSocket webSocket, BooleanSupplier isAlive) throws IOException, InterruptedException {
+    protected void pipe(ReadableByteChannel in, WebSocket webSocket, BooleanSupplier isAlive) throws IOException, InterruptedException {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         int read;
         do {
@@ -168,7 +173,7 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         } while (isAlive.getAsBoolean() && read >= 0);
     }
 
-    private void awaitMoreRequest() {
+    protected void awaitMoreRequest() {
         this.lock.lock();
         try {
             while (!this.more) {
@@ -182,27 +187,8 @@ public class PortForwarderWebSocketListener extends WebSocketListener {
         }
     }
 
-    private void writeMessage(WebSocket webSocket, ByteString bytes) {
-        this.awaitMoreRequest();
-        ++this.messagesRead;
+    protected void writeMessage(WebSocket webSocket, ByteString bytes) {
         final ByteBuffer buffer = bytes.asByteBuffer();
-        if (this.messagesRead <= 2) {
-            this.request();
-            return;
-        }
-        if (!buffer.hasRemaining()) {
-            this.closeWebSocket(webSocket, 1002, "Protocol error");
-            throw new AzureToolkitRuntimeException("Received an empty message.");
-        }
-        final byte channel = buffer.get();
-        if (channel < 0 || channel > 1) {
-            this.closeWebSocket(webSocket, 1002, "Protocol error");
-            throw new AzureToolkitRuntimeException("Received a wrong channel from the remote socket.");
-        }
-        if (channel == 1) {
-            this.closeForwarder();
-            throw new AzureToolkitRuntimeException("Received an error from the remote socket.");
-        }
         if (this.out != null) {
             while (true) {
                 try {
