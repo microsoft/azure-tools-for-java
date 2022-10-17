@@ -41,6 +41,7 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
         this.registerEnableRemoteDebuggingHandler(am);
         this.registerDisableRemoteDebuggingHandler(am);
         this.registerStartDebuggingHandler(am);
+        this.registerStartDebuggingAppHandler(am);
     }
 
     private void registerCreateServiceActionHandler(AzureActionManager am) {
@@ -76,27 +77,33 @@ public class IntellijSpringCloudActionsContributor implements IActionsContributo
     }
 
     private void registerStreamLogInstanceActionHandler(AzureActionManager am) {
-        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> true;
+        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> r.getFormalStatus().isRunning();
         final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudStreamingLogManager.getInstance().showStreamingLog(e.getProject(), c.getParent().getParent(), c.getName());
         am.registerHandler(SpringCloudActionsContributor.STREAM_LOG_INSTANCE, condition, handler);
     }
 
     private void registerEnableRemoteDebuggingHandler(AzureActionManager am) {
-        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
+        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> r.getFormalStatus().isRunning();
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudAppEnableDebuggingAction.enableRemoteDebugging(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING, condition, handler);
     }
 
     private void registerDisableRemoteDebuggingHandler(AzureActionManager am) {
-        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> true;
+        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> r.getFormalStatus().isRunning();
         final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudAppEnableDebuggingAction.disableRemoteDebugging(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING, condition, handler);
     }
 
     private void registerStartDebuggingHandler(AzureActionManager am) {
-        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> true;
+        final BiPredicate<SpringCloudAppInstance, AnActionEvent> condition = (r, e) -> r.getFormalStatus().isRunning();
         final BiConsumer<SpringCloudAppInstance, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebugging(c, e.getProject());
         am.registerHandler(SpringCloudActionsContributor.REMOTE_DEBUGGING, condition, handler);
+    }
+
+    private void registerStartDebuggingAppHandler(AzureActionManager am) {
+        final BiPredicate<SpringCloudApp, AnActionEvent> condition = (r, e) -> r.getFormalStatus().isRunning();
+        final BiConsumer<SpringCloudApp, AnActionEvent> handler = (c, e) -> SpringCloudAppInstanceDebuggingAction.startDebuggingApp(c, e.getProject());
+        am.registerHandler(SpringCloudActionsContributor.REMOTE_DEBUGGING_APP, condition, handler);
     }
 
     @Override

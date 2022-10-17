@@ -19,13 +19,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor;
+import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstanceSelectionDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionView;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
+import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudDeployment;
+import org.apache.commons.collections.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -35,8 +39,9 @@ import java.util.Optional;
 
 public class SpringCloudAppInstanceDebuggingAction {
     private static final int DEFAULT_PORT = 5005;
+    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app %s.";
 
-    @AzureOperation(name = "springcloud.attach_debugger.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
+    @AzureOperation(name = "springcloud.remote_debug.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
         if (!appInstance.getParent().getParent().isRemoteDebuggingEnabled()) {
             showEnableDebuggingMessage(appInstance);
@@ -45,6 +50,23 @@ public class SpringCloudAppInstanceDebuggingAction {
         addExecutionListener(project);
         executeRunConfiguration(appInstance, project);
         showOpenUrlMessage(appInstance);
+    }
+
+    @AzureOperation(name = "springcloud.remote_debug.app", params = {"app.getName()"}, type = AzureOperation.Type.ACTION)
+    public static void startDebuggingApp(@Nonnull SpringCloudApp app, Project project) {
+        final SpringCloudDeployment deployment = app.getActiveDeployment();
+        final List<SpringCloudAppInstance> instances = deployment.getInstances();
+        if (CollectionUtils.isEmpty(instances)) {
+            AzureMessager.getMessager().error(String.format(NO_AVAILABLE_INSTANCES, app.getName()));
+            return;
+        }
+        AzureTaskManager.getInstance().runLater(() -> {
+            final SpringCloudAppInstanceSelectionDialog dialog = new SpringCloudAppInstanceSelectionDialog(project, instances);
+            if (dialog.showAndGet()) {
+                final SpringCloudAppInstance target = dialog.getInstance();
+                startDebugging(target, project);
+            }
+        });
     }
 
     public static int getDefaultPort() {

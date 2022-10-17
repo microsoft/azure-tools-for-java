@@ -79,23 +79,11 @@ public class SpringCloudAppEnableDebuggingAction {
     }
 
     private static Action<?> generateDebugAction(@Nonnull SpringCloudApp app, @Nullable Project project) {
-        final Action<SpringCloudAppInstance> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING);
+        final Action<SpringCloudApp> remoteDebuggingAction = AzureActionManager.getInstance().getAction(SpringCloudActionsContributor.REMOTE_DEBUGGING_APP);
         return new Action<>(Action.Id.of("springcloud.remote_debug_dialog"), new ActionView.Builder("Debug")) {
             @Override
             public void handle(Object source, Object e) {
-                final SpringCloudDeployment deployment = app.getActiveDeployment();
-                final List<SpringCloudAppInstance> instances = deployment.getInstances();
-                if (CollectionUtils.isEmpty(instances)) {
-                    AzureMessager.getMessager().error(String.format(NO_AVAILABLE_INSTANCES, app.getName()));
-                    return;
-                }
-                AzureTaskManager.getInstance().runLater(() -> {
-                    final SpringCloudAppInstanceSelectionDialog dialog = new SpringCloudAppInstanceSelectionDialog(project, instances);
-                    if (dialog.showAndGet()) {
-                        final SpringCloudAppInstance target = dialog.getInstance();
-                        remoteDebuggingAction.handle(target, e);
-                    }
-                });
+                remoteDebuggingAction.handle(app, e);
             }
         };
     }

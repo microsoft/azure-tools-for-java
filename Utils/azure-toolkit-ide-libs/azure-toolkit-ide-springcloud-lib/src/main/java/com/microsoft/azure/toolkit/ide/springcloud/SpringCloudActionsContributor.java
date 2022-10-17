@@ -36,7 +36,8 @@ public class SpringCloudActionsContributor implements IActionsContributor {
     public static final Action.Id<SpringCloudAppInstance> STREAM_LOG_INSTANCE = Action.Id.of("springcloud.stream_log_instance");
     public static final Action.Id<SpringCloudApp> ENABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.enable_remote_debugging");
     public static final Action.Id<SpringCloudApp> DISABLE_REMOTE_DEBUGGING = Action.Id.of("springcloud.disable_remote_debugging");
-    public static final Action.Id<SpringCloudAppInstance> REMOTE_DEBUGGING = Action.Id.of("springcloud.remote_debug");
+    public static final Action.Id<SpringCloudAppInstance> REMOTE_DEBUGGING = Action.Id.of("springcloud.remote_debug_instance");
+    public static final Action.Id<SpringCloudApp> REMOTE_DEBUGGING_APP = Action.Id.of("springcloud.remote_debug_app");
     public static final Action.Id<Object> GROUP_CREATE_CLUSTER = Action.Id.of("group.create_spring_cluster");
 
     @Override
@@ -82,6 +83,11 @@ public class SpringCloudActionsContributor implements IActionsContributor {
                 .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
         am.registerAction(DISABLE_REMOTE_DEBUGGING, new Action<>(DISABLE_REMOTE_DEBUGGING, disableRemoteDebuggingView));
 
+        final ActionView.Builder attachDebuggerToAppView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
+                .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.app", ((SpringCloudApp) r).getName())).orElse(null))
+                .enabled(s -> s instanceof SpringCloudApp && ((AzResourceBase) s).getFormalStatus().isRunning());
+        am.registerAction(REMOTE_DEBUGGING_APP, new Action<>(REMOTE_DEBUGGING_APP, attachDebuggerToAppView));
+
         final ActionView.Builder attachDebuggerView = new ActionView.Builder("Debug", AzureIcons.Action.DEBUG.getIconPath())
                 .title(s -> Optional.ofNullable(s).map(r -> description("springcloud.remote_debug.instance", ((SpringCloudAppInstance) r).getName())).orElse(null))
                 .enabled(s -> s instanceof SpringCloudAppInstance);
@@ -126,6 +132,7 @@ public class SpringCloudActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.DELETE,
             "---",
             SpringCloudActionsContributor.STREAM_LOG,
+            SpringCloudActionsContributor.REMOTE_DEBUGGING_APP,
             SpringCloudActionsContributor.ENABLE_REMOTE_DEBUGGING,
             SpringCloudActionsContributor.DISABLE_REMOTE_DEBUGGING
         );
