@@ -42,7 +42,8 @@ public class SpringCloudNodeProvider implements IExplorerNodeProvider {
     public boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type) {
         return data instanceof AzureSpringCloud ||
             data instanceof SpringCloudCluster ||
-            data instanceof SpringCloudApp;
+            data instanceof SpringCloudApp ||
+            data instanceof SpringCloudAppInstance;
     }
 
     @Nullable
