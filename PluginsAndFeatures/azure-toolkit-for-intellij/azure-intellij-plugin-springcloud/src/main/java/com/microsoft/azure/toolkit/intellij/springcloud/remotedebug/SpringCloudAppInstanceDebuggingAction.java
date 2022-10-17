@@ -43,7 +43,7 @@ public class SpringCloudAppInstanceDebuggingAction {
 
     @AzureOperation(name = "springcloud.remote_debug.instance", params = {"appInstance.getName()"}, type = AzureOperation.Type.ACTION)
     public static void startDebugging(@Nonnull SpringCloudAppInstance appInstance, Project project) {
-        if (!appInstance.getParent().getParent().isRemoteDebuggingEnabled()) {
+        if (!appInstance.getParent().isRemoteDebuggingEnabled()) {
             showEnableDebuggingMessage(appInstance);
             return;
         }

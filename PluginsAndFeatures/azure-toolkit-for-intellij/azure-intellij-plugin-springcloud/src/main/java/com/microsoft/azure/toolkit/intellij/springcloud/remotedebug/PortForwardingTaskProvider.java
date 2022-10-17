@@ -95,7 +95,7 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
 
         public void setAppInstance(SpringCloudAppInstance appInstance) {
             this.appInstance = appInstance;
-            this.remoteUrl = String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteUrl(), SpringCloudAppInstanceDebuggingAction.getDefaultPort());
+            this.remoteUrl = String.format(REMOTE_URL_TEMPLATE, appInstance.getRemoteDebuggingUrl(), SpringCloudAppInstanceDebuggingAction.getDefaultPort());
             final Account account = az(AzureAccount.class).account();
             final String[] scopes = ScopeUtil.resourceToScopes(account.getEnvironment().getManagementEndpoint());
             final TokenRequestContext request = new TokenRequestContext().addScopes(scopes);

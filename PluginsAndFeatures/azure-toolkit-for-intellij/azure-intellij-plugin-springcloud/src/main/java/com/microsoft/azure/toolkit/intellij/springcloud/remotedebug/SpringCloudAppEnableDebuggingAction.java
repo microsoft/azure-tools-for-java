@@ -63,10 +63,10 @@ public class SpringCloudAppEnableDebuggingAction {
                     return;
                 }
                 if (isEnabled) {
-                    app.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
+                    deployment.enableRemoteDebugging(SpringCloudAppInstanceDebuggingAction.getDefaultPort());
                     messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()), null, generateDebugAction(app, project), generateLearnMoreAction());
                 } else {
-                    app.disableRemoteDebugging();
+                    deployment.disableRemoteDebugging();
                     messager.success(String.format(SUCCESS_MESSAGE, action, app.getName()));
                 }
             } catch (final Exception e) {
