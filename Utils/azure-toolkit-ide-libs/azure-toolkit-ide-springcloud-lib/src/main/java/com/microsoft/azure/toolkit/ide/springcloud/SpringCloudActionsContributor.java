@@ -139,8 +139,6 @@ public class SpringCloudActionsContributor implements IActionsContributor {
         am.registerGroup(APP_ACTIONS, appActionGroup);
 
         final ActionGroup appInstanceGroup = new ActionGroup(
-                ResourceCommonActionsContributor.PIN,
-                "---",
                 ResourceCommonActionsContributor.REFRESH,
                 SpringCloudActionsContributor.REMOTE_DEBUGGING,
                 SpringCloudActionsContributor.STREAM_LOG_INSTANCE
