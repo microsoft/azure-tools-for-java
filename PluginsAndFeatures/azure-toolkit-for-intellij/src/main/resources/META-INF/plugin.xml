@@ -181,12 +181,6 @@
             icon="/icons/CodeSamples_16.png">
     </action>
 
-<!--    <action id="Actions.SubmitSparkApplicationAction"-->
-<!--            class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction"-->
-<!--            text="Submit Apache Spark Application"-->
-<!--            description="Submit Apache Spark Application" icon="/icons/Spark.png">-->
-<!--      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>-->
-<!--    </action>-->
     <action id="Actions.SubmitLivySparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Apache Spark on HDInsight"
             description="Submit Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
