@@ -8,7 +8,10 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
-import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -16,10 +19,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
-import com.sun.jna.platform.win32.Advapi32Util;
-import com.sun.jna.platform.win32.WinReg;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +27,6 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     private static final String CLUSTER_MODULE_ID = ClusterNode.class.getName();
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
     public static final String ASE_DEEP_LINK = "storageexplorer:///";
-    public static final String STORAGE_EXPLORER_REGISTRY_PATH = "storageexplorer\\shell\\open\\command";
-    private static final String MAC_OS_STORAGE_EXPLORER_PATH = "/Contents/MacOS/Microsoft\\ Azure\\ Storage\\ Explorer";
-
     @NotNull
     private IClusterDetail clusterDetail;
 
@@ -69,11 +65,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
-                    if (StringUtils.isEmpty(getStorageExplorerExecutable())){
-                        DefaultLoader.getUIHelper().showError("Azure Storage Explorer not found.", "Open Azure Storage Explorer");
-                    } else {
-                        openUrlLink(ASE_DEEP_LINK);
-                    }
+                    final AzureString title =  OperationBundle.description("storage.open_azure_storage_explorer.account", clusterDetail.getName());
+                    AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
+                        OpenHDIAzureStorageExplorerAction openHDIAzureStorageExplorerAction = new OpenHDIAzureStorageExplorerAction();
+                        openHDIAzureStorageExplorerAction.openResource(clusterDetail);
+                    }));
                 }
             });
 
@@ -176,31 +172,6 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             } catch (Exception exception) {
                 DefaultLoader.getUIHelper().showError(exception.getMessage(), "HDInsight Explorer");
             }
-        }
-    }
-
-    private String getStorageExplorerExecutable() {
-        final String storageExplorerPath = Azure.az().config().getStorageExplorerPath();
-        return StringUtils.isEmpty(storageExplorerPath) ? getStorageExplorerExecutableFromOS() : storageExplorerPath;
-    }
-
-    private String getStorageExplorerExecutableFromOS() {
-        try {
-            if (SystemUtils.IS_OS_WINDOWS) {
-                final String storageExplorerPath = Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, STORAGE_EXPLORER_REGISTRY_PATH, "");
-                if (StringUtils.isEmpty(storageExplorerPath)) {
-                    return null;
-                }
-                // Parse from e.g.: "C:\Program Files (x86)\Microsoft Azure Storage Explorer\StorageExplorer.exe" -- "%1"
-                final String[] split = storageExplorerPath.split("\"");
-                return split.length > 1 ? split[1] : null;
-            } else if (SystemUtils.IS_OS_MAC) {
-                return MAC_OS_STORAGE_EXPLORER_PATH;
-            } else {
-                return null;
-            }
-        } catch (RuntimeException runtimeException) {
-            return null;
         }
     }
 
