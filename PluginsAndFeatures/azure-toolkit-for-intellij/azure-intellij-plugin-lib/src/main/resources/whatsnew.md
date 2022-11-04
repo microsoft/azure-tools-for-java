@@ -13,6 +13,12 @@
 <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.cosmosdb.png" alt="screenshot of 'cosmos db account'" width="1200"/>
 - Added support for filtering app settings of `Azure Web App/ Function App ` in properties view and run configuration dialog.
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202210/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202210.filterappsettings.png" alt="screenshot of 'app settings configuration'" width="1200"/>
+### Fixed
+- `Open Spark History UI` link no reaction, when there is no job in the cluster.
+- local console and Livy console run failed.
+- error getting cluster storage configuration.
+- linked clusters cannot be expanded when not logged in to azure.
+- local console get IDE Fatal Error when the project first create.
 
 ## 3.69.0
 ### Added
