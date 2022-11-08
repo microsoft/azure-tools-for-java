@@ -137,10 +137,12 @@ public class AppSettingsTable extends JBTable {
         if (MapUtils.isNotEmpty(appSettingMap)) {
             addAppSettings(appSettingMap);
         }
+        this.setRowSorter(sorter);
     }
 
     public void clear() {
         appSettingModel.clear();
+        this.setRowSorter(null);
         this.refresh();
     }
 
