@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.ide.springcloud.portforwarder.SpringPortForwa
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.springcloud.AzureSpringCloud;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppInstance;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,15 +33,16 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwardingTaskProvider.PortForwarderBeforeRunTask> {
     private static final String NAME_TEMPLATE = "Attach to %s";
+    private static final String DEFAULT_NAME = "Spring App Instance";
     private static final Key<PortForwarderBeforeRunTask> ID = Key.create("PortForwardingTaskProviderId");
     private static final Icon ICON = IntelliJAzureIcons.getIcon(AzureIcons.Action.REMOTE_DEBUG);
     @Getter
     public Key<PortForwarderBeforeRunTask> id = ID;
-    @Getter
-    public String name = String.format(NAME_TEMPLATE, "Spring App Instance");
+
     @Getter
     public Icon icon = ICON;
 
@@ -65,8 +67,13 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
     }
 
     @Override
+    public @Nls(capitalization = Nls.Capitalization.Title) String getName() {
+        return String.format(NAME_TEMPLATE, DEFAULT_NAME);
+    }
+
+    @Override
     public @Nls(capitalization = Nls.Capitalization.Sentence) String getDescription(PortForwarderBeforeRunTask task) {
-        return Objects.isNull(task.appInstance) ? name : String.format(NAME_TEMPLATE, task.appInstance.getName());
+        return task.getDescription();
     }
 
     @Getter
@@ -84,8 +91,7 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
         }
 
         public boolean startPortForwarding(int localPort) {
-            final String resourceId = this.state.properties.get(PortForwarderBeforeRunTaskState.RESOURCE_ID);
-            this.appInstance = (SpringCloudAppInstance) Azure.az().getById(resourceId);
+            loadInstance();
             if (this.config instanceof RemoteConfiguration && Objects.nonNull(appInstance)) {
                 this.forwarder = new SpringPortForwarder(appInstance);
                 AzureTaskManager.getInstance().runOnPooledThread(() ->  this.forwarder.startForward(localPort));
@@ -99,6 +105,12 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
             this.state.properties.put(PortForwarderBeforeRunTaskState.RESOURCE_ID, appInstance.getId());
         }
 
+        private String getDescription() {
+            loadInstance();
+            final String appInstanceName = Optional.ofNullable(this.appInstance).map(SpringCloudAppInstance::getName).orElse(DEFAULT_NAME);
+            return String.format(NAME_TEMPLATE, appInstanceName);
+        }
+
         @Nullable
         @Override
         public PortForwarderBeforeRunTaskState getState() {
@@ -108,6 +120,13 @@ public class PortForwardingTaskProvider extends BeforeRunTaskProvider<PortForwar
         @Override
         public void loadState(@Nonnull PortForwarderBeforeRunTaskState state) {
             XmlSerializerUtil.copyBean(state, this.state);
+        }
+
+        private void loadInstance() {
+            if (Objects.isNull(this.appInstance)) {
+                final String resourceId = this.state.properties.get(PortForwarderBeforeRunTaskState.RESOURCE_ID);
+                Optional.ofNullable(resourceId).ifPresent(s -> this.appInstance = Azure.az(AzureSpringCloud.class).getById(s));
+            }
         }
     }
 
