@@ -14,11 +14,10 @@ import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 
 public class AssignmentClient {
@@ -30,7 +29,7 @@ public class AssignmentClient {
     private final String AUDIENCE_FILTER_VALUE = "intellij";
     private final OkHttpClient client = new OkHttpClient();
     private final Request request;
-    private final Map<String, Object> featuresCache = new HashMap<>();
+    private final Map<String, String> featuresCache = new HashMap<>();
     private static final ObjectMapper JSON_MAPPER = new JsonMapper()
             .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -66,13 +65,15 @@ public class AssignmentClient {
         }
     }
 
-    public Object getFeatureVariable(String featureFlagName) {
-        return featuresCache.get(featureFlagName);
+    @Nonnull
+    public String getFeatureVariable(String featureFlagName) {
+        return Optional.ofNullable(featuresCache.get(featureFlagName)).orElse(StringUtils.EMPTY);
     }
 
-    public Object getFeatureVariableAsync(String featureFlagName) {
+    @Nonnull
+    public String getFeatureVariableAsync(String featureFlagName) {
         updateFeatures();
-        return featuresCache.get(featureFlagName);
+        return Optional.ofNullable(featuresCache.get(featureFlagName)).orElse(StringUtils.EMPTY);
     }
 
 }
