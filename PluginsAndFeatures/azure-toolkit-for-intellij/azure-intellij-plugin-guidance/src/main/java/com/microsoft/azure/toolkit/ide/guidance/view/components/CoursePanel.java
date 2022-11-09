@@ -5,6 +5,8 @@ import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.common.experiment.AssignmentClient;
+import com.microsoft.azure.toolkit.ide.common.experiment.FeatureFlag;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
@@ -33,7 +35,7 @@ public class CoursePanel {
 
     private final Project project;
     private boolean isStartedActionTriggered;
-    private final boolean showNewUIFlag = false;
+    private final boolean showNewUIFlag;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
             JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
@@ -43,6 +45,7 @@ public class CoursePanel {
         this.project = project;
         $$$setupUI$$$();
         init();
+        this.showNewUIFlag = Boolean.parseBoolean(AssignmentClient.getInstance().getFeatureVariable(FeatureFlag.GETTING_STARTED_UI.getFlagName()));
     }
 
     private void init() {
