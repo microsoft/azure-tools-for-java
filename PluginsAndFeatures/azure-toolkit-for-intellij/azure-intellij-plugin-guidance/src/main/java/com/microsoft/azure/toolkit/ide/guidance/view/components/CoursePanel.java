@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 public class CoursePanel {
     private final CourseConfig course;
@@ -28,9 +29,11 @@ public class CoursePanel {
     private JLabel lblTitle;
     private JTextPane areaDescription;
     private JButton startButton;
+    private JPanel tagsPanel;
 
     private final Project project;
     private boolean isStartedActionTriggered;
+    private final boolean showNewUIFlag = false;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
             JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
@@ -53,6 +56,11 @@ public class CoursePanel {
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setText(course.getDescription());
         this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
+        if (showNewUIFlag) {
+            this.course.getTags().forEach(tag -> this.tagsPanel.add(decorateTagLabel(tag)));
+            this.startButton.setText("Try It");
+            this.areaDescription.setForeground(null);
+        }
     }
 
     public void toggleSelectedStatus(final boolean isSelected) {
@@ -61,6 +69,9 @@ public class CoursePanel {
         }
         this.startButton.setVisible(isSelected);
         this.setBackgroundColor(this.rootPanel, isSelected ? NOTIFICATION_BACKGROUND_COLOR : UIUtil.getLabelBackground());
+        if (isSelected && showNewUIFlag) {
+            Optional.ofNullable(this.getRootPanel().getRootPane()).ifPresent(pane -> pane.setDefaultButton(this.startButton));
+        }
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
@@ -98,5 +109,7 @@ public class CoursePanel {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.rootPanel = new RoundedPanel(5);
+        this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-8));
     }
 }
