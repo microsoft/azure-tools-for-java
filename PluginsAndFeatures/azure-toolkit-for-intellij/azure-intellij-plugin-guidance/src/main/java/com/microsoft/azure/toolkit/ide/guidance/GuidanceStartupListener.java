@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationClient;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
@@ -16,6 +17,7 @@ public class GuidanceStartupListener implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
+        ExperimentationClient.init();
         final CourseConfig courseConfigFromWorkspace = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(project);
         Optional.ofNullable(courseConfigFromWorkspace)
                 .ifPresent(config -> GuidanceViewManager.getInstance().openCourseView(project, courseConfigFromWorkspace));

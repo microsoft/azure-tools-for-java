@@ -10,44 +10,53 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 
-public class AssignmentClient {
-    private static final AssignmentClient instance = new AssignmentClient();
-    private static final String endPoint = "https://default.exp-tas.com/exptas76/80fa735a-bc58-43ba-8d32-835a83d727b9-intellijexp/api/v1/tas";
-    private final String NAME_SPACE = "default";
-    private final String ASSIGNMENT_UNIT_ID = "installationid";
-    private final String AUDIENCE_FILTER_ID = "userstype";
-    private final String AUDIENCE_FILTER_VALUE = "intellij";
+public class ExperimentationService {
+    private static final String ASSIGNMENT_CONTEXT = "AssignmentContext";
+    private final String NAME_SPACE = "default";    // todo need support setting name space
     private final OkHttpClient client = new OkHttpClient();
-    private final Request request;
+    private Request request;
+    private String endPoint;
     private final Map<String, String> featuresCache = new HashMap<>();
+    private final Map<String, String> expParameters = new HashMap<>();
     private static final ObjectMapper JSON_MAPPER = new JsonMapper()
             .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    public AssignmentClient() {
-        request = new Request.Builder()
+    public ExperimentationService withAudienceFilters(Map<String, String> audienceFilters) {
+        this.expParameters.putAll(audienceFilters);
+        return this;
+    }
+
+    public ExperimentationService withAssignmentIds(Map<String, String> assignmentIds) {
+        this.expParameters.putAll(assignmentIds);
+        return this;
+    }
+
+    public ExperimentationService withEndPoint(String endPoint) {
+        this.endPoint = endPoint;
+        return this;
+    }
+
+    public ExperimentationService create() {
+        final StringBuilder builder = new StringBuilder();
+        expParameters.forEach((key, value) -> builder.append(String.format("%s=%s,", key, value)));
+        this.request = new Request.Builder()
                 .url(endPoint)
                 .addHeader("x-exp-sdk-version", "Microsoft.VariantAssignment.Client/1.0.0")
-                .addHeader("x-exp-parameters", String.format("%s=%s,%s=%s", ASSIGNMENT_UNIT_ID,
-                        InstallationIdUtils.getHashMac(), AUDIENCE_FILTER_ID, AUDIENCE_FILTER_VALUE))
+                .addHeader("x-exp-parameters", builder.toString())
                 .build();
+        updateFeatures();
+        return this;
     }
 
-    public static AssignmentClient getInstance() {
-        return instance;
-    }
-
-    public void updateFeatures() {
+    private void updateFeatures() {
         try {
             final Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
@@ -58,22 +67,21 @@ public class AssignmentClient {
                         featuresCache.putAll(config.getParameters());
                     }
                 });
-                featuresCache.put(FeatureFlag.ASSIGNMENT_CONTEXT.getFlagName(), assignmentResponse.getAssignmentContext());
+                featuresCache.put(ASSIGNMENT_CONTEXT, assignmentResponse.getAssignmentContext());
             }
         } catch (final Exception e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }
 
-    @Nonnull
+    @Nullable
     public String getFeatureVariable(String featureFlagName) {
-        return Optional.ofNullable(featuresCache.get(featureFlagName)).orElse(StringUtils.EMPTY);
+        return featuresCache.get(featureFlagName);
     }
 
-    @Nonnull
-    public String getFeatureVariableAsync(String featureFlagName) {
-        updateFeatures();
-        return Optional.ofNullable(featuresCache.get(featureFlagName)).orElse(StringUtils.EMPTY);
+    @Nullable
+    public String getAssignmentContext() {
+        return featuresCache.get(ASSIGNMENT_CONTEXT);
     }
 
 }
