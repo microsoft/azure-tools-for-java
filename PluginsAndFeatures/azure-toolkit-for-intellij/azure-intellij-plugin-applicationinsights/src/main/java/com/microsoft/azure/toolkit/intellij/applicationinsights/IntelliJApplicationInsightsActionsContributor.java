@@ -18,6 +18,8 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsightDraft;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceDraft;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
@@ -88,6 +90,9 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
         final ApplicationInsightDraft applicationInsightDraft = Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId())
             .create(String.format("ai-%s", timestamp), resourceGroupName);
         applicationInsightDraft.setRegion(region);
+        final LogAnalyticsWorkspaceDraft workspaceDraft = Azure.az(AzureLogAnalyticsWorkspace.class).logAnalyticsWorkspaces(subscription.getId())
+                .create(String.format("workspace-%s", timestamp), resourceGroupName);
+        applicationInsightDraft.setWorkspace(workspaceDraft);
         return applicationInsightDraft;
     }
 
