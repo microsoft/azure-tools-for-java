@@ -8,8 +8,7 @@ import com.intellij.ui.components.JBList;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
-import com.microsoft.azure.toolkit.ide.common.experiment.AssignmentClient;
-import com.microsoft.azure.toolkit.ide.common.experiment.FeatureFlag;
+import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationClient;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
@@ -51,7 +50,7 @@ public class CoursesView {
         $$$setupUI$$$();
         init();
         JBList a;
-        this.showNewUIFlag = Boolean.parseBoolean(AssignmentClient.getInstance().getFeatureVariable(FeatureFlag.GETTING_STARTED_UI.getFlagName()));
+        this.showNewUIFlag = Boolean.parseBoolean(ExperimentationClient.getFeatureVariable(ExperimentationClient.FeatureFlag.GETTING_STARTED_UI.getFlagName()));
     }
 
     private void init() {
