@@ -118,6 +118,12 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
     }
 
     private void showLoaAnalyticsWorkspaceCreationPopup() {
-
+        final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup, this.region);
+        dialog.setOkActionListener((workspace) -> {
+            workspace.setRegion(region);
+            dialog.close();
+            this.setValue(workspace);
+        });
+        dialog.show();
     }
 }
