@@ -54,6 +54,8 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         this.regionComboBox.setRequired(true);
         this.workspaceComboBox.setRequired(true);
         this.subscriptionComboBox.addItemListener(this::onSubscriptionChanged);
+        this.resourceGroupComboBox.addItemListener(this::onResourceGroupChanged);
+        this.regionComboBox.addItemListener(this::onRegionChanged);
     }
 
     @Override
@@ -113,6 +115,24 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
             this.resourceGroupComboBox.setSubscription(null);
             this.regionComboBox.setSubscription(null);
             this.workspaceComboBox.setSubscription(null);
+        }
+    }
+
+    private void onResourceGroupChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            final ResourceGroup resourceGroup = (ResourceGroup) e.getItem();
+            this.workspaceComboBox.setResourceGroup(resourceGroup);
+        } else {
+            this.workspaceComboBox.setResourceGroup(null);
+        }
+    }
+
+    private void onRegionChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            final Region region = (Region) e.getItem();
+            this.workspaceComboBox.setRegion(region);
+        } else {
+            this.workspaceComboBox.setRegion(null);
         }
     }
 
