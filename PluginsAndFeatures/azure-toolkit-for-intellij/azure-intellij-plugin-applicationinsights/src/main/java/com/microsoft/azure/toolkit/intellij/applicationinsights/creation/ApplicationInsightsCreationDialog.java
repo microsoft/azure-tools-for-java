@@ -83,7 +83,7 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         final ApplicationInsightDraft result =
                 Azure.az(AzureApplicationInsights.class).forSubscription(subscription.getId()).applicationInsights().create(name, resourceGroupName);
         result.setRegion(region);
-        result.setWorkspace(workspaceComboBox.getValue());
+        result.setWorkspaceConfig(workspaceComboBox.getValue());
         return result;
     }
 
@@ -95,7 +95,7 @@ public class ApplicationInsightsCreationDialog extends AzureDialog<ApplicationIn
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             Optional.ofNullable(data.getResourceGroup()).ifPresent(resourceGroupComboBox::setValue);
             Optional.ofNullable(data.getRegion()).ifPresent(regionComboBox::setValue);
-            Optional.ofNullable(data.getWorkspace()).ifPresent(workspaceComboBox::setValue);
+            Optional.ofNullable(data.getWorkspaceConfig()).ifPresent(workspaceComboBox::setValue);
         });
     }
 

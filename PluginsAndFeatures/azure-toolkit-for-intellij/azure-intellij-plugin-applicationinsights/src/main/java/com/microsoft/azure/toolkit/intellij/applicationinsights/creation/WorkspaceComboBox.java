@@ -11,7 +11,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
-import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspace;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -29,13 +29,13 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
+public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig> {
     private Subscription subscription;
     @Setter
     private Region region;
     @Setter
     private ResourceGroup resourceGroup;
-    private final List<LogAnalyticsWorkspace> draftItems = new LinkedList<>();
+    private final List<LogAnalyticsWorkspaceConfig> draftItems = new LinkedList<>();
 
     public void setSubscription(Subscription subscription) {
         if (Objects.equals(subscription, this.subscription)) {
@@ -46,21 +46,19 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
             this.clear();
             return;
         }
-        // todo use cache manager
         this.loadItems();
     }
 
     @Nullable
     @Override
-    protected LogAnalyticsWorkspace doGetDefaultValue() {
-        return CacheManager.getUsageHistory(LogAnalyticsWorkspace.class)
-                .peek(v -> (Objects.isNull(subscription) || Objects.equals(subscription, v.getSubscription()) &&
-                        (Objects.isNull(region) || Objects.equals(region, v.getRegion()))));
+    protected LogAnalyticsWorkspaceConfig doGetDefaultValue() {
+        return CacheManager.getUsageHistory(LogAnalyticsWorkspaceConfig.class)
+                .peek(v -> (!v.isNewCreate() && Objects.equals(subscription.getId(), v.getSubscriptionId())));
     }
 
     @Override
-    public void setValue(LogAnalyticsWorkspace val) {
-        if (Objects.nonNull(val) && val.isDraftForCreating()) {
+    public void setValue(LogAnalyticsWorkspaceConfig val) {
+        if (Objects.nonNull(val) && val.isNewCreate()) {
             this.draftItems.remove(val);
             this.draftItems.add(0, val);
             this.reloadItems();
@@ -73,8 +71,8 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
-        final LogAnalyticsWorkspace workspace = (LogAnalyticsWorkspace) item;
-        if (workspace.isDraftForCreating()) {
+        final LogAnalyticsWorkspaceConfig workspace = (LogAnalyticsWorkspaceConfig) item;
+        if (workspace.isNewCreate()) {
             return "(New) " + workspace.getName();
         }
         return workspace.getName();
@@ -82,18 +80,24 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
 
     @Nonnull
     @Override
-    protected List<LogAnalyticsWorkspace> loadItems() {
-        final List<LogAnalyticsWorkspace> workspaces = new ArrayList<>();
+    protected List<LogAnalyticsWorkspaceConfig> loadItems() {
+        final List<LogAnalyticsWorkspaceConfig> workspaces = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
             if (CollectionUtils.isNotEmpty(this.draftItems)) {
                 workspaces.addAll(this.draftItems.stream()
-                        .filter(p -> this.subscription.equals(p.getSubscription()))
+                        .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId()))
                         .collect(Collectors.toList()));
             }
-            final List<LogAnalyticsWorkspace> remoteWorkspaces = Azure.az(AzureLogAnalyticsWorkspace.class)
-                    .logAnalyticsWorkspaces(subscription.getId()).list();
+            final List<LogAnalyticsWorkspaceConfig> remoteWorkspaces = Azure.az(AzureLogAnalyticsWorkspace.class)
+                    .logAnalyticsWorkspaces(subscription.getId()).list().stream().map(workspace ->
+                            LogAnalyticsWorkspaceConfig.builder()
+                                    .newCreate(false)
+                                    .resourceId(workspace.getId())
+                                    .name(workspace.getName())
+                                    .resourceGroupName(workspace.getResourceGroupName())
+                                    .build()).collect(Collectors.toList());
             workspaces.addAll(remoteWorkspaces);
-            return workspaces.stream().sorted(Comparator.comparing(LogAnalyticsWorkspace::getName)).collect(Collectors.toList());
+            return workspaces.stream().sorted(Comparator.comparing(LogAnalyticsWorkspaceConfig::getName)).collect(Collectors.toList());
         }
         return workspaces;
     }
@@ -119,10 +123,9 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspace> {
 
     private void showLoaAnalyticsWorkspaceCreationPopup() {
         final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup, this.region);
-        dialog.setOkActionListener((workspace) -> {
-            workspace.setRegion(region);
+        dialog.setOkActionListener((workspaceConfig) -> {
             dialog.close();
-            this.setValue(workspace);
+            this.setValue(workspaceConfig);
         });
         dialog.show();
     }
