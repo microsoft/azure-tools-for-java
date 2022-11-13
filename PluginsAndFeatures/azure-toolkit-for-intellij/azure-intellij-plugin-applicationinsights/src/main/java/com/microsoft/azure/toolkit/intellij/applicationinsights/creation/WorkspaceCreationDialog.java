@@ -14,7 +14,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspace;
-import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceDraft;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -29,23 +29,24 @@ import java.util.List;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceDraft>
-    implements AzureForm<LogAnalyticsWorkspaceDraft> {
-    private Subscription subscription;
+public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceConfig>
+    implements AzureForm<LogAnalyticsWorkspaceConfig> {
+    private String subscriptionId;
+    // todo support change resource group
     private ResourceGroup resourceGroup;
     private JPanel contentPanel;
     private JBLabel labelDescription;
     private AzureTextInput textName;
+    // todo not support change region
     private RegionComboBox regionComboBox;
 
     public WorkspaceCreationDialog(final Subscription subscription,
                                    final ResourceGroup resourceGroup, final Region region) {
         super();
-        this.subscription = subscription;
+        this.subscriptionId = subscription.getId();
         this.resourceGroup = resourceGroup;
         this.init();
         this.textName.addValidator(this::validateName);
-        regionComboBox.setSubscription(this.subscription);
         this.regionComboBox.setValue(region);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("workspace.create.description"));
         this.pack();
@@ -62,9 +63,9 @@ public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceDr
         if (workspaceName.replaceAll("[0-9-a-zA-Z]", "").length() > 0) {
             return AzureValidationInfo.error(message("workspace.name.validate.symbol"), this);
         }
-        if (ObjectUtils.allNotNull(subscription, resourceGroup)) {
+        if (ObjectUtils.allNotNull(subscriptionId, resourceGroup)) {
             final LogAnalyticsWorkspace workspace = Azure.az(AzureLogAnalyticsWorkspace.class)
-                    .logAnalyticsWorkspaces(subscription.getId()).get(workspaceName, resourceGroup.getName());
+                    .logAnalyticsWorkspaces(subscriptionId).get(workspaceName, resourceGroup.getName());
             if (workspace != null && workspace.exists()) {
                 return AzureValidationInfo.error(message("workspace.name.validate.unique"), this);
             }
@@ -73,7 +74,7 @@ public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceDr
     }
 
     @Override
-    public AzureForm<LogAnalyticsWorkspaceDraft> getForm() {
+    public AzureForm<LogAnalyticsWorkspaceConfig> getForm() {
         return this;
     }
 
@@ -89,20 +90,15 @@ public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceDr
     }
 
     @Override
-    public LogAnalyticsWorkspaceDraft getValue() {
-        final LogAnalyticsWorkspaceDraft draft = Azure.az(AzureLogAnalyticsWorkspace.class)
-                .logAnalyticsWorkspaces(this.subscription.getId())
-                .create(this.textName.getValue(), this.resourceGroup.getName());
-        draft.setRegion(regionComboBox.getValue());
-        return draft;
+    public LogAnalyticsWorkspaceConfig getValue() {
+        return LogAnalyticsWorkspaceConfig.builder()
+                .newCreate(true).subscriptionId(this.subscriptionId).name(textName.getValue()).build();
     }
 
     @Override
-    public void setValue(final LogAnalyticsWorkspaceDraft data) {
-        this.subscription = data.getSubscription();
+    public void setValue(final LogAnalyticsWorkspaceConfig data) {
+        this.subscriptionId = data.getSubscriptionId();
         this.textName.setValue(data.getName());
-        this.resourceGroup = data.getResourceGroup();
-        regionComboBox.setValue(data.getRegion());
     }
 
     @Override
