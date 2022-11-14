@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import lombok.Getter;
 
 import javax.annotation.Nonnull;
@@ -86,6 +87,7 @@ public class CoursePanel {
 
     @AzureOperation(name = "guidance.open_course.course", params = {"this.course.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openGuidance() {
+        OperationContext.action().setTelemetryProperty("AssignmentContext", ExperimentationClient.getAssignmentContext());
         if (!isStartedActionTriggered) {
             isStartedActionTriggered = true;
             AzureStoreManager.getInstance().getIdeStore().setProperty(ShowGettingStartAction.GUIDANCE, ShowGettingStartAction.IS_ACTION_TRIGGERED, String.valueOf(true));

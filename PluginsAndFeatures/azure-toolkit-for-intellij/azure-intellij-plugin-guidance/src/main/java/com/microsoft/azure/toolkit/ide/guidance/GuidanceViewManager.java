@@ -7,11 +7,9 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationClient;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.view.GuidanceView;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +31,6 @@ public class GuidanceViewManager {
 
     @AzureOperation(name = "guidance.open_course.course", params = {"courseConfig.getTitle()"}, type = AzureOperation.Type.ACTION)
     public void openCourseView(@Nonnull final Project project, @Nonnull final CourseConfig courseConfig) {
-        OperationContext.action().setTelemetryProperty("AssignmentContext", ExperimentationClient.getAssignmentContext());
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(GuidanceViewManager.TOOL_WINDOW_ID);
         AzureTaskManager.getInstance().runLater(() -> {
             assert toolWindow != null;

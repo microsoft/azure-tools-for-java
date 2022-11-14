@@ -19,7 +19,7 @@ import java.util.*;
 
 public class ExperimentationService {
     private static final String ASSIGNMENT_CONTEXT = "AssignmentContext";
-    private final String NAME_SPACE = "default";    // todo need support setting name space
+    private final String NAME_SPACE = "IntelliJ";    // todo need support setting name space
     private final OkHttpClient client = new OkHttpClient();
     private Request request;
     private String endPoint;

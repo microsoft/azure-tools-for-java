@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExperimentationClient {
-    private static final String ASSIGNMENT_UNIT_ID = "installationid";
+    private static final String ASSIGNMENT_UNIT_ID = "clientId";
     private static final String AUDIENCE_FILTER_ID = "userstype";
     private static final String AUDIENCE_FILTER_VALUE = "intellij";
-    private static final String END_POINT = "https://default.exp-tas.com/exptas76/80fa735a-bc58-43ba-8d32-835a83d727b9-intellijexp/api/v1/tas";
+    private static final String END_POINT = "https://default.exp-tas.com/exptas76/35ba1968-fb20-4963-95c7-4895bfa08731-vscjava/api/v1/tas";
     private static ExperimentationService experimentationService;
     private static boolean isInited = false;
 
@@ -26,7 +26,6 @@ public class ExperimentationClient {
         }
         isInited = true;
         final Map<String, String> audienceFilters = new HashMap<>();
-        audienceFilters.put(AUDIENCE_FILTER_ID, AUDIENCE_FILTER_VALUE);
         final Map<String, String> assignmentIds = new HashMap<>();
         audienceFilters.put(ASSIGNMENT_UNIT_ID, InstallationIdUtils.getHashMac());
         experimentationService = new ExperimentationService()
