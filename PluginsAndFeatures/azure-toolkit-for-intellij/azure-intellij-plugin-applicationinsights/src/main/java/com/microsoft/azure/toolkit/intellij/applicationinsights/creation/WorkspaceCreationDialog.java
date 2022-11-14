@@ -32,22 +32,18 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceConfig>
     implements AzureForm<LogAnalyticsWorkspaceConfig> {
     private String subscriptionId;
-    // todo support change resource group
-    private ResourceGroup resourceGroup;
+    private final String resourceGroupName;
     private JPanel contentPanel;
     private JBLabel labelDescription;
     private AzureTextInput textName;
-    // todo not support change region
-    private RegionComboBox regionComboBox;
 
     public WorkspaceCreationDialog(final Subscription subscription,
                                    final ResourceGroup resourceGroup, final Region region) {
         super();
         this.subscriptionId = subscription.getId();
-        this.resourceGroup = resourceGroup;
+        this.resourceGroupName = resourceGroup.getName();
         this.init();
         this.textName.addValidator(this::validateName);
-        this.regionComboBox.setValue(region);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("workspace.create.description"));
         this.pack();
     }
@@ -63,9 +59,9 @@ public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceCo
         if (workspaceName.replaceAll("[0-9-a-zA-Z]", "").length() > 0) {
             return AzureValidationInfo.error(message("workspace.name.validate.symbol"), this);
         }
-        if (ObjectUtils.allNotNull(subscriptionId, resourceGroup)) {
+        if (ObjectUtils.allNotNull(subscriptionId, resourceGroupName)) {
             final LogAnalyticsWorkspace workspace = Azure.az(AzureLogAnalyticsWorkspace.class)
-                    .logAnalyticsWorkspaces(subscriptionId).get(workspaceName, resourceGroup.getName());
+                    .logAnalyticsWorkspaces(subscriptionId).get(workspaceName, resourceGroupName);
             if (workspace != null && workspace.exists()) {
                 return AzureValidationInfo.error(message("workspace.name.validate.unique"), this);
             }

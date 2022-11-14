@@ -8,9 +8,9 @@ package com.microsoft.azure.toolkit.ide.appservice.function;
 import com.microsoft.azure.toolkit.ide.appservice.model.AppServiceConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
-import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
@@ -35,7 +35,6 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -91,7 +90,8 @@ public class FunctionAppConfig extends AppServiceConfig {
                 .os(FunctionAppConfig.DEFAULT_RUNTIME.getOperatingSystem())
                 .pricingTier(PricingTier.CONSUMPTION).build());
 
-        final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).build();
+        final LogAnalyticsWorkspaceConfig workspaceConfig = LogAnalyticsWorkspaceConfig.builder().name(Utils.generateRandomResourceName("workspace-", 63)).newCreate(true).build();
+        final ApplicationInsightsConfig insightsConfig = ApplicationInsightsConfig.builder().name(appName).newCreate(true).workspaceConfig(workspaceConfig).build();
         final MonitorConfig monitorConfig = MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build();
         return FunctionAppConfig.builder()
                 .subscription(subscription)
@@ -122,6 +122,7 @@ public class FunctionAppConfig extends AppServiceConfig {
         if (insightsConfig != null) {
             result.appInsightsInstance(insightsConfig.getName());
             result.appInsightsKey(insightsConfig.getInstrumentationKey());
+            result.workspaceConfig(insightsConfig.getWorkspaceConfig());
         }
         result.appSettings(config.getAppSettings());
         return result;

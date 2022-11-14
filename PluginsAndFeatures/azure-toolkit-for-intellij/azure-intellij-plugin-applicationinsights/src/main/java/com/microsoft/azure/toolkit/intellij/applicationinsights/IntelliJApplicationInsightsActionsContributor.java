@@ -89,8 +89,8 @@ public class IntelliJApplicationInsightsActionsContributor implements IActionsCo
         final ApplicationInsightDraft applicationInsightDraft = Azure.az(AzureApplicationInsights.class).applicationInsights(subscription.getId())
             .create(String.format("ai-%s", timestamp), resourceGroupName);
         applicationInsightDraft.setRegion(region);
-        applicationInsightDraft.setWorkspaceConfig(LogAnalyticsWorkspaceConfig.builder().newCreate(true).subscriptionId(subscription.getId())
-                .resourceGroupName(resourceGroupName).name(String.format("workspace-%s", timestamp)).build());
+        applicationInsightDraft.setWorkspaceConfig(LogAnalyticsWorkspaceConfig.builder().newCreate(true)
+                .subscriptionId(subscription.getId()).name(String.format("workspace-%s", timestamp)).build());
         return applicationInsightDraft;
     }
 

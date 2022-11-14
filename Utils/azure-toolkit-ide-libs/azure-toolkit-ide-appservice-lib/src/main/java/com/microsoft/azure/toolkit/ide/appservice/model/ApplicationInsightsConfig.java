@@ -4,6 +4,7 @@
  */
 package com.microsoft.azure.toolkit.ide.appservice.model;
 
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,15 +24,20 @@ public class ApplicationInsightsConfig {
     private String name;
     @EqualsAndHashCode.Include
     private String instrumentationKey;
+    private LogAnalyticsWorkspaceConfig workspaceConfig;
 
     public ApplicationInsightsConfig(String name) {
         this.newCreate = true;
         this.name = name;
+        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true)
+                .name(String.format("workspace-%s", name)).build();
     }
 
     public ApplicationInsightsConfig(final String name, final String instrumentationKey) {
         this.newCreate = false;
         this.name = name;
         this.instrumentationKey = instrumentationKey;
+        this.workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true)
+                .name(String.format("workspace-%s", name)).build();
     }
 }
