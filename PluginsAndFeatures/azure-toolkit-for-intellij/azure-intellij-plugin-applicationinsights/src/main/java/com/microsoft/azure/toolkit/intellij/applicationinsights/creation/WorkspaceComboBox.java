@@ -32,8 +32,6 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig> {
     private Subscription subscription;
     @Setter
-    private Region region;
-    @Setter
     private ResourceGroup resourceGroup;
     private final List<LogAnalyticsWorkspaceConfig> draftItems = new LinkedList<>();
 
@@ -121,7 +119,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
     }
 
     private void showLoaAnalyticsWorkspaceCreationPopup() {
-        final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup, this.region);
+        final WorkspaceCreationDialog dialog = new WorkspaceCreationDialog(this.subscription, this.resourceGroup);
         dialog.setOkActionListener((workspaceConfig) -> {
             dialog.close();
             this.setValue(workspaceConfig);

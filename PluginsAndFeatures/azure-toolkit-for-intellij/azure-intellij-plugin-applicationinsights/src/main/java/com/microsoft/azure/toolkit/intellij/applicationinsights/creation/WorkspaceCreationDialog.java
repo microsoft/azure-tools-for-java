@@ -10,7 +10,6 @@ import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.O
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
-import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspace;
@@ -18,7 +17,6 @@ import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalytic
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
@@ -38,7 +36,7 @@ public class WorkspaceCreationDialog extends AzureDialog<LogAnalyticsWorkspaceCo
     private AzureTextInput textName;
 
     public WorkspaceCreationDialog(final Subscription subscription,
-                                   final ResourceGroup resourceGroup, final Region region) {
+                                   final ResourceGroup resourceGroup) {
         super();
         this.subscriptionId = subscription.getId();
         this.resourceGroupName = resourceGroup.getName();
