@@ -108,5 +108,8 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
                     .map(Runtime::getOperatingSystem).orElse(null);
             appServiceMonitorPanel.setApplicationLogVisible(operatingSystem == OperatingSystem.WINDOWS);
         });
+
+        appServiceConfigPanelAdvanced.getSelectorGroup().addActionListener(event ->
+                appServiceMonitorPanel.getApplicationInsightsComboBox().setResourceGroup(appServiceConfigPanelAdvanced.getSelectorGroup().getValue()));
     }
 }
