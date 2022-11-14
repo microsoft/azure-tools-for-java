@@ -6,8 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component;
 
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.intellij.applicationinsights.creation.WorkspaceComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,14 +22,16 @@ public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
 
     private JPanel contentPane;
     private ApplicationInsightsNameTextField txtInsightsName;
+    private WorkspaceComboBox workspaceComboBox;
     private JButton buttonOK;
     private String applicationInsightsName;
 
-    public CreateApplicationInsightsDialog() {
+    public CreateApplicationInsightsDialog(Subscription subscription) {
         super(false);
         setModal(true);
         setTitle("Create new Application Insights");
         getRootPane().setDefaultButton(buttonOK);
+        workspaceComboBox.setSubscription(subscription);
         init();
     }
 
@@ -60,6 +65,11 @@ public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
 
     public String getApplicationInsightsName() {
         return applicationInsightsName;
+    }
+
+    @Nullable
+    public LogAnalyticsWorkspaceConfig getWorkspaceConfig() {
+        return workspaceComboBox.getValue();
     }
 
     @Override

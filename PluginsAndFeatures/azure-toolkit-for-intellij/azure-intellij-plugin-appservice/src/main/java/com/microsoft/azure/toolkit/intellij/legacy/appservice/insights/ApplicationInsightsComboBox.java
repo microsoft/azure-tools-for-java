@@ -100,10 +100,11 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     }
 
     private void onCreateApplicationInsights() {
-        final CreateApplicationInsightsDialog dialog = new CreateApplicationInsightsDialog();
+        final CreateApplicationInsightsDialog dialog = new CreateApplicationInsightsDialog(subscription);
         dialog.pack();
         if (dialog.showAndGet()) {
-            final ApplicationInsightsConfig config = ApplicationInsightsConfig.builder().newCreate(true).name(dialog.getApplicationInsightsName()).build();
+            final ApplicationInsightsConfig config = ApplicationInsightsConfig.builder().newCreate(true).name(dialog.getApplicationInsightsName())
+                    .workspaceConfig(dialog.getWorkspaceConfig()).build();
             this.setValue(config);
         }
     }

@@ -76,6 +76,7 @@ public class FunctionAppService {
         Optional.ofNullable(applicationInsightsConfig).ifPresent(insights -> {
             result.appInsightsInstance(insights.getName());
             result.appInsightsKey(insights.getInstrumentationKey());
+            result.workspaceConfig(insights.getWorkspaceConfig());
         });
         Optional.ofNullable(config.getDeploymentSlot()).ifPresent(slot -> {
             result.deploymentSlotName(slot.getName());

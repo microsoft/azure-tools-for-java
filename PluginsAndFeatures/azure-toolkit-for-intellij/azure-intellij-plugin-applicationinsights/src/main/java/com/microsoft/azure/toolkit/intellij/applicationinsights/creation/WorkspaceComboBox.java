@@ -94,7 +94,6 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
                                     .newCreate(false)
                                     .resourceId(workspace.getId())
                                     .name(workspace.getName())
-                                    .resourceGroupName(workspace.getResourceGroupName())
                                     .build()).collect(Collectors.toList());
             workspaces.addAll(remoteWorkspaces);
             return workspaces.stream().sorted(Comparator.comparing(LogAnalyticsWorkspaceConfig::getName)).collect(Collectors.toList());

@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfi
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppServiceMonitorPanel;
+import com.microsoft.azure.toolkit.lib.applicationinsights.workspace.LogAnalyticsWorkspaceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.insights.ApplicationInsightsComboBox;
@@ -18,6 +19,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import org.apache.commons.collections4.ListUtils;
 
 import javax.annotation.Nonnull;
@@ -88,9 +90,11 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         appServiceConfigPanelAdvanced.setValidPricingTier(new ArrayList<>(PricingTier.FUNCTION_PRICING), PricingTier.CONSUMPTION);
         // Function does not support file deployment
         appServiceConfigPanelAdvanced.setDeploymentVisible(false);
+        final LogAnalyticsWorkspaceConfig workspaceConfig = LogAnalyticsWorkspaceConfig.builder().newCreate(true).name(Utils.generateRandomResourceName("workspace", 63)).build();
         insightsConfig = ApplicationInsightsConfig.builder().newCreate(true)
-                                                  .name(appServiceConfigPanelAdvanced.getTextName().getValue())
-                                                  .build();
+                .name(appServiceConfigPanelAdvanced.getTextName().getValue())
+                .workspaceConfig(workspaceConfig)
+                .build();
 
         appServiceMonitorPanel = new AppServiceMonitorPanel(project);
         appServiceMonitorPanel.setWebServerLogEnabled(false);

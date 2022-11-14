@@ -9,6 +9,7 @@ dependencies {
     compile project(':azure-intellij-plugin-lib')
     compile project(':azure-intellij-plugin-guidance')
     compile project(':azure-intellij-plugin-containerregistry')
+    compile project(':azure-intellij-plugin-applicationinsights')
     compile 'com.spotify:docker-client:8.16.0'
     compile 'com.microsoft.azure:azure-toolkit-appservice-lib'
     compile 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
