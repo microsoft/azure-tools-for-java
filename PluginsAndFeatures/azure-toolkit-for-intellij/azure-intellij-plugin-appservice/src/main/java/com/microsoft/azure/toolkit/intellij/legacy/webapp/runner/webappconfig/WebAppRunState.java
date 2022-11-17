@@ -16,7 +16,6 @@ import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.model.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
@@ -65,7 +64,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?, ?>> {
+public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     private static final String LIBS_ROOT = "/home/site/wwwroot/libs/";
     private static final String JAVA_OPTS = "JAVA_OPTS";
     private static final String CATALINA_OPTS = "CATALINA_OPTS";
@@ -87,7 +86,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     @Nullable
     @Override
     @AzureOperation(name = "webapp.deploy_artifact.app", params = {"this.webAppConfiguration.getWebAppName()"}, type = AzureOperation.Type.ACTION)
-    public AppServiceAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
+    public WebAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) throws Exception {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
         artifact = new File(getTargetPath());
@@ -101,7 +100,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         return deployTarget;
     }
 
-    private void applyResourceConnection(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
+    private void applyResourceConnection(@Nonnull WebAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
         final Connection<?, ?> connection = webAppConfiguration.getConnection();
         if (Objects.nonNull(connection)) {
             Optional.ofNullable(connection.getEnvironmentVariables(this.project)).ifPresent(appSettingsForResourceConnection::putAll);
@@ -111,7 +110,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
     }
 
-    private void uploadJavaAgent(@Nonnull AppServiceAppBase<?, ?, ?> deployTarget, @Nullable File javaAgent) {
+    private void uploadJavaAgent(@Nonnull WebAppBase<?, ?, ?> deployTarget, @Nullable File javaAgent) {
         if (javaAgent == null || !javaAgent.exists()) {
             return;
         }
@@ -120,7 +119,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         updateAppServiceVMOptions(deployTarget, targetPath);
     }
 
-    private void deployJavaAgentToAppService(AppServiceAppBase<?, ?, ?> deployTarget, File javaAgent, String targetPath) {
+    private void deployJavaAgentToAppService(WebAppBase<?, ?, ?> deployTarget, File javaAgent, String targetPath) {
         AppServiceFile file;
         try {
             file = deployTarget.getFileByPath(targetPath);
@@ -135,7 +134,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
     }
 
-    private void updateAppServiceVMOptions(AppServiceAppBase<?, ?, ?> deployTarget, String targetPath) {
+    private void updateAppServiceVMOptions(WebAppBase<?, ?, ?> deployTarget, String targetPath) {
         final Map<String, String> applicationSettings = webAppConfiguration.getApplicationSettings();
         final WebContainer webContainer = Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer();
         final String javaOptsParameter = (webContainer == WebContainer.JAVA_SE || webContainer == WebContainer.JBOSS_7) ? JAVA_OPTS : CATALINA_OPTS;
@@ -149,7 +148,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         appSettingsForResourceConnection.put(javaOptsParameter, value);
     }
 
-    private void updateApplicationSettings(AppServiceAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
+    private void updateApplicationSettings(WebAppBase<?, ?, ?> deployTarget, RunProcessHandler processHandler) {
         final Map<String, String> applicationSettings = new HashMap<>(ObjectUtils.firstNonNull(webAppConfiguration.getApplicationSettings(), Collections.emptyMap()));
         final Set<String> appSettingsToRemove = webAppConfiguration.isCreatingNew() ? Collections.emptySet() : getAppSettingsToRemove(deployTarget, applicationSettings);
         applicationSettings.putAll(appSettingsForResourceConnection);
@@ -173,7 +172,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         }
     }
 
-    private Set<String> getAppSettingsToRemove(final AppServiceAppBase<?, ?, ?> target, final Map<String, String> applicationSettings) {
+    private Set<String> getAppSettingsToRemove(final WebAppBase<?, ?, ?> target, final Map<String, String> applicationSettings) {
         return target.getAppSettings().keySet().stream()
                 .filter(key -> !applicationSettings.containsKey(key))
                 .collect(Collectors.toSet());
@@ -198,7 +197,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
 
     @Override
     @AzureOperation(name = "webapp.open_public_url.app", type = AzureOperation.Type.ACTION)
-    protected void onSuccess(AppServiceAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
+    protected void onSuccess(WebAppBase<?, ?, ?> result, @NotNull RunProcessHandler processHandler) {
         updateConfigurationDataModel(result);
         final String fileName = FileNameUtils.getBaseName(artifact.getName());
         final String fileType = FileNameUtils.getExtension(artifact.getName());
@@ -285,7 +284,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
     }
 
     @NotNull
-    private String getUrl(@NotNull AppServiceAppBase<?, ?, ?> webApp, @NotNull String fileName, @NotNull String fileType) {
+    private String getUrl(@NotNull WebAppBase<?, ?, ?> webApp, @NotNull String fileName, @NotNull String fileType) {
         String url = "https://" + webApp.getHostName();
         if (Objects.equals(fileType, MavenConstants.TYPE_WAR) && !webAppSettingModel.isDeployToRoot()) {
             url += "/" + WebAppUtils.encodeURL(fileName.replaceAll("#", StringUtils.EMPTY)).replaceAll("\\+", "%20");
@@ -293,7 +292,7 @@ public class WebAppRunState extends AzureRunProfileState<AppServiceAppBase<?, ?,
         return url;
     }
 
-    private void updateConfigurationDataModel(@NotNull AppServiceAppBase<?, ?, ?> app) {
+    private void updateConfigurationDataModel(@NotNull WebAppBase<?, ?, ?> app) {
         webAppConfiguration.setCreatingNew(false);
         // todo: add flag to indicate create new slot or not
         if (app instanceof WebAppDeploymentSlot) {

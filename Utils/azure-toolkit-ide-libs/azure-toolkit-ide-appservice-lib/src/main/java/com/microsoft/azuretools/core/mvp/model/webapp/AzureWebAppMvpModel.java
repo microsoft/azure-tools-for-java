@@ -5,7 +5,6 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
@@ -13,9 +12,11 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.DockerConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebAppArtifact;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlanDraft;
+import com.microsoft.azure.toolkit.lib.appservice.task.DeployWebAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
@@ -35,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -220,24 +222,11 @@ public class AzureWebAppMvpModel {
             final String action = "select a valid Web App or deployment slot to deploy the artifact";
             throw new AzureToolkitRuntimeException(error, action, retry);
         }
-        // stop target app service
-        final String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
-        progressIndicator.setText(stopMessage);
-        deployTarget.stop();
-        // todo: @hanli migrate to use WebAppDeployTask
         final DeployType deployType = Optional.ofNullable(DeployType.fromString(FilenameUtils.getExtension(file.getName()))).orElse(DeployType.ZIP);
-        // java se runtime will always deploy to root
-        if (isDeployToRoot ||
-            Objects.equals(Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer(), WebContainer.JAVA_SE)) {
-            deployTarget.deploy(deployType, file);
-        } else {
-            final String webappPath = String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
-            deployTarget.deploy(deployType, file, webappPath);
-        }
-
-        final String successMessage = deployTarget instanceof WebApp ? DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
-        progressIndicator.setText(successMessage);
-        deployTarget.start();
+        final String path = isDeployToRoot || Objects.equals(Objects.requireNonNull(deployTarget.getRuntime()).getWebContainer(), WebContainer.JAVA_SE) ?
+                null : String.format("webapps/%s", FilenameUtils.getBaseName(file.getName()).replaceAll("#", StringUtils.EMPTY));
+        final WebAppArtifact build = WebAppArtifact.builder().deployType(deployType).path(path).file(file).build();
+        new DeployWebAppTask(deployTarget, Collections.singletonList(build), true).doExecute();
     }
 
     /**
