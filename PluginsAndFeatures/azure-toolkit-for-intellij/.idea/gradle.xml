@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-containerapps" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerregistry" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerservice" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cosmos" />

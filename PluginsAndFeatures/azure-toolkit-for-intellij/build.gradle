@@ -192,6 +192,7 @@ dependencies {
     implementation project(':azure-intellij-plugin-applicationinsights')
     implementation project(':azure-intellij-plugin-guidance')
     implementation project(':azure-intellij-plugin-cosmos')
+    implementation project(':azure-intellij-plugin-containerapps')
     implementation 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     implementation 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+  <defs>
+    <linearGradient id="a9a29211-287a-4402-a0b0-d30d083baa5b" x1="81.004" y1="683.518" x2="81.004" y2="701.518" gradientTransform="matrix(1, 0, 0, -1, -72, 701.516)" gradientUnits="userSpaceOnUse">
+      <stop offset="0.001" stop-color="#773adc"/>
+      <stop offset="1" stop-color="#a67af4"/>
+    </linearGradient>
+    <linearGradient id="bfc5e099-000e-495e-a321-b86549259f74" x1="8.805" y1="10.636" x2="12.832" y2="10.636" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#a67af4"/>
+    </linearGradient>
+    <linearGradient id="f9b52a2f-b342-4bda-bbec-bf2aa6f4f376" x1="6.632" y1="7.184" x2="6.632" y2="14.209" gradientUnits="userSpaceOnUse">
+      <stop offset="0.135" stop-color="#fff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#a67af4"/>
+    </linearGradient>
+  </defs>
+  <g id="aa764f17-e706-43f5-9075-5271901bb627">
+    <g>
+      <g id="b1dc1809-4995-4a7a-8531-4266f90dabc2">
+        <g>
+          <path d="M16.114,5.8h-4.64a1.054,1.054,0,0,1-1.04-1.05V.148a.637.637,0,0,0-.4-.15H2.264a.615.615,0,0,0-.61.62v16.77a.606.606,0,0,0,.61.61h13.47a.615.615,0,0,0,.62-.61V6.288A.631.631,0,0,0,16.114,5.8Z" fill="url(#a9a29211-287a-4402-a0b0-d30d083baa5b)"/>
+          <path d="M16.114,5.8h-4.64a1.054,1.054,0,0,1-1.04-1.05V.148a.138.138,0,0,0,.04.03l5.61,5.6Z" fill="#773adc"/>
+          <path d="M10.474.178a.138.138,0,0,1-.04-.03V.138Z" fill="#552f99"/>
+        </g>
+      </g>
+      <g>
+        <g id="a618c158-e2a1-48fb-9836-8a86e0b5150e">
+          <g>
+            <path d="M12.877,8.486v4.055a.227.227,0,0,1-.139.213L8.7,14.42a.128.128,0,0,0,.052-.077.09.09,0,0,0,0-.028V6.974a.124.124,0,0,0-.1-.122h.012l4.054,1.416A.227.227,0,0,1,12.877,8.486Z" fill="url(#bfc5e099-000e-495e-a321-b86549259f74)"/>
+            <path d="M8.758,6.974v7.341a.09.09,0,0,1,0,.028.128.128,0,0,1-.052.077.106.106,0,0,1-.063.018H8.633a.155.155,0,0,1-.022,0L4.6,13.559a.122.122,0,0,1-.1-.122V7.729a.126.126,0,0,1,.1-.124l4.01-.755h.023a.088.088,0,0,1,.024,0A.124.124,0,0,1,8.758,6.974Z" fill="url(#f9b52a2f-b342-4bda-bbec-bf2aa6f4f376)"/>
+          </g>
+        </g>
+        <path d="M8.156,7.737v5.8l-1.4-.233V7.988Zm-3.109.537v4.654l1.215.254V8.064Z" fill="#fff" opacity="0.8"/>
+      </g>
+    </g>
+  </g>
+</svg>

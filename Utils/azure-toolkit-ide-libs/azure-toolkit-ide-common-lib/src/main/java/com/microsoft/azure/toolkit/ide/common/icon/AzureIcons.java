@@ -132,6 +132,10 @@ public final class AzureIcons {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/ApacheSparkOnCosmos/ApacheSparkOnCosmos.svg").build();
     }
 
+    public static final class ContainerApps {
+        public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.App/default.svg").build();
+    }
+
     public static final class ContainerRegistry {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/ContainerRegistry/ContainerRegistry.svg").build();
     }

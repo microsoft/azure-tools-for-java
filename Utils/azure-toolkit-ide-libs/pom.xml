@@ -47,6 +47,7 @@
         <module>azure-toolkit-ide-applicationinsights-lib</module>
         <module>azure-toolkit-ide-containerservice-lib</module>
         <module>azure-toolkit-ide-cosmos-lib</module>
+        <module>azure-toolkit-ide-containerapps-lib</module>
     </modules>
 
     <properties>
@@ -121,6 +122,11 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-toolkit-ide-cosmos-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-toolkit-ide-containerapps-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
