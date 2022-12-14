@@ -106,9 +106,9 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
         am.registerAction(restartRevisionAction);
 
         final Consumer<Revision> openRevision = resource ->
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(resource.getFqdn());
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle("https://" + resource.getFqdn());
         final ActionView.Builder openRevisionView = new ActionView.Builder("Open In Browser", AzureIcons.Action.BROWSER.getIconPath())
-                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.open_in_browser.revision", ((ContainerApp) r).getName())).orElse(null))
+                .title(s -> Optional.ofNullable(s).map(r -> description("containerapps.open_in_browser.revision", ((Revision) r).getName())).orElse(null))
                 .enabled(s -> s instanceof Revision && ((Revision) s).getFormalStatus().isConnected());
         final Action<Revision> openRevisionAction = new Action<>(OPEN_IN_BROWSER, openRevision, openRevisionView);
         am.registerAction(openRevisionAction);
