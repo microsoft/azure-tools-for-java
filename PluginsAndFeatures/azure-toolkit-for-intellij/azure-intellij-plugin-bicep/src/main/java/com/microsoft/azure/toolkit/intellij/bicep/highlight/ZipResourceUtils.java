@@ -6,16 +6,15 @@
 package com.microsoft.azure.toolkit.intellij.bicep.highlight;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.StartupActivity;
+import com.microsoft.azure.toolkit.intellij.bicep.activities.BicepStartupActivity;
 import com.microsoft.azure.toolkit.lib.common.exception.SystemException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,46 +27,38 @@ import java.util.zip.ZipFile;
 
 import static com.microsoft.azure.toolkit.intellij.bicep.highlight.BicepEditorHighlighterProvider.LIB_ROOT;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
-public class PrepareTextMateBundles implements StartupActivity.DumbAware {
-    public static final String TEXTMATE_ZIP = "/textmate.zip";
-    protected static final Logger LOG = Logger.getInstance(PrepareTextMateBundles.class);
+public class ZipResourceUtils {
+    protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
 
-    @Override
-    @ExceptionNotification
-    @AzureOperation(name = "platform/bicep.prepare_textmate_bundles")
-    public void runActivity(@Nonnull Project project) {
-        final File textmateDir = new File(LIB_ROOT + File.separator + "textmate");
-        if (!textmateDir.exists()) {
-            final URL textmateZipUrl = PrepareTextMateBundles.class.getResource(TEXTMATE_ZIP);
+    @Nullable
+    @AzureOperation("boundary/bicep.copy_textmate_bundle_from_jar")
+    public static void copyTextMateBundlesFromJar(final String source, final String target) {
+        final File targetFolder = new File(LIB_ROOT, target);
+        if (!targetFolder.exists()) {
+            final URL textmateZipUrl = ZipResourceUtils.class.getResource(source);
             if (textmateZipUrl != null) {
                 try {
-                    final String textmateZipPath = this.copyTextMateBundlesFromJar(textmateZipUrl);
-                    this.unzip(textmateZipPath);
+                    final File destZipFile = new File(LIB_ROOT, String.format("%s.zip", target));
+                    FileUtils.copyURLToFile(textmateZipUrl, destZipFile);
+                    unzip(destZipFile, targetFolder);
                 } catch (IOException e) {
                     LOG.error(e);
-                    textmateDir.delete();
+                    targetFolder.delete();
                     AzureMessager.getMessager().error(e);
                 }
+            } else {
+                throw new SystemException(String.format("'%s.zip' not found in toolkit", source));
             }
-            throw new SystemException("'textmate.zip' not found in jar");
         }
     }
 
-    @AzureOperation("boundary/bicep.copy_textmate_bundle_from_jar")
-    private String copyTextMateBundlesFromJar(URL textmateZipUrl) throws IOException {
-        final String destZipFile = LIB_ROOT + TEXTMATE_ZIP;
-        FileUtils.copyURLToFile(textmateZipUrl, new File(destZipFile));
-        return destZipFile;
-    }
-
     @AzureOperation(value = "boundary/bicep.unzip_textmate_bundle.zip", params = "zipFilePath")
-    private void unzip(@Nonnull String zipFilePath) throws IOException {
-        try (final java.util.zip.ZipFile zipFile = new ZipFile(zipFilePath)) {
+    private static void unzip(@Nonnull final File file, @Nonnull final File target) throws IOException {
+        try (final java.util.zip.ZipFile zipFile = new ZipFile(file)) {
             final Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 final ZipEntry entry = entries.nextElement();
-                final File entryDestination = new File(BicepEditorHighlighterProvider.LIB_ROOT, entry.getName());
+                final File entryDestination = new File(target, entry.getName());
                 if (entry.isDirectory()) {
                     entryDestination.mkdirs();
                 } else {

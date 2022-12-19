@@ -64,6 +64,26 @@ task buildToolkitsLib {
     }
 }
 
+task prepareBicepSupport {
+    doLast {
+        logger.info('Building Lsp4intellij ...')
+        def bicepDir = File.createTempDir()
+        bicepDir.deleteOnExit()
+        Grgit.clone(dir: file(bicepDir), uri: 'https://github.com/Flanker32/lsp4intellij-bicep.git')
+        exec {
+            workingDir file(bicepDir)
+            executable gradleExec
+            args 'publishToMavenLocal'
+        }
+
+        logger.info('Downloading bicep language server ...')
+        def f = new File('PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-bicep/src/main/resources/bicep-langserver.zip')
+        if (!f.exists()) {
+            new URL('https://aka.ms/java-toolkit-bicep-ls').withInputStream{ i -> f.withOutputStream{ it << i }}
+        }
+    }
+}
+
 task buildUtils {
     dependsOn buildToolkitsLib
     doLast {
@@ -87,7 +107,7 @@ task buildAdditionalLibrary {
 }
 
 task buildEclipse {
-    dependsOn buildUtils, buildAdditionalLibrary
+    dependsOn buildUtils, buildAdditionalLibrary, prepareBicepSupport
 
     doLast {
         logger.info('Building Eclipse plugin ...')
