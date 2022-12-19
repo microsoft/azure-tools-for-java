@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.bicep.activities.BicepStartupActivity"/>
+        <editorHighlighterProvider filetype="Bicep" implementationClass="com.microsoft.azure.toolkit.intellij.bicep.highlight.BicepEditorHighlighterProvider"/>
+        <lang.syntaxHighlighterFactory language="Bicep" implementationClass="org.jetbrains.plugins.textmate.language.syntax.highlighting.TextMateSyntaxHighlighterFactory"/>
+    </extensions>
+</idea-plugin>

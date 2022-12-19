@@ -20,3 +20,5 @@ include 'azure-intellij-plugin-applicationinsights'
 include 'azure-intellij-plugin-guidance'
 include 'azure-intellij-plugin-containerservice'
 include 'azure-intellij-plugin-cosmos'
+include 'azure-intellij-plugin-bicep'
+
