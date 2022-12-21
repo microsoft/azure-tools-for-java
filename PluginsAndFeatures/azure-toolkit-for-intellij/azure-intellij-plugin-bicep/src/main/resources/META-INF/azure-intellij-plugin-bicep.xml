@@ -10,7 +10,7 @@
 
         <!-- register intellijLanguageClient as a Service OR as a plugin component (see readme)... -->
         <applicationService serviceImplementation="org.wso2.lsp4intellij.IntellijLanguageClient"/>
-
+        <editorNotificationProvider implementation="com.microsoft.azure.toolkit.intellij.bicep.BicepEditorNotificationProvider"/>
         <!-- register a listener on editor events, required for lsp file sync -->
         <editorFactoryListener implementation="org.wso2.lsp4intellij.listeners.LSPEditorListener"/>
         <fileDocumentManagerListener implementation="org.wso2.lsp4intellij.listeners.LSPFileDocumentManagerListener"/>
