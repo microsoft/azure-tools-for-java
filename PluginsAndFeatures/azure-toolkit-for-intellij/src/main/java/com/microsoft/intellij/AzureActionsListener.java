@@ -12,6 +12,7 @@ import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.exception.ExceptionUtils;
 import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
@@ -127,6 +128,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
     @AzureOperation(name = "platform/common.init_plugin")
     public void appFrameCreated(@NotNull List<String> commandLineArgs) {
         try {
+            System.setProperty("jna.noclasspath", "false");
             DefaultLoader.setPluginComponent(this);
             DefaultLoader.setUiHelper(new UIHelperImpl());
             DefaultLoader.setIdeHelper(new IDEHelperImpl());
