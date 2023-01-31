@@ -130,7 +130,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
             case MAVEN:
                 new MavenProjectGenerator(module, this.selectedTemplate.getTemplateType(), sparkVersion)
                         .generate()
-                        .done(mavenProject -> {
+                        .onSuccess(mavenProject -> {
                             if (getSelectedTemplate() != null && artifactPackagingFactory != null &&
                                     getSelectedTemplate().getTemplateType() == HDInsightTemplatesType.ScalaFailureTaskDebugSample) {
 
