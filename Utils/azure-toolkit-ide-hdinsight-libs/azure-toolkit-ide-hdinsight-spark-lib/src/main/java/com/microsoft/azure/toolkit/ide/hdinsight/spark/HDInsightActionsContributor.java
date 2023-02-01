@@ -163,7 +163,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
-//                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
+                ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
                 this.OPEN_AZURE_STORAGE_EXPLORER,
                 this.OPEN_AZURE_EXPLORER_AMBARI,

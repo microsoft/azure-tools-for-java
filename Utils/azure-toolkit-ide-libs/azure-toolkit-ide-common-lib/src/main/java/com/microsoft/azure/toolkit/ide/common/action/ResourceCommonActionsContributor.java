@@ -129,7 +129,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withHandler(Refreshable::refresh)
             .register(am);
 
-/*
         new Action<>(OPEN_PORTAL_URL)
             .withLabel("Open in Portal")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
@@ -138,7 +137,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .visibleWhen(s -> s instanceof AzResource)
             .withHandler(s -> am.getAction(OPEN_URL).handle(s.getPortalUrl()))
             .register(am);
-*/
 
         new Action<>(OPEN_URL)
             .withLabel("Open Url")
