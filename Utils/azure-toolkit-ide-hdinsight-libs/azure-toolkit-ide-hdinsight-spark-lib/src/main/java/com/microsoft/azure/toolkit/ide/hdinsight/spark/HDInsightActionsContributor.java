@@ -7,13 +7,16 @@ import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.*;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -23,6 +26,8 @@ import com.microsoft.azure.toolkit.lib.hdinsight.StorageAccountNode;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
@@ -45,20 +50,39 @@ public class HDInsightActionsContributor implements IActionsContributor {
     public static final Action.Id<AzResource> OPEN_AZURE_EXPLORER_JUPYTER = Action.Id.of("user/hdinsight.open_jupyter_explorer.jupyter");
     public static final Action.Id<AzResource> OPEN_SPARK_HISTORY_UI = Action.Id.of("user/hdinsight.open_history_ui.spark");
     public static final Action.Id<AzResource> OPEN_AZURE_STORAGE_MANAGEMENT_EXPLORER = Action.Id.of("user/hdinsight.open_azure_storage_explorer.storage");
-
+    public static final Action.Id<Refreshable> REFRESH = Action.Id.of("user/hdinsight.refresh_resource.resource");
 
 
     @Override
     public void registerActions(AzureActionManager am) {
+        new Action<>(REFRESH)
+                .withLabel("Refresh")
+                .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+                .withIdParam(s -> Optional.ofNullable(s).map(r -> {
+                    if (r instanceof AzResource) {
+                        return ((AzResource) r).getName();
+                    } else if (r instanceof AbstractAzResourceModule) {
+                        return ((AbstractAzResourceModule<?, ?, ?>) r).getResourceTypeName();
+                    }
+                    throw new IllegalArgumentException("Unsupported type: " + r.getClass());
+                }).orElse(null))
+                .withShortcut(am.getIDEDefaultShortcuts().refresh())
+                .withAuthRequired(false)
+                .visibleWhen(s -> s instanceof Refreshable)
+                .withHandler(Refreshable::refresh)
+                .register(am);
+
         new Action<>(LINK_A_CLUSTER)
                 .withLabel("Link A Cluster")
                 .enableWhen(s -> true)
+                .withAuthRequired(false)
                 .withShortcut(am.getIDEDefaultShortcuts().edit())
                 .register(am);
 
         new Action<>(UNLINK_A_CLUSTER)
                 .withLabel("Unlink")
-                .enableWhen(s -> s instanceof SparkClusterNode)
+                .enableWhen(s -> true)
+                .withAuthRequired(false)
                 .withHandler(resource -> {
                     SparkClusterNode sparkClusterNode = (SparkClusterNode) resource;
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
@@ -74,12 +98,14 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
         new Action<>(OPEN_HDINSIGHT_JOB_VIEW)
                 .withLabel("Open HDInsight Spark JobView")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof AzResource)
                 .withShortcut(am.getIDEDefaultShortcuts().edit())
                 .register(am);
 
         new Action<>(OPEN_AZURE_STORAGE_EXPLORER)
                 .withLabel("Open Azure Storage Explorer")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
@@ -94,12 +120,14 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
         new Action<>(OPEN_AZURE_STORAGE_EXPLORER_ON_MODULE)
                 .withLabel("Open Azure Storage Explorer!")
+                .withAuthRequired(false)
                 .enableWhen(s -> true)
                 .withShortcut(am.getIDEDefaultShortcuts().edit())
                 .register(am);
 
         new Action<>(OPEN_AZURE_EXPLORER_AMBARI)
                 .withLabel("Open Cluster Management Portal(Ambari)")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
@@ -112,6 +140,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
         new Action<>(OPEN_AZURE_EXPLORER_JUPYTER)
                 .withLabel("Open Jupyter Notebook")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
@@ -122,6 +151,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
         new Action<>(OPEN_SPARK_HISTORY_UI)
                 .withLabel("Open Spark History UI")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
@@ -134,6 +164,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
         new Action<>(OPEN_AZURE_STORAGE_MANAGEMENT_EXPLORER)
                 .withLabel("Open Storage in Azure management Portal")
+                .withAuthRequired(false)
                 .enableWhen(s -> s instanceof StorageAccountNode)
                 .withHandler(resource -> {
                     final Account account = Azure.az(AzureAccount.class).account();
@@ -151,7 +182,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
     @Override
     public void registerGroups(AzureActionManager am) {
         final ActionGroup serviceActionGroup = new ActionGroup(
-                ResourceCommonActionsContributor.REFRESH,
+                this.REFRESH,
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 "---",
                 this.LINK_A_CLUSTER
@@ -161,7 +192,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
         final ActionGroup sparkActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.PIN,
                 "---",
-                ResourceCommonActionsContributor.REFRESH,
+                this.REFRESH,
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",
@@ -175,7 +206,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
         final ActionGroup sparkAdditionalActionGroup = new ActionGroup(
                 ResourceCommonActionsContributor.PIN,
                 "---",
-                ResourceCommonActionsContributor.REFRESH,
+                this.REFRESH,
                 ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
                 ResourceCommonActionsContributor.OPEN_PORTAL_URL,
                 "---",

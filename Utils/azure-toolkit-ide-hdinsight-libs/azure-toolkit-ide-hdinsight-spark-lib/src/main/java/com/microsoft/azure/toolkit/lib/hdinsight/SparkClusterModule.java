@@ -7,7 +7,8 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -52,17 +53,6 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
             List<Cluster> sourceList = c.list().stream().collect(Collectors.toList());
             List<Cluster> resultList = new ArrayList<Cluster>();
 
-            // Add additional clusters
-            List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
-            for (IClusterDetail detail : additionalClusterDetails) {
-                if (detail instanceof SqlBigDataLivyLinkClusterDetail
-                        || !this.additionalClusterSet.add(detail.getName()))
-                    continue;
-                SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
-                sdkAdditionalCluster.setName(detail.getName());
-                resultList.add(sdkAdditionalCluster);
-            }
-
             // Remove duplicate clusters that share the same cluster name
             HashSet<String> clusterIdSet = new HashSet<>();
             for (Cluster cluster : sourceList)
@@ -76,6 +66,8 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
     @Nullable
     @Override
     public Clusters getClient() {
+        if (!Azure.az(AzureAccount.class).isLoggedIn())
+            return null;
         return Optional.ofNullable(this.parent.getRemote()).map(HDInsightManager::clusters).orElse(null);
     }
 
@@ -113,6 +105,14 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
 
     private boolean isSparkCluster(String clusterKind) {
         return clusterKind.equalsIgnoreCase("spark");
+    }
+
+    @Override
+    @Nonnull
+    public String getSubscriptionId() {
+        if (!Azure.az(AzureAccount.class).isLoggedIn())
+            return "[LinkedCluster]";
+        return super.getSubscriptionId();
     }
 
     @Nonnull

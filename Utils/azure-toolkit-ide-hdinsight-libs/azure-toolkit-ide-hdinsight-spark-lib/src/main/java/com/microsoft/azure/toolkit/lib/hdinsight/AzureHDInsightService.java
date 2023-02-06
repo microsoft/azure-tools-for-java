@@ -4,6 +4,11 @@ import com.azure.core.http.policy.HttpLogDetailLevel;
 import com.azure.core.http.policy.HttpLogOptions;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.hdinsight.HDInsightManager;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.JobViewManager;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.SDKAdditionalCluster;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -13,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzServiceSubscriptio
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,8 +43,32 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
 
     @Override
     public void refresh() {
-        SparkClusterModule.additionalClusterSet.clear();
-        super.refresh();
+            SparkClusterModule.additionalClusterSet.clear();
+            super.refresh();
+    }
+
+    public List<SparkClusterNode> listAdditionalCluster() {
+        List<SparkClusterNode> resultList = new ArrayList<SparkClusterNode>();
+        // Add additional clusters
+        List<IClusterDetail> additionalClusterDetails = ClusterManagerEx.getInstance().getAdditionalClusterDetails();
+        for (IClusterDetail detail : additionalClusterDetails) {
+            if (detail instanceof SqlBigDataLivyLinkClusterDetail
+                    || !SparkClusterModule.additionalClusterSet.add(detail.getName()))
+                continue;
+            SDKAdditionalCluster sdkAdditionalCluster = new SDKAdditionalCluster();
+            sdkAdditionalCluster.setName(detail.getName());
+
+            HDInsightServiceSubscription nullSubscription = new HDInsightServiceSubscription(detail.getSubscription().getId(), this);
+            SparkClusterModule nullSparkClusterModule = new SparkClusterModule(nullSubscription);
+            SparkClusterNode sparkClusterNode = new SparkClusterNode(sdkAdditionalCluster, nullSparkClusterModule);
+            sparkClusterNode.setClusterDetail(detail);
+
+            JobViewManager.registerJovViewNode(detail.getName(), detail);
+
+            resultList.add(sparkClusterNode);
+        }
+
+        return resultList;
     }
 
     @Nonnull
@@ -60,6 +90,14 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
                 .withLogOptions(new HttpLogOptions().setLogLevel(logLevel))
                 .withPolicy(AbstractAzServiceSubscription.getUserAgentPolicy(userAgent))
                 .authenticate(account.getTokenCredential(subscriptionId), azureProfile);
+    }
+
+    @Override
+    @Nonnull
+    public String getSubscriptionId() {
+        if (!Azure.az(AzureAccount.class).isLoggedIn())
+            return "[LinkedCluster]";
+        return this.getParent().getSubscriptionId();
     }
 
     @Nonnull

@@ -51,9 +51,11 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             AzureHDInsightService service = (AzureHDInsightService)data;
             Function<AzureHDInsightService, List<SparkClusterNode>> clusters = s -> s.list().stream()
                     .flatMap(m -> m.clusters().list().stream()).collect(Collectors.toList());
-            return new Node<>(service).view(new AzureServiceLabelView(service, "HDInsight", ICON))
-                    .actions(HDInsightActionsContributor.SERVICE_ACTIONS)
-                    .addChildren(clusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager));
+            Function<AzureHDInsightService, List<SparkClusterNode>> additionalClusters = s -> s.listAdditionalCluster();
+                return new Node<>(service).view(new AzureServiceLabelView(service, "HDInsight", ICON))
+                        .actions(HDInsightActionsContributor.SERVICE_ACTIONS)
+                        .addChildren(additionalClusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager))
+                        .addChildren(clusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager));
         } else if (data instanceof SparkClusterNode) {
             final SparkClusterNode sparkClusterNode = (SparkClusterNode) data;
             Optional.ofNullable(JobViewManager.getCluster(sparkClusterNode.getName()))
@@ -61,7 +63,7 @@ public class HDInsightNodeProvider implements IExplorerNodeProvider {
             Node<SparkClusterNode> jobsNode = new Node<>(sparkClusterNode)
                     .view(new SparkJobNodeView(sparkClusterNode))
                     .clickAction(HDInsightActionsContributor.OPEN_HDINSIGHT_JOB_VIEW);
-            if (sparkClusterNode.getRemote(true) instanceof SDKAdditionalCluster)
+            if (sparkClusterNode.getClusterDetail().getResourceGroup()==null)//.getRemote(true) instanceof SDKAdditionalCluster)
                 return new Node<>(sparkClusterNode)
                         .view(new SparkClusterNodeView(sparkClusterNode))
                         .inlineAction(ResourceCommonActionsContributor.PIN)
