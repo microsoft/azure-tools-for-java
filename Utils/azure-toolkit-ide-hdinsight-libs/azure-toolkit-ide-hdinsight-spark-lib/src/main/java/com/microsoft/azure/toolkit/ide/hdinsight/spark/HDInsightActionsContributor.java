@@ -26,6 +26,8 @@ import com.microsoft.azure.toolkit.lib.hdinsight.StorageAccountNode;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
@@ -109,7 +111,7 @@ public class HDInsightActionsContributor implements IActionsContributor {
                 .enableWhen(s -> s instanceof SparkClusterNode)
                 .withHandler(resource -> {
                     IClusterDetail clusterDetail = ((SparkClusterNode) resource).getClusterDetail();
-                    final AzureString title = OperationBundle.description("user/hdinsight.open_azure_storage_explorer.cluster", clusterDetail.getName());
+                    final AzureString title = OperationBundle.description("user/hdinsight.open_azure_storage_explorer.cluster", ObjectUtils.isEmpty(clusterDetail) ?  StringUtils.EMPTY : clusterDetail.getName());
                     AzureTaskManager.getInstance().runInBackground(new AzureTask<>(title, () -> {
                         OpenHDIAzureStorageExplorerAction openHDIAzureStorageExplorerAction = new OpenHDIAzureStorageExplorerAction();
                         openHDIAzureStorageExplorerAction.openResource(clusterDetail);

@@ -31,10 +31,11 @@ public abstract class AbstractHDIAzureStorageExplorerHandler {
 
     private static final String STORAGE_EXPLORER_DOWNLOAD_URL = "https://go.microsoft.com/fwlink/?LinkId=723579";
     private static final String STORAGE_EXPLORER = "StorageExplorer";
+    public static final String ASE_DEEP_LINK = "storageexplorer:///";
 
     public void openResource(@Nonnull final IClusterDetail clusterDetail) {
         // Get resource url
-        final String resourceUrl = "storageexplorer://v=1&accountid=" + ((ClusterDetail) clusterDetail).getId() + "&subscriptionid=" + clusterDetail.getSubscription().getId();
+        final String resourceUrl = clusterDetail instanceof ClusterDetail ? ("storageexplorer://v=1&accountid=" + ((ClusterDetail) clusterDetail).getId() + "&subscriptionid=" + clusterDetail.getSubscription().getId()) : ASE_DEEP_LINK;
         // try launch with uri
         boolean result = launchStorageExplorerWithUri(clusterDetail, resourceUrl);
         if (!result) {
