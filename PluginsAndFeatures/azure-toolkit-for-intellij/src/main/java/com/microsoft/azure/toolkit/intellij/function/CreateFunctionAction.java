@@ -52,8 +52,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,29 +77,32 @@ public class CreateFunctionAction extends CreateElementActionBase {
             // get existing package from current directory
             String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
 
-            CreateFunctionForm form = new CreateFunctionForm(project, hintPackageName);
+            FunctionClassCreationDialog form = new FunctionClassCreationDialog(project);
+            form.setPackage(hintPackageName);
             List<PsiElement> psiElements = new ArrayList<>();
-            if (form.showAndGet()) {
+            form.setOkActionListener(result -> {
+                form.close();
                 final FunctionTemplate bindingTemplate;
                 try {
-                    Map<String, String> parameters = form.getTemplateParameters();
+                    Map<String, String> parameters = result.getParameters();
                     final String connectionName = parameters.get("connection");
-                    String triggerType = form.getTriggerType();
+                    String triggerType = result.getTemplate().getTriggerType();
                     String packageName = parameters.get("packageName");
                     String className = parameters.get("className");
                     PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
                     String newName = packageName.replace('.', '/');
                     bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
                     operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, triggerType);
-                    if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                        if (StringUtils.isBlank(connectionName)) {
-                            throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));
-                        }
-                        parameters.putIfAbsent("eventHubName", "myeventhub");
-                        parameters.putIfAbsent("consumerGroup", "$Default");
-                    }
+                    // todo: move to event hub panel
+//                    if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+//                        if (StringUtils.isBlank(connectionName)) {
+//                            throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));
+//                        }
+//                        parameters.putIfAbsent("eventHubName", "myeventhub");
+//                        parameters.putIfAbsent("consumerGroup", "$Default");
+//                    }
 
-                    final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
+                    final String functionClassContent = bindingTemplate.generateContent(parameters);
                     if (StringUtils.isNotEmpty(functionClassContent)) {
                         AzureTaskManager.getInstance().write(() -> {
                             CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
@@ -120,26 +121,26 @@ public class CreateFunctionAction extends CreateElementActionBase {
                                 psiElements.add(mkDirs.directory.add(psiFile));
                             }, null, null);
 
-                            if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                                try {
-                                    String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
-                                            getEventHubNamespaceConnectionString(form.getEventHubNamespace());
-
-                                    AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
-                                            parameters.get("connection"), connectionString);
-                                } catch (IOException e) {
-                                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
-                                    final String error = "failed to get connection string and save to local settings";
-                                    throw new AzureToolkitRuntimeException(error, e);
-                                }
-                            }
+//                            if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+//                                try {
+//                                    String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
+//                                            getEventHubNamespaceConnectionString(form.getEventHubNamespace());
+//
+//                                    AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
+//                                            parameters.get("connection"), connectionString);
+//                                } catch (IOException e) {
+//                                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
+//                                    final String error = "failed to get connection string and save to local settings";
+//                                    throw new AzureToolkitRuntimeException(error, e);
+//                                }
+//                            }
                         });
                     }
                 } catch (AzureExecutionException e) {
                     AzureMessager.getMessager().error(e);
-                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
                 }
-            }
+            });
+            form.show();
             if (!psiElements.isEmpty()) {
                 FileEditorManager.getInstance(project).openFile(psiElements.get(0).getContainingFile().getVirtualFile(), false);
             }
