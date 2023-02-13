@@ -9,7 +9,10 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor"/>
         <guidanceInputProvider implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceInputProvider"/>
     </extensions>
-
+    <extensionPoints>
+        <extensionPoint name="triggerPanelProvider"
+                        interface="com.microsoft.azure.toolkit.intellij.function.components.TriggerPanelProvider"/>
+    </extensionPoints>
     <extensions defaultExtensionNs="com.intellij">
         <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>
     </extensions>
