@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.function.components.FunctionModuleComboBox;
-import com.microsoft.azure.toolkit.intellij.function.components.FunctionTriggerPanel;
+import com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.intellij.function.components.FunctionTriggerPanel.getLabelWidth;
+import static com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel.getLabelWidth;
 
 public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreationDialog.FunctionCreationResult> implements AzureForm<FunctionClassCreationDialog.FunctionCreationResult> {
     public static final String CLASS_NAME = "className";
@@ -50,7 +50,7 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     private JPanel pnlAdditionalParameters;
     private AzureComboBox<FunctionTemplate> cbTriggerType;
 
-    private FunctionTriggerPanel templatePanel;
+    private FunctionTemplatePanel templatePanel;
     private final Project project;
     private final int labelWidth;
 
@@ -66,6 +66,11 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         super.init();
         this.setLabelWidth(labelWidth);
         this.cbTriggerType.addValueChangedListener(this::onTriggerChanged);
+        this.cbFunctionModule.addValueChangedListener(this::onModuleChanged);
+    }
+
+    private void onModuleChanged(@Nullable Module module) {
+        Optional.ofNullable(this.templatePanel).ifPresent(panel -> panel.setModule(module));
     }
 
     private void onTriggerChanged(@Nullable FunctionTemplate template) {
@@ -74,10 +79,10 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
             this.templatePanel = null;
             return;
         }
-        this.templatePanel = new FunctionTriggerPanel(template);
+        this.templatePanel = new FunctionTemplatePanel(template, project);
+        Optional.ofNullable(cbFunctionModule.getValue()).ifPresent(templatePanel::setModule);
         final GridConstraints labelConstraints = new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
-        this.pnlAdditionalParameters.add(templatePanel.getPnlRoot(), labelConstraints);
-        FunctionClassCreationDialog.this.pack();
+        this.pnlAdditionalParameters.add(this.templatePanel, labelConstraints);
     }
 
     private void setLabelWidth(final int width) {
