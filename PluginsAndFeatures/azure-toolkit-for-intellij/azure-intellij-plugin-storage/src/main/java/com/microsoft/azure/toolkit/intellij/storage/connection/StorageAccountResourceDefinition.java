@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -20,13 +21,16 @@ import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Getter
-public class StorageAccountResourceDefinition extends AzureServiceResource.Definition<StorageAccount> implements SpringSupported<StorageAccount> {
+public class StorageAccountResourceDefinition extends AzureServiceResource.Definition<StorageAccount>
+        implements SpringSupported<StorageAccount>, FunctionSupported<StorageAccount> {
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
     public StorageAccountResourceDefinition() {
@@ -69,5 +73,17 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     @Override
     public AzureFormJPanel<Resource<StorageAccount>> getResourcePanel(Project project) {
         return new StorageAccountResourcePanel();
+    }
+
+    @Nonnull
+    @Override
+    public String getResourceType() {
+        return "Storage";
+    }
+
+    @Nullable
+    @Override
+    public String getResourceConnectionString(@Nonnull StorageAccount resource) {
+        return resource.getConnectionString();
     }
 }
