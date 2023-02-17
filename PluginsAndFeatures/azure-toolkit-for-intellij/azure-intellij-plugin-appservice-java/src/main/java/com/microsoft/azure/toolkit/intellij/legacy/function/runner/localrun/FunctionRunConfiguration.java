@@ -20,23 +20,32 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
-    implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
+        implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption, IConnectionAware {
     private JsonObject appSettingsJsonObject;
     private FunctionRunModel functionRunModel;
+    @Getter
+    private final Set<Connection<?, ?>> connections = new HashSet<>();
 
     protected FunctionRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -48,9 +57,10 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     @Override
     public Module[] getModules() {
         final Module module = getModule();
-        return module == null ? Module.EMPTY_ARRAY : new Module[] { module };
+        return module == null ? Module.EMPTY_ARRAY : new Module[]{module};
     }
 
+    @Override
     public Module getModule() {
         Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
         if (module == null && StringUtils.isNotEmpty(this.functionRunModel.getModuleName())) {
@@ -58,6 +68,16 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
             this.myModule.setModule(module);
         }
         return module;
+    }
+
+    @Override
+    public void setConnection(@Nonnull Connection<?, ?> connection) {
+        addConnection(connection);
+    }
+
+    @Override
+    public void addConnection(@Nonnull Connection<?, ?> connection) {
+        connections.add(connection);
     }
 
     @Override
@@ -204,6 +224,12 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
         if (StringUtils.isEmpty(this.getLocalSettingsJsonPath())) {
             this.setLocalSettingsJsonPath(Paths.get(getProject().getBasePath(), "local.settings.json").toString());
+        }
+        try {
+            final Map<String, String> localSettings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(this.getLocalSettingsJsonPath()));
+            FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), localSettings);
+        } catch (final Throwable throwable) {
+            // swallow exception when load app settings
         }
     }
 

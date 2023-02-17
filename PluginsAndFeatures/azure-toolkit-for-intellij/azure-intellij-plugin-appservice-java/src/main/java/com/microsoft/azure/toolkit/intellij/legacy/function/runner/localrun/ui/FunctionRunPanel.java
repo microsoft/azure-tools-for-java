@@ -11,9 +11,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -28,6 +29,7 @@ import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -82,6 +84,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     public void disposeEditor() {
+        Optional.ofNullable(txtFunc).ifPresent(AzureFormInputComponent::dispose);
     }
 
     @Override
@@ -91,7 +94,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         }
         if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
             this.appSettingsKey = configuration.getAppSettingsKey();
-            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
+            final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
+            if (MapUtils.isNotEmpty(appSettings)) {
+                appSettingsTable.setAppSettings(appSettings);
+            }
         }
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
         appSettingsTable.loadRequiredSettings();
