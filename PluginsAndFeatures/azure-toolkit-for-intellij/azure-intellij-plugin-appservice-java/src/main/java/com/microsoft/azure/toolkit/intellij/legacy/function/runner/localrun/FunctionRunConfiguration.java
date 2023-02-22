@@ -19,10 +19,10 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionRunnerForRunConfiguration;
@@ -137,10 +137,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         functionRunModel.setDebugOptions(debugOptions);
     }
 
-    public String getStagingFolder() {
-        return functionRunModel.getStagingFolder();
-    }
-
     public String getFuncPath() {
         return functionRunModel.getFuncPath();
     }
@@ -153,11 +149,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         return functionRunModel.getModuleName();
     }
 
+    public String getLocalSettingsJsonPath() {
+        return functionRunModel.getLocalSettingsJsonPath();
+    }
+
     @javax.annotation.Nullable
-    public String getLocalSettingsJsonPath(final Module module) {
+    public String getDefaultLocalSettingsJsonPath(final Module module) {
         // workaround to get module file, todo: investigate the process canceled exception with FilenameIndex API
-        final VirtualFile moduleRoot = module.getModuleFile().getParent();
-        return Paths.get(moduleRoot.getCanonicalPath(), "local.settings.json").toString();
+        return Paths.get(ModuleUtil.getModuleDirPath(module), "local.settings.json").toString();
     }
 
     public Map<String, String> getAppSettings() {
@@ -221,7 +220,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
             return;
         }
         saveModule(module);
-
         if (StringUtils.isEmpty(this.getFuncPath())) {
             try {
                 this.setFuncPath(FunctionUtils.getFuncPath());
@@ -229,19 +227,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
                 // ignore;
             }
         }
-        if (StringUtils.isEmpty(this.getStagingFolder())) {
-            this.setStagingFolder(FunctionUtils.getTargetFolder(module));
-        }
-
         if (StringUtils.isEmpty(this.getHostJsonPath())) {
-            this.setHostJsonPath(Paths.get(getProject().getBasePath(), "host.json").toString());
+            this.setHostJsonPath(FunctionUtils.getDefaultHostJsonPath(module));
         }
-        final String localSettingsJsonPath = this.getLocalSettingsJsonPath(module);
-        if (StringUtils.isNotEmpty(localSettingsJsonPath)) {
-            this.setLocalSettingsJsonPath(localSettingsJsonPath);
+        if (StringUtils.isNotEmpty(this.getLocalSettingsJsonPath())) {
+            this.setHostJsonPath(FunctionUtils.getDefaultLocalSettingsJsonPath(module));
         }
         try {
-            final Map<String, String> localSettings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(localSettingsJsonPath));
+            final Map<String, String> localSettings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(getLocalSettingsJsonPath()));
             FunctionUtils.saveAppSettingsToSecurityStorage(getAppSettingsKey(), localSettings);
         } catch (final Throwable throwable) {
             // swallow exception when load app settings
