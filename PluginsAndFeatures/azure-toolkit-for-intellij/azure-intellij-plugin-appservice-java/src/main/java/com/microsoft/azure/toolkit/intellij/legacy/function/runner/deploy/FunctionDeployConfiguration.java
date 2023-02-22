@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +121,14 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public Module getModule() {
-        return module == null ? FunctionUtils.getFunctionModuleByName(getProject(), functionDeployModel.getModuleName()) : module;
+        Module module = ReadAction.compute(() -> getConfigurationModule().getModule());
+        if (module == null && StringUtils.isNotEmpty(this.functionDeployModel.getModuleName())) {
+            module = Arrays.stream(ModuleManager.getInstance(getProject()).getModules())
+                    .filter(m -> StringUtils.equals(this.functionDeployModel.getModuleName(), m.getName()))
+                    .findFirst().orElse(null);
+            this.myModule.setModule(module);
+        }
+        return module;
     }
 
     public void saveTargetModule(Module module) {
