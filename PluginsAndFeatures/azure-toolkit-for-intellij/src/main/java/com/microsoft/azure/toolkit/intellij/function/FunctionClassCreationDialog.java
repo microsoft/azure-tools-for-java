@@ -12,7 +12,6 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
-import com.microsoft.azure.toolkit.intellij.function.components.FunctionModuleComboBox;
 import com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -23,7 +22,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,23 +47,23 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     private JPanel pnlRoot;
     private JLabel lblPackageName;
     private AzureTextInput txtPackageName;
-    private FunctionModuleComboBox cbFunctionModule;
     private JLabel lblFunctionName;
     private AzureTextInput txtFunctionName;
     private JLabel lblTriggerType;
     private JPanel pnlAdditionalParameters;
     private AzureComboBox<FunctionTemplate> cbTriggerType;
-    private JLabel lblModule;
     private TitledSeparator titleTriggerParameters;
     private TitledSeparator titleBasicConfigurataion;
 
     private FunctionTemplatePanel templatePanel;
     private final Project project;
+    private final Module module;
     private final int labelWidth;
 
-    public FunctionClassCreationDialog(final Project project) {
-        super(project);
-        this.project = project;
+    public FunctionClassCreationDialog(final Module module) {
+        super(module.getProject());
+        this.module = module;
+        this.project = module.getProject();
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.labelWidth = getLabelWidth();
         this.init();
@@ -75,19 +73,12 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         super.init();
         this.setLabelWidth(labelWidth);
         this.cbTriggerType.addValueChangedListener(this::onTriggerChanged);
-        this.cbFunctionModule.addValueChangedListener(this::onModuleChanged);
-        this.cbFunctionModule.setRequired(true);
         this.txtPackageName.setRequired(true);
         this.txtFunctionName.setRequired(true);
         this.cbTriggerType.setRequired(true);
-        this.lblModule.setLabelFor(cbFunctionModule);
         this.lblPackageName.setLabelFor(txtPackageName);
         this.lblFunctionName.setLabelFor(txtFunctionName);
         this.lblTriggerType.setLabelFor(cbTriggerType);
-    }
-
-    private void onModuleChanged(@Nullable Module module) {
-        Optional.ofNullable(this.templatePanel).ifPresent(panel -> panel.setModule(module));
     }
 
     private void onTriggerChanged(@Nullable FunctionTemplate template) {
@@ -96,9 +87,8 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
             this.templatePanel = null;
             return;
         }
-        this.templatePanel = new FunctionTemplatePanel(template, project);
+        this.templatePanel = new FunctionTemplatePanel(template, module);
         this.templatePanel.setRequired(true);
-        Optional.ofNullable(cbFunctionModule.getValue()).ifPresent(templatePanel::setModule);
         final GridConstraints labelConstraints = new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
         this.pnlAdditionalParameters.add(this.templatePanel, labelConstraints);
         this.titleTriggerParameters.setVisible(CollectionUtils.isNotEmpty(templatePanel.getInputs()));
@@ -125,7 +115,6 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
                 return item instanceof FunctionTemplate ? ((FunctionTemplate) item).getMetadata().getName() : super.getItemText(item);
             }
         };
-        this.cbFunctionModule = new FunctionModuleComboBox(project);
     }
 
     @Override
@@ -145,14 +134,13 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
 
     @Override
     public FunctionCreationResult getValue() {
-        final Module module = cbFunctionModule.getValue();
         final FunctionTemplate template = cbTriggerType.getValue();
         final Map<String, String> parameters = new HashMap<>();
         parameters.put(CLASS_NAME, txtFunctionName.getText());
         parameters.put(FUNCTION_NAME, txtFunctionName.getText());
         parameters.put(PACKAGE_NAME, txtPackageName.getText());
         Optional.ofNullable(templatePanel).map(AzureFormPanel::getValue).ifPresent(parameters::putAll);
-        return new FunctionCreationResult(module, template, parameters);
+        return new FunctionCreationResult(template, parameters);
     }
 
     @Override
@@ -160,15 +148,10 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         final Map<String, String> parameters = ObjectUtils.firstNonNull(data.getParameters(), Collections.emptyMap());
         Optional.ofNullable(parameters.get(CLASS_NAME)).ifPresent(txtFunctionName::setValue);
         Optional.ofNullable(parameters.get(PACKAGE_NAME)).ifPresent(txtPackageName::setValue);
-        Optional.ofNullable(data.getModule()).ifPresent(cbFunctionModule::setValue);
         Optional.ofNullable(data.getTemplate()).ifPresent(cbTriggerType::setValue);
         if (ObjectUtils.anyNotNull(templatePanel, data.getParameters())) {
             templatePanel.setValue(data.getParameters());
         }
-    }
-
-    public void setModule(@Nullable final Module module) {
-        Optional.ofNullable(module).ifPresent(cbFunctionModule::setValue);
     }
 
     public void setPackage(@Nonnull final String packageName) {
@@ -177,7 +160,7 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Stream.of(txtFunctionName, cbFunctionModule, txtPackageName, cbTriggerType, templatePanel)
+        return Stream.of(txtFunctionName, txtPackageName, cbTriggerType, templatePanel)
                 .filter(Objects::nonNull).collect(Collectors.toList());
     }
 
@@ -188,7 +171,6 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     @Data
     @AllArgsConstructor
     public static class FunctionCreationResult {
-        private Module module;
         private FunctionTemplate template;
         private Map<String, String> parameters;
     }

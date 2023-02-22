@@ -7,10 +7,14 @@ package com.microsoft.azure.toolkit.intellij.function.components.connection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -36,6 +40,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,29 +53,28 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
 
     private final Project project;
     private final String resourceType;
-    private Module module;
+    private final Module module;
     private VirtualFile localSettingsFile;
     @Getter
     @Setter
     private String propertyName;
 
-    public FunctionConnectionComboBox(final Project project, final String resourceType, final String propertyName) {
+    public FunctionConnectionComboBox(final Module module, final String resourceType, final String propertyName) {
         super(false);
-        this.project = project;
+        this.module = module;
+        this.project = module.getProject();
         this.resourceType = resourceType;
         this.propertyName = propertyName;
+        setLocalSettings(getLocalSettingsFromModule(module));
     }
 
-    public void setModule(final Module module) {
-        if (Objects.equals(module, this.module)) {
-            return;
-        }
-        this.module = module;
-        if (module == null) {
-            this.clear();
-            return;
-        }
-        this.reloadItems();
+    @Nullable
+    private VirtualFile getLocalSettingsFromModule(final Module module) {
+        return ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.projectScope(project))).stream()
+                .filter(file -> Objects.equals(ModuleUtil.findModuleForFile(file, project), module))
+                .filter(file -> Objects.nonNull(file.getCanonicalPath()))
+                .min(Comparator.comparing(VirtualFile::getCanonicalPath))
+                .orElse(null);
     }
 
     public void setLocalSettings(final VirtualFile virtualFile) {

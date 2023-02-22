@@ -81,9 +81,8 @@ public class CreateFunctionAction extends CreateElementActionBase {
             // get existing package from current directory
             String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
             final Module module = ModuleUtil.findModuleForPsiElement(psiDirectory);
-            FunctionClassCreationDialog form = new FunctionClassCreationDialog(project);
+            FunctionClassCreationDialog form = new FunctionClassCreationDialog(module);
             form.setPackage(hintPackageName);
-            form.setModule(module);
 
             List<PsiElement> psiElements = new ArrayList<>();
             form.setOkActionListener(result -> {
