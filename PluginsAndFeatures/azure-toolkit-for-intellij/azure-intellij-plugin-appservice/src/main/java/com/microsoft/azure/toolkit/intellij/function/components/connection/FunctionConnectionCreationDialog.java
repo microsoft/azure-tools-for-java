@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.function.components.connection;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -124,7 +126,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
                 consumer.getDefinition()).define(resource, consumer);
         connection.setEnvPrefix(txtConnectionName.getValue());
         final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
-        final ResourceManager resourceManager = this.project.getService(ResourceManager.class);
+        final ResourceManager resourceManager = ApplicationManager.getApplication().getService(ResourceManager.class);
         if (connection.validate(this.project)) {
             resourceManager.addResource(resource);
             resourceManager.addResource(consumer);
@@ -140,7 +142,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     private Resource<?> getResource() {
         if (chkConnectionString.isSelected()) {
             final ConnectionTarget target = ConnectionTarget.builder()
-                    .triggerType(resourceType).name(txtConnectionName.getValue())
+                    .name(txtConnectionName.getValue())
                     .connectionString(txtConnectionString.getValue()).build();
             return CommonConnectionResource.Definition.INSTANCE.define(target);
         } else {
