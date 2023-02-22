@@ -72,15 +72,6 @@ public class AzureFunctionsUtils {
         }
     }
 
-    public static FunctionTemplate getFunctionTemplate(String trigger) throws AzureExecutionException {
-        if (functionTemplates == null) {
-            functionTemplates = FunctionUtils.loadAllFunctionTemplates();
-        }
-        return functionTemplates.stream()
-                .filter(template -> StringUtils.equalsIgnoreCase(trigger, template.getFunction()))
-                .findFirst().orElseThrow(() -> new AzureExecutionException("No such template"));
-    }
-
     public static void applyKeyValueToLocalSettingFile(File localSettingFile, String key, String value) throws IOException {
         if (!localSettingFile.getParentFile().isDirectory()) {
             throw new IOException("Cannot save file to a non-existing directory: " + localSettingFile.getParent());
