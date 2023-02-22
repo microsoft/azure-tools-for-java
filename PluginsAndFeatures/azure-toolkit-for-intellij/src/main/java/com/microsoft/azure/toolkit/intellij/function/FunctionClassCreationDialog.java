@@ -6,6 +6,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.TitledSeparator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -21,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.Nullable;
@@ -54,6 +56,8 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     private JPanel pnlAdditionalParameters;
     private AzureComboBox<FunctionTemplate> cbTriggerType;
     private JLabel lblModule;
+    private TitledSeparator titleTriggerParameters;
+    private TitledSeparator titleBasicConfigurataion;
 
     private FunctionTemplatePanel templatePanel;
     private final Project project;
@@ -97,6 +101,8 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         Optional.ofNullable(cbFunctionModule.getValue()).ifPresent(templatePanel::setModule);
         final GridConstraints labelConstraints = new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
         this.pnlAdditionalParameters.add(this.templatePanel, labelConstraints);
+        this.titleTriggerParameters.setVisible(CollectionUtils.isNotEmpty(templatePanel.getInputs()));
+        this.pnlAdditionalParameters.setVisible(CollectionUtils.isNotEmpty(templatePanel.getInputs()));
         AzureTaskManager.getInstance().runLater(() -> FunctionClassCreationDialog.this.getContentPane().repaint(), AzureTask.Modality.ANY);
     }
 
