@@ -306,7 +306,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
         final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
-        final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
+        final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath(functionRunConfiguration.getModule()));
         final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule()));
         final Path folder = stagingFolder.toPath();
         try {
