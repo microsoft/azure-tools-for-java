@@ -12,6 +12,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -34,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
     public static final VirtualFile EMPTY = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
@@ -103,10 +105,9 @@ public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
             return;
         }
         final VirtualFile value = getValue();
-        final Collection<VirtualFile> localFiles = ReadAction.compute(() ->
-                FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.moduleScope(module)));
-        if (CollectionUtils.isNotEmpty(localFiles) && !localFiles.contains(value)) {
-            setValue(localFiles.stream().findFirst().get());
+        final List<VirtualFile> moduleFiles = getItems().stream().filter(file -> Objects.equals(module, ModuleUtil.findModuleForFile(file, project))).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(moduleFiles) && !moduleFiles.contains(value)) {
+            setValue(moduleFiles.get(0));
         }
     }
 }
