@@ -20,6 +20,5 @@ public class FunctionRunModel extends IntelliJFunctionContext {
     private String funcPath;
     private String hostJsonPath;
     private String localSettingsJsonPath;
-    private int funcPort;
-    private boolean autoPort = true;
+    private String functionHostArguments;
 }

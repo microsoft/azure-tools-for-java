@@ -199,20 +199,12 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.myModule.setModule(module);
     }
 
-    public int getFuncPort() {
-        return this.functionRunModel.getFuncPort();
+    public String getFunctionHostArguments() {
+        return this.functionRunModel.getFunctionHostArguments();
     }
 
-    public void setFuncPort(int funcPort) {
-        this.functionRunModel.setFuncPort(funcPort);
-    }
-
-    public boolean isAutoPort() {
-        return this.functionRunModel.isAutoPort();
-    }
-
-    public void setAutoPort(boolean autoPort) {
-        this.functionRunModel.setAutoPort(autoPort);
+    public void setFunctionHostArguments(final String arguments) {
+        this.functionRunModel.setFunctionHostArguments(arguments);
     }
 
     public void initializeDefaults(Module module) {
@@ -230,8 +222,11 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         if (StringUtils.isEmpty(this.getHostJsonPath())) {
             this.setHostJsonPath(FunctionUtils.getDefaultHostJsonPath(module));
         }
-        if (StringUtils.isNotEmpty(this.getLocalSettingsJsonPath())) {
-            this.setHostJsonPath(FunctionUtils.getDefaultLocalSettingsJsonPath(module));
+        if (StringUtils.isEmpty(this.getLocalSettingsJsonPath())) {
+            this.setLocalSettingsJsonPath(FunctionUtils.getDefaultLocalSettingsJsonPath(module));
+        }
+        if (StringUtils.isEmpty(this.getFunctionHostArguments())) {
+            this.setFunctionHostArguments(FunctionUtils.getDefaultFuncArguments());
         }
         try {
             final Map<String, String> localSettings = FunctionAppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(getLocalSettingsJsonPath()));
@@ -287,9 +282,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException(message("function.run.validate.invalidFuncPath"));
-        }
-        if (!isAutoPort() && (getFuncPort() <= 0 || getFuncPort() >= 65535)) {
-            throw new ConfigurationException(message("function.validate_run_configuration.invalidPort"));
         }
     }
 
