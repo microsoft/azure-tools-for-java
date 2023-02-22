@@ -88,6 +88,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
         for (int i = 0; i < templates.size(); i++) {
             final FunctionSettingTemplate inputTemplate = templates.get(i);
             final AzureFormInputComponent<?> component = createComponent(inputTemplate);
+            component.setRequired(inputTemplate.isRequired());
             if (StringUtils.equalsIgnoreCase(inputTemplate.getValue(), BOOLEAN)) {
                 final GridConstraints booleanConstraints = new GridConstraints(i, 0, 1, 2, 0, 3, 3, 3, null, null, null, 0);
                 this.add((Component) component, booleanConstraints);
@@ -103,6 +104,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
                             label.setHorizontalTextPosition(JLabel.LEADING);
                             label.setToolTipText(description);
                         });
+                label.setLabelFor((Component) component);
                 final GridConstraints labelConstraints = new GridConstraints(i, 0, 1, 1, 0, 0, 0, 0, labelSize, labelSize, labelSize, 0);
                 this.add(label, labelConstraints);
                 final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, componentSize, null, 0);
@@ -186,7 +188,9 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return new ArrayList<>(inputs.values());
+        final ArrayList<AzureFormInput<?>> result = new ArrayList<>(inputs.values());
+        Optional.ofNullable(connectionComboBox).ifPresent(result::add);
+        return result;
     }
 
     public void setModule(Module module) {

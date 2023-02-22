@@ -15,6 +15,8 @@ import com.microsoft.azure.toolkit.intellij.function.components.FunctionModuleCo
 import com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionTemplate;
 import com.microsoft.azure.toolkit.lib.legacy.function.utils.FunctionUtils;
 import lombok.AllArgsConstructor;
@@ -33,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.microsoft.azure.toolkit.intellij.function.components.FunctionTemplatePanel.getLabelWidth;
 
@@ -49,6 +53,7 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
     private JLabel lblTriggerType;
     private JPanel pnlAdditionalParameters;
     private AzureComboBox<FunctionTemplate> cbTriggerType;
+    private JLabel lblModule;
 
     private FunctionTemplatePanel templatePanel;
     private final Project project;
@@ -67,6 +72,14 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         this.setLabelWidth(labelWidth);
         this.cbTriggerType.addValueChangedListener(this::onTriggerChanged);
         this.cbFunctionModule.addValueChangedListener(this::onModuleChanged);
+        this.cbFunctionModule.setRequired(true);
+        this.txtPackageName.setRequired(true);
+        this.txtFunctionName.setRequired(true);
+        this.cbTriggerType.setRequired(true);
+        this.lblModule.setLabelFor(cbFunctionModule);
+        this.lblPackageName.setLabelFor(txtPackageName);
+        this.lblFunctionName.setLabelFor(txtFunctionName);
+        this.lblTriggerType.setLabelFor(cbTriggerType);
     }
 
     private void onModuleChanged(@Nullable Module module) {
@@ -80,9 +93,11 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
             return;
         }
         this.templatePanel = new FunctionTemplatePanel(template, project);
+        this.templatePanel.setRequired(true);
         Optional.ofNullable(cbFunctionModule.getValue()).ifPresent(templatePanel::setModule);
         final GridConstraints labelConstraints = new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0);
         this.pnlAdditionalParameters.add(this.templatePanel, labelConstraints);
+        AzureTaskManager.getInstance().runLater(() -> FunctionClassCreationDialog.this.getContentPane().repaint(), AzureTask.Modality.ANY);
     }
 
     private void setLabelWidth(final int width) {
@@ -146,15 +161,18 @@ public class FunctionClassCreationDialog extends AzureDialog<FunctionClassCreati
         }
     }
 
+    public void setModule(@Nullable final Module module) {
+        Optional.ofNullable(module).ifPresent(cbFunctionModule::setValue);
+    }
+
     public void setPackage(@Nonnull final String packageName) {
         this.txtPackageName.setValue(packageName);
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        final List<AzureFormInput<?>> components = Arrays.asList(cbFunctionModule, txtFunctionName, txtPackageName, cbTriggerType);
-        final List<AzureFormInput<?>> templateInputs = Optional.ofNullable(templatePanel).map(AzureForm::getInputs).orElse(Collections.emptyList());
-        return ListUtils.union(components, templateInputs);
+        return Stream.of(txtFunctionName, cbFunctionModule, txtPackageName, cbTriggerType, templatePanel)
+                .filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
