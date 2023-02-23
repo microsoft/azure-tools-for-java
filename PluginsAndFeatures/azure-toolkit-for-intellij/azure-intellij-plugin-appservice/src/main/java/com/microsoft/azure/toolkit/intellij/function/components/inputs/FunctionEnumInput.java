@@ -28,6 +28,6 @@ public class FunctionEnumInput extends AzureComboBox<String> {
     @Nonnull
     @Override
     protected List<? extends String> loadItems() throws Exception {
-        return Arrays.stream(template.getEnum()).map(en -> en.getValue()).collect(Collectors.toList());
+        return Arrays.stream(template.getSettingEnum()).map(en -> en.getValue()).collect(Collectors.toList());
     }
 }

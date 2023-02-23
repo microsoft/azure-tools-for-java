@@ -10,15 +10,14 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommonConnectionCreationPanel implements AzureFormJPanel<Resource<ConnectionTarget>> {
     private JLabel lblConnectionName;
     private AzureTextInput txtConnectionName;
-    private JLabel lblResourceType;
     private JLabel lblConnectionString;
     private AzureTextInput txtConnectionString;
-    private AzureTextInput txtResourceType;
     private JPanel pnlRoot;
 
     @Override
@@ -30,22 +29,19 @@ public class CommonConnectionCreationPanel implements AzureFormJPanel<Resource<C
     public void setValue(Resource<ConnectionTarget> data) {
         final ConnectionTarget target = data.getData();
         txtConnectionName.setValue(target.getName());
-        txtResourceType.setValue(target.getTriggerType());
         txtConnectionString.setValue(target.getConnectionString());
     }
 
     @Override
     public Resource<ConnectionTarget> getValue() {
         final String connectionName = txtConnectionName.getValue();
-        final String resourceType = txtResourceType.getValue();
         final String connectionString = txtConnectionString.getValue();
-        final ConnectionTarget target = ConnectionTarget.builder().connectionString(connectionString)
-                .triggerType(resourceType).name(connectionName).build();
+        final ConnectionTarget target = ConnectionTarget.builder().connectionString(connectionString).name(connectionName).build();
         return CommonConnectionResource.Definition.INSTANCE.define(target);
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return AzureFormJPanel.super.getInputs();
+        return Arrays.asList(txtConnectionName, txtConnectionString);
     }
 }

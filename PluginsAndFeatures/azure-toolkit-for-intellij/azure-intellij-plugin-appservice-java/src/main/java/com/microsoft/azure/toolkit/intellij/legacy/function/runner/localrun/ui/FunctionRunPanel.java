@@ -9,11 +9,16 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
+import com.microsoft.azure.toolkit.intellij.function.components.ModuleFileComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTable;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -25,9 +30,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,12 +49,11 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private FunctionCoreToolsCombobox txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
-    private JTextField txtPort;
-    private JCheckBox chkAuto;
     private JLabel lblModule;
     private JLabel lblFunctionCli;
-    private JLabel lblPort;
     private JLabel lblAppSettings;
+    private ModuleFileComboBox cbHostJson;
+    private AzureTextInput txtFuncArguments;
     private FunctionAppSettingsTable appSettingsTable;
     private String appSettingsKey = UUID.randomUUID().toString();
 
@@ -57,6 +64,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         super(project);
         this.functionRunConfiguration = functionRunConfiguration;
         $$$setupUI$$$();
+        init();
+    }
+
+    private void init() {
         cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
             @Override
             public void customize(JList list, Module module, int i, boolean b, boolean b1) {
@@ -66,12 +77,22 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 }
             }
         });
-        chkAuto.addItemListener(e -> txtPort.setEnabled(!chkAuto.isSelected()));
+        cbFunctionModule.addItemListener(this::onSelectModule);
         lblModule.setLabelFor(cbFunctionModule);
         lblFunctionCli.setLabelFor(txtFunc);
-        lblPort.setLabelFor(txtPort);
         lblAppSettings.setLabelFor(appSettingsTable);
+
+        this.txtFuncArguments.setValue(FunctionUtils.getDefaultFuncArguments());
         fillModules();
+    }
+
+    private void onSelectModule(ItemEvent itemEvent) {
+        final Object module = cbFunctionModule.getSelectedItem();
+        if (module instanceof Module) {
+            cbHostJson.setModule((Module) module);
+        } else {
+            cbHostJson.setModule(null);
+        }
     }
 
     @NotNull
@@ -82,6 +103,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     public void disposeEditor() {
+        Optional.ofNullable(txtFunc).ifPresent(AzureFormInputComponent::dispose);
     }
 
     @Override
@@ -91,35 +113,39 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         }
         if (StringUtils.isNotEmpty(configuration.getAppSettingsKey())) {
             this.appSettingsKey = configuration.getAppSettingsKey();
-            appSettingsTable.setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey));
+            final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
+            if (MapUtils.isNotEmpty(appSettings)) {
+                appSettingsTable.setAppSettings(appSettings);
+            }
         }
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
         appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
             txtFunc.setValue(configuration.getFuncPath());
         }
+        if (StringUtils.isNotEmpty(configuration.getFunctionHostArguments())) {
+            txtFuncArguments.setValue(configuration.getFunctionHostArguments());
+        }
+        if (StringUtils.isNotEmpty(configuration.getHostJsonPath())) {
+            cbHostJson.setValue(LocalFileSystem.getInstance().findFileByIoFile(new File(configuration.getHostJsonPath())));
+        }
         this.previousModule = configuration.getModule();
         selectModule(previousModule);
-
-        final int port = functionRunConfiguration.getFuncPort() <= 0 ? FunctionUtils.findFreePort(DEFAULT_FUNC_PORT) : functionRunConfiguration.getFuncPort();
-        txtPort.setText(String.valueOf(port));
-        chkAuto.setSelected(configuration.isAutoPort());
     }
 
     @Override
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
         configuration.setFuncPath(txtFunc.getItem());
-        Optional.ofNullable((Module) cbFunctionModule.getSelectedItem()).ifPresent(configuration::saveModule);
+        Optional.ofNullable((Module) cbFunctionModule.getSelectedItem()).ifPresent(module -> {
+            configuration.saveModule(module);
+            configuration.setLocalSettingsJsonPath(FunctionUtils.getDefaultLocalSettingsJsonPath(module));
+        });
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettingsTable.getAppSettings());
         // save app settings storage key instead of real value
         configuration.setAppSettings(Collections.emptyMap());
         configuration.setAppSettingsKey(appSettingsKey);
-        configuration.setAutoPort(chkAuto.isSelected());
-        try {
-            configuration.setFuncPort(Integer.parseInt(txtPort.getText()));
-        } catch (final NumberFormatException e) {
-            configuration.setFuncPort(-1);
-        }
+        configuration.setHostJsonPath(Optional.ofNullable(cbHostJson.getValue()).map(VirtualFile::getCanonicalPath).orElse(null));
+        configuration.setFunctionHostArguments(txtFuncArguments.getValue());
     }
 
     @NotNull
@@ -158,6 +184,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
         pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
         appSettingsTable.loadLocalSetting();
+
+        cbHostJson = new ModuleFileComboBox(project, "host.json");
+        cbHostJson.setRequired(true);
     }
 
     private void fillModules() {

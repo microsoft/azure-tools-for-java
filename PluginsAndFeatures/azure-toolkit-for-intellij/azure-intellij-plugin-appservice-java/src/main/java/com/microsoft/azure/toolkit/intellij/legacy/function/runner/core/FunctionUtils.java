@@ -12,6 +12,7 @@ import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.LibraryOrderEntry;
@@ -331,6 +332,14 @@ public class FunctionUtils {
         return Paths.get(project.getBasePath(), "target", "azure-functions", stagingFolderName).toString();
     }
 
+    public static String getDefaultHostJsonPath(final Module module) {
+        return Paths.get(ModuleUtil.getModuleDirPath(module), "host.json").toString();
+    }
+
+    public static String getDefaultLocalSettingsJsonPath(final Module module) {
+        return Paths.get(ModuleUtil.getModuleDirPath(module), "local.settings.json").toString();
+    }
+
     public static String getFuncPath() throws IOException, InterruptedException {
         final AzureConfiguration config = Azure.az().config();
         if (StringUtils.isBlank(config.getFunctionCoreToolsPath())) {
@@ -563,6 +572,10 @@ public class FunctionUtils {
             return false;
         }
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
+    }
+
+    public static String getDefaultFuncArguments() {
+        return String.format("host start --port %s", findFreePort());
     }
 
     public static int findFreePort() {
