@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.function.components;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -49,25 +48,17 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
     public static final int DEFAULT_LABEL_WIDTH = 100;
     private final FunctionTemplate template;
     private final BindingTemplate binding;
-    private final Project project;
-    private Module module;
+    private final Module module;
     private final Map<String, AzureFormInputComponent<String>> inputs = new HashMap<>();
     private FunctionConnectionComboBox connectionComboBox;
-    private LocalSettingsFileComboBox localSettingsFileComboBox;
 
-    public FunctionTemplatePanel(@Nonnull FunctionTemplate template, @Nonnull Project project) {
+    public FunctionTemplatePanel(@Nonnull FunctionTemplate template, @Nonnull Module module) {
         super();
         this.template = template;
-        this.project = project;
+        this.module = module;
         this.binding = this.template.getBinding();
         // generate components based on template
-        init();
-    }
-
-    private void init() {
         initComponents();
-        Optional.ofNullable(localSettingsFileComboBox).ifPresent(combobox -> combobox.setModule(module));
-        Optional.ofNullable(connectionComboBox).ifPresent(combobox -> combobox.setModule(module));
     }
 
     private void initComponents() {
@@ -75,9 +66,6 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
         if (CollectionUtils.isEmpty(templates)) {
             return;
         }
-        // add local.settings.json config combo box if there are connection settings
-        templates.stream().filter(template -> StringUtils.isNotEmpty(template.getResource()))
-                .findFirst().ifPresent(ignore -> templates.add(0, LOCAL_SETTINGS_JSON_TEMPLATE));
         addComponentsByTemplates(templates);
     }
 
@@ -88,6 +76,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
         for (int i = 0; i < templates.size(); i++) {
             final FunctionSettingTemplate inputTemplate = templates.get(i);
             final AzureFormInputComponent<?> component = createComponent(inputTemplate);
+            component.setRequired(inputTemplate.isRequired());
             if (StringUtils.equalsIgnoreCase(inputTemplate.getValue(), BOOLEAN)) {
                 final GridConstraints booleanConstraints = new GridConstraints(i, 0, 1, 2, 0, 3, 3, 3, null, null, null, 0);
                 this.add((Component) component, booleanConstraints);
@@ -103,6 +92,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
                             label.setHorizontalTextPosition(JLabel.LEADING);
                             label.setToolTipText(description);
                         });
+                label.setLabelFor((Component) component);
                 final GridConstraints labelConstraints = new GridConstraints(i, 0, 1, 1, 0, 0, 0, 0, labelSize, labelSize, labelSize, 0);
                 this.add(label, labelConstraints);
                 final GridConstraints componentConstraints = new GridConstraints(i, 1, 1, 1, 0, 3, 3, 3, null, componentSize, null, 0);
@@ -137,16 +127,9 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
     private AzureFormInputComponent<?> createComponent(@Nullable FunctionSettingTemplate inputTemplate) {
         if (inputTemplate == null) {
             return new AzureTextInput();
-        } else if (inputTemplate == LOCAL_SETTINGS_JSON_TEMPLATE) {
-            this.localSettingsFileComboBox = new LocalSettingsFileComboBox(project);
-            this.localSettingsFileComboBox.setUsePreferredSizeAsMinimum(false);
-            return this.localSettingsFileComboBox;
         } else if (StringUtils.isNotEmpty(inputTemplate.getResource())) {
-            this.connectionComboBox = new FunctionConnectionComboBox(project, inputTemplate.getResource(), inputTemplate.getName());
-            this.localSettingsFileComboBox.setUsePreferredSizeAsMinimum(false);
-//            this.connectionComboBox.setPrototypeDisplayValue(FunctionConnectionComboBox.EMPTY);
-            Optional.ofNullable(localSettingsFileComboBox)
-                    .ifPresent(combo -> combo.addValueChangedListener(this::onSelectLocalSettings));
+            this.connectionComboBox = new FunctionConnectionComboBox(module, inputTemplate.getResource(), inputTemplate.getName());
+            this.connectionComboBox.setUsePreferredSizeAsMinimum(false);
             return this.connectionComboBox;
         }
         final AzureFormInputComponent<String> result;
@@ -186,13 +169,9 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return new ArrayList<>(inputs.values());
-    }
-
-    public void setModule(Module module) {
-        this.module = module;
-        Optional.ofNullable(localSettingsFileComboBox).ifPresent(combobox -> combobox.setModule(module));
-        Optional.ofNullable(connectionComboBox).ifPresent(combobox -> combobox.setModule(module));
+        final ArrayList<AzureFormInput<?>> result = new ArrayList<>(inputs.values());
+        Optional.ofNullable(connectionComboBox).ifPresent(result::add);
+        return result;
     }
 
     @Cacheable(value = "functionClassCreationLabelWidth")
@@ -203,7 +182,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
                 .flatMap(List::stream)
                 .map(label -> new JLabel(label).getPreferredSize().getWidth())
                 .max(Double::compare).orElse(0.0).intValue();
-        return Math.max(DEFAULT_LABEL_WIDTH, maxLabelWidth + help.getIconWidth() + 5);
+        return Math.max(DEFAULT_LABEL_WIDTH, maxLabelWidth + help.getIconWidth() + 10);
     }
 
     private static List<String> getTemplateLabels(final FunctionTemplate functionTemplate) {

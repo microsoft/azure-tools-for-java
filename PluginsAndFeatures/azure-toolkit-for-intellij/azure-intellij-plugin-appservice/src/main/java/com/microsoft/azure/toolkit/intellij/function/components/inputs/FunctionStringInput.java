@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.function.components.inputs;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.FunctionSettingTemplate;
+import com.microsoft.azure.toolkit.lib.legacy.function.template.TemplateResources;
 import com.microsoft.azure.toolkit.lib.legacy.function.template.ValidatorTemplate;
 import lombok.AllArgsConstructor;
 
@@ -42,7 +43,7 @@ public class FunctionStringInput extends AzureTextInput {
         public AzureValidationInfo doValidate() {
             final String value = FunctionStringInput.super.getValue();
             return Arrays.stream(validators).filter(rule -> !value.matches(rule.getExpression()))
-                    .map(rule -> AzureValidationInfo.error(rule.getErrorText(), FunctionStringInput.this))
+                    .map(rule -> AzureValidationInfo.error(TemplateResources.getResource(rule.getErrorText()), FunctionStringInput.this))
                     .findFirst()
                     .orElseGet(() -> AzureValidationInfo.success(FunctionStringInput.this));
         }

@@ -64,6 +64,11 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
         return Collections.singletonMap(connection.getName(), connection.getConnectionString());
     }
 
+    @Override
+    public String toString() {
+        return this.data.getName();
+    }
+
     @Getter
     @RequiredArgsConstructor
     public static class Definition implements ResourceDefinition<ConnectionTarget>, FunctionSupported<ConnectionTarget> {
@@ -89,7 +94,6 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
             final ConnectionTarget target = resource.getData();
             element.setAttribute(new Attribute("id", resource.getId()));
             element.addContent(new Element("dataId").addContent(resource.getDataId()));
-            element.addContent(new Element("triggerType").addContent(target.getTriggerType()));
             element.addContent(new Element("name").addContent(target.getName()));
             IntelliJSecureStore.getInstance().savePassword(Definition.class.getName(), resource.getId(), null, target.getConnectionString());
             return true;
@@ -102,7 +106,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
             final String triggerType = element.getChildTextTrim("triggerType");
             final String connectionString = IntelliJSecureStore.getInstance().loadPassword(Definition.class.getName(), id, null);
             final ConnectionTarget target = Objects.isNull(id) ? null :
-                    ConnectionTarget.builder().id(id).name(name).triggerType(triggerType).connectionString(connectionString).build();
+                    ConnectionTarget.builder().id(id).name(name).connectionString(connectionString).build();
             return Optional.ofNullable(target).map(this::define).orElse(null);
         }
 
