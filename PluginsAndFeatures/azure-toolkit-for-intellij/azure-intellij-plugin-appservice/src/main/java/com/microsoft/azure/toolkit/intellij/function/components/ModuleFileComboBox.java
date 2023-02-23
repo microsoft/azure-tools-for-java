@@ -12,16 +12,16 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
@@ -35,19 +35,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
+public class ModuleFileComboBox extends AzureComboBox<VirtualFile> {
     public static final VirtualFile EMPTY = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
-
+    private final String fileName;
     private Module module;
     private final @Nonnull Project project;
     private final List<VirtualFile> drafts = new ArrayList<>();
 
-    public LocalSettingsFileComboBox() {
-        this(ProjectManager.getInstance().getDefaultProject());
-    }
-
-    public LocalSettingsFileComboBox(@Nonnull final Project project) {
+    public ModuleFileComboBox(@Nonnull final Project project, @Nonnull final String fileName) {
         super(false);
+        this.fileName = fileName;
         this.project = project;
         refreshItems();
     }
@@ -63,8 +60,9 @@ public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
     }
 
     private void selectLocalSettings() {
-        final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("json");
-        descriptor.withTitle("Select Path for Function Local Settings");
+        final String extension = FileNameUtils.getExtension(fileName);
+        final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(extension);
+        descriptor.withTitle("Select Path for File");
         final VirtualFile current = getValue();
         final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, getValue());
         if (ArrayUtils.isNotEmpty(files)) {
@@ -78,7 +76,8 @@ public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
     @Override
     protected List<? extends VirtualFile> loadItems() throws Exception {
         final GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
-        final Collection<VirtualFile> localFiles = ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName("local.settings.json", scope));
+        final Collection<VirtualFile> localFiles = ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName(fileName, scope)).stream()
+                .filter(file -> module == null || Objects.equals(module, ModuleUtil.findModuleForFile(file, project))).toList();
         return ListUtils.union(new ArrayList<>(localFiles), drafts);
     }
 
@@ -98,15 +97,6 @@ public class LocalSettingsFileComboBox extends AzureComboBox<VirtualFile> {
             return;
         }
         this.module = module;
-        if (module == null) {
-            this.clear();
-            return;
-        }
-        final VirtualFile value = getValue();
-        final Collection<VirtualFile> localFiles = ReadAction.compute(() ->
-                FilenameIndex.getVirtualFilesByName("local.settings.json", GlobalSearchScope.moduleScope(module)));
-        if (CollectionUtils.isNotEmpty(localFiles) && !localFiles.contains(value)) {
-            setValue(localFiles.stream().findFirst().get());
-        }
+        refreshItems();
     }
 }

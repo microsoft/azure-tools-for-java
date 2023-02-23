@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.function.components.connection;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -35,7 +36,6 @@ import java.util.stream.Stream;
 
 public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnectionComboBox.ConnectionConfiguration> implements AzureForm<FunctionConnectionComboBox.ConnectionConfiguration> {
 
-    private JCheckBox chkConnectionString;
     private JLabel lblConnectionName;
     private JLabel lblConnectionString;
     private AzureTextInput txtConnectionName;
@@ -43,11 +43,13 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     private JPanel pnlRoot;
     private JPanel pnlResource;
     private JPanel pnlConnectionString;
+    private JRadioButton rdoSelectResource;
+    private JRadioButton rdoConnectionString;
+    private JPanel pnlMode;
     private Subscription subscription;
 
     private final Project project;
     private final Module module;
-    private final String resourceType;
     private final FunctionSupported<?> definition;
     private AzureFormJPanel<? extends Resource<?>> resourcePanel;
 
@@ -55,7 +57,6 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
         super(project);
         this.project = project;
         this.module = module;
-        this.resourceType = resourceType;
         this.definition = FunctionDefinitionManager.getFunctionDefinitionByResourceType(resourceType);
         $$$setupUI$$$();
         init();
@@ -63,9 +64,14 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
 
     protected void init() {
         super.init();
-        chkConnectionString.addItemListener(ignore -> toggleSelectionMode());
-        chkConnectionString.setSelected(Objects.isNull(definition));
-        chkConnectionString.setVisible(Objects.nonNull(definition));
+        final ButtonGroup group = new ButtonGroup();
+        group.add(rdoSelectResource);
+        group.add(rdoConnectionString);
+
+        rdoSelectResource.addItemListener(ignore -> toggleSelectionMode());
+        rdoConnectionString.addItemListener(ignore -> toggleSelectionMode());
+        rdoSelectResource.setSelected(Objects.nonNull(definition));
+        rdoConnectionString.setSelected(!Objects.nonNull(definition));
         if (Objects.nonNull(definition)) {
             initResourceSelectionPanel();
         }
@@ -80,8 +86,9 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     }
 
     private void toggleSelectionMode() {
-        pnlResource.setVisible(!chkConnectionString.isSelected());
-        pnlConnectionString.setVisible(chkConnectionString.isSelected());
+        pnlResource.setVisible(rdoSelectResource.isSelected());
+        pnlConnectionString.setVisible(rdoConnectionString.isSelected());
+        pnlMode.setVisible(Objects.nonNull(definition));
     }
 
     @Override
@@ -102,7 +109,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     @Override
     public FunctionConnectionComboBox.ConnectionConfiguration getValue() {
         final String name = txtConnectionName.getValue();
-        final String icon = chkConnectionString.isSelected() || Objects.isNull(definition) ? null : definition.getIcon();
+        final String icon = rdoConnectionString.isSelected() || Objects.isNull(definition) ? null : definition.getIcon();
         return new FunctionConnectionComboBox.ConnectionConfiguration(name, null);
     }
 
@@ -124,7 +131,7 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
                 consumer.getDefinition()).define(resource, consumer);
         connection.setEnvPrefix(txtConnectionName.getValue());
         final ConnectionManager connectionManager = this.project.getService(ConnectionManager.class);
-        final ResourceManager resourceManager = this.project.getService(ResourceManager.class);
+        final ResourceManager resourceManager = ApplicationManager.getApplication().getService(ResourceManager.class);
         if (connection.validate(this.project)) {
             resourceManager.addResource(resource);
             resourceManager.addResource(consumer);
@@ -138,9 +145,9 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     }
 
     private Resource<?> getResource() {
-        if (chkConnectionString.isSelected()) {
+        if (rdoConnectionString.isSelected()) {
             final ConnectionTarget target = ConnectionTarget.builder()
-                    .triggerType(resourceType).name(txtConnectionName.getValue())
+                    .name(txtConnectionName.getValue())
                     .connectionString(txtConnectionString.getValue()).build();
             return CommonConnectionResource.Definition.INSTANCE.define(target);
         } else {

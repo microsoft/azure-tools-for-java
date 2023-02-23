@@ -16,7 +16,6 @@ import java.util.UUID;
 public class ConnectionTarget {
     @Builder.Default
     private String id = UUID.randomUUID().toString();
-    private String triggerType;
     private String name;
     private String connectionString;
 }
