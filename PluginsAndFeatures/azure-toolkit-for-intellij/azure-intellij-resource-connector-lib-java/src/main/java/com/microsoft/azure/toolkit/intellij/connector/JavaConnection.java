@@ -75,11 +75,13 @@ public class JavaConnection<TResource, TConsumer> extends Connection<TResource, 
             return ((ModuleBasedConfiguration<?, ?>) configuration).getConfigurationModule().getModule();
         } else if (configuration instanceof IWebAppRunConfiguration) {
             return ((IWebAppRunConfiguration) configuration).getModule();
+        } else if (configuration instanceof IConnectionAware) {
+            return ((IConnectionAware) configuration).getModule();
         }
         return null;
     }
 
-    public static class JavaConnectionProvider implements ConnectionProvider{
+    public static class JavaConnectionProvider implements ConnectionProvider {
         @Override
         public <R, C> Connection<R, C> define(Resource<R> resource, Resource<C> consumer, ConnectionDefinition<R, C> definition) {
             return new JavaConnection<>(resource, consumer, definition);

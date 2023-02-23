@@ -15,11 +15,15 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.JavaDirectoryService;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
@@ -52,8 +56,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,68 +80,45 @@ public class CreateFunctionAction extends CreateElementActionBase {
             PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
             // get existing package from current directory
             String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
+            final Module module = ModuleUtil.findModuleForPsiElement(psiDirectory);
+            FunctionClassCreationDialog form = new FunctionClassCreationDialog(module);
+            form.setPackage(hintPackageName);
 
-            CreateFunctionForm form = new CreateFunctionForm(project, hintPackageName);
             List<PsiElement> psiElements = new ArrayList<>();
-            if (form.showAndGet()) {
-                final FunctionTemplate bindingTemplate;
-                try {
-                    Map<String, String> parameters = form.getTemplateParameters();
-                    final String connectionName = parameters.get("connection");
-                    String triggerType = form.getTriggerType();
-                    String packageName = parameters.get("packageName");
-                    String className = parameters.get("className");
-                    PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
-                    String newName = packageName.replace('.', '/');
-                    bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
-                    operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, triggerType);
-                    if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                        if (StringUtils.isBlank(connectionName)) {
-                            throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));
+            form.setOkActionListener(result -> {
+                form.close();
+                final FunctionTemplate bindingTemplate = result.getTemplate();
+                Map<String, String> parameters = result.getParameters();
+                final String connectionName = parameters.get("connection");
+                String triggerType = result.getTemplate().getTriggerType();
+                String packageName = parameters.get("packageName");
+                String className = parameters.get("className");
+                PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
+                String newName = packageName.replace('.', '/');
+                operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, triggerType);
+
+                final String functionClassContent = bindingTemplate.generateContent(parameters);
+                if (StringUtils.isNotEmpty(functionClassContent)) {
+                    AzureTaskManager.getInstance().write(() -> {
+                        CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
+                                (Computable<CreateFileAction.MkDirs>) () ->
+                                        new CreateFileAction.MkDirs(newName + '/' + className, directory));
+                        PsiFileFactory factory = PsiFileFactory.getInstance(project);
+                        try {
+                            mkDirs.directory.checkCreateFile(className + ".java");
+                        } catch (final IncorrectOperationException e) {
+                            final String dir = mkDirs.directory.getName();
+                            final String error = String.format("failed to create function class[%s] in directory[%s]", className, dir);
+                            throw new AzureToolkitRuntimeException(error, e);
                         }
-                        parameters.putIfAbsent("eventHubName", "myeventhub");
-                        parameters.putIfAbsent("consumerGroup", "$Default");
-                    }
-
-                    final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
-                    if (StringUtils.isNotEmpty(functionClassContent)) {
-                        AzureTaskManager.getInstance().write(() -> {
-                            CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
-                                    (Computable<CreateFileAction.MkDirs>) () ->
-                                            new CreateFileAction.MkDirs(newName + '/' + className, directory));
-                            PsiFileFactory factory = PsiFileFactory.getInstance(project);
-                            try {
-                                mkDirs.directory.checkCreateFile(className + ".java");
-                            } catch (final IncorrectOperationException e) {
-                                final String dir = mkDirs.directory.getName();
-                                final String error = String.format("failed to create function class[%s] in directory[%s]", className, dir);
-                                throw new AzureToolkitRuntimeException(error, e);
-                            }
-                            CommandProcessor.getInstance().executeCommand(project, () -> {
-                                PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
-                                psiElements.add(mkDirs.directory.add(psiFile));
-                            }, null, null);
-
-                            if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                                try {
-                                    String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
-                                            getEventHubNamespaceConnectionString(form.getEventHubNamespace());
-
-                                    AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
-                                            parameters.get("connection"), connectionString);
-                                } catch (IOException e) {
-                                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
-                                    final String error = "failed to get connection string and save to local settings";
-                                    throw new AzureToolkitRuntimeException(error, e);
-                                }
-                            }
-                        });
-                    }
-                } catch (AzureExecutionException e) {
-                    AzureMessager.getMessager().error(e);
-                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
+                        CommandProcessor.getInstance().executeCommand(project, () -> {
+                            PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
+                            psiElements.add(mkDirs.directory.add(psiFile));
+                        }, null, null);
+                    });
                 }
-            }
+            });
+            form.show();
             if (!psiElements.isEmpty()) {
                 FileEditorManager.getInstance(project).openFile(psiElements.get(0).getContainingFile().getVirtualFile(), false);
             }

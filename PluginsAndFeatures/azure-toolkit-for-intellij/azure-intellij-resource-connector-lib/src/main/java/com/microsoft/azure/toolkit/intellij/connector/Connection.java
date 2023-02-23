@@ -67,7 +67,7 @@ public class Connection<R, C> {
      * @return true if this connection should intervene the specified {@code configuration}.
      */
     public boolean isApplicableFor(@Nonnull RunConfiguration configuration) {
-        return configuration instanceof IWebAppRunConfiguration;
+        return configuration instanceof IConnectionAware;
     }
 
     public Map<String, String> getEnvironmentVariables(final Project project) {
@@ -84,7 +84,7 @@ public class Connection<R, C> {
         try {
             this.env = getEnvironmentVariables(configuration.getProject());
             if (configuration instanceof IConnectionAware) { // set envs for remote deploy
-                ((IConnectionAware) configuration).setConnection(this);
+                ((IConnectionAware) configuration).addConnection(this);
             }
             return true;
         } catch (final Throwable e) {

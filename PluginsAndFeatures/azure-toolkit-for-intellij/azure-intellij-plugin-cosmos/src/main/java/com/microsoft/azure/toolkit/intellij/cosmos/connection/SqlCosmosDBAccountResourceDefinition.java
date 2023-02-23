@@ -6,6 +6,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -15,6 +16,8 @@ import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +25,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<SqlDatabase> implements SpringSupported<SqlDatabase> {
+public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<SqlDatabase>
+        implements SpringSupported<SqlDatabase>, FunctionSupported<SqlDatabase> {
     public static final SqlCosmosDBAccountResourceDefinition INSTANCE = new SqlCosmosDBAccountResourceDefinition();
+
     public SqlCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Sql", "Azure Cosmos DB account (SQL)", AzureIcons.Cosmos.MODULE.getIconPath());
     }
@@ -62,5 +67,17 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
         properties.add(Pair.of("spring.cloud.azure.cosmos.database", String.format("${%s_DATABASE}", Connection.ENV_PREFIX)));
         properties.add(Pair.of("spring.cloud.azure.cosmos.populate-query-metrics", String.valueOf(true)));
         return properties;
+    }
+
+    @Nonnull
+    @Override
+    public String getResourceType() {
+        return "DocumentDB";
+    }
+
+    @Nullable
+    @Override
+    public String getResourceConnectionString(@Nonnull SqlDatabase resource) {
+        return resource.getModule().getParent().getCosmosDBAccountPrimaryConnectionString().getConnectionString();
     }
 }
