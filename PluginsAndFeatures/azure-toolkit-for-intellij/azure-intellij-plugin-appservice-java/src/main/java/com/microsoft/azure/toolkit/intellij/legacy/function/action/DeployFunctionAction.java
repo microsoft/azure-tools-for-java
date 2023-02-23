@@ -18,7 +18,9 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeployConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.deploy.FunctionDeploymentConfigurationFactory;
+import com.microsoft.azure.toolkit.intellij.legacy.function.runner.localrun.FunctionRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.AzureAnAction;
@@ -53,10 +55,16 @@ public class DeployFunctionAction extends AzureAnAction {
 
     @AzureOperation(name = "user/function.deploy_app.module", params = {"module.getName()"})
     private void runConfiguration(Module module) {
+        if (module == null) {
+            return;
+        }
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(configType);
         final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, factory);
+        if (settings.getConfiguration() instanceof FunctionDeployConfiguration) {
+            ((FunctionDeployConfiguration) settings.getConfiguration()).saveTargetModule(module);
+        }
         if (RunDialog.editConfiguration(project, settings, message("function.deploy.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);

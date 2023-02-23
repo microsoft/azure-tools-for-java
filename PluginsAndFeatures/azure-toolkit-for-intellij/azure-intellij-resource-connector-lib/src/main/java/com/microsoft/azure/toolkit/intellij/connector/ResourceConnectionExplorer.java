@@ -68,10 +68,8 @@ public class ResourceConnectionExplorer extends Tree {
         public RootNode(@Nonnull Project project) {
             super(project);
             final MessageBusConnection connection = project.getMessageBus().connect();
-            connection.subscribe(CONNECTIONS_REFRESHED, () -> this.view().refreshChildren());
-            connection.subscribe(CONNECTION_CHANGED, (p, conn, action) -> {
-                this.view().refreshChildren();
-            });
+            connection.subscribe(CONNECTIONS_REFRESHED, (ConnectionTopics.ConnectionsRefreshed) () -> RootNode.this.view().refreshChildren());
+            connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> this.view().refreshChildren());
         }
     }
 
