@@ -9,8 +9,8 @@ import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
-import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
@@ -23,12 +23,14 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.RunProcessHandler;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
@@ -67,6 +69,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
     public FunctionAppBase<?, ?, ?> executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Operation operation) {
         final RunProcessHandlerMessenger messenger = new RunProcessHandlerMessenger(processHandler);
         OperationContext.current().setMessager(messenger);
+        applyResourceConnection();
         final FunctionAppBase<?, ?, ?> target = FunctionAppService.getInstance().createOrUpdateFunctionApp(deployModel.getFunctionAppConfig());
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler, operation);
@@ -76,13 +79,24 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         return target;
     }
 
+    private void applyResourceConnection() {
+        if (CollectionUtils.isEmpty(functionDeployConfiguration.getConnections())) {
+            return;
+        }
+        functionDeployConfiguration.getConnections().stream()
+                .filter(connection -> connection.getResource().getDefinition() instanceof FunctionSupported)
+                .forEach(connection -> ((FunctionSupported) connection.getResource().getDefinition())
+                        .getPropertiesForFunction(connection.getResource().getData(), connection)
+                        .forEach((key, value) -> functionDeployConfiguration.getConfig().getAppSettings().put(key.toString(), value.toString())));
+    }
+
     @AzureOperation(name = "boundary/function.prepare_staging_folder.folder|app", params = {"stagingFolder.getName()", "this.deployModel.getFunctionAppConfig().getName()"})
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler, final @NotNull Operation operation) {
         final Module module = functionDeployConfiguration.getModule();
         if (module == null) {
             throw new AzureToolkitRuntimeException("Cannot find a valid module in function deploy configuration.");
         }
-        final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+        final Path hostJsonPath = Paths.get(functionDeployConfiguration.getHostJsonPath());
         final PsiMethod[] methods = ReadAction.compute(() -> FunctionUtils.findFunctionsByAnnotation(module));
         final Path folder = stagingFolder.toPath();
         try {

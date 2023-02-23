@@ -90,9 +90,9 @@ public class ConnectionRunnerForRunConfiguration extends BeforeRunTaskProvider<C
     @Getter
     @Setter
     public static class MyBeforeRunTask extends BeforeRunTask<MyBeforeRunTask> {
-        private final RunConfiguration config;
+        private RunConfiguration config;
 
-        protected MyBeforeRunTask(RunConfiguration config) {
+        public MyBeforeRunTask(RunConfiguration config) {
             super(ID);
             this.config = config;
         }
