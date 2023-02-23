@@ -182,7 +182,7 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
                 .flatMap(List::stream)
                 .map(label -> new JLabel(label).getPreferredSize().getWidth())
                 .max(Double::compare).orElse(0.0).intValue();
-        return Math.max(DEFAULT_LABEL_WIDTH, maxLabelWidth + help.getIconWidth() + 5);
+        return Math.max(DEFAULT_LABEL_WIDTH, maxLabelWidth + help.getIconWidth() + 10);
     }
 
     private static List<String> getTemplateLabels(final FunctionTemplate functionTemplate) {

@@ -574,6 +574,10 @@ public class FunctionUtils {
         return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
     }
 
+    public static String getDefaultFuncArguments() {
+        return String.format("host start --port %s", findFreePort());
+    }
+
     public static int findFreePort() {
         try (ServerSocket serverSocket = new ServerSocket(0)) {
             return serverSocket.getLocalPort();

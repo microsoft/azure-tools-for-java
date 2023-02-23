@@ -162,7 +162,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
             throw new ConfigurationException(message("function.validate_deploy_configuration.invalidRuntime"));
         }
     }
-
     public Map<String, String> getAppSettings() {
         return Optional.ofNullable(functionDeployModel.getFunctionAppConfig()).map(FunctionAppConfig::getAppSettings).orElse(Collections.emptyMap());
     }
@@ -194,6 +193,14 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public void setFunctionId(String id) {
         functionDeployModel.getFunctionAppConfig().setResourceId(id);
+    }
+
+    public String getHostJsonPath() {
+        return functionDeployModel.getHostJsonPath();
+    }
+
+    public void setHostJsonPath(String hostJsonPath) {
+        functionDeployModel.setHostJsonPath(hostJsonPath);
     }
 
     @Override
