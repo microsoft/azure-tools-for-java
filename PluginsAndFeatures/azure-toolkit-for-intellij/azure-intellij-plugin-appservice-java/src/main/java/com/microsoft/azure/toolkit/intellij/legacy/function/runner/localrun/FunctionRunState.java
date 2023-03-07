@@ -55,6 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -269,11 +270,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private ProcessBuilder getRunFunctionCliProcessBuilder(File stagingFolder, int debugPort) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
-        String[] command = new String[]{funcPath};
-        final String parameters = Optional.ofNullable(functionRunConfiguration.getFunctionHostArguments()).orElseGet(FunctionUtils::getDefaultFuncArguments);
-        if (StringUtils.isNotBlank(parameters)) {
-            command = ArrayUtils.addAll(command, parameters.split(" "));
-        }
+        final String parameters = this.getFunctionHostParameters();
+        String[] command = ArrayUtils.addAll(new String[]{funcPath}, parameters.split(" "));
         if (isDebugMode()) {
             final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
             command = ArrayUtils.addAll(command, "--language-worker", "--", debugConfiguration);
@@ -281,6 +279,19 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
         return processBuilder;
+    }
+
+    @Nonnull
+    private String getFunctionHostParameters() {
+        return Optional.ofNullable(functionRunConfiguration.getFunctionHostArguments())
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> {
+                    final FunctionRunModel model = functionRunConfiguration.getModel();
+                    final String arguments = !model.isAutoPort() && model.getFuncPort() > 0 ?
+                            FunctionUtils.getDefaultFuncArguments(model.getFuncPort()) : FunctionUtils.getDefaultFuncArguments();
+                    functionRunConfiguration.setFunctionHostArguments(arguments);
+                    return arguments;
+                });
     }
 
     private ProcessBuilder getRunFunctionCliExtensionInstallProcessBuilder(File stagingFolder) {
