@@ -1,6 +1,10 @@
 <!-- Version: 3.74.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.74.1
+### Fixed
+- Fix: Failed to generate function local run parameters when related value is not set.
+
 ## 3.74.0
 ### Added
 - Support IntelliJ 2023.1 EAP.

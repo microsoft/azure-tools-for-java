@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.74.1](#3741)
   - [3.74.0](#3740)
   - [3.73.0](#3730)
   - [3.72.0](#3720)
@@ -93,6 +94,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.74.1
+### Fixed
+- Fix: Failed to generate function local run parameters when related value is not set.
 
 ## 3.74.0
 ### Added

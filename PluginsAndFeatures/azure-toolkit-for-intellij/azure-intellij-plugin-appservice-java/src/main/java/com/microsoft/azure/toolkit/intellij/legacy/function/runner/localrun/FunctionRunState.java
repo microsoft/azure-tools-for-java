@@ -23,6 +23,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
+import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
@@ -44,18 +46,16 @@ import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionCo
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -270,8 +270,8 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
     private ProcessBuilder getRunFunctionCliProcessBuilder(File stagingFolder, int debugPort) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
-        String[] command = new String[]{funcPath};
-        command = ArrayUtils.addAll(command, functionRunConfiguration.getFunctionHostArguments().split(" "));
+        final String parameters = this.getFunctionHostParameters();
+        String[] command = ArrayUtils.addAll(new String[]{funcPath}, parameters.split(" "));
         if (isDebugMode()) {
             final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
             command = ArrayUtils.addAll(command, "--language-worker", "--", debugConfiguration);
@@ -279,6 +279,19 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
         return processBuilder;
+    }
+
+    @Nonnull
+    private String getFunctionHostParameters() {
+        return Optional.ofNullable(functionRunConfiguration.getFunctionHostArguments())
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> {
+                    final FunctionRunModel model = functionRunConfiguration.getModel();
+                    final String arguments = !model.isAutoPort() && model.getFuncPort() > 0 ?
+                            FunctionUtils.getDefaultFuncArguments(model.getFuncPort()) : FunctionUtils.getDefaultFuncArguments();
+                    functionRunConfiguration.setFunctionHostArguments(arguments);
+                    return arguments;
+                });
     }
 
     private ProcessBuilder getRunFunctionCliExtensionInstallProcessBuilder(File stagingFolder) {
