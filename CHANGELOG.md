@@ -94,6 +94,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.74.1
+### Fixed
+- Fix: Failed to generate function local run parameters when related value is not set.
+
 ## 3.74.0
 ### Added
 - Support IntelliJ 2023.1 EAP.

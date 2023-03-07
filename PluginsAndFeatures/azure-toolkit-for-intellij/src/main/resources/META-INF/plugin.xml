@@ -27,33 +27,10 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3 id="3-74-0">3.74.0</h3>
-      <h4 id="added">Added</h4>
-      <ul>
-          <li>Support IntelliJ 2023.1 EAP.</li>
-          <li>Add Azure Event Hub support in Azure Toolkits<ul>
-                  <li>Resource Management in Azure explorer</li>
-                  <li>Simple event hub client to send/receive events</li>
-              </ul>
-          </li>
-      </ul>
-      <h4 id="changed">Changed</h4>
-      <ul>
-          <li>Azure Function: New function class creation workflow with resource connection</li>
-          <li>Azure Function: Support customized function host parameters and path for <code>host.json</code> in function
-              run/deployment</li>
-          <li>App Service: New UX for runtime selection</li>
-          <li>Azure Spring Apps: Integrate with control plane logs, more diagnostic info will be shown during deployment</li>
-      </ul>
+      <h3 id="3-74-1">3.74.1</h3>
       <h4 id="fixed">Fixed</h4>
       <ul>
-          <li>Fix: Toolkit will always select maven as build tool in function module creation wizard</li>
-          <li>Fix: Copy connection string did not work for Cosmos DB</li>
-          <li>Fix: Only <code>local.settings.json</code> in root module could be found when import app settings</li>
-          <li>Fix: Linked cluster cannot display under the HDInsight node.</li>
-          <li>Fix: Open the sign into Azure dialog after click on "Link a cluster/refresh" in the context menu.</li>
-          <li>Fix: Failed to open Azure Storage Explorer.</li>
-          <li>Fix: In config, only display linked cluster in cluster list, but in Azure explorer both linked cluster and signincluster exist.</li>
+          <li>Fix: Failed to generate function local run parameters when related value is not set.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
