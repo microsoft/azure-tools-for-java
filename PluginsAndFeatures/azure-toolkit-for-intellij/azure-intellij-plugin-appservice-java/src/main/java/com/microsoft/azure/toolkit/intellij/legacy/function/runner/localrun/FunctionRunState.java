@@ -23,6 +23,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
+import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
+import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
@@ -44,13 +46,10 @@ import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionCo
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.common.ReadStreamLineThread;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -271,7 +270,9 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
         String[] command = new String[]{funcPath};
-        command = ArrayUtils.addAll(command, functionRunConfiguration.getFunctionHostArguments().split(" "));
+        if (StringUtils.isNotBlank(functionRunConfiguration.getFunctionHostArguments())) {
+            command = ArrayUtils.addAll(command, functionRunConfiguration.getFunctionHostArguments().split(" "));
+        }
         if (isDebugMode()) {
             final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
             command = ArrayUtils.addAll(command, "--language-worker", "--", debugConfiguration);
