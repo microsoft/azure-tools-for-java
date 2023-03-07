@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.74.1](#3741)
   - [3.74.0](#3740)
   - [3.73.0](#3730)
   - [3.72.0](#3720)
