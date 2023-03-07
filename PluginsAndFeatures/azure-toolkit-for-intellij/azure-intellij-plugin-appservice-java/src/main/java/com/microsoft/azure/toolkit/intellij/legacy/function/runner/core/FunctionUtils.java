@@ -596,7 +596,8 @@ public class FunctionUtils {
     }
 
     public static String getDefaultFuncArguments() {
-        return String.format("host start --port %s", findFreePort());
+        final int freePort = findFreePort();
+        return freePort > 0 ? String.format("host start --port %s", freePort) : "host start";
     }
 
     public static int findFreePort() {

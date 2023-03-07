@@ -270,8 +270,9 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
         String[] command = new String[]{funcPath};
-        if (StringUtils.isNotBlank(functionRunConfiguration.getFunctionHostArguments())) {
-            command = ArrayUtils.addAll(command, functionRunConfiguration.getFunctionHostArguments().split(" "));
+        final String parameters = Optional.ofNullable(functionRunConfiguration.getFunctionHostArguments()).orElseGet(FunctionUtils::getDefaultFuncArguments);
+        if (StringUtils.isNotBlank(parameters)) {
+            command = ArrayUtils.addAll(command, parameters.split(" "));
         }
         if (isDebugMode()) {
             final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
