@@ -150,13 +150,18 @@ public class AzureArtifactManager {
         });
     }
 
-    private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {
-        final ExternalProject externalProject = getRelatedExternalProject(gradleProjectPojo);
-        return Objects.nonNull(externalProject) ? externalProject.getQName() : null;
+    public String getArtifactId(@NotNull final AzureArtifact artifact) {
+        final Object object = artifact.getReferencedObject();
+        return switch (artifact.getType()) {
+            case Maven -> ((MavenProject) object).getMavenId().getArtifactId();
+            case Gradle -> AzureArtifactManager.getInstance(project).getGradleProjectId((ExternalProjectPojo) object);
+            default -> artifact.getName();
+        };
     }
 
-    private ExternalProject getRelatedExternalProject(ExternalProjectPojo gradleProjectPojo) {
-        return ExternalProjectDataCache.getInstance(project).getRootExternalProject(gradleProjectPojo.getPath());
+    private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {
+        final ExternalProject externalProject = ExternalProjectDataCache.getInstance(project).getRootExternalProject(gradleProjectPojo.getPath());
+        return Objects.nonNull(externalProject) ? externalProject.getQName() : null;
     }
 
     private List<AzureArtifact> prepareAzureArtifacts(Predicate<String> packagingFilter) {
