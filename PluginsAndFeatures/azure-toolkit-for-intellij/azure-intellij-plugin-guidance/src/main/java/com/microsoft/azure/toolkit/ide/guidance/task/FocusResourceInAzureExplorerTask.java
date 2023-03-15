@@ -12,6 +12,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class FocusResourceInAzureExplorerTask implements Task {
     public static final String RESOURCE_ID = "resourceId";
+    public static final String RESOURCE = "resource";
     public static final String ID = "task.common.focus_resource_in_explorer";
 
     @Nonnull
@@ -28,7 +30,9 @@ public class FocusResourceInAzureExplorerTask implements Task {
     @AzureOperation(name = "internal/guidance.focus_resource")
     public void execute() {
         final String resourceId = (String) context.getParameter(RESOURCE_ID);
-        final AbstractAzResource<?, ?, ?> resource = Objects.requireNonNull(Azure.az().getById(resourceId), String.format("failed to get resource with id (%s) in Azure", resourceId));
+        final AbstractAzResource<?, ?, ?> resource = StringUtils.isEmpty(resourceId) ?
+                (AbstractAzResource<?, ?, ?>) context.getParameter(RESOURCE) : Azure.az().getById(resourceId);
+        assert Objects.nonNull(resource) : String.format("failed to get resource with id (%s) in Azure", resourceId);
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? this.context.getProject() : null;
         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
         AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(resource, event);

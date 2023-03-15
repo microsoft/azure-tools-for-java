@@ -58,6 +58,7 @@ public class PhasePanel extends JPanel {
     public PhasePanel(@Nonnull Phase phase) {
         super();
         this.phase = phase;
+        this.phase.setPanel(this);
         $$$setupUI$$$();
         init();
     }
@@ -157,7 +158,7 @@ public class PhasePanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        UIUtil.invokeLaterIfNeeded(() -> {
+        UIUtil.invokeAndWaitIfNeeded((Runnable) () -> {
             this.updateStatusIcon(status);
             this.updateView(status, this.detailsPanel.isVisible());
             final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
@@ -201,7 +202,7 @@ public class PhasePanel extends JPanel {
         };
     }
 
-    private void toggleDetails(boolean expanded) {
+    public void toggleDetails(boolean expanded) {
         this.updateView(this.phase.getStatus(), expanded);
     }
 
