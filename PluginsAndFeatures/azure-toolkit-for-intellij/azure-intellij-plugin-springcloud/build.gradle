@@ -5,6 +5,7 @@ intellij {
 dependencies {
     implementation project(':azure-intellij-plugin-lib')
     implementation project(':azure-intellij-plugin-lib-java')
+    implementation project(':azure-intellij-plugin-guidance')
     implementation 'com.microsoft.azure:azure-toolkit-springcloud-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-springcloud-lib:' + azureToolkitVersion
