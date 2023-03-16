@@ -498,7 +498,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 cleanError();
             }
         });
-        AccessibilityUtils.addAccessibilityNameForUIComponent(comboSlotConf, "Deployment slot configuration source");
+        AccessibilityUtils.addAccessibilityPropertiesForUIComponent(comboSlotConf, "Clone settings from", "The configuration source of new deployment slot");
         decComboSlotConf = decorateContorolAndRegister(comboSlotConf);
 
         scrolledComposite.setContent(grpSlot);
