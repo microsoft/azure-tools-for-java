@@ -35,4 +35,6 @@ Import-Package: com.microsoft.azuretools.core.actions,
  org.eclipse.ui.console,
  org.eclipse.wst.common.frameworks.datamodel
 Export-Package: com.microsoft.azuretools.container.utils,
- com.spotify.docker.client
+ com.spotify.docker.client,
+ com.spotify.docker.client.exceptions,
+ com.spotify.docker.client.messages
