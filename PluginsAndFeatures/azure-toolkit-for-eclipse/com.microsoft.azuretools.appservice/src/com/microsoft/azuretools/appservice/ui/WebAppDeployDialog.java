@@ -407,6 +407,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDeployToSlot = new Button(compositeSlotCb, SWT.CHECK);
         btnDeployToSlot.setSelection(false);
         btnDeployToSlot.setText("Deploy to Slot");
+        AccessibilityUtils.addAccessibilityDescriptionForUIComponent(btnDeployToSlot, DEPLOYMENT_SLOT_HOVER);
         btnDeployToSlot.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

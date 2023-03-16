@@ -27,11 +27,23 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.widgets.Control;
 
 public class AccessibilityUtils {
-    public static void addAccessibilityNameForUIComponent(Control control, String text) {
+    public static void addAccessibilityNameForUIComponent(Control control, String name) {
+        addAccessibilityPropertiesForUIComponent(control, name, null);
+    }
+    
+    public static void addAccessibilityDescriptionForUIComponent(Control control, String description) {
+        addAccessibilityPropertiesForUIComponent(control, null, description);
+    }
+    
+    public static void addAccessibilityPropertiesForUIComponent(Control control, String name, String description) {
         control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(AccessibleEvent e) {
-                e.result = text;
+                e.result = name;
+            }
+            
+            public void getDescription(AccessibleEvent e) {
+                e.result = description;
             }
         });
     }
