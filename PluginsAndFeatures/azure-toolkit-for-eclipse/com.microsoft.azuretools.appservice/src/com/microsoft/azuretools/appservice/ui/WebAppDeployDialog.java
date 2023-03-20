@@ -119,6 +119,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private Table table;
     private Link browserAppServiceDetails;
+    private Link showFTPCredentials;
     private Button btnDeployToRoot;
     private Button btnDelete;
     private Button btnDeployToSlot;
@@ -346,21 +347,40 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private void createAppDetailGroup(Composite container) {
         Group grpAppServiceDetails = new Group(container, SWT.NONE);
-        grpAppServiceDetails.setLayout(new FillLayout(SWT.HORIZONTAL));
         GridData gdGrpAppServiceDetails = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gdGrpAppServiceDetails.heightHint = 150;
         grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
+        grpAppServiceDetails.setLayout(new GridLayout(1, false));
         grpAppServiceDetails.setText("App service details");
-
+        
+        GridData browserData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         browserAppServiceDetails = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
+        browserAppServiceDetails.setLayoutData(browserData);
+        browserData.heightHint = 100;
         browserAppServiceDetails.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    if (e.text.equals(ftpLinkString)) {
-                        showFtpCreadentialsWindow();
-                    } else if (e.text.contains("http")) {
+                    if (e.text.contains("http")) {
                         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "changing@LocationListener@browserAppServiceDetails@AppServiceCreateDialog", ex));
+                }
+            }
+        });
+
+        GridData showFTPData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        showFTPCredentials = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
+        showFTPCredentials.setLayoutData(showFTPData);
+        showFTPCredentials.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    if (StringUtils.isNoneEmpty(e.text)) {
+                        showFtpCreadentialsWindow();
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -542,6 +562,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         int selectedRow = table.getSelectionIndex();
         if (selectedRow < 0) {
             browserAppServiceDetails.setText("");
+            showFTPCredentials.setText("");
             btnDelete.setEnabled(false);
             return;
         }
@@ -551,25 +572,30 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         final String appServiceName = table.getItems()[selectedRow].getText(0);
         final WebApp webApp = webAppDetailsMap.get(appServiceName);
+        final String[] link = new String[1];
         Mono.fromCallable(() -> {
             AppServicePlan asp = webApp.getAppServicePlan();
-            Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(webApp.getSubscriptionId());
+            Subscription subscription = Azure.az(AzureAccount.class).account()
+                    .getSubscription(webApp.getSubscriptionId());
 
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("App Service name: %s \n", webApp.name()));
+            sb.append(String.format("App Service name: %s \n", webApp.getName()));
             sb.append(String.format("Subscription name: %s ; id: %s \n", subscription.getName(), subscription.getId()));
-            String aspName = asp == null ? "N/A" : asp.name();
+            String aspName = asp == null ? "N/A" : asp.getName();
             String aspPricingTier = asp == null ? "N/A" : asp.getPricingTier().toString();
             sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
-            String link = buildSiteLink(webApp, null);
-            sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
-            sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
+            link[0] = buildSiteLink(webApp, null);
+            sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link[0], link[0]));
             return sb.toString();
         }).subscribeOn(Schedulers.boundedElastic()).subscribe(content -> AzureTaskManager.getInstance().runLater(() -> {
-            if (browserAppServiceDetails.isDisposed()) {
+            if (browserAppServiceDetails.isDisposed() || showFTPCredentials.isDisposed()) {
                 return;
             }
+            final String ftpLink = String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials");
+            showFTPCredentials.setText(ftpLink);
             browserAppServiceDetails.setText(content);
+            AccessibilityUtils.addAccessibilityPropertiesForUIComponent(browserAppServiceDetails, link[0], content);
+            AccessibilityUtils.addAccessibilityPropertiesForUIComponent(showFTPCredentials, "Show FTP deployment credentials", "Show FTP deployment credentials");
         }));
     }
 
