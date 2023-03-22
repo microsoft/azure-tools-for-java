@@ -1,0 +1,145 @@
+{
+  "$schema": "../flow-schema/Course.json",
+  "name": "hello-spring-apps",
+  "title": "Deploy Your First Spring App to Azure",
+  "description": "This tutorial shows how to use the IntelliJ toolkit to deploy a simple todo-app project to Azure Spring Apps.",
+  "repository": "https://github.com/Azure-Samples/ASA-Samples-Web-Application.git",
+  "tags": [
+    "Spring Apps",
+    "For beginners",
+    "Quickstart"
+  ],
+  "context": {
+    "repository": "https://github.com/Azure-Samples/ASA-Samples-Web-Application.git",
+    "branch": "quickstart",
+    "deployModule": "simple-todo-web",
+    "packageModule": "simple-todo-parent"
+  },
+  "phases": [
+    {
+      "title": "Clone",
+      "description": "Clone demo project to your local machine",
+      "steps": [
+        {
+          "title": "Clone",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.common.file-chooser",
+              "paramMapping": {
+                "value": "defaultLocation"
+              }
+            }
+          ],
+          "task": {
+            "name": "task.clone",
+            "resultMapping": {
+              "defaultGitDirectory": "defaultLocation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sign-in",
+      "description": "Sign in with your Azure account",
+      "steps": [
+        {
+          "title": "Sign-in",
+          "description": null,
+          "task": {
+            "name": "task.signin"
+          }
+        },
+        {
+          "title": "Select Subscription",
+          "description": null,
+          "task": {
+            "name": "task.select_subscription"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Prepare",
+      "description": "Create resources and related resource connection for deployment",
+      "steps": [
+        {
+          "title": "Create Spring App",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.springcloud.cluster"
+            },
+            {
+              "name": "input.springcloud.name",
+              "paramMapping": {
+                "springAppName": "defaultSpringAppName"
+              },
+              "resultMapping": {
+                "springAppName": "newSpringAppName"
+              }
+            }
+          ],
+          "task": {
+            "name": "task.springcloud.create",
+            "description": "Create Azure Spring App ${context.newSpringAppName}",
+            "paramMapping": {
+              "springAppName": "newSpringAppName"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build & Deploy",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Spring App ${context.springApp?.name}",
+      "steps": [
+        {
+          "title": "Deploy",
+          "description": "Deploy to Azure Spring App ${context.springApp?.name}",
+          "task": {
+            "name": "task.springcloud.deploy"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Congratulations!",
+      "type": "summary",
+      "description": "Your project has been deployed to Azure Spring Apps, enjoy your Azure experience!",
+      "steps": [
+        {
+          "title": "View in Azure Explorer",
+          "description": null,
+          "task": {
+            "name": "task.common.focus_resource_in_explorer",
+            "paramMapping": {
+              "resource": "springApp"
+            }
+          }
+        },
+        {
+          "title": "Open in Browser",
+          "description": null,
+          "task": {
+            "name": "task.springcloud.open_in_browser",
+            "paramMapping": {
+              "resource": "springApp"
+            }
+          }
+        },
+        {
+          "title": "Open Log Streaming",
+          "description": null,
+          "task": {
+            "name": "task.springcloud.log_streaming",
+            "paramMapping": {
+              "resource": "springApp"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

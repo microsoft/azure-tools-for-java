@@ -3,6 +3,8 @@
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.springcloud.SpringCloudActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.springcloud.IntellijSpringCloudActionsContributor"/>
+        <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.IntelliJSpringCloudTaskProvider"/>
+        <guidanceInputProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.IntelliJSpringCloudInputProvider"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider"/>

@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -74,7 +75,7 @@ public class GuidanceViewManager {
         });
     }
 
-    public static class GuidanceViewFactory implements ToolWindowFactory {
+    public static class GuidanceViewFactory implements ToolWindowFactory, DumbAware {
         private static final Map<Project, GuidanceView> guidanceViewMap = new ConcurrentHashMap<>();
 
         @Override
