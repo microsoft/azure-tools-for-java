@@ -93,11 +93,11 @@
     },
     {
       "title": "Build & Deploy",
-      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Spring App ${context.springApp.name}",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Spring App ${context.springApp?.name}",
       "steps": [
         {
           "title": "Deploy",
-          "description": "Deploy to Azure Spring App ${context.springApp.name}",
+          "description": "Deploy to Azure Spring App ${context.springApp?.name}",
           "task": {
             "name": "task.springcloud.deploy"
           }
