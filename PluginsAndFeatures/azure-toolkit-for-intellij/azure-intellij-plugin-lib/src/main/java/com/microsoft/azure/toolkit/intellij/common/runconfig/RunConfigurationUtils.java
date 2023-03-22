@@ -10,8 +10,12 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 
 public class RunConfigurationUtils {
+
+    public static final Key<Boolean> AZURE_RUN_STATE_RESULT = Key.create("AZURE_RUN_STATE_RESULT");
+    public static final Key<Throwable> AZURE_RUN_STATE_EXCEPTION = Key.create("AZURE_RUN_STATE_EXCEPTION");
 
     public static RunnerAndConfigurationSettings getOrCreateRunConfigurationSettings(Module module, RunManagerEx manager, ConfigurationFactory factory) {
         final Project project = module.getProject();

@@ -17,6 +17,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -76,8 +77,11 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             try {
                 this.execute(messager);
                 messager.success("Deploy succeed!");
+                processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, true);
             } catch (final Exception e) {
                 messager.error(e, "Azure", retry);
+                processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, false);
+                processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_EXCEPTION, e);
             }
         };
         final Disposable subscribe = Mono.fromRunnable(execute)

@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.action;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.DumbAware;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.*;
 
-public class ShowGettingStartAction extends AzureAnAction {
+public class ShowGettingStartAction extends AzureAnAction implements DumbAware {
     public static final String GUIDANCE = "guidance";
     public static final String IS_ACTION_TRIGGERED = "is_action_triggered";
     private static boolean isActionTriggered = false;
