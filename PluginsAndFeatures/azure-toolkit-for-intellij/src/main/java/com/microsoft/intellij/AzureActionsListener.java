@@ -22,11 +22,14 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
+import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
+import com.microsoft.azure.toolkit.intellij.common.logger.IjLogger;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.logger.LoggerFactory;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -89,6 +92,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     static {
         // fix the class load problem for intellij plugin
+        LoggerFactory.register(new IjLogger.Factory());
         final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(AzureActionsListener.class.getClassLoader());
