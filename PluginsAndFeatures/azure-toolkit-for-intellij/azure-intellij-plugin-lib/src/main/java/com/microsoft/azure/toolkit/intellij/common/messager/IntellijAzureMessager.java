@@ -14,15 +14,14 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.intellij.util.ThrowableRunnable;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -31,8 +30,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@CustomLog
 public class IntellijAzureMessager implements IAzureMessager {
-    private static final Logger log = Logger.getInstance(AnAction.class);
     static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final Map<IAzureMessage.Type, NotificationType> types = Map.ofEntries(
         Map.entry(IAzureMessage.Type.INFO, NotificationType.INFORMATION),
@@ -93,7 +92,7 @@ public class IntellijAzureMessager implements IAzureMessager {
             .filter(p -> p.getValue().isVisible() && p.getValue().isEnabled())
             .map(p -> new NotificationAction(p.getValue().getLabel()) {
                 @Override
-                public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+                public void actionPerformed(@Nonnull AnActionEvent e, @Nonnull Notification notification) {
                     p.getKey().handle(null, e);
                 }
             }).collect(Collectors.toList());

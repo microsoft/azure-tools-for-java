@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.lib.legacy.appservice;
 
 import com.neovisionaries.ws.client.*;
+import lombok.CustomLog;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,12 +16,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public class WebSocketSSLProxy {
-    private static final Logger logger = Logger.getLogger(WebSocketSSLProxy.class.getName());
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     @Setter
@@ -93,7 +93,7 @@ public class WebSocketSSLProxy {
 
     private void handleConnectionBroken(Exception e) {
         if (Objects.nonNull(serverSocket)) {
-            logger.warning(message("common.webSocket.error.proxyingWebSocketFailed", e.getMessage()));
+            log.warn(message("common.webSocket.error.proxyingWebSocketFailed", e.getMessage()));
         }
         close();
     }

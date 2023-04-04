@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.hdinsight.jobs.framework;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
@@ -16,55 +15,56 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import lombok.CustomLog;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /*
     All the tool window should implement interface FileEditorProvider.
  */
+@CustomLog
 public class JobViewEditorProvider implements FileEditorProvider, DumbAware {
 
     public static Key<IClusterDetail> JOB_VIEW_KEY = new Key<>("com.microsoft.azure.hdinsight.jobview");
     public static Key<String> JOB_VIEW_UUID = new Key<>("com.microsoft.azure.hdinsight.jobview.uuid");
 
-    private static Logger LOG = Logger.getInstance(JobViewEditorProvider.class.getName());
-
     @Override
-    public boolean accept(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        LOG.info("start JobViewEditorProvider");
+    public boolean accept(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
+        log.info("start JobViewEditorProvider");
         IClusterDetail detail = virtualFile.getUserData(JOB_VIEW_KEY);
         return detail != null;
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
+    public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         return new JobViewEditor(project, virtualFile, this);
     }
 
     @Override
-    public void disposeEditor(@NotNull FileEditor fileEditor) {
+    public void disposeEditor(@Nonnull FileEditor fileEditor) {
         Disposer.dispose(fileEditor);
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public FileEditorState readState(@NotNull Element element, @NotNull Project project, @NotNull VirtualFile virtualFile) {
+    public FileEditorState readState(@Nonnull Element element, @Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         return FileEditorState.INSTANCE;
     }
 
     @Override
-    public void writeState(@NotNull FileEditorState fileEditorState, @NotNull Project project, @NotNull Element element) {
+    public void writeState(@Nonnull FileEditorState fileEditorState, @Nonnull Project project, @Nonnull Element element) {
 
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getEditorTypeId() {
         return this.getClass().getName();
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public FileEditorPolicy getPolicy() {
         return FileEditorPolicy.HIDE_DEFAULT_EDITOR;

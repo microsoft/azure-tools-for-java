@@ -26,6 +26,7 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.AzureAbstractPanel;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXHyperlink;
 
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public class ApplicationInsightsPanel implements AzureAbstractPanel {
     private static final String DISPLAY_NAME = "Choose Application Insights Telemetry key";
     private JPanel rootPanel;
@@ -73,7 +75,7 @@ public class ApplicationInsightsPanel implements AzureAbstractPanel {
                 handler.parseAIConfXmlPath(aiXMLFilePath);
             }
         } catch (Exception ex) {
-            AzurePlugin.log(message("aiParseError"));
+            log.error(message("aiParseError"));
         }
         if (isEdit()) {
             populateData();

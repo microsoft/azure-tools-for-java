@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.jfr.FlightRecorderStarterBase;
+import lombok.CustomLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,12 +29,11 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public class ProfileFlightRecordAction {
-    private static final Logger logger = Logger.getLogger(ProfileFlightRecordAction.class.getName());
     private static final int ONE_SECOND = 1000;
     private static final int TWO_SECONDS = 2000;
     private final Project project;

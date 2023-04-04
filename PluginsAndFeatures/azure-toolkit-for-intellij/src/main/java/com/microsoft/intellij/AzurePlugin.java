@@ -17,7 +17,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
@@ -48,6 +47,7 @@ import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.azure.toolkit.intellij.common.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
+import lombok.CustomLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -78,9 +78,8 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WHATS_N
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
-
+@CustomLog
 public class AzurePlugin implements StartupActivity.DumbAware {
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = com.microsoft.azure.toolkit.intellij.common.CommonConst.PLUGIN_VERSION;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "9.4.0.jre8";
@@ -111,7 +110,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         // Showing dialog needs to be run in UI thread
         initializeWhatsNew(project);
         if (!IS_ANDROID_STUDIO) {
-            LOG.info("Starting Azure Plugin");
+            log.info("Starting Azure Plugin");
             firstInstallationByVersion = isFirstInstallationByVersion();
             try {
                 //this code is for copying componentset.xml in plugins folder
@@ -140,7 +139,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             } catch (Exception e) {
                 /* This is not a user initiated task
                    So user should not get any exception prompt.*/
-                LOG.error(AzureBundle.message("expErlStrtUp"), e);
+                log.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
     }
@@ -197,7 +196,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             // https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000093184-What-is-com-intellij-openapi-progress-ProcessCanceledException
             // should ignore ProcessCanceledException
             if (Objects.isNull(ExceptionUtil.findCause(ex, ProcessCanceledException.class))) {
-                AzurePlugin.log(ex.getMessage(), ex);
+                log.error(ex.getMessage(), ex);
             }
         }
     }
@@ -214,9 +213,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         String tmpPath = System.getProperty("java.io.tmpdir");
         String projPath = String.format("%s%s%s", tmpPath, File.separator, "%proj%");
         File projFile = new File(projPath);
-        if (projFile != null) {
-            WAEclipseHelperMethods.deleteDirectory(projFile);
-        }
+        WAEclipseHelperMethods.deleteDirectory(projFile);
     }
 
     private void loadWebappsSettings(Project myProject) {
@@ -281,7 +278,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             }
 
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -298,7 +295,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             FileOutputStream fos = new FileOutputStream(outputFile);
             FileUtil.writeFile(is, fos);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -329,11 +326,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     }
 
     public static void log(String message, Throwable ex) {
-        LOG.error(message, ex);
+        log.error(message, ex);
     }
 
     public static void log(String message) {
-        LOG.info(message);
+        log.info(message);
     }
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";

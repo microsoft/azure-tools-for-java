@@ -30,7 +30,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import okhttp3.Authenticator;
 import okhttp3.Credentials;
 import org.apache.commons.collections4.CollectionUtils;
@@ -54,7 +54,7 @@ import java.util.logging.Level;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 
-@Slf4j
+@CustomLog
 public class IdeAzureAccount {
     private static final String AUTH_CONFIG_CACHE = "auth_configuration_cache";
     private static final String SERVICE_PRINCIPAL_STORE_SERVICE = "Service Principal";

@@ -11,11 +11,13 @@ import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
+import lombok.CustomLog;
 
 import java.io.File;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public class MethodUtils {
 
     /**
@@ -47,7 +49,7 @@ public class MethodUtils {
                 }
             }
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
         }
         return name;
     }

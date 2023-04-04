@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.common.subscription;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -15,18 +14,20 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.CustomLog;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+@CustomLog
 public class SelectSubscriptionsAction extends AzureAnAction implements DumbAware {
-    private static final Logger LOGGER = Logger.getInstance(SelectSubscriptionsAction.class);
 
     public SelectSubscriptionsAction() {
     }
 
     @Override
     @AzureOperation(name = "user/account.select_subscription")
-    public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
+    public boolean onActionPerformed(@Nonnull AnActionEvent e, @Nullable Operation operation) {
         selectSubscriptions(e.getProject());
         return true;
     }
@@ -38,7 +39,7 @@ public class SelectSubscriptionsAction extends AzureAnAction implements DumbAwar
             e.getPresentation().setEnabled(isSignIn);
         } catch (final Exception ex) {
             ex.printStackTrace();
-            LOGGER.error("update", ex);
+            log.error("update", ex);
         }
     }
 

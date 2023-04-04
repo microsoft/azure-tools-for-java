@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -19,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.graph.models.Application;
 import com.microsoft.graph.models.ImplicitGrantSettings;
 import com.microsoft.graph.models.WebApplication;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nonnull;
@@ -33,10 +33,9 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
  * <p>
  * ComponentNotRegistered is suppressed, because IntelliJ isn't finding the reference in resources/META-INF.
  */
+@CustomLog
 @SuppressWarnings("ComponentNotRegistered")
 public class RegisterApplicationAction extends AnAction {
-    private static final Logger LOG = Logger.getInstance(RegisterApplicationAction.class);
-
     public RegisterApplicationAction() {
         super(MessageBundle.message("action.AzureToolkit.AD.AzureRegisterApp.text"));
     }
@@ -47,7 +46,7 @@ public class RegisterApplicationAction extends AnAction {
             // throws an exception if user is not signed in
             az(AzureAccount.class).account();
         } catch (AzureToolkitAuthenticationException ex) {
-            LOG.debug("user is not signed in", ex);
+            log.debug("user is not signed in", ex);
             e.getPresentation().setEnabled(false);
         }
     }

@@ -11,12 +11,11 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.CustomLog;
 import lombok.EqualsAndHashCode;
-import lombok.extern.java.Log;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public interface ConnectionManager extends PersistentStateComponent<Element> {
@@ -71,7 +69,7 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         return String.format("%s:%s", rd.getName(), cd.getName());
     }
 
-    @Log
+    @CustomLog
     @State(name = Impl.ELEMENT_NAME_CONNECTIONS, storages = {@Storage("azure/resource-connections.xml")})
     final class Impl implements ConnectionManager, PersistentStateComponent<Element> {
         private static final ExtensionPointName<ConnectionDefinition<?, ?>> exPoints =
@@ -133,14 +131,14 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         @Override
         @ExceptionNotification
         @AzureOperation(name = "platform/connector.load_resource_connections")
-        public void loadState(@NotNull Element connectionsEle) {
+        public void loadState(@Nonnull Element connectionsEle) {
             for (final Element connectionEle : connectionsEle.getChildren()) {
                 final String name = connectionEle.getAttributeValue(FIELD_TYPE);
                 final ConnectionDefinition<?, ?> definition = ConnectionManager.getDefinitionOrDefault(name);
                 try {
                     Optional.ofNullable(definition).map(d -> d.read(connectionEle)).ifPresent(this::addConnection);
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when load a resource connection of type '%s'", name), e);
+                    log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
                 }
             }
         }

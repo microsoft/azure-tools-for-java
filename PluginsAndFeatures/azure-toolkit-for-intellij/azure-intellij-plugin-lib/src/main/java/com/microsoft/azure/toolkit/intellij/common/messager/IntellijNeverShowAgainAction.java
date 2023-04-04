@@ -12,26 +12,26 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.CustomLog;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 @Setter
-@Slf4j
+@CustomLog
 public class IntellijNeverShowAgainAction extends NotificationAction {
 
     public static final String ID = "user/common.never_show_again";
 
     public IntellijNeverShowAgainAction() {
-        super("Never Show Again");
+        super("Never show again");
     }
 
     @Override
     @ExceptionNotification
     @AzureOperation(name = "user/common.suppress_action")
-    public void actionPerformed(@NotNull AnActionEvent event, @NotNull Notification notification) {
+    public void actionPerformed(@Nonnull AnActionEvent event, @Nonnull Notification notification) {
         Optional.ofNullable(ActionManager.getInstance().getId(this)).ifPresent(id -> {
             IntellijStore.getInstance().getState().getSuppressedActions().put(id, Boolean.TRUE);
             notification.expire();

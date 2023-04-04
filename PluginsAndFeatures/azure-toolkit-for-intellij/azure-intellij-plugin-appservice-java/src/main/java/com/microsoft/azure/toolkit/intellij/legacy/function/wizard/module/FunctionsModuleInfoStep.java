@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunction
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.ValidationUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Slf4j
+@CustomLog
 public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposable {
     public static final String MAVEN_TOOL = "Maven";
     public static final String GRADLE_TOOL = "Gradle";

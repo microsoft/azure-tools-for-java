@@ -11,6 +11,7 @@ import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import lombok.CustomLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -22,15 +23,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 import static com.microsoft.azuretools.Constants.*;
 
-
+@CustomLog
 public class CommonSettings {
-
-    private static final Logger LOGGER = Logger.getLogger(CommonSettings.class.getName());
     private static final String ENV_NAME_KEY = "EnvironmentName";
     private static final String MOVE_RESOURCE_FILE_FAIL = "Fail to move Azure Toolkit resource file %s to %s";
     private static final String CLEAN_DEPRECATED_FOLDER_FAIL = "Fail to clean deprecated folder %s";
@@ -94,7 +92,7 @@ public class CommonSettings {
                             try {
                                 providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
                             } catch (Exception e) {
-                                LOGGER.warning("Parsing JSON String from " + providedEnvElem +
+                                log.warn("Parsing JSON String from " + providedEnvElem +
                                         "as provided environment failed, got the exception: " + e);
                             }
                         }
@@ -171,7 +169,7 @@ public class CommonSettings {
         try {
             FileUtils.moveToDirectory(resourceFile, baseDir, true);
         } catch (IOException e) {
-            LOGGER.warning(String.format(MOVE_RESOURCE_FILE_FAIL, resourceFile, baseDir));
+            log.warn(String.format(MOVE_RESOURCE_FILE_FAIL, resourceFile, baseDir));
         }
     }
 
@@ -180,7 +178,7 @@ public class CommonSettings {
             try {
                 FileUtils.deleteDirectory(deprecatedDir);
             } catch (IOException e) {
-                LOGGER.warning(String.format(CLEAN_DEPRECATED_FOLDER_FAIL, deprecatedDir.getName()));
+                log.warn(String.format(CLEAN_DEPRECATED_FOLDER_FAIL, deprecatedDir.getName()));
             }
         }
     }

@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import javax.annotation.Nonnull;
@@ -31,7 +30,6 @@ import java.util.UUID;
  * open "SSH Configurations" dialog in Intellij Ultimate.
  * <p>NOTE: this class is implemented via reflection to avoid explicit dependency on Intellij Ultimate </o>
  */
-@Slf4j
 public class AddSshConfigAction {
 
     public static void addSshConfig(VirtualMachine vm, @Nonnull Project project) {

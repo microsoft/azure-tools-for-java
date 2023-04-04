@@ -8,12 +8,10 @@ package com.microsoft.azure.toolkit.ide.storage.action.explorer;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
-@Slf4j
 public class WindowsOpenAzureStorageExplorerHandler extends AbstractAzureStorageExplorerHandler {
 
     public static final String STORAGE_EXPLORER_REGISTRY_PATH = "storageexplorer\\shell\\open\\command";

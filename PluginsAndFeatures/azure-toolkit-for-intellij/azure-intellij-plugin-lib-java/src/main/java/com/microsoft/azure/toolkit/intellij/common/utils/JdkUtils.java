@@ -17,7 +17,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.util.lang.JavaVersion;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Slf4j
+@CustomLog
 public class JdkUtils {
 
     @Nullable

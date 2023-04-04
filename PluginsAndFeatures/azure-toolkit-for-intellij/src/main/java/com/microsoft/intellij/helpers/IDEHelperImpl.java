@@ -61,8 +61,8 @@ import com.microsoft.intellij.ApplicationSettings;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
+import lombok.CustomLog;
 import lombok.SneakyThrows;
-import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -85,7 +85,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-@Log
+@CustomLog
 public class IDEHelperImpl implements IDEHelper {
 
     private static final String APP_SERVICE_FILE_EDITING = "App Service File Editing";

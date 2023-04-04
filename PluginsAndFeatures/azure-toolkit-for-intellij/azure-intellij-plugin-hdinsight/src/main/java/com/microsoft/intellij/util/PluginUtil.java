@@ -14,7 +14,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -31,6 +30,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
+import lombok.CustomLog;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.*;
@@ -38,10 +38,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Optional;
 
-
+@CustomLog
 public class PluginUtil {
     public static final String BASE_PATH = "${basedir}" + File.separator + "..";
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.util.PluginUtil");
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String PLATFORM_PREFIX_KEY = "idea.platform.prefix";
 
@@ -104,12 +103,12 @@ public class PluginUtil {
     }
 
     public static void displayErrorDialogAndLog(String title, String message, Exception e) {
-        LOG.error(message, e);
+        log.error(message, e);
         displayErrorDialog(title, message);
     }
 
     public static void displayErrorDialogInAWTAndLog(final String title, final String message, Throwable e) {
-        LOG.error(message, e);
+        log.error(message, e);
         AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
     }
 

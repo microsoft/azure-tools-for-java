@@ -6,6 +6,7 @@
 package com.microsoft.intellij.ui.libraries;
 
 import com.microsoft.intellij.AzurePlugin;
+import lombok.CustomLog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,6 +20,7 @@ import java.io.IOException;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public class AILibraryHandler {
     Document webXMLDoc = null;
     String webXMLPath = "";
@@ -53,7 +55,7 @@ public class AILibraryHandler {
                 parseAIConfXmlPath(aiConfXMLPath);
             }
         } catch (Exception e) {
-            AzurePlugin.log(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             throw new Exception(message("aiParseErrMsg"));
         }
     }
@@ -130,7 +132,7 @@ public class AILibraryHandler {
                 webXMLDoc.getDocumentElement().insertBefore(listenerMapping, existingListenerNode);
             }
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -162,7 +164,7 @@ public class AILibraryHandler {
                 webXMLDoc.getDocumentElement().insertBefore(filterMapping, existingFilterMapNode);
             }
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
         }
 
     }
@@ -194,7 +196,7 @@ public class AILibraryHandler {
                 webXMLDoc.getDocumentElement().insertBefore(filter, existingFilterNode);
             }
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
         }
     }
 
@@ -219,7 +221,7 @@ public class AILibraryHandler {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
             throw new Exception(String.format("%s%s", message("aiRemoveErr"), ex.getMessage()));
         }
     }
@@ -237,7 +239,7 @@ public class AILibraryHandler {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            AzurePlugin.log(ex.getMessage(), ex);
+            log.error(ex.getMessage(), ex);
             throw new Exception(String.format("%s%s", message("aiRemoveErr"), ex.getMessage()));
         }
     }

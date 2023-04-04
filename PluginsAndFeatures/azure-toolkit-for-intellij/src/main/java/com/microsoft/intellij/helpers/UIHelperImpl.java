@@ -37,6 +37,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import lombok.CustomLog;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -54,7 +55,7 @@ import java.util.function.Supplier;
 
 import static com.microsoft.azure.toolkit.intellij.springcloud.properties.SpringCloudAppPropertiesEditorProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
-
+@CustomLog
 public class UIHelperImpl implements UIHelper {
     public static final Key<StorageAccount> STORAGE_KEY = new Key<>("storageAccount");
     public static final Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<>("clientStorageAccount");
@@ -128,7 +129,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void logError(String message, Throwable ex) {
-        AzurePlugin.log(message, ex);
+        log.error(message, ex);
     }
 
     /**

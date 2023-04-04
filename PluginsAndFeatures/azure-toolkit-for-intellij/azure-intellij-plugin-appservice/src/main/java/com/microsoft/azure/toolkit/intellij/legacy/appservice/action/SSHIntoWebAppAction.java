@@ -15,13 +15,13 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.TunnelProxy;
+import lombok.CustomLog;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalView;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
@@ -29,10 +29,8 @@ import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.d
 /**
  * SSH into Web App Action
  */
+@CustomLog
 public class SSHIntoWebAppAction {
-
-    private static final Logger logger = Logger.getLogger(SSHIntoWebAppAction.class.getName());
-
     private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
     private static final String RESOURCE_GROUP_PATH_PREFIX = "resourceGroups/";
     private static final String RESOURCE_ELEMENT_PATTERN = "[^/]+";
@@ -54,7 +52,7 @@ public class SSHIntoWebAppAction {
 
     public void execute() {
         final Action<Void> retry = Action.retryFromFailure(this::execute);
-        logger.info(message("webapp.ssh.hint.startSSH", webAppName));
+        log.info(message("webapp.ssh.hint.startSSH", webAppName));
         // ssh to connect to remote web app container.
         final AzureString title = description("user/webapp.connect_ssh.app", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false,
@@ -94,6 +92,6 @@ public class SSHIntoWebAppAction {
                     }));
                 }, AzureTask.Modality.ANY);
             }));
-        logger.info(message("webapp.ssh.hint.SSHDone", webAppName));
+        log.info(message("webapp.ssh.hint.SSHDone", webAppName));
     }
 }

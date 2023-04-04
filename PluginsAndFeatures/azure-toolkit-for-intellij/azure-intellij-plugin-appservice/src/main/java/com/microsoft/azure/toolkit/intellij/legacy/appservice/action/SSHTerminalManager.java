@@ -10,20 +10,19 @@ import com.jediterm.terminal.emulator.Emulator;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.CustomLog;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
+@CustomLog
 public enum SSHTerminalManager {
     INSTANCE;
-
-    private static final Logger logger = Logger.getLogger(SSHTerminalManager.class.getName());
 
     private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = message("webapp.ssh.error.title");
     public static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = message("webapp.ssh.error.message");
@@ -84,7 +83,7 @@ public enum SSHTerminalManager {
             }
         } catch (InterruptedException e) {
         }
-        logger.info(message("webapp.ssh.hint.passwordNotReady"));
+        log.info(message("webapp.ssh.hint.passwordNotReady"));
     }
 
     @Data

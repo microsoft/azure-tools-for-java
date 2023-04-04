@@ -15,7 +15,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import lombok.CustomLog;
 
+@CustomLog
 public class ManageSubscriptionsAction extends NodeAction {
     public ManageSubscriptionsAction(AzureModule azureModule) {
         super(azureModule, "Select Subscriptions");
@@ -36,7 +38,7 @@ public class ManageSubscriptionsAction extends NodeAction {
         try {
             return super.isEnabled() && IdeAzureAccount.getInstance().isLoggedIn();
         } catch (Exception e) {
-            AzurePlugin.log("Error signing in", e);
+            log.error("Error signing in", e);
             return false;
         }
     }

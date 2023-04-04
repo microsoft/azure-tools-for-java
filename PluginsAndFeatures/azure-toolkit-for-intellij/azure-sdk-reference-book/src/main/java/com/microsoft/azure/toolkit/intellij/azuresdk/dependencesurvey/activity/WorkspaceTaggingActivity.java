@@ -13,18 +13,18 @@ import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurvey;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurveyManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@CustomLog
 public class WorkspaceTaggingActivity {
-    private static final Logger logger = Logger.getLogger(WorkspaceTaggingActivity.class.getName());
 
     private static final String WORKSPACE_TAGGING = "workspace-tagging";
     private static final String WORKSPACE_TAGGING_FAILURE = "workspace-tagging-failure";
@@ -36,7 +36,7 @@ public class WorkspaceTaggingActivity {
     private static final String MGMT = "mgmt";
     private static final String SPRING = "spring";
 
-    public static void runActivity(@NotNull final Project project) {
+    public static void runActivity(@Nonnull final Project project) {
 
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
@@ -45,12 +45,12 @@ public class WorkspaceTaggingActivity {
                 showCustomerSurvey(project, workspaceTags);
             } catch (final Exception e) {
                 // swallow exception for workspace tagging
-                logger.warning(e.getMessage());
+                log.warn(e.getMessage());
             }
         });
     }
 
-    private static void showCustomerSurvey(final @NotNull Project project, final Set<String> workspaceTags) {
+    private static void showCustomerSurvey(final @Nonnull Project project, final Set<String> workspaceTags) {
         if (workspaceTags.containsAll(Arrays.asList(CLIENT, MGMT))) {
             CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_SDK);
         }
@@ -67,7 +67,7 @@ public class WorkspaceTaggingActivity {
         CustomerSurveyManager.getInstance().takeSurvey(project, CustomerSurvey.AZURE_INTELLIJ_TOOLKIT);
     }
 
-    private static Set<String> getWorkspaceTags(@NotNull final Project project) {
+    private static Set<String> getWorkspaceTags(@Nonnull final Project project) {
         return ProjectLibraryService.getProjectLibraries(project).stream()
                 .map(l -> WorkspaceTaggingService.getWorkspaceTag(l.getGroupId(), l.getArtifactId()))
                 .filter(StringUtils::isNotBlank)

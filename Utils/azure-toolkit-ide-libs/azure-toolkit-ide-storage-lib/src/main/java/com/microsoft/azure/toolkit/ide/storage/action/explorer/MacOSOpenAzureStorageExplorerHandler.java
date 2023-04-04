@@ -7,14 +7,14 @@ package com.microsoft.azure.toolkit.ide.storage.action.explorer;
 
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 
-@Slf4j
+@CustomLog
 public class MacOSOpenAzureStorageExplorerHandler extends AbstractAzureStorageExplorerHandler {
 
     private static final String MAC_OS_STORAGE_EXPLORER_PATH = "/Contents/MacOS/Microsoft\\ Azure\\ Storage\\ Explorer";

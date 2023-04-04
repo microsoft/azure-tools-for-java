@@ -7,7 +7,6 @@ package com.microsoft.azure.hdinsight.jobs.framework;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -15,35 +14,36 @@ import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.util.PluginUtil;
+import lombok.CustomLog;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.util.WeakHashMap;
 
+@CustomLog
 public class JobViewEditor implements FileEditor {
 
     protected final Project myProject;
     private final JobViewEditorProvider myProvider;
     private final VirtualFile myVirtualFile;
-    @NotNull
+    @Nonnull
     private final JobViewPanel jobViewPanel;
 
-    @NotNull
+    @Nonnull
     private final String uuid;
 
-    private static Logger LOG = Logger.getInstance(JobViewEditor.class.getName());
     private WeakHashMap<Key,Object> userDatas = new WeakHashMap<Key,Object>();
 
-    public JobViewEditor(@NotNull final Project project, @NotNull final VirtualFile file, final JobViewEditorProvider provider) {
-        LOG.info("start open JobView page");
+    public JobViewEditor(@Nonnull final Project project, @Nonnull final VirtualFile file, final JobViewEditorProvider provider) {
+        log.info("start open JobView page");
         myProject = project;
         myProvider = provider;
         myVirtualFile = file;
@@ -54,7 +54,7 @@ public class JobViewEditor implements FileEditor {
             HDInsightBundle.message("HDInsightSparkJobview"), null);
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public JComponent getComponent() {
         return jobViewPanel.getComponent();
@@ -66,20 +66,20 @@ public class JobViewEditor implements FileEditor {
         return jobViewPanel.getBrowser().getComponent();
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return this.getClass().getName();
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public FileEditorState getState(@NotNull FileEditorStateLevel fileEditorStateLevel) {
+    public FileEditorState getState(@Nonnull FileEditorStateLevel fileEditorStateLevel) {
         return FileEditorState.INSTANCE;
     }
 
     @Override
-    public void setState(@NotNull FileEditorState fileEditorState) {
+    public void setState(@Nonnull FileEditorState fileEditorState) {
 
     }
 
@@ -104,12 +104,12 @@ public class JobViewEditor implements FileEditor {
     }
 
     @Override
-    public void addPropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    public void addPropertyChangeListener(@Nonnull PropertyChangeListener propertyChangeListener) {
 
     }
 
     @Override
-    public void removePropertyChangeListener(@NotNull PropertyChangeListener propertyChangeListener) {
+    public void removePropertyChangeListener(@Nonnull PropertyChangeListener propertyChangeListener) {
 
     }
 
@@ -140,7 +140,7 @@ public class JobViewEditor implements FileEditor {
 
     @Nullable
     @Override
-    public <T> T getUserData(@NotNull Key<T> key) {
+    public <T> T getUserData(@Nonnull Key<T> key) {
         if (userDatas.containsKey(key)) {
             WeakHashMap<Key<T>,Object> userData = new WeakHashMap<Key<T>,Object>();
             userData.put(key,userDatas.get(key));
@@ -150,7 +150,7 @@ public class JobViewEditor implements FileEditor {
     }
 
     @Override
-    public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
+    public <T> void putUserData(@Nonnull Key<T> key, @Nullable T t) {
         this.userDatas.put(key, t);
     }
 

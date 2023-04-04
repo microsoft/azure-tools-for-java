@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.actions.IncrementalFindAction;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -27,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.graph.models.Application;
+import lombok.CustomLog;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,9 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@CustomLog
 class ApplicationTemplateForm implements AzureForm<Application> {
-    private static final Logger LOG = Logger.getInstance(ApplicationTemplateForm.class);
-
     // custom fields
     private final Map<ApplicationCodeTemplate, EditorTextField> templateEditors = new HashMap<>();
 
@@ -74,13 +73,13 @@ class ApplicationTemplateForm implements AzureForm<Application> {
             // the subscription box does a refresh and update of selected item in its constructor
             var selected = subscriptionBox.getValue();
             if (selected != null) {
-                LOG.debug("Setting initially selected subscription to refresh applications");
+                log.debug("Setting initially selected subscription to refresh applications");
                 applicationsBox.setSubscription(selected);
             }
 
             subscriptionBox.addItemListener(e -> {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    LOG.debug("Subscription changed, updating applications");
+                    log.debug("Subscription changed, updating applications");
                     applicationsBox.setSubscription((Subscription) e.getItem());
                 }
             });

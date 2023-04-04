@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.common.auth;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbAware;
@@ -30,6 +29,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azure.toolkit.intellij.common.subscription.SelectSubscriptionsAction;
+import lombok.CustomLog;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,8 +41,8 @@ import java.util.concurrent.Executors;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 
+@CustomLog
 public class AzureSignInAction extends AzureAnAction implements DumbAware {
-    private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
     private static final String SIGN_IN = "Azure Sign In...";
     private static final String SIGN_OUT = "Azure Sign Out...";
     private static final String SIGN_IN_ERROR = "Sign In Error";
@@ -82,7 +82,7 @@ public class AzureSignInAction extends AzureAnAction implements DumbAware {
                     : com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_IN));
         } catch (final Exception ex) {
             ex.printStackTrace();
-            LOGGER.error("update", ex);
+            log.error("update", ex);
         }
     }
 

@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.bicep.activities;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.ui.EditorNotifications;
@@ -19,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.SystemException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.CustomLog;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -39,8 +39,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 
+@CustomLog
 public class BicepStartupActivity implements StartupActivity, PluginStateListener {
-    protected static final Logger LOG = Logger.getInstance(BicepStartupActivity.class);
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
     public static final String STDIO = "--stdio";
@@ -133,8 +133,8 @@ public class BicepStartupActivity implements StartupActivity, PluginStateListene
     @Override
     public void uninstall(@Nonnull IdeaPluginDescriptor ideaPluginDescriptor) {
         if (ideaPluginDescriptor.getPluginId().getIdString().equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
-            LOG.info("-------------------------------------------------------");
-            LOG.info("stopping all language servers at uninstalling plugin " + ideaPluginDescriptor.getName());
+            log.info("-------------------------------------------------------");
+            log.info("stopping all language servers at uninstalling plugin " + ideaPluginDescriptor.getName());
             IntellijLanguageClient.stopAllLanguageServers();
             unregisterBicepTextMateBundle();
         }

@@ -14,10 +14,12 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import lombok.CustomLog;
 
 import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_IN;
 import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.SIGN_OUT;
 
+@CustomLog
 public class SignInOutAction extends NodeAction {
 
     SignInOutAction(AzureModule azureModule) {
@@ -40,7 +42,7 @@ public class SignInOutAction extends NodeAction {
         try {
             return IdeAzureAccount.getInstance().isLoggedIn() ? "Sign Out" : "Sign In";
         } catch (final Exception e) {
-            AzurePlugin.log("Error signing in", e);
+            log.error("Error signing in", e);
             return "";
         }
     }

@@ -6,6 +6,7 @@
 package com.microsoft.intellij.ui.libraries;
 
 import com.microsoft.azure.toolkit.intellij.AzurePlugin;
+import lombok.CustomLog;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -24,6 +25,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 /**
  * Utility class used to parse and save xml files.
  */
+@CustomLog
 final class ParserXMLUtility {
 
     private ParserXMLUtility() {
@@ -47,7 +49,7 @@ final class ParserXMLUtility {
             doc = docBuilder.parse(xmlFile);
             return doc;
         } catch (Exception e) {
-            AzurePlugin.log(String.format("%s%s", errorMessage, e.getMessage()), e);
+            log.error(String.format("%s%s", errorMessage, e.getMessage()), e);
             throw new Exception(String.format("%s%s", errorMessage, e.getMessage()));
         }
     }
@@ -76,7 +78,7 @@ final class ParserXMLUtility {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             transformer.transform(source, destination);
         } catch (Exception excp) {
-            AzurePlugin.log(String.format("%s%s", message("saveErrMsg"), excp.getMessage()), excp);
+            log.error(String.format("%s%s", message("saveErrMsg"), excp.getMessage()), excp);
         } finally {
             if (fos != null) {
                 fos.close();

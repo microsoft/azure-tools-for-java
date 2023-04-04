@@ -11,7 +11,7 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import lombok.extern.java.Log;
+import lombok.CustomLog;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public interface ResourceManager {
@@ -51,7 +50,7 @@ public interface ResourceManager {
     @Nullable
     Resource<?> getResourceById(String id);
 
-    @Log
+    @CustomLog
     @State(name = Impl.ELEMENT_NAME_RESOURCES, storages = {@Storage("azure/connection-resources.xml")})
     final class Impl implements ResourceManager, PersistentStateComponent<Element> {
         private static final ExtensionPointName<ResourceDefinition<?>> exPoints =
@@ -97,7 +96,7 @@ public interface ResourceManager {
                         resourcesEle.addContent(resourceEle);
                     }
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when persist resource of type '%s'", resource.getDefinition().getName()), e);
+                    log.warn(String.format("error occurs when persist resource of type '%s'", resource.getDefinition().getName()), e);
                 }
             });
             return resourcesEle;
@@ -113,7 +112,7 @@ public interface ResourceManager {
                 try {
                     Optional.ofNullable(definition).map(d -> definition.read(resourceEle)).ifPresent(this::addResource);
                 } catch (final Exception e) {
-                    log.log(Level.WARNING, String.format("error occurs when load a resource of type '%s'", resDef), e);
+                    log.warn(String.format("error occurs when load a resource of type '%s'", resDef), e);
                 }
             }
         }

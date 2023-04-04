@@ -9,6 +9,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import lombok.CustomLog;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -27,12 +28,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.Logger;
 /**
  * Use JxBrowser to load URL for Swing, AWT or JavaFX UIs
  */
+@CustomLog
 public class JxBrowserUtil {
-    public static final Logger log = Logger.getLogger(JxBrowserUtil.class.getName());
     public static int MAX_RETRY_TIMES = 3;
     public static int MAX_WAIT_TIME_IN_SECONDS = 120;
 
@@ -62,7 +62,7 @@ public class JxBrowserUtil {
      * @return JComponent (JxBrowser BrowserView) that can be added to Swing UI
      */
     public static CompletableFuture<JComponent> createBrowserViewAndLoadURL(@NotNull final String url, final String targetPath) {
-        log.fine("Start to download, create browser view and load URL at time " + System.currentTimeMillis());
+        log.debug("Start to download, create browser view and load URL at time " + System.currentTimeMillis());
         CompletableFuture<JComponent> downloadAndLoadClassesTask = CompletableFuture.supplyAsync(() -> {
             synchronized (JxBrowserUtil.class) {
                 if (!loadedClasses.isLoaded()) {
@@ -75,7 +75,7 @@ public class JxBrowserUtil {
             }
 
             if (!loadedClasses.isLoaded()) {
-                log.severe("Class JxBrowser is not loaded at time " + System.currentTimeMillis());
+                log.error("Class JxBrowser is not loaded at time " + System.currentTimeMillis());
                 throw new CompletionException(new JxBrowserException("Class JxBrowser is not loaded"));
             }
 
@@ -90,12 +90,12 @@ public class JxBrowserUtil {
 
                 return (JComponent)browserView;
             } catch (Exception e) {
-                log.severe("Class JxBrowser is not loaded at time " +  + System.currentTimeMillis());
+                log.error("Class JxBrowser is not loaded at time " +  + System.currentTimeMillis());
                 throw new CompletionException(e);
             }
         });
 
-        log.fine("Finished downloading, creating browser view and loading URL at " + System.currentTimeMillis());
+        log.debug("Finished downloading, creating browser view and loading URL at " + System.currentTimeMillis());
 
         return downloadAndLoadClassesTask;
     }
@@ -150,7 +150,7 @@ public class JxBrowserUtil {
             threadPool.shutdown();
             threadPool.awaitTermination((long) (MAX_WAIT_TIME_IN_SECONDS * Math.pow(RETRY_BACKOFF_FACTOR, MAX_RETRY_TIMES)), TimeUnit.SECONDS);
         } catch (Exception ex) {
-            log.severe("Download JxBrowser jars failed with exception " + ex.getMessage());
+            log.error("Download JxBrowser jars failed with exception " + ex.getMessage());
             result = false;
         } finally {
             threadPool.shutdownNow();
@@ -168,13 +168,13 @@ public class JxBrowserUtil {
     private static boolean checkFileDigest(@NotNull Path filePathName, @NotNull Path digestFilePathName) {
         File targetFile = filePathName.toFile();
         if (!targetFile.exists() || !targetFile.isFile()) {
-            log.fine(filePathName + " doesn't exist");
+            log.debug(filePathName + " doesn't exist");
             return false;
         }
 
         File digestFile = digestFilePathName.toFile();
         if (!digestFile.exists() || !digestFile.isFile()) {
-            log.fine(digestFilePathName + " doesn't exist");
+            log.debug(digestFilePathName + " doesn't exist");
             return false;
         }
 
@@ -188,14 +188,14 @@ public class JxBrowserUtil {
             digestFileContent = FileUtils.readFileToString(digestFile, "UTF-8");
             targetFileStream.close();
         } catch (IOException e) {
-            log.warning(String.format("Fail to read file %s or digest %s", filePathName, digestFilePathName));
+            log.warn(String.format("Fail to read file %s or digest %s", filePathName, digestFilePathName));
             result = false;
         } finally {
             IOUtils.closeQuietly(targetFileStream);
         }
 
         if (digestFileContent.equals(digest) == false) {
-            log.warning(String.format("Check sum error for file %s and digest file %s", filePathName, digestFilePathName));
+            log.warn(String.format("Check sum error for file %s and digest file %s", filePathName, digestFilePathName));
             return false;
         }
 
@@ -218,7 +218,7 @@ public class JxBrowserUtil {
             blob.downloadToFile(downloadingFile.getAbsolutePath());
         } catch (Exception e) {
             result = false;
-            log.warning("Fail to download file from Azure: " + e.getMessage());
+            log.warn("Fail to download file from Azure: " + e.getMessage());
         }
 
         return result;
@@ -254,7 +254,7 @@ public class JxBrowserUtil {
             }
 
             if (retryLeft < 0) {
-                log.warning("Maximum retry time reached. Fail to download" + filePathNames.get(0));
+                log.warn("Maximum retry time reached. Fail to download" + filePathNames.get(0));
                 return false;
             }
 
@@ -280,10 +280,10 @@ public class JxBrowserUtil {
             }
         } catch (Exception ex) {
             result = false;
-            log.warning(String.format("Download fileName %s fail with exception %s", (filePathNames.size() > 0 ? filePathNames.get(0) : ""), ex.getMessage()));
+            log.warn(String.format("Download fileName %s fail with exception %s", (filePathNames.size() > 0 ? filePathNames.get(0) : ""), ex.getMessage()));
         } finally {
             if (!result) {
-                log.fine("Start to download again with retry count " + retryLeft + " and wait time " + waitTime);
+                log.debug("Start to download again with retry count " + retryLeft + " and wait time " + waitTime);
                 result = downloadAndCheckDigest(threadPool, filePathNames, retryLeft - 1, waitTime * RETRY_BACKOFF_FACTOR);
             }
         }
@@ -298,7 +298,7 @@ public class JxBrowserUtil {
     private static String getJxBrowserJarFileName() throws JxBrowserException {
         String osName = System.getProperty("os.name").toLowerCase();
         String osArch = System.getProperty("os.arch").toLowerCase();
-        log.fine("osName is : " + osName + ", osArch is: " + osArch);
+        log.debug("osName is : " + osName + ", osArch is: " + osArch);
 
         String result = "";
         if (osName.contains("mac") || osName.contains("darwin")) {
