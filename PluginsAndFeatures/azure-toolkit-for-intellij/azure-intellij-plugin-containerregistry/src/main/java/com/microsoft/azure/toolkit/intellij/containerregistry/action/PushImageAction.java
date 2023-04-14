@@ -19,8 +19,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.container.Constant;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
+import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
@@ -36,6 +39,17 @@ public class PushImageAction extends AzureAnAction {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
     private static final String DIALOG_TITLE = "Push Image";
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
+
+    private DockerImage dockerImage;
+
+    public PushImageAction() {
+        this(null);
+    }
+
+    public PushImageAction(@Nullable DockerImage dockerImage) {
+        super(DIALOG_TITLE, "Build/push local image to Azure Container Registry", IntelliJAzureIcons.getIcon("/icons/DockerSupport/PushImage.svg"));
+        this.dockerImage = dockerImage;
+    }
 
     @Override
     @AzureOperation(name = "user/docker.push_image")
@@ -71,6 +85,9 @@ public class PushImageAction extends AzureAnAction {
             settings = manager.createConfiguration(
                     String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
                     factory);
+        }
+        if (settings.getConfiguration() instanceof PushImageRunConfiguration) {
+            ((PushImageRunConfiguration) settings.getConfiguration()).setDockerImage(dockerImage);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));

@@ -5,77 +5,75 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.PushResponseItem;
+import com.github.dockerjava.core.command.PushImageResultCallback;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.container.Constant;
 import com.microsoft.azure.toolkit.intellij.container.DockerUtil;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PushImageRunState extends AzureRunProfileState<String> {
     private final PushImageRunModel dataModel;
+    private final PushImageRunConfiguration configuration;
 
-    public PushImageRunState(Project project, PushImageRunModel pushImageRunModel) {
+    public PushImageRunState(Project project, PushImageRunConfiguration configuration) {
         super(project);
-        this.dataModel = pushImageRunModel;
+        this.configuration = configuration;
+        this.dataModel = configuration.getModel();
     }
 
     @Override
     public String executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
-        processHandler.setText("Starting job ...  ");
-        String basePath = project.getBasePath();
-        if (basePath == null) {
-            processHandler.println("Project base path is null.", ProcessOutputTypes.STDERR);
-            throw new FileNotFoundException("Project base path is null.");
+        final DockerImage image = configuration.getDockerImageConfiguration();
+        final DockerClient dockerClient = DockerUtil.getDockerClient(Objects.requireNonNull(configuration.getDockerHostConfiguration()));
+        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(configuration.getContainerRegistryId());
+        final String loginServerUrl = Objects.requireNonNull(registry).getLoginServerUrl();
+        final String imageAndTag = StringUtils.startsWith(Objects.requireNonNull(image).getImageName(), loginServerUrl) ? image.getImageName() : loginServerUrl + "/" + image.getImageName();
+        // tag image with ACR url
+        final DockerImage localImage = DockerUtil.getImageWithName(dockerClient, image.getImageName());
+        final DockerImage taggedImage = DockerUtil.getImageWithName(dockerClient, imageAndTag);
+        if (ObjectUtils.allNull(localImage, taggedImage)) {
+            throw new AzureToolkitRuntimeException(String.format("Image %s was not found locally.", image.getImageName()));
+        } else if (Objects.isNull(taggedImage)) {
+            // tag image
+            DockerUtil.tagImage(dockerClient, image.getImageName(), imageAndTag, image.getTagName());
         }
-        // locate artifact to specified location
-        String targetFilePath = dataModel.getTargetPath();
-        processHandler.setText(String.format("Locating artifact ... [%s]", targetFilePath));
-
-        // validate dockerfile
-        Path targetDockerfile = Paths.get(dataModel.getDockerFilePath());
-        processHandler.setText(String.format("Validating dockerfile ... [%s]", targetDockerfile));
-        if (!targetDockerfile.toFile().exists()) {
-            throw new FileNotFoundException("Dockerfile not found.");
-        }
-        // replace placeholder if exists
-        String content = new String(Files.readAllBytes(targetDockerfile));
-        content = content.replaceAll(Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER,
-            Paths.get(basePath).toUri().relativize(Paths.get(targetFilePath).toUri()).getPath()
-        );
-        Files.write(targetDockerfile, content.getBytes());
-
-        // build image
-        PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
-        processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
-        DockerUtil.ping();
-        String image = DockerUtil.buildImage(
-            acrInfo.getImageTagWithServerUrl(),
-            targetDockerfile.toFile(),
-            targetDockerfile.getParent().toFile()
-        );
-
         // push to ACR
-        processHandler.setText(String.format("Pushing to ACR ... [%s] ", acrInfo.getServerUrl()));
-        DockerUtil.pushImage(acrInfo.getServerUrl(), acrInfo.getUsername(), acrInfo.getPassword(),
-            acrInfo.getImageTagWithServerUrl());
-
-        return image;
+        processHandler.setText(String.format("Pushing to ACR ... [%s] ", loginServerUrl));
+        final PushImageResultCallback callBack = new PushImageResultCallback() {
+            @Override
+            public void onNext(PushResponseItem item) {
+                final String status = item.getStatus();
+                final String id = item.getId();
+                final String progress = item.getProgress();
+                final String message = Stream.of(status, id, progress).filter(StringUtils::isNoneBlank).collect(Collectors.joining(" "));
+                processHandler.println(message, ProcessOutputTypes.SYSTEM);
+                super.onNext(item);
+            }
+        };
+        DockerUtil.pushImage(dockerClient, Objects.requireNonNull(loginServerUrl), registry.getUserName(), registry.getPrimaryCredential(), imageAndTag, callBack);
+        return image.getImageName();
     }
 
     @Nonnull
