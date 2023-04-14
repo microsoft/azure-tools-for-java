@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
+import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -16,11 +17,19 @@ import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Ports;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.LocalDirectorySSLConfig;
+import com.github.dockerjava.core.command.PushImageResultCallback;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -29,10 +38,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.container.model.DockerHost.DEFAULT_WINDOWS_HOST;
 
 
 public class DockerUtil {
@@ -71,7 +87,7 @@ public class DockerUtil {
 
     public static String createContainer(@Nonnull DockerClient docker, @Nonnull String imageNameWithTag, String port) throws DockerException {
         final CreateContainerCmd cmd = docker.createContainerCmd(imageNameWithTag)
-            .withExposedPorts(ExposedPort.parse(port));
+            .withPortBindings(new PortBinding(Ports.Binding.bindPort(findFreePort()), ExposedPort.parse(port)));
         final CreateContainerResponse container = cmd.exec();
         return container.getId();
     }
@@ -93,16 +109,30 @@ public class DockerUtil {
 
     @Nullable
     @AzureOperation(name = "boundary/docker.build_image.image|dir", params = {"imageNameWithTag", "baseDir"})
+    public static String buildImage(@Nonnull DockerClient docker, @Nonnull DockerImage image, @Nullable BuildImageResultCallback callback)
+            throws DockerException {
+        return buildImage(docker, image.getImageName(), image.getDockerFile(), image.getBaseDirectory(), callback);
+    }
+
     public static String buildImage(@Nonnull DockerClient docker, String imageNameWithTag, @Nonnull File dockerFile, File baseDir)
         throws DockerException {
-        final BuildImageResultCallback callback = new BuildImageResultCallback() {
-        };
+        return buildImage(docker, imageNameWithTag, dockerFile, baseDir, null);
+    }
+
+    @AzureOperation(name = "boundary/docker.build_image.image|dir", params = {"imageNameWithTag", "baseDir"})
+    public static String buildImage(@Nonnull DockerClient docker, String imageNameWithTag, @Nonnull File dockerFile, @Nullable File baseDir, @Nullable BuildImageResultCallback callback)
+            throws DockerException {
+        baseDir = Optional.ofNullable(baseDir).orElseGet(() -> dockerFile.getParentFile());
         final String imageId = docker.buildImageCmd()
             .withDockerfile(dockerFile)
             .withBaseDirectory(baseDir)
             .withTags(Set.of(imageNameWithTag))
-            .exec(callback).awaitImageId();
+            .exec(Optional.ofNullable(callback).orElseGet(BuildImageResultCallback::new)).awaitImageId();
         return imageId == null ? null : imageNameWithTag;
+    }
+
+    public static void tagImage(@Nonnull DockerClient docker, final String sourceImageWithTag, final String repository, final String tag) throws DockerException {
+        docker.tagImageCmd(sourceImageWithTag, repository, tag).exec();
     }
 
     public static void pushImage(@Nonnull String registryUrl, String username, String password, @Nonnull String targetImageName)
@@ -114,9 +144,17 @@ public class DockerUtil {
     public static void pushImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password,
                                  @Nonnull String targetImageName)
         throws DockerException, InterruptedException {
+        pushImage(dockerClient, registryUrl, username, password, targetImageName, null);
+    }
+
+    @AzureOperation(name = "boundary/docker.push_image.image|registry", params = {"targetImageName", "registryUrl"})
+    public static void pushImage(@Nonnull DockerClient dockerClient, @Nonnull String registryUrl, String username, String password,
+                                 @Nonnull String targetImageName, @Nullable PushImageResultCallback callback)
+            throws DockerException, InterruptedException {
         final AuthConfig authConfig = new AuthConfig().withUsername(username).withPassword(password).withRegistryAddress(registryUrl);
         final PushImageCmd cmd = dockerClient.pushImageCmd(targetImageName).withAuthConfig(authConfig);
-        cmd.exec(new ResultCallback.Adapter<>()).awaitCompletion();
+        final PushImageResultCallback resultCallback = Optional.ofNullable(callback).orElseGet(() -> new PushImageResultCallback());
+        cmd.exec(resultCallback).awaitCompletion();
     }
 
     public static void pullImage(@Nonnull String registryUrl, String username, String password,
@@ -142,6 +180,22 @@ public class DockerUtil {
     public static void stopContainer(@Nonnull DockerClient dockerClient, @Nonnull String containerId) throws DockerException {
         dockerClient.stopContainerCmd(containerId).exec();
         dockerClient.removeContainerCmd(containerId).exec();
+    }
+
+    public static DockerClient getDockerClient(@Nonnull final DockerHost dockerHost) {
+        return getDockerClient(dockerHost.getDockerHost(), dockerHost.isTlsEnabled(), dockerHost.getDockerCertPath());
+    }
+
+    // todo: add host configurations from docker extension
+    public static List<DockerHost> getDockerHosts() {
+        final List<DockerHost> result = new ArrayList<>();
+        final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+        final String certPath = config.getSSLConfig() instanceof LocalDirectorySSLConfig ? ((LocalDirectorySSLConfig) config.getSSLConfig()).getDockerCertPath() : null;
+        result.add(new DockerHost(config.getDockerHost().toString(), certPath));
+        if (!SystemInfo.isWindows && result.contains(DEFAULT_WINDOWS_HOST)) {
+            result.add(DEFAULT_WINDOWS_HOST);
+        }
+        return result;
     }
 
     /**
@@ -172,6 +226,27 @@ public class DockerUtil {
             docker.pingCmd().exec();
         } catch (final DockerException e) {
             throw new AzureToolkitRuntimeException("Failed to connect docker server, \nIs Docker installed and running?");
+        }
+    }
+
+    public static List<DockerImage> listLocalImages(@Nonnull final DockerClient dockerClient) {
+        final List<Image> images = dockerClient.listImagesCmd().exec();
+        return images.stream().map(DockerImage::new).collect(Collectors.toList());
+    }
+
+    public static DockerImage getImageWithName(@Nonnull final DockerClient dockerClient, @Nonnull final String imageName) {
+        return dockerClient.listImagesCmd().exec().stream().filter(image -> {
+            final String[] repoTags = image.getRepoTags();
+            return repoTags != null && Arrays.stream(repoTags).anyMatch(tag -> tag.equals(imageName));
+        }).findFirst().map(DockerImage::new).orElse(null);
+    }
+
+    // todo: move to socket utils
+    private static int findFreePort() {
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            return serverSocket.getLocalPort();
+        } catch (IOException e) {
+            return -1;
         }
     }
 }
