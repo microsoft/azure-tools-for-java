@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -14,16 +13,19 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.util.Optional;
 
-public class DockerHostRunConfiguration extends AzureRunConfigurationBase<DockerHostRunSetting> {
+public class DockerHostRunConfiguration extends AzureRunConfigurationBase<DockerHostRunSetting> implements IDockerConfiguration {
     // TODO: move to util
     private static final String MISSING_ARTIFACT = "A web archive (.war) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
@@ -50,7 +52,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new DockerHostRunSettingsEditor(this.getProject());
+        return new DockerHostRunSettingsEditor(this.getProject(), this);
     }
 
     /**
@@ -66,31 +68,35 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         if (StringUtils.isEmpty(dataModel.getDockerHost())) {
             throw new ConfigurationException(INVALID_DOCKER_HOST);
         }
-        if (StringUtils.isEmpty(dataModel.getDockerFilePath())
-                || !Paths.get(dataModel.getDockerFilePath()).toFile().exists()) {
-            throw new ConfigurationException(INVALID_DOCKER_FILE);
-        }
         if (dataModel.isTlsEnabled() && StringUtils.isEmpty(dataModel.getDockerCertPath())) {
             throw new ConfigurationException(INVALID_CERT_PATH);
         }
         if (StringUtils.isEmpty(dataModel.getImageName())) {
             throw new ConfigurationException(MISSING_IMAGE_NAME);
         }
-
-        // target package
-        if (StringUtils.isEmpty(dataModel.getTargetName())) {
-            throw new ConfigurationException(MISSING_ARTIFACT);
-        }
-        if (!dataModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, dataModel.getTargetName()));
-        }
     }
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
-            throws ExecutionException {
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
         return new DockerHostRunState(getProject(), dataModel);
+    }
+
+    @javax.annotation.Nullable
+    @Override
+    public DockerImage getDockerImageConfiguration() {
+        final DockerImage image = new DockerImage();
+        image.setRepositoryName(this.getImageName());
+        image.setTagName(this.getTagName());
+        image.setDockerFile(Optional.ofNullable(this.getDockerFilePath()).map(File::new).orElse(null));
+        image.setDraft(StringUtils.isNoneBlank(this.getDockerFilePath()));
+        return image;
+    }
+
+    @javax.annotation.Nullable
+    @Override
+    public DockerHost getDockerHostConfiguration() {
+        return new DockerHost(dataModel.getDockerHost(), dataModel.getDockerCertPath());
     }
 
     public String getDockerHost() {
@@ -162,5 +168,17 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     @Override
     public String getSubscriptionId() {
         return "";
+    }
+
+    public void setDockerImage(@Nullable DockerImage image) {
+        this.setImageName(Optional.ofNullable(image).map(DockerImage::getRepositoryName).orElse(null));
+        this.setTagName(Optional.ofNullable(image).map(DockerImage::getTagName).orElse(null));
+        this.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).map(File::getAbsolutePath).orElse(null));
+    }
+
+    public void setHost(@Nullable DockerHost host) {
+        this.setDockerHost(Optional.ofNullable(host).map(DockerHost::getDockerHost).orElse(null));
+        this.setDockerCertPath(Optional.ofNullable(host).map(DockerHost::getDockerCertPath).orElse(null));
+        this.setTlsEnabled(Optional.ofNullable(host).map(DockerHost::isTlsEnabled).orElse(false));
     }
 }

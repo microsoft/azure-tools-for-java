@@ -178,7 +178,7 @@ public class BuildArtifactBeforeRunTaskUtils {
         }
     }
 
-    private static synchronized <T extends BeforeRunTask<?>> void addTask(
+    public static synchronized <T extends BeforeRunTask<?>> void addTask(
         @Nonnull ConfigurationSettingsEditorWrapper editor,
         List<? extends T> tasks, T task, RunConfiguration config
     ) {

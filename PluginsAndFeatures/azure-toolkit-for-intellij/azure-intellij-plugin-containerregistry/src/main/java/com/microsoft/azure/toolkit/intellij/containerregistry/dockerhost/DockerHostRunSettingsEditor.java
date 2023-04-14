@@ -6,16 +6,18 @@
 package com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.ui.SettingPanel;
+import com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.ui.DockerHostRunConfigurationSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingsEditor;
 
 public class DockerHostRunSettingsEditor extends AzureSettingsEditor<DockerHostRunConfiguration> {
-    private SettingPanel settingPanel;
+    private DockerHostRunConfigurationSettingPanel settingPanel;
+    private DockerHostRunConfiguration dockerHostRunConfiguration;
 
-    public DockerHostRunSettingsEditor(Project project) {
+    public DockerHostRunSettingsEditor(Project project, DockerHostRunConfiguration dockerHostRunConfiguration) {
         super(project);
-        this.settingPanel = new SettingPanel(project);
+        this.dockerHostRunConfiguration = dockerHostRunConfiguration;
+        this.settingPanel = new DockerHostRunConfigurationSettingPanel(project, dockerHostRunConfiguration);
     }
 
     @Override
