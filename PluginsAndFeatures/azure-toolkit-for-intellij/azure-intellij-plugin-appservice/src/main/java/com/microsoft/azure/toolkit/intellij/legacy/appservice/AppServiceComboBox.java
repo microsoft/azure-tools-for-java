@@ -44,7 +44,7 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
     public AppServiceComboBox(final Project project) {
         super(false);
         this.project = project;
-        this.setRenderer(new AppComboBoxRender());
+        this.setRenderer(new AppComboBoxRender(false));
     }
 
     @Override
@@ -132,13 +132,22 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
 
     public static class AppComboBoxRender extends SimpleListCellRenderer<AppServiceConfig> {
 
+        private final boolean enableDocker;
+
+        public AppComboBoxRender(final boolean enableDocker) {
+            super();
+            this.enableDocker = enableDocker;
+        }
+
         @Override
         public void customize(JList<? extends AppServiceConfig> list, AppServiceConfig app, int index, boolean isSelected, boolean cellHasFocus) {
             if (app != null) {
                 final boolean isJavaApp = Optional.of(app).filter(a -> Objects.nonNull(a.getSubscription()))
                     .map(AppServiceConfig::getRuntime).map(Runtime::getJavaVersion)
                     .map(javaVersion -> !Objects.equals(javaVersion, JavaVersion.OFF)).orElse(false);
-                setEnabled(isJavaApp);
+                final boolean isDocker = Optional.of(app).filter(a -> Objects.nonNull(a.getSubscription()))
+                        .map(AppServiceConfig::getRuntime).map(Runtime::isDocker).orElse(false);
+                setEnabled(isJavaApp || (isDocker && enableDocker));
                 setFocusable(isJavaApp);
 
                 if (index >= 0) {

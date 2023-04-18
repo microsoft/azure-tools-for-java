@@ -4,7 +4,6 @@
  */
 package com.microsoft.azure.toolkit.intellij.container.model;
 
-import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class DockerPushConfiguration extends DockerConfiguration {
-    private ContainerRegistry containerRegistry;
+    private String containerRegistryId;
 }

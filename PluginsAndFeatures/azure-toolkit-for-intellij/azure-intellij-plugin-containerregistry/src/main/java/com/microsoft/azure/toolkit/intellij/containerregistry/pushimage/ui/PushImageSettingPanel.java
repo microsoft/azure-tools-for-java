@@ -15,17 +15,13 @@ import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.DockerB
 import com.microsoft.azure.toolkit.intellij.containerregistry.component.DockerImageConfigurationPanel;
 import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.PushImageRunConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
-import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
-import java.util.Optional;
 
 public class PushImageSettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
     private final PushImageRunConfiguration runConfiguration;
@@ -60,9 +56,7 @@ public class PushImageSettingPanel extends AzureSettingPanel<PushImageRunConfigu
         final DockerPushConfiguration result = new DockerPushConfiguration();
         result.setDockerImage(configuration.getDockerImageConfiguration());
         result.setDockerHost(configuration.getDockerHostConfiguration());
-        final ContainerRegistry containerRegistry = (ContainerRegistry) Optional.ofNullable(configuration.getContainerRegistryId())
-                .map(id -> Azure.az(AzureContainerRegistry.class).getById(id)).orElse(null);
-        result.setContainerRegistry(containerRegistry);
+        result.setContainerRegistryId(configuration.getContainerRegistryId());
         pnlConfiguration.setValue(result);
     }
 
@@ -71,7 +65,7 @@ public class PushImageSettingPanel extends AzureSettingPanel<PushImageRunConfigu
         final DockerPushConfiguration value = pnlConfiguration.getValue();
         configuration.setDockerImage(value.getDockerImage());
         configuration.setHost(value.getDockerHost());
-        configuration.setContainerRegistry(value.getContainerRegistry());
+        configuration.getModel().setContainerRegistryId(value.getContainerRegistryId());
     }
 
     @Override

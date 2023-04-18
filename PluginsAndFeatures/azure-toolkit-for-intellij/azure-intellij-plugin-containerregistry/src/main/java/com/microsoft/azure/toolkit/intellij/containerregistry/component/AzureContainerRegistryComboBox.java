@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
 
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -30,6 +31,7 @@ public class AzureContainerRegistryComboBox extends AzureComboBox<ContainerRegis
 
     public AzureContainerRegistryComboBox(boolean listAllSubscription) {
         super(false);
+        this.setRenderer(new AzureContainerRegistryComboBoxRenderer());
         this.listAllSubscription = listAllSubscription;
     }
 
@@ -63,5 +65,17 @@ public class AzureContainerRegistryComboBox extends AzureComboBox<ContainerRegis
                 Azure.az(AzureAccount.class).account().getSelectedSubscriptions().stream());
         return subscriptionStream.map(s -> Azure.az(AzureContainerRegistry.class).registry(s.getId()))
                 .flatMap(module -> module.list().stream()).collect(Collectors.toList());
+    }
+
+    class AzureContainerRegistryComboBoxRenderer extends SimpleListCellRenderer<ContainerRegistry> {
+        @Override
+        public void customize(JList<? extends ContainerRegistry> list, ContainerRegistry value, int index, boolean selected, boolean hasFocus) {
+            if (value == null) {
+                return;
+            }
+            this.setIcon(AzureContainerRegistryComboBox.this.getItemIcon(value));
+            this.setText(AzureContainerRegistryComboBox.this.getItemText(value));
+            this.setEnabled(value.isAdminUserEnabled());
+        }
     }
 }

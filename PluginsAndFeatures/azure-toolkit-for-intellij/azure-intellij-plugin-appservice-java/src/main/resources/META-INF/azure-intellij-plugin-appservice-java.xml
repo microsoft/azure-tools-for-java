@@ -5,6 +5,7 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <actions implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceIntelliJActionsContributor"/>
         <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceTaskProvider"/>
+        <dockerfileActionsProvider implementation="com.microsoft.azure.toolkit.intellij.appservice.AzureAppServiceDockerfileActionsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

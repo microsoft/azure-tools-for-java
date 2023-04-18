@@ -20,6 +20,7 @@ import org.apache.commons.collections4.ListUtils;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -78,5 +79,9 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
             final Runtime runtime = appServiceConfigPanelAdvanced.getSelectorRuntime().getValue();
             appServiceMonitorPanel.setApplicationLogVisible(runtime != null && runtime.getOperatingSystem() == OperatingSystem.WINDOWS);
         });
+    }
+
+    public void setFixedRuntime(final Runtime runtime) {
+        this.appServiceConfigPanelAdvanced.setFixedRuntime(runtime);
     }
 }

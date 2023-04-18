@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -122,7 +121,7 @@ public class DockerUtil {
     @AzureOperation(name = "boundary/docker.build_image.image|dir", params = {"imageNameWithTag", "baseDir"})
     public static String buildImage(@Nonnull DockerClient docker, String imageNameWithTag, @Nonnull File dockerFile, @Nullable File baseDir, @Nullable BuildImageResultCallback callback)
             throws DockerException {
-        baseDir = Optional.ofNullable(baseDir).orElseGet(() -> dockerFile.getParentFile());
+        baseDir = Optional.ofNullable(baseDir).orElseGet(dockerFile::getParentFile);
         final String imageId = docker.buildImageCmd()
             .withDockerfile(dockerFile)
             .withBaseDirectory(baseDir)
@@ -153,7 +152,7 @@ public class DockerUtil {
             throws DockerException, InterruptedException {
         final AuthConfig authConfig = new AuthConfig().withUsername(username).withPassword(password).withRegistryAddress(registryUrl);
         final PushImageCmd cmd = dockerClient.pushImageCmd(targetImageName).withAuthConfig(authConfig);
-        final PushImageResultCallback resultCallback = Optional.ofNullable(callback).orElseGet(() -> new PushImageResultCallback());
+        final PushImageResultCallback resultCallback = Optional.ofNullable(callback).orElseGet(PushImageResultCallback::new);
         cmd.exec(resultCallback).awaitCompletion();
     }
 
@@ -237,15 +236,15 @@ public class DockerUtil {
     public static DockerImage getImageWithName(@Nonnull final DockerClient dockerClient, @Nonnull final String imageName) {
         return dockerClient.listImagesCmd().exec().stream().filter(image -> {
             final String[] repoTags = image.getRepoTags();
-            return repoTags != null && Arrays.stream(repoTags).anyMatch(tag -> tag.equals(imageName));
+            return repoTags != null && Arrays.asList(repoTags).contains(imageName);
         }).findFirst().map(DockerImage::new).orElse(null);
     }
 
     // todo: move to socket utils
     private static int findFreePort() {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
+        try (final ServerSocket serverSocket = new ServerSocket(0)) {
             return serverSocket.getLocalPort();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             return -1;
         }
     }

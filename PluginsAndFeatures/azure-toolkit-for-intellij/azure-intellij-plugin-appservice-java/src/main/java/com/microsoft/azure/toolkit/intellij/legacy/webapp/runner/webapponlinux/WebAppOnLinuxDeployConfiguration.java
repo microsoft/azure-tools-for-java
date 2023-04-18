@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -14,16 +13,35 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
+import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
+import com.microsoft.azure.toolkit.intellij.containerregistry.buildimage.IDockerConfiguration;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunConfigurationBase;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
+import com.microsoft.azure.toolkit.lib.appservice.model.LogLevel;
+import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupConfig;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Paths;
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.util.Optional;
 
-public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
+public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> implements IDockerConfiguration {
 
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";
@@ -71,14 +89,13 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new WebAppOnLinuxDeploySettingsEditor(this.getProject());
+        return new WebAppOnLinuxDeploySettingsEditor(this.getProject(), this);
     }
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment)
-            throws ExecutionException {
-        return new WebAppOnLinuxDeployState(getProject(), deployModel);
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
+        return new WebAppOnLinuxDeployState(getProject(), this);
     }
 
     /**
@@ -87,56 +104,6 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
     @Override
     public void validate() throws ConfigurationException {
         checkAzurePreconditions();
-        if (StringUtils.isEmpty(deployModel.getDockerFilePath())
-                || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
-            throw new ConfigurationException(INVALID_DOCKER_FILE);
-        }
-        // acr
-        PrivateRegistryImageSetting setting = deployModel.getPrivateRegistryImageSetting();
-        if (StringUtils.isEmpty(setting.getServerUrl()) || !setting.getServerUrl().matches(DOMAIN_NAME_REGEX)) {
-            throw new ConfigurationException(MISSING_SERVER_URL);
-        }
-        if (StringUtils.isEmpty(setting.getUsername())) {
-            throw new ConfigurationException(MISSING_USERNAME);
-        }
-        if (StringUtils.isEmpty(setting.getPassword())) {
-            throw new ConfigurationException(MISSING_PASSWORD);
-        }
-        String imageTag = setting.getImageTagWithServerUrl();
-        if (StringUtils.isEmpty(imageTag)) {
-            throw new ConfigurationException(MISSING_IMAGE_WITH_TAG);
-        }
-        if (imageTag.endsWith(":")) {
-            throw new ConfigurationException(CANNOT_END_WITH_COLON);
-        }
-        final String[] repoAndTag = imageTag.split(":");
-
-        // check repository first
-        if (repoAndTag[0].length() < 1 || repoAndTag[0].length() > REPO_LENGTH) {
-            throw new ConfigurationException(REPO_LENGTH_INVALID);
-        }
-        if (repoAndTag[0].endsWith("/")) {
-            throw new ConfigurationException(CANNOT_END_WITH_SLASH);
-        }
-        final String[] repoComponents = repoAndTag[0].split("/");
-        for (String component : repoComponents) {
-            if (!component.matches(REPO_COMPONENTS_REGEX)) {
-                throw new ConfigurationException(String.format(REPO_COMPONENT_INVALID, component,
-                        REPO_COMPONENTS_REGEX));
-            }
-        }
-        // check when contains tag
-        if (repoAndTag.length == 2) {
-            if (repoAndTag[1].length() > TAG_LENGTH) {
-                throw new ConfigurationException(TAG_LENGTH_INVALID);
-            }
-            if (!repoAndTag[1].matches(TAG_REGEX)) {
-                throw new ConfigurationException(String.format(TAG_INVALID, repoAndTag[1], TAG_REGEX));
-            }
-        }
-        if (repoAndTag.length > 2) {
-            throw new ConfigurationException(INVALID_IMAGE_WITH_TAG);
-        }
         // web app
         if (deployModel.isCreatingNewWebAppOnLinux()) {
             if (StringUtils.isEmpty(deployModel.getWebAppName())) {
@@ -155,14 +122,6 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
             if (StringUtils.isEmpty(deployModel.getWebAppId())) {
                 throw new ConfigurationException(MISSING_WEB_APP);
             }
-        }
-
-        // target package
-        if (StringUtils.isEmpty(deployModel.getTargetName())) {
-            throw new ConfigurationException(MISSING_ARTIFACT);
-        }
-        if (!deployModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, deployModel.getTargetName()));
         }
     }
 
@@ -295,5 +254,132 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
 
     public void setDockerFilePath(String dockerFilePath) {
         deployModel.setDockerFilePath(dockerFilePath);
+    }
+
+    public void setDockerImage(@Nullable DockerImage image) {
+        final DockerHostRunSetting dockerHostRunSetting = Optional.ofNullable(getDockerHostRunSetting()).orElseGet(DockerHostRunSetting::new);
+        dockerHostRunSetting.setImageName(Optional.ofNullable(image).map(DockerImage::getRepositoryName).orElse(null));
+        dockerHostRunSetting.setTagName(Optional.ofNullable(image).map(DockerImage::getTagName).orElse(null));
+        dockerHostRunSetting.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).map(File::getAbsolutePath).orElse(null));
+        this.getModel().setDockerHostRunSetting(dockerHostRunSetting);
+    }
+
+    public void setHost(@Nullable DockerHost host) {
+        final DockerHostRunSetting dockerHostRunSetting = Optional.ofNullable(getDockerHostRunSetting()).orElseGet(DockerHostRunSetting::new);
+        dockerHostRunSetting.setDockerHost(Optional.ofNullable(host).map(DockerHost::getDockerHost).orElse(null));
+        dockerHostRunSetting.setDockerCertPath(Optional.ofNullable(host).map(DockerHost::getDockerCertPath).orElse(null));
+        dockerHostRunSetting.setTlsEnabled(Optional.ofNullable(host).map(DockerHost::isTlsEnabled).orElse(false));
+        this.getModel().setDockerHostRunSetting(dockerHostRunSetting);
+    }
+
+    public DockerImage getDockerImageConfiguration() {
+        final DockerImage image = new DockerImage();
+        final DockerHostRunSetting dockerHostRunSetting = getDockerHostRunSetting();
+        if (dockerHostRunSetting == null || StringUtils.isAllBlank(dockerHostRunSetting.getImageName(), dockerHostRunSetting.getDockerFilePath())) {
+            return null;
+        }
+        image.setRepositoryName(dockerHostRunSetting.getImageName());
+        image.setTagName(dockerHostRunSetting.getTagName());
+        image.setDockerFile(Optional.ofNullable(dockerHostRunSetting.getDockerFilePath()).map(File::new).orElse(null));
+        image.setDraft(StringUtils.isNoneBlank(dockerHostRunSetting.getDockerFilePath()));
+        return image;
+    }
+
+    @javax.annotation.Nullable
+    @Override
+    public DockerHost getDockerHostConfiguration() {
+        final DockerHostRunSetting dockerHostRunSetting = getDockerHostRunSetting();
+        if (dockerHostRunSetting == null || StringUtils.isEmpty(dockerHostRunSetting.getDockerHost())) {
+            return null;
+        }
+        return new DockerHost(dockerHostRunSetting.getDockerHost(), dockerHostRunSetting.getDockerCertPath());
+    }
+
+    @Nullable
+    public DockerHostRunSetting getDockerHostRunSetting() {
+        return getModel().getDockerHostRunSetting();
+    }
+
+    public void setContainerRegistry(@Nullable final ContainerRegistry containerRegistry) {
+        getModel().setContainerRegistryId(Optional.ofNullable(containerRegistry).map(ContainerRegistry::getId).orElse(null));
+    }
+
+    public String getContainerRegistryId() {
+        return getModel().getContainerRegistryId();
+    }
+
+    public WebAppConfig getWebAppConfig() {
+        final Subscription subscription = new Subscription(this.getSubscriptionId());
+        final Region region = StringUtils.isEmpty(this.getLocationName()) ? null : Region.fromName(this.getLocationName());
+        final String rgName = this.getResourceGroupName();
+        final ResourceGroupConfig resourceGroup = ResourceGroupConfig.builder().subscriptionId(subscription.getId()).name(rgName).region(region).build();
+        final PricingTier pricingTier = StringUtils.isAnyEmpty(this.getPricingSkuTier(), this.getPricingSkuSize()) ? null :
+                PricingTier.fromString(this.getPricingSkuTier(), this.getPricingSkuSize());
+        final AppServicePlanConfig plan = AppServicePlanConfig.builder().subscriptionId(subscription.getId())
+                .name(this.getAppServicePlanName()).resourceGroupName(rgName).region(region).os(OperatingSystem.LINUX).pricingTier(pricingTier).build();
+        final DiagnosticConfig diagnosticConfig = DiagnosticConfig.builder()
+                .enableApplicationLog(this.getModel().isEnableApplicationLog())
+                .applicationLogLevel(LogLevel.fromString(this.getModel().getApplicationLogLevel()))
+                .enableDetailedErrorMessage(this.getModel().isEnableDetailedErrorMessage())
+                .enableFailedRequestTracing(this.getModel().isEnableFailedRequestTracing())
+                .enableWebServerLogging(this.getModel().isEnableWebServerLogging())
+                .webServerRetentionPeriod(this.getModel().getWebServerRetentionPeriod())
+                .webServerLogQuota(this.getModel().getWebServerLogQuota()).build();
+        final MonitorConfig monitorConfig = MonitorConfig.builder().diagnosticConfig(diagnosticConfig).build();
+        final WebAppConfig.WebAppConfigBuilder<?, ?> configBuilder = WebAppConfig.builder().name(this.getAppName())
+                .resourceId(this.getWebAppId())
+                .subscription(subscription)
+                .resourceGroup(resourceGroup)
+                .runtime(Runtime.DOCKER)
+                .servicePlan(plan);
+        return !this.isCreatingNewWebAppOnLinux() ? configBuilder.build() : configBuilder.region(region).pricingTier(pricingTier)
+                .monitorConfig(monitorConfig).build();
+    }
+
+    public void setWebAppConfig(@Nonnull final WebAppConfig webAppConfig) {
+        this.setWebAppId(webAppConfig.getResourceId());
+        this.setSubscriptionId(webAppConfig.getSubscriptionId());
+        this.setResourceGroupName(webAppConfig.getResourceGroupName());
+        this.setAppName(webAppConfig.getName());
+        this.setCreatingNewWebAppOnLinux(StringUtils.isEmpty(webAppConfig.getResourceId()));
+        if (this.isCreatingNewWebAppOnLinux()) {
+            this.setLocationName(webAppConfig.getRegion().getName());
+            this.setCreatingNewAppServicePlan(webAppConfig.getServicePlan().toResource().isDraftForCreating());
+            this.setPricingSkuTier(Optional.ofNullable(webAppConfig.getServicePlan())
+                    .map(AppServicePlanConfig::getPricingTier).map(PricingTier::getTier).orElse(null));
+            this.setPricingSkuSize(Optional.ofNullable(webAppConfig.getServicePlan())
+                    .map(AppServicePlanConfig::getPricingTier).map(PricingTier::getSize).orElse(null));
+            this.setAppServicePlanName(webAppConfig.getServicePlan().getName());
+            this.setAppServicePlanResourceGroupName(webAppConfig.getServicePlan().getResourceGroupName());
+            Optional.ofNullable(webAppConfig.getMonitorConfig()).map(MonitorConfig::getDiagnosticConfig).ifPresent(diagnosticConfig -> {
+                this.getModel().setEnableApplicationLog(diagnosticConfig.isEnableApplicationLog());
+                this.getModel().setApplicationLogLevel(diagnosticConfig.getApplicationLogLevel().getValue());
+                this.getModel().setEnableWebServerLogging(diagnosticConfig.isEnableWebServerLogging());
+                this.getModel().setWebServerLogQuota(diagnosticConfig.getWebServerLogQuota());
+                this.getModel().setWebServerRetentionPeriod(diagnosticConfig.getWebServerRetentionPeriod());
+                this.getModel().setEnableDetailedErrorMessage(diagnosticConfig.isEnableDetailedErrorMessage());
+                this.getModel().setEnableFailedRequestTracing(diagnosticConfig.isEnableFailedRequestTracing());
+            });
+        } else {
+            this.setCreatingNewAppServicePlan(false);
+            this.setAppServicePlanName(Optional.ofNullable(webAppConfig.getServicePlan())
+                    .map(AppServicePlanConfig::getName).orElse(null));
+            this.setAppServicePlanResourceGroupName(Optional.ofNullable(webAppConfig.getServicePlan())
+                    .map(AppServicePlanConfig::getResourceGroupName).orElse(null));
+        }
+    }
+
+    public DockerPushConfiguration getDockerPushConfiguration() {
+        final DockerPushConfiguration dockerPushConfiguration = new DockerPushConfiguration();
+        dockerPushConfiguration.setContainerRegistryId(this.getContainerRegistryId());
+        dockerPushConfiguration.setDockerHost(this.getDockerHostConfiguration());
+        dockerPushConfiguration.setDockerImage(this.getDockerImageConfiguration());
+        return dockerPushConfiguration;
+    }
+
+    public void setDockerPushConfiguration(@Nonnull final DockerPushConfiguration configuration) {
+        this.setHost(configuration.getDockerHost());
+        this.setDockerImage(configuration.getDockerImage());
+        this.getModel().setContainerRegistryId(configuration.getContainerRegistryId());
     }
 }

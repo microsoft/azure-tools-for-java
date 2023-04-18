@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.containerregistry.pushimage;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.ui.PushImageSettingPanel;
-import com.microsoft.azure.toolkit.intellij.containerregistry.pushimage.ui.SettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureSettingsEditor;
 

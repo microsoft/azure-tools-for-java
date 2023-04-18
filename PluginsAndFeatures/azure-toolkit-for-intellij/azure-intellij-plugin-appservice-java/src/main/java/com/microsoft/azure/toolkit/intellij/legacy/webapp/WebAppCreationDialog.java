@@ -27,8 +27,8 @@ import static com.microsoft.azure.toolkit.lib.Azure.az;
 public class WebAppCreationDialog extends ConfigDialog<WebAppConfig> {
     private static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     private JPanel panel;
-    private WebAppConfigFormPanelAdvance advancedForm;
-    private AppServiceInfoBasicPanel<WebAppConfig> basicForm;
+    protected WebAppConfigFormPanelAdvance advancedForm;
+    protected AppServiceInfoBasicPanel<WebAppConfig> basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);

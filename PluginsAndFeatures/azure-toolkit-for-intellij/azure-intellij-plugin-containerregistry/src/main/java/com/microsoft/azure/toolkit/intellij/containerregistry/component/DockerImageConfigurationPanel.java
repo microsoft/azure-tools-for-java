@@ -10,10 +10,12 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerPushConfiguration;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
+    @Getter
     private JPanel pnlRoot;
     private AzureDockerHostComboBox cbDockerHost;
     private AzureDockerImageComboBox cbDockerImage;
@@ -107,7 +110,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
             image.setRepositoryName(this.txtRepositoryName.getValue());
             image.setTagName(this.txtTagName.getValue());
         }
-        result.setContainerRegistry(cbContainerRegistry.getValue());
+        result.setContainerRegistryId(Optional.ofNullable(cbContainerRegistry.getValue()).map(ContainerRegistry::getId).orElse(null));
         return result;
     }
 
@@ -122,7 +125,9 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
                 this.txtTagName.setValue(image.getTagName());
             }
         });
-        Optional.ofNullable(data.getContainerRegistry()).ifPresent(cbContainerRegistry::setValue);
+        Optional.ofNullable(data.getContainerRegistryId())
+                .map(id -> (ContainerRegistry)Azure.az(AzureContainerRegistry.class).getById(id))
+                .ifPresent(cbContainerRegistry::setValue);
         updateImageConfigurationUI();
     }
 

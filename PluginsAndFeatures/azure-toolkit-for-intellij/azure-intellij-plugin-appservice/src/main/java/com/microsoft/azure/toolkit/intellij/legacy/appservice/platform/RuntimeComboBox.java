@@ -62,7 +62,7 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     private String getSeparatorCaption(Runtime item) {
-        return String.format("%s & %s", item.getOperatingSystem().toString(), item.getJavaVersion().toString());
+        return item.isDocker() ? "Docker" : String.format("%s & %s", item.getOperatingSystem().toString(), item.getJavaVersion().toString());
     }
 
     class RuntimeItemDescriptor extends ListItemDescriptorAdapter<Runtime> {

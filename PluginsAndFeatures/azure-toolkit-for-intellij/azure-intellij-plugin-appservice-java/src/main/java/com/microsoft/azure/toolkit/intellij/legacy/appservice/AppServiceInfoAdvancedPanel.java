@@ -37,11 +37,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
@@ -100,7 +96,7 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         if (Objects.nonNull(planConfig) && servicePlan.isDraftForCreating()) {
             planConfig.setResourceGroupName(config.getResourceGroupName());
             planConfig.setRegion(region);
-            planConfig.setOs(Objects.requireNonNull(runtime).getOperatingSystem());
+            planConfig.setOs(Objects.requireNonNull(runtime).isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX);
         }
         config.setServicePlan(planConfig);
         if (Objects.nonNull(artifact)) {
@@ -221,7 +217,9 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void onRuntimeChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final Runtime runtime = (Runtime) e.getItem();
-            final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null : runtime.getOperatingSystem();
+            final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null :
+                    // Docker runtime use Linux service plan too
+                    runtime.isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
             this.selectorServicePlan.setOperatingSystem(operatingSystem);
         }
     }
@@ -263,5 +261,11 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
 
     public void setValidRuntime(List<Runtime> runtimes) {
         selectorRuntime.setPlatformList(runtimes);
+    }
+
+    public void setFixedRuntime(final Runtime runtime) {
+        selectorRuntime.setPlatformList(Collections.singletonList(runtime));
+        lblPlatform.setVisible(false);
+        selectorRuntime.setVisible(false);
     }
 }

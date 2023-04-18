@@ -5,13 +5,13 @@
 
 package com.microsoft.azure.toolkit.lib.legacy.webapp;
 
+import com.microsoft.azure.toolkit.ide.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.ide.appservice.model.MonitorConfig;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.model.WebAppConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.DiagnosticConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
+import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
-import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
+import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,6 +54,31 @@ public class WebAppService {
         } finally {
             operation.complete();
         }
+    }
+
+    public static com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig convertToTaskConfig(final WebAppConfig config) {
+        final com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig result = new com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig();
+        result.subscriptionId(config.getSubscription().getId());
+        result.resourceGroup(config.getResourceGroupName());
+        result.appName(config.getName());
+        result.region(config.getRegion());
+        result.pricingTier(Optional.ofNullable(config.getServicePlan()).map(AppServicePlanConfig::getPricingTier).orElseGet(config::getPricingTier));
+        result.servicePlanName(config.getServicePlan().getName());
+        result.servicePlanResourceGroup(StringUtils.firstNonBlank(config.getServicePlan().getResourceGroupName(), config.getResourceGroup().getName()));
+        result.runtime(convertToRuntimeConfig(config.getRuntime()));
+        result.appSettings(config.getAppSettings());
+        final ApplicationInsightsConfig applicationInsightsConfig =
+                Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getApplicationInsightsConfig).orElse(null);
+        Optional.ofNullable(config.getDeploymentSlot()).ifPresent(slot -> {
+            result.deploymentSlotName(slot.getName());
+            result.deploymentSlotConfigurationSource(slot.getConfigurationSource());
+        });
+        Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getDiagnosticConfig).ifPresent(result::diagnosticConfig);
+        return result;
+    }
+
+    private static RuntimeConfig convertToRuntimeConfig(Runtime runtime) {
+        return new RuntimeConfig().os(runtime.getOperatingSystem()).webContainer(runtime.getWebContainer()).javaVersion(runtime.getJavaVersion());
     }
 
     public static WebAppSettingModel convertConfig2Settings(final WebAppConfig config) {

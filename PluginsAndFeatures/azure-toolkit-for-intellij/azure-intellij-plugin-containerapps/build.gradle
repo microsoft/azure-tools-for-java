@@ -1,5 +1,5 @@
-plugins {
-    id 'java'
+intellij {
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java']
 }
 
 repositories {
@@ -8,8 +8,11 @@ repositories {
 
 dependencies {
     implementation project(':azure-intellij-plugin-lib')
+    implementation project(':azure-intellij-plugin-lib-java')
     implementation project(':azure-intellij-plugin-applicationinsights')
     implementation project(':azure-intellij-plugin-monitor')
+    implementation project(':azure-intellij-plugin-containerregistry')
+    implementation 'com.github.docker-java:docker-java:3.3.0'
     implementation 'com.microsoft.azure:azure-toolkit-containerapps-lib'
     implementation 'com.microsoft.azure:azure-toolkit-containerregistry-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-containerapps-lib'

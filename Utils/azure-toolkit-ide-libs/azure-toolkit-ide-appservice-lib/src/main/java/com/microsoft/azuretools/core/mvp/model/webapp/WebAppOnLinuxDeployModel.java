@@ -5,6 +5,8 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import com.azure.resourcemanager.appservice.models.LogLevel;
+import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,9 +26,23 @@ public class WebAppOnLinuxDeployModel {
     private boolean creatingNewAppServicePlan;
     private String appServicePlanResourceGroupName;
     private String appServicePlanName;
+    // deprecated
     private String targetPath;
     private String targetName;
     private String dockerFilePath;
+
+    // web server log
+    private boolean enableWebServerLogging = false;
+    private Integer webServerLogQuota = 35;
+    private Integer webServerRetentionPeriod = null;
+    private boolean enableDetailedErrorMessage = false;
+    private boolean enableFailedRequestTracing = false;
+    // application log
+    private boolean enableApplicationLog = false;
+    private String applicationLogLevel = LogLevel.ERROR.toString();
+    // docker related properties
+    private DockerHostRunSetting dockerHostRunSetting = new DockerHostRunSetting();
+    private String containerRegistryId;
 
     public WebAppOnLinuxDeployModel() {
         privateRegistryImageSetting = new PrivateRegistryImageSetting();

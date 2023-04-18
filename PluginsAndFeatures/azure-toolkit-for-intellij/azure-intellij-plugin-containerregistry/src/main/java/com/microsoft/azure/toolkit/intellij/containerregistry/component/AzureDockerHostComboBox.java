@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.keymap.KeymapUtil;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String DOCKER_HOST_HISTORY = "azure_toolkit.docker.docker_host_history";
     private static final int MAX_HISTORY_SIZE = 15;
     private final Project project;
@@ -55,6 +57,7 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
                 return JsonUtils.fromJson(history, new TypeReference<>() {
                 });
             } catch (final Exception ignore) {
+                ignore.printStackTrace();
                 // ignore since the history data is not important
             }
         }

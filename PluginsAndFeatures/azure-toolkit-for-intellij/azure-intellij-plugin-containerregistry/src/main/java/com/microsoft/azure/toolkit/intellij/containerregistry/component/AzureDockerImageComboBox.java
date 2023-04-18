@@ -34,11 +34,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,9 +93,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     @Nonnull
     @Override
     protected List<? extends DockerImage> loadItems() throws Exception {
-        final List<DockerImage> localImages = Optional.ofNullable(this.dockerHost)
-                .map(DockerUtil::getDockerClient)
-                .map(DockerUtil::listLocalImages).orElse(Collections.emptyList());
+        final List<DockerImage> localImages = getLocalDockerImages();
         final List<DockerImage> draftImages = this.draftImages.stream()
                 .filter(draft -> ListUtils.indexOf(localImages, image -> StringUtils.equals(image.getImageName(), draft.getImageName())) < 0)
                 .collect(Collectors.toList());
@@ -109,9 +103,19 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
         return Stream.of(localImages, draftImages, dockerImages).flatMap(List::stream).collect(Collectors.toList());
     }
 
+    private List<DockerImage> getLocalDockerImages() {
+        try {
+            return Optional.ofNullable(this.dockerHost)
+                    .map(DockerUtil::getDockerClient)
+                    .map(DockerUtil::listLocalImages).orElse(Collections.emptyList());
+        } catch (final RuntimeException e) {
+            return Collections.emptyList();
+        }
+    }
+
     private List<DockerImage> loadDockerFiles() {
         final Project project = Optional.ofNullable(this.project).orElseGet(ProjectUtils::getProject);
-        return ReadAction.compute(()-> FilenameIndex.getVirtualFilesByName("Dockerfile", GlobalSearchScope.projectScope(project))).stream()
+        return ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName("Dockerfile", GlobalSearchScope.projectScope(project))).stream()
                 .map(DockerImage::new).collect(Collectors.toList());
     }
 
@@ -120,7 +124,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     protected List<ExtendableTextComponent.Extension> getExtensions() {
         final List<ExtendableTextComponent.Extension> extensions = super.getExtensions();
         final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
-        final String tooltip = String.format("%s (%s)","Select Docker File", KeymapUtil.getKeystrokeText(keyStroke));
+        final String tooltip = String.format("%s (%s)", "Select Docker File", KeymapUtil.getKeystrokeText(keyStroke));
         final ExtendableTextComponent.Extension addEx = ExtendableTextComponent.Extension.create(AllIcons.General.OpenDisk, tooltip, this::selectDockerFile);
         this.registerShortcut(keyStroke, addEx);
         extensions.add(addEx);

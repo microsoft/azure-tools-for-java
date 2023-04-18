@@ -16,9 +16,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azure.toolkit.intellij.common.auth.AzureLoginHelper;
+import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
+import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.WebAppOnLinuxDeployConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -32,11 +35,16 @@ public class WebAppOnLinuxAction extends AzureAnAction {
 
     private static final String DIALOG_TITLE = "Run on Web App for Containers";
 
-    private final WebAppConfigurationType configType;
+    private DockerImage dockerImage;
+    private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
     public WebAppOnLinuxAction() {
-        super();
-        this.configType = WebAppConfigurationType.getInstance();
+        this(null);
+    }
+
+    public WebAppOnLinuxAction(@Nullable DockerImage dockerImage) {
+        super(DIALOG_TITLE, "Build/push local image to Azure Web App", IntelliJAzureIcons.getIcon("/icons/DockerSupport/RunOnWebApp.svg"));
+        this.dockerImage = dockerImage;
     }
 
     @Override
@@ -71,6 +79,9 @@ public class WebAppOnLinuxAction extends AzureAnAction {
             settings = manager.createConfiguration(
                     String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
                     factory);
+        }
+        if (settings.getConfiguration() instanceof WebAppOnLinuxDeployConfiguration) {
+            ((WebAppOnLinuxDeployConfiguration) settings.getConfiguration()).setDockerImage(dockerImage);
         }
         if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
