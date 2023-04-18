@@ -11,9 +11,9 @@
       <component id="928ea" class="javax.swing.JLabel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="100" height="24"/>
-            <preferred-size width="100" height="24"/>
-            <maximum-size width="100" height="24"/>
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
           </grid>
         </constraints>
         <properties>
@@ -31,9 +31,9 @@
       <component id="2676b" class="javax.swing.JLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="100" height="24"/>
-            <preferred-size width="100" height="24"/>
-            <maximum-size width="100" height="24"/>
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
           </grid>
         </constraints>
         <properties>
@@ -55,9 +55,9 @@
       <component id="5f6c5" class="javax.swing.JLabel">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
-            <minimum-size width="100" height="24"/>
-            <preferred-size width="100" height="24"/>
-            <maximum-size width="100" height="24"/>
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
           </grid>
         </constraints>
         <properties>

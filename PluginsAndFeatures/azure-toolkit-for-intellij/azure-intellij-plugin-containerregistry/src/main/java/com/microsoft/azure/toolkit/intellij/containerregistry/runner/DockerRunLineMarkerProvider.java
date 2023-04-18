@@ -10,24 +10,32 @@ import com.intellij.lang.ASTNode;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtil;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
-import com.microsoft.azure.toolkit.intellij.containerregistry.action.PushImageAction;
-import com.microsoft.azure.toolkit.intellij.containerregistry.action.RunOnDockerHostAction;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gradle.internal.impldep.org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 public class DockerRunLineMarkerProvider implements LineMarkerProvider {
+    private static final ExtensionPointName<DockerfileActionsProvider> exPoints =
+            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.dockerfileActionsProvider");
+    private static List<DockerfileActionsProvider> providers;
+
     @Override
     public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement psi) {
         final ASTNode node = psi.getNode();
@@ -56,13 +64,10 @@ public class DockerRunLineMarkerProvider implements LineMarkerProvider {
 
     private LineMarkerInfo<?> getDockerRunLineMarkerInfo(PsiElement psi) {
         final VirtualFile file = PsiUtil.getVirtualFile(psi);
-        final DockerImage dockerImage = new DockerImage(file);
         final ActionGroup actionGroup = new ActionGroup() {
             @Override
             public AnAction @NotNull [] getChildren(@Nullable AnActionEvent e) {
-                final RunOnDockerHostAction runAction = new RunOnDockerHostAction(dockerImage);
-                final PushImageAction pushAction = new PushImageAction(dockerImage);
-                return new AnAction[]{runAction, pushAction};
+                return file == null ? new AnAction[0] : getDockerfileActions(file);
             }
         };
         final Icon icon = IntelliJAzureIcons.getIcon(AzureIcons.ContainerRegistry.MODULE);
@@ -89,4 +94,21 @@ public class DockerRunLineMarkerProvider implements LineMarkerProvider {
         };
     }
 
+    public synchronized static List<DockerfileActionsProvider> getTaskProviders() {
+        if (CollectionUtils.isEmpty(providers)) {
+            providers = exPoints.getExtensionList();
+        }
+        return providers;
+    }
+
+    @Nonnull
+    public static AnAction[] getDockerfileActions(@Nonnull final VirtualFile dockerfile) {
+        return getTaskProviders().stream()
+                .sorted(Comparator.comparing(DockerfileActionsProvider::getPriority))
+                .map(provider -> provider.getActions(dockerfile))
+                .map(actions -> ArrayUtils.add(actions, Separator.create()))
+                .filter(Objects::nonNull)
+                .flatMap(Arrays::stream)
+                .toArray(AnAction[]::new);
+    }
 }

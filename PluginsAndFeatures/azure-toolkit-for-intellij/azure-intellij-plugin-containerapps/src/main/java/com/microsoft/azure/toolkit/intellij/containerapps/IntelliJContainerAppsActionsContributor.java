@@ -6,14 +6,17 @@
 package com.microsoft.azure.toolkit.intellij.containerapps;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsActionsContributor;
+import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageToAzureContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -34,6 +37,9 @@ import java.util.function.BiPredicate;
 import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class IntelliJContainerAppsActionsContributor implements IActionsContributor {
+
+    public static final Action.Id<VirtualFile> DEPLOY_IMAGE_TO_ACA = Action.Id.of("user/containerapps.deploy_image");
+
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<ContainerApp, AnActionEvent> serviceCondition = (r, e) -> r != null;
@@ -48,6 +54,15 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 (AzureContainerApps r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(null)));
         am.registerHandler(ContainerAppsActionsContributor.GROUP_CREATE_CONTAINER_APPS_ENVIRONMENT,
                 (ResourceGroup r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(r)));
+    }
+
+    @Override
+    public void registerActions(AzureActionManager am) {
+        new Action<>(DEPLOY_IMAGE_TO_ACA)
+                .withLabel("Deploy Image to Azure Container Apps")
+                .visibleWhen(s -> s instanceof VirtualFile)
+                .withHandler(DeployImageToAzureContainerAppAction::deployImageToAzureContainerApps)
+                .register(am);
     }
 
     private ContainerAppDraft.Config getContainerAppDefaultConfig(final ContainerAppsEnvironment o, final ResourceGroup resourceGroup) {

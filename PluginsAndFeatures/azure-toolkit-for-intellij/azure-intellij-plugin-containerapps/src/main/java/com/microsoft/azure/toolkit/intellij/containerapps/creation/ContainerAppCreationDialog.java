@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.containerapps.creation;
 
 import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
@@ -18,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBo
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.AzureContainerAppsEnvironmentComboBox;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ImageForm;
+import com.microsoft.azure.toolkit.intellij.containerapps.component.IngressConfigurationPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -32,7 +32,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -57,25 +56,20 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private RegionComboBox cbRegion;
     private JPanel pnlRoot;
     private JCheckBox chkUseQuickStart;
-    private JLabel lblIngress;
-    private JCheckBox chkIngress;
-    private JLabel lblExternalTraffic;
-    private JLabel lblTargetPort;
-    private JBIntSpinner txtTargetPort;
     private ImageForm pnlContainer;
     private AzureContainerAppsEnvironmentComboBox cbEnvironment;
     private TitledSeparator titleContainerDetails;
     private AzureHideableTitledSeparator titleIngress;
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private JLabel lblEnv;
-    private JCheckBox chkExternalTraffic;
     private AzureHideableTitledSeparator titleAppSettings;
     private AzureHideableTitledSeparator titleProjectDetails;
     private AzureHideableTitledSeparator titleContainerAppsEnvironment;
-    private JPanel pnlIngressSettings;
+    private JPanel pnlIngressSettingsHolder;
     private JPanel pnlAppSettings;
     private JPanel pnlProjectDetails;
     private JPanel pnlContainerAppsEnvironment;
+    private IngressConfigurationPanel pnlIngressConfiguration;
 
     public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = ContainerAppDraft.ImageConfig.builder()
             .fullImageName("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest").environmentVariables(new ArrayList<>()).build();
@@ -99,13 +93,10 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.txtContainerAppName.setRequired(true);
 
         this.txtContainerAppName.addValidator(this::validateContainerAppName);
-        this.txtTargetPort.setMin(1);
-        this.txtTargetPort.setMax(65535);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbRegion.addItemListener(this::onRegionChanged); // trigger validation after resource group changed
         this.cbResourceGroup.addItemListener(this::onResourceGroupChanged);
         this.chkUseQuickStart.addItemListener(e -> this.onSelectQuickImage(chkUseQuickStart.isSelected()));
-        this.chkIngress.addItemListener(e -> this.onSelectIngress(chkIngress.isSelected()));
 
         this.chkUseQuickStart.setSelected(true);
 
@@ -117,7 +108,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.titleProjectDetails.addContentComponent(pnlProjectDetails);
         this.titleContainerAppsEnvironment.addContentComponent(pnlContainerAppsEnvironment);
         this.titleAppSettings.addContentComponent(pnlAppSettings);
-        this.titleIngress.addContentComponent(pnlIngressSettings);
+        this.titleIngress.addContentComponent(pnlIngressSettingsHolder);
 
         this.titleProjectDetails.expand();
         this.titleContainerAppsEnvironment.expand();
@@ -182,8 +173,6 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         // TODO: place custom component creation code here
         this.cbEnvironment = new AzureContainerAppsEnvironmentComboBox();
         this.cbEnvironment.setRequired(true);
-
-        this.txtTargetPort = new JBIntSpinner(80, 1, 65535);
     }
 
     private void onSelectQuickImage(boolean useQuickStartImage) {
@@ -191,7 +180,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
             // set image config
             this.pnlContainer.setValue(QUICK_START_IMAGE);
             // set ingress config
-            this.setIngressConfig(QUICK_START_INGRESS);
+            pnlIngressConfiguration.setValue(QUICK_START_INGRESS);
         }
         // toggle app settings enable status
         this.pnlContainer.setEnabled(!useQuickStartImage);
@@ -202,27 +191,9 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         } else {
             titleIngress.collapse();
         }
-        this.lblIngress.setEnabled(!useQuickStartImage);
-        this.chkIngress.setEnabled(!useQuickStartImage);
-        this.lblExternalTraffic.setEnabled(!useQuickStartImage);
-        this.chkExternalTraffic.setEnabled(!useQuickStartImage);
-        this.lblTargetPort.setEnabled(!useQuickStartImage);
+        this.pnlIngressConfiguration.setEnabled(!useQuickStartImage);
         this.lblEnv.setEnabled(!useQuickStartImage);
         this.inputEnv.setEnabled(!useQuickStartImage);
-        this.txtTargetPort.setEnabled(!useQuickStartImage);
-    }
-
-    private void onSelectIngress(boolean enableIngress) {
-        this.lblExternalTraffic.setVisible(enableIngress);
-        this.chkExternalTraffic.setVisible(enableIngress);
-        this.lblTargetPort.setVisible(enableIngress);
-        this.txtTargetPort.setVisible(enableIngress);
-    }
-
-    private void setIngressConfig(@Nonnull final IngressConfig config) {
-        chkIngress.setSelected(config.isEnableIngress());
-        chkExternalTraffic.setSelected(config.isExternal());
-        txtTargetPort.setValue(config.getTargetPort());
     }
 
     @Override
@@ -254,14 +225,8 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
                 .collect(Collectors.toList());
         Optional.ofNullable(value).ifPresent(config -> config.setEnvironmentVariables(vars));
         result.setImageConfig(value);
-        result.setIngressConfig(this.getIngressConfig());
+        result.setIngressConfig(pnlIngressConfiguration.getValue());
         return result;
-    }
-
-    private IngressConfig getIngressConfig() {
-        return IngressConfig.builder().enableIngress(chkIngress.isSelected())
-                .external(chkExternalTraffic.isSelected())
-                .targetPort(txtTargetPort.getNumber()).build();
     }
 
     @Override
@@ -278,7 +243,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         } else {
             this.pnlContainer.setValue(imageConfig);
             // todo: add logic to set envs
-            Optional.ofNullable(data.getIngressConfig()).ifPresent(this::setIngressConfig);
+            Optional.ofNullable(data.getIngressConfig()).ifPresent(pnlIngressConfiguration::setValue);
         }
     }
 

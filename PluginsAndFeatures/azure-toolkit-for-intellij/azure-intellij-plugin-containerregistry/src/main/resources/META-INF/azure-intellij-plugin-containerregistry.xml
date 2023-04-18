@@ -1,5 +1,10 @@
 <idea-plugin>
+    <extensionPoints>
+        <extensionPoint name="dockerfileActionsProvider"
+                        interface="com.microsoft.azure.toolkit.intellij.containerregistry.runner.DockerfileActionsProvider"/>
+    </extensionPoints>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <dockerfileActionsProvider implementation="com.microsoft.azure.toolkit.intellij.containerregistry.runner.ContainerRegistryDockerfileActionsProvider"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.containerregistry.IntelliJContainerRegistryActionsContributor"/>

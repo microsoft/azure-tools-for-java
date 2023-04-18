@@ -97,11 +97,11 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Getter
-    private static class AnActionWrapper<T> extends AnAction implements DumbAware {
+    public static class AnActionWrapper<T> extends AnAction implements DumbAware {
         @Nonnull
         private final Action<T> action;
 
-        private AnActionWrapper(@Nonnull Action<T> action) {
+        public AnActionWrapper(@Nonnull Action<T> action) {
             super();
             this.action = action;
         }
