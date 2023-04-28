@@ -5,6 +5,7 @@
 ### Added
 - Basic resource management support for service connections
 - New one click action to deploy Dockerfile (build image first) to Azure Container App
+  <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="500"/>
 - Finer granular resource management(registry/repository/images/...) for Azure Container Registry    
   <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="500"/>
 - Monitoring support for Azure Container Apps (azure monitor integration & log streaming)
