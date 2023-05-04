@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 public class StorageAccountMudule extends AbstractAzResourceModule <StorageAccountNode,SparkClusterNode, com.azure.resourcemanager.hdinsight.models.StorageAccount>{
 
-    public static final String NAME = "HDInsight/Storage Accounts";
+    public static final String NAME = "Storage Accounts";
     private SparkClusterNode sparkClusterNode;
 
     public StorageAccountMudule(@NotNull SparkClusterNode parent) {
