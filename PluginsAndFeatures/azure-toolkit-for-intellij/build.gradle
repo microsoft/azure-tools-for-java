@@ -135,8 +135,9 @@ repositories {
 
 allprojects {
     ext {
-        azureToolkitVersion = "0.32.0"
-        azureToolkitUtilsVersion = "3.76.0"
+        azureToolkitLibsVersion = "0.32.0"
+        azureToolkitIdeLibsVersion = "0.32.1"
+        azureToolkitUtilsVersion = "3.76.1"
         azureToolkitHDInsightVersion = "0.1.0"
     }
 
@@ -207,13 +208,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.76.0', {
+    implementation 'com.microsoft.azuretools:azuretools-core:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.0', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.0', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 

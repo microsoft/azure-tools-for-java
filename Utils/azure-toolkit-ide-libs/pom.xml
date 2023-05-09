@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azure</groupId>
     <artifactId>azure-toolkit-ide-libs</artifactId>
-    <version>0.32.0</version>
+    <version>0.32.1</version>
     <packaging>pom</packaging>
     <name>Libs for Azure Toolkit for IDEs</name>
     <description>Wrapped libs of Microsoft Azure Toolkits for IDEs</description>
@@ -154,7 +154,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-toolkit-applicationinsights-lib</artifactId>
+                <artifactId>azure-toolkit-ide-applicationinsights-lib</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
