@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.76.1](#3761)
   - [3.76.0](#3760)
   - [3.75.0](#3750)
   - [3.74.0](#3740)
@@ -95,6 +96,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.76.1
+
+### Fixed
+- can not login in macOS with Intel chip.
+- [#7516](https://github.com/microsoft/azure-tools-for-java/issues/7516):  Azure Intellij Plugin is keep on loading the resources but not completing.
 
 ## 3.76.0
 ### Added

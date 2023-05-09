@@ -8,8 +8,9 @@ plugins {
 }
 
 ext {
-    azureToolkitVersion = "0.32.0"
-    azureToolkitUtilsVersion = "3.76.0"
+    azureToolkitLibsVersion = "0.32.0"
+    azureToolkitIdeLibsVersion = "0.32.1"
+    azureToolkitUtilsVersion = "3.76.1"
 }
 
 group 'com.microsoft.azure.toolkit'
@@ -49,8 +50,9 @@ subprojects {
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     ext {
-        azureToolkitVersion = "0.32.0"
-        azureToolkitUtilsVersion = "3.76.0"
+        azureToolkitLibsVersion = "0.32.0"
+        azureToolkitIdeLibsVersion = "0.32.1"
+        azureToolkitUtilsVersion = "3.76.1"
     }
 
     sourceCompatibility = javaVersion
@@ -72,8 +74,8 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitLibsVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitIdeLibsVersion
         }
     }
 
@@ -126,14 +128,14 @@ allprojects {
 
 dependencyManagement {
     imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitLibsVersion
+        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitIdeLibsVersion
     }
 }
 
 dependencies {
-    implementation 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
-    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitLibsVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitIdeLibsVersion
 
     implementation project(':azure-intellij-plugin-lib')
     implementation project(':azure-intellij-plugin-service-explorer')
