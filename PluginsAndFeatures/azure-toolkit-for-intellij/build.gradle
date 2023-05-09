@@ -7,12 +7,6 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-ext {
-    azureToolkitVersion = "0.32.0"
-    azureToolkitUtilsVersion = "3.76.0"
-    azureToolkitHDInsightVersion = "0.1.0"
-}
-
 compileKotlin {
     kotlinOptions.jvmTarget = javaVersion
     ajc {
@@ -84,11 +78,6 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
-    ext {
-        azureToolkitVersion = "0.32.0"
-        azureToolkitUtilsVersion = "3.76.0"
-        azureToolkitHDInsightVersion = "0.1.0"
-    }
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
@@ -105,15 +94,6 @@ subprojects {
         version = intellij_version
         updateSinceUntilBuild = false
         downloadSources = Boolean.valueOf(sources)
-    }
-
-    dependencyManagement {
-        imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
-            mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
-        }
     }
 
     dependencies {
@@ -154,6 +134,13 @@ repositories {
 }
 
 allprojects {
+    ext {
+        azureToolkitLibsVersion = "0.32.0"
+        azureToolkitIdeLibsVersion = "0.32.1"
+        azureToolkitUtilsVersion = "3.76.1"
+        azureToolkitHDInsightVersion = "0.1.0"
+    }
+
     configurations {
         implementation.exclude module:'slf4j-api'
         implementation.exclude module:'log4j'
@@ -165,14 +152,11 @@ allprojects {
             extendsFrom testImplementation
         }
     }
-}
 
-dependencyManagement {
-    imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
-        mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
+    dependencyManagement {
+        imports {
+            mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
+        }
     }
 }
 
@@ -224,13 +208,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.76.0', {
+    implementation 'com.microsoft.azuretools:azuretools-core:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.0', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.0', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.76.1', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 

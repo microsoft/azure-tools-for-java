@@ -1,13 +1,19 @@
 <!-- Version: 3.76.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.76.1
+
+### Fixed
+- can not login in macOS with Intel chip.
+- [#7516](https://github.com/microsoft/azure-tools-for-java/issues/7516):  Azure Intellij Plugin is keep on loading the resources but not completing.
+
 ## 3.76.0
 ### Added
 - Basic resource management support for service connections
-- New one click action to deploy Dockerfile (build image first) to Azure Container App
-  <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="500"/>
+- New one click action to deploy Dockerfile (build image first) to Azure Container App    
+  <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="1000"/>
 - Finer granular resource management(registry/repository/images/...) for Azure Container Registry    
-  <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="500"/>
+  <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="1000"/>
 - Monitoring support for Azure Container Apps (azure monitor integration & log streaming)
 
 ### Changed

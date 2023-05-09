@@ -16,7 +16,7 @@ dependencies {
     implementation project(':azure-intellij-plugin-storage')
     implementation 'com.microsoft.azure:azure-toolkit-compute-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-vm-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-vm-lib:' + azureToolkitIdeLibsVersion
 }
 
 processResources {
