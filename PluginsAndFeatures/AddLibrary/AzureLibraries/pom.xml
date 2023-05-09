@@ -41,7 +41,7 @@
   <properties>
     <azuretool.version>3.76.1</azuretool.version>
     <azuretool.sdk.version>3.32.0.qualifier</azuretool.sdk.version>
-    <azure.toolkit-ide-libs.version>0.32.0</azure.toolkit-ide-libs.version>
+    <azure.toolkit-ide-libs.version>0.32.1</azure.toolkit-ide-libs.version>
   </properties>
   <dependencyManagement>
     <dependencies>
