@@ -16,7 +16,7 @@ dependencies {
     implementation project(path: ':azure-intellij-resource-connector-lib-java', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-cosmos-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-cosmos-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-cosmos-lib'
 }
 
 processResources {

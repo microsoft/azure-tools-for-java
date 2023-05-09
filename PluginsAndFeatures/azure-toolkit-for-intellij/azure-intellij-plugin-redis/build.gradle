@@ -4,6 +4,6 @@ dependencies {
     implementation project(path: ':azure-intellij-resource-connector-lib-java', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-redis-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-redis-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-redis-lib'
     implementation 'redis.clients:jedis:3.6.3'
 }

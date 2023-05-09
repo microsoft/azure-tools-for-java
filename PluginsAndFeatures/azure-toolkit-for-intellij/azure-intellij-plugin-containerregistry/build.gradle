@@ -14,5 +14,5 @@ dependencies {
     implementation 'com.github.docker-java:docker-java-transport-zerodep:3.3.0'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-containerregistry-lib'
 }

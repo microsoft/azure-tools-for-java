@@ -7,73 +7,50 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-ext {
-    azureToolkitVersion = "0.33.0-SNAPSHOT"
-    azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
-}
-
-group 'com.microsoft.azure.toolkit'
-apply plugin: 'java'
-
-compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-intellij {
-    pluginName = 'azure-intellij-plugin-base'
-    version = intellij_version
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins]
-    downloadSources = Boolean.valueOf(sources)
-}
-
-gradle.taskGraph.whenReady { graph ->
-    def hasRootRunTask = graph.hasTask(':runIde')
-
-    if (hasRootRunTask) {
-        graph.getAllTasks().each { task ->
-            // look for *:runIde
-            def subRunTask = (task.path =~ /:.+:runIde/)
-            if (subRunTask) {
-                println "TRACER skipping ${task.path} because ':runIde' was specified"
-                task.enabled = false
-            }
-        }
-    }
-}
-
-subprojects {
+allprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
-    ext {
-        azureToolkitVersion = "0.33.0-SNAPSHOT"
-        azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
-    }
+    apply plugin: 'org.jetbrains.intellij'
+
+    group = 'com.microsoft.azure.toolkit'
 
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-    group = 'com.microsoft.azure.toolkit'
+
+    sourceSets {
+        main {
+            java.srcDirs 'src/main/java'
+            resources {
+                srcDir 'src/main/resources'
+            }
+        }
+        test {
+            java {
+                srcDir 'src/test/java'
+            }
+            resources {
+                srcDir 'src/test/resources'
+            }
+        }
+    }
 
     repositories {
         mavenLocal()
         mavenCentral()
     }
 
-    apply plugin: 'org.jetbrains.intellij'
-    intellij {
-        version = intellij_version
-        updateSinceUntilBuild = false
-        downloadSources = Boolean.valueOf(sources)
+    ext {
+        azureToolkitLibsVersion = "0.33.0-SNAPSHOT"
+        azureToolkitIdeLibsVersion = "0.33.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
     }
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitLibsVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitIdeLibsVersion
         }
     }
 
@@ -86,32 +63,6 @@ subprojects {
         compileOnly 'org.jetbrains:annotations'
     }
 
-    buildSearchableOptions.onlyIf {false}
-}
-
-sourceSets {
-    main {
-        java.srcDirs 'src/main/java'
-        resources {
-            srcDir 'src/main/resources'
-        }
-    }
-    test {
-        java {
-            srcDir 'src/test/java'
-        }
-        resources {
-            srcDir 'src/test/resources'
-        }
-    }
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-allprojects {
     configurations {
         implementation.exclude module:'slf4j-api'
         implementation.exclude module:'log4j'
@@ -122,18 +73,37 @@ allprojects {
             extendsFrom testImplementation
         }
     }
-}
 
-dependencyManagement {
-    imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
+    buildSearchableOptions.onlyIf {false}
+
+    intellij {
+        version = intellij_version
     }
 }
 
+subprojects {
+    buildPlugin { enabled = false }
+    runIde { enabled = false }
+    prepareSandbox { enabled = false }
+    prepareTestingSandbox { enabled = false }
+    buildSearchableOptions { enabled = false }
+    patchPluginXml { enabled = false }
+    publishPlugin { enabled = false }
+    verifyPlugin { enabled = false }
+
+    buildSearchableOptions.onlyIf { false }
+}
+
+intellij {
+    pluginName = 'azure-intellij-plugin-base'
+    version = intellij_version
+    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins]
+    downloadSources = Boolean.valueOf(sources)
+}
+
 dependencies {
-    implementation 'com.microsoft.azure:azure-toolkit-auth-lib:' + azureToolkitVersion
-    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-auth-lib'
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
 
     implementation project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-service-explorer', configuration: 'instrumentedJar')

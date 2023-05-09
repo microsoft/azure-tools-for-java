@@ -199,7 +199,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -214,7 +213,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azure-explorer-common</artifactId>
-            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

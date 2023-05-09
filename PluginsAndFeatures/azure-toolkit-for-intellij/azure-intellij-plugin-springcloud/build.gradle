@@ -8,5 +8,5 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-springcloud-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-springcloud-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-springcloud-lib'
 }

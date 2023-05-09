@@ -233,7 +233,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -242,7 +241,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azure-explorer-common</artifactId>
-            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

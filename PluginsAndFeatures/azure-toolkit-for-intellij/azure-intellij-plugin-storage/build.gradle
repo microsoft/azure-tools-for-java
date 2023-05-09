@@ -4,5 +4,5 @@ dependencies {
     implementation project(path: ':azure-intellij-resource-connector-lib-java', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-storage-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-storage-lib'
 }

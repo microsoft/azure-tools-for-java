@@ -6,5 +6,5 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-common-lib'
     aspect 'com.microsoft.azure:azure-toolkit-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-applicationinsights-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-applicationinsights-lib'
 }

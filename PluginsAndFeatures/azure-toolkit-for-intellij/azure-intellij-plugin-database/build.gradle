@@ -10,7 +10,7 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-sqlserver-lib'
     implementation 'com.microsoft.azure:azure-toolkit-postgre-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'com.microsoft.azure:azure-toolkit-ide-database-lib:' + azureToolkitVersion
+    implementation 'com.microsoft.azure:azure-toolkit-ide-database-lib'
     implementation 'mysql:mysql-connector-java:8.0.29'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:9.3.1.jre8-preview'
     implementation 'org.postgresql:postgresql:42.4.1'

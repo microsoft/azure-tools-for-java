@@ -31,7 +31,7 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azuretool.version>3.77.0-SNAPSHOT</azuretool.version>
+        <utils.version>3.77.0-SNAPSHOT</utils.version>
         <azure.version>1.41.3</azure.version>
         <kotlin.version>1.7.22</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
@@ -54,41 +54,6 @@
         <module>./spark-localrun-mock</module>
         <module>azure-toolkit-ide-hdinsight-libs</module>
     </modules>
-    <profiles>
-        <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
-        <profile>
-            <id>jenkins</id>
-            <activation>
-                <property>
-                    <name>env.BUILD_NUMBER</name>
-                </property>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.codehaus.mojo</groupId>
-                            <artifactId>cobertura-maven-plugin</artifactId>
-                            <version>2.7</version>
-                            <configuration>
-                                <formats>
-                                    <format>xml</format>
-                                </formats>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <phase>package</phase>
-                                    <goals>
-                                        <goal>cobertura</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-    </profiles>
     <build>
         <pluginManagement>
             <plugins>
@@ -251,6 +216,21 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>com.microsoft.azuretools</groupId>
+                <artifactId>azure-explorer-common</artifactId>
+                <version>${utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azuretools</groupId>
+                <artifactId>azuretools-core</artifactId>
+                <version>${utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.azuretools</groupId>
+                <artifactId>hdinsight-node-common</artifactId>
+                <version>${utils.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-redis</artifactId>
                 <version>${azure.version}</version>
@@ -258,21 +238,6 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-resources</artifactId>
-                <version>${azure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-mgmt-compute</artifactId>
-                <version>${azure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-mgmt-network</artifactId>
-                <version>${azure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-mgmt-eventhub</artifactId>
                 <version>${azure.version}</version>
             </dependency>
             <dependency>

@@ -7,79 +7,103 @@ plugins {
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
-ext {
-    azureToolkitVersion = "0.33.0-SNAPSHOT"
-    azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
-    azureToolkitHDInsightVersion = "0.1.0"
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-    ajc {
-        enabled = false
-    }
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-    ajc {
-        enabled = false
-    }
-}
-
-//import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
-
-import org.apache.tools.ant.filters.ReplaceTokens
-
 processResources {
     duplicatesStrategy(DuplicatesStrategy.INCLUDE)
 }
 
-group 'com.microsoft.azuretools'
-apply plugin: 'java'
-
-compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-//apply plugin: 'checkstyle'
-//
-//checkstyle {
-//    toolVersion = '8.30'
-//    configFile = new File('config/checkstyle/checkstyle.xml')
-//    showViolations = false
-//}
-
-intellij {
-    pluginName = 'azure-toolkit-for-intellij'
-    version = intellij_version
-    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal', 'gradle-java']
-    downloadSources = Boolean.valueOf(sources)
-}
-
-subprojects {
+allprojects {
     apply plugin: 'java'
     apply plugin: 'io.freefair.aspectj.post-compile-weaving'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'org.jetbrains.intellij'
 
+    group = 'com.microsoft.azuretools'
+
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-    group = 'com.microsoft.azuretools'
+
+    sourceSets {
+        main {
+            java.srcDirs 'src/main/java'
+            resources {
+                srcDir 'src/main/resources'
+                exclude 'bundle/**'
+            }
+        }
+        test {
+            java.srcDir 'src/test/java'
+            resources {
+                srcDir 'src/test/resources'
+            }
+        }
+    }
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = javaVersion
+        ajc {
+            enabled = false
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = javaVersion
+        ajc {
+            enabled = false
+        }
+    }
 
     repositories {
         mavenLocal()
         mavenCentral()
     }
 
+    ext {
+        azureToolkitLibsVersion = "0.33.0-SNAPSHOT"
+        azureToolkitIdeLibsVersion = "0.33.0-SNAPSHOT"
+        azureToolkitUtilsVersion = "3.77.0-SNAPSHOT"
+        azureToolkitHDInsightVersion = "0.1.0"
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitLibsVersion
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitIdeLibsVersion
+            mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
+            mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
+        }
+    }
+
+    dependencies {
+        // https://mvnrepository.com/artifact/org.projectlombok/lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        implementation 'com.microsoft.azure:azure-toolkit-common-lib'
+        aspect "com.microsoft.azure:azure-toolkit-common-lib", {
+            exclude group: "com.squareup.okhttp3", module: "okhttp"
+            exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
+            exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
+        }
+        compileOnly 'org.jetbrains:annotations'
+    }
+
+    configurations {
+        implementation.exclude module: 'slf4j-api'
+        implementation.exclude module: 'log4j'
+        implementation.exclude module: 'stax-api'
+        implementation.exclude module: 'groovy-xml'
+        implementation.exclude module: 'groovy-templates'
+        implementation.exclude module: 'jna'
+        cucumberRuntime {
+            extendsFrom testImplementation
+        }
+    }
+
     intellij {
         version = intellij_version
     }
+}
 
+subprojects {
     buildPlugin { enabled = false }
     runIde { enabled = false }
     prepareSandbox { enabled = false }
@@ -89,25 +113,15 @@ subprojects {
     publishPlugin { enabled = false }
     verifyPlugin { enabled = false }
 
-    dependencyManagement {
-        imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
-            mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
-            mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
-        }
-    }
-
-    dependencies {
-        // https://mvnrepository.com/artifact/org.projectlombok/lombok
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
-        implementation 'com.microsoft.azure:azure-toolkit-common-lib'
-        aspect 'com.microsoft.azure:azure-toolkit-common-lib'
-        compileOnly 'org.jetbrains:annotations'
-    }
-
     buildSearchableOptions.onlyIf { false }
+}
+
+intellij {
+    pluginName = 'azure-toolkit-for-intellij'
+    version = intellij_version
+    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
+    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal', 'gradle-java']
+    downloadSources = Boolean.valueOf(sources)
 }
 
 sourceSets {
@@ -127,34 +141,6 @@ sourceSets {
         resources {
             srcDir 'src/test/resources'
         }
-    }
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-allprojects {
-    configurations {
-        implementation.exclude module:'slf4j-api'
-        implementation.exclude module:'log4j'
-        implementation.exclude module:'stax-api'
-        implementation.exclude module:'groovy-xml'
-        implementation.exclude module:'groovy-templates'
-        implementation.exclude module:'jna'
-        cucumberRuntime {
-            extendsFrom testImplementation
-        }
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom 'com.microsoft.azure:azure-toolkit-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:' + azureToolkitVersion
-        mavenBom 'com.microsoft.azuretools:utils:' + azureToolkitUtilsVersion
-        mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:' + azureToolkitHDInsightVersion
     }
 }
 
@@ -190,12 +176,7 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-ide-appservice-lib'
     implementation 'com.microsoft.azure:azure-toolkit-applicationinsights-lib'
     implementation 'com.microsoft.azure:azure-toolkit-storage-lib'
-    implementation 'com.microsoft.azure:azure-mgmt-eventhub'
-    aspect "com.microsoft.azure:azure-toolkit-common-lib", {
-        exclude group: "com.squareup.okhttp3", module: "okhttp"
-        exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
-        exclude group: "com.squareup.okhttp3", module: "logging-interceptor"
-    }
+
     implementation 'com.microsoft.azure:azure-client-runtime', {
         exclude group: "com.squareup.okhttp3", module: "okhttp"
         exclude group: "com.squareup.okhttp3", module: "okhttp-urlconnection"
@@ -203,16 +184,14 @@ dependencies {
     }
     implementation 'commons-io:commons-io'
     implementation 'org.apache.commons:commons-lang3'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'com.microsoft.azuretools:azuretools-core:3.77.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azuretools-core', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:azure-explorer-common:3.77.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:azure-explorer-common', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    implementation 'com.microsoft.azuretools:hdinsight-node-common:3.77.0-SNAPSHOT', {
+    implementation 'com.microsoft.azuretools:hdinsight-node-common', {
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
 

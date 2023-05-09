@@ -150,7 +150,6 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>azuretools-core</artifactId>
-            <version>${azuretool.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
