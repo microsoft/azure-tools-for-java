@@ -151,11 +151,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>4.10.0</version>
             </dependency>
-            <dependency>
-                <groupId>net.minidev</groupId>
-                <artifactId>json-smart</artifactId>
-                <version>2.4.10</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

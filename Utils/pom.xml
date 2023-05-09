@@ -303,12 +303,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency> <!--CVE-2021-27568-->
-                <!--com.github.tomakehurst:wiremock-->
-                <groupId>net.minidev</groupId>
-                <artifactId>json-smart</artifactId>
-                <version>2.4.10</version>
-            </dependency>
             <dependency> <!--CVE-2021-28165-->
                 <!--com.github.tomakehurst:wiremock-->
                 <groupId>org.eclipse.jetty</groupId>
