@@ -344,22 +344,6 @@
                 <version>2.27.2</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
-                <artifactId>htmlunit</artifactId>
-                <version>2.68.0</version>
-                <exclusions>
-                    <!--xml-apis has conflict with azure-storage,-->
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion> <!--CVE-2021-28165-->
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-io</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
             <dependency> <!--CVE-2021-27568-->
                 <!--com.github.tomakehurst:wiremock-->
                 <groupId>net.minidev</groupId>
