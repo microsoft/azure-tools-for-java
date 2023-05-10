@@ -17,8 +17,8 @@
     </modules>
 
     <properties>
-        <scala.version.major>2.11</scala.version.major>
-        <scala.version.minor>12</scala.version.minor>
+        <scala.version.major>2.13</scala.version.major>
+        <scala.version.minor>0</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
         <build.copyDependenciesPhase>none</build.copyDependenciesPhase>
         <CodeCacheSize>512m</CodeCacheSize>
