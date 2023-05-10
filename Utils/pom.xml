@@ -345,9 +345,9 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>net.sourceforge.htmlunit</groupId>
+                <groupId>org.htmlunit</groupId>
                 <artifactId>htmlunit</artifactId>
-                <version>2.68.0</version>
+                <version>3.0.0</version>
                 <exclusions>
                     <!--xml-apis has conflict with azure-storage,-->
                     <exclusion>

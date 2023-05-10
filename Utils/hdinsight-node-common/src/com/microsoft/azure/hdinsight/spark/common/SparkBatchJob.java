@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.gargoylesoftware.htmlunit.Cache;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -26,6 +25,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.htmlunit.Cache;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
