@@ -13,8 +13,8 @@
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
         <project.build.encoding>UTF-8</project.build.encoding>
-        <scala.version>2.11.12</scala.version>
-        <spark.version>2.1.0</spark.version>
+        <scala.version>2.12.10</scala.version>
+        <spark.version>3.4.0</spark.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
@@ -258,7 +258,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -268,7 +268,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                <exclusion><!--CVE-2017-15288-->
                     <groupId>org.scala-lang</groupId>
@@ -290,7 +290,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
+            <artifactId>spark-sql_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -300,7 +300,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
@@ -310,7 +310,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.11</artifactId>
+            <artifactId>spark-streaming_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -320,13 +320,13 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.11</artifactId>
+            <artifactId>spark-mllib_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -336,7 +336,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                 <exclusion><!--WS-2019-0065-->
                     <groupId>org.jpmml</groupId>
