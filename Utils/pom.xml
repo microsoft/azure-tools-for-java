@@ -41,8 +41,9 @@
         <azure.toolkit-lib.version>0.32.0</azure.toolkit-lib.version>
         <azure.toolkit-ide-lib.version>0.32.1</azure.toolkit-ide-lib.version>
         <hdinsight.toolkit-ide-lib.version>0.1.0</hdinsight.toolkit-ide-lib.version>
-        <jetty.version>9.4.50.v20221201</jetty.version>
+        <jetty.version>9.4.51.v20230217</jetty.version>
         <woodstox.version>6.4.0</woodstox.version>
+        <hadoop.version>3.3.0</hadoop.version>
         <reactor-netty.version>1.0.28</reactor-netty.version>
     </properties>
     <modules>
@@ -310,7 +311,7 @@
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-common</artifactId>
-                <version>3.2.4</version>
+                <version>${hadoop.version}</version>
                 <exclusions>
                     <exclusion><!--WS-2018-0629-->
                         <groupId>com.fasterxml.woodstox</groupId>
