@@ -9,20 +9,19 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-tools</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
 
     <modules>
-        <module>spark-v2.1</module>
-        <module>spark-v2.3</module>
+        <module>spark-v3.4</module>
     </modules>
 
     <properties>
-        <scala.version.major>2.11</scala.version.major>
-        <scala.version.minor>12</scala.version.minor>
+        <scala.version.major>2.12</scala.version.major>
+        <scala.version.minor>10</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
         <build.copyDependenciesPhase>none</build.copyDependenciesPhase>
         <CodeCacheSize>512m</CodeCacheSize>
-        <hadoop.version>3.2.4</hadoop.version>
+        <hadoop.version>3.3.0</hadoop.version>
         <test.exclude.tags></test.exclude.tags>
     </properties>
 
