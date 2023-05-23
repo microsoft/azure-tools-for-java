@@ -37,6 +37,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureRxTaskManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
@@ -48,6 +49,7 @@ import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
+import com.microsoft.intellij.util.IntelliJCommandUtils;
 import com.microsoft.intellij.util.NetworkDiagnose;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
@@ -128,6 +130,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             DefaultLoader.setUiHelper(new UIHelperImpl());
             DefaultLoader.setIdeHelper(new IDEHelperImpl());
             AzureTaskManager.register(new IntellijAzureTaskManager());
+            CommandUtils.register(new IntelliJCommandUtils());
             AzureRxTaskManager.register();
             AzureStoreManager.register(new DefaultMachineStore(PluginHelper.getTemplateFile("azure.json")),
                 IntellijStore.getInstance(), IntelliJSecureStore.getInstance());
