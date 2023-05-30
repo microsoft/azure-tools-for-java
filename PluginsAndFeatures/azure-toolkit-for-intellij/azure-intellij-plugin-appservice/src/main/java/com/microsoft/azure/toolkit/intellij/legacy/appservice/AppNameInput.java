@@ -28,7 +28,7 @@ public class AppNameInput extends AzureTextInput {
 
     @Nonnull
     public AzureValidationInfo doValidateValue() {
-        if (subscription == null) {
+        if (subscription == null || !this.isEnabled()) {
             return AzureValidationInfo.none(this);
         }
         try {
