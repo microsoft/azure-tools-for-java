@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.ide.common.favorite;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,7 +42,7 @@ public class FavoriteDraft extends Favorite implements AzResource.Draft<Favorite
     @Nonnull
     @Override
     public AbstractAzResource<?, ?, ?> createResourceInAzure() {
-        Favorites.getInstance().favorites.add(0, resource.getId().toLowerCase());
+        Favorites.getInstance().favorites.add(0, resource);
         Favorites.getInstance().persist();
         return this.resource;
     }

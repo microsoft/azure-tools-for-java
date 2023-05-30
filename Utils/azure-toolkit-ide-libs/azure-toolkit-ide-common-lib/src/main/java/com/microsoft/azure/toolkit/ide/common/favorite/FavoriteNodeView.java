@@ -34,7 +34,7 @@ public class FavoriteNodeView implements NodeView {
         }
         final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) view.getResource();
         final ResourceId id = ResourceId.fromString(resource.getId());
-        final Subscription subs = Azure.az(AzureAccount.class).account().getSubscription(id.subscriptionId());
+        final Subscription subs = resource.getSubscription();
         final String rg = id.resourceGroupName();
         final String typeName = resource.getModule().getResourceTypeName();
         return String.format("Type:%s | Subscription: %s | Resource Group:%s", typeName, subs.getName(), rg) +

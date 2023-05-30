@@ -18,7 +18,6 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IMachineStore;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.Account;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
@@ -29,12 +28,14 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Emulatable;
 import com.microsoft.azure.toolkit.lib.common.model.page.ItemPage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -42,24 +43,19 @@ import javax.annotation.Nullable;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.None, AbstractAzResource<?, ?, ?>> {
     private static final String FAVORITE_ICON = AzureIcons.Common.FAVORITE.getIconPath();
     private static final String FAVORITE_GROUP = "{favorites_group}";
+    public static final String NAME = "favorites";
+    public static final String LOCAL = "local";
     @Getter
     private static final Favorites instance = new Favorites();
-    public static final String NAME = "favorites";
-    List<String> favorites = new LinkedList<>();
+    private static final ObjectMapper mapper = new ObjectMapper();
+    List<AbstractAzResource<?, ?, ?>> favorites = new LinkedList<>();
 
     private Favorites() {
         super(NAME, AzResource.NONE);
@@ -79,43 +75,52 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @Nonnull
     @Override
     public synchronized List<Favorite> list() {
-        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-            return Collections.emptyList();
-        }
         final List<Favorite> result = new LinkedList<>(super.list());
-        result.sort(Comparator.comparing(item -> this.favorites.indexOf(item.getName().toLowerCase())));
+        result.sort(Comparator.comparing(item -> ListUtils.indexOf(this.favorites, e -> StringUtils.equalsIgnoreCase(e.getId(), item.getId()))));
         return result;
     }
 
     @Nonnull
     @Override
     protected Iterator<? extends Page<AbstractAzResource<?, ?, ?>>> loadResourcePagesFromAzure() {
-        final Account account = Azure.az(AzureAccount.class).account();
-        final String user = account.getUsername();
+        final List<AbstractAzResource<?, ?, ?>> favoriteAzureResources = loadFavoriteAzureResources();
+        final List<AbstractAzResource<?, ?, ?>> favoriteLocalResources = loadFavoriteLocalResources();
+        this.favorites = ListUtils.union(favoriteAzureResources, favoriteLocalResources);
+        return Collections.singletonList(new ItemPage<>(favorites.stream())).iterator();
+    }
+
+    protected List<AbstractAzResource<?, ?, ?>> loadFavoriteAzureResources() {
+        final AzureAccount azureAccount = Azure.az(AzureAccount.class);
+        return azureAccount.isLoggedIn() ? loadResource(Objects.requireNonNull(azureAccount.getAccount()).getUsername()) : Collections.emptyList();
+    }
+
+    protected List<AbstractAzResource<?, ?, ?>> loadFavoriteLocalResources() {
+        return loadResource(LOCAL);
+    }
+
+    protected List<AbstractAzResource<?, ?, ?>> loadResource(final String key) {
         final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
-        final String favorites = store.getProperty(this.getName(), user);
+        final String favorites = store.getProperty(this.getName(), key);
         if (StringUtils.isNotBlank(favorites)) {
             final ObjectMapper mapper = new ObjectMapper();
             try {
-                this.favorites = new LinkedList<>(Arrays.asList(mapper.readValue(favorites, String[].class))).stream()
-                    .map(String::toLowerCase).distinct().collect(Collectors.toList());
+                return new LinkedList<>(Arrays.asList(mapper.readValue(favorites, String[].class))).stream()
+                        .map(String::toLowerCase).distinct()
+                        .map(id -> Azure.az().getById(id))
+                        .filter(Objects::nonNull)
+                        .map(c -> ((AbstractAzResource<?, ?, ?>) c)).collect(Collectors.toList());
             } catch (final JsonProcessingException ex) {
-                AzureMessager.getMessager().error("failed to load favorites.");
-                this.favorites = new LinkedList<>();
+                AzureMessager.getMessager().warning(String.format("failed to load favorites with key %s.", key));
             }
         }
-        final Stream<AbstractAzResource<?, ?, ?>> resources = this.favorites.stream().map(id -> this.loadResourceFromAzure(id, FAVORITE_GROUP)).filter(Objects::nonNull)
-            .map(c -> ((AbstractAzResource<?, ?, ?>) c));
-        return Collections.singletonList(new ItemPage<>(resources)).iterator();
+        return Collections.emptyList();
     }
 
     @Nullable
     @Override
     protected AbstractAzResource<?, ?, ?> loadResourceFromAzure(@Nonnull String name, @Nullable String resourceGroup) {
-        if (this.favorites.contains(name.toLowerCase())) {
-            return Azure.az().getById(name);
-        }
-        return null;
+        return this.favorites.stream().filter(favorite -> StringUtils.equalsIgnoreCase(favorite.getId(), name)).findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -123,7 +128,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     @AzureOperation(name = "internal/favorite.delete_favorite")
     protected void deleteResourceFromAzure(@Nonnull String favoriteId) {
         final String resourceId = URLDecoder.decode(ResourceId.fromString(favoriteId).name(), StandardCharsets.UTF_8.name());
-        this.favorites.remove(resourceId.toLowerCase());
+        this.favorites.removeIf(favorite -> StringUtils.equalsIgnoreCase(favorite.getId(), resourceId));
         this.persist();
     }
 
@@ -161,7 +166,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
     }
 
     public boolean exists(@Nonnull String resourceId) {
-        return this.favorites.contains(resourceId.toLowerCase());
+        return this.favorites.stream().anyMatch(favorite -> StringUtils.equalsIgnoreCase(favorite.getId(), resourceId));
     }
 
 
@@ -190,16 +195,38 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
 
     public void persist() {
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
-            final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
-            final Account account = Azure.az(AzureAccount.class).account();
-            final String user = account.getUsername();
-            final ObjectMapper mapper = new ObjectMapper();
-            try {
-                store.setProperty(this.getName(), user, mapper.writeValueAsString(this.favorites));
-            } catch (final JsonProcessingException e) {
-                AzureMessager.getMessager().error("failed to persist favorites.");
-            }
+            persistFavoritesLocalResources();
+            persistFavoritesAzureResources();
         });
+    }
+
+    private void persistFavoritesAzureResources() {
+        final AzureAccount azureAccount = Azure.az(AzureAccount.class);
+        if (!azureAccount.isLoggedIn()) {
+            return;
+        }
+        final String userName = Objects.requireNonNull(azureAccount.getAccount()).getUsername();
+        final List<AbstractAzResource<?, ?, ?>> emulatorResources = this.favorites.stream()
+                .filter(resource -> !(resource instanceof Emulatable && ((Emulatable) resource).isEmulatorResource()))
+                .collect(Collectors.toList());
+        persistFavorites(emulatorResources, userName);
+    }
+
+    private void persistFavoritesLocalResources() {
+        final List<AbstractAzResource<?, ?, ?>> emulatorResources = this.favorites.stream()
+                .filter(resource -> resource instanceof Emulatable && ((Emulatable) resource).isEmulatorResource())
+                .collect(Collectors.toList());
+        persistFavorites(emulatorResources, LOCAL);
+    }
+
+    private void persistFavorites(@Nonnull final List<AbstractAzResource<?, ?, ?>> resources, final String key) {
+        try {
+            final IMachineStore store = AzureStoreManager.getInstance().getMachineStore();
+            final List<String> idList = resources.stream().map(AbstractAzResource::getId).distinct().collect(Collectors.toList());
+            store.setProperty(this.getName(), key, mapper.writeValueAsString(idList));
+        } catch (final JsonProcessingException e) {
+            AzureMessager.getMessager().error("failed to persist favorites.");
+        }
     }
 
     public static Node<Favorites> buildFavoriteRoot(IExplorerNodeProvider.Manager manager) {
@@ -207,22 +234,26 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
         final AzureActionManager.Shortcuts shortcuts = am.getIDEDefaultShortcuts();
 
         final Action<Favorites> unpinAllAction = new Action<>(Action.Id.<Favorites>of("user/resource.unpin_all"))
-            .withLabel("Unmark All As Favorite")
-            .withIcon(AzureIcons.Action.UNPIN.getIconPath())
-            .visibleWhen(s -> s instanceof Favorites)
-            .enableWhen(s -> !Favorites.getInstance().favorites.isEmpty())
-            .withHandler(Favorites::unpinAll)
-            .withShortcut("control F11");
+                .withLabel("Unmark All As Favorite")
+                .withIcon(AzureIcons.Action.UNPIN.getIconPath())
+                .visibleWhen(s -> s instanceof Favorites)
+                .enableWhen(s -> !Favorites.getInstance().favorites.isEmpty())
+                .withHandler(Favorites::unpinAll)
+                .withShortcut("control F11");
 
         final AzureModuleLabelView<Favorites> rootView = new AzureModuleLabelView<>(Favorites.getInstance(), "Favorites", FAVORITE_ICON);
         return new Node<>(Favorites.getInstance(), rootView).lazy(false)
-            .actions(new ActionGroup(unpinAllAction, "---", ResourceCommonActionsContributor.REFRESH))
-            .addChildren(Favorites::list, (o, parent) -> {
-                final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
-                if (node.view() instanceof AzureResourceLabelView) {
-                    node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
-                }
-                return node;
-            });
+                .actions(new ActionGroup(unpinAllAction, "---", ResourceCommonActionsContributor.REFRESH))
+                .addChildren(Favorites::list, (o, parent) -> {
+                    final Node<?> node = manager.createNode(o.getResource(), parent, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+                    if (node.view() instanceof AzureResourceLabelView) {
+                        node.view(new FavoriteNodeView((AzureResourceLabelView<?>) node.view()));
+                    }
+                    return node;
+                });
+    }
+
+    protected boolean isAuthRequired() {
+        return false;
     }
 }

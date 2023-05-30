@@ -266,6 +266,7 @@ public class StorageActionsContributor implements IActionsContributor {
         am.registerGroup(ACCOUNT_ACTIONS, accountActionGroup);
 
         final ActionGroup azuriteActionGroup = new ActionGroup(
+                ResourceCommonActionsContributor.PIN,
                 StorageActionsContributor.OPEN_AZURE_STORAGE_EXPLORER,
                 "---",
                 ResourceCommonActionsContributor.REFRESH,

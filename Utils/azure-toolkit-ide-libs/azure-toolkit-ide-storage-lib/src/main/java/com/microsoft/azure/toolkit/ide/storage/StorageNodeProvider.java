@@ -62,6 +62,7 @@ public class StorageNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof AzuriteStorageAccount) {
             final AzuriteStorageAccount account = (AzuriteStorageAccount) data;
             return new Node<>(account).view(new AzureResourceLabelView<>(account))
+                .addInlineAction(ResourceCommonActionsContributor.PIN)
                 .actions(StorageActionsContributor.AZURITE_ACTIONS)
                 .addChildren(s -> s.getSubModules().stream().filter(Objects::nonNull).collect(Collectors.toList()), (module, p) -> new Node<>(module)
                     .view(new AzureModuleLabelView<>(module, module.getResourceTypeName() + "s"))
