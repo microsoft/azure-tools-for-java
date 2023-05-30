@@ -29,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
@@ -164,18 +165,11 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
     protected void doOKAction() {
         final Resource resource = getResource();
         final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(module.getName());
-        final Profile profile = Optional.ofNullable(AzureModule.from(module))
-                .map(AzureModule::initializeWithDefaultProfileIfNot).orElse(null);
-        if (profile == null) {
-            AzureMessager.getMessager().warning("Failed to get profile of module " + module.getName());
-            return;
-        }
         this.connection = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(),
                 consumer.getDefinition()).define(resource, consumer);
         this.connection.setEnvPrefix(txtConnectionName.getValue());
         if (this.connection.validate(this.project)) {
-            profile.addConnection(this.connection);
-            AzureMessager.getMessager().success(String.format(CONNECTION_CREATED_MESSAGE, resource.getName(), consumer.getName()));
+            AzureTaskManager.getInstance().write(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().addConnection(connection).save());
         }
         super.doOKAction();
     }
