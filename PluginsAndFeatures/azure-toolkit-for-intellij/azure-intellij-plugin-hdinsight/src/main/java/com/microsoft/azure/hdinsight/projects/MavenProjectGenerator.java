@@ -55,6 +55,12 @@ public class MavenProjectGenerator {
             createDirectories(root);
             createPom(root);
             copySamples(root);
+            Project project = this.module.getProject();
+            String baseDirPath = project.getBasePath();
+            File projectIml = new File(baseDirPath + File.separator + this.module.getName() + ".iml");
+            if (projectIml.exists()) {
+                projectIml.delete();
+            }
             return importMavenProject();
         } catch (Exception e) {
             DefaultLoader.getUIHelper().showError("Failed to create project: " + e.getMessage(), "Create Sample Project");
