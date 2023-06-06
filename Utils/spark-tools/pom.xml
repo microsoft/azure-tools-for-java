@@ -50,7 +50,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
-                <version>4.1.68.Final</version>
+                <version>4.1.69.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>

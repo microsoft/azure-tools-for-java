@@ -269,7 +269,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
-                <version>4.1.68.Final</version>
+                <version>4.1.69.Final</version>
             </dependency>
             <dependency><!--CVE-2022-40153-->
                 <groupId>com.fasterxml.woodstox</groupId>
