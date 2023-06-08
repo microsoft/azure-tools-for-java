@@ -56,5 +56,15 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzurePro
         }
         return null;
     }
+
+    @Override
+    public void triggerClickAction(Object event) {
+        Optional.ofNullable(getValue()).ifPresent(node -> node.triggerClickAction(event));
+    }
+
+    @Override
+    public void triggerDoubleClickAction(Object event) {
+        Optional.ofNullable(getValue()).ifPresent(node -> node.triggerDoubleClickAction(event));
+    }
 }
 

@@ -49,7 +49,7 @@ public class ResourceConnectorStructureProvider implements TreeStructureProvider
             final List<AbstractTreeNode<?>> nodes = new LinkedList<>();
             boolean containsAzureDir = false;
             for (final AbstractTreeNode<?> child : children) {
-                boolean isDotAzureDir = Optional.ofNullable(child)
+                final boolean isDotAzureDir = Optional.ofNullable(child)
                         .filter(c -> c instanceof PsiDirectoryNode)
                         .map(c -> ((PsiDirectoryNode) c).getVirtualFile())
                         .filter(f -> ".azure".equalsIgnoreCase(f.getName()))
@@ -93,20 +93,25 @@ public class ResourceConnectorStructureProvider implements TreeStructureProvider
         private List<AnAction> backupActions;
 
         @Override
-        public void mousePressed(MouseEvent e) {
+        public void mouseClicked(MouseEvent e) {
             final AbstractTreeNode<?> currentTreeNode = getCurrentTreeNode(e);
             if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureProjectExplorerNode) {
                 final IAzureProjectExplorerNode node = (IAzureProjectExplorerNode) currentTreeNode;
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
                 final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "explorer.connector", context);
-                if (e.getClickCount() == 1) {
-                    node.triggerClickAction(event);
+                if (e.getClickCount() == 2) {
+                    node.triggerDoubleClickAction(event);
                 } else {
                     node.triggerClickAction(event);
                 }
             } else {
                 modifyPopupActions(e);
             }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            modifyPopupActions(e);
         }
 
         @Override
