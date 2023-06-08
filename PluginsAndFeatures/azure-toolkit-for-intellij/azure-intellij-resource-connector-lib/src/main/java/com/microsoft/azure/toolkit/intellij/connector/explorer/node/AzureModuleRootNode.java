@@ -1,8 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.connector.explorer.node;
 
-import com.intellij.ide.projectView.PresentationData;
-import com.intellij.ide.projectView.ProjectView;
-import com.intellij.ide.projectView.ViewSettings;
+import com.intellij.ide.projectView.*;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
@@ -32,13 +30,13 @@ import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 
-public class AzureModuleRootNode extends AbstractTreeNode<AzureModule> implements IAzureProjectExplorerNode {
+public class AzureModuleRootNode extends ProjectViewNode<AzureModule> implements IAzureProjectExplorerNode {
     private final AzureEventBus.EventListener listener;
     private final MessageBusConnection connection;
     private final ViewSettings viewSettings;
 
     public AzureModuleRootNode(final AzureModule module, ViewSettings settings) {
-        super(module.getProject(), module);
+        super(module.getProject(), module, settings);
         this.viewSettings = settings;
         this.listener = new AzureEventBus.EventListener(this::onEvent);
         this.connection = module.getProject().getMessageBus().connect();
@@ -97,5 +95,15 @@ public class AzureModuleRootNode extends AbstractTreeNode<AzureModule> implement
     @Override
     public IActionGroup getActionGroup() {
         return AzureActionManager.getInstance().getGroup(ResourceConnectionActionsContributor.EXPLORER_MODULE_ROOT_ACTIONS);
+    }
+
+    @Override
+    public @NotNull NodeSortOrder getSortOrder(@NotNull NodeSortSettings settings) {
+        return NodeSortOrder.FOLDER;
+    }
+
+    @Override
+    public boolean contains(@NotNull VirtualFile file) {
+        return false;
     }
 }

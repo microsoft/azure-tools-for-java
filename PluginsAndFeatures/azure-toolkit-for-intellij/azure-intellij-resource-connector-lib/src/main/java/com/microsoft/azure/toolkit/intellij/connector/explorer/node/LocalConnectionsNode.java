@@ -10,7 +10,6 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -20,6 +19,8 @@ import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsC
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
@@ -31,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -69,6 +71,9 @@ public class LocalConnectionsNode extends AbstractTreeNode<AzureModule> implemen
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
         final AzureModule module = this.getValue();
         final Profile profile = module.getDefaultProfile();
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+            return Collections.emptyList();
+        }
         return Optional.ofNullable(this.getValue()).stream()
                 .map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
                 .flatMap(p -> p.getConnections().stream())
