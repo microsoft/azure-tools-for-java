@@ -9,6 +9,7 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <treeStructureProvider implementation="com.microsoft.azure.toolkit.intellij.connector.explorer.ResourceConnectorStructureProvider"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.MigrateStartupActivity"/>
         <toolWindow id="Resource Connections" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" canCloseContents="false"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>

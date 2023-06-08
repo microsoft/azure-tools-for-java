@@ -5,6 +5,7 @@ intellij {
 dependencies {
     implementation project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-service-explorer', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }

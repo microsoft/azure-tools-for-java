@@ -44,6 +44,7 @@ public class AzureModule {
     public static final String ATTR_DEFAULT_PROFILE = "defaultProfile";
     private final Map<String, Profile> profiles = new ConcurrentHashMap<>();
     @Nonnull
+    @Getter
     private final Module module;
     @Getter
     @Nullable

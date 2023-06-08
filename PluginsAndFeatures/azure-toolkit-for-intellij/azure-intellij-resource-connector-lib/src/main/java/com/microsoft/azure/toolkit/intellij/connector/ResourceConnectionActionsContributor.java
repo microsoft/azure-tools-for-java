@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
@@ -29,11 +30,41 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
     public static final Action.Id<AzureModule> ADD_CONNECTION = Action.Id.of("user/connector.add_connection");
     public static final Action.Id<Connection<?, ?>> EDIT_CONNECTION = Action.Id.of("user/connector.edit_connection");
     public static final Action.Id<Connection<?, ?>> REMOVE_CONNECTION = Action.Id.of("user/connector.remove_connection");
+
+    public static final Action.Id<AzureModule> CONNECT_TO_MODULE = Action.Id.of("user/connector.connect_to_module");
+    public static final Action.Id<AzureModule> REFRESH_MODULE = Action.Id.of("user/connector.refresh_module");
+    public static final Action.Id<AzureModule> REFRESH_MODULE_CONNECTIONS = Action.Id.of("user/connector.refresh_module_connections");
     public static final String MODULE_ACTIONS = "actions.connector.module";
     public static final String CONNECTION_ACTIONS = "actions.connector.connection";
+    public static final String EXPLORER_MODULE_ROOT_ACTIONS = "actions.connector.explorer_module_root";
+    public static final String EXPLORER_MODULE_LOCAL_CONNECTIONS_ACTIONS = "actions.connector.explorer_local_connections";
 
     @Override
     public void registerActions(AzureActionManager am) {
+        new Action<>(REFRESH_MODULE)
+                .withLabel("Refresh")
+                .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+                .withHandler((module, e) -> refreshModule(module))
+                .withShortcut(am.getIDEDefaultShortcuts().refresh())
+                .withAuthRequired(false)
+                .register(am);
+
+        new Action<>(REFRESH_MODULE_CONNECTIONS)
+                .withLabel("Refresh")
+                .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+                .withHandler((module, e) -> refreshModuleConnections(module))
+                .withShortcut(am.getIDEDefaultShortcuts().refresh())
+                .withAuthRequired(false)
+                .register(am);
+
+        new Action<>(CONNECT_TO_MODULE)
+                .withLabel("Connect to Azure Resource")
+                .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
+                .withHandler((module, e) -> AzureTaskManager.getInstance().runLater(() -> ModuleConnectorAction.connectModuleToAzureResource(module.getModule())))
+                .withShortcut(am.getIDEDefaultShortcuts().refresh())
+                .withAuthRequired(false)
+                .register(am);
+
         new Action<>(REFRESH_CONNECTIONS)
             .withLabel("Refresh")
             .withIcon(AzureIcons.Action.REFRESH.getIconPath())
@@ -70,6 +101,17 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
     }
 
+    private void refreshModuleConnections(AzureModule module) {
+//        AzureEventBus.emit("");
+        AzureEventBus.emit("connector.refreshed.module_connections", module);
+
+    }
+
+    private void refreshModule(AzureModule module) {
+//        AzureEventBus.emit("");
+        AzureEventBus.emit("connector.refreshed.module_root", module);
+    }
+
     @AzureOperation(value = "user/connector.remove_connection.resource", params = "connection.getResource()")
     private static void removeConnection(Connection<?, ?> connection, AnActionEvent e) {
         final Project project = Objects.requireNonNull(e.getProject());
@@ -89,6 +131,20 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
 
     @Override
     public void registerGroups(AzureActionManager am) {
+        final ActionGroup explorerModuleRootActions = new ActionGroup(
+                REFRESH_MODULE,
+                "---",
+                CONNECT_TO_MODULE
+        );
+        am.registerGroup(EXPLORER_MODULE_ROOT_ACTIONS, explorerModuleRootActions);
+
+        final ActionGroup explorerLocalConnectionsActions = new ActionGroup(
+                REFRESH_MODULE_CONNECTIONS,
+                "---",
+                CONNECT_TO_MODULE
+        );
+        am.registerGroup(EXPLORER_MODULE_LOCAL_CONNECTIONS_ACTIONS, explorerModuleRootActions);
+
         final ActionGroup moduleActions = new ActionGroup(
             ADD_CONNECTION
         );

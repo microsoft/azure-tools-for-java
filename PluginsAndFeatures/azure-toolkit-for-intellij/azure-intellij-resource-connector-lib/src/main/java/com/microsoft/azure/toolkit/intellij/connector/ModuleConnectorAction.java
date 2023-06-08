@@ -21,10 +21,14 @@ public class ModuleConnectorAction extends AnAction {
     public void actionPerformed(@NotNull final AnActionEvent event) {
         final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
         if (module != null) {
-            final Project project = module.getProject();
-            final ConnectorDialog dialog = new ConnectorDialog(project);
-            dialog.setConsumer(new ModuleResource(module.getName()));
-            dialog.show();
+            connectModuleToAzureResource(module);
         }
+    }
+
+    public static void connectModuleToAzureResource(@NotNull final Module module) {
+        final Project project = module.getProject();
+        final ConnectorDialog dialog = new ConnectorDialog(project);
+        dialog.setConsumer(new ModuleResource(module.getName()));
+        dialog.show();
     }
 }

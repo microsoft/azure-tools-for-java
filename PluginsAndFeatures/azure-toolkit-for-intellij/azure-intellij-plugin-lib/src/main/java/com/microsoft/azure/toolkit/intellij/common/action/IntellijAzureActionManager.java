@@ -6,20 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.common.action;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonShortcuts;
-import com.intellij.openapi.actionSystem.CustomShortcutSet;
-import com.intellij.openapi.actionSystem.DataKey;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.EmptyAction;
-import com.intellij.openapi.actionSystem.IdeActions;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.actionSystem.ShortcutSet;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.pom.Navigatable;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -65,7 +55,13 @@ public class IntellijAzureActionManager extends AzureActionManager {
     public <D> void registerAction(Action<D> action) {
         final ActionManager manager = ActionManager.getInstance();
         if (Objects.isNull(manager.getAction(action.getId()))) {
-            manager.registerAction(action.getId(), new AnActionWrapper<>(action));
+            final AnActionWrapper<D> wrapper = new AnActionWrapper<>(action);
+            manager.registerAction(action.getId(), wrapper);
+//            AnAction action1 = manager.getAction("ProjectViewPopupMenu");
+//            if(action1 instanceof DefaultActionGroup){
+//                DefaultActionGroup group = (DefaultActionGroup) action1;
+//                group.add(wrapper);
+//            }
         }
     }
 
@@ -129,15 +125,26 @@ public class IntellijAzureActionManager extends AzureActionManager {
             }
         }
 
+        private T getSource(@Nonnull AnActionEvent e) {
+            return Optional.ofNullable((T) e.getDataContext().getData(Action.SOURCE))
+                    .orElseGet(() -> {
+                        final Navigatable[] data = e.getData(CommonDataKeys.NAVIGATABLE_ARRAY);
+                        if (data == null || data.length != 1) {
+                            return null;
+                        }
+                        return data[0] instanceof DataProvider ? (T) ((DataProvider) data[0]).getData(Action.SOURCE) : null;
+                    });
+        }
+
         @Override
         public void actionPerformed(@Nonnull AnActionEvent e) {
-            final T source = (T) e.getDataContext().getData(Action.SOURCE);
+            final T source = getSource(e);
             this.action.handle(source, e);
         }
 
         @Override
         public void update(@Nonnull AnActionEvent e) {
-            final T source = (T) e.getDataContext().getData(Action.SOURCE);
+            final T source = getSource(e);
             final Presentation presentation = e.getPresentation();
             final IView.Label view = this.action.getView(source);
 
