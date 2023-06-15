@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.ide.appservice.function;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceDeploymentSlotsNodeView;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.appservice.function.node.FunctionsNode;
+import com.microsoft.azure.toolkit.ide.appservice.node.AppSettingsNode;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -73,7 +74,8 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
                 .addChildren(Arrays::asList, (app, webAppNode) -> new FunctionsNode(app))
                 .addChild(FunctionApp::getDeploymentModule, (module, functionAppNode) -> createNode(module, functionAppNode, manager))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files
-                .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager));
+                .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager))
+                .addChild(ignore -> new AppSettingsNode(functionApp));
         } else if (data instanceof FunctionAppDeploymentSlotModule) {
             final FunctionAppDeploymentSlotModule module = (FunctionAppDeploymentSlotModule) data;
             return new Node<>(module)

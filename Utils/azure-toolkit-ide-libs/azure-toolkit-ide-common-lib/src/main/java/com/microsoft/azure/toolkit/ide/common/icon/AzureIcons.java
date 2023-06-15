@@ -106,6 +106,11 @@ public final class AzureIcons {
         public static final AzureIcon UPDATING_ON_LINUX = AzureIcon.builder().iconPath("/icons/DeploymentSlot/DeploymentSlotUpdatingOnLinux.svg").build();
     }
 
+    public static final class AppService {
+        public static final AzureIcon APP_SETTINGS = AzureIcon.builder().iconPath("/icons/AppService/AppSettings").build();
+        public static final AzureIcon APP_SETTING = AzureIcon.builder().iconPath("/icons/AppService/AppSetting").build();
+    }
+
     public static final class FunctionApp {
         public static final AzureIcon MODULE = AzureIcon.builder().iconPath("/icons/Microsoft.Web/functions.svg").build();
         public static final AzureIcon RUNNING = AzureIcon.builder().iconPath("/icons/FunctionApp/FunctionAppRunning.svg").build();

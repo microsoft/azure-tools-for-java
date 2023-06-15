@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.appservice.webapp;
 
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceDeploymentSlotsNodeView;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
+import com.microsoft.azure.toolkit.ide.appservice.node.AppSettingsNode;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.component.*;
@@ -70,7 +71,8 @@ public class WebAppNodeProvider implements IExplorerNodeProvider {
                 .actions(WebAppActionsContributor.WEBAPP_ACTIONS)
                 .addChildren(WebApp::getSubModules, (module, webAppNode) -> createNode(module, webAppNode, manager))
                 .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files
-                .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager));
+                .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager))
+                .addChild(ignore -> new AppSettingsNode(webApp));
         } else if (data instanceof WebAppDeploymentSlotModule) {
             final WebAppDeploymentSlotModule module = (WebAppDeploymentSlotModule) data;
             return new Node<>(module)

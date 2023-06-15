@@ -145,14 +145,14 @@ public class TreeUtils {
                             final JPopupMenu popupMenu = menu.getComponent();
                             popupMenu.show(tree, e.getX(), e.getY());
                         }
-                    } else if (node.inner.hasClickAction()) {
+                    } else {
                         final DataContext context = DataManager.getInstance().getDataContext(tree);
                         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerClickAction(event);
-                    } else if (e.getClickCount() == 2) {
-                        final DataContext context = DataManager.getInstance().getDataContext(tree);
-                        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
-                        node.inner.triggerDoubleClickAction(event);
+                        if (e.getClickCount() == 1) {
+                            node.inner.triggerClickAction(event);
+                        } else if (e.getClickCount() == 2) {
+                            node.inner.triggerDoubleClickAction(event);
+                        }
                     }
                 } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
                     ((Tree.LoadMoreNode) n).load();
