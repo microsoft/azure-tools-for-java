@@ -16,8 +16,8 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
@@ -61,7 +61,7 @@ public class AzuriteTaskAdder implements RunManagerListener, ConnectionTopics.Co
 
     @Override
     public void artifactMayChanged(@Nonnull RunConfiguration config, @Nullable ConfigurationSettingsEditorWrapper editor) {
-        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getDefaultProfile)
+        final List<Connection<?, ?>> connections = AzureProjectFacet.getAzureModule(config).map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnectionManager)
                 .map(ConnectionManager::getConnections)
                 .orElse(Collections.emptyList());
@@ -82,7 +82,7 @@ public class AzuriteTaskAdder implements RunManagerListener, ConnectionTopics.Co
     }
 
     private static boolean isConfigurationConnectedToAzurite(@Nonnull final RunConfiguration config) {
-        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config).map(AzureModule::getDefaultProfile).map(Profile::getConnections).orElse(Collections.emptyList());
+        final List<Connection<?, ?>> connections = AzureProjectFacet.getAzureModule(config).map(AzureModule::getDefaultProfile).map(Profile::getConnections).orElse(Collections.emptyList());
         return connections.stream().anyMatch(c -> c.isApplicableFor(config) && isAzuriteResourceConnection(c));
     }
 

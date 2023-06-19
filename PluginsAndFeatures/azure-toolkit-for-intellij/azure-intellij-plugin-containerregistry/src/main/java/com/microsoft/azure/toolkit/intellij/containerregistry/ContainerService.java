@@ -7,6 +7,7 @@ import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryAction
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -61,7 +62,7 @@ public class ContainerService {
         Optional.of(image)
             .map(DockerImage::getDockerFile)
             .map(f -> VfsUtil.findFileByIoFile(f, true))
-            .map(f -> AzureModule.from(f, configuration.getProject()))
+            .flatMap(f -> AzureProjectFacet.getAzureModule(f, configuration.getProject()))
             .ifPresent(module -> tm.runLater(() -> tm.write(() -> module
                 .initializeWithDefaultProfileIfNot()
                 .addApp(registry).save())));

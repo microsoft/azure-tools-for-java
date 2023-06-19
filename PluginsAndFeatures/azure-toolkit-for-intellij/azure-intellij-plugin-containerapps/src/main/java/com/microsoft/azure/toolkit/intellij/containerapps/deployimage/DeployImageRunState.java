@@ -9,10 +9,10 @@ import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.ContainerService;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -70,7 +70,7 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
         Optional.ofNullable(image)
             .map(DockerImage::getDockerFile)
             .map(f -> VfsUtil.findFileByIoFile(f, true))
-            .map(f -> AzureModule.from(f, this.project))
+            .flatMap(f -> AzureProjectFacet.getAzureModule(f, this.project))
             .ifPresent(module -> tm.runLater(() -> tm.write(() -> {
                 final Profile p = module.initializeWithDefaultProfileIfNot();
                 Optional.ofNullable(registry).ifPresent(p::addApp);

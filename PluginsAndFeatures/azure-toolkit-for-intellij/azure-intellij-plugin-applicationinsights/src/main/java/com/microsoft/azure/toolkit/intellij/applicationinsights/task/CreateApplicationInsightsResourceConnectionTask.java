@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
@@ -40,8 +41,7 @@ public class CreateApplicationInsightsResourceConnectionTask implements Task {
         final Resource resource = getResource();
         final Module module = getModule();
         final Resource consumer = getModuleConsumer(module);
-        final AzureModule azureModule = AzureModule.from(module);
-        final Profile profile = azureModule.getDefaultProfile();
+        final Profile profile = AzureProjectFacet.getAzureModule(module).map(AzureModule::getDefaultProfile).orElse(null);
         if (Objects.isNull(profile)) {
             return;
         }

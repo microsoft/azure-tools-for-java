@@ -17,9 +17,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -178,7 +178,8 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
             params = {"connection.getConsumer().getName()", "connection.getResource().getName()"}
     )
     private void saveConnection(final Connection<?, ?> connection) {
-        AzureTaskManager.getInstance().write(() -> AzureModule.from(module).initializeWithDefaultProfileIfNot().addConnection(connection).save());
+        AzureTaskManager.getInstance().write(() -> AzureProjectFacet.getAzureModule(module)
+            .ifPresent(m -> m.initializeWithDefaultProfileIfNot().addConnection(connection).save()));
     }
 
     private Resource<?> getResource() {

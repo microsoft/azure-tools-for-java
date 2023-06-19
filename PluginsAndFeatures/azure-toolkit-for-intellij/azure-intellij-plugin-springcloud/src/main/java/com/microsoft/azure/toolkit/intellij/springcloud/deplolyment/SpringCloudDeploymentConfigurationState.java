@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage
 import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
 import com.microsoft.azure.toolkit.intellij.common.utils.JdkUtils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -149,7 +150,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         final SpringCloudApp app = deployment.getParent();
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         opFile.map(f -> VfsUtil.findFileByIoFile(f, true))
-            .map(f -> AzureModule.from(f, this.project))
+            .flatMap(f -> AzureProjectFacet.getAzureModule(f, this.project))
             .ifPresent(module -> tm.runLater(() -> tm.write(() -> module
                 .initializeWithDefaultProfileIfNot()
                 .addApp(app).save())));

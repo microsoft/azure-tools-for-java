@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig;
 
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.PathUtil;
@@ -13,8 +14,8 @@ import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.Constants;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -97,10 +98,11 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         }
         final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTargetFromAppSettingModel(processHandler);
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        Optional.ofNullable(this.webAppConfiguration.getModule()).map(AzureModule::from)
+        Optional.ofNullable(this.webAppConfiguration.getModule())
             .or(() -> Optional.ofNullable(artifact)
                 .map(f -> VfsUtil.findFileByIoFile(f, true))
-                .map(f -> AzureModule.from(f, this.project)))
+                .map(f -> ModuleUtil.findModuleForFile(f, this.project)))
+            .flatMap(AzureProjectFacet::getOrInitAzureModule)
             .ifPresent(module -> tm.runLater(() -> tm.write(() -> module
                 .initializeWithDefaultProfileIfNot()
                 .addApp(deployTarget).save())));

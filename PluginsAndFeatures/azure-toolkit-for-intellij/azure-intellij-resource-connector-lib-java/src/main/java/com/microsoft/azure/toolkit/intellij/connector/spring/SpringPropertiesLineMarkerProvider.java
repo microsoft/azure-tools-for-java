@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
         final ImmutablePair<String, String> keyProp = new ImmutablePair<>(propKey, propVal);
-        final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultProfile)
+        final List<Connection<?, ?>> connections = AzureProjectFacet.getAzureModule(module).map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnectionManager)
                 .map(cm -> cm.getConnectionsByConsumerId(module.getName()))
                 .orElse(Collections.emptyList());

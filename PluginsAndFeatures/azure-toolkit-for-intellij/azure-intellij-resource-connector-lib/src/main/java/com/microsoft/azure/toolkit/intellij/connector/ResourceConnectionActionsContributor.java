@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -182,7 +183,8 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         final Project project = Objects.requireNonNull(e.getProject());
         final Module module = ModuleManager.getInstance(project).findModuleByName(connection.getConsumer().getName());
         final AzureTaskManager m = AzureTaskManager.getInstance();
-        m.runLater(() -> Optional.ofNullable(module).map(AzureModule::from)
+        m.runLater(() -> Optional.ofNullable(module)
+            .flatMap(AzureProjectFacet::getAzureModule)
             .map(AzureModule::getDefaultProfile)
             .map(env -> env.removeConnection(connection))
             .ifPresent(p -> m.write(p::save)));

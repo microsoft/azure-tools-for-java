@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -147,7 +148,7 @@ public class ConnectionDefinition<R, C> {
                 .filter(c -> c instanceof ModuleResource)
                 .map(c -> ((ModuleResource) c).getModuleName())
                 .map(ModuleManager.getInstance(project)::findModuleByName)
-                .map(AzureModule::from)
+                .flatMap(AzureProjectFacet::getAzureModule)
                 .map(AzureModule::getDefaultProfile)
                 .orElse(null);
         if (Objects.isNull(profile)) {

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
@@ -46,7 +47,8 @@ public class MigrateStartupActivity implements StartupActivity {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         moduleConnections.forEach((moduleName, connections) -> {
             Optional.ofNullable(moduleManager.findModuleByName(moduleName))
-                .map(AzureModule::from).filter(m -> !m.isInitialized())
+                .flatMap(AzureProjectFacet::getOrInitAzureModule)
+                .filter(m -> !m.isInitialized())
                 .ifPresent(module -> tm.runLater(() -> tm.write(() -> {
                     final Profile profile = module.initializeWithDefaultProfileIfNot();
                     connections.forEach(c -> {

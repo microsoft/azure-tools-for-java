@@ -12,6 +12,8 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -23,15 +25,16 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetType;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -52,20 +55,20 @@ public class ResourceConnectionExplorer extends Tree {
         return new RootNode(project).withChildrenLoadLazily(false)
             .withIcon(AzureIcons.Common.AZURE.getIconPath())
             .withLabel("Resource Connections")
-            .addChildren(AzureModule::list, (m, n) -> new ModuleNode(m).withChildrenLoadLazily(false)
+            .addChildren(p -> Arrays.stream(ModuleManager.getInstance(project).getModules()).toList(), (m, n) -> new ModuleNode(m).withChildrenLoadLazily(false)
                 .withIcon("/icons/module")
                 .withLabel(m.getName())
                 .withActions(ResourceConnectionActionsContributor.MODULE_ACTIONS)
-                .addChildren(module -> Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).withChildrenLoadLazily(true)
+                .addChildren(module -> AzureProjectFacet.getAzureModule(module).map(AzureModule::getDefaultProfile).map(Profile::getConnections).orElse(Collections.emptyList()), (c, mn) -> new Node<>(c).withChildrenLoadLazily(true)
                     .withIcon(Objects.requireNonNull(c.getResource().getDefinition().getIcon()))
                     .withLabel(c.getResource().getName())
                     .withActions(ResourceConnectionActionsContributor.CONNECTION_ACTIONS)));
     }
 
-    private static class ModuleNode extends Node<AzureModule> {
+    private static class ModuleNode extends Node<Module> {
         private final MessageBusConnection connection;
 
-        public ModuleNode(@Nonnull AzureModule module) {
+        public ModuleNode(@Nonnull Module module) {
             super(module);
             this.connection = module.getProject().getMessageBus().connect();
             this.connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (p, conn, action) -> {

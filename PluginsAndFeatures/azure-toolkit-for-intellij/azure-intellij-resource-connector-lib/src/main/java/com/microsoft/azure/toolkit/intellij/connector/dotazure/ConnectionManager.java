@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -83,7 +84,7 @@ public class ConnectionManager {
 
     @Nonnull
     public static List<Connection<?, ?>> getConnectionForRunConfiguration(final RunConfiguration config) {
-        final List<Connection<?, ?>> connections = AzureModule.createIfSupport(config)
+        final List<Connection<?, ?>> connections = AzureProjectFacet.getAzureModule(config)
             .map(AzureModule::getDefaultProfile)
             .map(Profile::getConnectionManager)
                 .map(ConnectionManager::getConnections).orElse(Collections.emptyList());

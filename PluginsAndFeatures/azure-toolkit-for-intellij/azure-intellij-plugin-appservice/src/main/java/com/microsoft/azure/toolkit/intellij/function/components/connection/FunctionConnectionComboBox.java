@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -97,7 +98,7 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
         if (Objects.isNull(module)) {
             return Collections.emptyList();
         }
-        final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module))
+        final List<Connection<?, ?>> connections = AzureProjectFacet.getAzureModule(module)
                 .map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnections)
                 .orElse(Collections.emptyList());

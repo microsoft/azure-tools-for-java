@@ -22,6 +22,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -92,7 +93,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         AzureTaskManager.getInstance().runLater(() -> {
             final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("env");
             descriptor.withTitle("Choose .env File");
-            final VirtualFile defaultDir = AzureModule.createIfSupport(configuration)
+            final VirtualFile defaultDir = AzureProjectFacet.getAzureModule(configuration)
                 .flatMap(AzureModule::getModuleDir).orElse(null);
             final VirtualFile file = FileChooser.chooseFile(descriptor, configuration.getProject(), defaultDir);
             if (Objects.nonNull(file)) {
@@ -126,12 +127,12 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
         public LoadDotEnvBeforeRunTask(RunConfiguration configuration) {
             super(ID);
             this.config = configuration;
-            this.file = AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile).orElse(null);
+            this.file = AzureProjectFacet.getAzureModule(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile).orElse(null);
         }
 
         @AzureOperation("platform/connector.load_env_beforeruntask")
         public List<Pair<String, String>> loadEnv() {
-            final AzureModule azureModule = AzureModule.createIfSupport(this.config).orElse(null);
+            final AzureModule azureModule = AzureProjectFacet.getAzureModule(this.config).orElse(null);
             final Project project = Optional.ofNullable(azureModule).map(AzureModule::getProject).orElse(null);
             final List<Connection<?, ?>> invalidConnections = Optional.ofNullable(azureModule).map(AzureModule::getDefaultProfile)
                     .map(Profile::getConnections)
@@ -142,7 +143,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
             }
             // todo: wait for all connection has been saved to .env
             return Optional.ofNullable(this.file)
-                .or(() -> AzureModule.createIfSupport(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
+                .or(() -> AzureProjectFacet.getAzureModule(this.config).map(AzureModule::getDefaultProfile).map(Profile::getDotEnvFile))
                 .map(Profile::load)
                 .orElse(Collections.emptyList());
         }

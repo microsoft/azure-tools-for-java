@@ -5,6 +5,7 @@ import com.intellij.openapi.module.Module;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacet;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -21,7 +22,7 @@ public interface IConnectionAware extends RunConfiguration {
 
     @Nonnull
     default List<Connection<?, ?>> getConnections() {
-        return AzureModule.createIfSupport(this)
+        return AzureProjectFacet.getAzureModule(this)
                 .map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnections)
                 .orElse(Collections.emptyList());

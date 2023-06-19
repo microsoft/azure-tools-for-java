@@ -64,9 +64,13 @@ public class AzureModule {
     private Profile defaultProfile;
 
     public AzureModule(@Nonnull final Module module) {
+        this(module, null);
+    }
+
+    public AzureModule(@Nonnull final Module module, @Nullable VirtualFile dotAzure) {
         this.module = module;
-        this.getModuleDir().map(d -> d.findChild(DOT_AZURE)).ifPresent(dotAzure -> {
-            this.dotAzure = dotAzure;
+        Optional.ofNullable(dotAzure).or(() -> this.getModuleDir().map(d -> d.findChild(DOT_AZURE))).ifPresent(d -> {
+            this.dotAzure = d;
             this.profilesXmlFile = this.dotAzure.findChild(PROFILES_XML);
             Optional.ofNullable(this.profilesXmlFile).ifPresent(this::loadProfiles);
         });
@@ -226,17 +230,17 @@ public class AzureModule {
     }
 
     @Nonnull
-    public static AzureModule from(@Nonnull Module module) {
+    private static AzureModule from(@Nonnull Module module) {
         return modules.computeIfAbsent(module, t -> new AzureModule(module));
     }
 
     @Nullable
-    public static AzureModule from(@Nonnull VirtualFile file, @Nonnull Project project) {
+    private static AzureModule from(@Nonnull VirtualFile file, @Nonnull Project project) {
         final Module module = ModuleUtil.findModuleForFile(file, project);
         return Objects.isNull(module) ? null : AzureModule.from(module);
     }
 
-    public static List<AzureModule> list(@Nonnull Project project) {
+    private static List<AzureModule> list(@Nonnull Project project) {
         return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(AzureModule::from).toList();
     }
 
@@ -246,7 +250,7 @@ public class AzureModule {
      * @return true if {@param configuration} is a
      * {@link ModuleBasedConfiguration}, {@link IWebAppRunConfiguration} or {@link IConnectionAware}.
      */
-    public static boolean isSupported(RunConfiguration configuration) {
+    private static boolean isSupported(RunConfiguration configuration) {
         return Optional.ofNullable(configuration)
             .map(AzureModule::getTargetModule)
             .isPresent();
@@ -256,12 +260,11 @@ public class AzureModule {
      * create {@code AzureModule} if the given {@param configuration} meet the requirements.
      * see {@link AzureModule#isSupported(RunConfiguration)}
      */
-    public static Optional<AzureModule> createIfSupport(RunConfiguration configuration) {
-        return Optional.ofNullable(configuration)
-            .map(AzureModule::getTargetModule)
-            .map(AzureModule::from);
-    }
-
+//    public static Optional<AzureModule> createIfSupport(RunConfiguration configuration) {
+//        return Optional.ofNullable(configuration)
+//            .map(AzureModule::getTargetModule)
+//            .map(AzureModule::from);
+//    }
     @Nullable
     public static Module getTargetModule(@Nonnull RunConfiguration configuration) {
         if (configuration instanceof ModuleBasedConfiguration) {
