@@ -9,6 +9,8 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <facetType implementation="com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetType"/>
+        <framework.detector implementation="com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetType$AzureProjectFacetDetector"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.MigrateStartupActivity"/>
         <toolWindow id="Resource Connections" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" canCloseContents="false"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
