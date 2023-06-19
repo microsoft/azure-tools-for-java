@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.facet.ProjectFacetManager;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -22,17 +23,15 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.facet.AzureProjectFacetType;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.collections4.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTIONS_REFRESHED;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
@@ -133,13 +132,7 @@ public class ResourceConnectionExplorer extends Tree {
 
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
-            final List<Connection<?, ?>> connections = AzureModule.list(project).stream()
-                    .map(AzureModule::getDefaultProfile)
-                    .filter(Objects::nonNull)
-                    .map(Profile::getConnections)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
-            return CollectionUtils.isNotEmpty(connections);
+            return ProjectFacetManager.getInstance(project).getModulesWithFacet(AzureProjectFacetType.ID).size() > 0;
         }
 
         @Override
