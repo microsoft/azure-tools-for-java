@@ -7,17 +7,12 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
-import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.DataProvider;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.microsoft.azure.toolkit.lib.auth.AzureToolkitAuthenticationException;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -63,14 +58,4 @@ public interface IAzureFacetNode extends DataProvider, Disposable {
     boolean isDisposed();
 
     void setDisposed(boolean isDisposed);
-
-    default AbstractTreeNode<?> toExceptionNode(Throwable e) {
-        e = ExceptionUtils.getRootCause(e);
-        if (e instanceof AzureToolkitAuthenticationException) {
-            final Action<Object> signin = AzureActionManager.getInstance().getAction(Action.AUTHENTICATE).bind(this.getProject()).withLabel("Sign in to manage connected resource");
-            return new ActionNode<>(this, signin);
-        } else {
-            return new ExceptionNode(this, e);
-        }
-    }
 }

@@ -17,7 +17,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ClientProperty;
 import com.intellij.util.ui.tree.TreeUtil;
@@ -79,10 +78,6 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
                     .map(n -> ((PsiDirectoryNode) n))
                     .filter(d -> Objects.nonNull(d.getVirtualFile()) && ".azure".equalsIgnoreCase(d.getVirtualFile().getName()))
                     .findAny().orElse(null);
-                // dispose old azure facet root node
-                // noinspection UnstableApiUsage
-                Disposer.disposeChildren(viewPane, child -> child instanceof AzureFacetRootNode &&
-                    Objects.equals(((AzureFacetRootNode) child).getValue(), azureModule));
                 final List<AbstractTreeNode<?>> nodes = new LinkedList<>();
                 nodes.add(new AzureFacetRootNode(azureModule, settings));
                 nodes.addAll(children);

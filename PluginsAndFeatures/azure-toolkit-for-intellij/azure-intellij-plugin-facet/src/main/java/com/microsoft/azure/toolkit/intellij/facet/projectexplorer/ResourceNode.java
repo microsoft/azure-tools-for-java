@@ -7,15 +7,13 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,22 +25,13 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Slf4j
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFacetNode, Node.ChildrenRenderer, Node.ViewRenderer {
-    @EqualsAndHashCode.Include
-    private final IAzureFacetNode parent;
-    @Getter
-    @Setter
-    private boolean disposed;
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
+public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Node.ChildrenRenderer, Node.ViewRenderer {
 
-    public ResourceNode(@Nonnull IAzureFacetNode parent, final Node<?> node) {
-        super(parent.getProject(), node);
-        this.parent = parent;
+    public ResourceNode(@Nonnull Project project, final Node<?> node) {
+        super(project, node);
         node.setViewRenderer(this);
         node.setChildrenRenderer(this);
-        if (!parent.isDisposed()) {
-            Disposer.register(parent, this);
-        }
     }
 
     @Override
@@ -52,17 +41,15 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
         if (this.isDisposed()) {
             return Collections.emptyList();
         }
-        // noinspection UnstableApiUsage
-        Disposer.disposeChildren(this, ignore -> true);
         try {
             final Node<?> node = this.getValue();
-            children.addAll(node.getChildren().stream().map(n -> new ResourceNode(this, n)).toList());
+            children.addAll(node.getChildren().stream().map(n -> new ResourceNode(this.getProject(), n)).toList());
             if (node.hasMoreChildren()) {
                 final Action<Object> loadMoreAction = new Action<>(Action.Id.of("user/common.load_more"))
                     .withHandler(i -> node.loadMoreChildren())
                     .withLabel("load more")
                     .withAuthRequired(true);
-                children.add(new ActionNode<>(this, loadMoreAction));
+                children.add(new ActionNode<>(this.getProject(), loadMoreAction));
             }
         } catch (final Exception e) {
             log.warn(e.getMessage(), e);
@@ -82,6 +69,16 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
         } catch (final Exception e) {
             log.warn(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void updateView() {
+        rerender(false);
+    }
+
+    @Override
+    public void updateChildren(boolean... incremental) {
+        rerender(true);
     }
 
     @Override
@@ -110,28 +107,13 @@ public class ResourceNode extends AbstractTreeNode<Node<?>> implements IAzureFac
     }
 
     @Override
-    public void updateView() {
-        rerender(false);
-    }
-
-    @Override
-    public void updateChildren(boolean... incremental) {
-        rerender(true);
-    }
-
-    @Override
-    public String toString() {
-        return this.getValue().buildLabel();
-    }
-
-    @Override
     public void dispose() {
-        IAzureFacetNode.super.dispose();
+        super.dispose();
         Optional.ofNullable(getValue()).ifPresent(Node::dispose);
     }
 
     @EqualsAndHashCode.Include
-    private Node<?> getNode() {
-        return this.getValue();
+    public AbstractTreeNode<?> getMyParent() {
+        return this.getParent();
     }
 }

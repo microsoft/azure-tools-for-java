@@ -7,12 +7,10 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NonNls;
@@ -26,16 +24,10 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Slf4j
-public class ExceptionNode extends AbstractTreeNode<Throwable> implements IAzureFacetNode {
-    @Getter
-    @Setter
-    private boolean disposed;
+public class ExceptionNode extends AbstractAzureFacetNode<Throwable> {
 
-    public ExceptionNode(@Nonnull IAzureFacetNode parent, final Throwable e) {
-        super(parent.getProject(), e);
-        if (!parent.isDisposed()) {
-            Disposer.register(parent, this);
-        }
+    public ExceptionNode(@Nonnull Project project, final Throwable e) {
+        super(project, e);
     }
 
     @Override
@@ -45,17 +37,15 @@ public class ExceptionNode extends AbstractTreeNode<Throwable> implements IAzure
         if (this.isDisposed()) {
             return Collections.emptyList();
         }
-        // noinspection UnstableApiUsage
-        Disposer.disposeChildren(this, ignore -> true);
         try {
             final Throwable e = this.getValue();
             if (e instanceof AzureToolkitRuntimeException) {
                 final Object[] actions = Optional.ofNullable(((AzureToolkitRuntimeException) e).getActions()).orElseGet(() -> new Object[0]);
                 for (final Object action : actions) {
                     if (action instanceof Action.Id) {
-                        children.add(new ActionNode<>(this, (Action.Id<Object>) action));
+                        children.add(new ActionNode<>(this.getProject(), (Action.Id<Object>) action));
                     } else if (action instanceof Action<?>) {
-                        children.add(new ActionNode<>(this, (Action<Object>) action));
+                        children.add(new ActionNode<>(this.getProject(), (Action<Object>) action));
                     }
                 }
             }

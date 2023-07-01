@@ -9,7 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -22,7 +22,6 @@ import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.explorer.AzureExplorer;
@@ -34,8 +33,6 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,17 +47,12 @@ import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionA
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REMOVE_CONNECTION;
 
 @Slf4j
-public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implements IAzureFacetNode {
-    private final AzureModule module;
+public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
     private final Action<?> editAction;
     private final AzureEventBus.EventListener eventListener;
-    @Getter
-    @Setter
-    private boolean disposed;
 
-    public ConnectionNode(@Nonnull final ConnectionsNode parent, @Nonnull Connection<?, ?> connection) {
-        super(parent.getProject(), connection);
-        this.module = parent.getValue();
+    public ConnectionNode(@Nonnull final Project project, @Nonnull Connection<?, ?> connection) {
+        super(project, connection);
         this.editAction = new Action<>(Action.Id.of("user/connector.edit_connection_in_editor"))
             .withLabel("Open In Editor")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
@@ -68,20 +60,15 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
             .withAuthRequired(false);
         this.eventListener = new AzureEventBus.EventListener(this::onEvent);
         AzureEventBus.on("resource.status_changed.resource", eventListener);
-        if (!parent.isDisposed()) {
-            Disposer.register(parent, this);
-        }
     }
 
     private void onEvent(@Nonnull final AzureEvent azureEvent) {
         final String type = azureEvent.getType();
         final Object source = azureEvent.getSource();
         final Resource<?> resource = this.getValue().getResource();
-        if (StringUtils.equalsIgnoreCase(type, "resource.status_changed.resource")) {
-            if (resource instanceof AzureServiceResource &&
-                source instanceof AzResource && StringUtils.equals(((AzResource) source).getId(), resource.getDataId())) {
-                this.rerender(true);
-            }
+        if (resource instanceof AzureServiceResource &&
+            source instanceof AzResource && StringUtils.equals(((AzResource) source).getId(), resource.getDataId())) {
+            this.rerender(true);
         }
     }
 
@@ -92,21 +79,18 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
         if (this.isDisposed()) {
             return children;
         }
-        // dispose older children
-        // noinspection UnstableApiUsage
-        Disposer.disposeChildren(this, ignore -> true);
         try {
             final Connection<?, ?> connection = this.getValue();
-            final Profile profile = module.getDefaultProfile();
             if (!connection.isValidConnection()) {
-                children.add(new ActionNode<>(this, ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
+                children.add(new ActionNode<>(this.getProject(), ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
             }
             if (connection.getResource() instanceof AzureServiceResource) {
                 children.add(getResourceNode(connection));
             }
+            final Profile profile = connection.getProfile();
             final Boolean envFileExists = Optional.ofNullable(profile).map(Profile::getDotEnvFile).map(VirtualFile::exists).orElse(false);
             if (envFileExists) {
-                children.add(new EnvironmentVariablesNode(this, profile, connection));
+                children.add(new EnvironmentVariablesNode(this.getProject(), profile, connection));
             }
         } catch (final Exception e) {
             log.warn(e.getMessage(), e);
@@ -123,7 +107,7 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
                 return new GenericResourceNode(this.getProject(), resourceId, "Deleted");
             }
             final Node<?> node = AzureExplorer.manager.createNode(resource, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
-            return new ResourceNode(this, node);
+            return new ResourceNode(this.getProject(), node);
         } catch (final Throwable e) {
             log.warn(e.getMessage(), e);
             return toExceptionNode(e);
@@ -184,11 +168,6 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
     }
 
     @Override
-    public String toString() {
-        return "->" + this.getValue().getResource().getName();
-    }
-
-    @Override
     public void navigate(boolean requestFocus) {
         final VirtualFile connectionsFile = this.getConnectionsFile();
         final PsiFile psiFile = Optional.ofNullable(connectionsFile)
@@ -216,7 +195,12 @@ public class ConnectionNode extends AbstractTreeNode<Connection<?, ?>> implement
 
     @Override
     public void dispose() {
-        IAzureFacetNode.super.dispose();
+        super.dispose();
         AzureEventBus.off("resource.status_changed.resource", eventListener);
+    }
+
+    @Override
+    public String toString() {
+        return "->" + this.getValue().getResource().getName();
     }
 }

@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.facet.projectexplorer;
 import com.intellij.ide.projectView.*;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.messages.MessageBusConnection;
@@ -62,7 +61,6 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
                 rerender(true);
             }
         });
-        Disposer.register(ProjectView.getInstance(getProject()).getCurrentProjectViewPane(), this);
     }
 
     private void onEvent(@Nonnull final AzureEvent azureEvent) {
@@ -80,13 +78,11 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
 
     @Override
     public Collection<? extends AbstractTreeNode<?>> getChildren() {
-        if (this.isDisposed()) {
+        final AzureModule module = this.getValue();
+        final Profile profile = module.getDefaultProfile();
+        if (this.isDisposed() || Objects.isNull(profile)) {
             return Collections.emptyList();
         }
-        // dispose older children
-        // noinspection UnstableApiUsage
-        Disposer.disposeChildren(this, ignore -> true);
-        final AzureModule module = this.getValue();
 //        final ArrayList<AbstractTreeNode<?>> result = new ArrayList<>();
 //        final List<Connection<?, ?>> connections = Optional.ofNullable(module.getDefaultProfile()).map(Profile::getConnections).orElse(Collections.emptyList());
 //        final List<String> appIds = Optional.ofNullable(module.getDefaultProfile()).map(Profile::getTargetAppIds).orElse(Collections.emptyList());
@@ -100,14 +96,14 @@ public class AzureFacetRootNode extends ProjectViewNode<AzureModule> implements 
 //            result.add(new DeploymentTargetsNode(module));
 //        }
 //        result.add(new ConnectionsNode(module));
-        return new ConnectionsNode(this).getChildren();
+        return new ConnectionsNode(this.getProject(), profile.getConnectionManager()).getChildren();
     }
 
     @Override
     protected void update(@Nonnull final PresentationData presentation) {
         try {
-            final AzureModule value = getValue();
-            final List<Connection<?, ?>> connections = Optional.ofNullable(value.getDefaultProfile())
+            final AzureModule module = getValue();
+            final List<Connection<?, ?>> connections = Optional.ofNullable(module.getDefaultProfile())
                 .map(Profile::getConnections).orElse(Collections.emptyList());
             final boolean connected = CollectionUtils.isNotEmpty(connections);
             final boolean isConnectionValid = connections.stream().allMatch(Connection::isValidConnection);
