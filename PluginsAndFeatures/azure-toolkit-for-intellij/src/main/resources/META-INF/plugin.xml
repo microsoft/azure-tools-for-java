@@ -27,6 +27,13 @@
   <change-notes>
     <![CDATA[
     <html>
+      <h3>3.78.1</h3>
+        <h4 id="fixed">Fixed</h4>
+        <ul>
+        <li>Fix: error pops when starting/stopping/restarting spring app.</li>
+        <li>Fix: error pops when deleting cosmos db document.</li>
+        <li>Fix: updating firewall rules in sql database&#39;s properties editor view doesn&#39;t work.</li>
+        </ul>
       <h3>3.78.0</h3>
         <h4>Added</h4>
         <ul>

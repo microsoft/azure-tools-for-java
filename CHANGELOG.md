@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.78.1](#3781)
   - [3.78.0](#3780)
   - [3.77.0](#3770)
   - [3.76.0](#3760)
@@ -97,6 +98,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.78.1
+### Fixed
+- Fix: error pops when starting/stopping/restarting spring app.
+- Fix: error pops when deleting cosmos db document.
+- Fix: updating firewall rules in sql database's properties editor view doesn't work.
 
 ## 3.78.0
 ### Added
