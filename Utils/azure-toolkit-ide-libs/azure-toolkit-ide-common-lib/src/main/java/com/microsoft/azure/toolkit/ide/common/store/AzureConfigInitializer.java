@@ -6,12 +6,17 @@ package com.microsoft.azure.toolkit.ide.common.store;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler.getDotnetRuntimePath;
@@ -44,18 +49,39 @@ public class AzureConfigInitializer {
     public static final String AZURITE_PATH = "azurite_path";
     public static final String AZURITE_WORKSPACE = "azurite_workspace";
     public static final String ENABLE_LEASE_MODE = "enable_lease_mode";
+    public static final String SYSTEM = "system";
+    public static final String AZURE_CONFIGURATION = "azure_configuration";
 
     public static void initialize(String defaultMachineId, String pluginName, String pluginVersion) {
-        String machineId = AzureStoreManager.getInstance().getMachineStore().getProperty(TELEMETRY,
-            TELEMETRY_INSTALLATION_ID);
-        if (StringUtils.isBlank(machineId) || !InstallationIdUtils.isValidHashMac(machineId)) {
-            machineId = defaultMachineId;
-        }
-
+        final String machineId = Optional.ofNullable(AzureStoreManager.getInstance().getMachineStore().getProperty(TELEMETRY, TELEMETRY_INSTALLATION_ID))
+                .filter(StringUtils::isNotBlank)
+                .filter(InstallationIdUtils::isValidHashMac)
+                .orElse(defaultMachineId);
         final AzureConfiguration config = Azure.az().config();
         config.setMachineId(machineId);
+        config.setProduct(pluginName);
+        config.setVersion(pluginVersion);
+        config.setLogLevel("NONE");
+        final String userAgent = String.format("%s, v%s, machineid:%s", pluginName, pluginVersion,
+                BooleanUtils.isNotFalse(config.getTelemetryEnabled()) ? config.getMachineId() : StringUtils.EMPTY);
+        config.setUserAgent(userAgent);
 
         final IIdeStore ideStore = AzureStoreManager.getInstance().getIdeStore();
+        final String property = ideStore.getProperty(SYSTEM, AZURE_CONFIGURATION);
+        if (StringUtils.isBlank(property)) {
+            loadLegacyData(ideStore, config);
+        } else {
+            final AzureConfiguration azureConfiguration = JsonUtils.fromJson(property, AzureConfiguration.class);
+            try {
+                Utils.copyProperties(config, azureConfiguration, false);
+            } catch (IllegalAccessException e) {
+                AzureMessager.getMessager().warning("Failed to load azure configuration from store.", e);
+            }
+        }
+        saveAzConfig();
+    }
+
+    private static void loadLegacyData(final IIdeStore ideStore, final AzureConfiguration config) {
         final String allowTelemetry = ideStore.getProperty(TELEMETRY, TELEMETRY_ALLOW_TELEMETRY, "true");
         config.setTelemetryEnabled(Boolean.parseBoolean(allowTelemetry));
         final String enableAuthPersistence = ideStore.getProperty(OTHER, ENABLE_AUTH_PERSISTENCE, "true");
@@ -113,38 +139,12 @@ public class AzureConfigInitializer {
 
         final Boolean enableLeaseMode = Boolean.valueOf(ideStore.getProperty(AZURITE, ENABLE_LEASE_MODE, "false"));
         config.setEnableLeaseMode(enableLeaseMode);
-
-        ideStore.getProperty(TELEMETRY, TELEMETRY_PLUGIN_VERSION, "");
-
-        final String userAgent = String.format("%s, v%s, machineid:%s", pluginName, pluginVersion,
-            config.getTelemetryEnabled() ? config.getMachineId() : StringUtils.EMPTY);
-        config.setUserAgent(userAgent);
-        config.setProduct(pluginName);
-        config.setLogLevel("NONE");
-        config.setVersion(pluginVersion);
-        saveAzConfig();
     }
 
     public static void saveAzConfig() {
         final AzureConfiguration config = Azure.az().config();
-        final IIdeStore ideStore = AzureStoreManager.getInstance().getIdeStore();
-
-        AzureStoreManager.getInstance().getMachineStore().setProperty(TELEMETRY, TELEMETRY_INSTALLATION_ID,
-            config.getMachineId());
-
-        ideStore.setProperty(TELEMETRY, TELEMETRY_ALLOW_TELEMETRY, Boolean.toString(config.getTelemetryEnabled()));
-        ideStore.setProperty(OTHER, ENABLE_AUTH_PERSISTENCE, Boolean.toString(config.isAuthPersistenceEnabled()));
-        ideStore.setProperty(MONITOR, MONITOR_TABLE_ROWS, String.valueOf(config.getMonitorQueryRowNumber()));
-        ideStore.setProperty(ACCOUNT, AZURE_ENVIRONMENT_KEY, config.getCloud());
-        ideStore.setProperty(FUNCTION, FUNCTION_CORE_TOOLS_PATH, config.getFunctionCoreToolsPath());
-        ideStore.setProperty(STORAGE, STORAGE_EXPLORER_PATH, config.getStorageExplorerPath());
-        ideStore.setProperty(COMMON, PAGE_SIZE, String.valueOf(config.getPageSize()));
-        ideStore.setProperty(COSMOS, DOCUMENTS_LABEL_FIELDS, String.join(";", config.getDocumentsLabelFields()));
-        // don't save pluginVersion, it is saved in AzurePlugin class
-        ideStore.setProperty(BICEP, DOTNET_RUNTIME_PATH, config.getDotnetRuntimePath());
-        ideStore.setProperty(EVENT_HUBS, CONSUMER_GROUP_NAME, config.getEventHubsConsumerGroup());
-        ideStore.setProperty(AZURITE, AZURITE_PATH, config.getAzuritePath());
-        ideStore.setProperty(AZURITE, AZURITE_WORKSPACE, config.getAzuriteWorkspace());
-        ideStore.setProperty(AZURITE, ENABLE_LEASE_MODE, String.valueOf(config.getEnableLeaseMode()));
+        final AzureStoreManager storeManager = AzureStoreManager.getInstance();
+        storeManager.getIdeStore().setProperty(SYSTEM, AZURE_CONFIGURATION, JsonUtils.toJson(config));
+        storeManager.getMachineStore().setProperty(TELEMETRY, TELEMETRY_INSTALLATION_ID, config.getMachineId());
     }
 }

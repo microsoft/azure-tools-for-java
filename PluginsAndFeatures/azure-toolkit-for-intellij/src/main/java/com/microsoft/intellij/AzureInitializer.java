@@ -25,10 +25,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 public class AzureInitializer {
     public static void initialize() {
         ProxyUtils.initProxy();
-        initializeAzureConfiguration();
-    }
-
-    private static void initializeAzureConfiguration() {
         IntellijConfigInitializer.initialize();
         initializeTelemetry();
     }

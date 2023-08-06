@@ -273,7 +273,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
             Azure.az(AzureCloud.class).setByName(newConfig.getCloud());
         }
-        AzureConfigInitializer.saveAzConfig();
+        Azure.az().saveConfiguration();
         return true;
     }
 

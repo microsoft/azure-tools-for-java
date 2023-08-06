@@ -51,6 +51,7 @@ public class IntellijConfigInitializer {
 
         AzureConfigInitializer.initialize(installId, "Azure Toolkit for IntelliJ", AzurePlugin.PLUGIN_VERSION);
         CommonSettings.setUserAgent(Azure.az().config().getUserAgent());
+        Azure.az().setSaveConfigurationHandler(c -> AzureConfigInitializer.saveAzConfig());
         if (StringUtils.isNotBlank(Azure.az().config().getCloud())) {
             Azure.az(AzureCloud.class).setByName(Azure.az().config().getCloud());
         }
