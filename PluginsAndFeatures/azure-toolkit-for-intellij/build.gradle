@@ -171,6 +171,7 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-containerservice', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-applicationinsights', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-guidance-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-cosmos', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-bicep', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-containerapps', configuration: 'instrumentedJar')

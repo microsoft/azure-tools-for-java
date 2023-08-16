@@ -7,6 +7,7 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-appservice', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-guidance-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-storage', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-resource-connector-lib', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-containerregistry', configuration: 'instrumentedJar')
