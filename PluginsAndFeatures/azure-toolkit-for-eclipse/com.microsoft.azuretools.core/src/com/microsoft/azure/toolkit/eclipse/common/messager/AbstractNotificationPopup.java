@@ -15,27 +15,26 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.messager;
 
+import java.util.Optional;
+
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.DeviceResourceException;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.window.Window;
-import org.eclipse.mylyn.commons.ui.CommonImages;
-import org.eclipse.mylyn.commons.ui.CommonUiUtil;
-import org.eclipse.mylyn.commons.ui.GradientColors;
-import org.eclipse.mylyn.commons.ui.compatibility.CommonFonts;
-import org.eclipse.mylyn.internal.commons.ui.AnimationUtil;
-import org.eclipse.mylyn.internal.commons.ui.AnimationUtil.FadeJob;
-import org.eclipse.mylyn.internal.commons.ui.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -46,22 +45,19 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 
+import com.microsoft.azuretools.core.Activator;
+
 public abstract class AbstractNotificationPopup extends Window {
-    private static final String LABEL_NOTIFICATION;
-    private static final String LABEL_JOB_CLOSE;
+    private static final String LABEL_NOTIFICATION = "Notification";
+    private static final String LABEL_JOB_CLOSE = "Close Notification Job";
     private long delayClose;
     protected LocalResourceManager resources;
-    private GradientColors color;
     private final Display display;
     private Shell shell;
     private final Job closeJob;
-    private FadeJob fadeJob;
+    private AnimationUtil.FadeJob fadeJob;
     private boolean fadingEnabled;
-
-    static {
-        LABEL_NOTIFICATION = Messages.AbstractNotificationPopup_Notification;
-        LABEL_JOB_CLOSE = Messages.AbstractNotificationPopup_Close_Notification_Job;
-    }
+    private Image titleImage;
 
     public AbstractNotificationPopup(Display display) {
         this(display, 540684);
@@ -91,7 +87,6 @@ public abstract class AbstractNotificationPopup extends Window {
         this.setShellStyle(style);
         this.display = display;
         this.resources = new LocalResourceManager(JFaceResources.getResources());
-        this.initResources();
         this.closeJob.setSystem(true);
     }
 
@@ -104,7 +99,7 @@ public abstract class AbstractNotificationPopup extends Window {
     }
 
     protected String getPopupShellTitle() {
-        String productName = CommonUiUtil.getProductName();
+        String productName = Optional.ofNullable(Platform.getProduct()).map(IProduct::getName).orElse(null);
         return productName != null ? productName + " " + LABEL_NOTIFICATION : LABEL_NOTIFICATION;
     }
 
@@ -121,21 +116,13 @@ public abstract class AbstractNotificationPopup extends Window {
         titleImageLabel.setImage(this.getPopupShellImage());
         Label titleTextLabel = new Label(parent, 0);
         titleTextLabel.setText(this.getPopupShellTitle());
-        titleTextLabel.setFont(CommonFonts.BOLD);
+        titleTextLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
         titleTextLabel.setForeground(this.getTitleForeground());
         titleTextLabel.setLayoutData(new GridData(SWT.FILL, 16777216, true, true));
         titleTextLabel.setCursor(parent.getDisplay().getSystemCursor(21));
         final Label button = new Label(parent, 0);
-        button.setImage(CommonImages.getImage(CommonImages.NOTIFICATION_CLOSE));
-        button.addMouseTrackListener(new MouseTrackAdapter() {
-            public void mouseEnter(MouseEvent e) {
-                button.setImage(CommonImages.getImage(CommonImages.NOTIFICATION_CLOSE_HOVER));
-            }
-
-            public void mouseExit(MouseEvent e) {
-                button.setImage(CommonImages.getImage(CommonImages.NOTIFICATION_CLOSE));
-            }
-        });
+        titleImage = Activator.getImageDescriptor("icons/close.png").createImage();
+        button.setImage(titleImage);
         button.addMouseListener(new MouseAdapter() {
             public void mouseUp(MouseEvent e) {
                 AbstractNotificationPopup.this.close();
@@ -145,17 +132,75 @@ public abstract class AbstractNotificationPopup extends Window {
     }
 
     protected Color getTitleForeground() {
-        return this.color.getTitleText();
+        return getColor(this.resources, getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
     }
+    
+	private RGB getSystemColor(int code) {
+		return this.display.getSystemColor(code).getRGB();
+	}
+	
+	private Color getColor(ResourceManager manager, RGB rgb) {
+		try {
+			return manager.createColor(rgb);
+		} catch (DeviceResourceException e) {
+			return manager.getDevice().getSystemColor(SWT.COLOR_BLACK);
+		}
+	}
+	
+	private Color getBorderColor() {
+		RGB tbBorder = getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
+		RGB bg = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();
 
-    private void initResources() {
-        this.color = new GradientColors(this.display, this.resources);
-    }
+		// Group 1
+		// Rule: If at least 2 of the RGB values are equal to or between 180 and
+		// 255, then apply specified opacity for Group 1
+		// Examples: Vista, XP Silver, Wn High Con #2
+		// Keyline = TITLE_BACKGROUND @ 70% Opacity over LIST_BACKGROUND
+		if (testTwoPrimaryColors(tbBorder, 179, 256)) {
+			tbBorder = blend(tbBorder, bg, 70);
+		} else if (testTwoPrimaryColors(tbBorder, 120, 180)) {
+			tbBorder = blend(tbBorder, bg, 50);
+		} else {
+			tbBorder = blend(tbBorder, bg, 30);
+		}
+
+		return getColor(resources, tbBorder);
+	}
+	
+	private RGB blend(RGB c1, RGB c2, int ratio) {
+		int r = blend(c1.red, c2.red, ratio);
+		int g = blend(c1.green, c2.green, ratio);
+		int b = blend(c1.blue, c2.blue, ratio);
+		return new RGB(r, g, b);
+	}
+	
+	private int blend(int v1, int v2, int ratio) {
+		int b = (ratio * v1 + (100 - ratio) * v2) / 100;
+		return Math.min(255, b);
+	}
+	
+	private boolean testTwoPrimaryColors(RGB rgb, int from, int to) {
+		int total = 0;
+		if (testPrimaryColor(rgb.red, from, to)) {
+			total++;
+		}
+		if (testPrimaryColor(rgb.green, from, to)) {
+			total++;
+		}
+		if (testPrimaryColor(rgb.blue, from, to)) {
+			total++;
+		}
+		return total >= 2;
+	}
+	
+	private boolean testPrimaryColor(int value, int from, int to) {
+		return value > from && value < to;
+	}
 
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         this.shell = newShell;
-        newShell.setBackground(this.color.getBorder());
+        newShell.setBackground(getBorderColor());
     }
 
     public void create() {
@@ -240,7 +285,7 @@ public abstract class AbstractNotificationPopup extends Window {
         Rectangle clArea = this.getPrimaryClientArea();
         Point initialSize = this.shell.computeSize(-1, -1);
         int height = Math.max(initialSize.y, 100);
-        int width = Math.min(initialSize.x, 400);
+        int width = Math.max(initialSize.x, 400);
         Point size = new Point(width, height);
         this.shell.setLocation(clArea.width + clArea.x - size.x - 5, clArea.height + clArea.y - size.y - 5);
         this.shell.setSize(size);
@@ -279,6 +324,9 @@ public abstract class AbstractNotificationPopup extends Window {
 
     public boolean close() {
         this.resources.dispose();
+		if (titleImage != null) {
+			titleImage.dispose();
+		}
         return super.close();
     }
 

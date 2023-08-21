@@ -10,7 +10,9 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -89,6 +91,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     private Action doubleClickAction;
 
     private AzureModule azureModule;
+    private Map<ImageDescriptor, Image> imageMap = new HashMap<>();
 
     /*
      * The content provider class is responsible for
@@ -335,7 +338,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             } else if (obj instanceof AzureTreeNode) {
             	icon = ((AzureTreeNode) obj).getAzureIcon();
             }
-            return Optional.ofNullable(icon).map(EclipseAzureIcons::getIcon).map(ImageDescriptor::createImage).orElseGet(()->super.getImage(obj));
+            return Optional.ofNullable(icon).map(EclipseAzureIcons::getIcon).map(des -> imageMap.computeIfAbsent(des, ImageDescriptor::createImage)).orElseGet(()->super.getImage(obj));
         }
     }
 
@@ -563,4 +566,13 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     public void setFocus() {
         viewer.getControl().setFocus();
     }
+
+	@Override
+	public void dispose() {
+		imageMap.values().forEach(icon -> icon.dispose());
+		imageMap.clear();
+		super.dispose();
+	}
+    
+    
 }

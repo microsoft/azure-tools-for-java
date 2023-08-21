@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.eclipse.common.messager;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Image;
@@ -19,6 +20,7 @@ import org.eclipse.swt.widgets.Shell;
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 public class EclipseMessageNotification extends AbstractNotificationPopup implements EclipseMessageView {
 
@@ -51,7 +53,7 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
 
     @Override
     protected String getPopupShellTitle() {
-        return this.message.getTitle();
+        return Optional.ofNullable(this.message.getTitle()).filter(StringUtils::isNotEmpty).orElse("Azure Notification") ;
     }
 
     @Override

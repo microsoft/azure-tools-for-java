@@ -27,8 +27,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.m2e.maven.runtime,
  org.eclipse.m2e.launching,
  org.eclipse.equinox.registry,
- org.eclipse.mylyn.commons.core,
- org.eclipse.mylyn.commons.ui,
  org.eclipse.equinox.security,
  org.apache.commons.collections,
  org.eclipse.jface.text

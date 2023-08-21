@@ -5,7 +5,6 @@
 
 package com.microsoft.azuretools.core.survey;
 
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 
+import com.microsoft.azure.toolkit.eclipse.common.messager.AbstractNotificationPopup;
 import com.microsoft.azuretools.core.Activator;
 
 public class SurveyNotificationPopup extends AbstractNotificationPopup {
