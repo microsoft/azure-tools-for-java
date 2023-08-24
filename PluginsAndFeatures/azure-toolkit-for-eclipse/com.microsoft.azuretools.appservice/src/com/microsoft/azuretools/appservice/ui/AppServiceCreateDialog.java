@@ -161,9 +161,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
     public static final PricingTier DEFAULT_PRICINGTIER = PricingTier.BASIC_B2;
-    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8;
-    private static final WebContainer DEFAULT_WEB_CONTAINER = WebContainer.TOMCAT_9;
-    private static final Runtime DEFAULT_LINUX_RUNTIME = Runtime.LINUX_JAVA8_TOMCAT9;
+    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_17;
+    private static final WebContainer DEFAULT_WEB_CONTAINER = WebContainer.JAVA_SE;
+    private static final Runtime DEFAULT_LINUX_RUNTIME = Runtime.LINUX_JAVA17;
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";

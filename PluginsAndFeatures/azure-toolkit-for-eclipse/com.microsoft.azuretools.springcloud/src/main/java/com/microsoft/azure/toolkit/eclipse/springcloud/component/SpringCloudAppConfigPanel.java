@@ -167,9 +167,15 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		final SpringCloudDeploymentConfig deployment = config.getDeployment();
 		this.toggle(this.toggleEndpoint, config.getIsPublic());
 		this.toggle(this.toggleStorage, deployment.getEnablePersistentStorage());
-		this.useJava17.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_17.toString()));
-		this.useJava11.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_11.toString()));
-		this.useJava8.setSelection(StringUtils.equalsIgnoreCase(deployment.getRuntimeVersion(), RuntimeVersion.JAVA_8.toString()));
+		
+		String runtimeVersion = deployment.getRuntimeVersion();
+		if (StringUtils.isNoneBlank(runtimeVersion)) {
+			this.useJava17
+					.setSelection(StringUtils.equalsIgnoreCase(runtimeVersion, RuntimeVersion.JAVA_17.toString()));
+			this.useJava11
+					.setSelection(StringUtils.equalsIgnoreCase(runtimeVersion, RuntimeVersion.JAVA_11.toString()));
+			this.useJava8.setSelection(StringUtils.equalsIgnoreCase(runtimeVersion, RuntimeVersion.JAVA_8.toString()));
+		}
 
 		this.txtJvmOptions.setText(deployment.getJvmOptions());
 		final Map<String, String> env = deployment.getEnvironment();
@@ -237,10 +243,10 @@ public class SpringCloudAppConfigPanel extends Composite implements AzureFormPan
 		this.useJava8 = new Button(grpConfiguration, SWT.RADIO);
 		this.useJava8.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		this.useJava8.setText("Java 8");
-		this.useJava8.setSelection(true);
 
 		this.useJava11 = new Button(grpConfiguration, SWT.RADIO);
 		this.useJava11.setText("Java 11");
+		this.useJava11.setSelection(true); // use java 11 by default
 
 		this.useJava17 = new Button(grpConfiguration, SWT.RADIO);
 		this.useJava17.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
