@@ -9,6 +9,7 @@ import com.azure.identity.DeviceCodeInfo;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureDialogWrapper;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
 import lombok.Setter;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -111,6 +112,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                     }
                 }
             });
+            AccessibilityUtils.addAccessibilityNameForUIComponent(link, deviceCode.getMessage());
 
             Label label = new Label(area, SWT.NONE);
             label.setText("Waiting for signing in with the code, do not close the window.");

@@ -204,6 +204,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     protected Control createDialogArea(Composite parent) {
         setMessage("Select App Service to deploy to:");
         setTitle("Deploy Web App");
+        getShell().setText("Deploy Web App");
 
         ScrolledComposite scrolledComposite = new ScrolledComposite(parent, SWT.V_SCROLL);
         scrolledComposite.setLayout(new GridLayout(2, false));
@@ -249,6 +250,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 this.buildBeforeDeploy.setVisible(MavenUtils.isMavenProject(value));
             }
         });
+        AccessibilityUtils.addAccessibilityNameForUIComponent(projectCombo.getInputControl(), projectLabel.getText());
+
         Optional.ofNullable(project)
                 .ifPresent(value -> projectCombo.setValue(new ItemReference<>(item -> Objects.equals(value, item))));
         projectCombo.refreshItems();
@@ -413,18 +416,18 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         grpSlot.setLayout(new FillLayout(SWT.HORIZONTAL));
         grpSlot.setLayoutData(gdGrpSlot);
         grpSlot.setText("Deployment Slot");
-        Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
-        compositeSlot.setLayout(new GridLayout(2, false));
+        Composite parentComposite = new Composite(grpSlot, SWT.NONE);
+        parentComposite.setLayout(new GridLayout(1, false));
 
+        Composite checkBoxComposite = new Composite(parentComposite, SWT.LEFT);
         RowLayout rowLayout = new RowLayout();
         rowLayout.marginLeft = 0;
         rowLayout.marginTop = 0;
         rowLayout.marginRight = 0;
         rowLayout.marginBottom = 0;
-        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
-        compositeSlotCb.setLayout(rowLayout);
+        checkBoxComposite.setLayout(rowLayout);
 
-        btnDeployToSlot = new Button(compositeSlotCb, SWT.CHECK);
+        btnDeployToSlot = new Button(checkBoxComposite, SWT.CHECK);
         btnDeployToSlot.setSelection(false);
         btnDeployToSlot.setText("Deploy to Slot");
         AccessibilityUtils.addAccessibilityDescriptionForUIComponent(btnDeployToSlot, DEPLOYMENT_SLOT_HOVER);
@@ -451,9 +454,11 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
 
-        new Label(compositeSlot, SWT.NONE);
+        Composite slotComposite = new Composite(parentComposite, SWT.NONE);
+        slotComposite.setLayout(new GridLayout(2, false));
+        slotComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-        btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
+        btnSlotUseExisting = new Button(slotComposite, SWT.RADIO);
         btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -463,7 +468,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         btnSlotUseExisting.setSelection(true);
         btnSlotUseExisting.setText("Use existing");
-        comboSlot = new Combo(compositeSlot, SWT.READ_ONLY);
+        comboSlot = new Combo(slotComposite, SWT.READ_ONLY);
         AccessibilityUtils.addAccessibilityNameForUIComponent(comboSlot, "Existing deployment slot");
         comboSlot.setEnabled(false);
         comboSlot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -477,7 +482,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         decComboSlot = decorateContorolAndRegister(comboSlot);
 
-        btnSlotCreateNew = new Button(compositeSlot, SWT.RADIO);
+        btnSlotCreateNew = new Button(slotComposite, SWT.RADIO);
         btnSlotCreateNew.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -486,7 +491,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         });
         btnSlotCreateNew.setText("Create new");
 
-        textSlotName = new Text(compositeSlot, SWT.BORDER);
+        textSlotName = new Text(slotComposite, SWT.BORDER);
         textSlotName.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -501,14 +506,14 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         textSlotName.setEnabled(false);
         decTextSlotName = decorateContorolAndRegister(textSlotName);
 
-        lblSlotConf = new Label(compositeSlot, SWT.NONE);
+        lblSlotConf = new Label(slotComposite, SWT.NONE);
         lblSlotConf.setEnabled(false);
         GridData gdLblSlotConf = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gdLblSlotConf.horizontalIndent = 20;
         lblSlotConf.setLayoutData(gdLblSlotConf);
         lblSlotConf.setText("Clone settings from");
 
-        comboSlotConf = new Combo(compositeSlot, SWT.READ_ONLY);
+        comboSlotConf = new Combo(slotComposite, SWT.READ_ONLY);
         comboSlotConf.setEnabled(false);
         comboSlotConf.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         comboSlotConf.setBounds(0, 0, 26, 22);

@@ -17,8 +17,9 @@ public class CreateFunctionAppHandler {
 
     public static void create() {
         Shell shell = Display.getCurrent().getActiveShell();
-        CreateFunctionAppDialog createDialog = new CreateFunctionAppDialog(shell,
-                FunctionAppConfig.getFunctionAppDefaultConfig());
+        final FunctionAppConfig defaultConfig = FunctionAppConfig.getFunctionAppDefaultConfig();
+        defaultConfig.setRuntime(CreateFunctionAppDialog.FUNCTION_WINDOWS_JAVA17);
+        CreateFunctionAppDialog createDialog = new CreateFunctionAppDialog(shell, defaultConfig);
         createDialog.setOkActionListener(config -> {
             createDialog.close();
             AzureTaskManager.getInstance().runInBackground(
