@@ -130,9 +130,9 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
                     // if the selected radio button is disabled, select the first enabled button
                     final Button firstSelected = Stream.of(btnAzureCli, btnOAuth, btnDeviceCode, btnSPRadio).filter(Button::getSelection).findFirst().orElse(null);
-                    if (firstSelected != null && !firstSelected.isEnabled()) {
+                    if (firstSelected == null || !firstSelected.isEnabled()) {
                         Stream.of(btnAzureCli, btnOAuth, btnDeviceCode, btnSPRadio)
-                              .filter(Button::getSelection).findFirst().ifPresent(button -> button.setSelection(true));
+                              .filter(btn -> btn.isEnabled()).findFirst().ifPresent(button -> button.setSelection(true));
                     }
                     syncControlControls();
                 });

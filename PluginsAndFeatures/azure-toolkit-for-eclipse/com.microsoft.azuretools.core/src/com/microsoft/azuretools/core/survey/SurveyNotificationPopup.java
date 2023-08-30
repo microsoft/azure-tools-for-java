@@ -33,6 +33,7 @@ public class SurveyNotificationPopup extends AbstractNotificationPopup {
     private Runnable putOffAction;
     private Runnable neverShowAgainAction;
     private boolean isActionTaken = false;
+    private Image azureSmallLogo;
 
     public SurveyNotificationPopup(Display display, Runnable takeSurveyAction, Runnable putOffAction, Runnable neverShowAgainAction) {
         super(display);
@@ -49,7 +50,7 @@ public class SurveyNotificationPopup extends AbstractNotificationPopup {
 
         final Label surveyLogo = new Label(container, SWT.NONE);
 
-        final Image azureSmallLogo = Activator.getImageDescriptor("icons/azure_small.png").createImage();
+        azureSmallLogo = Activator.getImageDescriptor("icons/azure_small.png").createImage();
         surveyLogo.setImage(azureSmallLogo);
         surveyLogo.setSize(50, 50);
         final GridData logoLayoutData = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
@@ -121,6 +122,9 @@ public class SurveyNotificationPopup extends AbstractNotificationPopup {
         // default to putOff if we don't get option from user
         if (!isActionTaken) {
             putOffAction.run();
+        }
+        if(azureSmallLogo != null) {
+            azureSmallLogo.dispose();
         }
         return super.close();
     }
