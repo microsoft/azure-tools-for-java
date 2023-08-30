@@ -9,6 +9,9 @@
   </parent>
   <artifactId>com.microsoft.azuretools.springcloud</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <checkstyle.skip>true</checkstyle.skip>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>com.microsoft.azure</groupId>

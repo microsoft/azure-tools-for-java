@@ -336,11 +336,11 @@ public class PublishWebAppOnLinuxDialog extends AzureTitleAreaDialogWrapper impl
                 model.setCreatingNewAppServicePlan(false);
                 AppServicePlan selectedAsp = getSelectedAppServicePlan();
                 if (selectedAsp != null) {
-                	model.setLocationName(selectedAsp.getRegion().getName());
+                    model.setLocationName(selectedAsp.getRegion().getName());
                     model.setAppServicePlanName(selectedAsp.getName());
                     model.setAppServicePlanResourceGroupName(selectedAsp.getResourceGroupName());
                 } else {
-                	model.setLocationName(null);
+                    model.setLocationName(null);
                     model.setAppServicePlanName(null);
                     model.setAppServicePlanResourceGroupName(null);
                 }
