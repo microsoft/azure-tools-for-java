@@ -53,7 +53,7 @@ public abstract class AbstractNotificationPopup extends Window {
     private long delayClose;
     protected LocalResourceManager resources;
     private final Display display;
-    private Shell shell;
+    protected Shell shell;
     private final Job closeJob;
     private AnimationUtil.FadeJob fadeJob;
     private boolean fadingEnabled;
@@ -285,7 +285,7 @@ public abstract class AbstractNotificationPopup extends Window {
         Rectangle clArea = this.getPrimaryClientArea();
         Point initialSize = this.shell.computeSize(-1, -1);
         int height = Math.max(initialSize.y, 100);
-        int width = Math.max(initialSize.x, 400);
+        int width = Math.min(initialSize.x, 400);
         Point size = new Point(width, height);
         this.shell.setLocation(clArea.width + clArea.x - size.x - 5, clArea.height + clArea.y - size.y - 5);
         this.shell.setSize(size);

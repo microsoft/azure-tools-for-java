@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -80,6 +81,18 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
             shell = this.getParentShell();
         }
         return shell != null && !shell.isDisposed() ? shell.getDisplay() : Display.getCurrent();
+    }
+
+    @Override
+    protected void initializeBounds() {
+        // TODO Auto-generated method stub
+        super.initializeBounds();
+        // as browser computeSize may not get correct result in mac, reset the size here
+        final Rectangle clientArea = this.shell.getDisplay().getClientArea();
+        int height = clientArea.height / 15;
+        int width = (int) (height * 3.5);
+        Point size = new Point(width, height);
+        this.shell.setSize(size);
     }
 
     @Override
