@@ -7,12 +7,14 @@ package com.microsoft.azuretools.azureexplorer.forms.createrediscache;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroupModule;
 import com.microsoft.azure.toolkit.lib.resource.task.CreateResourceGroupTask;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
@@ -452,12 +454,9 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
             } catch (Exception ex) {
                 EventUtil.logError(operation, ErrorType.userError, ex, null, null);
                 operation.complete();
-                MessageDialog.openError(getShell(),
-                        String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
-                                dnsNameValue),
-                        ex.getMessage());
-                LOG.log(String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),
-                        dnsNameValue), ex);
+                final String message = String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT), dnsNameValue);
+                AzureMessager.getMessager().error(message);
+                LOG.log(message, ex);
             }
         };
         final String name = com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule.MODULE_NAME;
@@ -564,7 +563,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
 
         public RedisCache doExecute() {
             ResourceGroup rg = config.getResourceGroup();
-            if (rg instanceof Draft) {
+            if (rg.isDraftForCreating()) {
                 new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
             }
             final RedisCacheModule caches = Azure.az(AzureRedis.class).caches(config.getSubscription().getId());
