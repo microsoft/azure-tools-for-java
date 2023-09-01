@@ -44,7 +44,7 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         browser.setText(this.getMessage().getContent());
         browser.setBackgroundMode(SWT.INHERIT_FORCE);
-        int height = clientArea.height / 15;
+        int height = clientArea.height / 12;
         browser.setSize((int) (height * 3.5), height);
         Composite buttonBar = new Composite(container, SWT.NONE);
         buttonBar.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false, 1, 1));
@@ -89,7 +89,7 @@ public class EclipseMessageNotification extends AbstractNotificationPopup implem
         super.initializeBounds();
         // as browser computeSize may not get correct result in mac, reset the size here
         final Rectangle clientArea = this.shell.getDisplay().getClientArea();
-        int height = clientArea.height / 15;
+        int height = clientArea.height / 12;
         int width = (int) (height * 3.5);
         Point size = new Point(width, height);
         this.shell.setSize(size);
