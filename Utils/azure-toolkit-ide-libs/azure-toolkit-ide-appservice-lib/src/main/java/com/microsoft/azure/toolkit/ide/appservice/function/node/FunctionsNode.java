@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.entity.FunctionEntity;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
@@ -21,7 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,12 +36,19 @@ public class FunctionsNode extends Node<FunctionApp> {
         this.functionApp = functionApp;
         this.view(new FunctionsNodeView(functionApp));
         this.actions(FunctionAppActionsContributor.FUNCTIONS_ACTIONS);
-        this.addChildren(ignore -> functionApp.listFunctions().stream()
-                .sorted(Comparator.comparing(FunctionEntity::getName)).collect(Collectors.toList()),
-            (function, functionsNode) -> new Node<>(function)
+        this.addChildren(this::listChildren, (function, functionsNode) -> new Node<>(function)
                 .view(new NodeView.Static(function.getName(), "/icons/function-trigger.png", getFunctionTriggerType(function)))
                 .doubleClickAction(FunctionAppActionsContributor.TRIGGER_FUNCTION)
                 .actions(FunctionAppActionsContributor.FUNCTION_ACTION));
+    }
+
+    private List<FunctionEntity> listChildren(FunctionApp functionApp) {
+        try {
+            return functionApp.listFunctions().stream().sorted(Comparator.comparing(FunctionEntity::getName)).collect(Collectors.toList());
+        } catch (final Exception e) {
+            AzureMessager.getMessager().error(String.format("failed to list triggers in function app %s : %s", functionApp.getName(), e.getMessage()));
+            return Collections.emptyList();
+        }
     }
 
     private static String getFunctionTriggerType(@Nonnull FunctionEntity functionEntity) {
@@ -60,7 +70,7 @@ public class FunctionsNode extends Node<FunctionApp> {
         public FunctionsNodeView(@Nonnull FunctionApp functionApp) {
             this.functionApp = functionApp;
             this.listener = new AzureEventBus.EventListener(this::onEvent);
-            AzureEventBus.on("resource.refreshed.resource", listener);
+            AzureEventBus.on("appservice|function.functions.refresh", listener);
             this.refreshView();
         }
 
@@ -81,7 +91,7 @@ public class FunctionsNode extends Node<FunctionApp> {
 
         @Override
         public void dispose() {
-            AzureEventBus.off("resource.refreshed.resource", listener);
+            AzureEventBus.off("appservice|function.functions.refresh", listener);
             this.refresher = null;
         }
 
