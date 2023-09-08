@@ -1,7 +1,7 @@
-<!-- Version: 3.80.2 -->
+<!-- Version: 3.80.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
-## 3.80.2
+## 3.80.0
 ### Added
 - Azure OpenAI (chat) playground for GTP* models.    
   <img alt="azure openai playground" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202308/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202308.openai-playground.gif" width="1000"/>
