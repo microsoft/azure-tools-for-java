@@ -18,10 +18,14 @@ import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.util.Optional;
 
 public class CognitiveServicesActionsContributor implements IActionsContributor {
     public static final int INITIALIZE_ORDER = ResourceCommonActionsContributor.INITIALIZE_ORDER + 1;
@@ -29,12 +33,14 @@ public class CognitiveServicesActionsContributor implements IActionsContributor 
     public static final String SERVICE_ACTIONS = "actions.cognitiveservices.service";
     public static final String ACCOUNT_ACTIONS = "actions.cognitiveservices.account";
     public static final String DEPLOYMENT_ACTIONS = "actions.cognitiveservices.deployment";
+    public static final Action.Id<Subscription> ENABLE_OPENAI = Action.Id.of("user/openai.enable_openai.subscription");
     public static final Action.Id<AzureCognitiveServices> CREATE_ACCOUNT = Action.Id.of("user/openai.create_account");
     public static final Action.Id<CognitiveAccount> CREATE_DEPLOYMENT = CognitiveAccount.CREATE_DEPLOYMENT;
     public static final Action.Id<CognitiveAccount> COPY_PRIMARY_KEY = Action.Id.of("user/openai.copy_primary_key.account");
     public static final Action.Id<CognitiveAccount> OPEN_ACCOUNT_IN_PLAYGROUND = Action.Id.of("user/openai.open_playground.account");
     public static final Action.Id<CognitiveDeployment> OPEN_DEPLOYMENT_IN_PLAYGROUND = CognitiveDeployment.OPEN_DEPLOYMENT_IN_PLAYGROUND;
     public static final Action.Id<ResourceGroup> GROUP_CREATE_ACCOUNT = Action.Id.of("user/openai.create_account.group");
+    public static final String ENABLE_OPENAI_URL = "https://aka.ms/oai/access";
 
     @Override
     public void registerActions(AzureActionManager am) {
@@ -86,6 +92,15 @@ public class CognitiveServicesActionsContributor implements IActionsContributor 
             .visibleWhen(s -> s instanceof ResourceGroup)
             .enableWhen(s -> s.getFormalStatus().isConnected())
             .register(am);
+
+        new Action<>(ENABLE_OPENAI)
+                .withLabel("Azure OpenAI service")
+                .withIdParam(s -> Optional.ofNullable(s).map(Subscription::getId).orElse(StringUtils.EMPTY))
+                .withHandler(s -> {
+                    Optional.ofNullable(s).ifPresent(subscription -> OperationContext.current().setTelemetryProperty("subscriptionId", subscription.getId()));
+                    AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).handle(ENABLE_OPENAI_URL);
+                })
+                .register(am);
     }
 
     @Override

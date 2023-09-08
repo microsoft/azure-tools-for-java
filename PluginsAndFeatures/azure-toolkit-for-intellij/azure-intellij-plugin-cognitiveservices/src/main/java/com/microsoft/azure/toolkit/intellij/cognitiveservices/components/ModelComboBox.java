@@ -11,8 +11,10 @@ import com.microsoft.azure.toolkit.lib.cognitiveservices.CognitiveAccount;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.model.AccountModel;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class ModelComboBox extends AzureComboBox<AccountModel> {
     @Nonnull
@@ -36,5 +38,12 @@ public class ModelComboBox extends AzureComboBox<AccountModel> {
             return String.format("%s (version: %s)", ((AccountModel) item).getName(), ((AccountModel) item).getVersion());
         }
         return super.getItemText(item);
+    }
+
+    @Nullable
+    @Override
+    protected AccountModel doGetDefaultValue() {
+        return Optional.ofNullable(super.doGetDefaultValue()).orElseGet(() ->
+                this.getItems().stream().filter(AccountModel::isGPTModel).findFirst().orElse(null));
     }
 }

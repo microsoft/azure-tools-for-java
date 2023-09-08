@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.cognitiveservices.CognitiveServicesActionsContributor;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.CognitiveAccountRegionComboBox;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.CognitiveAccountSkuComboBox;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.CognitiveSubscriptionComboBox;
@@ -14,16 +15,20 @@ import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.Resou
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.AzureCognitiveServices;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.CognitiveAccountDraft;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -103,6 +108,14 @@ public class CognitiveAccountCreationDialog extends AzureDialog<CognitiveAccount
         this.cbSubscription = new CognitiveSubscriptionComboBox(false);
         this.cbRegion = new CognitiveAccountRegionComboBox();
         this.cbSku = new CognitiveAccountSkuComboBox();
+        this.lblRegister = new JBLabel() {
+            @Override
+            protected @NotNull HyperlinkListener createHyperlinkListener() {
+                return event -> Optional.of(event).filter(e -> e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                        .ifPresent(ignore -> AzureActionManager.getInstance().getAction(CognitiveServicesActionsContributor.ENABLE_OPENAI).handle(cbSubscription.getValue()));
+            }
+        };
+
     }
 
     @Override
