@@ -9,17 +9,22 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.ide.cognitiveservices.CognitiveServicesActionsContributor;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.CognitiveSubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.creation.CognitiveAccountCreationDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.AzureCognitiveServices;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.Arrays;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +34,7 @@ public class CognitiveSubscriptionInputPanel implements AzureFormJPanel<Subscrip
     private JBLabel lblRegister;
     private JPanel pnlRoot;
 
-    private AzureEventBus.EventListener eventListener;
+    private final AzureEventBus.EventListener eventListener;
 
     public CognitiveSubscriptionInputPanel() {
         $$$setupUI$$$();
@@ -72,10 +77,17 @@ public class CognitiveSubscriptionInputPanel implements AzureFormJPanel<Subscrip
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.cbSubscription = new CognitiveSubscriptionComboBox(true);
+        this.lblRegister = new JBLabel() {
+            @Override
+            protected @NotNull HyperlinkListener createHyperlinkListener() {
+                return event -> Optional.of(event).filter(e -> e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                        .ifPresent(ignore -> AzureActionManager.getInstance().getAction(CognitiveServicesActionsContributor.ENABLE_OPENAI).handle(cbSubscription.getValue()));
+            }
+        };
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(this.cbSubscription);
+        return Collections.singletonList(this.cbSubscription);
     }
 }
