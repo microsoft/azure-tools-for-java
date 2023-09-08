@@ -83,12 +83,12 @@ public class AzureSdkEnforcer {
         }).collect(Collectors.joining(""));
         return "<html>" +
             "Deprecated Azure SDK libraries are detected in your project, " +
-            "refer to <a href='https://azure.github.io/azure-sdk/releases/latest/java.html'>Azure SDK Releases</a> for the latest releases." +
+            "refer to <a href='https://azure.github.io/azure-sdk/releases/latest/java.html?_ijop_=sdk.open_latest_releases'>Azure SDK Releases</a> for the latest releases." +
             "<ul style='margin-top:2px'>" + liPackages + "</ul>" +
             "</html>";
     }
 
     public static String getMavenArtifactUrl(String pkgName) {
-        return String.format("https://search.maven.org/artifact/%s/", pkgName);
+        return String.format("https://search.maven.org/artifact/%s/?_ijop_=sdk.open_maven_url", pkgName);
     }
 }

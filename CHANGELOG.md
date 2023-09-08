@@ -116,6 +116,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Fix: reset/save doesn't show/enable when removing existing values of jvm options and env var in spring app properties editor.
 - Fix: the default runtime version of new spring apps doesn't match the version of current project/selected module.
 
+## 3.80.2
+### Fixed
+- [#7832](https://github.com/microsoft/azure-tools-for-java/issues/7832): npe in com.microsoft.azure.toolkit.intellij.cognitiveservices.CognitiveServicesStartupListener
+
 ## 3.79.1
 ### Fixed
 - Fix: Code navigation was not working for bicep files.

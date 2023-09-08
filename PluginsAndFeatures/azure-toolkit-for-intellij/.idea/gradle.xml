@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-bicep" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-cognitiveservices" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerapps" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerregistry" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerservice" />
@@ -22,7 +23,6 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-eventhubs" />
-            <option value="$PROJECT_DIR$/azure-intellij-plugin-facet" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-guidance" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />
@@ -33,12 +33,12 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-servicebus" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-springcloud" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-storage" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-synapse" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-vm" />
             <option value="$PROJECT_DIR$/azure-intellij-resource-connector-aad" />
             <option value="$PROJECT_DIR$/azure-intellij-resource-connector-lib" />
             <option value="$PROJECT_DIR$/azure-intellij-resource-connector-lib-java" />
             <option value="$PROJECT_DIR$/azure-sdk-reference-book" />
-            <option value="$PROJECT_DIR$/buildSrc" />
           </set>
         </option>
       </GradleProjectSettings>
