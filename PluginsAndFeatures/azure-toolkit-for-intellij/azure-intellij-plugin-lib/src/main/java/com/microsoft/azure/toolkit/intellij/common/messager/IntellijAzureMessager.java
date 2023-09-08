@@ -19,16 +19,29 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @Slf4j
 public class IntellijAzureMessager implements IAzureMessager {
@@ -41,7 +54,30 @@ public class IntellijAzureMessager implements IAzureMessager {
     );
 
     private Notification createNotification(@Nonnull String title, @Nonnull String content, NotificationType type) {
-        return new Notification(NOTIFICATION_GROUP_ID, title, content, type, new NotificationListener.UrlOpeningListener(false));
+        return new Notification(NOTIFICATION_GROUP_ID, title, content, type, new NotificationListener.UrlOpeningListener(false) {
+            @Override
+            @SneakyThrows
+            protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+                super.hyperlinkActivated(notification, event);
+                final URL url = event.getURL();
+                if (Objects.nonNull(url)) {
+                    final URIBuilder uri = new URIBuilder(url.toString());
+                    uri.getQueryParams().stream().filter(p -> "_ijop_".equalsIgnoreCase(p.getName())).map(NameValuePair::getValue)
+                        .reduce((first, second) -> second) // find last
+                        .ifPresent(op -> {
+                            final Map<String, String> properties = new HashMap<>();
+                            final String[] parts = op.split("\\.");
+                            if (parts.length > 1) {
+                                properties.put(SERVICE_NAME, parts[0]);
+                                properties.put(OPERATION_NAME, parts[1]);
+                                properties.put(OP_NAME, op);
+                                properties.put(OP_TYPE, Operation.Type.USER);
+                                AzureTelemeter.log(AzureTelemetry.Type.OP_END, properties);
+                            }
+                        });
+                }
+            }
+        });
     }
 
     @Override
