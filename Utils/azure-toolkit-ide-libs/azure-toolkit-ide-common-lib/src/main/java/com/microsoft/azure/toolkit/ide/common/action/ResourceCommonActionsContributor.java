@@ -9,7 +9,6 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
@@ -111,8 +110,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withShortcut(shortcuts.delete())
             .visibleWhen((s, place) -> s instanceof AzResource && s instanceof Deletable)
             .enableWhen(s -> {
-                if (s instanceof AbstractAzResource) {
-                    final AbstractAzResource<?, ?, ?> r = (AbstractAzResource<?, ?, ?>) s;
+                if (s instanceof AbstractAzResource<?, ?, ?> r) {
                     return !r.getFormalStatus().isDeleted() && !r.isDraftForCreating();
                 }
                 return true;
@@ -301,7 +299,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .visibleWhen(s -> Azure.az().config().isAuthPersistenceEnabled())
             .withHandler((s) -> {
                 Azure.az().config().setAuthPersistenceEnabled(false);
-                AzureConfigInitializer.saveAzConfig();
+                Azure.az().saveConfiguration();
                 final AzureAccount az = Azure.az(AzureAccount.class);
                 if (az.isLoggedIn()) {
                     az.logout();

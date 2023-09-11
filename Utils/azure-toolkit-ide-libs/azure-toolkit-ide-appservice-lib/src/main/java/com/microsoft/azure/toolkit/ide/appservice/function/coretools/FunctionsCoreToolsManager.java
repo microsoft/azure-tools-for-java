@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.function.coretools;
 
-import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -14,12 +13,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -98,7 +103,7 @@ public class FunctionsCoreToolsManager {
             throw new AzureToolkitRuntimeException(e);
         }
         Azure.az().config().setFunctionCoreToolsPath(executionFilePath);
-        AzureConfigInitializer.saveAzConfig();
+        Azure.az().saveConfiguration();
         AzureEventBus.emit("function.download_func_core_tools_succeed.version", releaseInfo.releaseVersion);
     }
 
