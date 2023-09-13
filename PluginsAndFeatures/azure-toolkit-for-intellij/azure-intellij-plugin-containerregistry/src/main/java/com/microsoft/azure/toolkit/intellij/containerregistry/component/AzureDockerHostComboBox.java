@@ -27,6 +27,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
@@ -50,7 +51,7 @@ public class AzureDockerHostComboBox extends AzureComboBox<DockerHost> {
     @Nonnull
     @Override
     protected List<? extends DockerHost> loadItems() throws Exception {
-        return Stream.of(AzureDockerClient.getDockerHosts(), loadHistory(), drafts).flatMap(List::stream).distinct().toList();
+        return Stream.of(AzureDockerClient.getDockerHosts(), loadHistory(), drafts).flatMap(List::stream).distinct().collect(Collectors.toList());
     }
 
     // todo: make it an configuration item in AzureConfiguration

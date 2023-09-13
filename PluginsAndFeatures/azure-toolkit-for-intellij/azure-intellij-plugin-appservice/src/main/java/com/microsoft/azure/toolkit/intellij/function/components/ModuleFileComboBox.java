@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ModuleFileComboBox extends AzureComboBox<VirtualFile> {
     public static final VirtualFile EMPTY = LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"));
@@ -79,7 +80,7 @@ public class ModuleFileComboBox extends AzureComboBox<VirtualFile> {
     protected List<? extends VirtualFile> loadItems() throws Exception {
         final GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
         final Collection<VirtualFile> localFiles = ReadAction.compute(() -> FilenameIndex.getVirtualFilesByName(fileName, scope)).stream()
-                .filter(file -> module == null || ProjectUtils.isSameModule(ModuleUtil.findModuleForFile(file, project), module)).toList();
+                .filter(file -> module == null || ProjectUtils.isSameModule(ModuleUtil.findModuleForFile(file, project), module)).collect(Collectors.toList());
         return ListUtils.union(new ArrayList<>(localFiles), drafts);
     }
 

@@ -30,6 +30,7 @@ import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     private SpringCloudCluster cluster;
@@ -91,9 +92,9 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
         final List<SpringCloudApp> apps = new ArrayList<>();
         if (Objects.nonNull(this.cluster)) {
             if (!this.draftItems.isEmpty()) {
-                apps.addAll(this.draftItems.stream().filter(a -> a.getParent().getName().equals(this.cluster.getName())).toList());
+                apps.addAll(this.draftItems.stream().filter(a -> a.getParent().getName().equals(this.cluster.getName())).collect(Collectors.toList()));
             }
-            apps.addAll(cluster.apps().list().stream().filter(a -> !a.getFormalStatus().isCreating()).toList());
+            apps.addAll(cluster.apps().list().stream().filter(a -> !a.getFormalStatus().isCreating()).collect(Collectors.toList()));
         }
         return apps;
     }

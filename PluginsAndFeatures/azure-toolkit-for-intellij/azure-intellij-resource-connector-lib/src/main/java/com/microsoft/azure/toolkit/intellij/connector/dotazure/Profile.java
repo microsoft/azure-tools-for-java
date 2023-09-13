@@ -79,7 +79,7 @@ public class Profile {
     public static List<Pair<String, String>> load(@Nonnull VirtualFile dotEnv) {
         final DotenvReader reader = new DotenvReader(dotEnv.getParent().getPath(), dotEnv.getName());
         final DotenvParser parser = new DotenvParser(reader, false, false);
-        return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).toList();
+        return parser.parse().stream().map(e -> Pair.of(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 
     public synchronized Profile addApp(@Nonnull final AbstractAzResource<?, ?, ?> app) {
@@ -140,7 +140,7 @@ public class Profile {
         lines.add("# connection.id=" + connection.getId());
         lines.addAll(connection.getEnvironmentVariables(project).entrySet().stream()
             .map((e) -> String.format("%s=\"%s\"", e.getKey(), e.getValue()))
-            .toList());
+            .collect(Collectors.toList()));
         return lines;
     }
 
@@ -214,7 +214,7 @@ public class Profile {
                 break;
             }
         }
-        return generated.stream().map(g -> g.split("=", 2)).map(a -> Pair.of(a[0], a[1])).toList();
+        return generated.stream().map(g -> g.split("=", 2)).map(a -> Pair.of(a[0], a[1])).collect(Collectors.toList());
     }
 
     public List<Connection<?, ?>> getConnections() {

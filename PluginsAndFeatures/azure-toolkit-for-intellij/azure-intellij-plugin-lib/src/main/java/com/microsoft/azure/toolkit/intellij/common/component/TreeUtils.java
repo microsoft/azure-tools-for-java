@@ -66,6 +66,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class TreeUtils {
@@ -103,7 +104,8 @@ public class TreeUtils {
             @Override
             public void treeWillExpand(TreeExpansionEvent event) {
                 final Object component = event.getPath().getLastPathComponent();
-                if (component instanceof Tree.TreeNode<?> treeNode) {
+                if (component instanceof Tree.TreeNode) {
+                    final Tree.TreeNode<?> treeNode = (Tree.TreeNode<?>) component;
                     if (treeNode.getAllowsChildren() && treeNode.loaded == null) {
                         expandNode(treeNode);
                     }
@@ -116,7 +118,7 @@ public class TreeUtils {
             }
 
             @AzureOperation(name = "user/$resource.expand_node.resource", params = {"treeNode.inner.getValue()"}, source = "treeNode.inner.getValue()")
-            private static void expandNode(final Tree.TreeNode<?> treeNode) {
+            private void expandNode(final Tree.TreeNode<?> treeNode) {
                 treeNode.inner.refreshChildrenLater();
             }
         };
@@ -148,7 +150,7 @@ public class TreeUtils {
             }
 
             @AzureOperation(name = "user/$resource.click_node.resource", params = {"node.inner.getValue()"}, source = "node.inner.getValue()")
-            private static void clickNode(final MouseEvent e, final Tree.TreeNode<?> node) {
+            private void clickNode(final MouseEvent e, final Tree.TreeNode<?> node) {
                 final JTree tree = node.tree;
                 final String place = TreeUtils.getPlace(tree) + "." + (TreeUtils.isInAppCentricView(node) ? "app" : "type");
                 if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
@@ -391,7 +393,7 @@ public class TreeUtils {
                     final Tree.TreeNode<?> source = (Tree.TreeNode<?>) sourceNode;
                     final List<AbstractAzResource<?, ?, ?>> resourcesToShow = getResourcesToFocus(tree);
                     final List<AbstractAzResource<?, ?, ?>> targetResources = resourcesToShow.stream()
-                        .filter(resource -> isParentResource(source.getUserObject(), resource)).toList();
+                        .filter(resource -> isParentResource(source.getUserObject(), resource)).collect(Collectors.toList());
                     for (final AbstractAzResource<?, ?, ?> targetResource : targetResources) {
                         final Tree.TreeNode<?> treeNode = Objects.equals(source.getUserObject(), targetResource) ? source :
                             StreamSupport.stream(Spliterators.spliteratorUnknownSize(source.children().asIterator(), Spliterator.ORDERED), false)

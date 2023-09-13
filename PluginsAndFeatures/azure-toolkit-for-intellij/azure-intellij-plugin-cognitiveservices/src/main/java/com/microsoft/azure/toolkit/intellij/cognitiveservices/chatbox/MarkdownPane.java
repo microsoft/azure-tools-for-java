@@ -57,7 +57,8 @@ public class MarkdownPane {
                 GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK,
                 null, null, null, 0);
             final String text = part.getText();
-            if (part instanceof MarkdownText.CodePart codePart) {
+            if (part instanceof MarkdownText.CodePart) {
+                final MarkdownText.CodePart codePart = (MarkdownText.CodePart) part;
                 this.contentPanel.add(createEditor(codePart), constraints);
             } else {
                 final String html = MarkdownUtil.INSTANCE.generateMarkdownHtml(new LightVirtualFile("dummy.md"), text, null);

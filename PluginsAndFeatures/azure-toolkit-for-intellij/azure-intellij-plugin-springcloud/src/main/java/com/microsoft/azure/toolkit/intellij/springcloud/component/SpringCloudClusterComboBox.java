@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster> {
     private final List<SpringCloudCluster> draftItems = new LinkedList<>();
@@ -81,7 +82,7 @@ public class SpringCloudClusterComboBox extends AzureComboBox<SpringCloudCluster
         if (Objects.nonNull(this.subscription)) {
             final String sid = this.subscription.getId();
             if (!this.draftItems.isEmpty()) {
-                clusters.addAll(this.draftItems.stream().filter(c -> c.getSubscriptionId().equals(sid)).toList());
+                clusters.addAll(this.draftItems.stream().filter(c -> c.getSubscriptionId().equals(sid)).collect(Collectors.toList()));
             }
             final SpringCloudClusterModule az = Azure.az(AzureSpringCloud.class).clusters(sid);
             clusters.addAll(az.list());

@@ -201,14 +201,15 @@ public class AzuriteService {
 
     private static String getAzuriteWorkspace(@Nonnull final Project project) {
         final String fileLocation = StringUtils.firstNonBlank(Azure.az().config().getAzuriteWorkspace(), INTELLIJ_GLOBAL_STORAGE);
-        return switch (fileLocation) {
-            case INTELLIJ_GLOBAL_STORAGE -> Path.of(CommonConst.PLUGIN_PATH, AZURITE).toString();
-            case CURRENT_PROJECT -> {
+        switch (fileLocation) {
+            case INTELLIJ_GLOBAL_STORAGE:
+                return Path.of(CommonConst.PLUGIN_PATH, AZURITE).toString();
+            case CURRENT_PROJECT:
                 final VirtualFile virtualFile = Optional.ofNullable(ProjectUtil.guessProjectDir(project)).orElseGet(project::getBaseDir);
-                yield Path.of(virtualFile.getPath(), AZURITE).toString();
-            }
-            default -> fileLocation;
-        };
+                return Path.of(virtualFile.getPath(), AZURITE).toString();
+            default:
+                return fileLocation;
+        }
     }
 
     private static String getAzuritePath() {

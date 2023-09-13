@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor.ACTIONS_DEPLOY_TO_AZURE;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REFRESH_MODULE_TARGETS;
@@ -69,7 +70,7 @@ public class DeploymentTargetsNode extends AbstractAzureFacetNode<DeploymentTarg
             .map(id -> Azure.az().getById(id))
             .filter(Objects::nonNull)
             .map(this::createResourceNode)
-            .toList();
+            .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(children)) {
             return children;
         }

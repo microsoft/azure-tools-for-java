@@ -82,45 +82,67 @@ public class AzureArtifact {
 
     @Nullable
     public String getIdentifier() {
-        return switch (this.getType()) {
-            case Gradle -> {
+        switch (this.getType()) {
+            case Gradle:
                 final ExternalProjectPojo pojo = (ExternalProjectPojo) this.getReferencedObject();
                 final ExternalProject externalProject = ExternalProjectDataCache.getInstance(project).getRootExternalProject(pojo.getPath());
-                yield Objects.nonNull(externalProject) ? externalProject.getQName() : null;
-            }
-            case Maven -> this.getReferencedObject().toString();
-            case Artifact -> ((Artifact) this.getReferencedObject()).getOutputFilePath();
-            case File -> this.getFileForDeployment();
-        };
+                return Objects.nonNull(externalProject) ? externalProject.getQName() : null;
+            case Maven:
+                return this.getReferencedObject().toString();
+            case Artifact:
+                return ((Artifact) this.getReferencedObject()).getOutputFilePath();
+            case File:
+                return this.getFileForDeployment();
+            default:
+                return null;
+        }
     }
 
     @AzureOperation(name = "internal/common.get_artifact_file.artifact", params = {"this.getName()"})
     public String getFileForDeployment() {
-        return switch (this.getType()) {
-            case Gradle -> GradleUtils.getTargetFile(project, (ExternalProjectPojo) this.getReferencedObject());
-            case Maven -> MavenUtils.getSpringBootFinalJarFilePath(project, (MavenProject) this.getReferencedObject());
-            case Artifact -> ((Artifact) this.getReferencedObject()).getOutputFilePath();
-            case File -> ((VirtualFile) this.getReferencedObject()).getPath();
-        };
+        switch (this.getType()) {
+            case Gradle:
+                return GradleUtils.getTargetFile(project, (ExternalProjectPojo) this.getReferencedObject());
+            case Maven:
+                return MavenUtils.getSpringBootFinalJarFilePath(project, (MavenProject) this.getReferencedObject());
+            case Artifact:
+                return ((Artifact) this.getReferencedObject()).getOutputFilePath();
+            case File:
+                return ((VirtualFile) this.getReferencedObject()).getPath();
+            default:
+                return null;
+        }
     }
 
     public String getPackaging() {
-        return switch (this.getType()) {
-            case Gradle -> FileNameUtils.getExtension(GradleUtils.getTargetFile(project,
-                (ExternalProjectPojo) this.getReferencedObject()));
-            case Maven -> ((MavenProject) this.getReferencedObject()).getPackaging();
-            case Artifact -> FileNameUtils.getExtension(((Artifact) this.getReferencedObject()).getOutputFilePath());
-            case File -> FileNameUtils.getExtension(this.getFileForDeployment());
-        };
+        switch (this.getType()) {
+            case Gradle:
+                return FileNameUtils.getExtension(GradleUtils.getTargetFile(project,
+                        (ExternalProjectPojo) this.getReferencedObject()));
+            case Maven:
+                return ((MavenProject) this.getReferencedObject()).getPackaging();
+            case Artifact:
+                return FileNameUtils.getExtension(((Artifact) this.getReferencedObject()).getOutputFilePath());
+            case File:
+                return FileNameUtils.getExtension(this.getFileForDeployment());
+            default:
+                return null;
+        }
     }
 
     public Icon getIcon() {
-        return switch (type) {
-            case Gradle -> GradleIcons.Gradle;
-            case Maven -> OpenapiIcons.RepositoryLibraryLogo;
-            case Artifact -> ((Artifact) referencedObject).getArtifactType().getIcon();
-            case File -> AllIcons.FileTypes.Archive;
-        };
+        switch (type) {
+            case Gradle:
+                return GradleIcons.Gradle;
+            case Maven:
+                return OpenapiIcons.RepositoryLibraryLogo;
+            case Artifact:
+                return ((Artifact) referencedObject).getArtifactType().getIcon();
+            case File:
+                return AllIcons.FileTypes.Archive;
+            default:
+                return null;
+        }
     }
 
     @Nullable
@@ -129,18 +151,24 @@ public class AzureArtifact {
         if (this.getReferencedObject() == null) {
             return null;
         }
-        return ApplicationManager.getApplication().runReadAction((Computable<Module>) () -> switch (type) {
-            case Gradle -> {
-                final Path path = Paths.get(((ExternalProjectPojo) referencedObject).getPath());
-                yield Optional.ofNullable(VfsUtil.findFile(path, true))
-                    .map(f -> ModuleUtil.findModuleForFile(f, this.project)).orElse(null);
+        return ApplicationManager.getApplication().runReadAction((Computable<Module>) () -> {
+            switch (type) {
+                case Gradle:
+                    final Path path = Paths.get(((ExternalProjectPojo) referencedObject).getPath());
+                    return Optional.ofNullable(VfsUtil.findFile(path, true))
+                            .map(f -> ModuleUtil.findModuleForFile(f, this.project)).orElse(null);
+                case Maven:
+                    return MavenProjectsManager.getInstance(this.project).findModule((MavenProject) referencedObject);
+                case Artifact:
+                    return Optional.ofNullable(((Artifact) referencedObject).getOutputPath())
+                            .map(Path::of).map(FileUtils::getNearestExistingParent)
+                            .map(p -> VfsUtil.findFile(p, true))
+                            .map(f -> ProjectFileIndex.getInstance(project).getModuleForFile(f)).orElse(null);
+                case File:
+                    return getNearestParentModuleForFile((VirtualFile) this.getReferencedObject());
+                default:
+                    return null;
             }
-            case Maven -> MavenProjectsManager.getInstance(this.project).findModule((MavenProject) referencedObject);
-            case Artifact -> Optional.ofNullable(((Artifact) referencedObject).getOutputPath())
-                .map(Path::of).map(FileUtils::getNearestExistingParent)
-                .map(p -> VfsUtil.findFile(p, true))
-                .map(f -> ProjectFileIndex.getInstance(project).getModuleForFile(f)).orElse(null);
-            case File -> getNearestParentModuleForFile((VirtualFile) this.getReferencedObject());
         });
     }
 
@@ -157,11 +185,14 @@ public class AzureArtifact {
     @Nullable
     public String getArtifactId() {
         final Object object = this.getReferencedObject();
-        return switch (this.getType()) {
-            case Maven -> ((MavenProject) object).getMavenId().getArtifactId();
-            case Gradle -> getIdentifier();
-            default -> this.getName();
-        };
+        switch (this.getType()) {
+            case Maven:
+                return ((MavenProject) object).getMavenId().getArtifactId();
+            case Gradle:
+                return getIdentifier();
+            default:
+                return this.getName();
+        }
     }
 
     public Integer getBytecodeTargetLevel() {

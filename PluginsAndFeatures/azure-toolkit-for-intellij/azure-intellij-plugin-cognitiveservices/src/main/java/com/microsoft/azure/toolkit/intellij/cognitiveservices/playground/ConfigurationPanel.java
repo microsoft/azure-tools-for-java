@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConfigurationPanel implements AzureForm<Configuration> {
     public static final String LEARN_MORE_URL = "https://go.microsoft.com/fwlink/?linkid=2189780";
@@ -81,7 +82,7 @@ public class ConfigurationPanel implements AzureForm<Configuration> {
             .maxResponse((int) Math.round(sliderMaxResponse.getValue()))
             .temperature(sliderTemperature.getValue())
             .topP(sliderTopN.getValue())
-            .stopSequences(Arrays.stream(txtStopSequence.getValue().split(";")).filter(StringUtils::isNotBlank).toList())
+            .stopSequences(Arrays.stream(txtStopSequence.getValue().split(";")).filter(StringUtils::isNotBlank).collect(Collectors.toList()))
             .frequencyPenalty(sliderFrequency.getValue())
             .presencePenalty(sliderPresence.getValue())
             .build();

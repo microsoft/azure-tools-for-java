@@ -86,7 +86,8 @@ public class IntellijAzureMessager implements IAzureMessager {
             log.warn("caught an error by messager", ((Throwable) raw.getPayload()));
         }
         switch (raw.getType()) {
-            case ALERT, CONFIRM -> {
+            case ALERT:
+            case CONFIRM:
                 final boolean[] result = new boolean[]{true};
                 try {
                     ApplicationManager.getApplication().invokeAndWait(() -> {
@@ -97,12 +98,9 @@ public class IntellijAzureMessager implements IAzureMessager {
                     e.printStackTrace();
                 }
                 return result[0];
-            }
-            case DEBUG -> {
+            case DEBUG :
                 return true;
-            }
-            default -> {
-            }
+            default :
         }
         this.showNotification(raw);
         return true;

@@ -31,6 +31,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
@@ -48,7 +49,7 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
     @Nonnull
     public Collection<? extends AbstractAzureFacetNode<?>> buildChildren() {
         final Node<?> node = this.getValue();
-        final ArrayList<AbstractAzureFacetNode<?>> children = new ArrayList<>(node.getChildren().stream().map(n -> new ResourceNode(this.getProject(), n, this)).toList());
+        final ArrayList<AbstractAzureFacetNode<?>> children = node.getChildren().stream().map(n -> new ResourceNode(this.getProject(), n, this)).collect(Collectors.toCollection(ArrayList::new));
         if (node.hasMoreChildren()) {
             final Action<Object> loadMoreAction = new Action<>(Action.Id.of("user/common.load_more"))
                 .withHandler(i -> node.loadMoreChildren())
@@ -119,7 +120,9 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
     public IActionGroup getActionGroup() {
         final IActionGroup originalGroup = Optional.ofNullable(getValue()).map(Node::getActions).orElse(null);
         final Object value = Optional.ofNullable(getValue()).map(Node::getValue).orElse(null);
-        if (this.parent instanceof DeploymentTargetsNode targets && value instanceof AbstractAzResource<?, ?, ?> resource) {
+        if (this.parent instanceof DeploymentTargetsNode && value instanceof AbstractAzResource<?, ?, ?>) {
+            final DeploymentTargetsNode targets = (DeploymentTargetsNode) this.parent;
+            final AbstractAzResource<?, ?, ?> resource = (AbstractAzResource<?, ?, ?>) value;
             final AzureTaskManager tm = AzureTaskManager.getInstance();
             final Action<Object> removeTarget = new Action<>(Action.Id.of("user/connector.remove_target.app"))
                 .withLabel("Remove Deployment Target")

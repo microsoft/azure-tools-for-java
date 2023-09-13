@@ -74,12 +74,12 @@ public class AzureArtifactManager {
         final List<ExternalProjectPojo> gradleProjects = GradleUtils.listGradleRootProjectPojo(project);
         final List<AzureArtifact> azureArtifacts = new ArrayList<>(gradleProjects.stream()
             .map(p -> AzureArtifact.createFromGradleProject(p, project))
-            .toList());
+            .collect(Collectors.toList()));
         final List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        azureArtifacts.addAll(mavenProjects.stream().map(p -> AzureArtifact.createFromMavenProject(p, project)).toList());
+        azureArtifacts.addAll(mavenProjects.stream().map(p -> AzureArtifact.createFromMavenProject(p, project)).collect(Collectors.toList()));
 
         final List<Artifact> artifactList = MavenRunTaskUtil.collectProjectArtifact(project);
-        azureArtifacts.addAll(artifactList.stream().map(p -> AzureArtifact.createFromArtifact(p, project)).toList());
+        azureArtifacts.addAll(artifactList.stream().map(p -> AzureArtifact.createFromArtifact(p, project)).collect(Collectors.toList()));
 
         if (packagingFilter == null) {
             return azureArtifacts;

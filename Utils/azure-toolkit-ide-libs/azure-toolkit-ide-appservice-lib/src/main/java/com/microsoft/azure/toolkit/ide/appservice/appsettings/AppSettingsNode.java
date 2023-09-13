@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> {
     public AppSettingsNode(@Nonnull AppServiceAppBase<?, ?, ?> app) {
@@ -31,7 +32,7 @@ public class AppSettingsNode extends AzResourceNode<AppServiceAppBase<?, ?, ?>> 
             .withTips("Variables passed as environment variables to the application code")
             .withActions(AppServiceActionsContributor.APP_SETTINGS_ACTIONS)
             .addChildren(
-                a -> Optional.ofNullable(a.getAppSettings()).map(Map::entrySet).map(s -> s.stream().sorted(Map.Entry.comparingByKey()).toList()).orElse(Collections.emptyList()),
+                a -> Optional.ofNullable(a.getAppSettings()).map(Map::entrySet).map(s -> s.stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toList())).orElse(Collections.emptyList()),
                 (e, p) -> new AppSettingNode(e));
     }
 

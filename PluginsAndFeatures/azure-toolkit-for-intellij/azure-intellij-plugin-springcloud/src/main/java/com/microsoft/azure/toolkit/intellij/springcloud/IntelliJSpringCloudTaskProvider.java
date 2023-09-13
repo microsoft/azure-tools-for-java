@@ -23,12 +23,17 @@ public class IntelliJSpringCloudTaskProvider implements GuidanceTaskProvider {
     @Override
     public Task createTask(@Nonnull TaskConfig config, @Nonnull Context context) {
         final ComponentContext taskContext = new ComponentContext(config, context);
-        return switch (config.getName()) {
-            case "task.springcloud.create" -> new CreateSpringAppTask(taskContext);
-            case "task.springcloud.deploy" -> new DeploySpringAppTask(taskContext);
-            case "task.springcloud.open_in_browser" -> new OpenInBrowserTask(taskContext);
-            case "task.springcloud.log_streaming" -> new OpenLogStreamingTask(taskContext);
-            default -> null;
-        };
+        switch (config.getName()) {
+            case "task.springcloud.create":
+                return new CreateSpringAppTask(taskContext);
+            case "task.springcloud.deploy":
+                return new DeploySpringAppTask(taskContext);
+            case "task.springcloud.open_in_browser":
+                return new OpenInBrowserTask(taskContext);
+            case "task.springcloud.log_streaming":
+                return new OpenLogStreamingTask(taskContext);
+            default:
+                return null;
+        }
     }
 }

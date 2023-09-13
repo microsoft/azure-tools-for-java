@@ -106,11 +106,11 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     private ModalityState toIntellijModality(final AzureTask<?> task) {
         final AzureTask.Modality modality = task.getModality();
-        return switch (modality) {
-            case NONE -> ModalityState.NON_MODAL;
-            case DEFAULT -> ModalityState.defaultModalityState();
-            default -> ModalityState.any();
-        };
+        switch (modality) {
+            case NONE : return ModalityState.NON_MODAL;
+            case DEFAULT : return ModalityState.defaultModalityState();
+            default : return ModalityState.any();
+        }
     }
 
     @Override

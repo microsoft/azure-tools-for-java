@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AzuriteWorkspaceComboBox extends AzureComboBox<String> {
@@ -37,11 +38,13 @@ public class AzuriteWorkspaceComboBox extends AzureComboBox<String> {
     protected Icon getItemIcon(Object item) {
         if (item instanceof String) {
             final String value = (String) item;
-            return switch (value) {
-                case AzuriteService.INTELLIJ_GLOBAL_STORAGE, AzuriteService.CURRENT_PROJECT ->
-                        AllIcons.Nodes.IdeaProject;
-                default -> AllIcons.FileTypes.Archive;
-            };
+            switch (value) {
+                case AzuriteService.INTELLIJ_GLOBAL_STORAGE:
+                case AzuriteService.CURRENT_PROJECT:
+                    return AllIcons.Nodes.IdeaProject;
+                default:
+                    return AllIcons.FileTypes.Archive;
+            }
         }
         return super.getItemIcon(item);
     }
@@ -58,7 +61,7 @@ public class AzuriteWorkspaceComboBox extends AzureComboBox<String> {
     public List<String> loadItems() {
         final String azuritePath = Azure.az().config().getAzuritePath();
         final List<String> values = Arrays.asList(AzuriteService.INTELLIJ_GLOBAL_STORAGE, AzuriteService.CURRENT_PROJECT, azuritePath);
-        return Stream.of(values, draftPaths).flatMap(List::stream).filter(StringUtils::isNoneBlank).distinct().toList();
+        return Stream.of(values, draftPaths).flatMap(List::stream).filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
     }
 
     @Nonnull

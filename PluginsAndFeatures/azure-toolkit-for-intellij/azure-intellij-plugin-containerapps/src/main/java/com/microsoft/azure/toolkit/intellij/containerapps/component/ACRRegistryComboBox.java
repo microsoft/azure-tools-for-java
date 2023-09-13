@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ACRRegistryComboBox extends AzureComboBox<ContainerRegistry> {
@@ -85,7 +86,7 @@ public class ACRRegistryComboBox extends AzureComboBox<ContainerRegistry> {
             stream = stream.filter(s -> s.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
         }
         final List<ContainerRegistry> remoteRegistries = stream.flatMap(s -> s.registry().list().stream())
-            .sorted(Comparator.comparing(ContainerRegistry::getName)).toList();
+            .sorted(Comparator.comparing(ContainerRegistry::getName)).collect(Collectors.toList());
         final List<ContainerRegistry> registries = new ArrayList<>(remoteRegistries);
         if (CollectionUtils.isNotEmpty(this.draftItems)) {
             this.draftItems.stream()

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -39,8 +40,8 @@ public class LogTableModel implements TableModel {
     }
 
     public LogTableModel(List<LogsTableRow> logsTableRows ) {
-        this.columnClasses.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnType).toList());
-        this.columnNames.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnName).toList());
+        this.columnClasses.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnType).collect(Collectors.toList()));
+        this.columnNames.addAll(logsTableRows.get(0).getRow().stream().map(LogsTableCell::getColumnName).collect(Collectors.toList()));
         this.logsTableRows.addAll(logsTableRows);
     }
 

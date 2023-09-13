@@ -70,8 +70,8 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
             return null;
         }
         final Object input = info.getInput();
-        final JComponent component = input instanceof AzureFormInputComponent<?> ic ? ic.getInputComponent() :
-            input instanceof JComponent c ? c : null;
+        final JComponent component = input instanceof AzureFormInputComponent<?> ?
+                ((AzureFormInputComponent<?>) input).getInputComponent() : input instanceof JComponent ? (JComponent) input : null;
         final ValidationInfo v = new ValidationInfo(Optional.ofNullable(info.getMessage()).orElse("Unknown error"), component);
         if (info.getType() == WARNING) {
             v.asWarning();

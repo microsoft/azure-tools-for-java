@@ -38,6 +38,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MonitorTreePanel extends JPanel implements Disposable {
     private JPanel contentPanel;
@@ -203,7 +204,7 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             });
         } catch (final Exception ignored) {
         }
-        final List<String> customQueryList = Arrays.stream(PropertiesComponent.getInstance().getValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).toList();
+        final List<String> customQueryList = Arrays.stream(PropertiesComponent.getInstance().getValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).collect(Collectors.toList());
         Optional.ofNullable(customQueryList).ifPresent(l -> l.forEach(s -> {
             final ObjectMapper mapper = new ObjectMapper();
             try {

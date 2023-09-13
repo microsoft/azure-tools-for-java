@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule.TARGETS_FILE;
 
@@ -62,7 +63,7 @@ public class DeploymentTargetManager {
     }
 
     public List<String> getTargets() {
-        return this.targetAppIds.stream().toList();
+        return this.targetAppIds.stream().collect(Collectors.toList());
     }
 
     @Nullable

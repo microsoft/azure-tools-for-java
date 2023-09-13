@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ACRRepositoryComboBox extends AzureComboBox<Repository> {
     private ContainerRegistry registry;
@@ -57,7 +58,7 @@ public class ACRRepositoryComboBox extends AzureComboBox<Repository> {
     protected List<? extends Repository> loadItems() {
         if (Objects.nonNull(this.registry)) {
             return this.registry.getRepositoryModule().list().stream()
-                .sorted(Comparator.comparing(Repository::getName)).toList();
+                .sorted(Comparator.comparing(Repository::getName)).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

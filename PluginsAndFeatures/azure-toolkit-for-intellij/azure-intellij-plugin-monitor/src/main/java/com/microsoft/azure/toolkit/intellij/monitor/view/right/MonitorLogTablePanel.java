@@ -54,6 +54,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -108,7 +109,7 @@ public class MonitorLogTablePanel implements Disposable {
         queryParams.add("sort by TimeGenerated desc");
         final String rowNumberLimitation = String.format("take %s", Azure.az().config().getMonitorQueryRowNumber());
         queryParams.add(rowNumberLimitation);
-        return StringUtils.join(queryParams.stream().filter(StringUtils::isNotBlank).toList(), " | ");
+        return StringUtils.join(queryParams.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList()), " | ");
     }
 
     public void loadTableModel(@Nullable LogAnalyticsWorkspace selectedWorkspace, String queryString) {
@@ -242,14 +243,14 @@ public class MonitorLogTablePanel implements Disposable {
     private List<String> queryColumnNameList(LogAnalyticsWorkspace selectedWorkspace, String tableName) {
         return Optional.ofNullable(selectedWorkspace.executeQuery(String.format("%s | take 1", tableName)))
                 .map(LogsTable::getAllTableCells).orElse(new ArrayList<>())
-                .stream().map(LogsTableCell::getColumnName).toList();
+                .stream().map(LogsTableCell::getColumnName).collect(Collectors.toList());
     }
 
     private Map<String, List<String>> queryCellValueList(LogAnalyticsWorkspace selectedWorkspace, String tableName,
                                                           List<String> specificColumnNames, List<String> columnNamesInTable) {
         final Map<String, List<String>> result = new HashMap<>();
         final String kustoColumnNames = StringUtils.join(specificColumnNames.stream()
-                .filter(columnNamesInTable::contains).toList(), ",");
+                .filter(columnNamesInTable::contains).collect(Collectors.toList()), ",");
         if (StringUtils.isBlank(kustoColumnNames)) {
             return result;
         }
@@ -296,7 +297,7 @@ public class MonitorLogTablePanel implements Disposable {
             final CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(target),
                     CSVFormat.Builder.create().setHeader(tableModel.getColumnNames().toArray(new String[0])).build());
             for (final LogsTableRow row : tableModel.getLogsTableRows()) {
-                csvPrinter.printRecord(row.getRow().stream().map(LogsTableCell::getValueAsString).toList());
+                csvPrinter.printRecord(row.getRow().stream().map(LogsTableCell::getValueAsString).collect(Collectors.toList()));
             }
             csvPrinter.close();
             AzureMessager.getMessager().success(message("azure.monitor.export.succeed.message", target.getAbsolutePath()),

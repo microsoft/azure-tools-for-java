@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REFRESH_ENVIRONMENT_VARIABLES;
 
@@ -63,7 +64,7 @@ public class EnvironmentVariablesNode extends AbstractAzureFacetNode<Connection<
     public Collection<? extends AbstractAzureFacetNode<?>> buildChildren() {
         final Connection<?, ?> connection = this.getValue();
         final List<Pair<String, String>> generated = connection.getProfile().getGeneratedEnvironmentVariables(connection);
-        return generated.stream().map(g -> new EnvironmentVariableNode(this.getProject(), g, getValue())).toList();
+        return generated.stream().map(g -> new EnvironmentVariableNode(this.getProject(), g, getValue())).collect(Collectors.toList());
     }
 
     @Override

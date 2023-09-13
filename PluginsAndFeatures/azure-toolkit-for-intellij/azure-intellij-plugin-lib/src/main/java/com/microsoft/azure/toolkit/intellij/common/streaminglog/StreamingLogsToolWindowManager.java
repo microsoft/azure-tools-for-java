@@ -56,7 +56,7 @@ public class StreamingLogsToolWindowManager {
 
     public List<StreamingLogsConsoleView> getToolWindowContents(Project project, String resourceIdPrefix) {
         final ToolWindow toolWindow = getToolWindow(project);
-        final List<String> consoleNames = resourceIdToNameMap.keySet().stream().filter(k -> k.contains(resourceIdPrefix)).map(resourceIdToNameMap::get).toList();
+        final List<String> consoleNames = resourceIdToNameMap.keySet().stream().filter(k -> k.contains(resourceIdPrefix)).map(resourceIdToNameMap::get).collect(Collectors.toList());
         return consoleNames.stream().filter(Objects::nonNull)
                 .map(n -> toolWindow.getContentManager().findContent(n).getDisposer())
                 .filter(d -> d instanceof StreamingLogsConsoleView)

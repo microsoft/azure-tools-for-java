@@ -82,7 +82,8 @@ public abstract class AbstractProjectNode<T> extends ProjectViewNode<T> implemen
             if (Registry.is("ide.debugMode")) {
                 presentation.addText(System.identityHashCode(this) + ":" + this.createdTime + ":" + this.disposedTime, SimpleTextAttributes.ERROR_ATTRIBUTES);
                 presentation.addText("/", SimpleTextAttributes.REGULAR_ATTRIBUTES);
-                if (this.getParent() instanceof IAzureFacetNode parent) {
+                if (this.getParent() instanceof IAzureFacetNode) {
+                    final IAzureFacetNode parent = (IAzureFacetNode) this.getParent();
                     presentation.addText(System.identityHashCode(parent) + ":" + parent.isDisposed(), SimpleTextAttributes.ERROR_ATTRIBUTES);
                 }
             }

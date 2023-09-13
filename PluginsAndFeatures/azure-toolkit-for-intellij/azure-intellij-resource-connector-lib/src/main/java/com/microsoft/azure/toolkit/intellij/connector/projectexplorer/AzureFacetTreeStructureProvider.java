@@ -118,7 +118,8 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         @Override
         public void mousePressed(MouseEvent e) {
             final AbstractTreeNode<?> currentTreeNode = getCurrentTreeNode(e);
-            if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode node) {
+            if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode) {
+                final IAzureFacetNode node = (IAzureFacetNode) currentTreeNode;
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
                 final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.PROJECT_VIEW_POPUP + ".click", context);
                 if (e.getClickCount() == 1) {
@@ -143,13 +144,14 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
 
         private void modifyPopupActions(MouseEvent e) {
             final AbstractTreeNode<?> node = getCurrentTreeNode(e);
-            if (!(node instanceof IAzureFacetNode newNode)) {
+            if (!(node instanceof IAzureFacetNode)) {
                 if (Objects.nonNull(currentNode)) {
                     // clean up popup menu actions
                     resetPopupMenuActions();
                 }
                 return;
             }
+            final IAzureFacetNode newNode = (IAzureFacetNode) node;
             if (!Objects.equals(newNode, currentNode)) {
                 // update popup menu actions for new node
                 updatePopupMenuActions(newNode);

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
     @Override
@@ -56,7 +57,7 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
                 final List<Connection<?, ?>> connections = AzureModule.list(project).stream().map(AzureModule::getDefaultProfile).filter(Objects::nonNull)
                         .map(Profile::getConnectionManager)
                         .map(ConnectionManager::getConnections)
-                        .flatMap(List::stream).toList();
+                        .flatMap(List::stream).collect(Collectors.toList());
                 if (connections.stream().noneMatch(c -> c.isApplicableFor(config))) {
                     tasks.removeIf(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
                 }

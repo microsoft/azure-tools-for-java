@@ -188,7 +188,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     }
 
     public void setValue(Resource<T> data) {
-        if (data instanceof InvalidResource<T>) {
+        if (data instanceof InvalidResource) {
             return;
         }
         final SqlDatabaseResource<T> db = (SqlDatabaseResource<T>) data;

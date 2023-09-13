@@ -131,11 +131,17 @@ public class FunctionTemplatePanel extends JPanel implements AzureFormPanel<Map<
             this.connectionComboBox.setUsePreferredSizeAsMinimum(false);
             return this.connectionComboBox;
         }
-        final AzureFormInputComponent<String> result = switch (inputTemplate.getValue()) {
-            case "boolean" -> new FunctionBooleanInput(inputTemplate);
-            case "enum" -> new FunctionEnumInput(inputTemplate);
-            default -> new FunctionStringInput(inputTemplate);
-        };
+        final AzureFormInputComponent<String> result;
+        switch (inputTemplate.getValue()) {
+            case "boolean":
+                result = new FunctionBooleanInput(inputTemplate);
+                break;
+            case "enum":
+                result = new FunctionEnumInput(inputTemplate);
+                break;
+            default:
+                result = new FunctionStringInput(inputTemplate);
+        }
         inputs.put(inputTemplate.getName(), result);
         return result;
     }
