@@ -75,8 +75,8 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
         final boolean isCustomToolConfiguration = runtimeType instanceof CustomToolLanguageRuntimeType;
         final ConnectionData data = new ConnectionData(false, null, "", 22, "", "", true, "", "", true, ConnectionData.OpenSshAgentConnectionState.NOT_STARTED);
         final SshTargetWizardModel model = new SshTargetWizardModel(project, config, data);
-        model.setLanguageType(runtimeType);
-        model.setCustomToolConfiguration(isCustomToolConfiguration);
+        model.setLanguageType$intellij_remoteRun(runtimeType);
+        model.setCustomToolConfiguration$intellij_remoteRun(isCustomToolConfiguration);
         final ArrayList<AbstractWizardStepEx> steps = new ArrayList<>(4);
         steps.add(new AzureVmTargetConnectionStep(model, steps));
         steps.add(new SshTargetAuthStep(model));
@@ -125,13 +125,14 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
     }
 
     @Override
-    public @NotNull <T extends Component> ActionListener createBrowser(@NotNull Project project, @NlsContexts.DialogTitle String title, @NotNull TextComponentAccessor<T> textComponentAccessor, @NotNull T component, @NotNull Supplier<? extends TargetEnvironmentConfiguration> configurationSupplier) {
+    public @NotNull <T extends Component> ActionListener createBrowser(@NotNull Project project, @NlsContexts.DialogTitle String title, @NotNull TextComponentAccessor<T> textComponentAccessor, @NotNull T component, @NotNull Supplier<TargetEnvironmentConfiguration> configurationSupplier) {
         return new ActionListener() {
             public final void actionPerformed(ActionEvent it) {
                 final TargetEnvironmentConfiguration configuration = configurationSupplier.get();
                 if (configuration instanceof SshTargetEnvironmentConfiguration) {
                     final SshConfig sshConfig = ((SshTargetEnvironmentConfiguration) configuration).findSshConfig(project);
                     final SshUiData uiData = sshConfig != null ? new SshUiData(sshConfig, true) : null;
+                    //noinspection KotlinInternalInJava
                     SshTargetType.Companion.handleBrowsing$intellij_remoteRun(uiData, project, title, component, textComponentAccessor);
                 } else if (configuration instanceof TempSshTargetEnvironmentConfigurationBase) {
                     final SshUiData uiData = ((TempSshTargetEnvironmentConfigurationBase) configuration).getTempSshData();
@@ -139,6 +140,7 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
                     if (config.getAuthType() == AuthType.KEY_PAIR && StringUtils.isBlank(config.getKeyPath())) {
                         config.setKeyPath(System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
                     }
+                    //noinspection KotlinInternalInJava
                     SshTargetType.Companion.handleBrowsing$intellij_remoteRun(uiData, project, title, component, textComponentAccessor);
                 } else {
                     Messages.showWarningDialog(component, RemoteSdkBundle.message("dialog.message.got.unexpected.settings.for.browsing", new Object[0]), title);

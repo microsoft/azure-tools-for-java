@@ -10,7 +10,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.remote.AuthType;
 import com.intellij.ssh.RemoteCredentialsUtil;
-import com.intellij.ssh.SshException;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ssh.ui.unified.SshUiData;
 import com.intellij.ui.content.Content;
@@ -64,7 +63,7 @@ public class BrowseRemoteHostSftpAction {
                         .withConnectionTimeout(10L, TimeUnit.SECONDS)
                         .checkCanAuthenticate(true);
                 AzureTaskManager.getInstance().runLater(callback);
-            } catch (final SshException e) {
+            } catch (final Exception e) {
                 AzureMessager.getMessager().error(e);
             }
         });

@@ -142,7 +142,7 @@ public class ResourceConnectionExplorer extends Tree {
         @AzureOperation(name = "platform/connector.initialize_explorer")
         public void createToolWindowContent(final Project project, final com.intellij.openapi.wm.ToolWindow toolWindow) {
             final ToolWindow myToolWindow = new ToolWindow(project);
-            final ContentFactory contentFactory = ContentFactory.getInstance();
+            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(myToolWindow, "", false);
             toolWindow.getContentManager().addContent(content);
         }

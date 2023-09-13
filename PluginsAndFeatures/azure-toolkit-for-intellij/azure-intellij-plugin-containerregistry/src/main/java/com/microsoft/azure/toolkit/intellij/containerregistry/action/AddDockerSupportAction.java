@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.action;
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -40,11 +39,6 @@ public class AddDockerSupportAction extends AnAction {
     private static final String NOTIFICATION_TITLE = "Add Docker Support";
     private Module module;
     String pomXmlBasePath;
-
-    @Override
-    public @Nonnull ActionUpdateThread getActionUpdateThread() {
-        return super.getActionUpdateThread();
-    }
 
     @Override
     @AzureOperation(name = "user/docker.add_docker_support")

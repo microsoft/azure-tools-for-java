@@ -45,7 +45,7 @@ public class ServiceBusToolWindowManager {
         Content content = toolWindow.getContentManager().findContent(contentName);
         if (content == null) {
             final SenderReceiverPanel panel = new SenderReceiverPanel(project, instance);
-            content = ContentFactory.getInstance().createContent(panel, contentName, false);
+            content = ContentFactory.SERVICE.getInstance().createContent(panel, contentName, false);
             toolWindow.getContentManager().addContent(content);
         }
         final JComponent contentComponent = content.getComponent();

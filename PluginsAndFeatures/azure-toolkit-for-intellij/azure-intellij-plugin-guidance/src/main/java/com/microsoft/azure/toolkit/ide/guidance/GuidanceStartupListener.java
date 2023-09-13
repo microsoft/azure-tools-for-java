@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.ide.guidance;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
@@ -15,20 +15,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class GuidanceStartupListener implements ProjectActivity {
+public class GuidanceStartupListener implements StartupActivity {
     private static final String GUIDANCE = "guidance";
     private static final String GUIDANCE_SHOWN = "guidance_shown";
     private static final String GUIDANCE_COURSES = "guidance_courses";
 
     @Override
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(@Nonnull Project project) {
         final CourseConfig courseConfigFromWorkspace = GuidanceConfigManager.getInstance().getCourseConfigFromWorkspace(project);
         if (Objects.nonNull(courseConfigFromWorkspace)) {
             GuidanceViewManager.getInstance().openCourseView(project, courseConfigFromWorkspace);
         } else {
             showGuidanceAtFirstStartup(project);
         }
-        return null;
     }
 
     private void showGuidanceAtFirstStartup(@Nonnull final Project project) {

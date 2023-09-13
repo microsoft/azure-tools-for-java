@@ -7,9 +7,7 @@
         <extensionFallback dbms="AZ_COSMOS_CASSANDRA" fallbackDbms="CASSANDRA"/>
         <artifactsConfig config="databaseDrivers/azure-cosmos-cassandra-drivers-extension.xml"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeFactory" order="first"/>
-        <urlParamEditorUiProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.MongoCosmosDbAccountTypeUIFactory" order="first"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeFactory" order="first"/>
-        <urlParamEditorUiProvider implementation="com.microsoft.azure.toolkit.intellij.cosmos.dbtools.CassandraCosmosDbAccountTypeUIFactory" order="first"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <registryKey key="azure.toolkit.cosmos_cassandra.dbtools.enabled"

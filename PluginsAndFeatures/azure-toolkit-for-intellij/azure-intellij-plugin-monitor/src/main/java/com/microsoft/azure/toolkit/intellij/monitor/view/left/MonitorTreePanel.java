@@ -100,7 +100,7 @@ public class MonitorTreePanel extends JPanel implements Disposable {
         AzureTaskManager.getInstance().runLater(() -> {
             final DefaultMutableTreeNode customQueryRootNode = getOrCreateCustomQueriesTabNode();
             final DefaultMutableTreeNode overrideNode = TreeUtil.findNode(customQueryRootNode, n ->
-                n.getUserObject() instanceof QueryData && Objects.equals(((QueryData) n.getUserObject()).displayName, data.displayName));
+                    n.getUserObject() instanceof QueryData && Objects.equals(((QueryData) n.getUserObject()).displayName, data.displayName));
             AzureMonitorManager.getInstance().changeContentView(project, AzureMonitorManager.QUERIES_TAB_NAME);
             final DefaultMutableTreeNode selectedNode;
             if (Objects.nonNull(overrideNode)) {
@@ -122,7 +122,7 @@ public class MonitorTreePanel extends JPanel implements Disposable {
                 } catch (final JsonProcessingException ignored) {
                 }
             });
-            PropertiesComponent.getInstance().setList(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST, customQueryList);
+            PropertiesComponent.getInstance().setValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST, customQueryList.toArray(new String[0]));
         });
     }
 
@@ -165,8 +165,9 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             final Map<String, List<String>> treeData = new JsonMapper()
                     .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .readValue(inputStream, new TypeReference<>() {});
-            treeData.forEach((key,value) -> {
+                    .readValue(inputStream, new TypeReference<>() {
+                    });
+            treeData.forEach((key, value) -> {
                 final DefaultMutableTreeNode resourceNode = new DefaultMutableTreeNode(key);
                 value.forEach(treeName -> {
                     final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(treeName);
@@ -190,8 +191,9 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             final Map<String, List<QueryData>> treeData = new JsonMapper()
                     .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .readValue(inputStream, new TypeReference<>() {});
-            treeData.forEach((key,value) -> {
+                    .readValue(inputStream, new TypeReference<>() {
+                    });
+            treeData.forEach((key, value) -> {
                 final DefaultMutableTreeNode resourceNode = new DefaultMutableTreeNode(key);
                 value.forEach(treeName -> {
                     final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(treeName);
@@ -201,7 +203,7 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             });
         } catch (final Exception ignored) {
         }
-        final List<String> customQueryList = PropertiesComponent.getInstance().getList(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST);
+        final List<String> customQueryList = Arrays.stream(PropertiesComponent.getInstance().getValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).toList();
         Optional.ofNullable(customQueryList).ifPresent(l -> l.forEach(s -> {
             final ObjectMapper mapper = new ObjectMapper();
             try {

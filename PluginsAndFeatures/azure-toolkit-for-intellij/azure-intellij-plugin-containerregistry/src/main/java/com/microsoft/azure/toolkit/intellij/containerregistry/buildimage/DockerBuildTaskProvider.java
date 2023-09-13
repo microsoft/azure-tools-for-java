@@ -147,7 +147,7 @@ public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTa
             final Content result = Arrays.stream(toolWindow.getContentManager().getContents())
                     .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), displayName))
                     .findFirst().orElseGet(() -> {
-                        final Content content = ContentFactory.getInstance().createContent(console.getComponent(), displayName, false);
+                        final Content content = ContentFactory.SERVICE.getInstance().createContent(console.getComponent(), displayName, false);
                         toolWindow.getContentManager().addContent(content);
                         return content;
                     });

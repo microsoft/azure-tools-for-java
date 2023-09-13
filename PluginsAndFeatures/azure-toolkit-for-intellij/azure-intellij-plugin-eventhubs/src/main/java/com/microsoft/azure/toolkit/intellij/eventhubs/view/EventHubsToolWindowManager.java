@@ -39,7 +39,7 @@ public class EventHubsToolWindowManager {
         Content content = Optional.ofNullable(toolWindow).map(w -> w.getContentManager().findContent(contentName)).orElse(null);
         if (content == null) {
             final SenderReceiverPanel panel = new SenderReceiverPanel(project, instance);
-            content = ContentFactory.getInstance().createContent(panel, contentName, false);
+            content = ContentFactory.SERVICE.getInstance().createContent(panel, contentName, false);
             toolWindow.getContentManager().addContent(content);
         }
         final JComponent contentComponent = content.getComponent();

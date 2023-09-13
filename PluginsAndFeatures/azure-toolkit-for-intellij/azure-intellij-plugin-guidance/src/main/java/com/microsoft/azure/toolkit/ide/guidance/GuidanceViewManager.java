@@ -97,7 +97,7 @@ public class GuidanceViewManager {
         public void createToolWindowContent(@Nonnull Project project, @Nonnull ToolWindow toolWindow) {
             final GuidanceView guidanceView = new GuidanceView(project);
             guidanceViewMap.put(project, guidanceView);
-            final ContentFactory contentFactory = ContentFactory.getInstance();
+            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final JBScrollPane view = new JBScrollPane(guidanceView, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             final Content content = contentFactory.createContent(view, "", false);
             toolWindow.getContentManager().addContent(content);

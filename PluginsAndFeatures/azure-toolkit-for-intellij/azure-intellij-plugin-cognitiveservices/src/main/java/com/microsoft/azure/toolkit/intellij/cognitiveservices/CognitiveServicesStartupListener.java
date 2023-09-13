@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.cognitiveservices;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -27,12 +27,11 @@ import static com.microsoft.azure.toolkit.ide.cognitiveservices.CognitiveService
 import static com.microsoft.azure.toolkit.intellij.cognitiveservices.IntelliJCognitiveServicesActionsContributor.TRY_OPENAI;
 import static com.microsoft.azure.toolkit.intellij.cognitiveservices.IntelliJCognitiveServicesActionsContributor.TRY_PLAYGROUND;
 
-public class CognitiveServicesStartupListener implements ProjectActivity {
+public class CognitiveServicesStartupListener implements StartupActivity {
     @Override
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(Project project) {
         tryOpenAI(project);
         tryPlayground();
-        return null;
     }
 
     private static void tryOpenAI(@Nonnull Project project) {

@@ -11,7 +11,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -24,14 +24,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Slf4j
-public class AddFacetStartupActivity implements ProjectActivity {
+public class AddFacetStartupActivity implements StartupActivity {
 
     @Nullable
     @Override
     @AzureOperation(name = "platform/connector.add_default_facet")
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(@Nonnull Project project) {
         if (project.isDisposed()) {
-            return null;
+            return;
         }
         final ModuleManager moduleManager = ModuleManager.getInstance(project);
         for (final Module module : moduleManager.getModules()) {
@@ -46,7 +46,6 @@ public class AddFacetStartupActivity implements ProjectActivity {
                 }
             }
         });
-        return null;
     }
 
     private static void addFacetWhenNecessary(Module module) {

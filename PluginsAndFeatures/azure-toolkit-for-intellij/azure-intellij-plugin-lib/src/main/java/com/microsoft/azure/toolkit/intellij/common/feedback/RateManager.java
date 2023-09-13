@@ -11,33 +11,22 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.common.operation.Operation;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationException;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationListener;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationManager;
+import com.microsoft.azure.toolkit.lib.common.operation.*;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import lombok.Data;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateManager {
@@ -109,15 +98,15 @@ public class RateManager {
         Optional.ofNullable(AzureStoreManager.getInstance()).map(AzureStoreManager::getIdeStore).ifPresent(s -> s.setProperty(SERVICE, TOTAL_SCORE, "" + score.get()));
     }
 
-    public static class WhenToPopup implements ProjectActivity, OperationListener {
+    public static class WhenToPopup implements StartupActivity.DumbAware, OperationListener {
         @Override
-        public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+        public void runActivity(@NotNull Project project) {
             final String hashMac = InstallationIdUtils.getHashMac();
             final char c = StringUtils.isBlank(hashMac) ? '0' : hashMac.toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
             final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
             if (Objects.isNull(store)) {
-                return null;
+                return;
             }
             final String nextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER);
             if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
@@ -130,7 +119,6 @@ public class RateManager {
                 }
                 OperationManager.getInstance().addListener(this);
             }
-            return null;
         }
 
         @Override

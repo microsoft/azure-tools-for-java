@@ -168,7 +168,7 @@ public class AzuriteService {
         final Content result = Arrays.stream(toolWindow.getContentManager().getContents())
                 .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), displayName))
                 .findFirst().orElseGet(() -> {
-                    final Content content = ContentFactory.getInstance().createContent(console.getComponent(), displayName, false);
+                    final Content content = ContentFactory.SERVICE.getInstance().createContent(console.getComponent(), displayName, false);
                     content.setIcon(ICON);
                     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
                     toolWindow.getContentManager().addContent(content);

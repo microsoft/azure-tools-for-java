@@ -53,12 +53,7 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     private void setGroupRender() {
-        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()) {
-            @Override
-            protected boolean hasSeparator(Runtime value, int index) {
-                return index >= 0 && super.hasSeparator(value, index);
-            }
-        });
+        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()));
     }
 
     private String getSeparatorCaption(Runtime item) {

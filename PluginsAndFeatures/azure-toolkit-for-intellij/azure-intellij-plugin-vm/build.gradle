@@ -1,5 +1,5 @@
 intellij {
-    plugins = ['remoteRun', 'webDeployment']
+    plugins = ['remote-run', 'webDeployment']
 }
 
 sourceSets {

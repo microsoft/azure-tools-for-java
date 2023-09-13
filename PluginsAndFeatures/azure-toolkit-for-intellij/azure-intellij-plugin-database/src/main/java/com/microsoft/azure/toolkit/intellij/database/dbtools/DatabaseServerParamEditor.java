@@ -191,7 +191,7 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
                 return;
             }
             final String user = server.getFullAdminName();
-            LocalDataSource.setUsername(interchange.getDataSource(), user);
+            // LocalDataSource.setUsername(interchange.getDataSource(), user);
             this.setUsername(user);
             this.setJdbcUrl(server.getJdbcUrl().toString());
             this.updating = false;

@@ -19,7 +19,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.ClientProperty;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
@@ -29,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +53,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         final AbstractProjectViewPane currentProjectViewPane = ProjectView.getInstance(project).getCurrentProjectViewPane();
         Optional.ofNullable(currentProjectViewPane)
                 .map(AbstractProjectViewPane::getTree)
-                .ifPresent(tree -> ClientProperty.put(tree, ANIMATION_IN_RENDERER_ALLOWED, true));
+                .ifPresent(tree -> tree.putClientProperty(ANIMATION_IN_RENDERER_ALLOWED, true));
     }
 
     @Override
@@ -200,7 +200,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     }
 
     @Override
-    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
+    public Object getData(@NotNull Collection<AbstractTreeNode<?>> selected, @NotNull String dataId) {
         final IAzureFacetNode azureFacetNode = selected.stream()
                 .filter(node -> node instanceof IAzureFacetNode)
                 .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);

@@ -32,7 +32,7 @@ public class StreamingLogsToolWindowManager {
     @AzureOperation(name = "boundary/common.open_log_streaming_console.resource", params = {"resourceName"})
     public void showStreamingLogConsole(Project project, String resourceId, String resourceName, ConsoleView consoleView) {
         final ToolWindow toolWindow = getToolWindow(project);
-        final ContentFactory contentFactory = ContentFactory.getInstance();
+        final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         final String consoleName = getConsoleViewName(resourceId, resourceName);
         Content content = toolWindow.getContentManager().findContent(consoleName);
         if (content == null) {

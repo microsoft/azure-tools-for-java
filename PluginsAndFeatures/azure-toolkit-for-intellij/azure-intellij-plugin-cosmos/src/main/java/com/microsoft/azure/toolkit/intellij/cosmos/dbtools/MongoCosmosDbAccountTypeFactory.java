@@ -5,17 +5,26 @@
 
 package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 
-import com.intellij.database.dataSource.url.TypeDescriptor;
+import com.intellij.database.dataSource.url.DataInterchange;
 import com.intellij.database.dataSource.url.TypesRegistry;
+import com.intellij.openapi.util.NlsContexts;
 import com.intellij.util.Consumer;
+import com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseAccountKind;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 public class MongoCosmosDbAccountTypeFactory implements TypesRegistry.TypeDescriptorFactory {
     private static final String TYPE_NAME = "cosmos_account_mongo";
     private static final String CAPTION = "Account";
 
     @Override
-    public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptor> consumer) {
-        consumer.consume(TypesRegistry.createTypeDescriptor(TYPE_NAME, ".", CAPTION));
+    public void createTypeDescriptor(@NotNull Consumer<? super TypesRegistry.TypeDescriptor> consumer) {
+        consumer.consume(new TypesRegistry.BaseTypeDescriptor(TYPE_NAME, ".", CAPTION) {
+            @Override
+            protected @NotNull TypesRegistry.ParamEditor createFieldImpl(@NlsContexts.Label @NotNull String s, @Nullable String s1, @NotNull DataInterchange dataInterchange) {
+                return new AzureCosmosDbAccountParamEditor(DatabaseAccountKind.MONGO_DB, formatFieldCaption(CAPTION), dataInterchange);
+            }
+        });
     }
 }

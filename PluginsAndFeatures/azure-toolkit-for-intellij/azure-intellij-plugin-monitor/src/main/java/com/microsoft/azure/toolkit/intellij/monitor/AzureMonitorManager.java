@@ -102,7 +102,7 @@ public class AzureMonitorManager {
     }
 
     private void addContent(@Nonnull ToolWindow toolWindow, String contentName, AzureMonitorView view) {
-        final Content tableContent = ContentFactory.getInstance().createContent(view, contentName, true);
+        final Content tableContent = ContentFactory.SERVICE.getInstance().createContent(view, contentName, true);
         tableContent.setCloseable(false);
         tableContent.setDisposer(view);
         toolWindow.getContentManager().addContent(tableContent);
