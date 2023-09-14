@@ -78,13 +78,13 @@ public class KubernetesUtils {
     private static Action<?> getRecommendKubernetesPluginAction(@Nonnull final Project project) {
         return new Action<>(Action.Id.of("user/kubernetes.install_kubernetes_plugin"))
             .withLabel("Install kubernetes plugin")
-            .withHandler(ignore -> AzureTaskManager.getInstance().runLater(KubernetesUtils::searchK8sPlugin));
+            .withHandler(ignore -> AzureTaskManager.getInstance().runLater(()-> searchK8sPlugin(project)));
     }
 
     @AzureOperation(name = "boundary/kubernetes.search_k8s_plugin")
-    private static void searchK8sPlugin() {
-        ShowSettingsUtil.getInstance().showSettingsDialog(null, PluginManagerConfigurable.class, it ->
-            it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")
+    private static void searchK8sPlugin(@Nonnull final Project project) {
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginManagerConfigurable.class, it ->
+                it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")
         );
     }
 
