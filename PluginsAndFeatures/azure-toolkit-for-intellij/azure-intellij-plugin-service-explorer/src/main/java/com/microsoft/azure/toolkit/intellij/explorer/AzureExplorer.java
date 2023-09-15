@@ -33,6 +33,9 @@ import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -96,7 +99,19 @@ public class AzureExplorer extends Tree {
     }
 
     private Node<Azure> buildTypeGroupedResourcesRoot() {
-        return new TypeGroupedServicesRootNode().addChildren((a) -> buildAzServiceNodes());
+        return new TypeGroupedServicesRootNode()
+            .withActions(new ActionGroup(
+                new Action<>(ResourceCommonActionsContributor.REFRESH)
+                    .withLabel("Refresh ALl")
+                    .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+                    .withHandler((e) -> this.refreshAll()),
+                IAccountActions.SELECT_SUBS,
+                "----",
+                ResourceCommonActionsContributor.SHOW_COURSES,
+                ResourceCommonActionsContributor.OPEN_MONITOR,
+                "----",
+                IAccountActions.AUTHENTICATE))
+            .addChildren((a) -> buildAzServiceNodes());
     }
 
     public Node<?> buildAppGroupedResourcesRoot() {

@@ -41,8 +41,8 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class SignInAction extends AnAction implements DumbAware {
-    private static final String SIGN_IN = "Azure Sign In...";
-    private static final String SIGN_OUT = "Azure Sign Out...";
+    private static final String SIGN_IN = "Sign In...";
+    private static final String SIGN_OUT = "Sign Out";
     private static final String SIGN_IN_ERROR = "Sign In Error";
 
     public SignInAction() {
