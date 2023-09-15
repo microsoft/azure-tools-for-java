@@ -10,6 +10,7 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
+import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
@@ -24,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.*;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -36,6 +38,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.GET_START;
+import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.GET_START_NEW;
 
 public class ResourceCommonActionsContributor implements IActionsContributor {
 
@@ -68,6 +73,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<ServiceLinker> FOCUS_ON_CONNECTED_SERVICE = Action.Id.of("user/common.focus_on_connected_service");
     public static final Action.Id<ServiceLinkerModule> CREATE_SERVICE_LINKER_IN_PORTAL = Action.Id.of("user/$resource.create_service_linker_in_portal");
     public static final Action.Id<AbstractAzService<?, ?>> GETTING_STARTED = Action.Id.of("user/$resource.open_getting_start.service");
+    public static final Action.Id<Object> SHOW_COURSES = Action.Id.of("user/$resource.show_courses");
+    public static final Action.Id<Object> OPEN_MONITOR = Action.Id.of("user/monitor.open_azure_monitor");
     public static final Action.Id<Action.Id<?>> SUPPRESS_ACTION = Action.Id.of("user/common.never_show_again");
 
     public static final String SERVICE_LINKER_ACTIONS = "actions.resource.service_linker";
@@ -316,6 +323,23 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withLabel("Getting Started")
             .withIdParam(s -> s.getClass().getSimpleName())
             .withIcon(AzureIcons.Common.GET_START.getIconPath())
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(SHOW_COURSES)
+            .withLabel("Getting Started")
+            .withIdParam(s -> s.getClass().getSimpleName())
+            .withIcon(o -> {
+                final String isActionTriggerVal = AzureStoreManager.getInstance().getIdeStore().getProperty("guidance", "is_action_triggered");
+                boolean isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::parseBoolean).orElse(false);
+                return isActionTriggered ? GET_START.getIconPath() : GET_START_NEW.getIconPath();
+            })
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(OPEN_MONITOR)
+            .withLabel("Open Azure Monitor")
+            .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
             .withAuthRequired(false)
             .register(am);
 
