@@ -31,12 +31,12 @@
                       id="Azure.LSPTypedHandler"/>
 
         <!-- needed for code diagnostics -->
-        <externalAnnotator id="Azure.LSPAnnotator" language="TEXT"
+        <externalAnnotator id="Azure.LSPAnnotator" language="Bicep"
                            implementationClass="org.wso2.lsp4intellij.contributors.annotator.LSPAnnotator"/>
 
         <!-- needed for Workspace Symbols -->
-        <gotoSymbolContributor implementation="org.wso2.lsp4intellij.contributors.symbol.LSPSymbolContributor"
-                               id="Azure.LSPSymbolContributor"/>
+<!--        <gotoSymbolContributor implementation="org.wso2.lsp4intellij.contributors.symbol.LSPSymbolContributor"-->
+<!--                               id="Azure.LSPSymbolContributor"/>-->
 
         <!-- needed for renaming -->
         <renameHandler implementation="org.wso2.lsp4intellij.contributors.rename.LSPRenameHandler" id="Azure.LSPRenameHandler" order="first"/>

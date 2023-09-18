@@ -88,28 +88,18 @@ public class BicepStartupActivity implements StartupActivity, PluginStateListene
     @AzureOperation("boundary/bicep.register_textmate_bundles")
     public static synchronized boolean registerBicepTextMateBundle() {
         final TextMateSettingsState state = TextMateSettings.getInstance().getState();
-        try {
-            if (Objects.nonNull(state)) {
-                final Lock registrationLock = (Lock) FieldUtils.readField(TextMateService.getInstance(), "myRegistrationLock", true);
-                try {
-                    registrationLock.lock();
-                    final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
-                    final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
-                    final Collection<BundleConfigBean> bundles = state.getBundles();
-                    if (bicepTextmatePath.toFile().exists() && bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && b.isEnabled() && Path.of(b.getPath()).equals(bicepTextmatePath))) {
-                        final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
-                        newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-                        newBundles.add(new BundleConfigBean("bicep", bicepTextmatePath.toString(), true));
-                        newBundles.add(new BundleConfigBean("bicepparam", bicepParamTextmatePath.toString(), true));
-                        state.setBundles(newBundles);
-                        return true;
-                    }
-                } finally {
-                    registrationLock.unlock();
-                }
+        if (Objects.nonNull(state)) {
+            final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
+            final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
+            final Collection<BundleConfigBean> bundles = state.getBundles();
+            if (bicepTextmatePath.toFile().exists() && bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && b.isEnabled() && Path.of(b.getPath()).equals(bicepTextmatePath))) {
+                final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
+                newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
+                newBundles.add(new BundleConfigBean("bicep", bicepTextmatePath.toString(), true));
+                newBundles.add(new BundleConfigBean("bicepparam", bicepParamTextmatePath.toString(), true));
+                state.setBundles(newBundles);
+                return true;
             }
-        } catch (final IllegalAccessException e) {
-            throw new SystemException("can not acquire lock of 'TextMateService'.", e);
         }
         return false;
     }
