@@ -204,14 +204,15 @@ public class MonitorTreePanel extends JPanel implements Disposable {
             });
         } catch (final Exception ignored) {
         }
-        final List<String> customQueryList = Arrays.stream(PropertiesComponent.getInstance().getValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST)).collect(Collectors.toList());
-        Optional.ofNullable(customQueryList).ifPresent(l -> l.forEach(s -> {
-            final ObjectMapper mapper = new ObjectMapper();
-            try {
-                customQueries.add(mapper.readValue(s, QueryData.class));
-            } catch (final JsonProcessingException ignored) {
-            }
-        }));
+        final String[] queries = PropertiesComponent.getInstance().getValues(AzureMonitorManager.AZURE_MONITOR_CUSTOM_QUERY_LIST);
+        Optional.ofNullable(queries).map(array -> Arrays.stream(array).collect(Collectors.toList()))
+                .ifPresent(l -> l.forEach(s -> {
+                    final ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        customQueries.add(mapper.readValue(s, QueryData.class));
+                    } catch (final JsonProcessingException ignored) {
+                    }
+                }));
         if (this.customQueries.size() > 0) {
             final DefaultMutableTreeNode tabNode = new DefaultMutableTreeNode(CUSTOM_QUERIES_TAB);
             this.customQueries.forEach(queryData -> {
