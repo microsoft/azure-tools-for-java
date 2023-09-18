@@ -4,8 +4,10 @@
  */
 package com.microsoft.azure.toolkit.intellij.common.survey;
 
+import com.intellij.ide.DataManager;
 import com.intellij.ide.ui.LafManager;
 import com.intellij.ide.ui.LafManagerListener;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
@@ -173,9 +175,8 @@ public class SurveyPopUpDialog extends JDialog {
     }
 
     // Set pop up window to right bottom side of IDE
-    private void setLocationRelativeToIDE(Project project) {
-        final Project openProject = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
-        JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(openProject);
+    private void setLocationRelativeToIDE(@Nonnull Project project) {
+        JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(project);
         if (ideFrame == null) {
             // In case user close project after start up
             ideFrame = WindowManagerImpl.getInstance().findVisibleFrame();

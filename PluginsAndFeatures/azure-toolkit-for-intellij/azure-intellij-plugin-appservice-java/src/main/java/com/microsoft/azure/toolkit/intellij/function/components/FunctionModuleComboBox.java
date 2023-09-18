@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.function.components;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 
@@ -21,10 +20,6 @@ import java.util.stream.Collectors;
 
 public class FunctionModuleComboBox extends AzureComboBox<Module> {
     private final Project project;
-
-    public FunctionModuleComboBox() {
-        this(ProjectManager.getInstance().getDefaultProject());
-    }
 
     public FunctionModuleComboBox(@Nonnull final Project project) {
         super();

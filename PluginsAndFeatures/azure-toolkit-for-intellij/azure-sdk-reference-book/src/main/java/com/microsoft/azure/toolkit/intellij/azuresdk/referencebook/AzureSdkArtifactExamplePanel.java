@@ -50,12 +50,11 @@ public class AzureSdkArtifactExamplePanel {
     private JPanel pnlRoot;
     private ActionLink linkRequestMoreExamples;
     private AzureSdkArtifactEntity artifact;
-    private AzureJavaSdkArtifactExamplesEntity examples;
 
     public void setArtifact(final AzureSdkArtifactEntity artifact) {
         this.artifact = artifact;
-        this.examples = AzureSdkExampleService.getArtifactExamples(artifact);
-        this.cbExample.setEntity(examples);
+        final AzureJavaSdkArtifactExamplesEntity examples = AzureSdkExampleService.getArtifactExamples(artifact);
+        Optional.ofNullable(examples).ifPresent(e -> this.cbExample.setEntity(e));
     }
 
     private void createUIComponents() {
@@ -90,7 +89,7 @@ public class AzureSdkArtifactExamplePanel {
     }
 
     private EditorTextField createExampleEditorTextField() {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final Project project = ProjectManager.getInstance().getDefaultProject();
         final DocumentImpl document = new DocumentImpl("", true);
         final EditorTextField result = new EditorTextField(document, project, JavaFileType.INSTANCE, true, false);
         result.addSettingsProvider(editor -> { // add scrolling/line number features
@@ -109,20 +108,20 @@ public class AzureSdkArtifactExamplePanel {
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());
                 OperationContext.action().setTelemetryProperty("example_id", String.valueOf(Optional.ofNullable(cbExample.getValue())
-                        .filter(v -> v != ExampleComboBox.NONE)
-                        .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
+                    .filter(v -> v != ExampleComboBox.NONE)
+                    .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
         });
-        group.add(new AnAction("Browse", "Browse Source Code", IntelliJAzureIcons.getIcon(AzureIcons.Common.OPEN_IN_PORTAL)) {
+        group.add(new AnAction("Browse", "Browse source code", IntelliJAzureIcons.getIcon(AzureIcons.Common.OPEN_IN_PORTAL)) {
             @Override
             @AzureOperation(name = "user/sdk.open_example_in_browser")
             public void actionPerformed(@NotNull final AnActionEvent e) {
                 final AzureJavaSdkArtifactExampleEntity value = cbExample.getValue();
                 OperationContext.action().setTelemetryProperty("artifact", artifact.getArtifactId());
                 OperationContext.action().setTelemetryProperty("example_id", String.valueOf(Optional.ofNullable(cbExample.getValue())
-                        .filter(v -> v != ExampleComboBox.NONE)
-                        .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
+                    .filter(v -> v != ExampleComboBox.NONE)
+                    .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 Optional.ofNullable(value).ifPresent(v -> AzureActionManager.getInstance().getAction(OPEN_URL).handle(v.getGithubUrl()));
             }
         });

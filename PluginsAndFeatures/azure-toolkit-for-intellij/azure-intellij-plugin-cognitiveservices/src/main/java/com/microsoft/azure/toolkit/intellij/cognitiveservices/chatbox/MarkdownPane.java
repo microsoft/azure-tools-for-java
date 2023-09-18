@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.cognitiveservices.chatbox;
 
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
@@ -74,7 +76,7 @@ public class MarkdownPane {
     }
 
     private EditorTextField createEditor(MarkdownText.CodePart part) {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final Project project = DataManager.getInstance().getDataContext(this.contentPanel).getData(CommonDataKeys.PROJECT);
         final DocumentImpl document = new DocumentImpl("", true);
         final FileType fileType = FileTypeManagerEx.getInstance().getFileTypeByExtension(part.getLanguage());
         final EditorTextField result = new EditorTextField(document, project, fileType, true, false);
