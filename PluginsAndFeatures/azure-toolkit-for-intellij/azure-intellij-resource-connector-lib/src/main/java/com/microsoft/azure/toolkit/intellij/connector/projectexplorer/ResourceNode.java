@@ -61,7 +61,7 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
     }
 
     @Override
-    public void buildView(final PresentationData presentation) {
+    public synchronized void buildView(final PresentationData presentation) {
         final Node<?> node = this.getValue();
         final Node.View view = node.getView();
         presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
