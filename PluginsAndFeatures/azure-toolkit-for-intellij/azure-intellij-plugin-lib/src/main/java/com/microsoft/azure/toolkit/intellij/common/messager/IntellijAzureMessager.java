@@ -123,7 +123,7 @@ public class IntellijAzureMessager implements IAzureMessager {
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         final Collection<NotificationAction> actions = Arrays.stream(message.getActions())
             .map(a -> ImmutablePair.of(a, a.getView(null)))
-            .filter(p -> p.getValue().isVisible())
+            .filter(p -> p.getValue().isVisible() && p.getValue().isEnabled())
             .map(p -> new NotificationAction(p.getValue().getLabel()) {
                 @Override
                 public void actionPerformed(@Nonnull AnActionEvent e, @Nonnull Notification notification) {
