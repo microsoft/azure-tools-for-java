@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.base;
 
-import com.azure.core.implementation.http.HttpClientProviders;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -32,7 +31,6 @@ import com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.DeprecatedWebAppOnLinuxDeployConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
@@ -68,20 +66,6 @@ public class PluginLifecycleListener implements AppLifecycleListener, PluginStat
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
     private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForIntelliJ";
     private static final FileHandler logFileHandler = null;
-
-    static {
-        // fix the class load problem for intellij plugin
-        final ClassLoader current = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(PluginLifecycleListener.class.getClassLoader());
-            HttpClientProviders.createInstance();
-            Azure.az(AzureAccount.class);
-        } catch (final Throwable e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(current);
-        }
-    }
 
     @Override
     public void appFrameCreated(@Nonnull List<String> commandLineArgs) {
