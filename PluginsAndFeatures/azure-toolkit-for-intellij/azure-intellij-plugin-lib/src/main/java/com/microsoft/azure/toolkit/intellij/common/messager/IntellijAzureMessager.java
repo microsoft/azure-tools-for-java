@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessagerProvider;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
@@ -42,10 +43,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_NAME;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_TYPE;
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.SERVICE_NAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @Slf4j
 public class IntellijAzureMessager implements IAzureMessager {
@@ -139,5 +137,11 @@ public class IntellijAzureMessager implements IAzureMessager {
             }).collect(Collectors.toList());
         notification.addActions(actions);
         Notifications.Bus.notify(notification, message.getProject());
+    }
+
+    public static class Provider implements AzureMessagerProvider {
+        public IAzureMessager getMessager() {
+            return ApplicationManager.getApplication().getService(IAzureMessager.class);
+        }
     }
 }
