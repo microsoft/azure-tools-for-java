@@ -8,9 +8,6 @@ package com.microsoft.azure.toolkit.intellij.base;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginStateListener;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.util.net.HttpConfigurable;
 import com.intellij.util.net.ssl.CertificateManager;
@@ -62,11 +59,6 @@ public class PluginLifecycleListener implements AppLifecycleListener, PluginStat
             initializeTelemetry();
             // workaround fixes for web app on linux run configuration
             AzureDockerSupportConfigurationType.registerConfigurationFactory("Web App for Containers", DeprecatedWebAppOnLinuxDeployConfigurationFactory::new);
-            final ActionManager am = ActionManager.getInstance();
-            final DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
-            toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            final DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
             IdeAzureAccount.getInstance().restoreSignin(); // restore sign in
         } catch (final Throwable t) {
             log.error(t.getMessage(), t);
