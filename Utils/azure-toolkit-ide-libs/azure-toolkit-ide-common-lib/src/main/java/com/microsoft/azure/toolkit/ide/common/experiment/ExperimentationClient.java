@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.ide.common.experiment;
 
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.AzureConfiguration;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -30,7 +29,6 @@ public class ExperimentationClient {
         return experimentationService;
     }
 
-    @AzureOperation(name = "internal/exp.assignment")
     private static void init() {
         try {
             final Map<String, String> audienceFilters = new HashMap<>();
@@ -38,10 +36,10 @@ public class ExperimentationClient {
             final AzureConfiguration config = Azure.az().config();
             assignmentIds.put(ASSIGNMENT_UNIT_ID, config.getMachineId());
             experimentationService = new ExperimentationService()
-                    .withEndPoint(END_POINT)
-                    .withAudienceFilters(audienceFilters)
-                    .withAssignmentIds(assignmentIds)
-                    .create();
+                .withEndPoint(END_POINT)
+                .withAudienceFilters(audienceFilters)
+                .withAssignmentIds(assignmentIds)
+                .create();
         } catch (final Throwable ignored) {
         }
     }

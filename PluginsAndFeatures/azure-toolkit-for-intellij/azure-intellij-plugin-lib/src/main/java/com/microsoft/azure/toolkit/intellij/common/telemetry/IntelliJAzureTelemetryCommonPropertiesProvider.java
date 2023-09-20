@@ -25,10 +25,9 @@ public class IntelliJAzureTelemetryCommonPropertiesProvider implements AzureTele
     public Map<String, String> getCommonProperties() {
         final Map<String, String> properties = new HashMap<>();
         final ApplicationInfo info = ApplicationInfo.getInstance();
-        final String ideInfo = String.format("%s_%s_%s", info.getVersionName(), info.getFullVersion(), info.getBuild());
         properties.put("SessionId", UUID.randomUUID().toString());
-        properties.put("IDE", ideInfo);
-        properties.put("AssignmentContext", Optional.ofNullable(ExperimentationClient.getExperimentationService()).map(ExperimentationService::getAssignmentContext).orElse(StringUtils.EMPTY));
+        properties.put("IDE", String.format("%s_%s_%s", info.getVersionName(), info.getFullVersion(), info.getBuild()));
+//        properties.put("AssignmentContext", Optional.ofNullable(ExperimentationClient.getExperimentationService()).map(ExperimentationService::getAssignmentContext).orElse(StringUtils.EMPTY));
         properties.put("Plugin Version", CommonConst.PLUGIN_VERSION);
         properties.put("Installation ID", Azure.az().config().getMachineId());
         if (StringUtils.isNotBlank(Azure.az().config().getProxySource())) {
