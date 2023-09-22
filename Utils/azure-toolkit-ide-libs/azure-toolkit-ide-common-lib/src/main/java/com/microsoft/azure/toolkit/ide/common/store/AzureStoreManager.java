@@ -16,17 +16,12 @@ public class AzureStoreManager {
     private IMachineStore machineStore;
 
     @Getter
-    private IIdeStore ideStore;
-
-    @Getter
     private ISecureStore secureStore;
 
     public static synchronized void register(@Nonnull IMachineStore machineStore,
-                                             @Nonnull IIdeStore ideStore,
                                              @Nonnull ISecureStore secureStore) {
         getInstance();
         instance.machineStore = machineStore;
-        instance.ideStore = ideStore;
         instance.secureStore = secureStore;
     }
 

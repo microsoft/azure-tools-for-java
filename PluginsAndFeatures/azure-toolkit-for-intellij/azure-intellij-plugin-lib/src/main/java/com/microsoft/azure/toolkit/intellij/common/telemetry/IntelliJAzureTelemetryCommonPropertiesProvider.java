@@ -6,12 +6,10 @@
 package com.microsoft.azure.toolkit.intellij.common.telemetry;
 
 import com.intellij.openapi.application.ApplicationInfo;
-import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationClient;
-import com.microsoft.azure.toolkit.ide.common.experiment.ExperimentationService;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.common.proxy.ProxyInfo;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryConfigProvider;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +28,7 @@ public class IntelliJAzureTelemetryCommonPropertiesProvider implements AzureTele
 //        properties.put("AssignmentContext", Optional.ofNullable(ExperimentationClient.getExperimentationService()).map(ExperimentationService::getAssignmentContext).orElse(StringUtils.EMPTY));
         properties.put("Plugin Version", CommonConst.PLUGIN_VERSION);
         properties.put("Installation ID", Azure.az().config().getMachineId());
-        if (StringUtils.isNotBlank(Azure.az().config().getProxySource())) {
+        if (Optional.ofNullable(Azure.az().config().getProxyInfo()).map(ProxyInfo::getSource).isPresent()) {
             properties.put(PROXY, "true");
         }
         return properties;

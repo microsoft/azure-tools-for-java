@@ -5,12 +5,12 @@ import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
-import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.RoundedPanel;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import lombok.Getter;
@@ -38,7 +38,7 @@ public class CoursePanel {
     private boolean isStartedActionTriggered;
     private final boolean showNewUIFlag;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
-            JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
+        JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
     public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
@@ -96,7 +96,7 @@ public class CoursePanel {
     public void openGuidance() {
         if (!isStartedActionTriggered) {
             isStartedActionTriggered = true;
-            AzureStoreManager.getInstance().getIdeStore().setProperty(ShowGettingStartAction.GUIDANCE, ShowGettingStartAction.IS_ACTION_TRIGGERED, String.valueOf(true));
+            Azure.az().config().set(GuidanceConfigManager.IS_ACTION_TRIGGERED, true);
         }
         OperationContext.current().setTelemetryProperty("course", this.course.getTitle());
         GuidanceViewManager.getInstance().openCourseView(project, course);

@@ -28,7 +28,8 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
+import com.microsoft.azure.toolkit.intellij.common.settings.IntelliJAzureConfiguration;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.ActionInstance;
@@ -41,7 +42,6 @@ import com.microsoft.azure.toolkit.lib.common.model.Emulatable;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
 import lombok.Getter;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -118,11 +118,21 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     public static boolean isSuppressed(Action.Id<?> actionId) {
-        return BooleanUtils.isTrue(IntellijStore.getInstance().getState().getSuppressedActions().get(actionId.toString()));
+        return isSuppressed(actionId.getId());
     }
 
     public static void suppress(Action.Id<?> actionId) {
-        IntellijStore.getInstance().getState().getSuppressedActions().put(actionId.toString(), true);
+        suppress(actionId.getId());
+    }
+
+    public static boolean isSuppressed(String actionId) {
+        final IntelliJAzureConfiguration config = (IntelliJAzureConfiguration) Azure.az().config();
+        return config.isActionSuppressed(actionId);
+    }
+
+    public static void suppress(String actionId) {
+        final IntelliJAzureConfiguration config = (IntelliJAzureConfiguration) Azure.az().config();
+        config.suppressAction(actionId);
     }
 
     @Getter

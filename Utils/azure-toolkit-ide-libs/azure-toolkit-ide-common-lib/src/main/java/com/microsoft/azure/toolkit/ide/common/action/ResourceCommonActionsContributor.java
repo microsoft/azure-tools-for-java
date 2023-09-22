@@ -9,10 +9,9 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.favorite.Favorites;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.lib.AzService;
 import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -22,10 +21,16 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.*;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzService;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.Deletable;
+import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
+import com.microsoft.azure.toolkit.lib.common.model.Startable;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
-import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -308,7 +313,6 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .visibleWhen(s -> Azure.az().config().isAuthPersistenceEnabled())
             .withHandler((s) -> {
                 Azure.az().config().setAuthPersistenceEnabled(false);
-                AzureConfigInitializer.saveAzConfig();
                 final AzureAccount az = Azure.az(AzureAccount.class);
                 if (az.isLoggedIn()) {
                     az.logout();
@@ -330,7 +334,8 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withLabel("Getting Started")
             .withIdParam(s -> s.getClass().getSimpleName())
             .withIcon(o -> {
-                final String isActionTriggerVal = AzureStoreManager.getInstance().getIdeStore().getProperty("guidance", "is_action_triggered");
+                final AzureConfiguration config = Azure.az().config();
+                final String isActionTriggerVal = config.getString("guidance.is_action_triggered");
                 boolean isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::parseBoolean).orElse(false);
                 return isActionTriggered ? GET_START.getIconPath() : GET_START_NEW.getIconPath();
             })

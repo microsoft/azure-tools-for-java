@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.ide.common.dotnet;
 
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -97,7 +96,6 @@ public class DotnetRuntimeHandler {
                 CommandUtils.exec(INSTALL_COMMAND, path);
             }
             Azure.az().config().setDotnetRuntimePath(path);
-            AzureConfigInitializer.saveAzConfig();
             AzureEventBus.emit("dotnet_runtime.updated");
             final String INSTALL_SUCCEED_MESSAGE = ".NET runtime is installed and configured successfully.";
             AzureMessager.getMessager().success(INSTALL_SUCCEED_MESSAGE, null, openSettingsAction, ResourceCommonActionsContributor.RESTART_IDE);

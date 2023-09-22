@@ -4,21 +4,19 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
+import com.microsoft.azure.toolkit.ide.guidance.GuidanceConfigManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.GET_START;
 import static com.microsoft.azure.toolkit.ide.common.icon.AzureIcons.Common.GET_START_NEW;
 
 public class ShowGettingStartAction extends AnAction implements DumbAware {
-    public static final String GUIDANCE = "guidance";
-    public static final String IS_ACTION_TRIGGERED = "is_action_triggered";
     private static boolean isActionTriggered = false;
 
     @Override
@@ -29,7 +27,7 @@ public class ShowGettingStartAction extends AnAction implements DumbAware {
             OperationContext.action().setTelemetryProperty("ShowBlueIcon", String.valueOf(!isActionTriggered));
             if (!isActionTriggered) {
                 isActionTriggered = true;
-                AzureStoreManager.getInstance().getIdeStore().setProperty(GUIDANCE, IS_ACTION_TRIGGERED, String.valueOf(true));
+                Azure.az().config().set(GuidanceConfigManager.IS_ACTION_TRIGGERED, true);
             }
             GuidanceViewManager.getInstance().showCoursesView(anActionEvent.getProject());
         }
@@ -38,8 +36,7 @@ public class ShowGettingStartAction extends AnAction implements DumbAware {
     @Override
     public void update(AnActionEvent e) {
         if (!isActionTriggered) {
-            final String isActionTriggerVal = AzureStoreManager.getInstance().getIdeStore().getProperty(GUIDANCE, IS_ACTION_TRIGGERED);
-            isActionTriggered = Optional.ofNullable(isActionTriggerVal).map(Boolean::parseBoolean).orElse(false);
+            isActionTriggered = Azure.az().config().get(GuidanceConfigManager.IS_ACTION_TRIGGERED, false);
         }
         e.getPresentation().setIcon(IntelliJAzureIcons.getIcon(isActionTriggered ? GET_START : GET_START_NEW));
     }

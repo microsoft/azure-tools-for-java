@@ -13,8 +13,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.util.registry.Registry;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -36,28 +36,27 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RateManager {
-    public static final String SERVICE = "rate";
-    public static final String RATED_AT = "rated_at";
-    public static final String RATED_SCORE = "rated_score";
-    public static final String POPPED_AT = "popped_at";
-    public static final String POPPED_TIMES = "popped_times";
-    public static final String NEXT_POP_AFTER = "next_pop_after";
-    public static final String TOTAL_SCORE = "action_total_score";
-    public static final String NEXT_REWIND_DATE = "next_rewind_date";
+    public static final AzureConfiguration.Key<Long> RATED_AT = AzureConfiguration.Key.of("rate.rate_at");
+    public static final AzureConfiguration.Key<Integer> RATED_SCORE = AzureConfiguration.Key.of("rate.rated_score");
+    public static final AzureConfiguration.Key<Long> POPPED_AT = AzureConfiguration.Key.of("rate.popped_at");
+    public static final AzureConfiguration.Key<Integer> POPPED_TIMES = AzureConfiguration.Key.of("rate.popped_times");
+    public static final AzureConfiguration.Key<Long> NEXT_POP_AFTER = AzureConfiguration.Key.of("rate.next_pop_after");
+    public static final AzureConfiguration.Key<Integer> TOTAL_SCORE = AzureConfiguration.Key.of("rate.action_total_score");
+    public static final AzureConfiguration.Key<Long> NEXT_REWIND_DATE = AzureConfiguration.Key.of("rate.next_rewind_date");
 
     private static final String SCORES_YML = "/com/microsoft/azure/toolkit/intellij/common/feedback/operation-scores.yml";
     private final Map<String, ScoreConfig> scores;
     private final AtomicInteger score = new AtomicInteger(0);
+    private final AzureConfiguration config;
 
     private RateManager() {
         scores = loadScores();
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
+        this.config = Azure.az().config();
+        final int totalScore = this.config.get(TOTAL_SCORE, 0);
         score.set(totalScore);
     }
 
@@ -90,11 +89,10 @@ public class RateManager {
                 this.score.set(threshold);
             }
         }
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         if (score > 0) {
-            store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
+            this.config.set(NEXT_REWIND_DATE, System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY);
         }
-        store.setProperty(SERVICE, TOTAL_SCORE, "" + this.score.get());
+        this.config.set(TOTAL_SCORE, this.score.get());
     }
 
     public synchronized int getScore() {
@@ -106,7 +104,7 @@ public class RateManager {
         OperationContext.current().setTelemetryProperty("causeOperation", causeOperation.getId());
         OperationContext.current().setTelemetryProperty("causeOperationId", causeOperation.getExecutionId());
         score.set(score.get() / 2);
-        Optional.ofNullable(AzureStoreManager.getInstance()).map(AzureStoreManager::getIdeStore).ifPresent(s -> s.setProperty(SERVICE, TOTAL_SCORE, "" + score.get()));
+        this.config.set(TOTAL_SCORE, score.get());
     }
 
     public static class WhenToPopup implements ProjectActivity, OperationListener {
@@ -115,18 +113,16 @@ public class RateManager {
             final String hashMac = InstallationIdUtils.getHashMac();
             final char c = StringUtils.isBlank(hashMac) ? '0' : hashMac.toLowerCase().charAt(0);
             final boolean testMode = Registry.is("azure.toolkit.test.mode.enabled", false);
-            final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-            if (Objects.isNull(store)) {
-                return null;
-            }
-            final String nextPopAfter = store.getProperty(SERVICE, NEXT_POP_AFTER);
-            if (testMode || (!StringUtils.equals(nextPopAfter, "-1") && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
-                final String nextRewindDate = store.getProperty(SERVICE, NEXT_REWIND_DATE);
-                if (StringUtils.isBlank(nextRewindDate)) {
-                    store.setProperty(SERVICE, NEXT_REWIND_DATE, String.valueOf(System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY));
-                } else if (Long.parseLong(nextRewindDate) > System.currentTimeMillis()) {
-                    final int totalScore = Integer.parseInt(Objects.requireNonNull(store.getProperty(SERVICE, TOTAL_SCORE, "0")));
-                    store.setProperty(SERVICE, TOTAL_SCORE, totalScore / 2 + "");
+
+            final AzureConfiguration config = Azure.az().config();
+            final Long nextPopAfter = config.get(NEXT_POP_AFTER, 0L);
+            if (testMode || (nextPopAfter != -1 && Character.digit(c, 16) % 4 == 0)) { // enabled for only 1/4
+                final long nextRewindDate = config.get(NEXT_REWIND_DATE, 0L);
+                if (nextRewindDate == 0) {
+                    config.set(NEXT_REWIND_DATE, System.currentTimeMillis() + 15 * DateUtils.MILLIS_PER_DAY);
+                } else if (nextRewindDate > System.currentTimeMillis()) {
+                    final int totalScore = config.get(TOTAL_SCORE, 0);
+                    config.set(TOTAL_SCORE, totalScore / 2);
                 }
                 OperationManager.getInstance().addListener(this);
             }

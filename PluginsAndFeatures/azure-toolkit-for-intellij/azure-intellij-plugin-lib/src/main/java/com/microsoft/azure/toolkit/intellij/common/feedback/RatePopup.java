@@ -21,9 +21,9 @@ import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.PositionTracker;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -42,13 +42,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class RatePopup {
     public static final JBColor BACKGROUND_COLOR =
         JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
     public static final int MOST_TIMES = 5;
     private static Balloon balloon;
+    private final AzureConfiguration config;
 
     @Getter
     private JPanel contentPanel;
@@ -69,6 +69,7 @@ public class RatePopup {
         super();
         $$$setupUI$$$();
         init();
+        this.config = Azure.az().config();
     }
 
     private void createUIComponents() {
@@ -94,7 +95,7 @@ public class RatePopup {
 
     @AzureOperation(name = "user/feedback.rate_next_time")
     private static void rateNextTime() {
-        final int times = getPoppedTimes();
+        final int times = Azure.az().config().get(RateManager.POPPED_TIMES, 0);
         popDaysLater(15 * times);
     }
 
@@ -117,7 +118,6 @@ public class RatePopup {
     }
 
     private void initStars() {
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
         this.logo.setIcon(IconLoader.getIcon("/icons/Common/Azure.svg", RatePopup.class));
         final float scale = 1.625f;
         final Icon outlined = IconUtil.scale(AllIcons.Nodes.NotFavoriteOnHover, this.contentPanel, scale);
@@ -131,8 +131,8 @@ public class RatePopup {
             public void mouseClicked(MouseEvent e) {
                 final int index = ArrayUtils.indexOf(stars, star);
                 OperationContext.current().setTelemetryProperty("score", String.valueOf(index + 1));
-                store.setProperty(RateManager.SERVICE, RateManager.RATED_AT, String.valueOf(System.currentTimeMillis()));
-                store.setProperty(RateManager.SERVICE, RateManager.RATED_SCORE, String.valueOf(index + 1));
+                config.set(RateManager.RATED_AT, System.currentTimeMillis());
+                config.set(RateManager.RATED_SCORE, index + 1);
                 if (index >= 3) {
                     AzureMessager.getMessager().success("Thank you for the feedback!");
                     popDaysLater(-1);
@@ -166,11 +166,9 @@ public class RatePopup {
 
     @AzureOperation(name = "internal/feedback.try_popup_rating")
     public static synchronized boolean tryPopup(@Nullable Project project) {
-        final int times = getPoppedTimes();
+        final int times = Azure.az().config().get(RateManager.POPPED_TIMES, 0);
         if (times < MOST_TIMES) {
-            final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-            final String strNextPopAfter = store.getProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "0");
-            final long nextPopAfter = Long.parseLong(Objects.requireNonNull(strNextPopAfter));
+            final long nextPopAfter = Azure.az().config().get(RateManager.NEXT_POP_AFTER, 0L);
             if (nextPopAfter >= 0 && System.currentTimeMillis() > nextPopAfter) {
                 popup.debounce();
                 return true;
@@ -200,12 +198,11 @@ public class RatePopup {
                 .setBlockClicksThroughBalloon(true)
                 .createBalloon();
         }
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        final String strTimes = store.getProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, "0");
-        final int times = Integer.parseInt(Objects.requireNonNull(strTimes)) + 1;
-        store.setProperty(RateManager.SERVICE, RateManager.POPPED_AT, String.valueOf(System.currentTimeMillis()));
-        store.setProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, String.valueOf(times));
-        OperationContext.current().setTelemetryProperty(RateManager.POPPED_TIMES, String.valueOf(times));
+        final AzureConfiguration config = Azure.az().config();
+        final int times = config.get(RateManager.POPPED_TIMES, 0) + 1;
+        config.set(RateManager.POPPED_AT, System.currentTimeMillis());
+        config.set(RateManager.POPPED_TIMES, times);
+        OperationContext.current().setTelemetryProperty("popped_times", String.valueOf(times));
         // popup 3 days later if the popup is faded out automatically
         popDaysLater(3);
 
@@ -225,17 +222,11 @@ public class RatePopup {
 
     private static void popDaysLater(int x) {
         balloon.hide();
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
+        final AzureConfiguration config = Azure.az().config();
         if (x == -1) {
-            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, "-1");
+            config.set(RateManager.NEXT_POP_AFTER, -1L);
         } else {
-            store.setProperty(RateManager.SERVICE, RateManager.NEXT_POP_AFTER, String.valueOf(System.currentTimeMillis() + x * DateUtils.MILLIS_PER_DAY));
+            config.set(RateManager.NEXT_POP_AFTER, System.currentTimeMillis() + x * DateUtils.MILLIS_PER_DAY);
         }
-    }
-
-    private static int getPoppedTimes() {
-        final IIdeStore store = AzureStoreManager.getInstance().getIdeStore();
-        final String strPoppedTimes = store.getProperty(RateManager.SERVICE, RateManager.POPPED_TIMES, "0");
-        return Integer.parseInt(Objects.requireNonNull(strPoppedTimes));
     }
 }

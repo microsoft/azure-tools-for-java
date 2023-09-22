@@ -10,7 +10,6 @@ import com.azure.core.credential.TokenRequestContext;
 import com.azure.identity.implementation.util.ScopeUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
-import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.ide.common.store.ISecureStore;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.Account;
@@ -37,7 +36,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 
 import static com.microsoft.azure.toolkit.lib.Azure.az;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 
 @Slf4j
 public class IdeAzureAccount {
@@ -48,7 +46,7 @@ public class IdeAzureAccount {
     static {
         // fix the class load problem for intellij plugin
         disableLog("com.microsoft.aad.adal4j.AuthenticationContext", "com.microsoft.aad.msal4j.PublicClientApplication",
-                "com.microsoft.aad.msal4j.ConfidentialClientApplication");
+            "com.microsoft.aad.msal4j.ConfidentialClientApplication");
     }
 
     private static void disableLog(String... classes) {
@@ -79,9 +77,8 @@ public class IdeAzureAccount {
     private void invalidateCache(@Nonnull final Account account) {
         final AzureStoreManager manager = AzureStoreManager.getInstance();
         final Optional<ISecureStore> secureStore = Optional.ofNullable(manager.getSecureStore());
-        final Optional<IIdeStore> ideStore = Optional.ofNullable(manager.getIdeStore());
         secureStore.ifPresent(s -> s.forgetPassword(SERVICE_PRINCIPAL_STORE_SERVICE, account.getClientId(), null));
-        ideStore.ifPresent(s -> s.setProperty(ACCOUNT, AUTH_CONFIG_CACHE, null));
+        Azure.az().config().set("account.auth_configuration_cache", null);
     }
 
     @AzureOperation(name = "auto/account.restore_signin")
@@ -112,8 +109,7 @@ public class IdeAzureAccount {
             final String serialized = mapper.writeValueAsString(config);
             final AzureStoreManager manager = AzureStoreManager.getInstance();
             final Optional<ISecureStore> secureStore = Optional.ofNullable(manager.getSecureStore());
-            final IIdeStore ideStore = manager.getIdeStore();
-            ideStore.setProperty(ACCOUNT, AUTH_CONFIG_CACHE, serialized);
+            Azure.az().config().set("account.auth_configuration_cache", serialized);
             if (config.getType() == AuthType.SERVICE_PRINCIPAL) {
                 final String password = Objects.nonNull(config.getCertificate()) ? config.getCertificatePassword() : config.getKey();
                 if (StringUtils.isBlank(password)) {
@@ -134,8 +130,7 @@ public class IdeAzureAccount {
         try {
             final AzureStoreManager manager = AzureStoreManager.getInstance();
             final Optional<ISecureStore> secureStore = Optional.ofNullable(manager.getSecureStore());
-            final Optional<IIdeStore> ideStore = Optional.ofNullable(manager.getIdeStore());
-            final String cache = ideStore.map(s -> s.getProperty(ACCOUNT, AUTH_CONFIG_CACHE, "")).orElse(null);
+            final String cache = az().config().getString("account.auth_configuration_cache");
             if (StringUtils.isNotBlank(cache)) {
                 final AuthConfiguration config = mapper.readValue(cache, AuthConfiguration.class);
                 if (config.getType() == AuthType.SERVICE_PRINCIPAL) {
@@ -157,7 +152,7 @@ public class IdeAzureAccount {
         return null;
     }
 
-    public String getAccessTokenByTrack2(String tenantId,String resourceId) {
+    public String getAccessTokenByTrack2(String tenantId, String resourceId) {
         final TokenRequestContext context = new TokenRequestContext().addScopes(ScopeUtil.resourceToScopes(resourceId));
         final AccessToken token = az(AzureAccount.class).account().getTenantTokenCredential(tenantId).getToken(context).block();
         return Objects.requireNonNull(token, "failed to get access token for track2 lib").getToken();

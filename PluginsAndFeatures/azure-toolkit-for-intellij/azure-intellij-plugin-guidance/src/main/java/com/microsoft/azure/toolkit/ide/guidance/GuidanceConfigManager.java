@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
+import com.microsoft.azure.toolkit.lib.AzureConfiguration.Key;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.Reflections;
@@ -33,6 +34,9 @@ import java.util.stream.Collectors;
 public class GuidanceConfigManager {
     public static final String AZURE = ".azure";
     public static final String GETTING_START_CONFIGURATION_NAME = "azure-getting-started.json";
+    public static final Key<Boolean> IS_ACTION_TRIGGERED = Key.of("guidance.is_action_triggered");
+    public static final Key<Boolean> GUIDANCE_SHOWN = Key.of("guidance.guidance_shown");
+    public static final Key<String> GUIDANCE_COURSES = Key.of("guidance.guidance_courses");
 
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));

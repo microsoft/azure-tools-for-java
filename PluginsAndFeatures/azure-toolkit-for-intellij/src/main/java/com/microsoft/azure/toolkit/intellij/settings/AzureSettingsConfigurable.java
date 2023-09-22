@@ -20,7 +20,6 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class AzureSettingsConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
     public static final String AZURE_CONFIGURABLE_ID = "com.microsoft.intellij.AzureConfigurable";
 
-    private java.util.List<Configurable> myPanels;
     private final AzureSettingsPanel azureSettingsPanel;
 
     public AzureSettingsConfigurable() {
@@ -36,7 +35,7 @@ public class AzureSettingsConfigurable implements SearchableConfigurable, Config
     @Nls
     @Override
     public String getDisplayName() {
-        return azureSettingsPanel.getDisplayName();
+        return "Azure";
     }
 
     @Nullable

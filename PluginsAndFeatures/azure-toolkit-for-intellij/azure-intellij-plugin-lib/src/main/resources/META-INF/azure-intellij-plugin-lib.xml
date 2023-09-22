@@ -17,12 +17,13 @@
                             serviceImplementation="com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager"/>
         <applicationService serviceInterface="com.microsoft.azure.toolkit.lib.common.action.AzureActionManager"
                             serviceImplementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager"/>
+        <applicationService serviceInterface="com.microsoft.azure.toolkit.lib.AzureConfiguration"
+                            serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.IntelliJAzureConfiguration"/>
         <toolWindow anchor="bottom"
                     factoryClass="com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsToolWindowFactory"
                     icon="AllIcons.Nodes.LogFolder"
                     id="Azure Streaming Log" canCloseContents="true"/>
         <webHelpProvider implementation="com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider"/>
-        <applicationService serviceImplementation="com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore"/>
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.common.feedback.MonkeySurveyEditorProvider"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.common.feedback.RateManager$WhenToPopup"/>
         <registryKey key="azure.toolkit.test.mode.enabled" description="Test mode" restartRequired="true" defaultValue="false"/>
