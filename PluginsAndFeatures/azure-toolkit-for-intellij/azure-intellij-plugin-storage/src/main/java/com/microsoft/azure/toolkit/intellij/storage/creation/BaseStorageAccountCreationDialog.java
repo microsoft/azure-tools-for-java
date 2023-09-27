@@ -19,10 +19,10 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.Kind;
 import com.microsoft.azure.toolkit.lib.storage.model.Performance;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
-import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -59,6 +59,18 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
         init();
         initListeners();
         setValue(config);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.subscriptionComboBox.setRequired(true);
+        this.resourceGroupComboBox.setRequired(true);
+        this.accountNameTextField.setRequired(true);
+        this.regionComboBox.setRequired(true);
+        this.performanceComboBox.setRequired(true);
+        this.kindComboBox.setRequired(true);
+        this.redundancyComboBox.setRequired(true);
     }
 
     protected void initListeners() {
