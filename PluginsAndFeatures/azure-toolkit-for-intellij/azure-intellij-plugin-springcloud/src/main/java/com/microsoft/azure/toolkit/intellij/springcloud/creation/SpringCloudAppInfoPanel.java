@@ -104,7 +104,10 @@ public abstract class SpringCloudAppInfoPanel extends JPanel implements AzureFor
     }
 
     @Override
-    public synchronized void setValue(final SpringCloudAppDraft app) {
+    public synchronized void setValue(@Nullable final SpringCloudAppDraft app) {
+        if (Objects.isNull(app)) {
+            return;
+        }
         this.getTextName().setValue(app.getName());
         this.getSelectorCluster().setValue(app.getParent());
         this.getSelectorSubscription().setValue(app.getSubscription());

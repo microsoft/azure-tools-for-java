@@ -36,6 +36,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.event.ActionEvent;
@@ -222,7 +223,10 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     }
 
     @Override
-    public synchronized void setValue(SpringCloudAppDraft app) {
+    public synchronized void setValue(@Nullable SpringCloudAppDraft app) {
+        if (Objects.isNull(app)) {
+            return;
+        }
         final SpringCloudDeploymentDraft deployment = app.updateOrCreateActiveDeployment();
         this.statusStorage.putClientProperty("origin.enabled", app.isPersistentDiskEnabled());
         this.statusEndpoint.putClientProperty("origin.enabled", app.isPublicEndpointEnabled());

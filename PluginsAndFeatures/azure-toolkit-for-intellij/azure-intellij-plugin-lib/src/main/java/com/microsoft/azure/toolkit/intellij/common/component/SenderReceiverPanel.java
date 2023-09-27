@@ -150,7 +150,7 @@ public class SenderReceiverPanel extends JPanel {
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
                 view.print(raw.getMessage().toString(), ConsoleViewContentType.ERROR_OUTPUT);
             }
-            return super.show(raw);
+            return super.show(msg);
         }
 
     }

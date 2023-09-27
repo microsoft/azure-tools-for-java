@@ -69,8 +69,6 @@ public class BaseStorageAccountCreationDialog extends AzureDialog<StorageAccount
         this.accountNameTextField.setRequired(true);
         this.regionComboBox.setRequired(true);
         this.performanceComboBox.setRequired(true);
-        this.kindComboBox.setRequired(true);
-        this.redundancyComboBox.setRequired(true);
     }
 
     protected void initListeners() {

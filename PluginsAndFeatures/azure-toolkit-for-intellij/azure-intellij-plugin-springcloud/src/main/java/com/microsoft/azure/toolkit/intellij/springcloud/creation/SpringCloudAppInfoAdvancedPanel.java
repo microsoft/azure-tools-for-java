@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +46,7 @@ public class SpringCloudAppInfoAdvancedPanel extends SpringCloudAppInfoPanel {
     }
 
     @Override
+    @Nullable
     public SpringCloudAppDraft getValue() {
         final SpringCloudAppDraft app = super.getValue();
         if (Objects.nonNull(app)) {
@@ -54,7 +56,10 @@ public class SpringCloudAppInfoAdvancedPanel extends SpringCloudAppInfoPanel {
     }
 
     @Override
-    public void setValue(final SpringCloudAppDraft app) {
+    public void setValue(@Nullable final SpringCloudAppDraft app) {
+        if (Objects.isNull(app)) {
+            return;
+        }
         super.setValue(app);
         this.formConfig.setValue(app);
     }

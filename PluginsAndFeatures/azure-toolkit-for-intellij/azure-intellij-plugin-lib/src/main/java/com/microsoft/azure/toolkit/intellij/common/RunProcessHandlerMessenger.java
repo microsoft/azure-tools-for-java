@@ -35,6 +35,6 @@ public class RunProcessHandlerMessenger extends IntellijAzureMessager {
         } else if (raw.getType() == IAzureMessage.Type.ERROR) {
             handler.println(raw.getContent(), ProcessOutputType.STDERR);
         }
-        return super.show(raw);
+        return super.show(msg);
     }
 }

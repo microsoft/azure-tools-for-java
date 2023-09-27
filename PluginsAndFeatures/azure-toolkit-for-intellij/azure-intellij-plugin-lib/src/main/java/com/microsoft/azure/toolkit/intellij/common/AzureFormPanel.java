@@ -9,6 +9,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public interface AzureFormPanel<T> extends AzureForm<T> {
     }
 
     @Override
+    @Nullable
     default T getValue() {
         throw new AzureToolkitRuntimeException("method not implemented");
     }

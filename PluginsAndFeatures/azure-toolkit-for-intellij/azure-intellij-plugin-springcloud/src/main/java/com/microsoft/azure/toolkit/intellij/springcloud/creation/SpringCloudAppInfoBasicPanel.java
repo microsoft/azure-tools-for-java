@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +64,7 @@ public class SpringCloudAppInfoBasicPanel extends SpringCloudAppInfoPanel {
     }
 
     @Override
+    @Nullable
     public SpringCloudAppDraft getValue() {
         final SpringCloudAppDraft app = super.getValue();
         if (Objects.nonNull(app) && this.useJava17.isVisible()) {
@@ -75,7 +77,10 @@ public class SpringCloudAppInfoBasicPanel extends SpringCloudAppInfoPanel {
     }
 
     @Override
-    public void setValue(final SpringCloudAppDraft app) {
+    public void setValue(@Nullable final SpringCloudAppDraft app) {
+        if (Objects.isNull(app)) {
+            return;
+        }
         super.setValue(app);
         final SpringCloudDeploymentDraft deployment = app.updateOrCreateActiveDeployment();
         final String runtime = Optional.ofNullable(deployment.getRuntimeVersion())

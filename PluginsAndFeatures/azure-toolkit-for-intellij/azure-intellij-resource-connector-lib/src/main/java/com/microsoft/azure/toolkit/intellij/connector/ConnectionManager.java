@@ -114,9 +114,6 @@ public interface ConnectionManager extends PersistentStateComponent<Element> {
         @Override
         @AzureOperation(name = "boundary/connector.remove_connection")
         public synchronized void removeConnection(String resourceId, String consumerId) {
-            if (StringUtils.isNotBlank(resourceId)) {
-                OperationContext.action().setTelemetryProperty("subscriptionId", ResourceId.fromString(resourceId).subscriptionId());
-            }
             connections.removeIf(c -> StringUtils.equals(resourceId, c.getResource().getId()) && StringUtils.equals(consumerId, c.getConsumer().getId()));
         }
 
