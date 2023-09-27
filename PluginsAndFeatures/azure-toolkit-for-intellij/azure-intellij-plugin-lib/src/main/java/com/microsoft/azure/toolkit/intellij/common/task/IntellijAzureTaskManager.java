@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common.task;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -14,6 +15,7 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManagerProvider;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Objects;
 
+@Service
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
@@ -98,7 +101,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         };
         if (ApplicationManager.getApplication().isDispatchThread()) {
             ApplicationManager.getApplication().executeOnPooledThread(
-                    () -> ProgressManager.getInstance().run(modalTask));
+                () -> ProgressManager.getInstance().run(modalTask));
         } else {
             ProgressManager.getInstance().run(modalTask);
         }
@@ -130,6 +133,13 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
         @Override
         public boolean isCancelled() {
             return indicator.isCanceled();
+        }
+    }
+
+    public static class Provider implements AzureTaskManagerProvider {
+        @Override
+        public AzureTaskManager getTaskManager() {
+            return ApplicationManager.getApplication().getService(AzureTaskManager.class);
         }
     }
 }

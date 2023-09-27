@@ -30,6 +30,13 @@ public class SynapseActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
+        new Action<>(GROUP_CREATE_SYNAPSE_SERVICE)
+                .withLabel("Apache Spark on Azure Synapse")
+                .withIdParam(AzResource::getName)
+                .visibleWhen(s -> s instanceof ResourceGroup)
+                .enableWhen(s -> true)
+                .register(am);
+
         new Action<>(OPEN_LAUNCH_WORKSPACE)
                 .withLabel("Launch workspace")
                 .enableWhen(s -> true)

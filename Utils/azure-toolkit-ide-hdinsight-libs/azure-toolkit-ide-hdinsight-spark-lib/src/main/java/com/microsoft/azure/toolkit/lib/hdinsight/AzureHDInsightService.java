@@ -113,4 +113,9 @@ public class AzureHDInsightService extends AbstractAzService<HDInsightServiceSub
         return "clusters";
     }
 
+    @Override
+    public String getServiceNameForTelemetry() {
+        return "hdinsight";
+    }
+
 }

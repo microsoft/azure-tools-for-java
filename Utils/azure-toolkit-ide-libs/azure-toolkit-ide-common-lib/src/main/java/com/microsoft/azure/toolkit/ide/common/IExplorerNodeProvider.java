@@ -21,6 +21,10 @@ public interface IExplorerNodeProvider {
         return null;
     }
 
+    default boolean isAzureService() {
+        return true;
+    }
+
     boolean accept(@Nonnull Object data, @Nullable Node<?> parent, ViewType type);
 
     @Nullable

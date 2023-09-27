@@ -27,10 +27,6 @@
             <artifactId>azure-toolkit-ide-common-lib</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-ide-storage-lib</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.microsoft.hdinsight</groupId>
             <artifactId>hdinsight-node-common</artifactId>
         </dependency>
@@ -38,10 +34,6 @@
             <groupId>com.azure.resourcemanager</groupId>
             <artifactId>azure-resourcemanager-synapse</artifactId>
             <version>1.0.0-beta.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
         </dependency>
     </dependencies>
     <build>

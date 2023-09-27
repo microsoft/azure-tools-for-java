@@ -7,7 +7,9 @@ package com.microsoft.azure.toolkit.intellij.monitor.view.right;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.intellij.ide.DataManager;
 import com.intellij.json.JsonFileType;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
@@ -56,7 +58,7 @@ public class MonitorLogDetailsPanel {
     }
 
     private EditorTextField createEditorTextField() {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final Project project = DataManager.getInstance().getDataContext(this.contentPanel).getData(CommonDataKeys.PROJECT);
         final DocumentImpl document = new DocumentImpl("", true);
         final EditorTextField result = new EditorTextField(document, project, PlainTextFileType.INSTANCE, true, false);
         result.addSettingsProvider(editor -> { // add scrolling/line number features/show gutter/soft wrap

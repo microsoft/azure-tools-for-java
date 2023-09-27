@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.sqlserver.spark.SqlserverBigDataNodeProvider"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.sqlserver.spark.SqlserverBigDataActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.sqlserverbigdata.IntellijSqlserverBigDataActionsContributor"/>
+    </extensions>
+</idea-plugin>

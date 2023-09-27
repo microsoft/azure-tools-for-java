@@ -1,6 +1,8 @@
 package com.microsoft.azure.toolkit.intellij.cognitiveservices.chatbox.sourcecode;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx;
@@ -110,7 +112,7 @@ public class ViewCodePanel {
     }
 
     private EditorTextField createCodeViewer(final ISourceCodeGenerator generator) {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final Project project = DataManager.getInstance().getDataContext(this.contentPanel).getData(CommonDataKeys.PROJECT);
         final DocumentImpl document = new DocumentImpl("", true);
         final FileType fileType = FileTypeManagerEx.getInstance().getFileTypeByExtension(generator.getLanguage());
         final EditorTextField editor = new EditorTextField(document, project, fileType, true, false);

@@ -1,0 +1,24 @@
+plugins {
+    id "java"
+    id "org.jetbrains.kotlin.jvm"
+}
+
+intellij {
+    plugins = ['java']
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10")
+    compileOnly project(path: ':azure-intellij-plugin-lib')
+    runtimeOnly project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-lib-java')
+    runtimeOnly project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-hdinsight-lib')
+    runtimeOnly project(path: ':azure-intellij-plugin-hdinsight-lib', configuration: 'instrumentedJar')
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    implementation 'com.microsoft.hdinsight:azure-toolkit-ide-sqlserver-spark-lib'
+}
+
+repositories {
+    mavenCentral()
+}

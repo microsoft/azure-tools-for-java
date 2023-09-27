@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id "org.jetbrains.kotlin.jvm"
+}
+
+intellij {
+    plugins = ['java', dep_plugins]
+}
+
+dependencies {
+    compileOnly project(path: ':azure-intellij-plugin-lib')
+    runtimeOnly project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-lib-java')
+    runtimeOnly project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
+    implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
+    implementation 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-spark-lib'
+}
+
+repositories {
+    mavenCentral()
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+    ajc {
+        enabled = false
+    }
+}

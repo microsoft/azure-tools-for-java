@@ -23,7 +23,6 @@ import com.intellij.ui.EditorTextField;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.intellij.util.GradleUtils;
@@ -42,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_URL;
 import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.GRADLE;
 import static com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity.DependencyType.MAVEN;
 
@@ -116,7 +114,7 @@ public class AzureSdkArtifactGroupPanel {
     }
 
     private EditorTextField buildCodeViewer() {
-        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final Project project = ProjectManager.getInstance().getDefaultProject();
         final DocumentImpl document = new DocumentImpl("", true);
         final EditorTextField viewer = new EditorTextField(document, project, XmlFileType.INSTANCE, true, false);
         viewer.addSettingsProvider(editor -> { // add scrolling/line number features

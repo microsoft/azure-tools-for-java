@@ -11,6 +11,12 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.common.genericresource.GenericResourceActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager"
+                            serviceImplementation="com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager"/>
+        <applicationService serviceInterface="com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager"
+                            serviceImplementation="com.microsoft.azure.toolkit.intellij.common.task.IntellijAzureTaskManager"/>
+        <applicationService serviceInterface="com.microsoft.azure.toolkit.lib.common.action.AzureActionManager"
+                            serviceImplementation="com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager"/>
         <toolWindow anchor="bottom"
                     factoryClass="com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsToolWindowFactory"
                     icon="AllIcons.Nodes.LogFolder"

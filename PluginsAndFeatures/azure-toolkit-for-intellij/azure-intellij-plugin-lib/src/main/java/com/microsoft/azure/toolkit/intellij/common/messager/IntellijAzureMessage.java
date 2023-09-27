@@ -5,36 +5,19 @@
 
 package com.microsoft.azure.toolkit.intellij.common.messager;
 
-import com.azure.core.http.HttpResponse;
-import com.azure.core.management.exception.ManagementException;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureHtmlMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.awt.*;
-import java.util.Optional;
 
 public class IntellijAzureMessage extends AzureHtmlMessage {
-    @Nullable
     @Getter
-    @Setter
     private Project project;
 
     public IntellijAzureMessage(@Nonnull Type type, @Nonnull AzureString message) {
@@ -43,6 +26,11 @@ public class IntellijAzureMessage extends AzureHtmlMessage {
 
     public IntellijAzureMessage(IAzureMessage raw) {
         super(raw);
+    }
+
+    public IntellijAzureMessage setProject(Project project) {
+        this.project = project;
+        return this;
     }
 
     protected String getErrorColor() {
@@ -99,42 +87,6 @@ class NotificationMessage extends IntellijAzureMessage {
             return String.format("<div>Call Stack:</div><ul style='%s'>%s</ul>", style, details);
         }
         return "";
-    }
-
-    @Nonnull
-    @Override
-    public Action<?>[] getActions() {
-        final Action<?>[] actions = super.getActions();
-        if (payload instanceof Throwable) {
-            final Action<?>[] actionFromException = getActionFromException((Throwable) payload, getProject());
-            if (ArrayUtils.isNotEmpty(actionFromException)) {
-                return ArrayUtils.addAll(actions, actionFromException);
-            }
-        }
-        return super.getActions();
-    }
-
-    // todo: make it expandable
-    @Nullable
-    private static Action<?>[] getActionFromException(Throwable throwable, Project project) {
-        final Throwable rootCause = ExceptionUtils.getRootCause(throwable);
-        if (rootCause instanceof ManagementException) {
-            final int errorCode = Optional.ofNullable((ManagementException) rootCause).map(ManagementException::getResponse)
-                .map(HttpResponse::getStatusCode).orElse(0);
-            if (errorCode == FORBIDDEN) {
-                final Action.Id<Void> id = Action.Id.of("user/account.select_subscription");
-                final Action<Void> action = new Action<>(id)
-                    .withLabel("Select Subscription")
-                    .withHandler(ignore -> {
-                        final AnAction s = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
-                        final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-                        AzureTaskManager.getInstance().runLater(() -> ActionUtil.invokeAction(s, context, "AzurePluginErrorNotification", null, null));
-                    })
-                    .withAuthRequired(false);
-                return new Action[]{action};
-            }
-        }
-        return null;
     }
 }
 

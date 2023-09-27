@@ -57,4 +57,9 @@ public class AzureSynapseService extends AbstractAzService<SynapseServiceSubscri
         return "synapseclusters";
     }
 
+    @Override
+    public String getServiceNameForTelemetry() {
+        return "synapse";
+    }
+
 }

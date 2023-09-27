@@ -3,4 +3,10 @@
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.synapse.spark.SynapseNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.synapse.spark.SynapseActionsContributor"/>
     </extensions>
+    <actions>
+        <action id="Actions.SubmitArcadiaSparkApplicationAction"
+                class="com.microsoft.azure.synapse.spark.actions.ArcadiaSparkSelectAndSubmitAction"
+                text="Apache Spark on Azure Synapse"
+                description="Submit Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
+    </actions>
 </idea-plugin>

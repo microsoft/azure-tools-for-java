@@ -27,6 +27,7 @@ public class TypeGroupedServicesRootNode extends Node<Azure> {
 
         this.eventListener = new AzureEventBus.EventListener(e -> this.onAuthEvent());
         AzureEventBus.on("account.logging_in.type", this.eventListener);
+        AzureEventBus.on("account.failed_logging_in.type", this.eventListener);
         AzureEventBus.on("account.logged_in.account", this.eventListener);
         AzureEventBus.on("account.restore_sign_in", this.eventListener);
         AzureEventBus.on("account.subscription_changed.account", this.eventListener);
@@ -63,6 +64,7 @@ public class TypeGroupedServicesRootNode extends Node<Azure> {
     public void dispose() {
         super.dispose();
         AzureEventBus.off("account.logging_in.type", this.eventListener);
+        AzureEventBus.off("account.failed_logging_in.type", this.eventListener);
         AzureEventBus.off("account.logged_in.account", this.eventListener);
         AzureEventBus.off("account.restore_sign_in", this.eventListener);
         AzureEventBus.off("account.subscription_changed.account", this.eventListener);

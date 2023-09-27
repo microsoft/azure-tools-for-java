@@ -92,4 +92,9 @@ public class WorkspaceModule extends AbstractAzResourceModule<WorkspaceNode, Syn
         return "Synapse Workspaces";
     }
 
+    @Override
+    public ArcadiaWorkSpace getClient() {
+        return null;
+    }
+
 }

@@ -1,0 +1,39 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.cosmos.spark.SparkOnCosmosNodeProvider"/>
+        <actions implementation="com.microsoft.azure.toolkit.ide.cosmos.spark.SparkOnCosmosActionsContributor"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.sparkoncosmos.IntellijSOCActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+                anchor="bottom"
+                factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
+                id="Cosmos Serverless Spark Jobs"
+                canCloseContents="true"/>
+
+        <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
+        <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
+
+        <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
+        <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
+
+        <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner"/>
+
+        <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner"/>
+    </extensions>
+    <actions>
+        <action id="Actions.SubmitCosmosSparkApplicationAction"
+                class="com.microsoft.azure.cosmos.spark.actions.CosmosSparkSelectAndSubmitAction"
+                text="Apache Spark on Cosmos"
+                description="Submit Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
+        <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
+                class="com.microsoft.azure.cosmos.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Apache Spark on Cosmos Serverless"
+                description="Submit Apache Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
+        <action id="Actions.RunCosmosSparkConsoleAction"
+                class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Apache Spark on Cosmos"
+                description="Start an interactive console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
+        <action id="Actions.RunCosmosSparkLocalConsoleAction"
+                class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Cosmos"
+                description="Start a Apache Spark local console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    </actions>
+</idea-plugin>

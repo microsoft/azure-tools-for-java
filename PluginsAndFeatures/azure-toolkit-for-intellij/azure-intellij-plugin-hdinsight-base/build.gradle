@@ -14,9 +14,12 @@ dependencies {
     runtimeOnly project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-plugin-hdinsight')
     runtimeOnly project(path: ':azure-intellij-plugin-hdinsight', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-hdinsight-lib')
+    runtimeOnly project(path: ':azure-intellij-plugin-hdinsight-lib', configuration: 'instrumentedJar')
 
     implementation 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-spark-lib'
     implementation 'com.microsoft.hdinsight:azure-toolkit-ide-synapse-spark-lib'
+    implementation 'com.microsoft.hdinsight:azure-toolkit-ide-cosmos-spark-lib'
 
     implementation 'com.microsoft.azure:azure-client-runtime', {
         exclude group: "com.squareup.okhttp3", module: "okhttp"

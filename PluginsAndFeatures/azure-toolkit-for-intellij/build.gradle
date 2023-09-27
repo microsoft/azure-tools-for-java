@@ -94,8 +94,8 @@ allprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.37.0-SNAPSHOT'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.37.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.37.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.37.0'
             mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.0'
         }
     }
@@ -139,20 +139,23 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-applicationinsights', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-cosmos', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-cognitiveservices', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-resource-connector-aad', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-vm', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-redis', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-database-java', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-monitor', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-containerregistry', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-containerservice', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-bicep', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-monitor', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-containerapps', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-database-java', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-vm', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-redis', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-bicep', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-eventhubs', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-servicebus', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-resource-connector-aad', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-hdinsight-lib', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-sqlserverbigdata', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-hdinsight', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-hdinsight-base', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-synapse', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-sparkoncosmos', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-hdinsight-base', configuration: 'instrumentedJar')
 
     implementation 'commons-io:commons-io'
     implementation 'org.apache.commons:commons-lang3'

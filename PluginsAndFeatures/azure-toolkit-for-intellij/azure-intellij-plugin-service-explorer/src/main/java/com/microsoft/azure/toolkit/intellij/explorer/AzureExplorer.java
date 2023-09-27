@@ -28,6 +28,9 @@ import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
@@ -58,7 +61,8 @@ public class AzureExplorer extends Tree {
             .withChildrenLoadLazily(false)
             .addChild(buildFavoriteRoot())
             .addChild(buildAppGroupedResourcesRoot())
-            .addChild(buildTypeGroupedResourcesRoot());
+            .addChild(buildTypeGroupedResourcesRoot())
+            .addChildren(buildNonAzServiceNodes());
         this.init(this.root);
         this.setRootVisible(false);
         //noinspection UnstableApiUsage
@@ -86,7 +90,19 @@ public class AzureExplorer extends Tree {
     }
 
     private Node<Azure> buildTypeGroupedResourcesRoot() {
-        return new TypeGroupedServicesRootNode().addChildren((a) -> getModules());
+        return new TypeGroupedServicesRootNode()
+            .withActions(new ActionGroup(
+                new Action<>(ResourceCommonActionsContributor.REFRESH)
+                    .withLabel("Refresh All")
+                    .withIcon(AzureIcons.Action.REFRESH.getIconPath())
+                    .withHandler((e) -> this.refreshAll()),
+                IAccountActions.SELECT_SUBS,
+                "----",
+                ResourceCommonActionsContributor.SHOW_COURSES,
+                ResourceCommonActionsContributor.OPEN_MONITOR,
+                "----",
+                IAccountActions.AUTHENTICATE))
+            .addChildren((a) -> buildAzServiceNodes());
     }
 
     public Node<?> buildAppGroupedResourcesRoot() {
@@ -99,15 +115,23 @@ public class AzureExplorer extends Tree {
     }
 
     @Nonnull
-    public List<Node<?>> getModules() {
-        return manager.getRoots().stream()
+    public List<Node<?>> buildAzServiceNodes() {
+        return manager.getAzServices().stream()
+            .map(r -> manager.createNode(r, null, IExplorerNodeProvider.ViewType.TYPE_CENTRIC))
+            .sorted(Comparator.comparing(Node::getLabel))
+            .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    public List<Node<?>> buildNonAzServiceNodes() {
+        return manager.getNonAzServices().stream()
             .map(r -> manager.createNode(r, null, IExplorerNodeProvider.ViewType.TYPE_CENTRIC))
             .sorted(Comparator.comparing(Node::getLabel))
             .collect(Collectors.toList());
     }
 
     public void refreshAll() {
-        manager.getRoots().stream().filter(r -> r instanceof AbstractAzResourceModule)
+        manager.getAzServices().stream().filter(r -> r instanceof AbstractAzResourceModule)
             .forEach(r -> ((AbstractAzResourceModule<?, ?, ?>) r).refresh());
         Favorites.getInstance().refresh();
     }
@@ -162,8 +186,18 @@ public class AzureExplorer extends Tree {
             ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.explorerNodeProvider");
 
         @Nonnull
-        public List<Object> getRoots() {
+        public List<Object> getAzServices() {
             return providers.getExtensionList().stream()
+                .filter(IExplorerNodeProvider::isAzureService)
+                .map(IExplorerNodeProvider::getRoot)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        }
+
+        @Nonnull
+        public List<Object> getNonAzServices() {
+            return providers.getExtensionList().stream()
+                .filter(p -> !p.isAzureService())
                 .map(IExplorerNodeProvider::getRoot)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

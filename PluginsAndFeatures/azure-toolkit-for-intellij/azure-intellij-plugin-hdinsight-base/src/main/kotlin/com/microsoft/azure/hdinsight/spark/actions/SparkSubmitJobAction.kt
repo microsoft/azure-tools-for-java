@@ -24,8 +24,4 @@ package com.microsoft.azure.hdinsight.spark.actions
 import com.microsoft.azure.hdinsight.spark.run.action.SeqActions
 
 
-class LivySparkSelectAndSubmitAction : SeqActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
-class CosmosServerlessSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
 class ArisSparkSelectAndSubmitAction : SeqActions("Actions.SelectArisSparkType", "Actions.SubmitSparkApplicationAction")
-class ArcadiaSparkSelectAndSubmitAction : SeqActions("Actions.SelectArcadiaSparkType", "Actions.SubmitSparkApplicationAction")

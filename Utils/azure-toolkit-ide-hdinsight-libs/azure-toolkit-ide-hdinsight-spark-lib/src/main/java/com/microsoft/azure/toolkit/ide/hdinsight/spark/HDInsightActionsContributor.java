@@ -57,6 +57,13 @@ public class HDInsightActionsContributor implements IActionsContributor {
 
     @Override
     public void registerActions(AzureActionManager am) {
+        new Action<>(GROUP_CREATE_HDInsight_SERVICE)
+                .withLabel("HDInsight")
+                .withIdParam(AzResource::getName)
+                .visibleWhen(s -> true)
+                .enableWhen(s -> true)
+                .register(am);
+
         new Action<>(REFRESH)
                 .withLabel("Refresh")
                 .withIcon(AzureIcons.Action.REFRESH.getIconPath())

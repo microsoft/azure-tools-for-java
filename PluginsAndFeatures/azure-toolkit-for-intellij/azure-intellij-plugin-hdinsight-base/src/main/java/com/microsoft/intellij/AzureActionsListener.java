@@ -7,7 +7,6 @@ package com.microsoft.intellij;
 
 import com.google.gson.Gson;
 import com.intellij.ide.AppLifecycleListener;
-import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
@@ -66,9 +65,6 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             } catch (final IOException e) {
                 PluginUtil.displayErrorDialogAndLog("Error", "An error occurred while attempting to load settings", e);
             }
-            // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
-                new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
 
             ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             CommonSettings.setUserAgent(Azure.az().config().getUserAgent());

@@ -8,27 +8,13 @@
 
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
 
-    <toolWindow
-            anchor="bottom"
-            factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
-            id="Cosmos Serverless Spark Jobs"
-            canCloseContents="true"/>
-
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
 
-
-    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
-    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkRunConfigurationProducer"/>
 
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner"/>
-
-    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner"/>
   </extensions>
@@ -38,21 +24,10 @@
   </applicationListeners>
 
   <actions>
-    <action id="Actions.SubmitCosmosSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction"
-            text="Apache Spark on Cosmos"
-            description="Submit Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
-    <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Apache Spark on Cosmos Serverless"
-            description="Submit Apache Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitArisSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction"
             text="Apache Spark on SQL Server Big Data Cluster"
             description="Submit Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
-    <action id="Actions.SubmitArcadiaSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction"
-            text="Apache Spark on Azure Synapse"
-            description="Submit Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
 
     <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
       <action id="AzureToolkit.DisableSSLCertificateValidation"
@@ -91,9 +66,6 @@
             text="Apache Spark on Azure Synapse"
             description="Start an interactive console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
 
-    <action id="Actions.RunCosmosSparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Apache Spark on Cosmos"
-            description="Start an interactive console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction"
             text="Apache Spark on SQL Server Big Data Cluster"
@@ -103,9 +75,6 @@
             class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Azure Synapse"
             description="Start a Apache Spark local console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
 
-    <action id="Actions.RunCosmosSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Cosmos"
-            description="Start a Apache Spark local console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction"
             text="Apache Spark on SQL Server Big Data Cluster"

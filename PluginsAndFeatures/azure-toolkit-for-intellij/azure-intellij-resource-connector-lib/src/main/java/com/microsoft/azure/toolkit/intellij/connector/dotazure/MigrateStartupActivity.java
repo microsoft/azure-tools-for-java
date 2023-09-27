@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionManager;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -59,7 +60,8 @@ public class MigrateStartupActivity implements StartupActivity {
                             manager.removeConnection(c.getResource().getId(), c.getConsumer().getId());
                             profile.addConnection(c);
                         } catch (final Exception e) {
-                            AzureMessager.getMessager().error(e);
+                            final IntellijAzureMessage message = (IntellijAzureMessage) AzureMessager.getMessager().buildErrorMessage(e);
+                            message.setProject(project).show();
                         }
                     });
                     profile.save();
