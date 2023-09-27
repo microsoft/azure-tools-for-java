@@ -16,7 +16,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="9f560" class="javax.swing.JButton" binding="refreshButton" default-binding="true">
+          <component id="4a78c" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="refreshButton">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -24,7 +24,7 @@
               <text value="Refresh"/>
             </properties>
           </component>
-          <component id="34544" class="javax.swing.JButton" binding="startButton" default-binding="true">
+          <component id="547e" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="startButton">
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -32,7 +32,7 @@
               <text value="Start"/>
             </properties>
           </component>
-          <component id="865b6" class="javax.swing.JButton" binding="stopButton" default-binding="true">
+          <component id="4037" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="stopButton">
             <constraints>
               <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -40,7 +40,7 @@
               <text value="Stop"/>
             </properties>
           </component>
-          <component id="d4e7c" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
+          <component id="6e42c" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="deleteButton">
             <constraints>
               <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -49,7 +49,7 @@
               <text value="Delete"/>
             </properties>
           </component>
-          <component id="31232" class="javax.swing.JButton" binding="saveButton" default-binding="true">
+          <component id="e2c03" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="saveButton">
             <constraints>
               <grid row="0" column="7" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -57,7 +57,7 @@
               <text value="Save"/>
             </properties>
           </component>
-          <component id="bc72b" class="javax.swing.JButton" binding="restartButton" default-binding="true">
+          <component id="43241" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="restartButton">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

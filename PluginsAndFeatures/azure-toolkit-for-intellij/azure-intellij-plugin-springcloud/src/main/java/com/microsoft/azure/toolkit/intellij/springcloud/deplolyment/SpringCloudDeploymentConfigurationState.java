@@ -235,7 +235,8 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
         private final ConsoleView consoleView;
 
         @Override
-        public boolean show(IAzureMessage raw) {
+        public boolean show(IAzureMessage msg) {
+            final IAzureMessage raw = msg.getRawMessage();
             if (raw.getType() == IAzureMessage.Type.INFO) {
                 println(raw.getContent(), ConsoleViewContentType.NORMAL_OUTPUT);
                 return true;
@@ -249,7 +250,7 @@ public class SpringCloudDeploymentConfigurationState implements RunProfileState 
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
                 println(raw.getContent(), ConsoleViewContentType.ERROR_OUTPUT);
             }
-            return super.show(raw);
+            return super.show(msg);
         }
 
         private void println(String originText, ConsoleViewContentType type) {

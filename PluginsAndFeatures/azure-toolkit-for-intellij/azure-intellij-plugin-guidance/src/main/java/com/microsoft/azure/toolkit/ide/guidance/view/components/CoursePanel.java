@@ -9,8 +9,10 @@ import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.component.RoundedPanel;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import lombok.Getter;
@@ -31,7 +33,7 @@ public class CoursePanel {
     private JPanel rootPanel;
     private JLabel lblTitle;
     private JTextPane areaDescription;
-    private JButton startButton;
+    private AzureActionButton<Void> startButton;
     private JPanel tagsPanel;
 
     private final Project project;
@@ -62,7 +64,11 @@ public class CoursePanel {
             this.lblTitle.setIcon(icon);
         }
         this.startButton.setVisible(false);
-        this.startButton.addActionListener(e -> openGuidance());
+        final Action<Void> startAction = new Action<Void>(Action.Id.of("user/guidance.open_course.course"))
+                .withAuthRequired(false)
+                .withIdParam(ignore -> this.course.getTitle())
+                .withHandler(ignore -> openGuidance());
+        this.startButton.setAction(startAction);
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setText(course.getDescription());
         this.areaDescription.setForeground(UIUtil.getLabelInfoForeground());
@@ -92,7 +98,6 @@ public class CoursePanel {
         this.rootPanel.addMouseListener(coursePanelListener);
     }
 
-    @AzureOperation(name = "user/guidance.open_course.course", params = {"this.course.getTitle()"})
     public void openGuidance() {
         if (!isStartedActionTriggered) {
             isStartedActionTriggered = true;

@@ -20,6 +20,8 @@ import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
@@ -49,7 +51,7 @@ public class PhasePanel extends JPanel {
     private static final JBColor BACKGROUND_COLOR = JBColor.namedColor("NotificationsToolwindow.newNotification.background", new JBColor(15134455, 4540746));
     private final Phase phase;
     private JPanel contentPanel;
-    private JButton actionButton;
+    private AzureActionButton<Void> actionButton;
     private JLabel toggleIcon;
     private JLabel statusIcon;
     private JLabel titleLabel;
@@ -85,7 +87,11 @@ public class PhasePanel extends JPanel {
         final Icon icon = IconUtil.scale(AllIcons.Actions.Execute, this.actionButton, 0.75f);
         this.actionButton.setIcon(AllIcons.Actions.Execute);
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.actionButton.addActionListener(e -> execute());
+        final Action<Void> executeAction = new Action<Void>(Action.Id.of("user/guidance.execute_phase.phase"))
+                .withAuthRequired(false)
+                .withIdParam(this.phase.getTitle())
+                .withHandler(ignore -> execute());
+        this.actionButton.setAction(executeAction);
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.descPanel.setBorder(null);
@@ -126,7 +132,6 @@ public class PhasePanel extends JPanel {
         }
     }
 
-    @AzureOperation(name = "user/guidance.execute_phase.phase", params = {"this.phase.getTitle()"})
     private void execute() {
         OperationContext.current().setTelemetryProperty("phase", this.phase.getTitle());
         OperationContext.current().setTelemetryProperty("course", this.phase.getCourse().getTitle());

@@ -65,18 +65,16 @@ class DialogMessage extends IntellijAzureMessage {
 }
 
 class NotificationMessage extends IntellijAzureMessage {
-
-    public static final int FORBIDDEN = 403;
-
     NotificationMessage(@Nonnull IAzureMessage original) {
         super(original);
     }
 
     public String getContent() {
-        if (this.getType() == Type.ERROR) {
-            return super.getContent() + this.getDetails();
+        final String content = this.getType() == Type.ERROR ? super.getContent() + this.getDetails() : super.getContent();
+        if (StringUtils.isBlank(this.getTitle())) {
+            return "<b>Azure: </b>" + content;
         }
-        return super.getContent();
+        return content;
     }
 
     @Override

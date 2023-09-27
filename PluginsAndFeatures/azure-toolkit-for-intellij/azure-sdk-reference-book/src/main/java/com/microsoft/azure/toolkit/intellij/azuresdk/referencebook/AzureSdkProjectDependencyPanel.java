@@ -12,6 +12,8 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.GradleProjectM
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.MavenProjectModule;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.module.ProjectModule;
 import com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components.ModuleDependencyComboBox;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
@@ -32,7 +34,7 @@ public class AzureSdkProjectDependencyPanel {
     public static final String UPDATE_DEPENDENCY = "Update Dependency";
 
     private ModuleDependencyComboBox cbModule;
-    private JButton btnAddDependency;
+    private AzureActionButton<Void> btnAddDependency;
     private JTextPane paneMessage;
     private JPanel pnlRoot;
     private JLabel lblMessageIcon;
@@ -68,7 +70,10 @@ public class AzureSdkProjectDependencyPanel {
 
     private void init() {
         cbModule.addItemListener(e -> onSelectModule());
-        btnAddDependency.addActionListener(e -> onAddDependency());
+        final Action<Void> addDependency = new Action<Void>(Action.Id.of("user/sdk.add_dependency"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> onAddDependency());
+        btnAddDependency.setAction(addDependency);
         lblMessageIcon.setIcon(AllIcons.General.BalloonInformation);
     }
 
@@ -87,7 +92,6 @@ public class AzureSdkProjectDependencyPanel {
         btnAddDependency.setText(exists ? UPDATE_DEPENDENCY : ADD_DEPENDENCY);
     }
 
-    @AzureOperation(name = "user/sdk.add_dependency")
     private void onAddDependency() {
         OperationContext.action().setTelemetryProperty("artifact", pkg.getArtifactId());
         messager.clean();

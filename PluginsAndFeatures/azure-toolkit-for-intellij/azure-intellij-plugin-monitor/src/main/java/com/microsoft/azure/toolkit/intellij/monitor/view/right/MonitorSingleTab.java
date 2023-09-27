@@ -15,13 +15,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
 import lombok.Getter;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
@@ -68,31 +65,24 @@ public class MonitorSingleTab {
             }
             this.monitorLogDetailsPanel.setViewText(viewerTitle, viewerText);
         });
-        this.monitorLogTablePanel.addRunActionListener(new ActionListener() {
-            @Override
-            @AzureOperation(name = "user/monitor.execute_query")
-            public void actionPerformed(ActionEvent e) {
-                Optional.ofNullable(parentView.getSelectedWorkspace())
-                        .ifPresentOrElse(t -> loadLogs(),
-                        () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction()));
-            }
-        });
-        this.monitorLogTablePanel.addSaveActionListener(new ActionListener() {
-            @Override
-            @AzureOperation(name = "user/monitor.save_filters_as_query")
-            public void actionPerformed(ActionEvent e) {
-                final String queryContent = monitorLogTablePanel.getQueryStringFromFilters(tabName);
-                AzureTaskManager.getInstance().runLater(() -> {
-                    final Project project = parentView.getProject();
-                    final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(project, queryContent,
-                            Optional.ofNullable(AzureMonitorManager.getInstance().getContentViewByTabName(project, AzureMonitorManager.QUERIES_TAB_NAME))
-                                    .map(azureMonitorView -> azureMonitorView.getMonitorTreePanel().getCustomQueries()).orElse(Collections.emptyList()));
-                    if (dialog.showAndGet()) {
-                        AzureEventBus.emit("azure.monitor.add_query_node", dialog.getQueryDataToSave());
-                    }
-                });
-            }
-        });
+        this.monitorLogTablePanel.setRunAction(new Action<Void>(Action.Id.of("user/monitor.execute_query"))
+                .withAuthRequired(true)
+                .withHandler(ignore -> Optional.ofNullable(parentView.getSelectedWorkspace())
+                        .ifPresentOrElse(t -> loadLogs(), () -> AzureMessager.getMessager().info(message("azure.monitor.info.selectWorkspace"), null, selectWorkspaceAction()))));
+        this.monitorLogTablePanel.setSaveAction(new Action<Void>(Action.Id.of("user/monitor.save_filters_as_query"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> {
+                    final String queryContent = monitorLogTablePanel.getQueryStringFromFilters(tabName);
+                    AzureTaskManager.getInstance().runLater(() -> {
+                        final Project project = parentView.getProject();
+                        final SaveFiltersAsQueryDialog dialog = new SaveFiltersAsQueryDialog(project, queryContent,
+                                Optional.ofNullable(AzureMonitorManager.getInstance().getContentViewByTabName(project, AzureMonitorManager.QUERIES_TAB_NAME))
+                                        .map(azureMonitorView -> azureMonitorView.getMonitorTreePanel().getCustomQueries()).orElse(Collections.emptyList()));
+                        if (dialog.showAndGet()) {
+                            AzureEventBus.emit("azure.monitor.add_query_node", dialog.getQueryDataToSave());
+                        }
+                    });
+                }));
     }
 
     private void loadLogs() {

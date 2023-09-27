@@ -31,7 +31,7 @@
             </constraints>
             <properties/>
           </component>
-          <component id="6709d" class="javax.swing.JButton" binding="sendMessageBtn">
+          <component id="6709d" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="sendMessageBtn">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

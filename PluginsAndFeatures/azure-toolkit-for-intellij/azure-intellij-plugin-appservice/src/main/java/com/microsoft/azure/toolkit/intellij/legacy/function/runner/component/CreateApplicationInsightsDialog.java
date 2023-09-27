@@ -24,14 +24,12 @@ public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private ApplicationInsightsNameTextField txtInsightsName;
     private WorkspaceComboBox workspaceComboBox;
-    private JButton buttonOK;
     private String applicationInsightsName;
 
     public CreateApplicationInsightsDialog(Subscription subscription, Region region) {
         super(false);
         setModal(true);
         setTitle("Create new Application Insights");
-        getRootPane().setDefaultButton(buttonOK);
         workspaceComboBox.setSubscription(subscription);
         workspaceComboBox.setValue(LogAnalyticsWorkspaceConfig.createConfig(subscription, region));
         init();

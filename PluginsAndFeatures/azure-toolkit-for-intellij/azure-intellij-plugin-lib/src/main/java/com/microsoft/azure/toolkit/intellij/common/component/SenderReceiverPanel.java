@@ -9,9 +9,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.fields.ExpandableTextField;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -31,7 +33,7 @@ import java.util.Optional;
 public class SenderReceiverPanel extends JPanel {
     @Getter
     private JPanel contentPanel;
-    private JButton sendMessageBtn;
+    private AzureActionButton<Void> sendMessageBtn;
     private ExpandableTextField messageInput;
     private JPanel listenPanel;
     private JPanel sendPanel;
@@ -132,7 +134,8 @@ public class SenderReceiverPanel extends JPanel {
             this.view = view;
         }
         @Override
-        public boolean show(IAzureMessage raw) {
+        public boolean show(IAzureMessage msg) {
+            final IAzureMessage raw = msg.getRawMessage();
             if (raw.getType() == IAzureMessage.Type.INFO) {
                 view.print(raw.getMessage().toString(), ConsoleViewContentType.SYSTEM_OUTPUT);
                 return true;

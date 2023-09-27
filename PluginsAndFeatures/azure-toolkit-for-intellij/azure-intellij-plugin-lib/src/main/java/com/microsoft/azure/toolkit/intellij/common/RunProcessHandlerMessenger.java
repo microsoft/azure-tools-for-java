@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.common;
 import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 
 public class RunProcessHandlerMessenger extends IntellijAzureMessager {
@@ -21,7 +22,8 @@ public class RunProcessHandlerMessenger extends IntellijAzureMessager {
     }
 
     @Override
-    public boolean show(IAzureMessage raw) {
+    public boolean show(IAzureMessage msg) {
+        final IAzureMessage raw = msg.getRawMessage();
         if (raw.getType() == IAzureMessage.Type.INFO || raw.getType() == IAzureMessage.Type.WARNING) {
             handler.setText(raw.getMessage().toString());
             return true;

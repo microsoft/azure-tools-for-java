@@ -22,16 +22,18 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
-import com.microsoft.azure.toolkit.intellij.arm.action.DeploymentActions;
+import com.microsoft.azure.toolkit.ide.arm.DeploymentActionsContributor;
 import com.microsoft.azure.toolkit.intellij.arm.language.ARMTemplateLanguage;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeploymentDraft;
-import com.microsoft.azure.toolkit.intellij.common.component.UIUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -51,15 +53,15 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     private final Project project;
     private final ResourceDeploymentDraft draft;
 
-    private JButton exportTemplateButton;
-    private JButton updateDeploymentButton;
+    private AzureActionButton<ResourceDeployment> exportTemplateButton;
+    private AzureActionButton<Void> updateDeploymentButton;
     private JPanel contentPane;
     private JPanel templatePanel;
     private JPanel parameterPanel;
     private JLabel lblEditorPanel;
     private JLabel lblParametersPanel;
     private JSplitPane armSplitPanel;
-    private JButton exportParameterFileButton;
+    private AzureActionButton<ResourceDeployment> exportParameterFileButton;
 
     private FileEditor templateEditor;
     private FileEditor parameterEditor;
@@ -74,13 +76,15 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
     }
 
     private void initListeners() {
-        exportTemplateButton.addActionListener((e) -> DeploymentActions.exportTemplate(this.project, deployment));
-        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(this.project, deployment));
-        updateDeploymentButton.addActionListener((e) -> {
-            if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_UPDATE_DEPLOYMENT)) {
-                apply();
-            }
-        });
+
+        exportTemplateButton.setAction(DeploymentActionsContributor.EXPORT_TEMPLATE, this.deployment);
+        exportParameterFileButton.setAction(DeploymentActionsContributor.EXPORT_PARAMETER, this.deployment);
+        final Action<Void> updateDeploymentAction = new Action<Void>(Action.Id.of("user/arm.update_deployment.deployment"))
+                .withAuthRequired(true)
+                .withIdParam(deployment.getName())
+                .withSource(deployment)
+                .withHandler((ignore, e) -> AzureTaskManager.getInstance().runLater(this::updateDeployment));
+        updateDeploymentButton.setAction(updateDeploymentAction);
         final MessageBusConnection connection = project.getMessageBus().connect(this);
         connection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
             @Override
@@ -96,6 +100,12 @@ public class ResourceTemplateView extends AzResourcePropertiesEditor<ResourceDep
                 }
             }
         });
+    }
+
+    private void updateDeployment() {
+        if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_UPDATE_DEPLOYMENT)) {
+            apply();
+        }
     }
 
     @Override

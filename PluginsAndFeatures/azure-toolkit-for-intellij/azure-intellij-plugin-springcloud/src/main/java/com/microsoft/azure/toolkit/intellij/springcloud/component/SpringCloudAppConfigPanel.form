@@ -127,7 +127,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="1c3de" class="javax.swing.JButton" binding="toggleEndpoint">
+              <component id="1c3de" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="toggleEndpoint">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -177,7 +177,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="80fd7" class="javax.swing.JButton" binding="toggleStorage">
+              <component id="80fd7" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="toggleStorage">
                 <constraints>
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>

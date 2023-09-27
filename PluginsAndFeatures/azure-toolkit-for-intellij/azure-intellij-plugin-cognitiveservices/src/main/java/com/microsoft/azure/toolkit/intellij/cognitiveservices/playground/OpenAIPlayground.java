@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.GPTDepl
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.model.Configuration;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.model.SystemMessage;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.service.SystemMessageTemplateService;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.CognitiveAccount;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.CognitiveDeployment;
@@ -40,8 +41,8 @@ public class OpenAIPlayground extends BaseEditor {
     private JPanel pnlChat;
     private JTabbedPane pnlAssistantTabPane;
     private SystemMessagePanel pnlSystemMessage;
-    private JButton btnExport;
-    private JButton btnImport;
+    private AzureActionButton<Void> btnExport;
+    private AzureActionButton<Void> btnImport;
     private JPanel pnlSystemMessageContainer;
     private ConfigurationPanel pnlConfiguration;
     private ChatBox chatBox;

@@ -10,22 +10,24 @@ import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.util.IconUtil;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.database.connection.Database;
 import com.microsoft.azure.toolkit.intellij.database.connection.DatabaseConnectionUtils;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -42,7 +44,7 @@ public class PasswordDialog extends AzureDialog<char[]> implements AzureForm<cha
     private JLabel headerIconLabel;
     private JTextPane headerTextPane;
     private JTextPane testResultTextPane;
-    private JButton testConnectionButton;
+    private AzureActionButton<Database> testConnectionButton;
     private TestConnectionActionPanel testConnectionActionPanel;
     private JPasswordField passwordField;
 
@@ -65,9 +67,17 @@ public class PasswordDialog extends AzureDialog<char[]> implements AzureForm<cha
 
     private void initListener() {
         this.passwordField.addKeyListener(this.onInputPasswordFieldChanged());
-        this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
-        this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
-
+        final Action<Database> testConnectionAction = new Action<Database>(Action.Id.of("user/$database.test_connection.database"))
+                .withAuthRequired(false)
+                .withSource(this.database)
+                .withIdParam(this.database.getName())
+                .withHandler(ignore -> this.onTestConnectionButtonClicked());
+        this.testConnectionButton.setAction(testConnectionAction);
+        final Action<IDatabase> copyAction = new Action<IDatabase>(Action.Id.of("user/$database.copy_connection_string.database"))
+                .withAuthRequired(false)
+                .withSource(this.database)
+                .withIdParam(this.database.getName())
+                .withHandler(ignore -> onCopyButtonClicked());
     }
 
     private KeyListener onInputPasswordFieldChanged() {
@@ -79,7 +89,7 @@ public class PasswordDialog extends AzureDialog<char[]> implements AzureForm<cha
         };
     }
 
-    private void onTestConnectionButtonClicked(ActionEvent e) {
+    private void onTestConnectionButtonClicked() {
         testConnectionButton.setEnabled(false);
         testConnectionButton.setIcon(new AnimatedIcon.Default());
         testConnectionButton.setDisabledIcon(new AnimatedIcon.Default());
@@ -113,7 +123,7 @@ public class PasswordDialog extends AzureDialog<char[]> implements AzureForm<cha
         return messageBuilder.toString();
     }
 
-    private void onCopyButtonClicked(ActionEvent e) {
+    private void onCopyButtonClicked() {
         try {
             CopyPasteManager.getInstance().setContents(new StringSelection(testResultTextPane.getText()));
         } catch (final Exception exception) {

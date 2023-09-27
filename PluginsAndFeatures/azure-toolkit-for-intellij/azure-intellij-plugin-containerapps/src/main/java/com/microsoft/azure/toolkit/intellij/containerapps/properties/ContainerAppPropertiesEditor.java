@@ -12,6 +12,7 @@ import com.intellij.ui.JBIntSpinner;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
@@ -19,6 +20,7 @@ import com.microsoft.azure.toolkit.intellij.common.properties.AzResourceProperti
 import com.microsoft.azure.toolkit.intellij.containerapps.component.EnableComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
@@ -48,7 +50,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     public static final String N_A = "N/A";
     private JPanel pnlContent;
     private JPanel propertyActionPanel;
-    private JButton btnRefresh;
+    private AzureActionButton<Void> btnRefresh;
     private AzureHideableTitledSeparator overviewSeparator;
     private JBLabel resourceGroupTextField;
     private JBLabel txtProvisioningStatus;
@@ -80,7 +82,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private JPanel pnlNetworking;
     private AzureHideableTitledSeparator revisionsSeparator;
     private JPanel pnlRoot;
-    private JButton saveButton;
+    private AzureActionButton<Void> saveButton;
     private ActionLink resetButton;
     private EnableComboBox cbIngress;
     private EnableComboBox cbExternalAccess;
@@ -141,14 +143,24 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
 
     private void initListeners() {
         this.resetButton.addActionListener(e -> this.reset());
-        this.btnRefresh.addActionListener(e -> this.refresh());
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
-        this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
         final Runnable runnable = () -> AzureTaskManager.getInstance().runOnPooledThread(ContainerAppPropertiesEditor.this::refreshToolbar);
         this.txtTargetPort.addChangeListener(e -> runnable.run());
         this.cbExternalAccess.addValueChangedListener(ignore -> runnable.run());
         this.cbIngress.addValueChangedListener(ignore -> toggleIngress());
+        final Action<Void> refreshAction = new Action<Void>(Action.Id.of("user/containerapps.refresh_properties_view.app"))
+                .withAuthRequired(true)
+                .withSource(this.containerApp)
+                .withIdParam(this.containerApp.getName())
+                .withHandler(ignore -> this.refresh());
+        this.btnRefresh.setAction(refreshAction);
+        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
+        final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/containerapps.update_container_app.app"))
+                .withAuthRequired(true)
+                .withSource(this.containerApp)
+                .withIdParam(this.containerApp.getName())
+                .withHandler(ignore -> tm.runInBackground(saveTitle, this::save));
+        this.saveButton.setAction(saveAction);
     }
 
     private void toggleIngress() {

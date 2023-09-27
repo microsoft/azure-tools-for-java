@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.legacy.webapp;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -14,20 +15,18 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.BaseEditor;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTable;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azure.toolkit.intellij.common.action.AzureActionListenerWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
@@ -36,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -57,9 +55,9 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
     private static final String NOTIFY_PROFILE_GET_FAIL = "Failed to get Publish Profile.";
     private static final String INSIGHT_NAME = "AzurePlugin.IntelliJ.Editor.WebAppBasePropertyView";
     private JPanel pnlMain;
-    private JButton btnGetPublishFile;
-    private JButton btnSave;
-    private JButton btnDiscard;
+    private AzureActionButton<Void> btnGetPublishFile;
+    private AzureActionButton<Void> btnSave;
+    private AzureActionButton<Void> btnDiscard;
     private JPanel pnlOverviewHolder;
     private JPanel pnlOverview;
     private JPanel pnlAppSettingsHolder;
@@ -113,50 +111,31 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 false /*adjustWindow*/);
         appSettingDecorator.setContentComponent(pnlAppSettings);
         appSettingDecorator.setOn(true);
-
+        final String resourceName = ResourceId.fromString(resourceId).name();
+        final Action<Void> getPublishFileAction = new Action<Void>(Action.Id.of("user/webapp.get_publish_profile.app"))
+                .withAuthRequired(true)
+                .withIdParam(resourceName)
+                .withHandler((ignore, e) -> getPubishProfile(sid, appServiceId, slotName));
         btnGetPublishFile.setIcon(AllIcons.Actions.Download);
-        btnGetPublishFile.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnGetPublishFile", null) {
-            @Override
-            @AzureOperation("user/webapp.get_publish_profile")
-            public void actionPerformedFunc(ActionEvent event) {
-                EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.GET_PUBLISH_FILE, operation -> {
-                    final FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
-                        false /*chooseFiles*/,
-                        true /*chooseFolders*/,
-                        false /*chooseJars*/,
-                        false /*chooseJarsAsFiles*/,
-                        false /*chooseJarContents*/,
-                        false /*chooseMultiple*/
-                    );
-                    fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
-                    final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
-                    if (file != null) {
-                        presenter.onGetPublishingProfileXmlWithSecrets(sid, appServiceId, slotName, file.getPath());
-                    }
+        btnGetPublishFile.setAction(getPublishFileAction);
+
+        final Action<Void> discardAction = new Action<Void>(Action.Id.of("user/webapp.discard_property_changes.app"))
+                .withAuthRequired(false)
+                .withIdParam(resourceName)
+                .withHandler((ignore, e) -> {
+                    updateMapStatus(editedAppSettings, cachedAppSettings);
+                    tblAppSetting.clear();
+                    tblAppSetting.setAppSettings(editedAppSettings);
                 });
-            }
-        });
+        btnDiscard.setAction(discardAction);
 
-        btnDiscard.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnDiscard", null) {
-            @Override
-            @AzureOperation("user/webapp.discard_property_changes")
-            public void actionPerformedFunc(ActionEvent event) {
-                updateMapStatus(editedAppSettings, cachedAppSettings);
-                tblAppSetting.clear();
-                tblAppSetting.setAppSettings(editedAppSettings);
-            }
-        });
-
-        btnSave.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSave", null) {
-            @Override
-            @AzureOperation("user/webapp.save_property_changes")
-            public void actionPerformedFunc(ActionEvent event) {
-                EventUtil.executeWithLog(TelemetryConstants.APP_SERVICE, TelemetryConstants.SAVE_APP_SERVICE, operation -> {
+        final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/webapp.save_property_changes"))
+                .withAuthRequired(false)
+                .withIdParam(resourceName)
+                .withHandler((ignore, e) -> {
                     setLoading(true);
                     presenter.onUpdateWebAppProperty(sid, appServiceId, slotName, cachedAppSettings, editedAppSettings);
                 });
-            }
-        });
 
         lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();
@@ -164,6 +143,24 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         // todo: add event handler to close editor
         listener = new AzureEventBus.EventListener(this::onStatusChangeEvent);
         AzureEventBus.on("resource.status_changed.resource", listener);
+    }
+
+    private void getPubishProfile(@Nonnull String sid, @Nonnull String appServiceId, @javax.annotation.Nullable String slotName) {
+        final FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(
+            false /*chooseFiles*/,
+            true /*chooseFolders*/,
+            false /*chooseJars*/,
+            false /*chooseJarsAsFiles*/,
+            false /*chooseJarContents*/,
+            false /*chooseMultiple*/
+        );
+        fileChooserDescriptor.setTitle(FILE_SELECTOR_TITLE);
+        AzureTaskManager.getInstance().runLater(() -> {
+            final VirtualFile file = FileChooser.chooseFile(fileChooserDescriptor, null, null);
+            if (file != null) {
+                presenter.onGetPublishingProfileXmlWithSecrets(sid, appServiceId, slotName, file.getPath());
+            }
+        });
     }
 
     protected void onStatusChangeEvent(AzureEvent event) {
@@ -246,6 +243,10 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
             }
         });
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(tblAppSetting);
+
+        btnDiscard = new AzureActionButton<>();
+        btnGetPublishFile = new AzureActionButton<>();
+        btnSave = new AzureActionButton<>();
     }
 
     @Override

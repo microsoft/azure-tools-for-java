@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.intellij.common.component.Tree;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.facet.AzureFacetType;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -115,6 +116,7 @@ public class ResourceConnectionExplorer extends Tree {
 
         private ActionToolbarImpl initToolbar() {
             final DefaultActionGroup group = new DefaultActionGroup();
+            final AzureActionManager ijAm = AzureActionManager.getInstance();
             final ActionManager am = ActionManager.getInstance();
             final CommonActionsManager manager = CommonActionsManager.getInstance();
             group.add(am.getAction(ResourceConnectionActionsContributor.REFRESH_CONNECTIONS.getId()));
@@ -155,10 +157,7 @@ public class ResourceConnectionExplorer extends Tree {
         public void connectionChanged(Project project, Connection<?, ?> connection, ConnectionTopics.Action change) {
             final com.intellij.openapi.wm.ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowFactory.ID);
             assert toolWindow != null;
-            AzureTaskManager.getInstance().runLater(() -> {
-                toolWindow.setAvailable(true);
-                toolWindow.activate(null);
-            });
+            AzureTaskManager.getInstance().runLater(() -> toolWindow.setAvailable(true));
         }
     }
 }

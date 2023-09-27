@@ -4,18 +4,17 @@
  */
 package com.microsoft.azure.toolkit.intellij.common.survey;
 
-import com.intellij.ide.DataManager;
 import com.intellij.ide.ui.LafManager;
 import com.intellij.ide.ui.LafManagerListener;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.Gray;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.JBColor;
 import com.intellij.util.Consumer;
 import com.intellij.util.messages.MessageBusConnection;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -25,12 +24,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.Optional;
 
 public class SurveyPopUpDialog extends JDialog {
@@ -39,8 +33,8 @@ public class SurveyPopUpDialog extends JDialog {
     private static final String LABEL_DO_NOT_SHOW_AGAIN = "Don't show again.";
 
     private JPanel contentPane;
-    private JButton giveFeedbackButton;
-    private JButton notNowButton;
+    private AzureActionButton<Void> giveFeedbackButton;
+    private AzureActionButton<Void> notNowButton;
     private HyperlinkLabel lblDoNotShowAgain;
     private JLabel lblMessage;
     private JLabel lblAzureIcon;
@@ -76,10 +70,16 @@ public class SurveyPopUpDialog extends JDialog {
         this.setLocationRelativeToIDE(project);
         this.setDisposeTimer();
 
-        giveFeedbackButton.addActionListener((e) -> takeSurvey(CustomerSurveyResponse.ACCEPT));
+        final Action<Void> giveFeedbackAction = new Action<Void>(Action.Id.of("user/feedback.provide_feedback"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> takeSurvey(CustomerSurveyResponse.ACCEPT));
+        giveFeedbackButton.setAction(giveFeedbackAction);
         giveFeedbackButton.setFocusable(false);
 
-        notNowButton.addActionListener((e) -> takeSurvey(CustomerSurveyResponse.PUT_OFF));
+        final Action<Void> putoffAction = new Action<Void>(Action.Id.of("user/feedback.put_off"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> takeSurvey(CustomerSurveyResponse.PUT_OFF));
+        notNowButton.setAction(putoffAction);
         notNowButton.setFocusable(false);
 
         lblClose.addMouseListener(new MouseInputAdapter() {

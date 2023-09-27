@@ -84,7 +84,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="fad00" class="javax.swing.JButton" binding="exportTemplateButton" default-binding="true">
+          <component id="fad00" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="exportTemplateButton" default-binding="true">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -92,7 +92,7 @@
               <text value="Export Template File"/>
             </properties>
           </component>
-          <component id="30960" class="javax.swing.JButton" binding="updateDeploymentButton" default-binding="true">
+          <component id="30960" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="updateDeploymentButton" default-binding="true">
             <constraints>
               <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -105,7 +105,7 @@
               <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
           </hspacer>
-          <component id="1b101" class="javax.swing.JButton" binding="exportParameterFileButton" default-binding="true">
+          <component id="1b101" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="exportParameterFileButton" default-binding="true">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>

@@ -82,7 +82,7 @@
                           <text value="*"/>
                         </properties>
                       </component>
-                      <component id="5403b" class="javax.swing.JButton" binding="btnSearch">
+                      <component id="5403b" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnSearch">
                         <constraints>
                           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -92,7 +92,7 @@
                           <text value="Search"/>
                         </properties>
                       </component>
-                      <component id="cb157" class="javax.swing.JButton" binding="btnScanMore">
+                      <component id="cb157" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnScanMore">
                         <constraints>
                           <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>

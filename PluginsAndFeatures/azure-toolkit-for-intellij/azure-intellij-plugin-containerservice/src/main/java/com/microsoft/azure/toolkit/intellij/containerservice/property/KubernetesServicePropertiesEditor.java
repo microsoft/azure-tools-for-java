@@ -8,11 +8,13 @@ package com.microsoft.azure.toolkit.intellij.containerservice.property;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.table.JBTable;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.component.TextFieldUtils;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
@@ -32,7 +34,7 @@ import java.util.Optional;
 public class KubernetesServicePropertiesEditor extends AzResourcePropertiesEditor<KubernetesCluster> {
     private JPanel pnlContent;
     private JPanel propertyActionPanel;
-    private JButton btnRefresh;
+    private AzureActionButton<Void> btnRefresh;
     private AzureHideableTitledSeparator overviewSeparator;
     private JTextField resourceGroupTextField;
     private JTextField txtKubernetesVersion;
@@ -121,8 +123,15 @@ public class KubernetesServicePropertiesEditor extends AzResourcePropertiesEdito
         TextFieldUtils.makeTextOpaque(resourceGroupTextField, statusTextField, locationTextField, subscriptionTextField,
                 subscriptionIDTextField, txtApiServerAddress, txtDndServiceIp, txtLoadBalancer, txtKubernetesVersion, txtDockerBridgeCidr, txtNetworkPolicy,
                 txtNetworkType, txtNodePools, txtPodCidr, txtServiceCidr);
-        this.btnRefresh.addActionListener(e -> AzureTaskManager.getInstance().runInBackground("Refreshing...", () -> cluster.refresh())
-            .thenAccept(ignore -> rerender()));
+        final Action<Void> refreshAction = new Action<Void>(Action.Id.of("user/kubernetes.refresh_properties_view.kubernetes"))
+                .withAuthRequired(true)
+                .withSource(this.cluster)
+                .withIdParam(this.cluster.getName())
+                .withHandler(ignore -> {
+                    cluster.refresh();
+                    rerender();
+                });
+        this.btnRefresh.setAction(refreshAction);
 
         this.overviewSeparator.addContentComponent(pnlOverview);
         this.nodePoolSeparator.addContentComponent(pnlNodePools);

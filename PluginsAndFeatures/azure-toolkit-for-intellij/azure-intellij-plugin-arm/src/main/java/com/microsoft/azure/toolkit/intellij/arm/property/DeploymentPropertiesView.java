@@ -9,7 +9,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoft.azure.toolkit.intellij.arm.action.DeploymentActions;
+import com.microsoft.azure.toolkit.ide.arm.DeploymentActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceDeployment;
@@ -39,9 +40,9 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
     private JLabel deploymentModeLabel;
     private Tree templateTree;
     private JLabel statusReasonLabel;
-    private JButton viewResourceTemplateButton;
-    private JButton exportTemplateFileButton;
-    private JButton exportParameterFileButton;
+    private AzureActionButton<ResourceDeployment> viewResourceTemplateButton;
+    private AzureActionButton<ResourceDeployment> exportTemplateFileButton;
+    private AzureActionButton<ResourceDeployment> exportParameterFileButton;
     private static final String PNL_OVERVIEW = "Overview";
 
     public DeploymentPropertiesView(@Nonnull Project project, @Nonnull ResourceDeployment deployment, @Nonnull final VirtualFile virtualFile) {
@@ -52,8 +53,8 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
         overviewDecorator.setOn(true);
         pnlOverview.setName(PNL_OVERVIEW);
         pnlOverview.setBorder(BorderFactory.createCompoundBorder());
-        exportTemplateFileButton.addActionListener((e) -> DeploymentActions.exportTemplate(this.project, deployment));
-        exportParameterFileButton.addActionListener((e) -> DeploymentActions.exportParameters(this.project, deployment));
+        exportTemplateFileButton.setAction(DeploymentActionsContributor.EXPORT_TEMPLATE, this.deployment);
+        exportParameterFileButton.setAction(DeploymentActionsContributor.EXPORT_PARAMETER, this.deployment);
         this.rerender();
     }
 
@@ -75,7 +76,7 @@ public class DeploymentPropertiesView extends AzResourcePropertiesEditor<Resourc
             }
         });
         statusReasonLabel.setText(statusReason.toString());
-        viewResourceTemplateButton.addActionListener((e) -> DeploymentActions.openTemplateView(this.project, this.deployment));
+        viewResourceTemplateButton.setAction(DeploymentActionsContributor.EDIT, this.deployment);
 
         final DefaultMutableTreeNode nodeRoot = new DefaultMutableTreeNode("Template");
         final TreeModel model = new DefaultTreeModel(nodeRoot);

@@ -1,10 +1,10 @@
 <idea-plugin>
     <extensionPoints>
-        <extensionPoint name="com.microsoft.tooling.msservices.intellij.azure.guidanceTaskProvider"
+        <extensionPoint name="guidanceTaskProvider"
                         interface="com.microsoft.azure.toolkit.ide.guidance.task.GuidanceTaskProvider"/>
-        <extensionPoint name="com.microsoft.tooling.msservices.intellij.azure.guidancePhaseProvider"
+        <extensionPoint name="guidancePhaseProvider"
                         interface="com.microsoft.azure.toolkit.ide.guidance.phase.GuidancePhaseProvider"/>
-        <extensionPoint name="com.microsoft.tooling.msservices.intellij.azure.guidanceInputProvider"
+        <extensionPoint name="guidanceInputProvider"
                         interface="com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInputProvider"/>
     </extensionPoints>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">

@@ -9,15 +9,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.JBLabel;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppConfigPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudAppInstancesPanel;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
@@ -29,13 +30,13 @@ import javax.swing.*;
 import java.util.Optional;
 
 public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<SpringCloudApp> {
-    private JButton refreshButton;
-    private JButton startButton;
-    private JButton stopButton;
-    private JButton restartButton;
-    private JButton deleteButton;
+    private AzureActionButton<SpringCloudApp> refreshButton;
+    private AzureActionButton<SpringCloudApp> startButton;
+    private AzureActionButton<SpringCloudApp> stopButton;
+    private AzureActionButton<SpringCloudApp> restartButton;
+    private AzureActionButton<SpringCloudApp> deleteButton;
+    private AzureActionButton<SpringCloudApp> saveButton;
     private JPanel contentPanel;
-    private JButton saveButton;
     private ActionLink resetButton;
     private JBLabel lblSubscription;
     private JBLabel lblCluster;
@@ -89,35 +90,57 @@ public class SpringCloudAppPropertiesEditor extends AzResourcePropertiesEditor<S
 
     private void initListeners() {
         this.resetButton.addActionListener(e -> this.reset());
-        this.refreshButton.addActionListener(e -> refresh());
-        final AzureString deleteTitle = OperationBundle.description("user/springcloud.delete_app.app", this.draft.getName());
-        final AzureTaskManager tm = AzureTaskManager.getInstance();
-        this.deleteButton.addActionListener(e -> {
-            final String message = String.format("Are you sure to delete Spring app(%s)", this.draft.getName());
-            if (AzureMessager.getMessager().confirm(message, "Delete Spring app")) {
-                tm.runInBackground(deleteTitle, () -> {
-                    IntellijShowPropertiesViewAction.closePropertiesView(this.draft, this.project);
-                    this.draft.delete();
+        final Action<SpringCloudApp> refreshAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.refresh_app.app"))
+                .withAuthRequired(true)
+                .withSource(this.app)
+                .withIdParam(this.app.getName())
+                .withHandler(ignore -> this.refresh());
+        this.refreshButton.setAction(refreshAction);
+        final Action<SpringCloudApp> deleteAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.delete_app.app"))
+                .withAuthRequired(true)
+                .withIdParam(this.app.getName())
+                .withSource(this.app)
+                .withHandler(ignore -> {
+                    final String message = String.format("Are you sure to delete Spring app(%s)", this.draft.getName());
+                    if (AzureMessager.getMessager().confirm(message, "Delete Spring app")) {
+                        IntellijShowPropertiesViewAction.closePropertiesView(this.draft, this.project);
+                        this.draft.delete();
+                    }
                 });
-            }
-        });
-        final AzureString startTitle = OperationBundle.description("user/springcloud.start_app.app", this.draft.getName());
-        this.startButton.addActionListener(e -> tm.runInBackground(startTitle, () -> {
-            this.reset();
-            this.app.start();
-        }));
-        final AzureString stopTitle = OperationBundle.description("user/springcloud.stop_app.app", this.draft.getName());
-        this.stopButton.addActionListener(e -> tm.runInBackground(stopTitle, () -> {
-            this.reset();
-            this.app.stop();
-        }));
-        final AzureString restartTitle = OperationBundle.description("user/springcloud.restart_app.app", this.draft.getName());
-        this.restartButton.addActionListener(e -> tm.runInBackground(restartTitle, () -> {
-            this.reset();
-            this.app.restart();
-        }));
-        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
-        this.saveButton.addActionListener(e -> tm.runInBackground(saveTitle, this::save));
+        this.deleteButton.setAction(deleteAction);
+        final Action<SpringCloudApp> startAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.start_app.app"))
+                .withAuthRequired(true)
+                .withIdParam(this.app.getName())
+                .withSource(this.app)
+                .withHandler(ignore -> {
+                    this.reset();
+                    this.app.start();
+                });
+        this.startButton.setAction(startAction);
+        final Action<SpringCloudApp> stopAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.stop_app.app"))
+                .withAuthRequired(true)
+                .withIdParam(this.app.getName())
+                .withSource(this.app)
+                .withHandler(ignore -> {
+                    this.reset();
+                    this.app.stop();
+                });
+        this.stopButton.setAction(stopAction);
+        final Action<SpringCloudApp> restartAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.restart_app.app"))
+                .withAuthRequired(true)
+                .withIdParam(this.app.getName())
+                .withSource(this.app)
+                .withHandler(ignore -> {
+                    this.reset();
+                    this.app.restart();
+                });
+        this.restartButton.setAction(restartAction);
+        final Action<SpringCloudApp> saveAction = new Action<SpringCloudApp>(Action.Id.of("user/springcloud.save_app.app"))
+                .withAuthRequired(true)
+                .withIdParam(this.app.getName())
+                .withSource(this.app)
+                .withHandler(ignore -> this.save());
+        this.saveButton.setAction(saveAction);
         this.formConfig.setDataChangedListener(() -> {
             this.formConfig.applyTo(this.draft);
             this.refreshToolbar();

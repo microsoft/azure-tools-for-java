@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -92,7 +93,7 @@ public class AzureExplorer extends Tree {
     private Node<Azure> buildTypeGroupedResourcesRoot() {
         return new TypeGroupedServicesRootNode()
             .withActions(new ActionGroup(
-                new Action<>(ResourceCommonActionsContributor.REFRESH)
+                new Action<>(Action.Id.of("user/common.refresh_all"))
                     .withLabel("Refresh All")
                     .withIcon(AzureIcons.Action.REFRESH.getIconPath())
                     .withHandler((e) -> this.refreshAll()),
@@ -152,6 +153,7 @@ public class AzureExplorer extends Tree {
         private void addToolbarActions(ToolWindow toolWindow, final Project project, AzureExplorer explorer) {
             final AnAction refreshAction = new AnAction("Refresh All", "Refresh Azure nodes list", AllIcons.Actions.Refresh) {
                 @Override
+                @AzureOperation("user/common.refresh_all")
                 public void actionPerformed(@NotNull final AnActionEvent e) {
                     explorer.refreshAll();
                 }

@@ -29,7 +29,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="8fbc8" class="javax.swing.JButton" binding="btnGetPublishFile">
+                  <component id="8fbc8" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnGetPublishFile" custom-create="true">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -37,7 +37,7 @@
                       <text value="Get Publish Profile"/>
                     </properties>
                   </component>
-                  <component id="881fd" class="javax.swing.JButton" binding="btnDiscard">
+                  <component id="881fd" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnDiscard" custom-create="true">
                     <constraints>
                       <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -46,7 +46,7 @@
                       <text value="Discard"/>
                     </properties>
                   </component>
-                  <component id="16a8e" class="javax.swing.JButton" binding="btnSave">
+                  <component id="16a8e" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnSave" custom-create="true">
                     <constraints>
                       <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>

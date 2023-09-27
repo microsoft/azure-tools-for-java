@@ -8,6 +8,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.ui.AnimatedIcon;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
@@ -20,6 +21,7 @@ import com.microsoft.azure.toolkit.intellij.database.component.TestConnectionAct
 import com.microsoft.azure.toolkit.intellij.database.component.UsernameComboBox;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -47,7 +49,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
     private UsernameComboBox usernameComboBox;
     private JPasswordField inputPasswordField;
     private JTextField urlTextField;
-    private JButton testConnectionButton;
+    private AzureActionButton<Void> testConnectionButton;
     private TestConnectionActionPanel testConnectionActionPanel;
     private JTextPane testResultTextPane;
 
@@ -81,11 +83,17 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         this.serverComboBox.addItemListener(this::onServerChanged);
         this.databaseComboBox.addItemListener(this::onDatabaseChanged);
         this.urlTextField.getDocument().addDocumentListener((TextDocumentListenerAdapter) this.debouncer::debounce);
-        this.testConnectionButton.addActionListener(this::onTestConnectionButtonClicked);
-        this.testConnectionActionPanel.getCopyButton().addActionListener(this::onCopyButtonClicked);
+        final Action<Void> testConnectionAction = new Action<Void>(Action.Id.of("user/$database.test_connection"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> onTestConnectionButtonClicked());
+        this.testConnectionButton.setAction(testConnectionAction);
+        final Action<Void> copyAction = new Action<Void>(Action.Id.of("user/$database.copy_connection_string"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> onCopyButtonClicked());
+        this.testConnectionActionPanel.getCopyButton().setAction(copyAction);
     }
 
-    private void onTestConnectionButtonClicked(ActionEvent e) {
+    private void onTestConnectionButtonClicked() {
         if (Objects.isNull(this.jdbcUrl)) {
             return;
         }
@@ -164,7 +172,7 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
         this.testConnectionButton.setEnabled(Objects.nonNull(this.jdbcUrl));
     }
 
-    private void onCopyButtonClicked(ActionEvent e) {
+    private void onCopyButtonClicked() {
         try {
             CopyPasteManager.getInstance().setContents(new StringSelection(testResultTextPane.getText()));
         } catch (final Exception exception) {

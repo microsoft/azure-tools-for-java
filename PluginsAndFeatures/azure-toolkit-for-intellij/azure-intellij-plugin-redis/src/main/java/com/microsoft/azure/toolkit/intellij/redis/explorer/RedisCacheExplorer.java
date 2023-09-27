@@ -7,7 +7,9 @@ package com.microsoft.azure.toolkit.intellij.redis.explorer;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -67,9 +69,9 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
     private JComboBox<String> cbDatabase;
     private JComboBox<String> cbActionType;
     private JTextField txtKeyPattern;
-    private JButton btnSearch;
+    private AzureActionButton<RedisCache> btnSearch;
     private JList<String> lstKey;
-    private JButton btnScanMore;
+    private AzureActionButton<RedisCache> btnScanMore;
     private JTable tblInnerValue;
     private JTextArea txtStringValue;
     private JLabel lblTypeValue;
@@ -126,16 +128,26 @@ public class RedisCacheExplorer extends AzResourcePropertiesEditor<RedisCache> {
             });
         });
 
-        btnSearch.addActionListener(event -> RedisCacheExplorer.this.onBtnSearchClick());
+        final Action<RedisCache> searchAction = new Action<RedisCache>(Action.Id.of("user/redis.search.redis"))
+                .withAuthRequired(true)
+                .withSource(this.redis)
+                .withIdParam(this.redis.getName())
+                .withHandler(ignore -> RedisCacheExplorer.this.onBtnSearchClick());
+        btnSearch.setAction(searchAction);
 
-        btnScanMore.addActionListener(event -> {
-            RedisCacheExplorer.this.setWidgetEnableStatus(false);
-            manager.runOnPooledThread(() -> {
-                final ScanResult<String> r = doWithRedis(jedis -> jedis.scan(currentCursor, new ScanParams()
-                    .match(txtKeyPattern.getText()).count(DEFAULT_KEY_COUNT)));
-                manager.runLater(() -> RedisCacheExplorer.this.showScanResult(r));
-            });
-        });
+        final Action<RedisCache> scanMoreAction = new Action<RedisCache>(Action.Id.of("user/redis.scan_more.redis"))
+                .withAuthRequired(true)
+                .withSource(this.redis)
+                .withIdParam(this.redis.getName())
+                .withHandler(ignore -> {
+                    RedisCacheExplorer.this.setWidgetEnableStatus(false);
+                    manager.runOnPooledThread(() -> {
+                        final ScanResult<String> r = doWithRedis(jedis -> jedis.scan(currentCursor, new ScanParams()
+                                .match(txtKeyPattern.getText()).count(DEFAULT_KEY_COUNT)));
+                        manager.runLater(() -> RedisCacheExplorer.this.showScanResult(r));
+                    });
+                });
+        btnScanMore.setAction(scanMoreAction);
 
         txtKeyPattern.addActionListener(event -> onBtnSearchClick());
 

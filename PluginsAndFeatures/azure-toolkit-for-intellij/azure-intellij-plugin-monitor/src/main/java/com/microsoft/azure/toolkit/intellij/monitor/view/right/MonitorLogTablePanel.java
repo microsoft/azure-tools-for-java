@@ -24,6 +24,7 @@ import com.intellij.ui.components.ActionLink;
 import com.intellij.ui.components.AnActionLink;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.KustoFilterComboBox;
@@ -66,7 +67,7 @@ public class MonitorLogTablePanel implements Disposable {
     private TimeRangeFilterComboBox timeRangeFilterComboBox;
     private KustoFilterComboBox resourceComboBox;
     private KustoFilterComboBox levelComboBox;
-    private JButton runButton;
+    private AzureActionButton<Void> runButton;
     private ActionLink exportAction;
     private SearchTextField searchField;
     private JPanel timeRangePanel;
@@ -74,7 +75,7 @@ public class MonitorLogTablePanel implements Disposable {
     private JPanel resourcePanel;
     private JLabel logLevelLabel;
     private JLabel resourceLabel;
-    private JButton saveFiltersButton;
+    private AzureActionButton<Void> saveFiltersButton;
     private final static String[] RESOURCE_COMBOBOX_COLUMN_NAMES = {"_ResourceId", "ResourceId"};
     private final static String[] LEVEL_COMBOBOX_COLUMN = {"Level"};
     private final static String RESULT_CSV_FILE = "result.csv";
@@ -176,12 +177,12 @@ public class MonitorLogTablePanel implements Disposable {
         this.logTable.getSelectionModel().addListSelectionListener(selectionListener);
     }
 
-    public void addRunActionListener(ActionListener listener) {
-        this.runButton.addActionListener(listener);
+    public void setRunAction(Action<Void> action) {
+        this.runButton.setAction(action);
     }
 
-    public void addSaveActionListener(ActionListener listener) {
-        this.saveFiltersButton.addActionListener(listener);
+    public void setSaveAction(Action<Void> action) {
+        this.saveFiltersButton.setAction(action);
     }
 
     @Nullable

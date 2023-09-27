@@ -15,26 +15,35 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.common.operation.Operation;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type.SUCCESS;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @Slf4j
 public abstract class AzureDialog<T> extends DialogWrapper {
+    public static final String SYSTEM = "system";
+    public static final String CANCEL = "cancel_dialog";
+    public static final String CANCEL_DIALOG = "user/system.cancel_dialog";
+    public static final String DIALOG_TITLE = "DialogTitle";
     @Setter
     protected OkActionListener<T> okActionListener;
     @Setter
     protected Action<T> okAction;
+    @Setter
+    protected Action<T> closeAction;
     protected String helpId;
 
     public AzureDialog(Project project) {
@@ -69,6 +78,35 @@ public abstract class AzureDialog<T> extends DialogWrapper {
 
     public void close() {
         this.doCancelAction();
+    }
+
+    @Override
+    public void doCancelAction() {
+        try {
+            if (Objects.nonNull(this.closeAction)) {
+                final DataContext context = DataManager.getInstance().getDataContext(this.getContentPanel());
+                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, getName(), context);
+                this.closeAction.handle(null, event);
+                super.doCancelAction();
+            } else {
+                AzureTelemeter.log(AzureTelemetry.Type.OP_END, getCancelProperties());
+                super.doCancelAction();
+            }
+        } catch (final Exception e) {
+            AzureMessager.getMessager().error(e);
+        }
+    }
+
+    private Map<String, String> getCancelProperties() {
+        final Map<String, String> properties = new HashMap<>();
+        final Action.Id<T> id = Optional.ofNullable(okAction).map(Action::getId).orElse(null);
+        properties.put(SERVICE_NAME, Optional.ofNullable(id).map(
+                Action.Id::getService).orElse(SYSTEM));
+        properties.put(OPERATION_NAME, Optional.ofNullable(id).map(Action.Id::getOperation).map(op -> op + "_" + CANCEL).orElse(SYSTEM));
+        properties.put(OP_TYPE, Operation.Type.USER);
+        properties.put(OP_NAME, Optional.ofNullable(okAction).map(Action::getId).map(Action.Id::getId).orElse(CANCEL_DIALOG));
+        properties.put(DIALOG_TITLE, this.getDialogTitle());
+        return properties;
     }
 
     @Nullable

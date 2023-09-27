@@ -14,9 +14,9 @@ import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.springcloud.creation.SpringCloudAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
+import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.resource.ResourceGroupDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudAppDraft;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
@@ -118,6 +118,10 @@ public class SpringCloudAppComboBox extends AzureComboBox<SpringCloudApp> {
     }
 
     private void showAppCreationPopup() {
+        if (Objects.isNull(this.cluster)) {
+            AzureMessager.getDefaultMessager().alert("Please select a cluster first.");
+            return;
+        }
         final SpringCloudAppCreationDialog dialog = new SpringCloudAppCreationDialog();
         dialog.setCluster(this.cluster, true);
         Optional.ofNullable(this.javaVersion).ifPresent(a -> dialog.setDefaultRuntimeVersion(javaVersion));

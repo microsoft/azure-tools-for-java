@@ -8,7 +8,9 @@ package com.microsoft.azure.toolkit.intellij.redis.property;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzResourcePropertiesEditor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -37,8 +39,8 @@ public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<Redis
     private JTextField txtSslPortValue;
     private JTextField txtNonSslPortValue;
     private JTextField txtVersionValue;
-    private JButton btnPrimaryKey;
-    private JButton btnSecondaryKey;
+    private AzureActionButton<RedisCache> btnPrimaryKey;
+    private AzureActionButton<RedisCache> btnSecondaryKey;
 
     @Nonnull
     private final RedisCache redis;
@@ -72,8 +74,18 @@ public class RedisCachePropertiesEditor extends AzResourcePropertiesEditor<Redis
     }
 
     private void initListeners() {
-        btnPrimaryKey.addActionListener(event -> CopyPasteManager.getInstance().setContents(new StringSelection(primaryKey)));
-        btnSecondaryKey.addActionListener(event -> CopyPasteManager.getInstance().setContents(new StringSelection(secondaryKey)));
+        final Action<RedisCache> copyPrimaryKey = new Action<RedisCache>(Action.Id.of("user/redis.copy_primary_key.redis"))
+                .withAuthRequired(false)
+                .withSource(this.redis)
+                .withIdParam(this.redis.getName())
+                .withHandler(ignore -> CopyPasteManager.getInstance().setContents(new StringSelection(primaryKey)));
+        btnPrimaryKey.setAction(copyPrimaryKey);
+        final Action<RedisCache> copySecondaryKey = new Action<RedisCache>(Action.Id.of("user/redis.copy_secondary_key.redis"))
+                .withAuthRequired(false)
+                .withSource(this.redis)
+                .withIdParam(this.redis.getName())
+                .withHandler(ignore -> CopyPasteManager.getInstance().setContents(new StringSelection(secondaryKey)));
+        btnSecondaryKey.setAction(copySecondaryKey);
     }
 
     private void disableTxtBoard() {

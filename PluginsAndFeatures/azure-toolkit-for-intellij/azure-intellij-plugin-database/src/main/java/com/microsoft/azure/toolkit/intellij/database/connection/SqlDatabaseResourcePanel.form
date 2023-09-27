@@ -149,7 +149,7 @@
               <text value="Editing connection URL will override settings above"/>
             </properties>
           </component>
-          <component id="e6a3f" class="javax.swing.JButton" binding="testConnectionButton" default-binding="true">
+          <component id="e6a3f" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="testConnectionButton" default-binding="true">
             <constraints>
               <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <preferred-size width="100" height="30"/>

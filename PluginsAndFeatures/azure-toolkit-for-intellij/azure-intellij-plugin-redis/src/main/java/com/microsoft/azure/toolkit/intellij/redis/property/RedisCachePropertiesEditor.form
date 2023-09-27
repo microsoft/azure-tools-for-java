@@ -234,7 +234,7 @@
                   <text value="Primary Key"/>
                 </properties>
               </component>
-              <component id="15f44" class="javax.swing.JButton" binding="btnPrimaryKey">
+              <component id="7880f" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnPrimaryKey">
                 <constraints>
                   <grid row="9" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                   <gridbag weightx="1.0" weighty="0.0"/>
@@ -254,7 +254,7 @@
                   <text value="Secondary Key"/>
                 </properties>
               </component>
-              <component id="de9ad" class="javax.swing.JButton" binding="btnSecondaryKey">
+              <component id="74212" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnSecondaryKey">
                 <constraints>
                   <grid row="10" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
                   <gridbag weightx="1.0" weighty="1.0"/>

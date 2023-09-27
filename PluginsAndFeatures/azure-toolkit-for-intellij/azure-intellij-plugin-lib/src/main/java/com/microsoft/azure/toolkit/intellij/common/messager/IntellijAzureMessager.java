@@ -43,7 +43,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OPERATION_NAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_NAME;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.OP_TYPE;
+import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.SERVICE_NAME;
 
 @Slf4j
 public class IntellijAzureMessager implements IAzureMessager {
@@ -112,6 +115,9 @@ public class IntellijAzureMessager implements IAzureMessager {
     @Override
     public IntellijAzureMessage buildMessage(@Nonnull IAzureMessage.Type type, @Nonnull AzureString content, @Nullable String title, @Nullable Object[] actions, @Nullable Object payload) {
         final AzureMessage message = IAzureMessager.super.buildMessage(type, content, title, actions, payload);
+        if (type == IAzureMessage.Type.ALERT || type == IAzureMessage.Type.CONFIRM) {
+            return new DialogMessage(message);
+        }
         return new NotificationMessage(message);
     }
 

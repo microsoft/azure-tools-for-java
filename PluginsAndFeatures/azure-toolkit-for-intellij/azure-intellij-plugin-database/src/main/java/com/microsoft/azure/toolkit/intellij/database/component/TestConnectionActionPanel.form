@@ -17,7 +17,7 @@
           <toolTipText value=""/>
         </properties>
       </component>
-      <component id="f4ffd" class="javax.swing.JButton" binding="copyButton">
+      <component id="f4ffd" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="copyButton">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="24" height="26"/>

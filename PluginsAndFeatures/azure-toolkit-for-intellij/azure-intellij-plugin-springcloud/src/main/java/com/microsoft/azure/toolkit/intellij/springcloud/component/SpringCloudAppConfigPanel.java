@@ -6,15 +6,19 @@
 package com.microsoft.azure.toolkit.intellij.springcloud.component;
 
 import com.azure.resourcemanager.appplatform.models.RuntimeVersion;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
@@ -34,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,10 +49,10 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
     @Getter
     private JPanel contentPanel;
     private HyperlinkLabel txtEndpoint;
-    private JButton toggleEndpoint;
+    private AzureActionButton<Void> toggleEndpoint;
     private HyperlinkLabel txtTestEndpoint;
     private JBLabel txtStorage;
-    private JButton toggleStorage;
+    private AzureActionButton<Void> toggleStorage;
     private JRadioButton useJava8;
     private JRadioButton useJava11;
     private JRadioButton useJava17;
@@ -77,14 +82,25 @@ public class SpringCloudAppConfigPanel extends JPanel implements AzureFormPanel<
 
     private void init() {
         final TailingDebouncer debouncer = new TailingDebouncer(this::onDataChanged, 300);
-        this.toggleStorage.addActionListener(e -> {
-            toggleStorage("enable".equals(e.getActionCommand()));
-            debouncer.debounce();
-        });
-        this.toggleEndpoint.addActionListener(e -> {
-            toggleEndpoint("enable".equals(e.getActionCommand()));
-            debouncer.debounce();
-        });
+        final Action<Void> toggleStorageAction = new Action<Void>(Action.Id.of("user/springcloud.toggle_storage"))
+                .withAuthRequired(false)
+                .withHandler((Void ignore, AnActionEvent event) -> {
+                    final ActionEvent e = event.getData(AzureActionButton.ACTION_EVENT_KEY);
+                    final String actionCommand = Optional.ofNullable(e).map(ActionEvent::getActionCommand).orElse(StringUtils.EMPTY);
+                    toggleStorage("enable".equals(actionCommand));
+                    debouncer.debounce();
+                });
+        this.toggleStorage.setAction(toggleStorageAction);
+
+        final Action<Void> toggleEndpointAction = new Action<Void>(Action.Id.of("user/springcloud.toggle_endpoint"))
+                .withAuthRequired(false)
+                .withHandler((Void ignore, AnActionEvent event) -> {
+                    final ActionEvent e = event.getData(AzureActionButton.ACTION_EVENT_KEY);
+                    final String actionCommand = Optional.ofNullable(e).map(ActionEvent::getActionCommand).orElse(StringUtils.EMPTY);
+                    toggleEndpoint("enable".equals(actionCommand));
+                    debouncer.debounce();
+                });
+        this.toggleEndpoint.setAction(toggleEndpointAction);
 
         this.txtStorage.setBorder(JBUI.Borders.empty(0, 2));
         this.useJava8.addActionListener((e) -> debouncer.debounce());

@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.database.postgre.property;
 
-import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
@@ -14,10 +13,11 @@ import com.microsoft.azure.toolkit.intellij.database.component.ConnectionSecurit
 import com.microsoft.azure.toolkit.intellij.database.component.ConnectionStringsOutputPanel;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseComboBox;
 import com.microsoft.azure.toolkit.intellij.database.component.DatabaseServerPropertyActionPanel;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlDatabase;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServerDraft;
@@ -25,9 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 
 public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<PostgreSqlServer> {
 
@@ -117,42 +116,25 @@ public class PostgreSqlPropertiesEditor extends AzResourcePropertiesEditor<Postg
         // update to trigger save/discard buttons
         connectionSecurity.getAllowAccessFromAzureServicesCheckBox().addItemListener(this::onCheckBoxChanged);
         connectionSecurity.getAllowAccessFromLocalMachineCheckBox().addItemListener(this::onCheckBoxChanged);
-        // actions of copy buttons
-        connectionStringsJDBC.getCopyButton().addActionListener(this::onJDBCCopyButtonClicked);
-        connectionStringsSpring.getCopyButton().addActionListener(this::onSpringCopyButtonClicked);
         // save/discard buttons
-        propertyActionPanel.getSaveButton().addActionListener(e -> this.apply());
-        propertyActionPanel.getDiscardButton().addActionListener(e -> this.reset());
+        final Action<PostgreSqlServer> applyAction = new Action<PostgreSqlServer>(Action.Id.of("user/postgre.update_server.server"))
+                .withAuthRequired(true)
+                .withSource(this.server)
+                .withIdParam(this.server.getName())
+                .withHandler(server -> this.apply());
+        propertyActionPanel.getSaveButton().setAction(applyAction);
+        final Action<PostgreSqlServer> resetAction = new Action<PostgreSqlServer>(Action.Id.of("user/postgre.refresh.server"))
+                .withAuthRequired(true)
+                .withSource(this.server)
+                .withIdParam(this.server.getName())
+                .withHandler(server -> this.reset());
+        propertyActionPanel.getDiscardButton().setAction(resetAction);
         // database combobox changed
         databaseComboBox.addItemListener(this::onDatabaseComboBoxChanged);
     }
 
     private void onCheckBoxChanged(ItemEvent itemEvent) {
         this.refreshButtons();
-    }
-
-    private void onJDBCCopyButtonClicked(ActionEvent e) {
-        try {
-            copyToSystemClipboard(this.connectionStringsJDBC.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy JDBC connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
-    }
-
-    private void copyToSystemClipboard(String text) {
-        CopyPasteManager.getInstance().setContents(new StringSelection(text));
-    }
-
-    private void onSpringCopyButtonClicked(ActionEvent e) {
-        try {
-            copyToSystemClipboard(this.connectionStringsSpring.getOutputTextArea().getText());
-        } catch (final Exception exception) {
-            final String error = "copy Spring connection strings";
-            final String action = "try again later.";
-            throw new AzureToolkitRuntimeException(error, action);
-        }
     }
 
     private void apply() {

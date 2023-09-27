@@ -5,15 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.database.component;
 
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import lombok.Getter;
 
 import javax.swing.*;
 
 public class DatabaseServerPropertyActionPanel extends JPanel {
     @Getter
-    private JButton saveButton;
+    private AzureActionButton saveButton;
     @Getter
-    private JButton discardButton;
+    private AzureActionButton discardButton;
     private JPanel rootPanel;
 
 }

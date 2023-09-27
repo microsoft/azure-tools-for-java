@@ -16,6 +16,8 @@ import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.guidance.Phase;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -113,8 +115,13 @@ public class SummaryPanel extends JPanel {
         this.detailsPanel.setLayout(new GridLayoutManager(1, steps.size() + 1));
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
-            final JButton button = new JButton(step.getTitle());
-            button.addActionListener(e -> executeStep(step));
+            final Action<Void> executeAction = new Action<Void>(Action.Id.of("user/guidance.execute_summary_step.step"))
+                    .withIdParam(step.getTitle())
+                    .withAuthRequired(false)
+                    .withHandler(ignore -> executeStep(step));
+            final AzureActionButton<Void> button = new AzureActionButton<>();
+            button.setText(step.getTitle());
+            button.setAction(executeAction);
             if (i == 0) {
                 SummaryPanel.this.defaultButton = button;
             }
@@ -124,7 +131,6 @@ public class SummaryPanel extends JPanel {
         detailsPanel.add(new Spacer(), new GridConstraints(0, steps.size(), 1, 1, 0, FILL_HORIZONTAL, 7, 3, null, null, null, 0));
     }
 
-    @AzureOperation(name = "user/guidance.execute_summary_step.step", params = {"this.step.getTitle()"})
     private void executeStep(final Step step) {
         OperationContext.current().setTelemetryProperty("step", step.getTitle());
         OperationContext.current().setTelemetryProperty("phase", phase.getTitle());

@@ -6,7 +6,6 @@
 package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -18,6 +17,7 @@ import org.dom4j.Node;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
 import org.jetbrains.idea.maven.model.MavenId;
+import org.jetbrains.idea.maven.model.MavenPlugin;
 import org.jetbrains.idea.maven.project.MavenEmbeddersManager;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class MavenUtils {
-    private static final String SPRING_BOOT_MAVEN_PLUGIN = "spring-boot-maven"
-            + "-plugin";
+    private static final String SPRING_BOOT_MAVEN_PLUGIN = "spring-boot-maven-plugin";
     private static final String MAVEN_PROJECT_NOT_FOUND = "Cannot find maven project at folder: %s";
+    public static final String WARNING = "Customize artifact name in `spring-boot-maven-plugin` configuration part is no longer supported, please use the standard `finalName`. see https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging.examples.custom-name";
 
     public static boolean isMavenProject(Project project) {
         return MavenProjectsManager.getInstance(project).isMavenizedProject();
@@ -50,19 +50,16 @@ public class MavenUtils {
                          mavenProject.getFinalName() + "." + mavenProject.getPackaging()).toString();
     }
 
-    public static String getSpringBootFinalJarFilePath(@NotNull Project ideaProject,
-                                                       @NotNull MavenProject mavenProject) {
-        String finalName = mavenProject.getFinalName();
-        try {
-            final String xml = evaluateEffectivePom(ideaProject, mavenProject);
-            if (StringUtils.isNotEmpty(xml) && xml.contains(SPRING_BOOT_MAVEN_PLUGIN)) {
-                finalName = StringUtils.firstNonBlank(
-                        getPluginConfiguration(xml, "org.springframework.boot", SPRING_BOOT_MAVEN_PLUGIN, "finalName"), finalName);
-            }
-        } catch (final Exception ex) {
-            AzureMessager.getMessager().warning(String.format("Can not evaluate effective pom, fall back to final jar %s", finalName));
-        }
-        return Paths.get(mavenProject.getBuildDirectory(), finalName + "." + mavenProject.getPackaging()).toString();
+    public static String getSpringBootFinalJarFilePath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject) {
+        final String finalName = mavenProject.getFinalName();
+        // https://docs.spring.io/spring-boot/docs/current/maven-plugin/reference/htmlsingle/#packaging.examples.custom-name
+        // customize artifact name in `spring-boot-maven-plugin` configuration is no longer recommended.
+        final String springPluginFinaleName = mavenProject.getPlugins().stream().filter(p -> p.getArtifactId().equals(SPRING_BOOT_MAVEN_PLUGIN)).findFirst()
+            .map(MavenPlugin::getConfigurationElement)
+            .map(e -> e.getChild("finalName"))
+            .map(org.jdom.Element::getTextTrim)
+            .orElse(null);
+        return Paths.get(mavenProject.getBuildDirectory(), StringUtils.firstNonBlank(springPluginFinaleName, finalName) + "." + mavenProject.getPackaging()).toString();
     }
 
     public static String evaluateEffectivePom(@NotNull Project ideaProject,
@@ -86,7 +83,7 @@ public class MavenUtils {
     public static final String POM_NAMESPACE = "http://maven.apache.org/POM/4.0.0";
 
     @Nullable
-    public static String getPluginConfiguration(String effectivePomXml, String groupId, String artifactId, String configurationName) throws DocumentException {
+    private static String getPluginConfiguration(String effectivePomXml, String groupId, String artifactId, String configurationName) throws DocumentException {
         final Map<String, String> nsContext = new HashMap<>();
         nsContext.put("ns", POM_NAMESPACE);
         DocumentFactory.getInstance().setXPathNamespaceURIs(nsContext);

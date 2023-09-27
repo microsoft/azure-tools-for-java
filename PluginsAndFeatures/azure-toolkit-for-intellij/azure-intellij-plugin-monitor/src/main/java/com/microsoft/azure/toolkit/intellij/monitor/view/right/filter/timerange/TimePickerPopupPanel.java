@@ -4,6 +4,7 @@ import com.intellij.ui.JBIntSpinner;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.michaelbaranov.microba.calendar.CalendarPane;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ public class TimePickerPopupPanel extends JPanel {
     @Getter
     private CalendarPane calendarPane;
     @Getter
-    private JButton okButton;
+    private AzureActionButton<Void> okButton;
     private Date timeDate;
 
     public TimePickerPopupPanel() {

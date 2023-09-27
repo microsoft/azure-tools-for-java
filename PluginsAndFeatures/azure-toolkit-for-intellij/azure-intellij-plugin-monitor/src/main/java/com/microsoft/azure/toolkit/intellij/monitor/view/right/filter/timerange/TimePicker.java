@@ -1,15 +1,19 @@
 package com.microsoft.azure.toolkit.intellij.monitor.view.right.filter.timerange;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.util.UserDataHolder;
 import com.intellij.util.ui.JBUI;
 import com.michaelbaranov.microba.calendar.DatePicker;
 import com.michaelbaranov.microba.calendar.resource.Resource;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -19,7 +23,7 @@ public class TimePicker extends DatePicker {
     private JPopupMenu popup;
     private TimePickerPopupPanel popupPanel;
     private JFormattedTextField field;
-    private JButton button;
+    private AzureActionButton<Void> button;
     private ComponentListener componentListener;
 
     public TimePicker() {
@@ -74,14 +78,24 @@ public class TimePicker extends DatePicker {
     }
 
     private void initListeners() {
+        final Action<Void> pickAction = new Action<Void>(Action.Id.of("user/monitor.pick_time"))
+                .withAuthRequired(false)
+                .withHandler((Void ignore, AnActionEvent event) -> {
+                    final ActionEvent actionEvent = event.getData(AzureActionButton.ACTION_EVENT_KEY);
+                    final boolean visible = Objects.nonNull(actionEvent) && actionEvent.getSource() != popupPanel.getCalendarPane();
+                    showPopup(visible);
+                });
+        this.button.setAction(pickAction);
         this.componentListener = new ComponentListener();
-        this.button.addActionListener(this.componentListener);
         this.field.addPropertyChangeListener(this.componentListener);
-        this.popupPanel.getOkButton().addActionListener(event -> {
-            showPopup(false);
-            final Date timeDate = popupPanel.getTimeDate();
-            Optional.ofNullable(popupPanel.getTimeDate()).ifPresent(t -> this.field.setValue(t));
-        });
+        final Action<Void> pickTimeAction = new Action<Void>(Action.Id.of("user/monitor.pick_time"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> {
+                    AzureTaskManager.getInstance().runLater(() -> showPopup(false));
+                    final Date timeDate = popupPanel.getTimeDate();
+                    Optional.ofNullable(popupPanel.getTimeDate()).ifPresent(t -> this.field.setValue(t));
+                });
+        this.popupPanel.getOkButton().setAction(pickTimeAction);
         this.addPropertyChangeListener(evt -> {
             if ("dateFormat".equals(evt.getPropertyName())) {
                 field.setFormatterFactory(createFormatterFactory());
@@ -95,7 +109,7 @@ public class TimePicker extends DatePicker {
         this.field.setFocusLostBehavior(this.getFocusLostBehavior());
         this.field.setEditable(this.isFieldEditable());
         this.field.setToolTipText(this.getToolTipText());
-        this.button = new JButton();
+        this.button = new AzureActionButton<>();
         this.button.setFocusable(false);
         this.button.setMargin(JBUI.emptyInsets());
         this.button.setToolTipText(this.getToolTipText());
@@ -143,7 +157,7 @@ public class TimePicker extends DatePicker {
         this.field.addPropertyChangeListener(this.componentListener);
     }
 
-    private class ComponentListener implements ActionListener, PropertyChangeListener {
+    private class ComponentListener implements PropertyChangeListener {
         public ComponentListener() {
         }
 

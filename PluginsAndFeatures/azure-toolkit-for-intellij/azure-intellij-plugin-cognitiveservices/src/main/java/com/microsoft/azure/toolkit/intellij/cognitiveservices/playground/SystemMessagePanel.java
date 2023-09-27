@@ -12,7 +12,9 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.components.OpenAISystemTemplateComboBox;
 import com.microsoft.azure.toolkit.intellij.cognitiveservices.model.SystemMessage;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureTextArea;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -26,7 +28,6 @@ import org.apache.commons.lang.ObjectUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -52,7 +53,7 @@ public class SystemMessagePanel implements AzureForm<SystemMessage> {
     private JBLabel lblExampleDescription;
     private JScrollPane scrollPane;
     private JPanel pnlExample;
-    private JButton btnAddExample;
+    private AzureActionButton<Void> btnAddExample;
     private OpenAISystemTemplateComboBox cbSystemTemplate;
     private JPanel pnlSystemMessageContainer;
     private JPanel pnlExamplesContainer;
@@ -72,8 +73,11 @@ public class SystemMessagePanel implements AzureForm<SystemMessage> {
     }
 
     private void init() {
+        final Action<Void> addExampleAction = new Action<Void>(Action.Id.of("user/openai.add_example"))
+                .withAuthRequired(false)
+                .withHandler(ignore -> this.onAddNewExample());
+        this.btnAddExample.setAction(addExampleAction);
         this.btnAddExample.setIcon(AllIcons.General.Add);
-        this.btnAddExample.addActionListener(this::onAddNewExample);
 
         this.lblSystemDescription.setText(SYSTEM_MESSAGE_DESCRIPTION);
         this.lblSystemDescription.setAllowAutoWrapping(true);
@@ -131,7 +135,7 @@ public class SystemMessagePanel implements AzureForm<SystemMessage> {
         this.lblSaveChanges.setVisible(!ObjectUtils.equals(value, this.systemMessage));
     }
 
-    private void onAddNewExample(final ActionEvent actionEvent) {
+    private void onAddNewExample() {
         addExamplePanel(SystemMessage.Example.builder().build());
     }
 

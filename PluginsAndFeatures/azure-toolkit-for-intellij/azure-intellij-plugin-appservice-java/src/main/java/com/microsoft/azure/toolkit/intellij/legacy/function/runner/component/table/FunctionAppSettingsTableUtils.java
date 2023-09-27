@@ -19,6 +19,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.table.AppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.AzureFunctionsConstants;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
@@ -27,12 +28,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.annotation.Nonnull;
 import javax.swing.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -109,24 +105,20 @@ public class FunctionAppSettingsTableUtils {
     }
 
     public static void importAppSettings(@Nonnull final FunctionAppSettingsTable appSettingsTable) {
-        final ImportAppSettingsDialog importAppSettingsDialog = new ImportAppSettingsDialog(appSettingsTable.getProject());
-        importAppSettingsDialog.addWindowListener(new WindowAdapter() {
-            @Override
-            @AzureOperation("user/function.close_app_settings_dialog")
-            public void windowClosed(WindowEvent windowEvent) {
-                super.windowClosed(windowEvent);
-                final Map<String, String> appSettings = importAppSettingsDialog.getAppSettings();
-                if (importAppSettingsDialog.shouldErase()) {
-                    appSettingsTable.clear();
-                }
-                if (appSettings != null) {
-                    appSettingsTable.addAppSettings(appSettings);
-                }
-            }
-        });
-        importAppSettingsDialog.setLocationRelativeTo(appSettingsTable);
-        importAppSettingsDialog.pack();
-        importAppSettingsDialog.setVisible(true);
+        final ImportAppSettingsDialog dialog = new ImportAppSettingsDialog(appSettingsTable.getProject());
+        dialog.setOkAction(new Action<ImportAppSettingsDialog.Result>(Action.Id.of("user/function.do_import_app_settings"))
+                .withLabel("Import")
+                .withAuthRequired(false)
+                .withHandler((result, event) -> {
+                    if (result.isEraseExistingSettings()) {
+                        appSettingsTable.clear();
+                    }
+                    if (result.getAppSettings() != null) {
+                        appSettingsTable.addAppSettings(result.getAppSettings());
+                    }
+                }));
+        dialog.pack();
+        dialog.show();
     }
 
     private static void exportAppSettings(@Nonnull final FunctionAppSettingsTable appSettingsTable) {

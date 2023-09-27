@@ -91,7 +91,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationConfigurable parentId="tools" displayName="Azure"
-                             id="com.microsoft.azure.toolkit.intellij.settings.AzureSettingsConfigurable"
+                             id="com.microsoft.intellij.AzureConfigurable"
                              provider="com.microsoft.azure.toolkit.intellij.settings.AzureSettingsConfigurableProvider"/>
     <projectConfigurable parentId="root" instance="com.microsoft.azure.toolkit.intellij.settings.DeprecatedAzureSettingsConfigurable"
                          id="com.microsoft.azure.toolkit.intellij.settings.DeprecatedAzureSettingsConfigurable" displayName="Microsoft Tools"/>

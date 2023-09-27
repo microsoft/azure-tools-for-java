@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.database.component;
 
 import com.intellij.icons.AllIcons;
+import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -15,7 +16,7 @@ import java.awt.event.MouseEvent;
 
 @Getter
 public class TestConnectionActionPanel extends JPanel {
-    private JButton copyButton;
+    private AzureActionButton<Void> copyButton;
     private JLabel iconLabel;
     private JPanel root;
 
