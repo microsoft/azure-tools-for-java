@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook.components;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.popup.ListItemDescriptorAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.popup.list.GroupedItemsListRenderer;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureSdkArtifactEntity;
@@ -20,14 +21,9 @@ import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,7 +46,15 @@ public class ModuleDependencyComboBox extends AzureComboBox<ProjectModule> {
     public ModuleDependencyComboBox(Project project) {
         super();
         this.project = project;
-        this.setRenderer(new GroupedItemsListRenderer<>(new ModuleDependencyItemDescriptor()));
+        this.setRenderer(new GroupedItemsListRenderer<>(new ModuleDependencyItemDescriptor()) {
+            @Override
+            public Component getListCellRendererComponent(JList<? extends ProjectModule> list, ProjectModule value, int index, boolean isSelected, boolean cellHasFocus) {
+                final SimpleListCellRenderer<ProjectModule> renderer = getAzureRenderer();
+                return index < 0 && Objects.nonNull(renderer) ?
+                        renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) :
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
     }
 
     public void setArtifact(final AzureSdkArtifactEntity pkg, final String version) {

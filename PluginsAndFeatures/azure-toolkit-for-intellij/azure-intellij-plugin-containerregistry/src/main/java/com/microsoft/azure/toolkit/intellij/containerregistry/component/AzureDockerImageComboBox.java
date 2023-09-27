@@ -17,6 +17,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.popup.list.GroupedItemsListRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -33,10 +34,12 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +52,15 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     public AzureDockerImageComboBox(Project project) {
         super(false);
         this.project = project;
-        this.setRenderer(new GroupedItemsListRenderer<>(new DockerImageDescriptor()));
+        this.setRenderer(new GroupedItemsListRenderer<>(new DockerImageDescriptor()) {
+            @Override
+            public Component getListCellRendererComponent(JList<? extends DockerImage> list, DockerImage value, int index, boolean isSelected, boolean cellHasFocus) {
+                final SimpleListCellRenderer<DockerImage> renderer = getAzureRenderer();
+                return index < 0 && Objects.nonNull(renderer) ?
+                        renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) :
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
         this.setUsePreferredSizeAsMinimum(false);
     }
 
