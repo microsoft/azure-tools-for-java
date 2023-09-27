@@ -254,8 +254,14 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                 processHandler.println(inputLine, ProcessOutputTypes.STDERR);
             }
         });
-        // Pending for function cli
-        final int result = process.waitFor();
+        int result;
+        try {
+            // Pending for function cli
+            result = process.waitFor();
+        } catch (final InterruptedException ie) {
+            // swallow interrupt exception, which is caused by user click the stop button
+            result = 0;
+        }
         if (result != 0) {
             throw new AzureToolkitRuntimeException(error[0]);
         }

@@ -18,7 +18,7 @@ import javax.swing.*;
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class AzureSettingsConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
-    public static final String AZURE_CONFIGURABLE_ID = "com.microsoft.intellij.AzureConfigurable";
+    public static final String AZURE_CONFIGURABLE_ID = "com.microsoft.azure.toolkit.intellij.settings.AzureSettingsConfigurable";
 
     private java.util.List<Configurable> myPanels;
     private final AzureSettingsPanel azureSettingsPanel;

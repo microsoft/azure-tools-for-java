@@ -31,63 +31,61 @@ public class JavaSourceCodeGenerator implements ISourceCodeGenerator {
             .map(m -> String.format("        chatMessages.add(new ChatMessage(ChatRole.%s, \"%s\"));",
                 m.getRole().toString().toUpperCase(), StringEscapeUtils.escapeJava(m.getContent())))
             .collect(Collectors.joining("\n"));
-
-        return String.format("""
-                import com.azure.ai.openai.OpenAIClient;
-                import com.azure.ai.openai.OpenAIClientBuilder;
-                import com.azure.ai.openai.models.ChatChoice;
-                import com.azure.ai.openai.models.ChatCompletions;
-                import com.azure.ai.openai.models.ChatCompletionsOptions;
-                import com.azure.ai.openai.models.ChatMessage;
-                import com.azure.ai.openai.models.ChatRole;
-                import com.azure.core.credential.AzureKeyCredential;
-                            
-                import java.util.Arrays;
-                import java.util.ArrayList;
-                import java.util.List;
-                            
-                /**
-                 * Note: The Azure OpenAI client library for Java is in preview.
-                 * Add the library dependency in Maven:
-                 * <pre>
-                 * &lt;dependency&gt;
-                 *     &lt;groupId&gt;com.azure&lt;/groupId&gt;
-                 *     &lt;artifactId&gt;azure-ai-openai&lt;/artifactId&gt;
-                 *     &lt;version&gt;1.0.0-beta.3&lt;/version&gt;
-                 * &lt;/dependency&gt;
-                 * </pre>
-                 */
-                public class Example {
-                    public static void main(String[] args) {
-                        String endpoint = "%s";
-                        String azureOpenaiKey = "YOUR_KEY";
-                        String deploymentOrModelId = "%s";
-                            
-                        OpenAIClient client = new OpenAIClientBuilder()
-                            .endpoint(endpoint)
-                            .credential(new AzureKeyCredential(azureOpenaiKey))
-                            .buildClient();
-                            
-                        List<ChatMessage> chatMessages = new ArrayList<>();
-                %s
-
-                        final ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);
-                        options.setMaxTokens(%d);
-                        options.setTemperature(%.2f);
-                        options.setFrequencyPenalty(%.1f);
-                        options.setPresencePenalty(%.1f);
-                        options.setTopP(%.2f);
-                        options.setStop(Arrays.asList(%s));
-                        ChatCompletions chatCompletions = client.getChatCompletions(deploymentOrModelId, options);
-                            
-                        for (ChatChoice choice : chatCompletions.getChoices()) {
-                            ChatMessage message = choice.getMessage();
-                            System.out.println("Message:");
-                            System.out.println(message.getContent());
-                        }
-                    }
-                }
-                """, endpoint, deployment.getName(), msgs,
+        final String content = "import com.azure.ai.openai.OpenAIClient;\n" +
+                "import com.azure.ai.openai.OpenAIClientBuilder;\n" +
+                "import com.azure.ai.openai.models.ChatChoice;\n" +
+                "import com.azure.ai.openai.models.ChatCompletions;\n" +
+                "import com.azure.ai.openai.models.ChatCompletionsOptions;\n" +
+                "import com.azure.ai.openai.models.ChatMessage;\n" +
+                "import com.azure.ai.openai.models.ChatRole;\n" +
+                "import com.azure.core.credential.AzureKeyCredential;\n" +
+                "            \n" +
+                "import java.util.Arrays;\n" +
+                "import java.util.ArrayList;\n" +
+                "import java.util.List;\n" +
+                "            \n" +
+                "/**\n" +
+                " * Note: The Azure OpenAI client library for Java is in preview.\n" +
+                " * Add the library dependency in Maven:\n" +
+                " * <pre>\n" +
+                " * &lt;dependency&gt;\n" +
+                " *     &lt;groupId&gt;com.azure&lt;/groupId&gt;\n" +
+                " *     &lt;artifactId&gt;azure-ai-openai&lt;/artifactId&gt;\n" +
+                " *     &lt;version&gt;1.0.0-beta.3&lt;/version&gt;\n" +
+                " * &lt;/dependency&gt;\n" +
+                " * </pre>\n" +
+                " */\n" +
+                "public class Example {\n" +
+                "    public static void main(String[] args) {\n" +
+                "        String endpoint = \"%s\";\n" +
+                "        String azureOpenaiKey = \"YOUR_KEY\";\n" +
+                "        String deploymentOrModelId = \"%s\";\n" +
+                "            \n" +
+                "        OpenAIClient client = new OpenAIClientBuilder()\n" +
+                "            .endpoint(endpoint)\n" +
+                "            .credential(new AzureKeyCredential(azureOpenaiKey))\n" +
+                "            .buildClient();\n" +
+                "            \n" +
+                "        List<ChatMessage> chatMessages = new ArrayList<>();\n" +
+                "%s\n" +
+                "\n" +
+                "        final ChatCompletionsOptions options = new ChatCompletionsOptions(chatMessages);\n" +
+                "        options.setMaxTokens(%d);\n" +
+                "        options.setTemperature(%.2f);\n" +
+                "        options.setFrequencyPenalty(%.1f);\n" +
+                "        options.setPresencePenalty(%.1f);\n" +
+                "        options.setTopP(%.2f);\n" +
+                "        options.setStop(Arrays.asList(%s));\n" +
+                "        ChatCompletions chatCompletions = client.getChatCompletions(deploymentOrModelId, options);\n" +
+                "            \n" +
+                "        for (ChatChoice choice : chatCompletions.getChoices()) {\n" +
+                "            ChatMessage message = choice.getMessage();\n" +
+                "            System.out.println(\"Message:\");\n" +
+                "            System.out.println(message.getContent());\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        return String.format(content, endpoint, deployment.getName(), msgs,
             config.getMaxResponse(),
             config.getTemperature(),
             config.getFrequencyPenalty(),

@@ -50,12 +50,7 @@ public class ModuleDependencyComboBox extends AzureComboBox<ProjectModule> {
     public ModuleDependencyComboBox(Project project) {
         super();
         this.project = project;
-        this.setRenderer(new GroupedItemsListRenderer<>(new ModuleDependencyItemDescriptor()) {
-            @Override
-            protected boolean hasSeparator(ProjectModule value, int index) {
-                return index >= 0 && super.hasSeparator(value, index);
-            }
-        });
+        this.setRenderer(new GroupedItemsListRenderer<>(new ModuleDependencyItemDescriptor()));
     }
 
     public void setArtifact(final AzureSdkArtifactEntity pkg, final String version) {

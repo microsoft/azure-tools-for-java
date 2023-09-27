@@ -5,13 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.cognitiveservices.chatbox;
 
-import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.common.component.RoundedPanel;
 import lombok.Getter;
 
 import javax.swing.*;

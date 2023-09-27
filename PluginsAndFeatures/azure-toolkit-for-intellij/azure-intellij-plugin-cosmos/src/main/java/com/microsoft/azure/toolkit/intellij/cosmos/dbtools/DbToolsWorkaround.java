@@ -12,14 +12,12 @@ import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -33,7 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class DbToolsWorkaround implements ProjectActivity, DumbAware {
+public class DbToolsWorkaround implements StartupActivity, DumbAware {
     private static final String PARAM_NAME = "account";
     public static final String COSMOS_MONGO_ICON = "icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg";
     public static final String COSMOS_MONGO_DRIVER_ID = "az_cosmos_mongo";
@@ -43,7 +41,7 @@ public class DbToolsWorkaround implements ProjectActivity, DumbAware {
     public static final String COSMOS_CASSANDRA_DRIVER_CONFIG = "databaseDrivers/azure-cosmos-cassandra-drivers.xml";
 
     @Override
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(Project project) {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
                 DbToolsWorkaround.makeAccountShowAtTop();
@@ -54,7 +52,6 @@ public class DbToolsWorkaround implements ProjectActivity, DumbAware {
                 AzureTelemeter.log(AzureTelemetry.Type.ERROR, new HashMap<>(), t);
             }
         });
-        return null;
     }
 
     private static void loadMongoDriver() {

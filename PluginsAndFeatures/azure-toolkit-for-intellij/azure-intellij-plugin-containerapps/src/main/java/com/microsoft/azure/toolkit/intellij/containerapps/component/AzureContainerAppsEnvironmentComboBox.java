@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<ContainerAppsEnvironment> {
@@ -110,7 +111,7 @@ public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<Contain
         final List<ContainerAppsEnvironment> remoteEnvironments = stream.flatMap(s -> s.environments().list().stream())
                 .filter(env -> env.getFormalStatus().isConnected())
                 .filter(env -> Objects.equals(env.getRegion(), this.region))
-                .sorted(Comparator.comparing(ContainerAppsEnvironment::getName)).toList();
+                .sorted(Comparator.comparing(ContainerAppsEnvironment::getName)).collect(Collectors.toList());
         final List<ContainerAppsEnvironment> environments = new ArrayList<>(remoteEnvironments);
         final ContainerAppsEnvironment draftItem = this.draftItems.stream()
                 .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()) &&

@@ -12,20 +12,18 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionUtil;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import kotlin.Unit;
-import kotlin.coroutines.Continuation;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nonnull;
 import java.time.Duration;
 
 @Slf4j
-public class WhatsNewStartupActivity implements ProjectActivity, DumbAware {
+public class WhatsNewStartupActivity implements StartupActivity, DumbAware {
     @Override
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(@NotNull Project project) {
         Mono.delay(Duration.ofSeconds(5)).subscribe(next -> {
             if (project.isDisposed()) {
                 return;
@@ -34,6 +32,5 @@ public class WhatsNewStartupActivity implements ProjectActivity, DumbAware {
             final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
             AzureTaskManager.getInstance().runLater(() -> ActionUtil.invokeAction(action, context, "AzurePluginStartupActivity", null, null));
         }, error -> log.warn("error occurs when opening what's new.", error));
-        return null;
     }
 }

@@ -93,14 +93,17 @@ public class AzureFacetRootNode extends AbstractProjectNode<AzureModule> impleme
 
     private void onEvent(@Nonnull final AzureEvent azureEvent) {
         switch (azureEvent.getType()) {
-            case "account.logged_in.account", "account.logged_out.account" -> this.updateChildren();
-            case "connector.refreshed.module_root" -> {
+            case "account.logged_in.account":
+            case "account.logged_out.account":
+                this.updateChildren();
+                break;
+            case "connector.refreshed.module_root":
                 if (Objects.equals(azureEvent.getSource(), this.getValue())) {
                     this.updateChildren();
                 }
-            }
-            default -> {
-            }
+                break;
+            default:
+                break;
         }
     }
 

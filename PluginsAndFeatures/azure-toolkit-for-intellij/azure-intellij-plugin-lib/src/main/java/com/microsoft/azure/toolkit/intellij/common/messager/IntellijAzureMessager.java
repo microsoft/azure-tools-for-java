@@ -86,7 +86,8 @@ public class IntellijAzureMessager implements IAzureMessager {
             log.warn("caught an error by messager", ((Throwable) raw.getPayload()));
         }
         switch (raw.getType()) {
-            case ALERT, CONFIRM -> {
+            case ALERT:
+            case CONFIRM:
                 final boolean[] result = new boolean[]{true};
                 try {
                     ApplicationManager.getApplication().invokeAndWait(() -> {
@@ -97,12 +98,9 @@ public class IntellijAzureMessager implements IAzureMessager {
                     e.printStackTrace();
                 }
                 return result[0];
-            }
-            case DEBUG -> {
+            case DEBUG :
                 return true;
-            }
-            default -> {
-            }
+            default :
         }
         this.showNotification(raw);
         return true;
@@ -125,7 +123,7 @@ public class IntellijAzureMessager implements IAzureMessager {
         final Notification notification = this.createNotification(message.getTitle(), content, type);
         final Collection<NotificationAction> actions = Arrays.stream(message.getActions())
             .map(a -> ImmutablePair.of(a, a.getView(null)))
-            .filter(p -> p.getValue().isVisible())
+            .filter(p -> p.getValue().isVisible() && p.getValue().isEnabled())
             .map(p -> new NotificationAction(p.getValue().getLabel()) {
                 @Override
                 public void actionPerformed(@Nonnull AnActionEvent e, @Nonnull Notification notification) {

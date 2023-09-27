@@ -49,12 +49,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     public AzureDockerImageComboBox(Project project) {
         super(false);
         this.project = project;
-        this.setRenderer(new GroupedItemsListRenderer<>(new DockerImageDescriptor()) {
-            @Override
-            protected boolean hasSeparator(DockerImage value, int index) {
-                return index >= 0 && super.hasSeparator(value, index);
-            }
-        });
+        this.setRenderer(new GroupedItemsListRenderer<>(new DockerImageDescriptor()));
         this.setUsePreferredSizeAsMinimum(false);
     }
 

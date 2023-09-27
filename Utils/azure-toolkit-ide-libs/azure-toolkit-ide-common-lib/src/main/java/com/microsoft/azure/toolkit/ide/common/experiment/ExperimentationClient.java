@@ -42,7 +42,7 @@ public class ExperimentationClient {
                     .withAudienceFilters(audienceFilters)
                     .withAssignmentIds(assignmentIds)
                     .create();
-        } catch (final Exception ignored) {
+        } catch (final Throwable ignored) {
         }
     }
 

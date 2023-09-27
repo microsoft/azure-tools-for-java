@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.cognitiveservices;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.GuidanceViewManager;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -21,18 +21,18 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.cognitiveservices.CognitiveServicesActionsContributor.CREATE_DEPLOYMENT;
 import static com.microsoft.azure.toolkit.ide.cognitiveservices.CognitiveServicesActionsContributor.OPEN_DEPLOYMENT_IN_PLAYGROUND;
 import static com.microsoft.azure.toolkit.intellij.cognitiveservices.IntelliJCognitiveServicesActionsContributor.TRY_OPENAI;
 import static com.microsoft.azure.toolkit.intellij.cognitiveservices.IntelliJCognitiveServicesActionsContributor.TRY_PLAYGROUND;
 
-public class CognitiveServicesStartupListener implements ProjectActivity {
+public class CognitiveServicesStartupListener implements StartupActivity {
     @Override
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(Project project) {
         tryOpenAI(project);
         tryPlayground();
-        return null;
     }
 
     private static void tryOpenAI(@Nonnull Project project) {
@@ -59,7 +59,7 @@ public class CognitiveServicesStartupListener implements ProjectActivity {
     private static void tryPlayground() {
             AzureEventBus.once("account.subscription_changed.account", (_a, _b) -> {
                 final List<CognitiveAccount> accounts = Azure.az(AzureCognitiveServices.class).list().stream()
-                    .flatMap(m -> m.accounts().list().stream()).toList();
+                    .flatMap(m -> m.accounts().list().stream()).collect(Collectors.toList());
                 final Optional<CognitiveDeployment> gptModel = accounts.stream()
                     .flatMap(a -> a.deployments().list().stream())
                     .filter(d -> d.getModel().isGPTModel())

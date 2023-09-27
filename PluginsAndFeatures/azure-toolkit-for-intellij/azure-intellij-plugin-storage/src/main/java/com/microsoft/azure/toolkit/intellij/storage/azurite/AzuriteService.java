@@ -168,7 +168,7 @@ public class AzuriteService {
         final Content result = Arrays.stream(toolWindow.getContentManager().getContents())
                 .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), displayName))
                 .findFirst().orElseGet(() -> {
-                    final Content content = ContentFactory.getInstance().createContent(console.getComponent(), displayName, false);
+                    final Content content = ContentFactory.SERVICE.getInstance().createContent(console.getComponent(), displayName, false);
                     content.setIcon(ICON);
                     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
                     toolWindow.getContentManager().addContent(content);
@@ -201,14 +201,15 @@ public class AzuriteService {
 
     private static String getAzuriteWorkspace(@Nonnull final Project project) {
         final String fileLocation = StringUtils.firstNonBlank(Azure.az().config().getAzuriteWorkspace(), INTELLIJ_GLOBAL_STORAGE);
-        return switch (fileLocation) {
-            case INTELLIJ_GLOBAL_STORAGE -> Path.of(CommonConst.PLUGIN_PATH, AZURITE).toString();
-            case CURRENT_PROJECT -> {
+        switch (fileLocation) {
+            case INTELLIJ_GLOBAL_STORAGE:
+                return Path.of(CommonConst.PLUGIN_PATH, AZURITE).toString();
+            case CURRENT_PROJECT:
                 final VirtualFile virtualFile = Optional.ofNullable(ProjectUtil.guessProjectDir(project)).orElseGet(project::getBaseDir);
-                yield Path.of(virtualFile.getPath(), AZURITE).toString();
-            }
-            default -> fileLocation;
-        };
+                return Path.of(virtualFile.getPath(), AZURITE).toString();
+            default:
+                return fileLocation;
+        }
     }
 
     private static String getAzuritePath() {

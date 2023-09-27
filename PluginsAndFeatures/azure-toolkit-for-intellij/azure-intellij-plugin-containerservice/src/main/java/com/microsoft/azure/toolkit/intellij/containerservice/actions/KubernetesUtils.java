@@ -45,9 +45,10 @@ public class KubernetesUtils {
         final String installedPluginId = getInstalledKubernetesPlugin();
         if (StringUtils.isNoneBlank(installedPluginId)) {
             return getOpenInKubernetesPluginAction(project, installedPluginId);
-        } else {
-            return getRecommendKubernetesPluginAction(project);
         }
+        return StringUtils.isNoneBlank(installedPluginId) ?
+                getOpenInKubernetesPluginAction(project, installedPluginId) :
+                getRecommendKubernetesPluginAction(project);
     }
 
     private static Action<?> getOpenInKubernetesPluginAction(@Nonnull final Project project, String installedPluginId) {
@@ -77,13 +78,13 @@ public class KubernetesUtils {
     private static Action<?> getRecommendKubernetesPluginAction(@Nonnull final Project project) {
         return new Action<>(Action.Id.of("user/kubernetes.install_kubernetes_plugin"))
             .withLabel("Install kubernetes plugin")
-            .withHandler(ignore -> AzureTaskManager.getInstance().runLater(KubernetesUtils::searchK8sPlugin));
+            .withHandler(ignore -> AzureTaskManager.getInstance().runLater(()-> searchK8sPlugin(project)));
     }
 
     @AzureOperation(name = "boundary/kubernetes.search_k8s_plugin")
-    private static void searchK8sPlugin() {
-        ShowSettingsUtil.getInstance().editConfigurable(null, new PluginManagerConfigurable(), it ->
-            it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")
+    private static void searchK8sPlugin(@Nonnull final Project project) {
+        ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginManagerConfigurable.class, it ->
+                it.openMarketplaceTab("/tag: \"Cloud\" Kubernetes")
         );
     }
 

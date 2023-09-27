@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.common.auth;
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -61,11 +60,6 @@ public class SignInAction extends AnAction implements DumbAware {
         if (Objects.nonNull(project)) {
             authActionPerformed(project);
         }
-    }
-
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
     }
 
     @Override

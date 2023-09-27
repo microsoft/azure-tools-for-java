@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 @Getter
 public class JsonSourceCodeGenerator implements ISourceCodeGenerator {
@@ -27,18 +28,16 @@ public class JsonSourceCodeGenerator implements ISourceCodeGenerator {
             node.put("role", m.getRole().toString());
             node.put("content", m.getContent());
             return node;
-        }).toList();
-        return String.format("""
-                {
-                  "messages": %s,
-                  "temperature": %.2f,
-                  "top_p": %.2f,
-                  "frequency_penalty": %.1f,
-                  "presence_penalty": %.1f,
-                  "max_tokens": %d,
-                  "stop": %s
-                }
-                """,
+        }).collect(Collectors.toList());
+        return String.format("{\n" +
+                        "  \"messages\": %s,\n" +
+                        "  \"temperature\": %.2f,\n" +
+                        "  \"top_p\": %.2f,\n" +
+                        "  \"frequency_penalty\": %.1f,\n" +
+                        "  \"presence_penalty\": %.1f,\n" +
+                        "  \"max_tokens\": %d,\n" +
+                        "  \"stop\": %s\n" +
+                        "}",
             mapper.writerWithDefaultPrettyPrinter().writeValueAsString(nodes),
             config.getTemperature(),
             config.getTopP(),

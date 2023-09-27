@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 @Getter
 public class CurlSourceCodeGenerator implements ISourceCodeGenerator {
@@ -29,22 +30,20 @@ public class CurlSourceCodeGenerator implements ISourceCodeGenerator {
             node.put("role", m.getRole().toString());
             node.put("content", m.getContent());
             return node;
-        }).toList();
+        }).collect(Collectors.toList());
         //noinspection deprecation
-        return String.format("""
-                curl "%s" \\
-                  -H "Content-Type: application/json" \\
-                  -H "api-key: YOUR_API_KEY" \\
-                  -d "{
-                  \\"messages\\": %s,
-                  \\"max_tokens\\": %d,
-                  \\"temperature\\": %.2f,
-                  \\"frequency_penalty\\": %.1f,
-                  \\"presence_penalty\\": %.1f,
-                  \\"top_p\\": %.2f,
-                  \\"stop\\": %s
-                }"
-                """,
+        return String.format("curl \"%s\" \\\n" +
+                        "  -H \"Content-Type: application/json\" \\\n" +
+                        "  -H \"api-key: YOUR_API_KEY\" \\\n" +
+                        "  -d \"{\n" +
+                        "  \\\"messages\\\": %s,\n" +
+                        "  \\\"max_tokens\\\": %d,\n" +
+                        "  \\\"temperature\\\": %.2f,\n" +
+                        "  \\\"frequency_penalty\\\": %.1f,\n" +
+                        "  \\\"presence_penalty\\\": %.1f,\n" +
+                        "  \\\"top_p\\\": %.2f,\n" +
+                        "  \\\"stop\\\": %s\n" +
+                        "}\"",
             endpoint,
             StringEscapeUtils.escapeJson(mapper.writeValueAsString(nodes)),
             config.getMaxResponse(),

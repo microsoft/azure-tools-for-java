@@ -9,7 +9,7 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.IconLoader;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.Azure;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -58,9 +58,7 @@ public enum CustomerSurvey implements ICustomerSurvey {
     private final Icon icon;
 
     private static String getInstallationId() {
-        return Optional.ofNullable(AzureTelemeter.getCommonProperties())
-                .map(properties -> properties.get("Installation ID"))
-                .orElse(StringUtils.EMPTY);
+        return Azure.az().config().getMachineId();
     }
 
     @Override

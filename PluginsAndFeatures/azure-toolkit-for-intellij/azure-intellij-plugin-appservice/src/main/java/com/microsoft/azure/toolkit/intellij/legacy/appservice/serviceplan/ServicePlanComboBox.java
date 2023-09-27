@@ -146,7 +146,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
                     .collect(Collectors.toList()));
             }
             final List<AppServicePlan> remotePlans = Azure.az(AzureAppService.class).plans(subscription.getId()).list()
-                .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).toList();
+                .stream().sorted((first, second) -> StringUtils.compare(first.getName(), second.getName())).collect(Collectors.toList());
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {

@@ -6,12 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.explorer;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -43,11 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.tree.DefaultTreeModel;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
@@ -129,7 +120,7 @@ public class AzureExplorer extends Tree {
             explorer.putClientProperty(KEY_SCROLL_PANE, scrollPane);
             windowPanel.setContent(scrollPane);
             this.addToolbarActions(toolWindow, project, explorer);
-            final ContentFactory contentFactory = ContentFactory.getInstance();
+            final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final Content content = contentFactory.createContent(windowPanel, null, false);
             toolWindow.getContentManager().addContent(content);
         }
@@ -144,11 +135,6 @@ public class AzureExplorer extends Tree {
                 @Override
                 public void update(@NotNull final AnActionEvent e) {
                     e.getPresentation().setEnabled(Azure.az(AzureAccount.class).isLoggedIn());
-                }
-
-                @Override
-                public ActionUpdateThread getActionUpdateThread() {
-                    return ActionUpdateThread.BGT;
                 }
             };
             final AnAction feedbackAction = ActionManager.getInstance().getAction("Actions.ProvideFeedback");
@@ -165,7 +151,7 @@ public class AzureExplorer extends Tree {
                 final AnAction openSdkReferenceBookAction = ActionManager.getInstance().getAction("user/sdk.OpenSdkReferenceBook");
                 final AnAction openResourceConnectionExplorerAction = ActionManager.getInstance().getAction("AzureToolkit.OpenResourceConnectionExplorerAction");
                 final AnAction openAzureSettingsAction = ActionManager.getInstance().getAction(OPEN_AZURE_SETTINGS.getId());
-                (toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction, openResourceConnectionExplorerAction,
+                ((ToolWindowEx)toolWindow).setAdditionalGearActions(new DefaultActionGroup(openSdkReferenceBookAction, openAzureSettingsAction, openResourceConnectionExplorerAction,
                     Separator.create(), reportIssueAction, featureRequestAction, feedbackAction, Separator.create(), devBlogsAction, documentAction));
             }
         }

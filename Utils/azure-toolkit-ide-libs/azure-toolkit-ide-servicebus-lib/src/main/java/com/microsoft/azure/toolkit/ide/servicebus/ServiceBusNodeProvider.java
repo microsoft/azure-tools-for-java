@@ -89,11 +89,14 @@ public class ServiceBusNodeProvider implements IExplorerNodeProvider {
         if (Objects.isNull(entityStatus)) {
             return null;
         }
-        return switch (entityStatus) {
-            case SEND_DISABLED -> AzureIcon.Modifier.SEND_DISABLED;
-            case RECEIVE_DISABLED -> AzureIcon.Modifier.RECEIVED_DISABLED;
-            default -> null;
-        };
+        switch (entityStatus) {
+            case SEND_DISABLED:
+                return AzureIcon.Modifier.SEND_DISABLED;
+            case RECEIVE_DISABLED:
+                return AzureIcon.Modifier.RECEIVED_DISABLED;
+            default:
+                return null;
+        }
     }
 
 }

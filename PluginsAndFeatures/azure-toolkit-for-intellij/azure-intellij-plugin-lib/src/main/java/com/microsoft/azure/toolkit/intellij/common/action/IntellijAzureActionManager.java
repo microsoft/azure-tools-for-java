@@ -16,9 +16,7 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
-import com.microsoft.azure.toolkit.lib.common.action.ActionInstance;
-import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
+import com.microsoft.azure.toolkit.lib.common.action.*;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Emulatable;
@@ -124,11 +122,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.action = action;
         }
 
-        @Override
-        public @Nonnull ActionUpdateThread getActionUpdateThread() {
-            return ActionUpdateThread.BGT;
-        }
-
         @Nullable
         public ShortcutSet getShortcuts() {
             final Object shortcuts = action.getShortcut();
@@ -204,7 +197,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
             this.setPopup(true);
             this.addActions(group.getActions());
             final Presentation presentation = this.getTemplatePresentation();
-            presentation.setPerformGroup(true);
+            // presentation.setPerformGroup(true);
             final IView.Label view = this.group.getView();
             Optional.ofNullable(this.group.getView()).ifPresent(v -> presentation.setText(v.getLabel()));
         }
@@ -221,11 +214,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
                 presentation.setVisible(v.isVisible());
                 Optional.ofNullable(v.getIconPath()).filter(StringUtils::isNotBlank).map(IntelliJAzureIcons::getIcon).ifPresent(presentation::setIcon);
             });
-        }
-
-        @Override
-        public @Nonnull ActionUpdateThread getActionUpdateThread() {
-            return ActionUpdateThread.BGT;
         }
 
         private void addActions(List<Object> actions) {
@@ -295,8 +283,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
         public void registerCustomShortcutSetForActions(JComponent component, @Nullable Disposable disposable) {
             for (final AnAction origin : this.getChildActionsOrStubs()) {
-                final AnAction real = origin instanceof com.intellij.openapi.actionSystem.AnActionWrapper ?
-                    ((com.intellij.openapi.actionSystem.AnActionWrapper) origin).getDelegate() : origin;
+                final AnAction real = origin;
                 if (real instanceof AnActionWrapper) {
                     final ShortcutSet shortcuts = ((AnActionWrapper<?>) real).getShortcuts();
                     if (Objects.nonNull(shortcuts)) {

@@ -146,7 +146,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         final List<SimpleSubscription> subs = this.candidates.stream()
             .filter(s -> StringUtils.isBlank(k) || StringUtils.containsIgnoreCase(s.getName(), k) || StringUtils.containsIgnoreCase(s.getId(), k))
             .sorted(Comparator.comparing(SimpleSubscription::isSelected).reversed())
-            .toList();
+            .collect(Collectors.toList());
         for (final SimpleSubscription sd : subs) {
             model.addRow(new Object[]{sd.isSelected(), sd.getName(), sd});
         }

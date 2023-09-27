@@ -128,9 +128,11 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withLabel("Connect Azure Resource...")
             .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
             .withHandler((target, e) -> {
-                if (target instanceof AzureModule module) {
+                if (target instanceof AzureModule) {
+                    AzureModule module = (AzureModule) target;
                     AzureTaskManager.getInstance().runLater(() -> ModuleConnectorAction.connectModuleToAzureResource(module.getModule()));
-                } else if (target instanceof ConnectionManager cm) {
+                } else if (target instanceof ConnectionManager) {
+                    ConnectionManager cm = (ConnectionManager) target;
                     AzureTaskManager.getInstance().runLater(() -> ModuleConnectorAction.connectModuleToAzureResource(cm.getProfile().getModule().getModule()));
                 }
             })

@@ -213,7 +213,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
                 .map(t -> (DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)t)
                 .collect(Collectors.toList());
         final List<DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask> invalidTasks =
-                rcTasks.stream().filter(t -> !Objects.equals(this, t.getConfig())).toList();
+                rcTasks.stream().filter(t -> !Objects.equals(this, t.getConfig())).collect(Collectors.toList());
         tasks.removeAll(invalidTasks);
         rcTasks.removeAll(invalidTasks);
         if (CollectionUtils.isEmpty(rcTasks) && connections.stream().anyMatch(c -> c.isApplicableFor(this))) {

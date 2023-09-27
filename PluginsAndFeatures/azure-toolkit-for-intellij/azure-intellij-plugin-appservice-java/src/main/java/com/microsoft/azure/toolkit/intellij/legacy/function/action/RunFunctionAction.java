@@ -12,7 +12,6 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -49,11 +48,6 @@ public class RunFunctionAction extends AnAction {
     public void update(AnActionEvent e) {
         final boolean onModule = Objects.nonNull(LangDataKeys.MODULE.getData(e.getDataContext()));
         e.getPresentation().setEnabledAndVisible(onModule && FunctionUtils.isFunctionProject(e.getProject()));
-    }
-
-    @Override
-    public ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
     }
 
     @AzureOperation(name = "user/function.run_app.module", params = {"module.getName()"})

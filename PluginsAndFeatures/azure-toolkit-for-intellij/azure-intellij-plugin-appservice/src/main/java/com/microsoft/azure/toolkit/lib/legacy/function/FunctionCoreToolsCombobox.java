@@ -121,7 +121,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
     @Nullable
     @Override
     public String getDefaultValue() {
-        final List<String> items = this.getItems().stream().filter(s -> !s.equals(OPEN_AZURE_SETTINGS)).toList();
+        final List<String> items = this.getItems().stream().filter(s -> !s.equals(OPEN_AZURE_SETTINGS)).collect(Collectors.toList());
         final String value = doGetDefaultValue();
         final int index = items.indexOf(value);
         if (Objects.nonNull(value) && index > -1) {

@@ -9,7 +9,7 @@ import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.ui.EditorNotifications;
 import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
@@ -42,7 +42,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 
 @Slf4j
-public class BicepStartupActivity implements ProjectActivity, PluginStateListener {
+public class BicepStartupActivity implements StartupActivity, PluginStateListener {
     public static final String BICEP_LANGSERVER = "bicep-langserver";
     public static final String BICEP_LANG_SERVER_DLL = "Bicep.LangServer.dll";
     public static final String STDIO = "--stdio";
@@ -51,7 +51,7 @@ public class BicepStartupActivity implements ProjectActivity, PluginStateListene
     @Override
     @ExceptionNotification
     @AzureOperation(name = "platform/bicep.startup_language_server")
-    public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+    public void runActivity(@Nonnull Project project) {
         final File bicep = FileUtils.getFile(CommonConst.PLUGIN_PATH, "bicep", BICEP_LANGSERVER, BICEP_LANG_SERVER_DLL);
         final String dotnet = Azure.az().config().getDotnetRuntimePath();
         final boolean isDotnetReady = StringUtils.isNotEmpty(dotnet) && DotnetRuntimeHandler.isDotnetRuntimeInstalled(dotnet);
@@ -60,11 +60,10 @@ public class BicepStartupActivity implements ProjectActivity, PluginStateListene
             if (!isDotnetReady) {
                 AzureEventBus.on("dotnet_runtime.updated", new AzureEventBus.EventListener(e -> registerLanguageServerDefinition(project)));
             }
-            return null;
+            return;
         }
         PluginInstaller.addStateListener(this);
         registerLanguageServerDefinition(project);
-        return null;
     }
 
     public static void registerLanguageServerDefinition(@Nonnull Project project) {
@@ -89,28 +88,18 @@ public class BicepStartupActivity implements ProjectActivity, PluginStateListene
     @AzureOperation("boundary/bicep.register_textmate_bundles")
     public static synchronized boolean registerBicepTextMateBundle() {
         final TextMateSettingsState state = TextMateSettings.getInstance().getState();
-        try {
-            if (Objects.nonNull(state)) {
-                final Lock registrationLock = (Lock) FieldUtils.readField(TextMateService.getInstance(), "myRegistrationLock", true);
-                try {
-                    registrationLock.lock();
-                    final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
-                    final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
-                    final Collection<BundleConfigBean> bundles = state.getBundles();
-                    if (bicepTextmatePath.toFile().exists() && bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && b.isEnabled() && Path.of(b.getPath()).equals(bicepTextmatePath))) {
-                        final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
-                        newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-                        newBundles.add(new BundleConfigBean("bicep", bicepTextmatePath.toString(), true));
-                        newBundles.add(new BundleConfigBean("bicepparam", bicepParamTextmatePath.toString(), true));
-                        state.setBundles(newBundles);
-                        return true;
-                    }
-                } finally {
-                    registrationLock.unlock();
-                }
+        if (Objects.nonNull(state)) {
+            final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
+            final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
+            final Collection<BundleConfigBean> bundles = state.getBundles();
+            if (bicepTextmatePath.toFile().exists() && bundles.stream().noneMatch(b -> "bicep".equals(b.getName()) && b.isEnabled() && Path.of(b.getPath()).equals(bicepTextmatePath))) {
+                final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
+                newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
+                newBundles.add(new BundleConfigBean("bicep", bicepTextmatePath.toString(), true));
+                newBundles.add(new BundleConfigBean("bicepparam", bicepParamTextmatePath.toString(), true));
+                state.setBundles(newBundles);
+                return true;
             }
-        } catch (final IllegalAccessException e) {
-            throw new SystemException("can not acquire lock of 'TextMateService'.", e);
         }
         return false;
     }

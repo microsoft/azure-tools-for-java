@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.database.dbtools;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.database.dataSource.DatabaseConnectionInterceptor;
 import com.intellij.database.dataSource.DatabaseConnectionPoint;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
@@ -27,7 +26,7 @@ public class DatabaseServerConnectionInterceptor implements DatabaseConnectionIn
     @Nullable
     public CompletionStage<ProtoConnection> intercept(@Nonnull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
-        final String accountId = point.getAdditionalProperty(DatabaseServerParamEditor.KEY_DB_SERVER_ID);
+        final String accountId = point.getAdditionalProperties().get(DatabaseServerParamEditor.KEY_DB_SERVER_ID);
         if (StringUtils.isNotBlank(accountId) && !StringUtils.equalsIgnoreCase(accountId, DatabaseServerParamEditor.NONE)) {
             final Map<String, String> properties = new HashMap<>();
             final ResourceId id = ResourceId.fromString(accountId);

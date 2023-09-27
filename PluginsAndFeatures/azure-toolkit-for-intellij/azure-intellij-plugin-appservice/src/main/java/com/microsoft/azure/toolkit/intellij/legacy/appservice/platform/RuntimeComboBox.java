@@ -14,6 +14,7 @@ import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RuntimeComboBox extends AzureComboBox<Runtime> {
 
@@ -26,7 +27,7 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     public RuntimeComboBox(List<Runtime> platformList) {
         super();
         this.platformList = Collections.unmodifiableList(platformList.stream()
-                .sorted(Comparator.comparing(o -> WebAppService.getInstance().getRuntimeDisplayName(o))).toList());
+                .sorted(Comparator.comparing(o -> WebAppService.getInstance().getRuntimeDisplayName(o))).collect(Collectors.toList()));
         setGroupRender();
     }
 
@@ -53,12 +54,7 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     private void setGroupRender() {
-        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()) {
-            @Override
-            protected boolean hasSeparator(Runtime value, int index) {
-                return index >= 0 && super.hasSeparator(value, index);
-            }
-        });
+        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()));
     }
 
     private String getSeparatorCaption(Runtime item) {

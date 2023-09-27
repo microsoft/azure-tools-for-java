@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class AzureModule {
@@ -262,7 +263,7 @@ public class AzureModule {
     }
 
     public static List<AzureModule> list(@Nonnull Project project) {
-        return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(AzureModule::from).toList();
+        return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(AzureModule::from).collect(Collectors.toList());
     }
 
     /**

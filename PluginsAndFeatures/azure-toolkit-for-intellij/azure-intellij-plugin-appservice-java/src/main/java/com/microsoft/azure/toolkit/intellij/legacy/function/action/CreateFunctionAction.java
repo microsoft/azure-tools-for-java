@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -136,7 +137,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
             final IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
             final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
             if (view != null) {
-                final List<PsiDirectory> dirs = Arrays.stream(view.getDirectories()).filter(Objects::nonNull).toList();
+                final List<PsiDirectory> dirs = Arrays.stream(view.getDirectories()).filter(Objects::nonNull).collect(Collectors.toList());
                 for (final PsiDirectory dir : dirs) {
                     if (projectFileIndex.isUnderSourceRootOfType(dir.getVirtualFile(), JavaModuleSourceRootTypes.SOURCES) && doCheckPackageExists(dir)) {
                         return true;

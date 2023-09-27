@@ -149,9 +149,6 @@ public class AppInsightsClient {
             TelemetryManager.getInstance().setCommonProperties(toolkitDefaultProperties);
             TelemetryManager.getInstance().setEventNamePrefix(eventNamePrefix);
             TelemetryManager.getInstance().sendCachedTelemetries();
-            AzureTelemeter.setClient(client);
-            AzureTelemeter.setCommonProperties(toolkitDefaultProperties);
-            AzureTelemeter.setEventNamePrefix(eventNamePrefix);
         } catch (Exception ignore) {
         }
     }

@@ -92,7 +92,7 @@ public class WorkspaceComboBox extends AzureComboBox<LogAnalyticsWorkspaceConfig
         if (Objects.nonNull(this.subscription)) {
             if (CollectionUtils.isNotEmpty(this.draftItems)) {
                 workspaces.addAll(this.draftItems.stream()
-                        .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId())).toList());
+                        .filter(p -> Objects.equals(subscription.getId(), p.getSubscriptionId())).collect(Collectors.toList()));
             }
             final List<LogAnalyticsWorkspaceConfig> remoteWorkspaces = Azure.az(AzureLogAnalyticsWorkspace.class)
                     .logAnalyticsWorkspaces(subscription.getId()).list()

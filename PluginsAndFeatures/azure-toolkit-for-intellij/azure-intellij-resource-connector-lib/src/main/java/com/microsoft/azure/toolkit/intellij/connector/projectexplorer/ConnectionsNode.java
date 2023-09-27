@@ -27,6 +27,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.CONNECT_TO_MODULE;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REFRESH_MODULE_CONNECTIONS;
@@ -61,7 +62,7 @@ public class ConnectionsNode extends AbstractAzureFacetNode<ConnectionManager> {
         final List<ConnectionNode> children = Optional.ofNullable(this.getValue()).stream()
             .flatMap(p -> p.getConnections().stream())
             .map(r -> new ConnectionNode(this.getProject(), r))
-            .toList();
+            .collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(children)) {
             return children;
         }

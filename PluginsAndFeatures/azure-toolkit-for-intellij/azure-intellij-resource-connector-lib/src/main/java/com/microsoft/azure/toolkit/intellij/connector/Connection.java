@@ -79,7 +79,7 @@ public class Connection<R, C> {
     public Map<String, String> getEnvironmentVariables(final Project project) {
         final Map<String, String> result = this.resource.initEnv(project).entrySet().stream()
             .collect(Collectors.toMap(e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()), Map.Entry::getValue));
-        if (this.getResource().getDefinition() instanceof FunctionSupported<R>) {
+        if (this.getResource().getDefinition() instanceof FunctionSupported) {
             result.putAll(((FunctionSupported<R>) this.getResource().getDefinition()).getPropertiesForFunction(this.getResource().getData(), this));
         }
         return result;

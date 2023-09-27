@@ -21,6 +21,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
@@ -51,12 +52,12 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
 
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "platform/hdinsight.init_plugin")
     public void appFrameCreated(@Nonnull List<String> commandLineArgs) {
         try {
             DefaultLoader.setPluginComponent(this);
             DefaultLoader.setUiHelper(new UIHelperImpl());
             DefaultLoader.setIdeHelper(new IDEHelperImpl());
+            AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
             SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
             MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
             HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());

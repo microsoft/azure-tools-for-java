@@ -27,7 +27,7 @@ public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnec
     @Nullable
     public CompletionStage<ProtoConnection> intercept(@NotNull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
-        final String accountId = point.getAdditionalProperty(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
+        final String accountId = point.getAdditionalProperties().get(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
         if (StringUtils.isNotBlank(accountId) && !StringUtils.equalsIgnoreCase(accountId, AzureCosmosDbAccountParamEditor.NONE)) {
             final Map<String, String> properties = new HashMap<>();
             final ResourceId id = ResourceId.fromString(accountId);

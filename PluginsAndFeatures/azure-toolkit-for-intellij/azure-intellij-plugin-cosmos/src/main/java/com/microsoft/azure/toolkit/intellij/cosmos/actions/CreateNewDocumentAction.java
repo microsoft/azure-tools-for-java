@@ -32,16 +32,13 @@ import static com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFi
 
 public class CreateNewDocumentAction {
 
-    private static final String DEFAULT_TEMPLATE = """
-            {
-            \t"id": "replace_with_new_document_id"
-            }
-            """;
-    private static final String SHARED_KEY_TEMPLATE = """
-            {
-            \t"id": "replace_with_new_document_id",
-            \t"%s": "replace_with_new_document_shared_key"
-            }""";
+    private static final String DEFAULT_TEMPLATE = "{\n" +
+            "\t\"id\": \"replace_with_new_document_id\"\n" +
+            "}";
+    private static final String SHARED_KEY_TEMPLATE = "{\n" +
+            "\t\"id\": \"replace_with_new_document_id\",\n" +
+            "\t\"%s\": \"replace_with_new_document_shared_key\"\n" +
+            "}";
 
     public static void create(@Nonnull final ICosmosDocumentContainer<?> container, @Nonnull final Project project) {
         create(container, project, getDocumentTemplate(container));

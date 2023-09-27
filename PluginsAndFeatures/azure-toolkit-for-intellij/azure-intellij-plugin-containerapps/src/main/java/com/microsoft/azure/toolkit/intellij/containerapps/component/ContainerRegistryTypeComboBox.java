@@ -31,11 +31,17 @@ public class ContainerRegistryTypeComboBox extends ComboBox<String> {
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             this.setText(String.valueOf(value));
-            final Icon icon = switch (String.valueOf(value)) {
-                case ACR -> IntelliJAzureIcons.getIcon(AzureIcons.ContainerRegistry.MODULE);
-                case DOCKER_HUB -> IconLoader.getIcon("/icons/Docker.svg", ContainerRegistryTypeComboBox.class);
-                default -> IconLoader.getIcon("/icons/Registry.svg", ContainerRegistryTypeComboBox.class);
-            };
+            final Icon icon;
+            switch (String.valueOf(value)) {
+                case ACR:
+                    icon = IntelliJAzureIcons.getIcon(AzureIcons.ContainerRegistry.MODULE);
+                    break;
+                case DOCKER_HUB:
+                    icon = IconLoader.getIcon("/icons/Docker.svg", ContainerRegistryTypeComboBox.class);
+                    break;
+                default:
+                    icon = IconLoader.getIcon("/icons/Registry.svg", ContainerRegistryTypeComboBox.class);
+            }
             this.setIcon(icon);
             return this;
         }

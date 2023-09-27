@@ -391,7 +391,7 @@ public class Node<D> {
 
     public void triggerInlineAction(final Object event, int index, final String place) {
         final List<Action<? super D>> enabledActions = this.inlineActions.stream()
-            .filter(action -> action.getView(this.value, place).isEnabled()).toList();
+            .filter(action -> action.getView(this.value, place).isEnabled()).collect(Collectors.toList());
         if (index >= 0 && index < enabledActions.size()) {
             Optional.ofNullable(enabledActions.get(index)).ifPresent(a -> a.handle(this.value, event));
         }

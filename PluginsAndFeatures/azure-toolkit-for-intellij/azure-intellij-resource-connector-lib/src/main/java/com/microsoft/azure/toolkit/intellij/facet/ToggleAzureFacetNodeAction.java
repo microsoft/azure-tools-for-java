@@ -77,7 +77,7 @@ public class ToggleAzureFacetNodeAction extends AnAction {
     private static Module getModule(final @Nonnull AnActionEvent e) {
         Module module = LangDataKeys.MODULE.getData(e.getDataContext());
         final Object[] selected = PlatformDataKeys.SELECTED_ITEMS.getData(e.getDataContext());
-        final boolean onDotAzure = Objects.nonNull(selected) && selected.length == 1 && (selected[0] instanceof PsiDirectoryNode node) && ".azure".equalsIgnoreCase(node.getValue().getName());
+        final boolean onDotAzure = Objects.nonNull(selected) && selected.length == 1 && (selected[0] instanceof PsiDirectoryNode) && ".azure".equalsIgnoreCase(((PsiDirectoryNode)selected[0]).getValue().getName());
         if (Objects.isNull(module) && onDotAzure && Objects.nonNull(e.getProject())) {
             module = ModuleUtil.findModuleForFile(((PsiDirectoryNode) selected[0]).getValue().getVirtualFile(), e.getProject());
         }

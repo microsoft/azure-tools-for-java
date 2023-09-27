@@ -19,7 +19,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.ClientProperty;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
@@ -29,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +53,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         final AbstractProjectViewPane currentProjectViewPane = ProjectView.getInstance(project).getCurrentProjectViewPane();
         Optional.ofNullable(currentProjectViewPane)
                 .map(AbstractProjectViewPane::getTree)
-                .ifPresent(tree -> ClientProperty.put(tree, ANIMATION_IN_RENDERER_ALLOWED, true));
+                .ifPresent(tree -> tree.putClientProperty(ANIMATION_IN_RENDERER_ALLOWED, true));
     }
 
     @Override
@@ -118,7 +118,8 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         @Override
         public void mousePressed(MouseEvent e) {
             final AbstractTreeNode<?> currentTreeNode = getCurrentTreeNode(e);
-            if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode node) {
+            if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode) {
+                final IAzureFacetNode node = (IAzureFacetNode) currentTreeNode;
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
                 final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.PROJECT_VIEW_POPUP + ".click", context);
                 if (e.getClickCount() == 1) {
@@ -143,13 +144,14 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
 
         private void modifyPopupActions(MouseEvent e) {
             final AbstractTreeNode<?> node = getCurrentTreeNode(e);
-            if (!(node instanceof IAzureFacetNode newNode)) {
+            if (!(node instanceof IAzureFacetNode)) {
                 if (Objects.nonNull(currentNode)) {
                     // clean up popup menu actions
                     resetPopupMenuActions();
                 }
                 return;
             }
+            final IAzureFacetNode newNode = (IAzureFacetNode) node;
             if (!Objects.equals(newNode, currentNode)) {
                 // update popup menu actions for new node
                 updatePopupMenuActions(newNode);
@@ -200,7 +202,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     }
 
     @Override
-    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
+    public Object getData(@NotNull Collection<AbstractTreeNode<?>> selected, @NotNull String dataId) {
         final IAzureFacetNode azureFacetNode = selected.stream()
                 .filter(node -> node instanceof IAzureFacetNode)
                 .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);

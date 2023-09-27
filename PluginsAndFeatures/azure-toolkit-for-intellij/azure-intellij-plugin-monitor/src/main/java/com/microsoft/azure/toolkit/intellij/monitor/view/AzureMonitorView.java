@@ -42,6 +42,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AzureMonitorView extends JPanel implements Disposable {
     private JPanel contentPanel;
@@ -80,7 +81,7 @@ public class AzureMonitorView extends JPanel implements Disposable {
                 final Subscription subscription = account.getSelectedSubscriptions().get(0);
                 try {
                     final List<LogAnalyticsWorkspace> workspaceList = Azure.az(AzureLogAnalyticsWorkspace.class)
-                            .logAnalyticsWorkspaces(subscription.getId()).list().stream().toList();
+                            .logAnalyticsWorkspaces(subscription.getId()).list().stream().collect(Collectors.toList());
                     if (workspaceList.size() > 0) {
                         defaultWorkspace = workspaceList.get(0);
                     }

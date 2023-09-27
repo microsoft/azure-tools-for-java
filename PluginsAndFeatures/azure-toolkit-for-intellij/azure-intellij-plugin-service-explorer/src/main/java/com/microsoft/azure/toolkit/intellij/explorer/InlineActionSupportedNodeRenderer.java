@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.common.component.TreeUtils.INLINE_ACTION_ICON_WIDTH;
 import static com.microsoft.azure.toolkit.intellij.common.component.TreeUtils.KEY_SCROLL_PANE;
@@ -27,17 +28,19 @@ public class InlineActionSupportedNodeRenderer extends NodeRenderer {
 
     @Override
     public void customizeCellRenderer(@Nonnull JTree jtree, final Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
-        if (value instanceof Tree.TreeNode<?> node) {
+        if (value instanceof Tree.TreeNode<?>) {
             //noinspection UnstableApiUsage
+            final Tree.TreeNode<?> node = (Tree.TreeNode<?>) value;
             final int hoveredRow = TreeHoverListener.getHoveredRow(jtree);
             this.inlineActionIcons = node.getInlineActionViews().stream()
                 .map(av -> IntelliJAzureIcons.getIcon(av.getIconPath()))
-                .filter(icon -> hoveredRow == row || icon == AllIcons.Nodes.Favorite).toList();
+                .filter(icon -> hoveredRow == row || icon == AllIcons.Nodes.Favorite).collect(Collectors.toList());
             this.viewportRect = Optional.ofNullable((JBScrollPane) jtree.getClientProperty(KEY_SCROLL_PANE))
                 .map(JBScrollPane::getViewport).map(JViewport::getViewRect).orElse(null);
             TreeUtils.renderMyTreeNode(jtree, node, selected, this);
             return;
-        } else if (value instanceof Tree.LoadMoreNode node) {
+        } else if (value instanceof Tree.LoadMoreNode) {
+            Tree.LoadMoreNode node = (Tree.LoadMoreNode) value;
             TreeUtils.renderLoadModeNode(jtree, node, selected, this);
             return;
         }

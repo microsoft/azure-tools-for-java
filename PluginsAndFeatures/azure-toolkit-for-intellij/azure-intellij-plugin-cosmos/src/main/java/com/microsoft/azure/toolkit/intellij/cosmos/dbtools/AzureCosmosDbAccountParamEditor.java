@@ -186,8 +186,8 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                 final String port = String.valueOf(connectionString.getPort());
                 final String user = connectionString.getUsername();
                 final String password = String.valueOf(connectionString.getPassword());
-                LocalDataSource.setUsername(dataSource, user);
-                interchange.getCredentials().storePassword(dataSource, new OneTimeString(password));
+                dataSource.setUsername(user);
+                interchange.getCredentials().setPassword(dataSource, new OneTimeString(password));
                 this.setUseSsl(true);
                 interchange.putProperties(consumer -> {
                     consumer.consume("host", host);

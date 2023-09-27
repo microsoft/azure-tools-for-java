@@ -99,7 +99,7 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
         }
         return FUNCTION_TEMPLATES.stream()
                 .filter(template -> selectedTriggers.contains(template.getName()))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override

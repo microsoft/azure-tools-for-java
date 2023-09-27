@@ -71,12 +71,20 @@ public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
-        final AzureFormJPanel<ContainerAppDraft.ImageConfig> newFormImage = switch (type) {
-            case ContainerRegistryTypeComboBox.ACR -> new ACRImageForm();
-            case ContainerRegistryTypeComboBox.DOCKER_HUB -> new DockerHubImageForm();
-            case ContainerRegistryTypeComboBox.OTHER -> new OtherPublicRegistryImageForm();
-            default -> throw new IllegalArgumentException("Unsupported registry type: " + type);
-        };
+        final AzureFormJPanel<ContainerAppDraft.ImageConfig> newFormImage;
+        switch (type) {
+            case ContainerRegistryTypeComboBox.ACR:
+                newFormImage = new ACRImageForm();
+                break;
+            case ContainerRegistryTypeComboBox.DOCKER_HUB:
+                newFormImage = new DockerHubImageForm();
+                break;
+            case ContainerRegistryTypeComboBox.OTHER:
+                newFormImage = new OtherPublicRegistryImageForm();
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported registry type: " + type);
+        }
         this.formImageContainer.removeAll();
         this.formImageContainer.add(newFormImage.getContentPanel(), constraints);
         this.formImageContainer.revalidate();

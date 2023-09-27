@@ -22,11 +22,15 @@ public class IntelliJCognitiveServicesTaskProvider implements GuidanceTaskProvid
     @Override
     public Task createTask(@Nonnull TaskConfig config, @Nonnull Context context) {
         final ComponentContext taskContext = new ComponentContext(config, context);
-        return switch (config.getName()) {
-            case "task.openai.select_subscription" -> new SelectSubscriptionTask(taskContext);
-            case "task.openai.create_deployment" -> new CreateCognitiveDeploymentTask(taskContext);
-            case "task.open_ai.open_playground" -> new OpenPlaygroundTask(taskContext);
-            default -> null;
-        };
+        switch (config.getName()) {
+            case "task.openai.select_subscription":
+                return new SelectSubscriptionTask(taskContext);
+            case "task.openai.create_deployment":
+                return new CreateCognitiveDeploymentTask(taskContext);
+            case "task.open_ai.open_playground":
+                return new OpenPlaygroundTask(taskContext);
+            default:
+                return null;
+        }
     }
 }

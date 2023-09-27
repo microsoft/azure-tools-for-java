@@ -73,7 +73,7 @@ public class LogTable extends JBTable {
         } catch (final java.util.regex.PatternSyntaxException e) {
             return;
         }
-        if (this.getRowSorter() instanceof TableRowSorter<? extends TableModel>) {
+        if (this.getRowSorter() instanceof TableRowSorter) {
             ((TableRowSorter<? extends TableModel>) this.getRowSorter()).setRowFilter(rf);
         }
     }

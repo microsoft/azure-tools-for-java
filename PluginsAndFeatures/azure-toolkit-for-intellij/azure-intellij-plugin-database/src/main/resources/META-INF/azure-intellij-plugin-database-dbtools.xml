@@ -2,7 +2,6 @@
     <extensions defaultExtensionNs="com.intellij.database">
         <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.database.dbtools.DatabaseServerConnectionInterceptor"/>
         <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.database.dbtools.DatabaseServerTypeFactory" order="first"/>
-        <urlParamEditorUiProvider implementation="com.microsoft.azure.toolkit.intellij.database.dbtools.DatabaseServerTypeUIFactory" order="first"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.database.dbtools.DatabaseDbToolsWorkaround"/>
