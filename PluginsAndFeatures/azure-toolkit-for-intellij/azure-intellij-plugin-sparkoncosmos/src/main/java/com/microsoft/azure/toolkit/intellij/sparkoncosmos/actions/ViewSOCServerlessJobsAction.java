@@ -84,7 +84,7 @@ public class ViewSOCServerlessJobsAction {
                                     );
                             jobView.setData(model);
 
-                            ContentFactory contentFactory = ContentFactory.getInstance();
+                            ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
                             Content content = contentFactory.createContent(jobView.getComponent(), getDisplayName(account.getName()), false);
                             content.setDisposer(jobView);
                             toolWindow.getContentManager().addContent(content);
