@@ -118,7 +118,7 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
         final DefaultMutableTreeNode node = TreeUtil.findNodeWithObject((DefaultMutableTreeNode) model.getRoot(), this);
         if (Objects.nonNull(node)) {
             final TreePath path = TreeUtil.getPath((TreeNode) model.getRoot(), node);
-            pane.updateFrom(path, false, updateStructure);
+            pane.updateFromRoot(true);
         }
     }
 
