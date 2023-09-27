@@ -23,6 +23,8 @@ import com.intellij.openapi.util.UserDataHolderBase;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileSystem;
+import com.intellij.openapi.vfs.ex.temp.TempFileSystem;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -173,12 +176,19 @@ public class VirtualFileActions {
         private final VirtualFile origin;
         private final String path;
 
+        @Override
+        public @NotNull VirtualFileSystem getFileSystem() {
+            return TempFileSystem.getInstance();
+        }
+
         @Nonnull
         public String getPresentableName() {
             return path;
         }
 
         private interface Customize {
+            public VirtualFileSystem getFileSystem();
+
             public String getPresentableName();
 
             public String getPresentableUrl();
