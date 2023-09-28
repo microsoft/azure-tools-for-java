@@ -87,13 +87,10 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
     }
 
     private void sendTelemetry(Operation operation, Throwable exception) {
-        final Map<String, String> telemetryMap = getTelemetryMap();
-        operation.trackProperties(telemetryMap);
+        operation.trackProperties(getTelemetryMap());
         if (exception != null) {
             EventUtil.logError(operation, ErrorType.userError, new Exception(exception.getMessage(), exception), null, null);
         }
-        final Map<String, String> properties = operation instanceof DefaultOperation ? ((DefaultOperation) operation).getProperties() : telemetryMap;
-        AzureTelemeter.log(Objects.isNull(exception) ? AzureTelemetry.Type.INFO : AzureTelemetry.Type.ERROR, properties, exception);
         operation.complete();
     }
 

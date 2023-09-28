@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.telemetry;
 
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,14 +26,6 @@ public final class TelemetryClientSingleton {
     }
 
     private TelemetryClientSingleton() {
-        telemetry = new AzureTelemetryClient() {
-            @Override
-            public boolean isEnabled() {
-                if (configuration == null) {
-                    return false;
-                }
-                return (StringUtils.isEmpty(configuration.preferenceVal()) || Boolean.parseBoolean(configuration.preferenceVal())) && super.isEnabled();
-            }
-        };
+        telemetry = AzureTelemeter.getClient();
     }
 }

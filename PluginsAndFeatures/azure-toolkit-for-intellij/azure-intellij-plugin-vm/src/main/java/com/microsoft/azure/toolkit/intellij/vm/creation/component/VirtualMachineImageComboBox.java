@@ -67,6 +67,6 @@ public class VirtualMachineImageComboBox extends AzureComboBox<VmImage> {
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof VmImage ? String.format("%s %s", ((VmImage) item).getOffer(), ((VmImage) item).getSku()) : super.getItemText(item);
+        return item instanceof VmImage ? ((VmImage) item).getDisplayName() : super.getItemText(item);
     }
 }

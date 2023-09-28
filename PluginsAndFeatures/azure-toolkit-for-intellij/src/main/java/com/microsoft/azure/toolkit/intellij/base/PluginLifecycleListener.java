@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.ide.common.store.DefaultMachineStore;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
+import com.microsoft.azure.toolkit.intellij.common.telemetry.IntelliJAzureTelemetryCommonPropertiesProvider;
 import com.microsoft.azure.toolkit.intellij.containerregistry.AzureDockerSupportConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webapponlinux.DeprecatedWebAppOnLinuxDeployConfigurationFactory;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -77,14 +78,7 @@ public class PluginLifecycleListener implements AppLifecycleListener, PluginStat
     }
 
     private static void initializeConfig() {
-        String installId = AzureStoreManager.getInstance().getIdeStore().getProperty(null, TELEMETRY_INSTALLATION_ID);
-
-        if (StringUtils.isBlank(installId) || !InstallationIdUtils.isValidHashMac(installId)) {
-            installId = InstallationIdUtils.getHashMac();
-        }
-        if (StringUtils.isBlank(installId) || !InstallationIdUtils.isValidHashMac(installId)) {
-            installId = InstallationIdUtils.hash(PermanentInstallationID.get());
-        }
+        final String installId = IntelliJAzureTelemetryCommonPropertiesProvider.getInstallationId();
 
         AzureConfigInitializer.initialize(installId, "Azure Toolkit for IntelliJ", CommonConst.PLUGIN_VERSION);
         if (StringUtils.isNotBlank(Azure.az().config().getCloud())) {
