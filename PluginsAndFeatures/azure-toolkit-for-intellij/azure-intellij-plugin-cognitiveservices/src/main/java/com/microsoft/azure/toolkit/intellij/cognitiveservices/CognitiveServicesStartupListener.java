@@ -61,7 +61,7 @@ public class CognitiveServicesStartupListener implements StartupActivity {
     private static void tryPlayground(Project project) {
         AzureEventBus.once("account.subscription_changed.account", (_a, _b) -> {
             final List<CognitiveAccount> accounts = Azure.az(AzureCognitiveServices.class).list().stream()
-                .flatMap(m -> m.accounts().list().stream()).toList();
+                .flatMap(m -> m.accounts().list().stream()).collect(Collectors.toList());
             final Optional<CognitiveDeployment> gptModel = accounts.stream()
                 .flatMap(a -> a.deployments().list().stream())
                 .filter(d -> d.getModel().isGPTModel())

@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.legacy.appservice.platform;
 
 import com.intellij.openapi.ui.popup.ListItemDescriptorAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.popup.list.GroupedItemsListRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -13,7 +14,10 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class RuntimeComboBox extends AzureComboBox<Runtime> {
@@ -54,7 +58,15 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     private void setGroupRender() {
-        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()));
+        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()) {
+            @Override
+            public Component getListCellRendererComponent(JList<? extends Runtime> list, Runtime value, int index, boolean isSelected, boolean cellHasFocus) {
+                final SimpleListCellRenderer<Runtime> renderer = getAzureRenderer();
+                return index < 0 && Objects.nonNull(renderer) ?
+                        renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) :
+                        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+        });
     }
 
     private String getSeparatorCaption(Runtime item) {

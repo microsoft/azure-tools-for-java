@@ -26,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -73,6 +74,8 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     @Setter
     private Supplier<? extends List<? extends T>> itemsLoader;
     private final TailingDebouncer valueDebouncer;
+    @Getter(AccessLevel.PROTECTED)
+    private SimpleListCellRenderer<T> azureRenderer;
 
     public AzureComboBox() {
         this(true);
@@ -102,14 +105,15 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
         this.setEditable(true);
         this.setEditor(this.myEditor);
         this.setLoading(false);
-        this.setRenderer(new SimpleListCellRenderer<>() {
+        this.azureRenderer = new SimpleListCellRenderer<>() {
             @Override
             public void customize(@Nonnull final JList<? extends T> l, final T t, final int i, final boolean b,
                                   final boolean b1) {
                 setText(getItemText(t));
                 setIcon(getItemIcon(t));
             }
-        });
+        };
+        this.setRenderer(this.azureRenderer);
         if (isFilterable()) {
             this.addPopupMenuListener(new AzureComboBoxPopupMenuListener());
         }
