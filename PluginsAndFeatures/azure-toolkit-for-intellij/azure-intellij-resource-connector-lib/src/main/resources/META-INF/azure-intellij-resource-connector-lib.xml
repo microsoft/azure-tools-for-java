@@ -14,7 +14,7 @@
 <!--        <framework.detector implementation="com.microsoft.azure.toolkit.intellij.facet.AzureFacetType$AzureFacetDetector"/>-->
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.MigrateStartupActivity"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.facet.AddFacetStartupActivity"/>
-        <toolWindow id="Resource Connections" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" canCloseContents="false"
+        <toolWindow id="Resource Connections (Deprecated)" anchor="right" icon="/icons/Common/AzureResourceConnector.svg" canCloseContents="false"
                     factoryClass="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionExplorer$ToolWindowFactory"/>
         <projectService
             serviceInterface="com.microsoft.azure.toolkit.intellij.connector.ConnectionManager"

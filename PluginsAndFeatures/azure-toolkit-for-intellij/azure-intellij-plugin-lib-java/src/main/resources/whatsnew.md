@@ -1,6 +1,20 @@
 <!-- Version: 3.80.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.81.0
+### Added
+- Bring all new feature to IntelliJ IDEA 2021.3
+
+### Changed
+- Upgrade Azure SDK to the latest.
+- More UI actions are tracked (Telemetry).
+- Resource Connections Explorer is deprecated.
+- Some minor UI updates.
+
+### Fixed
+- NPE when creating storage account if region is loading.
+- other known issues.
+
 ## 3.80.0
 ### Added
 - Azure OpenAI (chat) playground for GTP* models.    

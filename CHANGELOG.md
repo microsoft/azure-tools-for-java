@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.81.0](#3810)
   - [3.80.0](#3800)
   - [3.79.1](#3791)
   - [3.79.0](#3790)
@@ -101,6 +102,20 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.81.0
+### Added
+- Bring all new feature to IntelliJ IDEA 2021.3
+
+### Changed
+- Upgrade Azure SDK to the latest.
+- More UI actions are tracked (Telemetry).
+- Resource Connections Explorer is deprecated.
+- Some minor UI updates.
+
+### Fixed
+- NPE when creating storage account if region is loading.
+- other known issues.
 
 ## 3.80.0
 ### Added

@@ -132,7 +132,7 @@ public class ResourceConnectionExplorer extends Tree {
     }
 
     public static class ToolWindowFactory implements com.intellij.openapi.wm.ToolWindowFactory {
-        public static final String ID = "Resource Connections";
+        public static final String ID = "Resource Connections (Deprecated)";
 
         @Override
         public boolean shouldBeAvailable(@Nonnull Project project) {
