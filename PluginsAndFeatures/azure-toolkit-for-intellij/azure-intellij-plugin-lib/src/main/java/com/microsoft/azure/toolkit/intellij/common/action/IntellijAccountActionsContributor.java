@@ -17,6 +17,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -51,7 +52,7 @@ public class IntellijAccountActionsContributor implements IActionsContributor, I
                 if (az.isLoggedIn()) {
                     az.logout();
                 } else {
-                    SignInAction.authActionPerformed(e.getProject());
+                    AzureTaskManager.getInstance().runLater(()-> SignInAction.authActionPerformed(e.getProject()));
                 }
             })
             .withAuthRequired(false)

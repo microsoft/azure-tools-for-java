@@ -35,7 +35,6 @@ import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.*;
 
@@ -143,14 +142,11 @@ public abstract class SqlDatabaseResourcePanel<T extends IDatabase> implements A
             final IDatabaseServer<T> server = (IDatabaseServer<T>) e.getItem();
             this.databaseComboBox.setServer(server);
             this.usernameComboBox.setServer(server);
-        } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-            this.databaseComboBox.setServer(null);
-            this.usernameComboBox.setServer(null);
         }
     }
 
     private void onDatabaseChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final String server = Optional.ofNullable(this.databaseComboBox.getServer())
                 .map(IDatabaseServer::getFullyQualifiedDomainName).orElse(null);
             final String database = Optional.ofNullable((IDatabase) e.getItem()).map(IDatabase::getName).orElse(null);

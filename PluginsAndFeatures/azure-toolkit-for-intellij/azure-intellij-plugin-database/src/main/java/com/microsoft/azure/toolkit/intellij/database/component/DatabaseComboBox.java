@@ -32,8 +32,8 @@ public class DatabaseComboBox<T extends IDatabase> extends AzureComboBox<T> {
             return;
         }
         this.server = server;
+        this.clear();
         if (server == null) {
-            this.clear();
             return;
         }
         this.reloadItems();

@@ -136,6 +136,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                     setLoading(true);
                     presenter.onUpdateWebAppProperty(sid, appServiceId, slotName, cachedAppSettings, editedAppSettings);
                 });
+        btnSave.setAction(saveAction);
 
         lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();

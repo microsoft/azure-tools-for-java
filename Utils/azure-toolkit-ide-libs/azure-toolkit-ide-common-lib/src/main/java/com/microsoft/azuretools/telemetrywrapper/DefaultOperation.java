@@ -5,6 +5,7 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import lombok.Getter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nullable;
@@ -24,6 +25,7 @@ import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperti
 import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
 import static com.microsoft.azuretools.telemetrywrapper.EventUtil.isAbleToCollectErrorStacks;
 
+@Getter
 public class DefaultOperation implements Operation {
 
     private long timeStart;

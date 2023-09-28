@@ -66,8 +66,9 @@ public class AzureActionButton<T> extends JButton {
     }
 
     private void onActionPerformed(ActionEvent actionEvent) {
+        final DataContext dataContext = DataManager.getInstance().getDataContext(this);
         final DataContext context = (String key) -> StringUtils.equals(key, ACTION_EVENT_KEY.getName()) ?
-                actionEvent : DataManager.getInstance().getDataContext(this).getData(key);
+                actionEvent : dataContext.getData(key);
         // todo: use panel name as the action place
         final AnActionEvent event = AnActionEvent.createFromDataContext("actionButton", null, context);
         Optional.ofNullable(action).ifPresent(a -> a.handle(null, event));
