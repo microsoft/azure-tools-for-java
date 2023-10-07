@@ -33,7 +33,7 @@ public class WorkspaceTaggingService {
         if (StringUtils.isAnyEmpty(groupId, artifactId)) {
             return null;
         }
-        return ObjectUtils.firstNonNull(getAzureDependencyTag(groupId, artifactId), getExternalDependencyTag(groupId, artifactId));
+        return ObjectUtils.firstNonNull(getExternalDependencyTag(groupId, artifactId), getAzureDependencyTag(groupId, artifactId));
     }
 
     private static String getAzureDependencyTag(final String groupId, final String artifactId) {
