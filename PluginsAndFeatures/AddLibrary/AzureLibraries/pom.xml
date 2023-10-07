@@ -27,7 +27,7 @@
   <parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.81.0</version>
+    <version>3.82.0-SNAPSHOT</version>
   </parent>
   <groupId>com.microsoft.azuretools</groupId>
   <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
@@ -39,9 +39,9 @@
   </organization>
 
   <properties>
-    <azuretool.version>3.81.0</azuretool.version>
+    <azuretool.version>3.82.0-SNAPSHOT</azuretool.version>
     <azuretool.sdk.version>3.32.0.qualifier</azuretool.sdk.version>
-    <azure.toolkit-lib.version>0.37.0</azure.toolkit-lib.version>
+    <azure.toolkit-lib.version>0.38.0-SNAPSHOT</azure.toolkit-lib.version>
   </properties>
   <dependencyManagement>
     <dependencies>

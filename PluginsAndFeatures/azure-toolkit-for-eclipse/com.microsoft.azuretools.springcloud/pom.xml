@@ -13,7 +13,7 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>azure-toolkit-ide-springcloud-lib</artifactId>
-      <version>0.37.0</version>
+      <version>0.38.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
