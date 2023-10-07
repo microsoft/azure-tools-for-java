@@ -94,14 +94,14 @@ public class IntellijAzureMessager implements IAzureMessager {
         switch (raw.getType()) {
             case ALERT, CONFIRM -> {
                 final boolean[] result = new boolean[]{true};
-                try {
-                    ApplicationManager.getApplication().invokeAndWait(() -> {
+                ApplicationManager.getApplication().invokeAndWait(() -> {
+                    try {
                         final String title = StringUtils.firstNonBlank(raw.getTitle(), DEFAULT_TITLE);
                         result[0] = MessageDialogBuilder.yesNo(title, raw.getContent()).guessWindowAndAsk();
-                    }, ModalityState.any());
-                } catch (final Throwable e) {
-                    e.printStackTrace();
-                }
+                    } catch (final Throwable e) {
+                        e.printStackTrace();
+                    }
+                }, ModalityState.any());
                 return result[0];
             }
             case DEBUG -> {

@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.cosmos.dbtools;
 import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.DatabaseDriverManager;
 import com.intellij.database.dataSource.DatabaseDriverManagerImpl;
-import com.intellij.database.dataSource.url.ui.UrlPropertiesPanel;
+import com.intellij.database.dataSource.url.ui.ParametersLayoutUtils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -105,7 +105,7 @@ public class DbToolsWorkaround implements ProjectActivity, DumbAware {
     @SuppressWarnings("unchecked")
     private static void makeAccountShowAtTop() {
         try {
-            final Field HEADS = FieldUtils.getField(UrlPropertiesPanel.class, "HEADS", true);
+            final Field HEADS = FieldUtils.getField(ParametersLayoutUtils.class, "HEADS", true);
             final List<String> heads = (List<String>) FieldUtils.readStaticField(HEADS, true);
             if (!heads.contains(PARAM_NAME)) {
                 final Object[] old = heads.toArray();

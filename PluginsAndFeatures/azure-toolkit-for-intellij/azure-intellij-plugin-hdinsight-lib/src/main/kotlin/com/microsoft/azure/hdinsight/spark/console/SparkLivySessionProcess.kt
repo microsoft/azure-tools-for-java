@@ -63,6 +63,10 @@ class SparkLivySessionProcess(
         return 0
     }
 
+    override fun setWindowSize(columns: Int, rows: Int) {
+
+    }
+
     override fun getInputStream(): InputStream = stdOutStream
 
     fun start(): Observable<Session> = session.deploy()
