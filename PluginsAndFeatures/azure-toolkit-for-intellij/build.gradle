@@ -116,6 +116,9 @@ allprojects {
         implementation.exclude module: 'groovy-xml'
         implementation.exclude module: 'groovy-templates'
         implementation.exclude module: 'jna'
+        implementation.exclude module: 'xpp3'
+        implementation.exclude module: 'pull-parser'
+        implementation.exclude module: 'xsdlib'
         cucumberRuntime {
             extendsFrom testImplementation
         }
@@ -243,4 +246,5 @@ prepareSandbox {
 
 runIde {
     jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
+    ideDir = new File("/Applications/IntelliJ IDEA CE 2023.1.app/Contents")
 }
