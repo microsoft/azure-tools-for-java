@@ -246,5 +246,4 @@ prepareSandbox {
 
 runIde {
     jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
-    ideDir = new File("/Applications/IntelliJ IDEA CE 2023.1.app/Contents")
 }
