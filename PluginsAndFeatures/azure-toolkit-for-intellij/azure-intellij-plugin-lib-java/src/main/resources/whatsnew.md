@@ -1,6 +1,10 @@
 <!-- Version: 3.80.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.81.1
+### Fixed
+- [#7897](https://github.com/microsoft/azure-tools-for-java/issues/7897): Uncaught Exception: Error was received while reading the incoming data. The connection will be closed.
+
 ## 3.81.0
 ### Added
 - Bring all new feature to IntelliJ IDEA 2021.3

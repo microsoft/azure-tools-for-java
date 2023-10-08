@@ -27,5 +27,47 @@
 	// unit test
 	{ "groupId": "org.junit.jupiter", "artifactId": "junit-jupiter-api", "tag": "unitTest" },
 	{ "groupId": "junit", "artifactId": "junit", "tag": "unitTest" },
-	{ "groupId": "org.testng", "artifactId": "testng", "tag": "unitTest" }
+	{ "groupId": "org.testng", "artifactId": "testng", "tag": "unitTest" },
+	// cosmos
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-data-cosmos", "tag": "cosmos" },
+	{ "groupId": "com.azure", "artifactId": "azure-cosmos", "tag": "cosmos" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-cosmos", "tag": "cosmos" },
+	{ "groupId": "com.azure", "artifactId": "zure-cosmos-test", "tag": "cosmos" },
+	{ "groupId": "com.azure", "artifactId": "azure-spring-data-cosmos-core", "tag": "cosmos" },
+	// storage account
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-storage", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-blob", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-file-share", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-queue", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-blob-batch", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-blob-changefeed", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-blob-cryptography", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-blob-nio", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-file-datalake", "tag": "azure_storage" },
+	{ "groupId": "com.azure", "artifactId": "azure-storage-internal-avro", "tag": "azure_storage" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-storage-blob", "tag": "azure_storage" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-storage-file-share", "tag": "azure_storage" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-storage-queue", "tag": "azure_storage" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-integration-storage-queue", "tag": "azure_storage" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-integration-azure-storage-queue", "tag": "azure_storage" },
+	// service bus
+	{ "groupId": "com.azure", "artifactId": "azure-messaging-servicebus", "tag": "servicebus" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-servicebus", "tag": "servicebus" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-integration-servicebus", "tag": "servicebus" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-integration-azure-servicebus", "tag": "servicebus" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-stream-binder-servicebus", "tag": "servicebus" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-servicebus-jms", "tag": "servicebus" },
+	// event hubs
+	{ "groupId": "com.azure", "artifactId": "azure-messaging-eventhubs", "tag": "eventhubs" },
+	{ "groupId": "com.azure", "artifactId": "azure-messaging-eventhubs-parent", "tag": "eventhubs" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-eventhubs", "tag": "eventhubs" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-starter-integration-eventhubs", "tag": "eventhubs" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-integration-azure-eventhubs", "tag": "eventhubs" },
+	{ "groupId": "com.azure.spring", "artifactId": "spring-cloud-azure-stream-binder-eventhubs", "tag": "eventhubs" },
+	// open ai
+	{ "groupId": "com.theokanning.openai-gpt3-java", "artifactId": "api", "tag": "openai" },
+	{ "groupId": "com.theokanning.openai-gpt3-java", "artifactId": "client", "tag": "openai" },
+	{ "groupId": "com.theokanning.openai-gpt3-java", "artifactId": "service", "tag": "openai" },
+	// azure open ai
+	{ "groupId": "com.azure", "artifactId": "azure-ai-openai", "tag": "azure_openai" }
 ]
