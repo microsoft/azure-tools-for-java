@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.completion.provider.Method
 public class ResourceConnectionCompletionContributor extends CompletionContributor {
     public ResourceConnectionCompletionContributor() {
         super();
-        extend(CompletionType.BASIC, PsiJavaPatterns.psiElement(JavaTokenType.IDENTIFIER), new MethodCompletionProvider());
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new AnnotationCompletionProvider());
+//        extend(CompletionType.BASIC, PsiJavaPatterns.psiElement(JavaTokenType.IDENTIFIER), new MethodCompletionProvider());
+//        extend(CompletionType.BASIC, PlatformPatterns.psiElement(), new AnnotationCompletionProvider());
     }
 }

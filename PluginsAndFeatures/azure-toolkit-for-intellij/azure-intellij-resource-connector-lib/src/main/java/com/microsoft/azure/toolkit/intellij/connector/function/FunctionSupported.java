@@ -22,6 +22,11 @@ public interface FunctionSupported<T> extends ResourceDefinition<T> {
     String getResourceConnectionString(@Nonnull T resource);
 
     default Map<String, String> getPropertiesForFunction(@Nonnull T resource, @Nonnull Connection connection) {
-        return Collections.singletonMap(connection.getEnvPrefix(), getResourceConnectionString(resource));
+        final String property = getFunctionProperty(connection);
+        return Collections.singletonMap(property, getResourceConnectionString(resource));
+    }
+
+    default String getFunctionProperty(@Nonnull Connection connection) {
+        return connection.getEnvPrefix();
     }
 }

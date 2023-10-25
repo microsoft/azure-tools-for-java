@@ -54,7 +54,7 @@ public class ChangeEnvironmentVariableFix extends ChoiceVariantIntentionAction {
         final Document document = editor.getDocument();
         final PsiElement element = pointer.getElement();
         final TextRange textRange = element.getTextRange();
-        final String newValue = StringUtils.replace(element.getText(), origin, value);
+        final String newValue = StringUtils.isEmpty(origin) ? String.format("\"%s\"", value) : StringUtils.replace(element.getText(), origin, value);
         document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), newValue);
         PsiDocumentManager.getInstance(project).commitDocument(document);
     }
