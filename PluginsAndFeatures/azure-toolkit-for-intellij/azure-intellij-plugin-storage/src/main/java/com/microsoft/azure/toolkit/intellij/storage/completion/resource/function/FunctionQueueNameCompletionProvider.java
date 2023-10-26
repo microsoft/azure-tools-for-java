@@ -12,10 +12,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.patterns.PatternCondition;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiJavaElementPattern;
-import com.intellij.patterns.PsiJavaPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationParameterList;
 import com.intellij.psi.PsiElement;
@@ -24,6 +21,7 @@ import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaCompletionContributor;
+import com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
@@ -31,6 +29,7 @@ import com.microsoft.azure.toolkit.lib.storage.queue.Queue;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,30 +40,28 @@ public class FunctionQueueNameCompletionProvider extends CompletionProvider<Comp
             "com.microsoft.azure.functions.annotation.QueueTrigger",
             "com.microsoft.azure.functions.annotation.QueueOutput"
     };
-    public static final PsiJavaElementPattern<?, ?> QUEUE_NAME_PATTERN = psiElement().withSuperParent(2,
-            PsiJavaPatterns.psiNameValuePair().withName("queueName").withParent(
-                    PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
-                            PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("queueAnnotation") {
-                                @Override
-                                public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
-                                    return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), QUEUE_ANNOTATIONS);
-                                }
-                            }))));
+    public static final PsiElementPattern<?, ?> QUEUE_NAME_PAIR_PATTERN = PsiJavaPatterns.psiNameValuePair().withName("queueName").withParent(
+            PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
+                    PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("queueAnnotation") {
+                        @Override
+                        public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
+                            return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), QUEUE_ANNOTATIONS);
+                        }
+                    })));
+    public static final PsiJavaElementPattern<?, ?> QUEUE_NAME_PATTERN = psiElement().withSuperParent(2, QUEUE_NAME_PAIR_PATTERN);
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
-        final String fullPrefix = element.getText().split(AzureStorageJavaCompletionContributor.DUMMY_IDENTIFIER)[0].replace("\"", "").trim();
+        final String fullPrefix = StringUtils.substringBefore(element.getText(), AzureStorageJavaCompletionContributor.DUMMY_IDENTIFIER).replace("\"", "").trim();
         final Module module = ModuleUtil.findModuleForFile(parameters.getOriginalFile());
         if (Objects.isNull(module) || !Azure.az(AzureAccount.class).isLoggedIn()) {
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
         final StorageAccount account = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
-        if (Objects.isNull(account)) {
-            return;
-        }
-        account.getQueueModule().list().stream()
+        final List<StorageAccount> accounts = Objects.isNull(account) ? Utils.getConnectedStorageAccounts(module) : List.of(account);
+        accounts.stream().flatMap(a -> a.getQueueModule().list().stream())
                 .filter(queue -> StringUtils.startsWithIgnoreCase(queue.getName(), fullPrefix))
                 .map(this::createLookupElement)
                 .forEach(result::addElement);

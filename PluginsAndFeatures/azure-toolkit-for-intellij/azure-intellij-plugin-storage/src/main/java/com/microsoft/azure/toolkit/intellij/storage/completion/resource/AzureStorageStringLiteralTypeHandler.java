@@ -28,7 +28,7 @@ public class AzureStorageStringLiteralTypeHandler extends TypedHandlerDelegate {
         }
         final String text = ele.getText().replace("\"", "");
         if (AzureStorageJavaCompletionContributor.PREFIX_PLACES.accepts(ele)
-            || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
+            || AzureStorageFunctionAnnotationCompletionContributor.shouldScheduleAutoPopup(charTyped, ele, editor) || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
             return Result.STOP;
         }

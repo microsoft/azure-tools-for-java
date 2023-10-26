@@ -11,10 +11,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.patterns.PatternCondition;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiJavaElementPattern;
-import com.intellij.patterns.PsiJavaPatterns;
+import com.intellij.patterns.*;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
@@ -38,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageResourceStringLiteralCompletionProvider.*;
 import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils.getConnectionWithStorageAccount;
@@ -48,15 +46,15 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
             "com.microsoft.azure.functions.annotation.BlobInput",
             "com.microsoft.azure.functions.annotation.BlobOutput"
     };
-    public static final PsiJavaElementPattern<?, ?> BLOB_PATH_PATTERN = psiElement().withSuperParent(2,
-            PsiJavaPatterns.psiNameValuePair().withName("path").withParent(
-                    PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
-                            PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("blobAnnotation") {
-                                @Override
-                                public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
-                                    return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), BLOB_ANNOTATIONS);
-                                }
-                            }))));
+    public static final PsiElementPattern<?, ?> BLOB_PATH_PAIR_PATTERN = PsiJavaPatterns.psiNameValuePair().withName("path").withParent(
+            PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
+                    PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("blobAnnotation") {
+                        @Override
+                        public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
+                            return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), BLOB_ANNOTATIONS);
+                        }
+                    })));
+    public static final PsiJavaElementPattern<?, ?> BLOB_PATH_PATTERN = psiElement().withSuperParent(2, BLOB_PATH_PAIR_PATTERN);
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
@@ -72,7 +70,7 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         if (Objects.isNull(account) && StringUtils.isNotBlank(connection)) {
             return;
         }
-        final String fullPrefix = element.getText().split(AzureStorageJavaCompletionContributor.DUMMY_IDENTIFIER)[0].replace("\"", "").trim();
+        final String fullPrefix = StringUtils.substringBefore(element.getText(), AzureStorageJavaCompletionContributor.DUMMY_IDENTIFIER).replace("\"", "").trim();
         final List<StorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : Utils.getConnectedStorageAccounts(module);
         final List<? extends StorageFile> files = getFiles("azure-blob://" + fullPrefix, accountsToSearch);
         final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
@@ -101,6 +99,14 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
                 AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor());
             }
             final PsiElement element = PsiUtil.getElementAtOffset(context.getFile(), context.getStartOffset());
+            final boolean hasSpace = element.getPrevSibling() instanceof PsiWhiteSpace;
+            // handle when insert not happen in string literal
+            final String property = element.getText();
+            if (!psiElement().inside(literalExpression()).accepts(element)) {
+                final String newElementValue = (hasSpace ? StringUtils.EMPTY : StringUtils.SPACE) + String.format("\"%s\"", property);
+                context.getDocument().replaceString(context.getStartOffset(), context.getTailOffset(), newElementValue);
+                context.commitDocument();
+            }
             final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
             final PsiAnnotationMemberValue value = Optional.ofNullable(annotation)
                     .map(a -> annotation.findAttributeValue("connection")).orElse(null);
@@ -114,8 +120,8 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
                         .flatMap(m -> getConnectionWithStorageAccount(storageAccount, m).stream().findFirst())
                         .orElse(null);
                 if (Objects.nonNull(connection)) {
-                    value.replace(JavaPsiFacade.getElementFactory(context.getProject())
-                            .createExpressionFromText("\"" + connection.getEnvPrefix() + "\"", context.getFile()));
+                    final String newConnectionValue = "\"" + connection.getEnvPrefix() + "\"";
+                    value.replace(JavaPsiFacade.getElementFactory(context.getProject()).createExpressionFromText(newConnectionValue, context.getFile()));
                 }
             }
         }

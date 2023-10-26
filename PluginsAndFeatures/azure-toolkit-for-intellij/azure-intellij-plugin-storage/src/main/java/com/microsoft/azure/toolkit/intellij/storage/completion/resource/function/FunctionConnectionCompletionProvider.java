@@ -17,7 +17,9 @@ import com.intellij.patterns.*;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationParameterList;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -35,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
 // todo: this should belong to connector common library
@@ -56,15 +59,15 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
     public static final String AZURE_FUNCTION_PACKAGE = "com.microsoft.azure.functions.annotation";
     public static final PsiJavaElementPattern.Capture<PsiElement> STORAGE_ACCOUNT_ANNOTATION = psiElement()
             .insideAnnotationParam("com.microsoft.azure.functions.annotation.StorageAccount");
-    public static final PsiJavaElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2,
-            PsiJavaPatterns.psiNameValuePair().withName("connection").withParent(
-                    PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
-                            PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("functionAnnotation") {
-                                @Override
-                                public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
-                                    return StringUtils.startsWith(psiAnnotation.getQualifiedName(), AZURE_FUNCTION_PACKAGE);
-                                }
-                            }))));
+    public static final ElementPattern CONNECTION_NAME_VALUE = PsiJavaPatterns.psiNameValuePair().withName("connection").withParent(
+            PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
+                    PsiJavaPatterns.psiAnnotation().with(new PatternCondition<>("functionAnnotation") {
+                        @Override
+                        public boolean accepts(@NotNull final PsiAnnotation psiAnnotation, final ProcessingContext context) {
+                            return ANNOTATION_DEFINITION_MAP.containsKey(psiAnnotation.getQualifiedName());
+                        }
+                    })));
+    public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2,CONNECTION_NAME_VALUE);
     public static final ElementPattern STORAGE_ANNOTATION_CONNECTION_PATTERN = PlatformPatterns.or(STORAGE_ACCOUNT_ANNOTATION, CONNECTION_ANNOTATION);
 
     @Override
@@ -123,9 +126,12 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
         if (Objects.isNull(connection)) {
             return;
         }
+        final PsiElement element = PsiUtil.getElementAtOffset(context.getFile(), context.getStartOffset());
+        final boolean hasSpace = element.getPrevSibling() instanceof PsiWhiteSpace;
         final FunctionSupported<?> definition = (FunctionSupported<?>) connection.getResource().getDefinition();
-        context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
-        context.getDocument().insertString(context.getStartOffset(), definition.getFunctionProperty(connection));
+        final String property = definition.getFunctionProperty(connection);
+        final String insertValue = psiElement().inside(literalExpression()).accepts(element) ? property : String.format("%s\"%s\"", hasSpace ? "" : " ", property);
+        context.getDocument().replaceString(context.getStartOffset(), context.getTailOffset(), insertValue);
         context.commitDocument();
     }
 }
