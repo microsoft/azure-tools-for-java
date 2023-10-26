@@ -32,7 +32,7 @@ import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 public class StorageFunctionConnectionAnnotator implements Annotator {
     @Override
-    public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+    public void annotate(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         // get correspond storage account
         if (!FunctionConnectionCompletionProvider.STORAGE_ANNOTATION_CONNECTION_PATTERN.accepts(element)) {
             return;
@@ -54,9 +54,12 @@ public class StorageFunctionConnectionAnnotator implements Annotator {
         final PsiAnnotationMemberValue connectionValue = Optional.ofNullable(annotation)
                 .map(a -> a.findAttributeValue("connection"))
                 .orElseGet(() -> annotation.findAttributeValue("value"));
+        final String connection = Optional.ofNullable(connectionValue)
+                .map(value -> value.getText().replace("\"", "")).orElse(null);
         if (Objects.isNull(storageAccount)) {
-            final AnnotationBuilder builder = holder.newAnnotation(HighlightSeverity.ERROR,
-                    String.format("Could not find storage account for connection '%s'", element.getText()));
+            final String message = StringUtils.isEmpty(connection) ? "Connection could not be empty" :
+                    String.format("Could not find storage account connection with name '%s'", element.getText());
+            final AnnotationBuilder builder = holder.newAnnotation(HighlightSeverity.ERROR, message);
             builder.range(element.getTextRange())
                     .highlightType(ProblemHighlightType.GENERIC_ERROR_OR_WARNING);
             addChangeEnvironmentVariableFix(element, builder);
@@ -69,30 +72,30 @@ public class StorageFunctionConnectionAnnotator implements Annotator {
         builder.withFix(new IntentionAction() {
 
             @Override
-            public @IntentionName @NotNull String getText() {
+            public @IntentionName @Nonnull String getText() {
                 return "Create New Connection";
             }
 
             @Override
-            public @NotNull @IntentionFamilyName String getFamilyName() {
+            public @Nonnull @IntentionFamilyName String getFamilyName() {
                 return "Azure Function Fixes";
             }
 
             @Override
-            public boolean isAvailable(@NotNull Project project, Editor editor, PsiFile file) {
+            public boolean isAvailable(@Nonnull Project project, Editor editor, PsiFile file) {
                 return true;
             }
 
             @Override
-            public void invoke(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
+            public void invoke(@Nonnull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
                 final Module module = ModuleUtil.findModuleForPsiElement(element);
                 final var dialog = new ConnectorDialog(project);
                 dialog.setConsumer(new ModuleResource(module.getName()));
                 dialog.setResourceDefinition(StorageAccountResourceDefinition.INSTANCE);
                 if (dialog.showAndGet()) {
                     final Connection<?, ?> c = dialog.getValue();
-                    WriteCommandAction.runWriteCommandAction(project, (ThrowableComputable<PsiElement, RuntimeException>) () ->
-                            element.replace(JavaPsiFacade.getElementFactory(project).createExpressionFromText(String.format("\"%s\"", c.getEnvPrefix()), element.getContainingFile())));
+                    editor.getDocument().replaceString(element.getTextRange().getStartOffset(), element.getTextRange().getEndOffset(), String.format("\"%s\"", c.getEnvPrefix()));
+                    PsiDocumentManager.getInstance(project).commitDocument(editor.getDocument());
                 }
             }
 

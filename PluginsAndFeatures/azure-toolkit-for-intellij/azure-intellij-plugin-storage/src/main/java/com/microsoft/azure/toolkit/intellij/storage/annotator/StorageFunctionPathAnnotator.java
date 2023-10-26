@@ -86,8 +86,7 @@ public class StorageFunctionPathAnnotator implements Annotator {
         }
         final String path = Optional.ofNullable(annotation.findAttributeValue("path"))
                 .map(PsiElement::getText).map(text -> text.replace("\"", "")).orElse(StringUtils.EMPTY);
-        final String constantPath = path.contains("{") ? path.substring(0, path.indexOf("{")) : path; // get sub path without parameters
-        final String pathToValid = constantPath.contains("/") ? constantPath.substring(0, constantPath.lastIndexOf("/")) : constantPath;
+        final String pathToValid = path.contains("{") ? StringUtils.substringBeforeLast(StringUtils.substringBefore(path, "{"), "/") : path; // get sub path without parameters
         final StorageFile file = StringUtils.isBlank(path) ? null : getFileByPath(pathToValid, storageAccount);
         if (Objects.isNull(file)) {
             final String message = StringUtils.isBlank(path) ? "Path could not be empty" :
