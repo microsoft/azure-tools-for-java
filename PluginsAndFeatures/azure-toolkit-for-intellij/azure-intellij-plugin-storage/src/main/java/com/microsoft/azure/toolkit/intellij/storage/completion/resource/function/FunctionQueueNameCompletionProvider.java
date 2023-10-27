@@ -20,6 +20,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationCompletionConfidence;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationTypeHandler;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.FunctionAnnotationValueInsertHandler;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaCompletionContributor;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -34,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionBlobPathCompletionProvider.getAdditionalPropertiesFromCompletion;
 
 public class FunctionQueueNameCompletionProvider extends CompletionProvider<CompletionParameters> {
     public static final String[] QUEUE_ANNOTATIONS = new String[]{
@@ -50,6 +54,11 @@ public class FunctionQueueNameCompletionProvider extends CompletionProvider<Comp
                     })));
     public static final PsiJavaElementPattern<?, ?> QUEUE_NAME_PATTERN = psiElement().withSuperParent(2, QUEUE_NAME_PAIR_PATTERN);
 
+    static {
+        AzureFunctionAnnotationTypeHandler.registerKeyPairPattern(QUEUE_NAME_PAIR_PATTERN);
+        AzureFunctionAnnotationCompletionConfidence.registerCodeCompletionPattern(QUEUE_NAME_PATTERN);
+    }
+
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
@@ -59,18 +68,18 @@ public class FunctionQueueNameCompletionProvider extends CompletionProvider<Comp
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
-        final StorageAccount account = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         final List<StorageAccount> accounts = Objects.isNull(account) ? Utils.getConnectedStorageAccounts(module) : List.of(account);
         accounts.stream().flatMap(a -> a.getQueueModule().list().stream())
                 .filter(queue -> StringUtils.startsWithIgnoreCase(queue.getName(), fullPrefix))
-                .map(this::createLookupElement)
+                .map(queue -> createLookupElement(queue, module))
                 .forEach(result::addElement);
     }
 
-    private LookupElement createLookupElement(Queue queue) {
+    private LookupElement createLookupElement(Queue queue, Module module) {
         return LookupElementBuilder.create(queue.getName())
                 .withBoldness(true)
-                .withInsertHandler(new FunctionBlobPathCompletionProvider.MyInsertHandler(false, queue.getParent()))
+                .withInsertHandler(new FunctionAnnotationValueInsertHandler(false, getAdditionalPropertiesFromCompletion(queue.getParent(), module)))
                 .withCaseSensitivity(false)
                 .withTypeText("Queue")
                 .withTailText(" " + queue.getParent().getName())

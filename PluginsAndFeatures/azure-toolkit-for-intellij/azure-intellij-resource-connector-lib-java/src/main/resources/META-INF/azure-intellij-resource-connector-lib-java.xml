@@ -6,10 +6,13 @@
     <extensions defaultExtensionNs="com.intellij">
         <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvRunConfigurationExtension"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.annotator.JavaResourceConnectionAnnotator"/>
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.annotator.FunctionConnectionAnnotator"/>
         <annotator language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.annotator.PropertiesResourceConnectionAnnotator"/>
         <annotator language="yaml" implementationClass="com.microsoft.azure.toolkit.intellij.connector.annotator.YamlResourceConnectionAnnotator"/>
+        <typedHandler implementation="com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationTypeHandler" id="azFunctionAnnotation"/>
         <typedHandler implementation="com.microsoft.azure.toolkit.intellij.connector.spring.properties.SpringPropertiesAutoPopupHandler" id="azPropertiesAuto"/>
         <lookup.charFilter implementation="com.microsoft.azure.toolkit.intellij.connector.spring.properties.SpringPropertyKeyCharFilter" id="azProperties"/>
+        <completion.confidence language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationCompletionConfidence" order="before javaSkipAutopopupInStrings" id="azFunctionAnnotation" />
         <completion.contributor language="Properties" id="azPropertiesQuickCompletion" order="before azPropertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.properties.SpringPropertiesQuickCompletionContributor"/>
         <completion.contributor language="Properties" id="azPropertiesCompletion" order="before propertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.properties.SpringPropertiesCompletionContributor"/>
         <completion.contributor language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.completion.ResourceConnectionCompletionContributor"/>

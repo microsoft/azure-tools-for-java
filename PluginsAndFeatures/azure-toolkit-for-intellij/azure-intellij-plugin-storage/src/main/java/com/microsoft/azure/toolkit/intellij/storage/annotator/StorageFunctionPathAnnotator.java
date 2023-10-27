@@ -12,10 +12,10 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionBlobPathCompletionProvider;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionQueueNameCompletionProvider;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionTableNameCompletionProvider;
-import com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionUtils;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
@@ -42,7 +42,7 @@ public class StorageFunctionPathAnnotator implements Annotator {
 
     private void validateTableName(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("tableName"))) {
             return;
         }
@@ -61,7 +61,7 @@ public class StorageFunctionPathAnnotator implements Annotator {
 
     private void validateQueueName(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("queueName"))) {
             return;
         }
@@ -80,7 +80,7 @@ public class StorageFunctionPathAnnotator implements Annotator {
 
     private void validateBlobPath(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("path"))) {
             return;
         }

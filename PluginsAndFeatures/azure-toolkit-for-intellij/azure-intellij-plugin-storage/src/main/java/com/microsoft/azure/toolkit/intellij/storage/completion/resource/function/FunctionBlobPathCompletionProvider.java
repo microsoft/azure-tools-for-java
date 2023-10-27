@@ -5,19 +5,23 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.completion.resource.function;
 
-import com.intellij.codeInsight.AutoPopupController;
-import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionProvider;
+import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.patterns.*;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationParameterList;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationCompletionConfidence;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationTypeHandler;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.FunctionAnnotationValueInsertHandler;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaCompletionContributor;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -25,20 +29,16 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.BiFunction;
 
-import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageResourceStringLiteralCompletionProvider.*;
-import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils.getConnectionWithStorageAccount;
 
 public class FunctionBlobPathCompletionProvider extends CompletionProvider<CompletionParameters> {
     public static final String[] BLOB_ANNOTATIONS = new String[]{
@@ -56,6 +56,11 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
                     })));
     public static final PsiJavaElementPattern<?, ?> BLOB_PATH_PATTERN = psiElement().withSuperParent(2, BLOB_PATH_PAIR_PATTERN);
 
+    static {
+        AzureFunctionAnnotationTypeHandler.registerKeyPairPattern(BLOB_PATH_PAIR_PATTERN);
+        AzureFunctionAnnotationCompletionConfidence.registerCodeCompletionPattern(BLOB_PATH_PATTERN);
+    }
+
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
@@ -64,7 +69,7 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
-        final StorageAccount account = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         final String connection = Optional.ofNullable(annotation).map(a -> a.findAttributeValue("connection"))
                 .map(value -> value.getText().replace("\"", "").trim()).orElse(null);
         if (Objects.isNull(account) && StringUtils.isNotBlank(connection)) {
@@ -74,7 +79,7 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         final List<StorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : Utils.getConnectedStorageAccounts(module);
         final List<? extends StorageFile> files = getFiles("azure-blob://" + fullPrefix, accountsToSearch);
         final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
-                .withInsertHandler(new MyInsertHandler(title.endsWith("/"), getStorageAccount(file)))
+                .withInsertHandler(new FunctionAnnotationValueInsertHandler(title.endsWith("/"), getAdditionalPropertiesFromCompletion(getStorageAccount(file), module)))
                 .withBoldness(true)
                 .withCaseSensitivity(false)
                 .withTypeText(file.getResourceTypeName())
@@ -88,42 +93,9 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         }
     }
 
-    @RequiredArgsConstructor
-    public static class MyInsertHandler implements InsertHandler<LookupElement> {
-        private final boolean popup;
-        private final StorageAccount storageAccount;
-
-        @Override
-        public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement item) {
-            if (popup) {
-                AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor());
-            }
-            final PsiElement element = PsiUtil.getElementAtOffset(context.getFile(), context.getStartOffset());
-            final boolean hasSpace = element.getPrevSibling() instanceof PsiWhiteSpace;
-            // handle when insert not happen in string literal
-            final String property = element.getText();
-            if (!psiElement().inside(literalExpression()).accepts(element)) {
-                final String newElementValue = (hasSpace ? StringUtils.EMPTY : StringUtils.SPACE) + String.format("\"%s\"", property);
-                context.getDocument().replaceString(context.getStartOffset(), context.getTailOffset(), newElementValue);
-                context.commitDocument();
-            }
-            final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-            final PsiAnnotationMemberValue value = Optional.ofNullable(annotation)
-                    .map(a -> annotation.findAttributeValue("connection")).orElse(null);
-            if (Objects.isNull(value) || Objects.isNull(storageAccount)) {
-                return;
-            }
-            final String connectionValue = value.getText().replace("\"", "");
-            if (StringUtils.isBlank(connectionValue)) {
-                final Module module = ModuleUtil.findModuleForPsiElement(element);
-                final Connection<?, ?> connection = Optional.ofNullable(module)
-                        .flatMap(m -> getConnectionWithStorageAccount(storageAccount, m).stream().findFirst())
-                        .orElse(null);
-                if (Objects.nonNull(connection)) {
-                    final String newConnectionValue = "\"" + connection.getEnvPrefix() + "\"";
-                    value.replace(JavaPsiFacade.getElementFactory(context.getProject()).createExpressionFromText(newConnectionValue, context.getFile()));
-                }
-            }
-        }
+    public static Map<String, String> getAdditionalPropertiesFromCompletion(@Nullable final StorageAccount account, @Nonnull final Module module) {
+        final Connection<?, ?> connection = Objects.isNull(account) ? null :
+                Utils.getConnectionWithStorageAccount(account, module).stream().findFirst().orElse(null);
+        return connection == null ? Collections.emptyMap() : Collections.singletonMap("connection", connection.getEnvPrefix());
     }
 }

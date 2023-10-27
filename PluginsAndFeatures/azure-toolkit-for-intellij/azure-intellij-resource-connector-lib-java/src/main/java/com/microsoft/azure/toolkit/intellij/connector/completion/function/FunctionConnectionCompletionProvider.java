@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.storage.completion.resource.function;
+package com.microsoft.azure.toolkit.intellij.connector.completion.function;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -56,7 +56,6 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
         put("com.microsoft.azure.functions.annotation.CosmosDBOutput", "DocumentDB");
         put("com.microsoft.azure.functions.annotation.CosmosDBTrigger", "DocumentDB");
     }};
-    public static final String AZURE_FUNCTION_PACKAGE = "com.microsoft.azure.functions.annotation";
     public static final PsiJavaElementPattern.Capture<PsiElement> STORAGE_ACCOUNT_ANNOTATION = psiElement()
             .insideAnnotationParam("com.microsoft.azure.functions.annotation.StorageAccount");
     public static final ElementPattern CONNECTION_NAME_VALUE = PsiJavaPatterns.psiNameValuePair().withName("connection").withParent(
@@ -68,23 +67,14 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
                         }
                     })));
     public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2,CONNECTION_NAME_VALUE);
-    public static final ElementPattern STORAGE_ANNOTATION_CONNECTION_PATTERN = PlatformPatterns.or(STORAGE_ACCOUNT_ANNOTATION, CONNECTION_ANNOTATION);
+    public static final ElementPattern FUNCTION_ANNOTATION_CONNECTION_PATTERN = PlatformPatterns.or(STORAGE_ACCOUNT_ANNOTATION, CONNECTION_ANNOTATION);
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (Objects.isNull(annotation)) {
-            return;
-        }
-        // get function definition for current psiElement
-        final String annotationQualifiedName = annotation.getQualifiedName();
-        final String resourceType = ANNOTATION_DEFINITION_MAP.get(annotationQualifiedName);
-        final FunctionSupported<?> resourceDefinition = ResourceManager.getDefinitions().stream()
-                .filter(definition -> definition instanceof FunctionSupported<?> &&
-                        StringUtils.equalsIgnoreCase(((FunctionSupported<?>) definition).getResourceType(), resourceType))
-                .map(d -> (FunctionSupported<?>) d)
-                .findFirst().orElse(null);
+        final FunctionSupported<?> resourceDefinition = Optional.ofNullable(annotation)
+                .map(FunctionConnectionCompletionProvider::getResourceDefinition).orElse(null);
         if (Objects.isNull(resourceDefinition)) {
             return;
         }
@@ -94,6 +84,16 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
         addExistingConnectionLookupElements(azureModule, result, resourceDefinition);
         // add create connection string lookup element
         addCreateNewConnectionLookupElement(parameters, result, resourceDefinition);
+    }
+
+    public static FunctionSupported<?> getResourceDefinition(@Nonnull final PsiAnnotation annotation) {
+        final String qualifiedName = annotation.getQualifiedName();
+        final String resourceType = ANNOTATION_DEFINITION_MAP.get(qualifiedName);
+        return ResourceManager.getDefinitions().stream()
+                .filter(definition -> definition instanceof FunctionSupported<?> &&
+                        StringUtils.equalsIgnoreCase(((FunctionSupported<?>) definition).getResourceType(), resourceType))
+                .map(d -> (FunctionSupported<?>) d)
+                .findFirst().orElse(null);
     }
 
     private void addExistingConnectionLookupElements(AzureModule azureModule, CompletionResultSet result, FunctionSupported<?> resourceDefinition) {

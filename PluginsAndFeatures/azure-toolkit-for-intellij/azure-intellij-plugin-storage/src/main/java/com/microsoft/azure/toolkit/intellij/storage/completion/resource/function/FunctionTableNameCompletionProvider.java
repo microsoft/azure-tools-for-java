@@ -20,6 +20,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationCompletionConfidence;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.AzureFunctionAnnotationTypeHandler;
+import com.microsoft.azure.toolkit.intellij.connector.completion.function.FunctionAnnotationValueInsertHandler;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaCompletionContributor;
 import com.microsoft.azure.toolkit.intellij.storage.completion.resource.Utils;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -34,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.storage.completion.resource.function.FunctionBlobPathCompletionProvider.getAdditionalPropertiesFromCompletion;
 
 public class FunctionTableNameCompletionProvider extends CompletionProvider<CompletionParameters> {
     public static final String[] TABLE_ANNOTATIONS = new String[]{
@@ -50,6 +54,11 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
                     })));
     public static final PsiJavaElementPattern<?, ?> TABLE_NAME_PATTERN = psiElement().withSuperParent(2, TABLE_NAME_PAIR_PATTERN);
 
+    static {
+        AzureFunctionAnnotationTypeHandler.registerKeyPairPattern(TABLE_NAME_PAIR_PATTERN);
+        AzureFunctionAnnotationCompletionConfidence.registerCodeCompletionPattern(TABLE_NAME_PATTERN);
+    }
+
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
@@ -59,18 +68,18 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
-        final StorageAccount account = Optional.ofNullable(annotation).map(FunctionUtils::getBindingStorageAccount).orElse(null);
+        final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         final List<StorageAccount> accounts = Objects.isNull(account) ? Utils.getConnectedStorageAccounts(module) : List.of(account);
         accounts.stream().flatMap(a -> a.getTableModule().list().stream())
                 .filter(table -> StringUtils.startsWithIgnoreCase(table.getName(), fullPrefix))
-                .map(this::createLookupElement)
+                .map(queue -> createLookupElement(queue, module))
                 .forEach(result::addElement);
     }
 
-    private LookupElement createLookupElement(Table table) {
+    private LookupElement createLookupElement(Table table, Module module) {
         return LookupElementBuilder.create(table.getName())
                 .withBoldness(true)
-                .withInsertHandler(new FunctionBlobPathCompletionProvider.MyInsertHandler(false, table.getParent()))
+                .withInsertHandler(new FunctionAnnotationValueInsertHandler(false, getAdditionalPropertiesFromCompletion(table.getParent(), module)))
                 .withCaseSensitivity(false)
                 .withTypeText("Table")
                 .withTailText(" " + table.getParent().getName())

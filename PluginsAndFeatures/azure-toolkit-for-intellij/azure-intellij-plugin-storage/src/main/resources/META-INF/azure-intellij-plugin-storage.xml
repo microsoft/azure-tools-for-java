@@ -11,7 +11,6 @@
         <completion.contributor id="azStorageFunctionAnnotation" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageFunctionAnnotationCompletionContributor"/>
         <completion.contributor id="azStorageStringLiteral" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaCompletionContributor"/>
         <completion.contributor id="azStorageStringLiteralQuick" language="JAVA" order="after azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageJavaQuickCompletionContributor"/>
-        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.annotator.StorageFunctionConnectionAnnotator"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.annotator.StorageFunctionPathAnnotator"/>
         <typedHandler id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageStringLiteralTypeHandler"/>
         <lookup.charFilter id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.completion.resource.AzureStorageStringLiteralCharFilter"/>
