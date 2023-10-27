@@ -22,7 +22,7 @@ import static com.intellij.patterns.PsiJavaPatterns.*;
 public class AzureStorageJavaCompletionContributor extends CompletionContributor {
 
     public static final String DUMMY_IDENTIFIER = CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED;
-    public static final List<Character> SPECIAL_CHARS = Arrays.asList(':', '/', '-', '"', '=');
+    public static final List<Character> SPECIAL_CHARS = Arrays.asList(':', '/', '-');
 
     private static final PsiJavaElementPattern.Capture<PsiElement> insideAnnotation = psiElement().insideAnnotationParam("org.springframework.beans.factory.annotation.Value");
     private static final PsiMethodPattern resourceLoaderGetResource = psiMethod().withName("getResource").definedInClass("org.springframework.core.io.ResourceLoader");
