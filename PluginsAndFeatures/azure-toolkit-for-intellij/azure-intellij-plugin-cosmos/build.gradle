@@ -1,5 +1,5 @@
 intellij {
-    plugins = ['com.intellij.database']
+    plugins = ['com.intellij.database', 'java']
 }
 
 sourceSets {
