@@ -44,7 +44,7 @@ public class PropertiesResourceConnectionLineMarkerProvider extends AbstractReso
             return null;
         }
         final ResourceDefinition<? extends AzResource> definition = connection.getResource().getDefinition();
-        final List<Pair<String, String>> variables = definition instanceof SpringSupported<? extends AzResource> ?
+        final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
                 ((SpringSupported<? extends AzResource>) definition).getSpringProperties() : Collections.emptyList();
         final Property parent = PsiTreeUtil.getParentOfType(element, Property.class);
         final String property = Optional.ofNullable(parent).map(Property::getKey).orElse(null);

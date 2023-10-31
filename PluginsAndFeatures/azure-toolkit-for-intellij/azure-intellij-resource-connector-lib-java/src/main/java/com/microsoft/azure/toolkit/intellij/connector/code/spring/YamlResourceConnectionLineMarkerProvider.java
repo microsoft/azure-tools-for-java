@@ -43,7 +43,7 @@ public class YamlResourceConnectionLineMarkerProvider extends AbstractResourceCo
             return null;
         }
         final ResourceDefinition<? extends AzResource> definition = connection.getResource().getDefinition();
-        final List<Pair<String, String>> variables = definition instanceof SpringSupported<? extends AzResource> ?
+        final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
                 ((SpringSupported<? extends AzResource>) definition).getSpringProperties() : Collections.emptyList();
         final String property = YAMLUtil.getConfigFullName((YAMLPlainTextImpl) element);
         return CollectionUtils.isNotEmpty(variables) && StringUtils.equalsIgnoreCase(variables.get(0).getKey(), property) ? connection : null;

@@ -34,8 +34,9 @@ public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvide
     @Override
     @Nullable
     public LineMarkerInfo<?> getLineMarkerInfo(@Nonnull PsiElement element) {
-        if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element) && element.getParent() instanceof PsiLiteralExpression literal) {
+        if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element)) {
             final Module module = ModuleUtil.findModuleForPsiElement(element);
+            final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
             final String valueWithPrefix = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
             if (Objects.nonNull(module) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://")) && Azure.az(AzureAccount.class).isLoggedIn()) {
                 final String prefix = valueWithPrefix.startsWith("azure-blob://") ? "azure-blob://" : "azure-file://";
@@ -55,8 +56,8 @@ public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvide
         public ResourceLineMarkerInfo(final PsiElement element, final StorageFile file) {
             super(element, element.getTextRange(),
                 IntelliJAzureIcons.getIcon(StringLiteralResourceCompletionProvider.getFileIcon(file)),
-                ignore -> Azure.az(AzureAccount.class).isLoggedIn()?
-                    String.format("navigate to Azure Storage %s \"%s\" in Project Explorer", file.getName(), file.getResourceTypeName()):
+                ignore -> Azure.az(AzureAccount.class).isLoggedIn() ?
+                    String.format("navigate to Azure Storage %s \"%s\" in Project Explorer", file.getName(), file.getResourceTypeName()) :
                     "navigate to Azure Storage in Project Explorer",
                 null, (e, element1) -> {
                     final Module module = ModuleUtil.findModuleForPsiElement(element1);

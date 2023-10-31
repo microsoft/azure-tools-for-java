@@ -190,7 +190,7 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
         final String rId = app.getId();
         selectResource(module, rId, node -> node instanceof AzureFacetRootNode
             || node instanceof DeploymentTargetsNode
-            || node instanceof ResourceNode rn && isAncestor(rn.getValue().getValue(), rId), requestFocus);
+            || node instanceof ResourceNode && isAncestor(((ResourceNode) node).getValue().getValue(), rId), requestFocus);
     }
 
     public static void selectConnectedResource(@Nonnull Connection<?, ?> connection, final boolean requestFocus) {
@@ -202,8 +202,8 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
         final String rId = Optional.ofNullable(resourceId).filter(StringUtils::isNotBlank).orElseGet(() -> connection.getResource().getDataId());
         selectResource(module, rId, node -> node instanceof AzureFacetRootNode
             || node instanceof ConnectionsNode
-            || node instanceof ConnectionNode cn && Objects.equals(cn.getValue(), connection)
-            || node instanceof ResourceNode rn && isAncestor(rn.getValue().getValue(), rId), requestFocus);
+            || node instanceof ConnectionNode && Objects.equals(((ConnectionNode) node).getValue(), connection)
+            || node instanceof ResourceNode && isAncestor(((ResourceNode) node).getValue().getValue(), rId), requestFocus);
     }
 
     private static void selectResource(final Module module, final String rId, Predicate<Object> isContainerNode, final boolean requestFocus) {
@@ -214,16 +214,19 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
         }
         Optional.ofNullable(ToolWindowManager.getInstance(module.getProject()).getToolWindow("Project")).ifPresent(w -> w.activate(() -> {
             final DefaultMutableTreeNode moduleRoot = TreeUtil.findNode((DefaultMutableTreeNode) tree.getModel().getRoot(), node ->
-                node.getUserObject() instanceof PsiDirectoryNode n
-                    && Objects.equals(ModuleUtil.findModuleForFile(n.getValue().getVirtualFile(), module.getProject()), module));
+                node.getUserObject() instanceof PsiDirectoryNode
+                    && Objects.equals(ModuleUtil.findModuleForFile(((PsiDirectoryNode) node.getUserObject()).getValue().getVirtualFile(), module.getProject()), module));
             final TreePath from = Optional.ofNullable(moduleRoot).map(r -> new TreePath(r.getPath())).orElse(null);
             TreeUtils.selectNode(tree, new TreeUtils.NodeFinder() {
                 @Override
                 public boolean matches(final TreePath path) {
                     final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                    return node.getUserObject() instanceof ResourceNode rn
-                        && rn.getValue().getValue() instanceof AzResource r
-                        && r.getId().equalsIgnoreCase(rId);
+                    return Optional.ofNullable(node).map(DefaultMutableTreeNode::getUserObject)
+                        .filter(o -> o instanceof ResourceNode)
+                        .map(o -> ((ResourceNode) node.getUserObject()).getValue().getValue())
+                        .filter(v -> v instanceof AzResource)
+                        .filter(v -> ((AzResource) v).getId().equalsIgnoreCase(rId))
+                        .isPresent();
                 }
 
                 @Override
@@ -237,6 +240,6 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
 
     private static boolean isAncestor(Object r, final String target) {
         // why append? consider resource `xxx/abc` and `xxx/abcd`
-        return r instanceof AzComponent azr && StringUtils.containsIgnoreCase(target, StringUtils.appendIfMissing(azr.getId(), "/"));
+        return r instanceof AzComponent && StringUtils.containsIgnoreCase(target, StringUtils.appendIfMissing(((AzComponent) r).getId(), "/"));
     }
 }
