@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -75,7 +76,7 @@ public final class ModuleResource implements Resource<String> {
 
         @Override
         public List<Resource<String>> getResources(Project project) {
-            return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(m -> this.define(m.getName())).toList();
+            return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(m -> this.define(m.getName())).collect(Collectors.toList());
         }
 
         @Override

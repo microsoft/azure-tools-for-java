@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionProvider.FUNCTION_ANNOTATION_CONNECTION_PATTERN;
 
@@ -105,7 +106,7 @@ public class FunctionConnectionAnnotator implements Annotator {
         final Profile profile = Optional.ofNullable(module).map(AzureModule::from).map(AzureModule::getDefaultProfile).orElse(null);
         final List<Connection<?, ?>> storageConnections = profile.getConnections().stream()
                 .filter(c -> Objects.equals(c.getResource().getDefinition(), definition))
-                .toList();
+                .collect(Collectors.toList());
         final String originalValue = element.getText().replace("\"", "");
         final SmartPsiElementPointer<PsiElement> pointer = SmartPointerManager.createPointer(element);
         storageConnections.forEach(connection -> builder.withFix(new ChangeEnvironmentVariableFix(originalValue, connection.getEnvPrefix(), pointer)));

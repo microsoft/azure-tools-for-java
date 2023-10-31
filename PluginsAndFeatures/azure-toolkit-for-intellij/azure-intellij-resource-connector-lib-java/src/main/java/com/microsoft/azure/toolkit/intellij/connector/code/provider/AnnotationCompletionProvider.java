@@ -77,7 +77,7 @@ public class AnnotationCompletionProvider extends AbstractResourceConnectionComp
         final List<Connection<? extends AzResource, ?>> connections = metadata.getConnectedResourcesFunction().apply(module);
         final List<? extends AzResource> resources = metadata.getAzureResourcesFunction().apply(module)
                 .stream().filter(resource -> connections.stream().noneMatch(connection -> connection.getResource().getData().equals(resource)))
-                .toList();
+                .collect(Collectors.toList());
         resources.stream()
                 .map(resource -> getCreateConnectionElement(module, resource, metadata.getResourceDefinition(),
                         connection -> metadata.getCompletionItemsFunction().apply(connection, null)))

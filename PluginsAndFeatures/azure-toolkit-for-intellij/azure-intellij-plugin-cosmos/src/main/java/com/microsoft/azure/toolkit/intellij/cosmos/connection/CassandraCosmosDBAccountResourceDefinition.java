@@ -39,7 +39,7 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
             .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
             .filter(a -> a instanceof CassandraCosmosDBAccount)
             .flatMap(a -> ((CassandraCosmosDBAccount) a).keySpaces().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

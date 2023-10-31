@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public class RedisResourceDefinition extends AzureServiceResource.Definition<RedisCache> implements SpringSupported<RedisCache> {
@@ -63,7 +64,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     public List<Resource<RedisCache>> getResources(Project project) {
         return Azure.az(AzureRedis.class).list().stream()
             .flatMap(m -> m.caches().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

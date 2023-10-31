@@ -44,7 +44,7 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
             .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
             .filter(a -> a instanceof SqlCosmosDBAccount)
             .flatMap(a -> ((SqlCosmosDBAccount) a).sqlDatabases().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

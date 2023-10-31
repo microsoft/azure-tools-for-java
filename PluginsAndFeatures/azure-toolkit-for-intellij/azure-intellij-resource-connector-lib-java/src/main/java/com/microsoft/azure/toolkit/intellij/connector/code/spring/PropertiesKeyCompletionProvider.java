@@ -28,12 +28,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PropertiesKeyCompletionProvider extends CompletionProvider<CompletionParameters> {
     private static final List<? extends SpringSupported<?>> definitions = ResourceManager
         .getDefinitions(ResourceDefinition.RESOURCE).stream()
         .filter(d -> d instanceof SpringSupported)
-        .map(d -> (SpringSupported<?>) d).toList();
+        .map(d -> (SpringSupported<?>) d).collect(Collectors.toList());
 
     @Override
     protected void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context, @Nonnull CompletionResultSet result) {

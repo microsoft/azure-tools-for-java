@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public class ApplicationInsightsResourceDefinition extends AzureServiceResource.Definition<ApplicationInsight> implements IJavaAgentSupported {
@@ -46,7 +47,7 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
     public List<Resource<ApplicationInsight>> getResources(Project project) {
         return Azure.az(AzureApplicationInsights.class).list().stream()
             .flatMap(m -> m.getApplicationInsightsModule().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

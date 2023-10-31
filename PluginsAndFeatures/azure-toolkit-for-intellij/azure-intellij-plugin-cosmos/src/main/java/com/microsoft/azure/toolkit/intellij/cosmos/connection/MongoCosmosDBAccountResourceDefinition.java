@@ -40,7 +40,7 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
             .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
             .filter(a -> a instanceof MongoCosmosDBAccount)
             .flatMap(a -> ((MongoCosmosDBAccount) a).mongoDatabases().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

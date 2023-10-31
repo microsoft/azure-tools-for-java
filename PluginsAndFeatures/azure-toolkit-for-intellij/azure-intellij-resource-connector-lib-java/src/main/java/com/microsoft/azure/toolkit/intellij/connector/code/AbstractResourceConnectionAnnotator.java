@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Annotator for validations of resource connection variables in String
@@ -91,7 +92,7 @@ public abstract class AbstractResourceConnectionAnnotator implements Annotator {
                     .flatMap(c -> profile.getGeneratedEnvironmentVariables(c).stream())
                     .map(Pair::getKey)
                     .filter(key -> StringUtils.isNotBlank(suffix) && StringUtils.endsWith(key, suffix))
-                    .toList();
+                    .collect(Collectors.toList());
             values.stream()
                     .map(property -> new ChangeEnvironmentVariableFix(text, property, SmartPointerManager.createPointer(element)))
                     .forEach(builder::withFix);

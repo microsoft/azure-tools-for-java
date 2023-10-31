@@ -53,6 +53,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class StringLiteralResourceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
@@ -97,10 +98,10 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
         final var getModule = fullPrefix.startsWith("azure-blob://") ?
             (Function<StorageAccount, BlobContainerModule>) StorageAccount::getBlobContainerModule :
             (Function<StorageAccount, ShareModule>) StorageAccount::getShareModule;
-        List<? extends StorageFile> files = accounts.stream().map(getModule).flatMap(m -> m.list().stream()).map(r -> ((StorageFile) r)).toList();
+        List<? extends StorageFile> files = accounts.stream().map(getModule).flatMap(m -> m.list().stream()).map(r -> ((StorageFile) r)).collect(Collectors.toList());
         for (int i = 1; i < parts.length; i++) {
             final String parentName = parts[i - 1];
-            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName)).filter(StorageFile::isDirectory).flatMap(f -> f.getSubFileModule().list().stream()).toList();
+            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName)).filter(StorageFile::isDirectory).flatMap(f -> f.getSubFileModule().list().stream()).collect(Collectors.toList());
         }
         return files;
     }
@@ -111,7 +112,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
             .flatMap(m -> m.getConnections().stream())
             .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
             .filter(c -> c.getResource().isValidResource())
-            .toList();
+            .collect(Collectors.toList());
     }
 
     @Nullable

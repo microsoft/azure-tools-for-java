@@ -33,6 +33,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Utils {
     public static final Pattern SPRING_PROPERTY_VALUE_PATTERN = Pattern.compile("\\$\\{(.*)}");
@@ -51,7 +52,7 @@ public class Utils {
                 .filter(Resource::isValidResource)
                 .map(Resource::getData)
                 .map(resource -> (T) resource)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Nullable

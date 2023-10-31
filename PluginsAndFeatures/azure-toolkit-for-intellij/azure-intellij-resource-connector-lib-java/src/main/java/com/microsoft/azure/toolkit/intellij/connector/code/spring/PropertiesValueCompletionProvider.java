@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PropertiesValueCompletionProvider extends CompletionProvider<CompletionParameters> {
     @Override
@@ -81,15 +82,15 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
             .withLookupStrings(Arrays.asList(r.getName(), ((AzResource) r.getData()).getResourceGroupName()))
             .withInsertHandler(new PropertyValueInsertHandler(r))
             .withTailText(" " + ((AzResource) r.getData()).getResourceTypeName())
-            .withTypeText(d.getSpringPropertyTypes().get(key)))).toList();
+            .withTypeText(d.getSpringPropertyTypes().get(key)))).collect(Collectors.toList());
     }
 
     public static List<? extends SpringSupported<?>> getSupportedDefinitions(String key) {
         final List<ResourceDefinition<?>> definitions = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream()
-            .filter(d -> d instanceof SpringSupported<?>).toList();
+            .filter(d -> d instanceof SpringSupported<?>).collect(Collectors.toList());
         return definitions.stream().map(d -> (SpringSupported<?>) d)
             .filter(d -> d.getSpringProperties().stream().anyMatch(p -> p.getKey().equals(key)))
-            .toList();
+            .collect(Collectors.toList());
     }
 
     @RequiredArgsConstructor

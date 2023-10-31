@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public class StorageAccountResourceDefinition extends AzureServiceResource.Definition<StorageAccount>
@@ -96,7 +97,7 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     public List<Resource<StorageAccount>> getResources(Project project) {
         return Azure.az(AzureStorageAccount.class).list().stream()
             .flatMap(m -> m.storageAccounts().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

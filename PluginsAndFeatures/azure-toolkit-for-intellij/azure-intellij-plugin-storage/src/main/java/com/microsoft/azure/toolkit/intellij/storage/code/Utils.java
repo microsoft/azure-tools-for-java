@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -26,7 +27,7 @@ public class Utils {
                 .flatMap(m -> m.getConnections().stream())
                 .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
                 .filter(c -> Objects.equals(c.getResource().getData(), account))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public static StorageAccount getBindingStorageAccount(@Nonnull final PsiAnnotation annotation) {

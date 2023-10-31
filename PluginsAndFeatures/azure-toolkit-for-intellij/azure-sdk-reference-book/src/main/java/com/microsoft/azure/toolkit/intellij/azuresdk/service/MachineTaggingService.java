@@ -56,7 +56,7 @@ public class MachineTaggingService {
 
     private static boolean hasToolInLocalPath(List<Path> paths, String executableWithoutExt) {
         final var baseNames = SystemInfo.isWindows ?
-            Stream.of(".bat", ".com", ".exe", ".cmd").map(exeSuffix -> executableWithoutExt + exeSuffix).toList() :
+            Stream.of(".bat", ".com", ".exe", ".cmd").map(exeSuffix -> executableWithoutExt + exeSuffix).collect(Collectors.toList()) :
             Collections.singletonList(executableWithoutExt);
         return paths.stream().flatMap(p -> baseNames.stream().map(p::resolve))
             .filter(Files::isRegularFile)
@@ -74,6 +74,6 @@ public class MachineTaggingService {
                 }
                 //noinspection ReturnOfNull
                 return null;
-            }).filter(Objects::nonNull).filter(Files::exists).toList();
+            }).filter(Objects::nonNull).filter(Files::exists).collect(Collectors.toList());
     }
 }
