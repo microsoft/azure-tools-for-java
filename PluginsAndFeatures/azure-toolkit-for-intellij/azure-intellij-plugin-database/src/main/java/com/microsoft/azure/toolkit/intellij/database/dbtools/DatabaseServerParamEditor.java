@@ -154,13 +154,13 @@ public class DatabaseServerParamEditor extends ParamEditorBase<DatabaseServerPar
         Objects.requireNonNull(explorer).activate(() -> {
             final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "database.dbtools", context);
             if (MySqlServer.class.isAssignableFrom(clazz)) {
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureMySql.class), event);
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureMySql.class), event);
                 CreateMySqlAction.create(project, null);
             } else if (PostgreSqlServer.class.isAssignableFrom(clazz)) {
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzurePostgreSql.class), event);
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzurePostgreSql.class), event);
                 CreatePostgreSqlAction.create(project, null);
             } else if (MicrosoftSqlServer.class.isAssignableFrom(clazz)) {
-                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureSqlServer.class), event);
+                AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureSqlServer.class), event);
                 CreateSqlServerAction.create(project, null);
             }
         });

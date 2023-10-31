@@ -1,5 +1,5 @@
 intellij {
-    plugins = ['java', "properties"]
+    plugins = ['java', "properties", "yaml"]
 }
 
 dependencies {

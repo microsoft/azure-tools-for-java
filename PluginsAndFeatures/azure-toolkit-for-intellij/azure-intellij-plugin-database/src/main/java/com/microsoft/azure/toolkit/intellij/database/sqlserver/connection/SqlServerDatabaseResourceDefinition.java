@@ -35,6 +35,14 @@ public class SqlServerDatabaseResourceDefinition extends SqlDatabaseResourceDefi
     }
 
     @Override
+    public List<Resource<MicrosoftSqlDatabase>> getResources(Project project) {
+        return Azure.az(AzureSqlServer.class).list().stream()
+            .flatMap(m -> m.servers().list().stream())
+            .flatMap(s -> s.databases().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<MicrosoftSqlDatabase>> getResourcePanel(Project project) {
         return new SqlDatabaseResourcePanel<>(this) {
             @Override

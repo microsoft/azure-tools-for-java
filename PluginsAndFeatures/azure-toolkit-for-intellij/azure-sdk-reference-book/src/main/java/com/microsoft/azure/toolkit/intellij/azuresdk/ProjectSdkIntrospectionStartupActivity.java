@@ -9,6 +9,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.enforcer.AzureSdkEnforcer;
+import com.microsoft.azure.toolkit.intellij.azuresdk.service.MachineTaggingService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.ProjectLibraryService;
 import com.microsoft.azure.toolkit.intellij.azuresdk.service.WorkspaceTaggingService;
 import com.microsoft.azure.toolkit.intellij.common.survey.CustomerSurvey;
@@ -22,10 +23,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,6 +31,7 @@ public class ProjectSdkIntrospectionStartupActivity implements StartupActivity {
 
     private static final String WORKSPACE_TAGGING = "workspace-tagging";
     private static final String WORKSPACE_TAGGING_FAILURE = "workspace-tagging-failure";
+    private static final String MACHINE_TAGGING = "machine-tagging";
     private static final String OPERATION_NAME = "operationName";
     private static final String SERVICE_NAME = "serviceName";
     private static final String SYSTEM = "system";
@@ -58,6 +57,8 @@ public class ProjectSdkIntrospectionStartupActivity implements StartupActivity {
             try {
                 final Set<String> workspaceTags = getWorkspaceTags(project);
                 trackWorkspaceTagging(workspaceTags);
+                final Set<String> machineTags = getMachineTags(project);
+                trackMachineTagging(machineTags);
                 showCustomerSurvey(project, workspaceTags);
             } catch (final Exception e) {
                 // swallow exception for workspace tagging
@@ -85,15 +86,27 @@ public class ProjectSdkIntrospectionStartupActivity implements StartupActivity {
 
     private static Set<String> getWorkspaceTags(@Nonnull final Project project) {
         return ProjectLibraryService.getProjectLibraries(project).stream()
-                .map(l -> WorkspaceTaggingService.getWorkspaceTag(l.getGroupId(), l.getArtifactId()))
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toSet());
+            .flatMap(l -> WorkspaceTaggingService.getWorkspaceTags(l.getGroupId(), l.getArtifactId()).stream()).filter(Objects::nonNull)
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.toSet());
+    }
+
+    private static Set<String> getMachineTags(@Nonnull final Project project) {
+        return MachineTaggingService.getMachineTags(project);
     }
 
     private static void trackWorkspaceTagging(final Set<String> tagSet) {
         final Map<String, String> properties = new HashMap<>();
         properties.put(SERVICE_NAME, SYSTEM);
         properties.put(OPERATION_NAME, WORKSPACE_TAGGING);
+        properties.put(TAG, StringUtils.join(tagSet, ","));
+        AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
+    }
+
+    private static void trackMachineTagging(final Set<String> tagSet) {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(SERVICE_NAME, SYSTEM);
+        properties.put(OPERATION_NAME, MACHINE_TAGGING);
         properties.put(TAG, StringUtils.join(tagSet, ","));
         AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
     }

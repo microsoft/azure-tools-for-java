@@ -94,8 +94,8 @@ allprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.38.0-SNAPSHOT'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.38.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.38.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.38.0'
             mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.0'
         }
     }
@@ -133,7 +133,7 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-resource-connector-lib-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-service-explorer', configuration: 'instrumentedJar')
-    implementation project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-guidance-java', configuration: 'instrumentedJar')
     implementation project(path: ':azure-sdk-reference-book', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-springcloud', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-storage', configuration: 'instrumentedJar')

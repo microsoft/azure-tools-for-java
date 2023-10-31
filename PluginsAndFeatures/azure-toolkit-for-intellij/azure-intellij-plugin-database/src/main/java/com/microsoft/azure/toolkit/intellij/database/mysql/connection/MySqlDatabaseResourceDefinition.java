@@ -35,6 +35,14 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
     }
 
     @Override
+    public List<Resource<MySqlDatabase>> getResources(Project project) {
+        return Azure.az(AzureMySql.class).list().stream()
+            .flatMap(m -> m.servers().list().stream())
+            .flatMap(s -> s.databases().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<MySqlDatabase>> getResourcePanel(Project project) {
         return new SqlDatabaseResourcePanel<>(this) {
             @Override

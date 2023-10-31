@@ -16,7 +16,6 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics;
@@ -36,19 +35,11 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor.ACTIONS_DEPLOY_TO_AZURE;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.CONNECT_TO_MODULE;
-import static com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode.FOCUS_KEY;
 
 @Slf4j
 public class AzureFacetRootNode extends AbstractProjectNode<AzureModule> implements IAzureFacetNode {
@@ -64,30 +55,16 @@ public class AzureFacetRootNode extends AbstractProjectNode<AzureModule> impleme
         connection.subscribe(CONNECTION_CHANGED, (ConnectionTopics.ConnectionChanged) (project, conn, action) -> {
             final JTree tree = this.getTree();
             if (conn.getConsumer().getId().equalsIgnoreCase(module.getName()) && tree != null) {
-                TreeUtils.addClientProperty(tree, FOCUS_KEY, conn);
                 updateChildren();
-                AzureTaskManager.getInstance().runLater(() -> expandChild(1));
+                AzureTaskManager.getInstance().runLater(() -> AbstractAzureFacetNode.selectConnectedResource(conn, false));
             }
         });
         connection.subscribe(DeploymentTargetTopics.TARGET_APP_CHANGED, (DeploymentTargetTopics.TargetAppChanged) (m, app, action) -> {
             final JTree tree = this.getTree();
             if (m.getName().equalsIgnoreCase(module.getName()) && tree != null) {
-                TreeUtils.addClientProperty(tree, FOCUS_KEY, app);
                 updateChildren();
-                AzureTaskManager.getInstance().runLater(() -> expandChild(0));
+                AzureTaskManager.getInstance().runLater(() -> AbstractAzureFacetNode.selectDeploymentResource(module.getModule(), app, true));
             }
-        });
-    }
-
-    private void expandChild(int childIndex) {
-        this.expandNode(this.getPath()).thenAsync(p -> {
-            final DefaultMutableTreeNode thisNode = (DefaultMutableTreeNode) p.getLastPathComponent();
-            final DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) thisNode.getChildAt(childIndex);
-            if (Objects.nonNull(childNode)) {
-                final TreePath childNodePath = new TreePath(childNode.getPath());
-                return this.expandNode(childNodePath);
-            }
-            return this.expandNode(p);
         });
     }
 

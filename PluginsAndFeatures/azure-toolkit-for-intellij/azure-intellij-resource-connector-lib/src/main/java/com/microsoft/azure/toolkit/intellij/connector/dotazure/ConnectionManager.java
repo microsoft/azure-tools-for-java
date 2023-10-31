@@ -12,6 +12,7 @@ import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ConnectionDefinition;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
@@ -180,5 +181,16 @@ public class ConnectionManager {
                 log.warn(String.format("error occurs when load a resource connection of type '%s'", name), e);
             }
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public String getNewPrefix(Resource resource, Resource consumer) {
+        final Set<String> prefixes = this.getConnectionsByConsumerId(consumer.getId()).stream().map(Connection::getEnvPrefix).collect(Collectors.toSet());
+        String prefix = resource.getDefinition().getDefaultEnvPrefix();
+        int i = 1;
+        while (prefixes.contains(prefix)) {
+            prefix = prefix + (i++);
+        }
+        return prefix;
     }
 }

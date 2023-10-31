@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<MongoDatabase> implements SpringSupported<MongoDatabase> {
     public static final MongoCosmosDBAccountResourceDefinition INSTANCE = new MongoCosmosDBAccountResourceDefinition();
+
     public MongoCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Mongo", "Azure Cosmos DB account (Mongo)", AzureIcons.Cosmos.MODULE.getIconPath());
     }
@@ -34,11 +35,20 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
     }
 
     @Override
+    public List<Resource<MongoDatabase>> getResources(Project project) {
+        return Azure.az(AzureCosmosService.class).list().stream()
+            .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
+            .filter(a -> a instanceof MongoCosmosDBAccount)
+            .flatMap(a -> ((MongoCosmosDBAccount) a).mongoDatabases().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<MongoDatabase>> getResourcePanel(Project project) {
         final Function<Subscription, ? extends List<MongoCosmosDBAccount>> accountLoader = subscription ->
-                Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
-                        .filter(account -> account instanceof MongoCosmosDBAccount)
-                        .map(account -> (MongoCosmosDBAccount) account).collect(Collectors.toList());
+            Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
+                .filter(account -> account instanceof MongoCosmosDBAccount)
+                .map(account -> (MongoCosmosDBAccount) account).collect(Collectors.toList());
         final Function<MongoCosmosDBAccount, ? extends List<? extends MongoDatabase>> databaseLoader = account -> account.mongoDatabases().list();
         return new CosmosDatabaseResourcePanel<>(this, accountLoader, databaseLoader);
     }

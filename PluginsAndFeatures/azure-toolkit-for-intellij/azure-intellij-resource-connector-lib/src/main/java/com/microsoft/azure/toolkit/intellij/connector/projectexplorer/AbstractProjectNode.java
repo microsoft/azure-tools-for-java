@@ -25,8 +25,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.concurrency.AsyncPromise;
-import org.jetbrains.concurrency.Promise;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -108,16 +106,6 @@ public abstract class AbstractProjectNode<T> extends ProjectViewNode<T> implemen
             final AbstractProjectViewPane pane = ProjectView.getInstance(this.getProject()).getCurrentProjectViewPane();
             pane.updateFrom(path, false, updateStructure);
         }
-    }
-
-    protected @Nonnull Promise<TreePath> expandNode(TreePath path) {
-        final JTree tree = this.getTree();
-        if (Objects.isNull(path) || Objects.isNull(tree)) {
-            final AsyncPromise<TreePath> promise = new AsyncPromise<>();
-            promise.setError("failure to expand node");
-            return promise;
-        }
-        return TreeUtil.promiseExpand(tree, path);
     }
 
     @Nullable

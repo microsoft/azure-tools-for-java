@@ -14,11 +14,9 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Refreshable;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import com.microsoft.azure.toolkit.lib.sqlserverbigdata.SqlserverBigDataModule;
 import com.microsoft.azure.toolkit.lib.sqlserverbigdata.SqlserverBigDataNode;
 import com.microsoft.azure.toolkit.lib.sqlserverbigdata.SqlserverBigDataService;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import java.util.Optional;
 
@@ -52,14 +50,14 @@ public class SqlserverBigDataActionsContributor implements IActionsContributor {
                 .register(am);
 
         new Action<>(LINK_CLUSTER)
-                .withLabel("link cluster")
+                .withLabel("Link SQL Server Big Data Cluster")
                 .visibleWhen(s -> s instanceof Object)
                 .enableWhen(s -> true)
                 .withAuthRequired(false)
                 .register(am);
 
         new Action<>(UNLINK_CLUSTER)
-                .withLabel("unlink cluster")
+                .withLabel("Unlink")
                 .visibleWhen(s -> s instanceof Object)
                 .enableWhen(s -> true)
                 .withAuthRequired(false)

@@ -4,6 +4,8 @@
         <registryKey key="azure.toolkit.cosmos_cassandra.dbtools.enabled"
                      description="Enable DB Tools related features of Azure cosmos DB API for Cassandra"
                      restartRequired="true" defaultValue="false"/>
+        <completion.contributor id="azCosmosDBCompletion" language="JAVA" order="after azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBFunctionAnnotationCompletionContributor"/>
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.cosmos.code.function.CosmosDBFunctionPathAnnotator"/>
     </extensions>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.cosmos.CosmosNodeProvider"/>

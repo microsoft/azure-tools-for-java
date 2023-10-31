@@ -1,0 +1,13 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.ide.guidance.IntelliJGuidanceActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.ide.guidance.GuidanceStartupListener"/>
+    </extensions>
+    <actions>
+        <action id="Actions.GettingStart" class="com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction"
+                text="Getting Started" description="Show Azure getting started tutorials" icon="/icons/Common/get_start.svg">
+        </action>
+    </actions>
+</idea-plugin>

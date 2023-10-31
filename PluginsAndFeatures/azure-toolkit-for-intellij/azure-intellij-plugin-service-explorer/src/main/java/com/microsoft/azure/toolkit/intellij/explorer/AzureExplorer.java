@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.common.model.AzComponent;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import lombok.Getter;
@@ -69,15 +70,14 @@ public class AzureExplorer extends Tree {
         //noinspection UnstableApiUsage
         TreeHoverListener.DEFAULT.addTo(this);
         this.setCellRenderer(new InlineActionSupportedNodeRenderer());
-        AzureEventBus.on("azure.explorer.highlight_resource", new AzureEventBus.EventListener(e -> TreeUtils.highlightResource(this, e.getSource())));
-        AzureEventBus.on("resource.creation_started.resource", new AzureEventBus.EventListener(e -> {
-            if (e.getSource() instanceof AbstractAzResource<?, ?, ?>) {
-                TreeUtils.focusResource(this, (AbstractAzResource<?, ?, ?>) e.getSource());
+        AzureEventBus.on("azure.explorer.select_resource", new AzureEventBus.EventListener(e -> {
+            if (e.getSource() instanceof AzComponent c) {
+                TreeUtils.selectResourceNode(this, c);
             }
         }));
-        AzureEventBus.on("azure.explorer.focus_resource", new AzureEventBus.EventListener(e -> {
-            if (e.getSource() instanceof AbstractAzResource<?, ?, ?>) {
-                TreeUtils.focusResource(this, (AbstractAzResource<?, ?, ?>) e.getSource());
+        AzureEventBus.on("resource.creation_started.resource", new AzureEventBus.EventListener(e -> {
+            if (e.getSource() instanceof AzComponent c) {
+                TreeUtils.selectResourceNode(this, c);
             }
         }));
         AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener(e -> {

@@ -6,12 +6,16 @@
 package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.google.common.util.concurrent.SettableFuture;
+import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -20,6 +24,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DeploymentTargetManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.EditorUtils;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -27,7 +32,6 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -166,6 +170,14 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withAuthRequired(false)
             .register(am);
 
+        new Action<>(EDIT_ENV_FILE_IN_EDITOR)
+            .withLabel("Open In Editor")
+            .withIcon(AzureIcons.Action.EDIT.getIconPath())
+            .visibleWhen(m -> m instanceof Connection<?, ?>)
+            .withHandler((c, e) -> AzureTaskManager.getInstance().runLater(() -> editEnvInEditor(c, ((AnActionEvent) e).getProject())))
+            .withAuthRequired(false)
+            .register(am);
+
         new Action<>(FIX_CONNECTION)
                 .withLabel("Edit Connection...")
                 .withIcon(AzureIcons.Action.EDIT.getIconPath())
@@ -216,6 +228,20 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
     }
 
+    public static void editEnvInEditor(Connection<?, ?> c, Project project) {
+        final VirtualFile envFile = Optional.ofNullable(c)
+                .map(Connection::getProfile)
+                .map(Profile::getDotEnvFile)
+                .orElse(null);
+        final PsiFile psiFile = Optional.ofNullable(envFile)
+                .map(f -> PsiManager.getInstance(project).findFile(f)).orElse(null);
+        if (Objects.isNull(psiFile)) {
+            return;
+        }
+        NavigationUtil.openFileWithPsiElement(psiFile, true, true);
+        EditorUtils.focusContentInCurrentEditor(project, envFile, c.getId());
+    }
+
     public static Connection<?, ?> fixResourceConnection(Connection<?, ?> c, Project project) {
         final SettableFuture<Connection<?, ?>> result = SettableFuture.create();
         AzureTaskManager.getInstance().runLater(() -> {
@@ -238,7 +264,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         });
         try {
             return result.get();
-        } catch (InterruptedException | ExecutionException | RuntimeException e) {
+        } catch (final InterruptedException | ExecutionException | RuntimeException e) {
             throw new AzureToolkitRuntimeException(e);
         }
     }

@@ -10,6 +10,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.IJavaAgentSupported;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -17,7 +18,6 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.applicationinsights.ApplicationInsight;
 import com.microsoft.azure.toolkit.lib.applicationinsights.AzureApplicationInsights;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
-import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import lombok.Getter;
 import org.apache.commons.io.FileUtils;
 
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -39,6 +40,13 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
     @Override
     public ApplicationInsight getResource(String dataId) {
         return Azure.az(AzureApplicationInsights.class).getById(dataId);
+    }
+
+    @Override
+    public List<Resource<ApplicationInsight>> getResources(Project project) {
+        return Azure.az(AzureApplicationInsights.class).list().stream()
+            .flatMap(m -> m.getApplicationInsightsModule().list().stream())
+            .map(this::define).toList();
     }
 
     @Override
@@ -66,9 +74,9 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
     //      2. Framework for plugin local file cache
     static class ApplicationInsightsAgentHolder {
         private static final String APPLICATION_INSIGHTS_URL =
-                "https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.4.10/applicationinsights-agent-3.4.10.jar";
+            "https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.4.10/applicationinsights-agent-3.4.10.jar";
         private static final File applicationInsightsLibrary =
-                new File(PluginManagerCore.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID)).getPluginPath().toString(), "applicationinsights-agent.jar");
+            new File(PluginManagerCore.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID)).getPluginPath().toString(), "applicationinsights-agent.jar");
 
         @Preload
         public static synchronized File getApplicationInsightsLibrary() {

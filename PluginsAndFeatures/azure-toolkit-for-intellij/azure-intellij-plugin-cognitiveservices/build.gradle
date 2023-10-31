@@ -7,6 +7,8 @@ dependencies {
     runtimeOnly project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-plugin-guidance')
     runtimeOnly project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-guidance-java')
+    runtimeOnly project(path: ':azure-intellij-plugin-guidance-java', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-resource-connector-lib')
     runtimeOnly project(path: ':azure-intellij-resource-connector-lib', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-common-lib'

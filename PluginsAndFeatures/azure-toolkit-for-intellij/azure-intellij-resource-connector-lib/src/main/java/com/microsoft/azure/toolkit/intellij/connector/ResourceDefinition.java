@@ -11,6 +11,7 @@ import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public interface ResourceDefinition<T> {
     int RESOURCE = 1;
@@ -46,6 +47,11 @@ public interface ResourceDefinition<T> {
      * with this panel, user could select/create a {@link T} resource.
      */
     AzureFormJPanel<Resource<T>> getResourcePanel(final Project project);
+
+    /**
+     * get candidate resources
+     */
+    List<Resource<T>> getResources(Project project);
 
     /**
      * write/serialize {@code resource} to {@code element} for persistence

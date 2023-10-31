@@ -148,7 +148,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         final ToolWindow explorer = ToolWindowManager.getInstance(Objects.requireNonNull(project)).getToolWindow("Azure Explorer");
         Objects.requireNonNull(explorer).activate(() -> {
             final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "cosmos.dbtools", context);
-            AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureCosmosService.class), event);
+            AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureCosmosService.class), event);
             CreateCosmosDBAccountAction.create(null, null);
         });
     }

@@ -35,7 +35,7 @@ public class FocusResourceInAzureExplorerTask implements Task {
         assert Objects.nonNull(resource) : String.format("failed to get resource with id (%s) in Azure", resourceId);
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? this.context.getProject() : null;
         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
-        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.HIGHLIGHT_RESOURCE_IN_EXPLORER).handle(resource, event);
+        AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(resource, event);
     }
 
     @Nonnull

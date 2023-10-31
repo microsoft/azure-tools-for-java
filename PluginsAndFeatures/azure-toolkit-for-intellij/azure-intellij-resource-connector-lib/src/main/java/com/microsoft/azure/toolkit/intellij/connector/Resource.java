@@ -28,11 +28,11 @@ public interface Resource<T> {
      * this id will be saved somewhere in the workspace and may be tracked by git.<br>
      * a good practice would be returning the hashed(e.g. md5/sha1/sha256...) Azure resource id
      */
-    T getData();
-
     default String getId() {
         return DigestUtils.md5Hex(this.getDataId());
     }
+
+    T getData();
 
     String getDataId();
 
@@ -54,6 +54,10 @@ public interface Resource<T> {
     }
 
     default boolean isValidResource() {
+        return true;
+    }
+
+    default boolean canConnectSilently() {
         return true;
     }
 }

@@ -13,46 +13,50 @@ import com.microsoft.azure.toolkit.intellij.azuresdk.model.AzureJavaSdkEntity;
 import com.microsoft.azure.toolkit.intellij.azuresdk.model.WorkspaceTagEntity;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
 import com.microsoft.azure.toolkit.lib.common.cache.Preload;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WorkspaceTaggingService {
 
     private static final ObjectMapper JSON_MAPPER = new JsonMapper().configure(JsonParser.Feature.ALLOW_COMMENTS, true);
     private static final String WORKSPACE_TAG_JSON = "/workspaceTag.json";
 
-    @Nullable
-    public static String getWorkspaceTag(@Nonnull String groupId, @Nonnull final String artifactId) {
+    @Nonnull
+    public static Set<String> getWorkspaceTags(@Nonnull String groupId, @Nonnull final String artifactId) {
+        final HashSet<String> tags = new HashSet<>();
         if (StringUtils.isAnyEmpty(groupId, artifactId)) {
-            return null;
+            return tags;
         }
-        return ObjectUtils.firstNonNull(getExternalDependencyTag(groupId, artifactId), getAzureDependencyTag(groupId, artifactId));
+        tags.addAll(getExternalDependencyTags(groupId, artifactId));
+        tags.addAll(getAzureDependencyTags(groupId, artifactId));
+        return tags;
     }
 
-    private static String getAzureDependencyTag(final String groupId, final String artifactId) {
+    private static Set<String> getAzureDependencyTags(final String groupId, final String artifactId) {
         return AzureSdkLibraryService.loadAzureSDKEntities()
             .stream()
             .filter(entity -> StringUtils.isNotEmpty(entity.getType())
                 && StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId)
                 && StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId))
             .map(AzureJavaSdkEntity::getType)
-            .findFirst().orElse(null);
+            .collect(Collectors.toSet());
     }
 
-    private static String getExternalDependencyTag(final String groupId, final String artifactId) {
+    private static Set<String> getExternalDependencyTags(final String groupId, final String artifactId) {
         return getWorkspaceTagEntities()
             .stream()
             .filter(entity -> (StringUtils.isEmpty(entity.getGroupId()) || StringUtils.equalsIgnoreCase(entity.getGroupId(), groupId))
                 && (StringUtils.isEmpty(entity.getArtifactId()) || StringUtils.equalsIgnoreCase(entity.getArtifactId(), artifactId)))
             .map(WorkspaceTagEntity::getTag)
-            .findFirst().orElse(null);
+            .collect(Collectors.toSet());
     }
 
     @Preload

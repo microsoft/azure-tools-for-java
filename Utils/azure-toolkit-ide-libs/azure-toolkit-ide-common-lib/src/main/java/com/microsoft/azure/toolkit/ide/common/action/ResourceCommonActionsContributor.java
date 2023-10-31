@@ -65,7 +65,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<Object> OPEN_AZURE_SETTINGS = Action.OPEN_AZURE_SETTINGS;
     public static final Action.Id<Object> OPEN_AZURE_EXPLORER = Action.Id.of("user/common.open_azure_explorer");
     public static final Action.Id<Object> OPEN_AZURE_REFERENCE_BOOK = Action.Id.of("user/common.open_azure_reference_book");
-    public static final Action.Id<Object> HIGHLIGHT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.highlight_resource_in_explorer");
+    public static final Action.Id<Object> SELECT_RESOURCE_IN_EXPLORER = Action.Id.of("internal/common.select_resource_in_explorer");
     public static final Action.Id<Object> INSTALL_DOTNET_RUNTIME = Action.Id.of("user/bicep.install_dotnet_runtime");
     public static final Action.Id<Object> RESTART_IDE = Action.Id.of("user/common.restart_ide");
     public static final Action.Id<File> REVEAL_FILE = Action.Id.of("user/common.reveal_file_in_explorer");
@@ -206,7 +206,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
             .withAuthRequired(false)
             .register(am);
 
-        new Action<>(HIGHLIGHT_RESOURCE_IN_EXPLORER)
+        new Action<>(SELECT_RESOURCE_IN_EXPLORER)
             .withLabel("Highlight resource in Azure Explorer")
             .withAuthRequired(false)
             .register(am);
@@ -281,7 +281,7 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
                     AzureMessager.getMessager().info(AzureString.format("Cannot find connected service(%s) in Azure Explorer.", serviceName));
                     return;
                 }
-                AzureEventBus.emit("azure.explorer.focus_resource", resource);
+                AzureEventBus.emit("azure.explorer.select_resource", resource);
             })
             .withAuthRequired(false)
             .register(am);

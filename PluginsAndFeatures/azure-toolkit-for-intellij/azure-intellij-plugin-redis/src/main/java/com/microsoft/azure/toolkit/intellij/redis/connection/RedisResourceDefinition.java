@@ -60,6 +60,13 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     }
 
     @Override
+    public List<Resource<RedisCache>> getResources(Project project) {
+        return Azure.az(AzureRedis.class).list().stream()
+            .flatMap(m -> m.caches().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<RedisCache>> getResourcePanel(Project project) {
         return new RedisResourcePanel();
     }

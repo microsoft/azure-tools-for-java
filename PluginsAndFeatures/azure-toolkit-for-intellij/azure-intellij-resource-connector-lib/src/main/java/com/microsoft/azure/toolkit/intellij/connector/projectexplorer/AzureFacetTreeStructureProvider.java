@@ -15,6 +15,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Disposer;
@@ -77,9 +78,10 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
                     .findAny().orElse(null);
                 final List<AbstractTreeNode<?>> nodes = new LinkedList<>(children);
                 nodes.removeIf(n -> Objects.equals(n, dotAzureDir));
+                final AbstractProjectViewPane pane = ProjectView.getInstance(this.myProject).getCurrentProjectViewPane();
                 final AzureFacetRootNode azureNode = this.azureNodes.computeIfAbsent(azureModule.getModule(), m -> {
                     final AzureFacetRootNode node = new AzureFacetRootNode(azureModule, settings);
-                    Disposer.register(ProjectView.getInstance(this.myProject).getCurrentProjectViewPane(), node);
+                    Disposer.register(pane, node);
                     return node;
                 });
                 nodes.add(azureNode);
@@ -87,6 +89,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             } else {
                 children.removeIf(c -> c instanceof AzureFacetRootNode);
             }
+        } catch (final ProcessCanceledException ignored) {
         } catch (final Exception e) {
             log.warn(e.getMessage(), e);
         }
@@ -205,8 +208,8 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     @Override
     public Object getData(@NotNull Collection<AbstractTreeNode<?>> selected, @NotNull String dataId) {
         final IAzureFacetNode azureFacetNode = selected.stream()
-                .filter(node -> node instanceof IAzureFacetNode)
-                .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
+            .filter(node -> node instanceof IAzureFacetNode)
+            .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
         return Objects.nonNull(azureFacetNode) ? azureFacetNode.getData(dataId) : TreeStructureProvider.super.getData(selected, dataId);
     }
 }

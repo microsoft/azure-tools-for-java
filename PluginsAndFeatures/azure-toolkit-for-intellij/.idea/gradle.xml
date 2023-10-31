@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-eventhubs" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-guidance" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-guidance-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-base" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-lib" />
@@ -43,7 +44,6 @@
             <option value="$PROJECT_DIR$/azure-intellij-resource-connector-lib" />
             <option value="$PROJECT_DIR$/azure-intellij-resource-connector-lib-java" />
             <option value="$PROJECT_DIR$/azure-sdk-reference-book" />
-            <option value="$PROJECT_DIR$/buildSrc" />
           </set>
         </option>
       </GradleProjectSettings>

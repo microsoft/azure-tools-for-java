@@ -19,21 +19,22 @@ import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import lombok.Getter;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 public class StorageAccountResourceDefinition extends AzureServiceResource.Definition<StorageAccount>
-        implements SpringSupported<StorageAccount>, FunctionSupported<StorageAccount> {
+    implements SpringSupported<StorageAccount>, FunctionSupported<StorageAccount> {
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
     public static final String LOCAL_STORAGE_CONNECTION_STRING = "UseDevelopmentStorage=true";
+    public static final String CONNECTION_STRING_KEY = String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX);
+    public static final String ACCOUNT_NAME_KEY = String.format("%s_ACCOUNT_NAME", Connection.ENV_PREFIX);
+    public static final String ACCOUNT_KEY = String.format("%s_ACCOUNT_KEY", Connection.ENV_PREFIX);
 
     public StorageAccountResourceDefinition() {
         super("Azure.Storage", "Azure Storage Account", AzureIcons.StorageAccount.MODULE.getIconPath());
@@ -44,9 +45,9 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
         final StorageAccount account = accountDef.getData();
         final String conString = account.getConnectionString();
         final HashMap<String, String> env = new HashMap<>();
-        env.put(String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX), conString);
-        env.put(String.format("%s_ACCOUNT_NAME", Connection.ENV_PREFIX), account.name());
-        env.put(String.format("%s_ACCOUNT_KEY", Connection.ENV_PREFIX), account.getKey());
+        env.put(CONNECTION_STRING_KEY, conString);
+        env.put(ACCOUNT_NAME_KEY, account.getName());
+        env.put(ACCOUNT_KEY, account.getKey());
         return env;
     }
 
@@ -64,11 +65,38 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     }
 
     @Override
+    public Map<String, String> getSpringPropertyFields() {
+        final Map<String, String> fields = new HashMap<>();
+        fields.put("azure.storage.accountName", "com.azure.spring.autoconfigure.storage.StorageProperties#accountName");
+        fields.put("azure.storage.accountKey", "com.azure.spring.autoconfigure.storage.StorageProperties#accountKey");
+        fields.put("azure.storage.blobEndpoint", "com.azure.spring.autoconfigure.storage.StorageProperties#blobEndpoint");
+        fields.put("azure.storage.fileEndpoint", "com.azure.spring.autoconfigure.storage.StorageProperties#fileEndpoint");
+        return fields;
+    }
+
+    @Override
+    public Map<String, String> getSpringPropertyTypes() {
+        final Map<String, String> fields = new HashMap<>();
+        fields.put("azure.storage.accountName", "Name");
+        fields.put("azure.storage.accountKey", "Access Key");
+        fields.put("azure.storage.blobEndpoint", "Endpoint Url");
+        fields.put("azure.storage.fileEndpoint", "Endpoint Url");
+        return fields;
+    }
+
+    @Override
     public StorageAccount getResource(String dataId) {
         if (StringUtils.equalsIgnoreCase(dataId, AzuriteStorageAccount.AZURITE_RESOURCE_ID)) {
             return AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT;
         }
         return Azure.az(AzureStorageAccount.class).getById(dataId);
+    }
+
+    @Override
+    public List<Resource<StorageAccount>> getResources(Project project) {
+        return Azure.az(AzureStorageAccount.class).list().stream()
+            .flatMap(m -> m.storageAccounts().list().stream())
+            .map(this::define).toList();
     }
 
     @Override
@@ -80,6 +108,11 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     @Override
     public String getResourceType() {
         return "Storage";
+    }
+
+    @Override
+    public List<String> getEnvironmentVariablesKey() {
+        return ListUtils.union(Arrays.asList(CONNECTION_STRING_KEY, ACCOUNT_NAME_KEY, ACCOUNT_KEY), super.getEnvironmentVariablesKey());
     }
 
     @Nullable

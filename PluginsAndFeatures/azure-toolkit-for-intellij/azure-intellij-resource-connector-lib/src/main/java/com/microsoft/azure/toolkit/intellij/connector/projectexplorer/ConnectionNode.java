@@ -13,14 +13,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.tree.LeafState;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -41,7 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -118,14 +115,7 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
         final boolean isValid = connection.isValidConnection();
         final String icon = StringUtils.firstNonBlank(resource.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath());
         presentation.setIcon(IntelliJAzureIcons.getIcon(icon));
-        final String label = resource.getDefinition().getTitle();
-        final SimpleTextAttributes attributes = AzureFacetRootNode.getTextAttributes(isValid);
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, this.getValue())) {
-            presentation.addText(label, attributes.derive(SimpleTextAttributes.STYLE_SEARCH_MATCH, JBColor.RED, JBColor.YELLOW, null));
-        } else {
-            presentation.addText(label, attributes);
-        }
+        presentation.addText(resource.getDefinition().getTitle(), AzureFacetRootNode.getTextAttributes(isValid));
         if (isValid) {
             presentation.addText(StringUtils.SPACE + resource.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
         } else {
@@ -137,22 +127,7 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
     }
 
     @Override
-    public void onClicked(AnActionEvent event) {
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, this.getValue())) {
-            TreeUtils.removeClientProperty(tree, FOCUS_KEY, this.getValue());
-            this.updateView();
-        }
-        super.onClicked(event);
-    }
-
-    @Override
     public void onDoubleClicked(AnActionEvent event) {
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, this.getValue())) {
-            TreeUtils.removeClientProperty(tree, FOCUS_KEY, this.getValue());
-            this.updateView();
-        }
         final boolean isValid = getValue().validate(getProject());
         if (!isValid) {
             Optional.ofNullable(AzureActionManager.getInstance().getAction(EDIT_CONNECTION))

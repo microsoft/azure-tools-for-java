@@ -9,13 +9,11 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.tree.LeafState;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.component.TreeUtils;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
@@ -27,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -66,13 +63,7 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
         final Node.View view = node.getView();
         presentation.setIcon(IntelliJAzureIcons.getIcon(view.getIcon()));
         final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
-        final Object resource = node.getValue();
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, resource) && this.parent instanceof DeploymentTargetsNode) {
-            presentation.addText(view.getLabel(), attributes.derive(SimpleTextAttributes.STYLE_SEARCH_MATCH, JBColor.RED, JBColor.YELLOW, null));
-        } else {
-            presentation.addText(view.getLabel(), attributes);
-        }
+        presentation.addText(view.getLabel(), attributes);
         presentation.setTooltip(view.getTips());
         Optional.ofNullable(view.getDescription()).ifPresent(d -> presentation.addText(" " + d, SimpleTextAttributes.GRAYED_ATTRIBUTES));
     }
@@ -94,24 +85,12 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
     @Override
     public void onDoubleClicked(AnActionEvent event) {
         final Node<?> node = this.getValue();
-        final Object resource = node.getValue();
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, resource) && this.parent instanceof DeploymentTargetsNode) {
-            TreeUtils.removeClientProperty(tree, FOCUS_KEY, resource);
-            this.updateView();
-        }
         node.doubleClick(event);
     }
 
     @Override
     public void onClicked(AnActionEvent event) {
         final Node<?> node = this.getValue();
-        final Object resource = node.getValue();
-        final JTree tree = this.getTree();
-        if (tree != null && TreeUtils.hasClientProperty(tree, FOCUS_KEY, resource) && this.parent instanceof DeploymentTargetsNode) {
-            TreeUtils.removeClientProperty(tree, FOCUS_KEY, resource);
-            this.updateView();
-        }
         node.click(event);
     }
 
@@ -146,6 +125,10 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
     public void dispose() {
         super.dispose();
         Optional.ofNullable(getValue()).ifPresent(Node::dispose);
+    }
+
+    public String toString() {
+        return this.getValue().getLabel();
     }
 
     @EqualsAndHashCode.Include

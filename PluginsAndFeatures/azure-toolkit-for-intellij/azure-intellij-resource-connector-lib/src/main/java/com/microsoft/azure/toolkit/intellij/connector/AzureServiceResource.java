@@ -25,9 +25,7 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * the <b>{@code resource}</b> in <b>{@code resource connection}</b><br>
@@ -35,6 +33,8 @@ import java.util.Optional;
  */
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class AzureServiceResource<T extends AzResource> implements Resource<T> {
+    public static final String SUBSCRIPTION_ID_KEY = String.format("%s_SUBSCRIPTION_ID", Connection.ENV_PREFIX);
+    public static final String RESOURCE_GROUP_KEY = String.format("%s_RESOURCE_GROUP", Connection.ENV_PREFIX);
     @Nonnull
     private final ResourceId id;
     @Getter
@@ -64,7 +64,11 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         if (resource == null || !resource.exists()) {
             throw new AzureToolkitRuntimeException(String.format("%s '%s' does not exist.", this.getResourceType(), this.getName()));
         }
-        return this.definition.initEnv(this, project);
+        final Map<String, String> result = new HashMap<>();
+        result.putAll(this.definition.initEnv(this, project));
+        result.put(SUBSCRIPTION_ID_KEY, resource.getSubscriptionId());
+        result.put(RESOURCE_GROUP_KEY, resource.getResourceGroupName());
+        return result;
     }
 
     @Override
@@ -151,5 +155,9 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         }
 
         public abstract Map<String, String> initEnv(AzureServiceResource<T> data, Project project);
+
+        public List<String> getEnvironmentVariablesKey() {
+            return Arrays.asList(SUBSCRIPTION_ID_KEY, RESOURCE_GROUP_KEY);
+        }
     }
 }

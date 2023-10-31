@@ -1,11 +1,8 @@
 dependencies {
     compileOnly project(path: ':azure-intellij-plugin-lib')
     runtimeOnly project(path: ':azure-intellij-plugin-lib', configuration: 'instrumentedJar')
-    compileOnly project(path: ':azure-intellij-plugin-lib-java')
-    runtimeOnly project(path: ':azure-intellij-plugin-lib-java', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-resource-connector-lib')
     runtimeOnly project(path: ':azure-intellij-resource-connector-lib', configuration: 'instrumentedJar')
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.1.0.202203080745-r'
     implementation 'org.yaml:snakeyaml:1.30'
 }

@@ -13,6 +13,8 @@ dependencies {
     runtimeOnly project(path: ':azure-intellij-plugin-appservice', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-plugin-guidance')
     runtimeOnly project(path: ':azure-intellij-plugin-guidance', configuration: 'instrumentedJar')
+    compileOnly project(path: ':azure-intellij-plugin-guidance-java')
+    runtimeOnly project(path: ':azure-intellij-plugin-guidance-java', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-plugin-storage')
     runtimeOnly project(path: ':azure-intellij-plugin-storage', configuration: 'instrumentedJar')
     compileOnly project(path: ':azure-intellij-resource-connector-lib')

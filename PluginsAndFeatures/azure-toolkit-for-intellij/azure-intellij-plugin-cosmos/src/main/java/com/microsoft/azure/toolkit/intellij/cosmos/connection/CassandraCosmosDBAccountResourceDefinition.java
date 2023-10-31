@@ -34,11 +34,20 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
     }
 
     @Override
+    public List<Resource<CassandraKeyspace>> getResources(Project project) {
+        return Azure.az(AzureCosmosService.class).list().stream()
+            .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
+            .filter(a -> a instanceof CassandraCosmosDBAccount)
+            .flatMap(a -> ((CassandraCosmosDBAccount) a).keySpaces().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<CassandraKeyspace>> getResourcePanel(Project project) {
         final Function<Subscription, ? extends List<CassandraCosmosDBAccount>> accountLoader = subscription ->
-                Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
-                        .filter(account -> account instanceof CassandraCosmosDBAccount)
-                        .map(account -> (CassandraCosmosDBAccount) account).collect(Collectors.toList());
+            Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
+                .filter(account -> account instanceof CassandraCosmosDBAccount)
+                .map(account -> (CassandraCosmosDBAccount) account).collect(Collectors.toList());
         final Function<CassandraCosmosDBAccount, ? extends List<? extends CassandraKeyspace>> databaseLoader = account -> account.keySpaces().list();
         return new CosmosDatabaseResourcePanel<>(this, accountLoader, databaseLoader);
     }

@@ -160,10 +160,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
     private void saveConnectionToDotAzure(Connection<?, ?> connection) {
         final Resource<?> consumer = connection.getConsumer();
-        final Resource<?> resource = connection.getResource();
-        if (resource instanceof AzureServiceResource<?>) {
-            OperationContext.action().setTelemetryProperty("subscriptionId", ResourceId.fromString(resource.getDataId()).subscriptionId());
-        }
         if (consumer instanceof ModuleResource) {
             final ModuleManager moduleManager = ModuleManager.getInstance(project);
             final Module m = moduleManager.findModuleByName(consumer.getName());
@@ -194,14 +190,12 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Connection<?, ?> getValue() {
-        final ResourceDefinition resourceDef = this.resourceTypeSelector.getValue();
-        final ResourceDefinition consumerDef = this.consumerTypeSelector.getValue();
         final Resource resource = (Resource<?>) this.resourcePanel.getValue();
         final Resource consumer = (Resource<?>) this.consumerPanel.getValue();
         if (Objects.isNull(resource) || Objects.isNull(consumer)) {
             return null;
         }
-        final ConnectionDefinition<?, ?> connectionDefinition = ConnectionManager.getDefinitionOrDefault(resourceDef, consumerDef);
+        final ConnectionDefinition<?, ?> connectionDefinition = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(), consumer.getDefinition());
         final Connection connection;
         if (Objects.isNull(this.connection)) {
             connection = connectionDefinition.define(resource, consumer);
@@ -211,7 +205,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             connection.setConsumer(consumer);
             connection.setDefinition(connectionDefinition);
         }
-        if (resourceDef.isEnvPrefixSupported()) {
+        if (resource.getDefinition().isEnvPrefixSupported()) {
             connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         }
         return connection;

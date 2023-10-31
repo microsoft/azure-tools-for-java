@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.intellij.connector.spring;
+package com.microsoft.azure.toolkit.intellij.connector.code.spring;
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
@@ -23,6 +23,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
+import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SpringPropertiesLineMarkerProvider implements LineMarkerProvider {
+public class PropertiesLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     @Nullable

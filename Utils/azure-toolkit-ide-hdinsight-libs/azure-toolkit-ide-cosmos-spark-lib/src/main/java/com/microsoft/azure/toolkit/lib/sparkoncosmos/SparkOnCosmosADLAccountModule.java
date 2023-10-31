@@ -8,8 +8,6 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.page.ItemPage;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.sparkoncosmos.SparkOnCosmosServiceSubscription;
-import com.microsoft.azure.toolkit.lib.sparkoncosmos.SparkOnCosmosADLAccountNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -84,6 +82,11 @@ public class SparkOnCosmosADLAccountModule extends AbstractAzResourceModule<Spar
     @Override
     public String getResourceTypeName() {
         return "SparkOnCosmos ADLAs";
+    }
+
+    @Override
+    public AzureSparkServerlessAccount getClient() {
+        return null;
     }
 
 }

@@ -7,7 +7,6 @@ package com.microsoft.azure.toolkit.intellij.function.connection;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
-import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
@@ -22,6 +21,7 @@ import org.jdom.Element;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -101,6 +101,11 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
         }
 
         @Override
+        public List<Resource<ConnectionTarget>> getResources(Project project) {
+            return Collections.emptyList();
+        }
+
+        @Override
         public boolean write(@Nonnull Element element, @Nonnull Resource<ConnectionTarget> resource) {
             final ConnectionTarget target = resource.getData();
             element.setAttribute(new Attribute("id", resource.getId()));
@@ -117,7 +122,7 @@ public class CommonConnectionResource implements Resource<ConnectionTarget> {
             final String triggerType = element.getChildTextTrim("triggerType");
             final String connectionString = IntelliJSecureStore.getInstance().loadPassword(Definition.class.getName(), id, null);
             final ConnectionTarget target = Objects.isNull(id) ? null :
-                    ConnectionTarget.builder().id(id).name(name).connectionString(connectionString).build();
+                ConnectionTarget.builder().id(id).name(name).connectionString(connectionString).build();
             return Optional.ofNullable(target).map(this::define).orElse(null);
         }
 

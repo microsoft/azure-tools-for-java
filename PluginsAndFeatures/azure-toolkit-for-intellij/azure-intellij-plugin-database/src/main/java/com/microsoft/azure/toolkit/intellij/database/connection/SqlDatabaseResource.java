@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.azure.toolkit.intellij.database.connection.DatabaseConnectionUtils.ACCESS_DENIED_ERROR_CODE;
 
@@ -132,5 +131,10 @@ public class SqlDatabaseResource<T extends IDatabase> extends AzureServiceResour
 
     public void setUsername(String username) {
         this.database.setUsername(username);
+    }
+
+    @Override
+    public boolean canConnectSilently() {
+        return false;
     }
 }

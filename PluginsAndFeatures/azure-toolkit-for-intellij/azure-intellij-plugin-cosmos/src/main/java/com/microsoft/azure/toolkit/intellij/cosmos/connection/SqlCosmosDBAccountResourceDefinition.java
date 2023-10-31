@@ -26,7 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<SqlDatabase>
-        implements SpringSupported<SqlDatabase>, FunctionSupported<SqlDatabase> {
+    implements SpringSupported<SqlDatabase>, FunctionSupported<SqlDatabase> {
     public static final SqlCosmosDBAccountResourceDefinition INSTANCE = new SqlCosmosDBAccountResourceDefinition();
 
     public SqlCosmosDBAccountResourceDefinition() {
@@ -39,11 +39,20 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
     }
 
     @Override
+    public List<Resource<SqlDatabase>> getResources(Project project) {
+        return Azure.az(AzureCosmosService.class).list().stream()
+            .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
+            .filter(a -> a instanceof SqlCosmosDBAccount)
+            .flatMap(a -> ((SqlCosmosDBAccount) a).sqlDatabases().list().stream())
+            .map(this::define).toList();
+    }
+
+    @Override
     public AzureFormJPanel<Resource<SqlDatabase>> getResourcePanel(Project project) {
         final Function<Subscription, ? extends List<SqlCosmosDBAccount>> accountLoader = subscription ->
-                Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
-                        .filter(account -> account instanceof SqlCosmosDBAccount)
-                        .map(account -> (SqlCosmosDBAccount) account).collect(Collectors.toList());
+            Azure.az(AzureCosmosService.class).databaseAccounts(subscription.getId()).list().stream()
+                .filter(account -> account instanceof SqlCosmosDBAccount)
+                .map(account -> (SqlCosmosDBAccount) account).collect(Collectors.toList());
         final Function<SqlCosmosDBAccount, ? extends List<? extends SqlDatabase>> databaseLoader = account -> account.sqlDatabases().list();
         return new CosmosDatabaseResourcePanel<>(this, accountLoader, databaseLoader);
     }

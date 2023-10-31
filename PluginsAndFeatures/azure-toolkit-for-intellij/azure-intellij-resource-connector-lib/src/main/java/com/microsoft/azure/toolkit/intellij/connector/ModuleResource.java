@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
@@ -15,6 +16,8 @@ import org.jdom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -68,6 +71,11 @@ public final class ModuleResource implements Resource<String> {
         @Override
         public AzureFormJPanel<Resource<String>> getResourcePanel(final Project project) {
             return new ModulePanel(project);
+        }
+
+        @Override
+        public List<Resource<String>> getResources(Project project) {
+            return Arrays.stream(ModuleManager.getInstance(project).getModules()).map(m -> this.define(m.getName())).toList();
         }
 
         @Override

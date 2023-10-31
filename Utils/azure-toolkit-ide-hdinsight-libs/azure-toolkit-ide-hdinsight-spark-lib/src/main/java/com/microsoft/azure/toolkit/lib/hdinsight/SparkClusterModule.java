@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.microsoft.azure.toolkit.lib.common.model.AzResource.RESOURCE_GROUP_PLACEHOLDER;
@@ -110,7 +109,7 @@ public class SparkClusterModule extends AbstractAzResourceModule<SparkClusterNod
     }
 
     private boolean isSparkCluster(String clusterKind) {
-        return clusterKind.equalsIgnoreCase("spark");
+        return "spark".equalsIgnoreCase(clusterKind);
     }
 
     @Override

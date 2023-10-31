@@ -336,7 +336,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         // Driver side execute, leverage Intellij Async Promise, to wait for the Spark app deployed
         executionManager.startRunProfile(env, () -> jobDriverEnvReady.thenAsync(driverEnv ->
                 toIdeaPromise(attachAndDebug(driverEnv, state))));
-        return super.doExecute(state,env);
+        return null;
     }
 
     private Observable<RunContentDescriptor> attachAndDebug(final ExecutionEnvironment environment,
