@@ -16,17 +16,16 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
 public class StringLiteralResourceReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(@Nonnull PsiReferenceRegistrar registrar) {
-        registrar.registerReferenceProvider(psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new PsiReferenceProvider() {
+        registrar.registerReferenceProvider(psiElement(PsiLiteralExpression.class), new PsiReferenceProvider() {
             @Override
             public PsiReference[] getReferencesByElement(@Nonnull PsiElement element, @Nonnull ProcessingContext context) {
-                final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
+                final PsiLiteralExpression literal = (PsiLiteralExpression) element;
                 final String text = element.getText();
                 final String valueWithPrefix = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
                 if ((valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://"))) {
@@ -35,7 +34,7 @@ public class StringLiteralResourceReferenceContributor extends PsiReferenceContr
                 }
                 return PsiReference.EMPTY_ARRAY;
             }
-        });
+        }, PsiReferenceRegistrar.HIGHER_PRIORITY);
     }
 
     public static PsiReference[] getStorageFileReferences(@Nonnull final String prefix, @Nonnull final String protocol,
