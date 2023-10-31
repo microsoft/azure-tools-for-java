@@ -94,8 +94,8 @@ allprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.38.0'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.38.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.39.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.39.0-SNAPSHOT'
             mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.0'
         }
     }
