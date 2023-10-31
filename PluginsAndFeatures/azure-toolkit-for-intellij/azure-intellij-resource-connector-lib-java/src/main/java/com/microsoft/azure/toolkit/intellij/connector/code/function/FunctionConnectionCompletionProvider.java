@@ -66,7 +66,7 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
                             return ANNOTATION_DEFINITION_MAP.containsKey(psiAnnotation.getQualifiedName());
                         }
                     })));
-    public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2,CONNECTION_NAME_VALUE);
+    public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2, CONNECTION_NAME_VALUE);
     public static final ElementPattern FUNCTION_ANNOTATION_CONNECTION_PATTERN = PlatformPatterns.or(STORAGE_ACCOUNT_ANNOTATION, CONNECTION_ANNOTATION);
 
     @Override

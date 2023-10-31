@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.cosmos.code.function;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.CompletionUtilCore;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
@@ -33,11 +32,13 @@ import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionUtil
 import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -69,17 +70,14 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
             return;
         }
         final String connectionValue = FunctionUtils.getConnectionValueFromAnnotation(annotation);
-        final Object resource = Optional.ofNullable(FunctionUtils.getConnectionFromAnnotation(annotation))
-                .map(Connection::getResource).map(Resource::getData).orElse(null);
-        final SqlDatabase account = resource instanceof SqlDatabase ? (SqlDatabase) resource : null;
-        if (Objects.isNull(account) && StringUtils.isNotBlank(connectionValue)) {
+        final SqlDatabase database = getConnectedDatabase(annotation);
+        if (Objects.isNull(database) && StringUtils.isNotBlank(connectionValue)) {
             return;
         }
-        final String fullPrefix = StringUtils.substringBefore(element.getText(), CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED).replace("\"", "").trim();
-        final List<SqlDatabase> accountsToSearch = Objects.nonNull(account) ? List.of(account) :
+        final List<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? List.of(database) :
                 Utils.getConnectedResources(module, SqlCosmosDBAccountResourceDefinition.INSTANCE);
         accountsToSearch.stream()
-                .map(database -> createLookupElement(database, module))
+                .map(d -> createLookupElement(d, module))
                 .forEach(result::addElement);
     }
 
@@ -94,5 +92,20 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
                 .withTypeText(database.getResourceTypeName())
                 .withTailText(" " + database.getParent().getName())
                 .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.Cosmos.MODULE));
+    }
+
+    @Nullable
+    public static SqlDatabase getConnectedDatabase(@Nullable final PsiAnnotation annotation) {
+        if (Objects.isNull(annotation) || Objects.isNull(annotation.findAttribute("databaseName"))) {
+            return null;
+        }
+        final Connection<?, ?> connection = FunctionUtils.getConnectionFromAnnotation(annotation);
+        final SqlDatabase database = (SqlDatabase) Optional.ofNullable(connection).map(Connection::getResource)
+                .map(Resource::getData).filter(data -> data instanceof SqlDatabase).orElse(null);
+        if (Objects.isNull(database)) {
+            return null;
+        }
+        final String databaseName = Optional.ofNullable(annotation.findAttributeValue("databaseName")).map(PsiElement::getText).map(text -> text.replace("\"", "")).orElse(StringUtils.EMPTY);
+        return ((SqlCosmosDBAccount) database.getParent()).sqlDatabases().get(databaseName, database.getResourceGroupName());
     }
 }

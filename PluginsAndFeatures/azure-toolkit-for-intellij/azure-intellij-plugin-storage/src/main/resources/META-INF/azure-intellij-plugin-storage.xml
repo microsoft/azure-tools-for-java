@@ -9,6 +9,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceAnnotator"/>
         <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceReferenceContributor"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionStorageAccountResourceReferenceContributor"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralStorageLineMarkerProvider"/>
         <completion.confidence id="azStorageStringLiteral" language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor id="azStorageFunctionAnnotation" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionAnnotationCompletionContributor"/>

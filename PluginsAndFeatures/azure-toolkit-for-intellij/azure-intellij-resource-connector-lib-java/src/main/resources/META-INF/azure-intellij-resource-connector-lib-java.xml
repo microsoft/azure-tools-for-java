@@ -4,6 +4,7 @@
     <depends>org.jetbrains.plugins.yaml</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionReferenceContributor"/>
         <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvRunConfigurationExtension"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.JavaResourceConnectionAnnotator"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionAnnotator"/>

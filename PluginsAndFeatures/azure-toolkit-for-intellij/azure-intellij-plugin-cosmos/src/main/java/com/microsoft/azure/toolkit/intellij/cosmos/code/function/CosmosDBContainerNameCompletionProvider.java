@@ -8,7 +8,6 @@ package com.microsoft.azure.toolkit.intellij.cosmos.code.function;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.CompletionUtilCore;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
@@ -24,7 +23,6 @@ import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationCompletionConfidence;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationTypeHandler;
@@ -39,7 +37,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBFunctionAnnotationCompletionContributor.COSMOS_ANNOTATIONS;
@@ -70,16 +71,14 @@ public class CosmosDBContainerNameCompletionProvider extends CompletionProvider<
             return;
         }
         final String connectionValue = FunctionUtils.getConnectionValueFromAnnotation(annotation);
-        final Object resource = Optional.ofNullable(FunctionUtils.getConnectionFromAnnotation(annotation))
-                .map(Connection::getResource).map(Resource::getData).orElse(null);
-        final SqlDatabase database = resource instanceof SqlDatabase ? (SqlDatabase) resource : null;
-        if (Objects.isNull(database) && StringUtils.isNotBlank(connectionValue)) {
+        final String databaseValue = FunctionUtils.getPropertyValueFromAnnotation(annotation, "databaseName");
+        final SqlDatabase database = CosmosDBDatabaseNameCompletionProvider.getConnectedDatabase(annotation);
+        if (Objects.isNull(database) && (StringUtils.isNotBlank(connectionValue) || StringUtils.isNotBlank(databaseValue))) {
             return;
         }
-        final String fullPrefix = StringUtils.substringBefore(element.getText(), CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED).replace("\"", "").trim();
-        final List<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? List.of(database) :
+        final List<SqlDatabase> databasesToSearch = Objects.nonNull(database) ? List.of(database) :
                 Utils.getConnectedResources(module, SqlCosmosDBAccountResourceDefinition.INSTANCE);
-        accountsToSearch.stream()
+        databasesToSearch.stream()
                 .flatMap(db -> db.containers().list().stream())
                 .map(container -> createLookupElement(container, module))
                 .forEach(result::addElement);
