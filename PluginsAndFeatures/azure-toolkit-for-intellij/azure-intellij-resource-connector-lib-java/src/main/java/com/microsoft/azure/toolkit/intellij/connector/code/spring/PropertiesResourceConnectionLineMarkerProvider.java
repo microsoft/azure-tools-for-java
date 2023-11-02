@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.code.AbstractResourceConnectionLineMarkerProvider;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -44,7 +45,7 @@ public class PropertiesResourceConnectionLineMarkerProvider extends AbstractReso
         }
         final Property parent = PsiTreeUtil.getParentOfType(element, Property.class);
         final String property = Optional.ofNullable(parent).map(Property::getKey).orElse(null);
-        final ResourceDefinition<? extends AzResource> definition = connection.getResource().getDefinition();
+        final ResourceDefinition<? extends AzResource> definition = (ResourceDefinition<? extends AzResource>) connection.getResource().getDefinition();
         final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
                 ((SpringSupported<? extends AzResource>) definition).getSpringProperties(property) : Collections.emptyList();
         return CollectionUtils.isNotEmpty(variables) && StringUtils.equalsIgnoreCase(variables.get(0).getKey(), property) ? connection : null;
