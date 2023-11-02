@@ -141,8 +141,8 @@ public class Utils {
     }
 
 
-    public static List<? extends Resource<?>> listResourceForDefinition(@Nonnull final Project project,
-                                                                        @Nonnull final ResourceDefinition<?> d) {
+    public static <T> List<? extends Resource<T>> listResourceForDefinition(@Nonnull final Project project,
+                                                                        @Nonnull final ResourceDefinition<T> d) {
         try {
             return d.getResources(project);
         } catch (final ProcessCanceledException ProcessCanceledException) {

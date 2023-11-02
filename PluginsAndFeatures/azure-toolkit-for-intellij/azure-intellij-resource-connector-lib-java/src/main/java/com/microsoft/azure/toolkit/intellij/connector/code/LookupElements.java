@@ -52,11 +52,7 @@ public class LookupElements {
         @ExceptionNotification
         @AzureOperation(name = "user/connector.sign_in_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                final int end = context.getEditor().getCaretModel().getOffset();
-                context.getDocument().deleteString(end - SIGN_IN_TO_AZURE.length(), end);
-            }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                 AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle((a) ->
                     AzureTaskManager.getInstance().runLater(() ->
@@ -84,11 +80,7 @@ public class LookupElements {
         @ExceptionNotification
         @AzureOperation(name = "user/connector.create_connection_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                final int end = context.getEditor().getCaretModel().getOffset();
-                context.getDocument().deleteString(end - CONNECT_AZURE_RESOURCE.length(), end);
-            }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             AzureTaskManager.getInstance().write(() -> Optional.ofNullable(module).map(AzureModule::from)

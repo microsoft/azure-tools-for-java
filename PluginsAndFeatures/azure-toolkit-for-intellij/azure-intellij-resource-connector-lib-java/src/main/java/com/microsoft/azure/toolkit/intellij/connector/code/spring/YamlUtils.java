@@ -19,6 +19,7 @@ import org.jetbrains.yaml.YAMLElementGenerator;
 import org.jetbrains.yaml.YAMLUtil;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLPsiElement;
 import org.jetbrains.yaml.psi.YAMLValue;
 
 import javax.annotation.Nonnull;
@@ -63,7 +64,7 @@ public class YamlUtils {
             insertContent.append(value);
         }
         final int index = Optional.ofNullable(parentValue)
-                .map(v -> v.getTextRange().getEndOffset())
+                .map(YamlUtils::getNoneEmptyOffset)
                 .orElseGet(() -> (Objects.isNull(parent) ? yamlFile : parent).getTextRange().getEndOffset());
         if (StringUtils.isNotBlank(getOffsetLineContent(document, index))) {
             insertContent.insert(0, StringUtils.repeat(' ', indent));
@@ -72,6 +73,11 @@ public class YamlUtils {
         final String content = insertContent.toString();
         document.insertString(index, content);
         context.commitDocument();
+    }
+
+    private static int getNoneEmptyOffset(@Nonnull final YAMLPsiElement element) {
+        final String trim = element.getText().trim();
+        return element.getTextOffset() + trim.length();
     }
 
     private static String[] getKeyListForProperty(@Nonnull final String property) {

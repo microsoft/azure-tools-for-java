@@ -104,10 +104,7 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         @ExceptionNotification
         @AzureOperation(name = "user/connector.select_resource_completion_item_in_properties")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                context.getDocument().deleteString(element.getTextOffset(), element.getTextOffset() + element.getTextLength());
-            }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             Optional.ofNullable(module).map(AzureModule::from)

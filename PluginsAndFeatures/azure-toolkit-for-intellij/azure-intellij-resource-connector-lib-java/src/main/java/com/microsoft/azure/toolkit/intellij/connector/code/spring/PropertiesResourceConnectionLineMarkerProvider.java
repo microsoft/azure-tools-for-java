@@ -45,9 +45,9 @@ public class PropertiesResourceConnectionLineMarkerProvider extends AbstractReso
         }
         final Property parent = PsiTreeUtil.getParentOfType(element, Property.class);
         final String property = Optional.ofNullable(parent).map(Property::getKey).orElse(null);
-        final ResourceDefinition<? extends AzResource> definition = (ResourceDefinition<? extends AzResource>) connection.getResource().getDefinition();
+        final ResourceDefinition<?> definition = connection.getResource().getDefinition();
         final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
-                ((SpringSupported<? extends AzResource>) definition).getSpringProperties(property) : Collections.emptyList();
+                ((SpringSupported<?>) definition).getSpringProperties(property) : Collections.emptyList();
         return CollectionUtils.isNotEmpty(variables) && StringUtils.equalsIgnoreCase(variables.get(0).getKey(), property) ? connection : null;
     }
 }

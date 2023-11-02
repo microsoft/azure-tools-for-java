@@ -28,6 +28,7 @@ import java.util.Objects;
 
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.connector.code.ResourceConnectionLineMarkerInfo.LINE_MARKER_NAVIGATE_TOOLTIP;
 
 public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvider {
 
@@ -56,9 +57,9 @@ public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvide
         public ResourceLineMarkerInfo(final PsiElement element, final StorageFile file) {
             super(element, element.getTextRange(),
                 IntelliJAzureIcons.getIcon(StringLiteralResourceCompletionProvider.getFileIcon(file)),
-                ignore -> Azure.az(AzureAccount.class).isLoggedIn() ?
-                    String.format("navigate to Azure Storage %s \"%s\" in Project Explorer", file.getName(), file.getResourceTypeName()) :
-                    "navigate to Azure Storage in Project Explorer",
+                ignore -> Azure.az(AzureAccount.class).isLoggedIn()?
+                    String.format(LINE_MARKER_NAVIGATE_TOOLTIP, file.getResourceTypeName(), file.getName()):
+                    "Navigate to Azure Storage in Project Explorer",
                 null, (e, element1) -> {
                     final Module module = ModuleUtil.findModuleForPsiElement(element1);
                     StringLiteralResourceCompletionProvider.navigateToFile(file, module);

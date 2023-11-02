@@ -12,10 +12,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.function.components.ModuleFileComboBox;
@@ -37,12 +38,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
@@ -72,7 +68,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     }
 
     private void init() {
-        cbFunctionModule.setRenderer(new ListCellRendererWrapper<>() {
+        cbFunctionModule.setRenderer(new SimpleListCellRenderer<>() {
             @Override
             public void customize(JList list, Module module, int i, boolean b, boolean b1) {
                 if (module != null) {
@@ -97,6 +93,9 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             functionRunConfiguration.saveModule((Module) module);
             final DataContext context = DataManager.getInstance().getDataContext(pnlMain);
             final ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(context);
+            if (Objects.isNull(editor)) {
+                return;
+            }
             BuildArtifactBeforeRunTaskUtils.updateConnectorBeforeRunTask(this.functionRunConfiguration, editor);
         } else {
             cbHostJson.setModule(null);
@@ -124,6 +123,13 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             final Map<String, String> appSettings = FunctionUtils.loadAppSettingsFromSecurityStorage(appSettingsKey);
             if (MapUtils.isNotEmpty(appSettings)) {
                 appSettingsTable.setAppSettings(appSettings);
+            } else {
+                final String localSettingsPath = configuration.getDefaultLocalSettingsJsonPath(configuration.getModule());
+
+                if (StringUtils.isNotBlank(localSettingsPath) && FileUtil.exists(localSettingsPath)) {
+                    appSettingsTable.setLocalSettingPath(localSettingsPath);
+                    appSettingsTable.loadLocalSetting();
+                }
             }
         }
         // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
@@ -192,7 +198,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         appSettingsTable = new FunctionAppSettingsTable(localSettingPath);
         appSettingsTable.setProject(project);
         pnlAppSettings = FunctionAppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
-        appSettingsTable.loadLocalSetting();
+        // appSettingsTable.loadLocalSetting();
 
         cbHostJson = new ModuleFileComboBox(project, "host.json");
         cbHostJson.setRequired(true);
@@ -214,6 +220,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         }
         for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
             final Module module = cbFunctionModule.getItemAt(i);
+            //noinspection UnstableApiUsage
             if (Paths.get(module.getModuleFilePath()).equals(Paths.get(target.getModuleFilePath()))) {
                 cbFunctionModule.setSelectedIndex(i);
                 break;
