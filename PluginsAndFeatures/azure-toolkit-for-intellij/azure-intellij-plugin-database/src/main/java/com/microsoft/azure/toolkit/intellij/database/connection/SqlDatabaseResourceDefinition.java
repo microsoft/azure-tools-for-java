@@ -36,9 +36,7 @@ public abstract class SqlDatabaseResourceDefinition<T extends IDatabase> extends
         env.put(String.format("%s_USERNAME", Connection.ENV_PREFIX), resource.getUsername());
         env.put(String.format("%s_PASSWORD", Connection.ENV_PREFIX), Optional.ofNullable(resource.loadPassword())
             .filter(StringUtils::isNotBlank)
-            .or(() -> Optional.ofNullable(resource.inputPassword(project)))
-            .filter(StringUtils::isNotBlank)
-            .orElse("<YOUR_PASSWORD>"));
+            .orElse(""));
         return env;
     }
 

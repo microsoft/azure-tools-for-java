@@ -5,31 +5,22 @@
 package com.microsoft.azure.toolkit.intellij.database.connection;
 
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
-import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.store.AzureStoreManager;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
-import com.microsoft.azure.toolkit.intellij.database.component.PasswordDialog;
-import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.JdbcUrl;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabase;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.database.connection.DatabaseConnectionUtils.ACCESS_DENIED_ERROR_CODE;
 
@@ -84,24 +75,6 @@ public class SqlDatabaseResource<T extends IDatabase> extends AzureServiceResour
             AzureMessager.getMessager().warning(result.getMessage(), "Azure Resource Connector");
         }
         return null;
-    }
-
-    @SneakyThrows
-    public String inputPassword(@Nonnull final Project project) {
-        final SettableFuture<char[]> passwordRef = SettableFuture.create();
-        final AzureString title = OperationBundle.description("internal/connector.update_database_password.database", this.database.getName());
-        AzureTaskManager.getInstance().runAndWait(title, () -> {
-            final PasswordDialog dialog = new PasswordDialog(project, this.database);
-            final Action.Id<char[]> actionId = Action.Id.of("user/$database.input_password.database");
-            dialog.setOkAction(new Action<>(actionId)
-                .withLabel("OK")
-                .withIdParam(this.database.getName())
-                .withSource(this.database)
-                .withAuthRequired(false)
-                .withHandler(passwordRef::set));
-            dialog.show();
-        });
-        return Optional.ofNullable(passwordRef.get()).map(String::valueOf).orElse(null);
     }
 
     public JdbcUrl getJdbcUrl() {
