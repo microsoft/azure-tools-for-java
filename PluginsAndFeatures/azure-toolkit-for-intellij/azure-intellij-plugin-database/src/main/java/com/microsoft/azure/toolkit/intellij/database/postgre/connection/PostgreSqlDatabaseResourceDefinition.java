@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDefinition<PostgreSqlDatabase> {
     public static final PostgreSqlDatabaseResourceDefinition INSTANCE = new PostgreSqlDatabaseResourceDefinition();
@@ -39,7 +40,13 @@ public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDef
     public List<Resource<PostgreSqlDatabase>> getResources(Project project) {
         return Azure.az(AzurePostgreSql.class).list().stream()
             .flatMap(m -> m.servers().list().stream())
-            .flatMap(s -> s.databases().list().stream())
+            .flatMap(s -> {
+                try {
+                    return s.databases().list().stream();
+                } catch (final Throwable e) {
+                    return Stream.empty();
+                }
+            })
             .map(this::define).collect(Collectors.toList());
     }
 

@@ -13,6 +13,7 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.util.treeView.AbstractTreeNode;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.registry.Registry;
@@ -180,6 +181,10 @@ public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> impl
         try {
             return t.call();
         } catch (final Throwable e) {
+            final Throwable cause = ExceptionUtils.getRootCause(e);
+            if (cause instanceof ProcessCanceledException || cause instanceof InterruptedException) {
+                return Collections.emptyList();
+            }
             final ArrayList<AbstractAzureFacetNode<?>> children = new ArrayList<>();
             children.add(toExceptionNode(e, project));
             return children;

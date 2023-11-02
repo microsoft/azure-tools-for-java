@@ -11,8 +11,11 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.storage.code.Utils;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
@@ -25,9 +28,14 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.intellij.connector.code.AbstractResourceConnectionAnnotator.isAzureFacetEnabled;
+
 public class FunctionAnnotationResourcePathAnnotator implements Annotator {
     @Override
     public void annotate(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
+        if (!(isAzureFacetEnabled(element) && Azure.az(AzureAccount.class).isLoggedIn())) {
+            return;
+        }
         if (FunctionBlobPathCompletionProvider.BLOB_PATH_PATTERN.accepts(element)) {
             validateBlobPath(element, holder);
         } else if (FunctionQueueNameCompletionProvider.QUEUE_NAME_PATTERN.accepts(element)) {
@@ -43,8 +51,8 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("tableName"))) {
             return;
         }
-        final String tableName = Optional.ofNullable(annotation.findAttributeValue("tableName"))
-                .map(PsiElement::getText).map(text -> text.replace("\"", "")).orElse(StringUtils.EMPTY);
+        final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
+        final String tableName = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
         final Table table = StringUtils.isBlank(tableName) ? null : storageAccount.getTableModule().get(tableName, storageAccount.getResourceGroupName());
         if (Objects.isNull(table)) {
             final String message = StringUtils.isBlank(tableName) ? "Table name could not be empty" :
@@ -62,8 +70,8 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("queueName"))) {
             return;
         }
-        final String queueName = Optional.ofNullable(annotation.findAttributeValue("queueName"))
-                .map(PsiElement::getText).map(text -> text.replace("\"", "")).orElse(StringUtils.EMPTY);
+        final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
+        final String queueName = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
         final Queue queue = StringUtils.isBlank(queueName) ? null : storageAccount.getQueueModule().get(queueName, storageAccount.getResourceGroupName());
         if (Objects.isNull(queue)) {
             final String message = StringUtils.isBlank(queueName) ? "QueueName could not be empty" :
@@ -81,8 +89,8 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("path"))) {
             return;
         }
-        final String path = Optional.ofNullable(annotation.findAttributeValue("path"))
-                .map(PsiElement::getText).map(text -> text.replace("\"", "")).orElse(StringUtils.EMPTY);
+        final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
+        final String path = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
         final String pathToValid = path.contains("{") ? StringUtils.substringBeforeLast(StringUtils.substringBefore(path, "{"), "/") : path; // get sub path without parameters
         final StorageFile file = StringUtils.isBlank(path) ? null : getFileByPath(pathToValid, storageAccount);
         if (Objects.isNull(file)) {

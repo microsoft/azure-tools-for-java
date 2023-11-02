@@ -16,6 +16,8 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
+import static com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionBlobPathCompletionProvider.BLOB_PATH_PATTERN;
+
 public class StringLiteralTypeHandler extends TypedHandlerDelegate {
     @Override
     public @Nonnull Result checkAutoPopup(char charTyped, @Nonnull Project project, @Nonnull Editor editor, @Nonnull PsiFile file) {
@@ -28,7 +30,8 @@ public class StringLiteralTypeHandler extends TypedHandlerDelegate {
         }
         final String text = ele.getText().replace("\"", "");
         if (StringLiteralCompletionContributor.PREFIX_PLACES.accepts(ele)
-            || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
+                || BLOB_PATH_PATTERN.accepts(ele)
+                || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
             return Result.STOP;
         }

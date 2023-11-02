@@ -18,6 +18,7 @@ import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationParameterList;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -29,9 +30,13 @@ import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnno
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationTypeHandler;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationValueInsertHandler;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionUtils;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +59,7 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
                             return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), COSMOS_ANNOTATIONS);
                         }
                     })));
-    public static final PsiElementPattern<?, ?> COSMOS_DATABASE_PATTERN = psiElement().withSuperParent(2, COSMOS_DATABASE_NAME_PAIR_PATTERN);
+    public static final PsiElementPattern<?, ?> COSMOS_DATABASE_PATTERN = psiElement().withParent(PsiLiteralExpression.class).withSuperParent(2, COSMOS_DATABASE_NAME_PAIR_PATTERN);
 
     static {
         FunctionAnnotationTypeHandler.registerKeyPairPattern(COSMOS_DATABASE_NAME_PAIR_PATTERN);
@@ -70,15 +75,19 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
             return;
         }
         final String connectionValue = FunctionUtils.getConnectionValueFromAnnotation(annotation);
-        final SqlDatabase database = getConnectedDatabase(annotation);
+        final Connection<?, ?> connection = FunctionUtils.getConnectionFromAnnotation(annotation);
+        final SqlDatabase database = (SqlDatabase) Optional.ofNullable(connection).map(Connection::getResource)
+                .map(Resource::getData).filter(data -> data instanceof SqlDatabase).orElse(null);
         if (Objects.isNull(database) && StringUtils.isNotBlank(connectionValue)) {
             return;
         }
         final List<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? List.of(database) :
-                Utils.getConnectedResources(module, SqlCosmosDBAccountResourceDefinition.INSTANCE);
+            AzureModule.from(module).getConnections(SqlCosmosDBAccountResourceDefinition.INSTANCE).stream()
+                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
         accountsToSearch.stream()
                 .map(d -> createLookupElement(d, module))
                 .forEach(result::addElement);
+        AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_cosmos_database"));
     }
 
     private LookupElement createLookupElement(@Nonnull final SqlDatabase database, Module module) {

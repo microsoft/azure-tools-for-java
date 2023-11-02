@@ -54,6 +54,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class StringLiteralResourceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
@@ -98,10 +100,14 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
         final var getModule = fullPrefix.startsWith("azure-blob://") ?
             (Function<StorageAccount, BlobContainerModule>) StorageAccount::getBlobContainerModule :
             (Function<StorageAccount, ShareModule>) StorageAccount::getShareModule;
-        List<? extends StorageFile> files = accounts.stream().map(getModule).flatMap(m -> m.list().stream()).map(r -> ((StorageFile) r)).collect(Collectors.toList());
+        List<? extends StorageFile> files = accounts.stream().map(getModule)
+            .flatMap(m -> emptyIfException(() -> m.list().stream()))
+            .map(r -> ((StorageFile) r)).collect(Collectors.toList());
         for (int i = 1; i < parts.length; i++) {
             final String parentName = parts[i - 1];
-            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName)).filter(StorageFile::isDirectory).flatMap(f -> f.getSubFileModule().list().stream()).collect(Collectors.toList());
+            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName))
+                .filter(StorageFile::isDirectory)
+                .flatMap(f -> emptyIfException(() -> f.getSubFileModule().list().stream())).collect(Collectors.toList());
         }
         return files;
     }
@@ -169,6 +175,14 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
                     });
                 }
             }
+        }
+    }
+
+    private static <T> Stream<T> emptyIfException(Supplier<Stream<T>> func) {
+        try {
+            return func.get();
+        } catch (final Throwable e) {
+            return Stream.empty();
         }
     }
 }

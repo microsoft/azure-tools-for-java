@@ -193,6 +193,10 @@ public class Profile {
         });
     }
 
+    public boolean isEnvFileValid() {
+        return Optional.ofNullable(dotEnvFile).map(VirtualFile::isValid).orElse(false);
+    }
+
     @Nonnull
     @SneakyThrows(IOException.class)
     @AzureOperation(value = "boundary/connector.get_generated_env_from_dotenv.resource", params = "connection.getResource().getName()")

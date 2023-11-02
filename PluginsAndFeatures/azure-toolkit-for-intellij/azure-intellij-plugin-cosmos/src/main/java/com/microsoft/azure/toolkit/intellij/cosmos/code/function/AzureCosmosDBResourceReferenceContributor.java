@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
@@ -24,11 +25,11 @@ import static com.microsoft.azure.toolkit.intellij.cosmos.code.function.CosmosDB
 public class AzureCosmosDBResourceReferenceContributor extends PsiReferenceContributor {
     @Override
     public void registerReferenceProviders(@Nonnull PsiReferenceRegistrar registrar) {
-        registrar.registerReferenceProvider(psiElement(PsiLiteralExpression.class).inside(COSMOS_DATABASE_NAME_PAIR_PATTERN), new PsiReferenceProvider() {
+        registrar.registerReferenceProvider(psiElement(PsiLiteralExpression.class).withParent(COSMOS_DATABASE_NAME_PAIR_PATTERN), new PsiReferenceProvider() {
             @Override
             public PsiReference[] getReferencesByElement(@Nonnull PsiElement element, @Nonnull ProcessingContext context) {
                 final PsiLiteralExpression literal = (PsiLiteralExpression) element;
-                final String value = literal.getValue() instanceof String ? (String) literal.getValue() : null;
+                final String value = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
                 if (StringUtils.isNotBlank(value)) {
                     final TextRange range = new TextRange(1, value.length() + 1);
                     return new PsiReference[]{new FunctionAnnotationResourceReference(element, range,
@@ -37,14 +38,14 @@ public class AzureCosmosDBResourceReferenceContributor extends PsiReferenceContr
                 return PsiReference.EMPTY_ARRAY;
             }
         });
-        registrar.registerReferenceProvider(psiElement(PsiLiteralExpression.class).inside(COSMOS_CONTAINER_NAME_PAIR_PATTERN), new PsiReferenceProvider() {
+        registrar.registerReferenceProvider(psiElement(PsiLiteralExpression.class).withParent(COSMOS_CONTAINER_NAME_PAIR_PATTERN), new PsiReferenceProvider() {
             @Override
             public PsiReference[] getReferencesByElement(@Nonnull PsiElement element, @Nonnull ProcessingContext context) {
                 final PsiLiteralExpression literal = (PsiLiteralExpression) element;
-                final String value = literal.getValue() instanceof String ? (String) literal.getValue() : null;
+                final String value = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
                 final BiFunction<PsiAnnotation, Connection<?, ?>, AzResource> function = (annotation, connection) -> {
                     final SqlDatabase database = CosmosDBDatabaseNameCompletionProvider.getConnectedDatabase(annotation);
-                    return database.containers().get(value, database.getResourceGroupName());
+                    return Optional.ofNullable(database).map(d -> d.containers().get(value, database.getResourceGroupName())).orElse(null);
                 };
                 if (StringUtils.isNotBlank(value)) {
                     final TextRange range = new TextRange(1, value.length() + 1);

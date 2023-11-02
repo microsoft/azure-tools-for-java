@@ -43,6 +43,7 @@ public class LookupElements {
             .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE.getIconPath()))
             .withPresentableText("Sign in to Azure to select resources...")
             .withTypeText("Action")
+            .withCaseSensitivity(false)
             .withInsertHandler(new SignInInsertHandler());
     }
 
@@ -69,6 +70,7 @@ public class LookupElements {
             .withIcon(IntelliJAzureIcons.getIcon(Optional.ofNullable(definition).map(ResourceDefinition::getIcon).orElse(AzureIcons.Common.AZURE.getIconPath())))
             .withPresentableText(String.format("Connect %s...", Optional.ofNullable(definition).map(ResourceDefinition::getTitle).orElse("Azure resource")))
             .withTypeText("Action")
+            .withCaseSensitivity(false)
             .withInsertHandler(new ConnectInsertHandler(definition, onResult));
     }
 

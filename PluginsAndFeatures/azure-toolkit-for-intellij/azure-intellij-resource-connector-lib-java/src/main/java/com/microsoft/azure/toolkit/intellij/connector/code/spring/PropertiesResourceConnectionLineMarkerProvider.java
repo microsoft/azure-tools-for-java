@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.code.AbstractResourceConnectionLineMarkerProvider;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -36,18 +35,18 @@ public class PropertiesResourceConnectionLineMarkerProvider extends AbstractReso
     }
 
     @Override
-    protected Connection<? extends AzResource, ?> getConnectionForPsiElement(@Nonnull PsiElement element) {
+    protected Connection<?, ?> getConnectionForPsiElement(@Nonnull PsiElement element) {
         final String text = extractVariableFromSpringProperties(element.getText());
         final Module module = ModuleUtil.findModuleForPsiElement(element);
-        final Connection<? extends AzResource, ?> connection = getConnectionWithEnvironmentVariable(module, text);;
+        final Connection<?, ?> connection = getConnectionWithEnvironmentVariable(module, text);
         if (Objects.isNull(connection)) {
             return null;
         }
-        final ResourceDefinition<? extends AzResource> definition = connection.getResource().getDefinition();
-        final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
-                ((SpringSupported<? extends AzResource>) definition).getSpringProperties() : Collections.emptyList();
         final Property parent = PsiTreeUtil.getParentOfType(element, Property.class);
         final String property = Optional.ofNullable(parent).map(Property::getKey).orElse(null);
+        final ResourceDefinition<? extends AzResource> definition = connection.getResource().getDefinition();
+        final List<Pair<String, String>> variables = definition instanceof SpringSupported ?
+                ((SpringSupported<? extends AzResource>) definition).getSpringProperties(property) : Collections.emptyList();
         return CollectionUtils.isNotEmpty(variables) && StringUtils.equalsIgnoreCase(variables.get(0).getKey(), property) ? connection : null;
     }
 }

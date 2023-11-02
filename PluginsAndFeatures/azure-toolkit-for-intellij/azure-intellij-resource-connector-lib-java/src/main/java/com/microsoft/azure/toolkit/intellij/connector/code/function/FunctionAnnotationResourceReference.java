@@ -18,6 +18,8 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AllArgsConstructor;
@@ -50,6 +52,9 @@ public class FunctionAnnotationResourceReference extends PsiReferenceBase<PsiEle
 
     @Override
     public @Nullable PsiElement resolve() {
+        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+            return null;
+        }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(getElement(), PsiAnnotation.class);
         final Connection<?, ?> connection = Optional.ofNullable(annotation)
                 .map(FunctionUtils::getConnectionFromAnnotation).orElse(null);

@@ -5,19 +5,13 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.code.function;
 
-import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionProvider;
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.InsertionContext;
+import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.patterns.*;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiAnnotationParameterList;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.ProcessingContext;
@@ -25,11 +19,14 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.code.LookupElements;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,7 +38,7 @@ import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
 // todo: this should belong to connector common library
-public class FunctionConnectionCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class FunctionConnectionCompletionContributor extends CompletionContributor {
     public static final Map<String, String> ANNOTATION_DEFINITION_MAP = new HashMap<>() {{
         put("com.microsoft.azure.functions.annotation.BlobInput", "Storage");
         put("com.microsoft.azure.functions.annotation.BlobOutput", "Storage");
@@ -57,6 +54,7 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
         put("com.microsoft.azure.functions.annotation.CosmosDBTrigger", "DocumentDB");
     }};
     public static final PsiJavaElementPattern.Capture<PsiElement> STORAGE_ACCOUNT_ANNOTATION = psiElement()
+            .withParent(PsiLiteralExpression.class)
             .insideAnnotationParam("com.microsoft.azure.functions.annotation.StorageAccount");
     public static final ElementPattern CONNECTION_NAME_VALUE = PsiJavaPatterns.psiNameValuePair().withName("connection").withParent(
             PlatformPatterns.psiElement(PsiAnnotationParameterList.class).withParent(
@@ -66,24 +64,28 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
                             return ANNOTATION_DEFINITION_MAP.containsKey(psiAnnotation.getQualifiedName());
                         }
                     })));
-    public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withSuperParent(2, CONNECTION_NAME_VALUE);
+    public static final ElementPattern CONNECTION_ANNOTATION = psiElement().withParent(PsiLiteralExpression.class).withSuperParent(2, CONNECTION_NAME_VALUE);
     public static final ElementPattern FUNCTION_ANNOTATION_CONNECTION_PATTERN = PlatformPatterns.or(STORAGE_ACCOUNT_ANNOTATION, CONNECTION_ANNOTATION);
 
-    @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-        final PsiElement element = parameters.getPosition();
-        final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final FunctionSupported<?> resourceDefinition = Optional.ofNullable(annotation)
-                .map(FunctionConnectionCompletionProvider::getResourceDefinition).orElse(null);
-        if (Objects.isNull(resourceDefinition)) {
-            return;
-        }
-        final Module module = ModuleUtil.findModuleForPsiElement(parameters.getPosition());
-        final AzureModule azureModule = Optional.ofNullable(module).map(AzureModule::from).orElse(null);
-        // get all connection string from function definition
-        addExistingConnectionLookupElements(azureModule, result, resourceDefinition);
-        // add create connection string lookup element
-        addCreateNewConnectionLookupElement(parameters, result, resourceDefinition);
+    public FunctionConnectionCompletionContributor() {
+        super();
+        extend(null, FUNCTION_ANNOTATION_CONNECTION_PATTERN, new CompletionProvider<>() {
+            @Override
+            protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
+                final PsiElement element = parameters.getPosition();
+                final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
+                final FunctionSupported<?> resourceDefinition = Optional.ofNullable(annotation)
+                        .map(FunctionConnectionCompletionContributor::getResourceDefinition).orElse(null);
+                if (Objects.isNull(resourceDefinition)) {
+                    return;
+                }
+                final Module module = ModuleUtil.findModuleForPsiElement(parameters.getPosition());
+                final AzureModule azureModule = Optional.ofNullable(module).map(AzureModule::from).orElse(null);
+                // get all connection string from function definition
+                addExistingConnectionLookupElements(azureModule, result, resourceDefinition);
+                AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_function_connection"));
+            }
+        });
     }
 
     public static FunctionSupported<?> getResourceDefinition(@Nonnull final PsiAnnotation annotation) {
@@ -102,6 +104,7 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
                 .map(Profile::getConnections).orElse(Collections.emptyList());
         connections.stream()
                 .filter(connection -> Objects.equals(connection.getResource().getDefinition(), resourceDefinition))
+                .filter(Connection::isValidConnection)
                 .map(this::createExistingLookupElement)
                 .forEach(result::addElement);
     }
@@ -117,12 +120,8 @@ public class FunctionConnectionCompletionProvider extends CompletionProvider<Com
                 .withTailText(String.format(" (%s : %s)", resource.getName(), definition.getTitle()));
     }
 
-    private void addCreateNewConnectionLookupElement(CompletionParameters parameters, CompletionResultSet result, FunctionSupported<?> resourceDefinition) {
-        final LookupElement lookupElement = LookupElements.buildConnectLookupElement(resourceDefinition, this::onInsertConnection);
-        result.addElement(lookupElement);
-    }
-
-    private void onInsertConnection(@Nullable final Connection<?, ?> connection, @Nonnull final InsertionContext context) {
+    @AzureOperation(name = "user/connector.insert_function_connection")
+    public static void onInsertConnection(@Nullable final Connection<?, ?> connection, @Nonnull final InsertionContext context) {
         if (Objects.isNull(connection)) {
             return;
         }

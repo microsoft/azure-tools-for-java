@@ -54,12 +54,12 @@ public class PropertiesLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
         final ImmutablePair<String, String> keyProp = new ImmutablePair<>(propKey, propVal);
-        final List<Connection<?, ?>> connections = Optional.ofNullable(AzureModule.from(module)).map(AzureModule::getDefaultProfile)
+        final List<Connection<?, ?>> connections = Optional.of(AzureModule.from(module)).map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnectionManager)
                 .map(cm -> cm.getConnectionsByConsumerId(module.getName()))
                 .orElse(Collections.emptyList());
         for (final Connection<?, ?> connection : connections) {
-            final List<Pair<String, String>> properties = SpringSupported.getProperties(connection);
+            final List<Pair<String, String>> properties = SpringSupported.getProperties(connection, propKey);
             if (!properties.isEmpty() && properties.get(0).equals(keyProp)) {
                 final Resource<?> r = connection.getResource();
                 return new LineMarkerInfo<>(element, element.getTextRange(),

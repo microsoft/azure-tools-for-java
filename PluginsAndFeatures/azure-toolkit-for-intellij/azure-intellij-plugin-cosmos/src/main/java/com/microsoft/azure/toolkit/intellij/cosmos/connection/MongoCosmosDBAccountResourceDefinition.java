@@ -15,12 +15,14 @@ import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoDatabase;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<MongoDatabase> implements SpringSupported<MongoDatabase> {
     public static final MongoCosmosDBAccountResourceDefinition INSTANCE = new MongoCosmosDBAccountResourceDefinition();
@@ -39,7 +41,13 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
         return Azure.az(AzureCosmosService.class).list().stream()
             .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
             .filter(a -> a instanceof MongoCosmosDBAccount)
-            .flatMap(a -> ((MongoCosmosDBAccount) a).mongoDatabases().list().stream())
+            .flatMap(s -> {
+                try {
+                    return ((MongoCosmosDBAccount) s).mongoDatabases().list().stream();
+                } catch (final Throwable e) {
+                    return Stream.empty();
+                }
+            })
             .map(this::define).collect(Collectors.toList());
     }
 
@@ -64,7 +72,7 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
     }
 
     @Override
-    public List<Pair<String, String>> getSpringProperties() {
+    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
         properties.add(Pair.of("spring.data.mongodb.database", String.format("${%s_DATABASE}", Connection.ENV_PREFIX)));
         properties.add(Pair.of("spring.data.mongodb.uri", String.format("${%s_CONNECTION_STRING}", Connection.ENV_PREFIX)));

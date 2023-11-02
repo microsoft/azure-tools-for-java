@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
@@ -33,6 +32,9 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,18 +52,18 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
                                   @Nonnull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
         final YAMLPsiElement yamlElement = PsiTreeUtil.getParentOfType(element, YAMLPsiElement.class);
-        if (Objects.isNull(yamlElement)) {
+        if (Objects.isNull(yamlElement) || !Azure.az(AzureAccount.class).isLoggedIn()) {
             return;
         }
         final String key = YAMLUtil.getConfigFullName(yamlElement);
         final List<? extends SpringSupported<?>> definitions = ResourceManager.getDefinitions().stream()
                 .filter(d -> d instanceof SpringSupported<?>)
                 .map(d -> (SpringSupported<?>) d)
-                .filter(d -> d.getSpringProperties().stream().anyMatch(p -> StringUtils.equals(p.getKey(), key)))
+                .filter(d -> d.getSpringProperties(key).stream().anyMatch(p -> StringUtils.equals(p.getKey(), key)))
                 .collect(Collectors.toList());
         ProgressManager.checkCanceled();
         final Module module = ModuleUtil.findModuleForPsiElement(parameters.getOriginalFile());
-        if (Objects.isNull(module) || CollectionUtils.isEmpty(definitions) || !Azure.az(AzureAccount.class).isLoggedIn()) {
+        if (Objects.isNull(module) || CollectionUtils.isEmpty(definitions)) {
             return;
         }
         final List<? extends Resource<?>> resources = definitions.stream()
@@ -72,6 +74,7 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
                 .map(resource -> createYamlValueLookupElement(module, resource))
                 .filter(Objects::nonNull)
                 .forEach(result::addElement);
+        AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_values_in_yaml"));
     }
 
     @Nullable
@@ -92,18 +95,19 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
 
     @AzureOperation(name = "user/connector.insert_spring_yaml_properties")
     private void handleYamlConnection(AzureModule azureModule, Resource<?> resource, InsertionContext context) {
-        final ConnectionManager connectionManager = Optional.ofNullable(azureModule.getDefaultProfile())
-                .map(Profile::getConnectionManager).orElse(null);
-        Utils.createAndInsert(azureModule.getModule(), resource, context, connectionManager, this::insertConnection, null);
+        azureModule.connect(resource, c-> insertConnection(c, context));
     }
 
-    private void insertConnection(@Nonnull Connection connection, @Nonnull InsertionContext context) {
+    private void insertConnection(@Nullable Connection<?, ?> connection, @Nonnull InsertionContext context) {
+        if (Objects.isNull(connection)) {
+            return;
+        }
         // delete value insert by LookupElement
         final PsiElement element = PsiUtil.getElementAtOffset(context.getFile(), context.getStartOffset());
         final YAMLPsiElement yamlElement = Objects.requireNonNull(PsiTreeUtil.getParentOfType(element, YAMLPsiElement.class));
         final String key = YAMLUtil.getConfigFullName(yamlElement);
         final SpringSupported<?> definition = (SpringSupported<?>)connection.getResource().getDefinition();
-        final String value = definition.getSpringProperties().stream()
+        final String value = definition.getSpringProperties(key).stream()
                 .filter(pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key))
                 .findFirst()
                 .map(Pair::getValue)
@@ -112,7 +116,7 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
         context.getDocument().insertString(context.getStartOffset(), value);
         context.commitDocument();
         // add up missing connection parameters
-        YamlUtils.insertYamlConnection(connection, context);
+        YamlUtils.insertYamlConnection(connection, context, key);
     }
 }
 

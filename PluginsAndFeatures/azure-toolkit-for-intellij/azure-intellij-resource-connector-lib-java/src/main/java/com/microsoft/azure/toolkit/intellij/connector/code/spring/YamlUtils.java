@@ -30,13 +30,13 @@ import java.util.Optional;
 
 public class YamlUtils {
 
-    public static void insertYamlConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final InsertionContext context) {
+    public static void insertYamlConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final InsertionContext context, final String triggerKey) {
         final YAMLFile yamlFile = context.getFile() instanceof YAMLFile ? (YAMLFile) context.getFile() : null;
         if (Objects.isNull(yamlFile)) {
             return;
         }
         final ResourceDefinition<?> definition = connection.getResource().getDefinition();
-        final List<Pair<String, String>> springProperties = ((SpringSupported<?>) definition).getSpringProperties();
+        final List<Pair<String, String>> springProperties = ((SpringSupported<?>) definition).getSpringProperties(triggerKey);
         for (final Pair<String, String> pair : springProperties) {
             final YAMLKeyValue target = YAMLUtil.getQualifiedKeyInFile(yamlFile, getKeyListForProperty(pair.getKey()));
             if (Objects.isNull(target) || StringUtils.isBlank(target.getValueText())) {

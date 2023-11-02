@@ -2,23 +2,30 @@ package com.microsoft.azure.toolkit.intellij.storage.code;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
 
     public static List<StorageAccount> getConnectedStorageAccounts(@Nonnull final Module module) {
-        return com.microsoft.azure.toolkit.intellij.connector.code.Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
+        return AzureModule.from(module).getConnections(StorageAccountResourceDefinition.INSTANCE).stream()
+            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
     }
 
     public static List<Connection<?, ?>> getConnectionWithStorageAccount(@Nonnull final StorageAccount account, @Nonnull final Module module) {
@@ -31,9 +38,15 @@ public class Utils {
     }
 
     public static StorageAccount getBindingStorageAccount(@Nonnull final PsiAnnotation annotation) {
-        return Optional.ofNullable(FunctionUtils.getConnectionFromAnnotation(annotation))
+        final PsiMethod method = PsiTreeUtil.getParentOfType(annotation, PsiMethod.class);
+        final PsiAnnotation accountAnnotation = Objects.isNull(method) ? null : Arrays.stream(method.getAnnotations())
+                .filter(ann -> StringUtils.equalsIgnoreCase(ann.getQualifiedName(), "com.microsoft.azure.functions.annotation.StorageAccount"))
+                .findFirst().orElse(null);
+        return Stream.of(accountAnnotation, annotation).filter(Objects::nonNull)
+                .map(FunctionUtils::getConnectionFromAnnotation)
+                .filter(Objects::nonNull)
                 .filter(c -> c.getResource().getData() instanceof StorageAccount)
                 .map(c -> (StorageAccount) c.getResource().getData())
-                .orElse(null);
+                .findFirst().orElse(null);
     }
 }

@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.redis.RedisCache;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     }
 
     @Override
-    public List<Pair<String, String>> getSpringProperties() {
+    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
         final String suffix = Azure.az(AzureCloud.class).get().getStorageEndpointSuffix();
         properties.add(Pair.of("spring.redis.host", String.format("${%s_HOST}", Connection.ENV_PREFIX)));

@@ -1,7 +1,6 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition"/>
-        <completionMetadataProvider implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountCompletionProvider"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.storage.StorageNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>

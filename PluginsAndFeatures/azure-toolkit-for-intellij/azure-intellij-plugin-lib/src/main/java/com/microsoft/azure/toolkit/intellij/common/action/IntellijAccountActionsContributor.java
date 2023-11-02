@@ -43,18 +43,9 @@ public class IntellijAccountActionsContributor implements IActionsContributor, I
             .register(am);
 
         new Action<>(Action.AUTHENTICATE)
-            .withIcon((a) -> Azure.az(AzureAccount.class).isLoggedIn() ?
-                AzureIcons.Common.SIGN_OUT.getIconPath() : AzureIcons.Common.SIGN_IN.getIconPath())
-            .withLabel((a) -> Azure.az(AzureAccount.class).isLoggedIn() ?
-                "Sign out" : "Sign in...")
-            .withHandler((Object v, AnActionEvent e) -> {
-                final AzureAccount az = Azure.az(AzureAccount.class);
-                if (az.isLoggedIn()) {
-                    az.logout();
-                } else {
-                    AzureTaskManager.getInstance().runLater(()-> SignInAction.authActionPerformed(e.getProject()));
-                }
-            })
+            .withIcon((a) -> Azure.az(AzureAccount.class).isLoggedIn() ? AzureIcons.Common.SIGN_OUT.getIconPath() : AzureIcons.Common.SIGN_IN.getIconPath())
+            .withLabel((a) -> Azure.az(AzureAccount.class).isLoggedIn() ? "Sign out" : "Sign in...")
+            .withHandler((Object v, AnActionEvent e) -> AzureTaskManager.getInstance().runLater(()-> SignInAction.authActionPerformed(e.getProject())))
             .withAuthRequired(false)
             .register(am);
 

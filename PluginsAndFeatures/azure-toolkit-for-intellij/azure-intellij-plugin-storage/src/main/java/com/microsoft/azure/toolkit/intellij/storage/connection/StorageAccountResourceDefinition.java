@@ -53,35 +53,37 @@ public class StorageAccountResourceDefinition extends AzureServiceResource.Defin
     }
 
     @Override
-    public List<Pair<String, String>> getSpringProperties() {
+    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
         final String suffix = Azure.az(AzureCloud.class).get().getStorageEndpointSuffix();
-        properties.add(Pair.of("azure.storage.accountName", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("azure.storage.accountKey", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
-        final String blobEndpoint = "https://${%s_ACCOUNT_NAME}.blob%s/<your-container-name>/<your-blob-name>";
-        final String fileEndpoint = "https://${%s_ACCOUNT_NAME}.file%s/<your-fileshare-name>/<your-file-name>";
-        properties.add(Pair.of("# azure.storage.blob-endpoint", String.format(blobEndpoint, Connection.ENV_PREFIX, suffix)));
-        properties.add(Pair.of("# azure.storage.file-endpoint", String.format(fileEndpoint, Connection.ENV_PREFIX, suffix)));
+        if (StringUtils.containsIgnoreCase(key, "blob")) {
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.account-name", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.account-key", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.endpoint", String.format("https://${%s_ACCOUNT_NAME}.blob%s", Connection.ENV_PREFIX, suffix)));
+        } else if (StringUtils.containsIgnoreCase(key, "share")) {
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.account-name", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.account-key", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.endpoint", String.format("https://${%s_ACCOUNT_NAME}.file%s", Connection.ENV_PREFIX, suffix)));
+        } else {
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.account-name", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.account-key", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.fileshare.endpoint", String.format("https://${%s_ACCOUNT_NAME}.file%s", Connection.ENV_PREFIX, suffix)));
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.account-name", String.format("${%s_ACCOUNT_NAME}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.account-key", String.format("${%s_ACCOUNT_KEY}", Connection.ENV_PREFIX)));
+            properties.add(Pair.of("spring.cloud.azure.storage.blob.endpoint", String.format("https://${%s_ACCOUNT_NAME}.blob%s", Connection.ENV_PREFIX, suffix)));
+        }
         return properties;
-    }
-
-    @Override
-    public Map<String, String> getSpringPropertyFields() {
-        final Map<String, String> fields = new HashMap<>();
-        fields.put("azure.storage.accountName", "com.azure.spring.autoconfigure.storage.StorageProperties#accountName");
-        fields.put("azure.storage.accountKey", "com.azure.spring.autoconfigure.storage.StorageProperties#accountKey");
-        fields.put("azure.storage.blobEndpoint", "com.azure.spring.autoconfigure.storage.StorageProperties#blobEndpoint");
-        fields.put("azure.storage.fileEndpoint", "com.azure.spring.autoconfigure.storage.StorageProperties#fileEndpoint");
-        return fields;
     }
 
     @Override
     public Map<String, String> getSpringPropertyTypes() {
         final Map<String, String> fields = new HashMap<>();
-        fields.put("azure.storage.accountName", "Name");
-        fields.put("azure.storage.accountKey", "Access Key");
-        fields.put("azure.storage.blobEndpoint", "Endpoint Url");
-        fields.put("azure.storage.fileEndpoint", "Endpoint Url");
+        fields.put("spring.cloud.azure.storage.blob.account-name", "Name");
+        fields.put("spring.cloud.azure.storage.blob.account-key", "Access Key");
+        fields.put("spring.cloud.azure.storage.blob.endpoint", "Endpoint Url");
+        fields.put("spring.cloud.azure.storage.fileshare.account-name", "Name");
+        fields.put("spring.cloud.azure.storage.fileshare.account-key", "Access Key");
+        fields.put("spring.cloud.azure.storage.fileshare.endpoint", "Endpoint Url");
         return fields;
     }
 

@@ -331,6 +331,10 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.fixConsumerType(definition.getConsumerDefinition());
     }
 
+    public void setEnvPrefix(@Nonnull final String envPrefix) {
+        envPrefixTextField.setText(envPrefix);
+    }
+
     public void setFixedEnvPrefix(@Nonnull final String envPrefix) {
         envPrefixTextField.setText(envPrefix);
         envPrefixTextField.setEnabled(false);

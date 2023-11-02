@@ -13,7 +13,6 @@ import com.intellij.psi.PsiElement;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ public abstract class AbstractResourceConnectionLineMarkerProvider implements Li
     @Nullable
     public LineMarkerInfo<?> getLineMarkerInfo(@Nonnull PsiElement element) {
         if (isAzureFacetEnabled(element) && shouldAccept(element)) {
-            final Connection<? extends AzResource, ?> connection = getConnectionForPsiElement(element);
+            final Connection<?, ?> connection = getConnectionForPsiElement(element);
             final AzureServiceResource<?> resource = Optional.ofNullable(connection)
                     .filter(c -> c.getResource() instanceof AzureServiceResource)
                     .map(c -> ((AzureServiceResource<?>) c.getResource())).orElse(null);
@@ -45,5 +44,5 @@ public abstract class AbstractResourceConnectionLineMarkerProvider implements Li
     protected abstract boolean shouldAccept(@Nonnull final PsiElement element);
 
     @Nullable
-    protected abstract Connection<? extends AzResource, ?> getConnectionForPsiElement(@Nonnull final PsiElement element);
+    protected abstract Connection<?, ?> getConnectionForPsiElement(@Nonnull final PsiElement element);
 }

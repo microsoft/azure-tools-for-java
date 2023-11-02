@@ -38,13 +38,19 @@ public class PropertiesKeyCompletionProvider extends CompletionProvider<Completi
 
     @Override
     protected void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context, @Nonnull CompletionResultSet result) {
+        final String originalPrefix = result.getPrefixMatcher().getPrefix();
+        final String prefix = StringUtils.substringBefore(parameters.getPosition().getText(), CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
+        if (!StringUtils.equals(originalPrefix, prefix)) {
+            result = result.withPrefixMatcher(prefix);
+        }
         final PsiFile file = parameters.getOriginalFile();
         definitions.stream().flatMap(definition ->
             definition.getSpringProperties().stream().filter(p -> !p.getKey().trim().startsWith("#")).map(p -> LookupElementBuilder
                 .create(definition.getName(), p.getKey())
                 .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(definition.getIcon(), AzureIcons.Common.AZURE.getIconPath())))
                 .withPsiElement(Utils.getPropertyField(definition.getSpringPropertyFields().get(p.getKey()), file))
-                .withBoldness(true)
+                .bold()
+                .withCaseSensitivity(false)
                 .withInsertHandler(new PropertyKeyInsertHandler())
                 .withTypeText("Property Key")
                 .withTailText(String.format(" (%s)", definition.getTitle())))
