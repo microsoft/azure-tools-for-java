@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -133,10 +134,10 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withIcon(AzureIcons.Connector.CONNECT.getIconPath())
             .withHandler((target, e) -> {
                 if (target instanceof AzureModule) {
-                    AzureModule module = (AzureModule) target;
+                    final AzureModule module = (AzureModule) target;
                     AzureTaskManager.getInstance().runLater(() -> ModuleConnectorAction.connectModuleToAzureResource(module.getModule()));
                 } else if (target instanceof ConnectionManager) {
-                    ConnectionManager cm = (ConnectionManager) target;
+                    final ConnectionManager cm = (ConnectionManager) target;
                     AzureTaskManager.getInstance().runLater(() -> ModuleConnectorAction.connectModuleToAzureResource(cm.getProfile().getModule().getModule()));
                 }
             })
@@ -165,7 +166,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .withLabel("Edit")
             .withIcon(AzureIcons.Action.EDIT.getIconPath())
             .visibleWhen(m -> m instanceof Connection<?, ?>)
-            .withHandler((c, e) -> openDialog(c, ((AnActionEvent) e).getProject()))
+            .withHandler((c, e) -> openDialog(c, () -> ((AnActionEvent) e).getProject()))
             .withShortcut(am.getIDEDefaultShortcuts().edit())
             .withAuthRequired(false)
             .register(am);
@@ -179,12 +180,12 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
             .register(am);
 
         new Action<>(FIX_CONNECTION)
-                .withLabel("Edit Connection...")
-                .withIcon(AzureIcons.Action.EDIT.getIconPath())
-                .visibleWhen(m -> m instanceof Connection<?, ?>)
-                .withHandler((c, e) -> fixResourceConnection(c, ((AnActionEvent) e).getProject()))
-                .withAuthRequired(false)
-                .register(am);
+            .withLabel("Edit Connection...")
+            .withIcon(AzureIcons.Action.EDIT.getIconPath())
+            .visibleWhen(m -> m instanceof Connection<?, ?>)
+            .withHandler((c, e) -> fixResourceConnection(c, () -> ((AnActionEvent) e).getProject()))
+            .withAuthRequired(false)
+            .register(am);
 
         new Action<>(REMOVE_CONNECTION)
             .withLabel("Remove Resource Connection")
@@ -242,7 +243,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         EditorUtils.focusContentInCurrentEditor(project, envFile, c.getId());
     }
 
-    public static Connection<?, ?> fixResourceConnection(Connection<?, ?> c, Project project) {
+    public static Connection<?, ?> fixResourceConnection(Connection<?, ?> c, Supplier<Project> project) {
         final SettableFuture<Connection<?, ?>> result = SettableFuture.create();
         AzureTaskManager.getInstance().runLater(() -> {
             final String invalidResourceName = c.getResource().isValidResource() ? null : c.getResource().getDefinition().getTitle();
@@ -251,7 +252,7 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
                     .filter(Objects::nonNull)
                     .collect(Collectors.joining(", "));
             final String promptMessage = String.format("Please set correct %s for connection %s", invalidProperties, c.getEnvPrefix());
-            final ConnectorDialog dialog = new ConnectorDialog(project);
+            final ConnectorDialog dialog = new ConnectorDialog(project.get());
             dialog.setDescription(promptMessage);
             dialog.setFixedEnvPrefix(c.getEnvPrefix());
             dialog.setFixedConnectionDefinition(c.getDefinition());
@@ -331,9 +332,9 @@ public class ResourceConnectionActionsContributor implements IActionsContributor
         });
     }
 
-    private void openDialog(Connection<?, ?> c, Project project) {
+    private void openDialog(Connection<?, ?> c, Supplier<Project> project) {
         AzureTaskManager.getInstance().runLater(() -> {
-            final ConnectorDialog dialog = new ConnectorDialog(project);
+            final ConnectorDialog dialog = new ConnectorDialog(project.get());
             dialog.setValue(c);
             dialog.show();
         });
