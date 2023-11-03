@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.connector.code.function;
 import com.intellij.codeInsight.AutoPopupController;
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PsiJavaPatterns;
@@ -42,7 +43,7 @@ public class FunctionAnnotationTypeHandler extends TypedHandlerDelegate {
 
     @Override
     public @Nonnull Result checkAutoPopup(char charTyped, @Nonnull Project project, @Nonnull Editor editor, @Nonnull PsiFile file) {
-        if (!(file instanceof PsiJavaFileImpl)) {
+        if (DumbService.isDumb(project) || !(file instanceof PsiJavaFileImpl)) {
             return Result.CONTINUE;
         }
         final PsiElement ele = file.findElementAt(editor.getCaretModel().getOffset());

@@ -61,7 +61,6 @@ public class StringLiteralPreCompletionContributor extends CompletionContributor
                             }
                         }));
                     }
-                    result.stopHere();
                 }
             }
         });

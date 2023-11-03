@@ -27,10 +27,16 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2 id="3-81-1">3.81.1</h2>
+      <h2 id="3-82-0">3.82.0</h2>
+      <h3 id="added">Added</h3>
+      <ul>
+      <li>Code assistance of Azure resources for Spring and Azure Functions.</li>
+      <li>Azure Functions flex consumption tier support.</li>
+      </ul>
       <h3 id="fixed">Fixed</h3>
       <ul>
-      <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7897">#7897</a>: Uncaught Exception: Error was received while reading the incoming data. The connection will be closed.</li>
+      <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/7907">#7907</a>: Uncaught Exception Operator called default onErrorDropped java.lang.InterruptedException.</li>
+      <li>other known issues.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

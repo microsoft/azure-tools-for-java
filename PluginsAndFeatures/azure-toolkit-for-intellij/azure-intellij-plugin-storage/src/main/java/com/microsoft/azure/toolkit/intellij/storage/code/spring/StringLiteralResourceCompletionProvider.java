@@ -107,6 +107,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
                     }
                 }
             }
+            result.stopHere();
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_storage_resources_in_string_literal"));
         }
     }
