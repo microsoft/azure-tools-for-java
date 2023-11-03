@@ -12,6 +12,7 @@ import com.intellij.util.DocumentUtil;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,9 +32,9 @@ import java.util.Optional;
 
 public class YamlUtils {
 
-    public static void insertYamlConnection(@Nonnull final Connection<?, ?> connection, @Nonnull final InsertionContext context, final String triggerKey) {
+    public static void insertYamlConnection(@Nullable final Connection<?, ?> connection, @Nonnull final InsertionContext context, final String triggerKey) {
         final YAMLFile yamlFile = context.getFile() instanceof YAMLFile ? (YAMLFile) context.getFile() : null;
-        if (Objects.isNull(yamlFile)) {
+        if (Objects.isNull(yamlFile) || Objects.isNull(connection)) {
             return;
         }
         final ResourceDefinition<?> definition = connection.getResource().getDefinition();
@@ -66,7 +67,7 @@ public class YamlUtils {
         final int index = Optional.ofNullable(parentValue)
                 .map(YamlUtils::getNoneEmptyOffset)
                 .orElseGet(() -> (Objects.isNull(parent) ? yamlFile : parent).getTextRange().getEndOffset());
-        if (StringUtils.isNotBlank(getOffsetLineContent(document, index))) {
+        if (StringUtils.isNotBlank(getOffsetLineContent(document, index)) && CollectionUtils.isNotEmpty(keyList)) {
             insertContent.insert(0, StringUtils.repeat(' ', indent));
             insertContent.insert(0, StringUtils.LF);
         }
@@ -99,7 +100,7 @@ public class YamlUtils {
     @Nonnull
     private static Pair<YAMLKeyValue, List<String>> getLatestKeyValue(@Nonnull final YAMLFile file, final String properties) {
         final String[] keys = getKeyListForProperty(properties);
-        for (int i = keys.length - 1; i > 0; i--) {
+        for (int i = keys.length; i > 0; i--) {
             final YAMLKeyValue result = YAMLUtil.getQualifiedKeyInFile(file, ArrayUtils.subarray(keys, 0, i));
             if (Objects.nonNull(result)) {
                 return Pair.of(result, Arrays.stream(ArrayUtils.subarray(keys, i, keys.length)).toList());

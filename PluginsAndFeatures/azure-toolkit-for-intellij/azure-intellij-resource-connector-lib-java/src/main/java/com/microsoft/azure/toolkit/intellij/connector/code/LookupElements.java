@@ -9,7 +9,6 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -81,6 +80,7 @@ public class LookupElements {
         @AzureOperation(name = "user/connector.create_connection_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
             context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
+            context.commitDocument();
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             AzureTaskManager.getInstance().write(() -> Optional.ofNullable(module).map(AzureModule::from)

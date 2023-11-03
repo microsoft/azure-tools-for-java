@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.psi.PsiElement;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
@@ -55,7 +56,7 @@ public class ResourceConnectionLineMarkerInfo extends MergeableLineMarkerInfo<Ps
                 .filter(Objects::nonNull)
                 .filter(i -> !Objects.equals(AzureIcons.Common.REFRESH_ICON, i))
                 .map(IntelliJAzureIcons::getIcon)
-                .filter(Objects::nonNull)
+                .filter(icon -> Objects.nonNull(icon) && !Objects.equals(AnimatedIcon.Default.INSTANCE, icon))
                 .findFirst().orElse(AllIcons.Providers.Azure);
     }
 

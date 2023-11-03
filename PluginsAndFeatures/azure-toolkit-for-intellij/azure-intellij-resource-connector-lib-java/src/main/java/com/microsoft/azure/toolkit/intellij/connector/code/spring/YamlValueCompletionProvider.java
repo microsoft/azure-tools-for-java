@@ -80,8 +80,6 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
     @Nullable
     private LookupElement createYamlValueLookupElement(@Nonnull final Module module, @Nonnull final Resource<?> resource) {
         final AzureModule azureModule = AzureModule.from(module);
-        final Profile defaultProfile = azureModule.getDefaultProfile();
-        final List<Connection<?, ?>> connections = Objects.isNull(defaultProfile) ? Collections.emptyList() : defaultProfile.getConnections();
         final ResourceDefinition<?> definition = resource.getDefinition();
         return LookupElementBuilder.create(resource.getName())
                 .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(definition.getIcon(), AzureIcons.Common.AZURE.getIconPath())))
@@ -95,7 +93,14 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
 
     @AzureOperation(name = "user/connector.insert_spring_yaml_properties")
     private void handleYamlConnection(AzureModule azureModule, Resource<?> resource, InsertionContext context) {
-        azureModule.connect(resource, c-> insertConnection(c, context));
+        final Profile defaultProfile = azureModule.getDefaultProfile();
+        final List<Connection<?, ?>> connections = Objects.isNull(defaultProfile) ? Collections.emptyList() : defaultProfile.getConnections();
+        final Connection<?, ?> connection = connections.stream().filter(c -> Objects.equals(c.getResource(), resource)).findFirst().orElse(null);
+        if (Objects.nonNull(connection)) {
+            insertConnection(connection, context);
+        } else {
+            azureModule.connect(resource, c -> insertConnection(c, context));
+        }
     }
 
     private void insertConnection(@Nullable Connection<?, ?> connection, @Nonnull InsertionContext context) {
