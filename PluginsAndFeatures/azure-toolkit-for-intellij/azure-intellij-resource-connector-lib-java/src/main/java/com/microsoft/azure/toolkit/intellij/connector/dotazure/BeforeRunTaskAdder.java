@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.ConnectionChanged, IWebAppRunConfiguration.ModuleChangedListener {
     @Override
@@ -32,12 +33,15 @@ public class BeforeRunTaskAdder implements RunManagerListener, ConnectionTopics.
             return;
         }
         final List<Connection<?, ?>> connections = profile.getConnections();
-        final List<BeforeRunTask<?>> tasks = new ArrayList<>(config.getBeforeRunTasks());
-        tasks.removeIf(t -> t instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask);
-        if (connections.stream().anyMatch(c -> c.isApplicableFor(config))) {
-            tasks.add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
+        synchronized (config.getBeforeRunTasks()) {
+            final List<BeforeRunTask<?>> tasks = config.getBeforeRunTasks().stream()
+                    .filter(task -> task instanceof DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask)
+                    .collect(Collectors.toList());
+            if (connections.stream().anyMatch(c -> c.isApplicableFor(config))) {
+                tasks.add(new DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask(config));
+            }
+            config.setBeforeRunTasks(tasks);
         }
-        config.setBeforeRunTasks(tasks);
     }
 
     @Override
