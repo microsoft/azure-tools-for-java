@@ -42,7 +42,9 @@ public class AzuriteTaskAdder implements RunManagerListener, ConnectionTopics.Co
         final RunConfiguration config = settings.getConfiguration();
         if (isConfigurationConnectedToAzurite(config) && !isConfigurationContainsAzuriteTask(config)
                 && !isDeploymentTask(config)) {
-            config.getBeforeRunTasks().add(new AzuriteTaskProvider.AzuriteBeforeRunTask());
+            synchronized (config.getBeforeRunTasks()) {
+                config.getBeforeRunTasks().add(new AzuriteTaskProvider.AzuriteBeforeRunTask());
+            }
         }
     }
 
