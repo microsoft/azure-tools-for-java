@@ -45,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBFunctionAnnotationCompletionContributor.COSMOS_ANNOTATIONS;
@@ -81,10 +82,10 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
         if (Objects.isNull(database) && StringUtils.isNotBlank(connectionValue)) {
             return;
         }
-        final List<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? List.of(database) :
+        final Stream<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? Stream.of(database) :
             AzureModule.from(module).getConnections(SqlCosmosDBAccountResourceDefinition.INSTANCE).stream()
-                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
-        accountsToSearch.stream()
+                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData);
+        accountsToSearch
                 .map(d -> createLookupElement(d, module))
                 .forEach(result::addElement);
         AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_cosmos_database"));

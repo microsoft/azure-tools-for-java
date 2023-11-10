@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class YamlUtils {
 
@@ -103,10 +104,10 @@ public class YamlUtils {
         for (int i = keys.length; i > 0; i--) {
             final YAMLKeyValue result = YAMLUtil.getQualifiedKeyInFile(file, ArrayUtils.subarray(keys, 0, i));
             if (Objects.nonNull(result)) {
-                return Pair.of(result, Arrays.stream(ArrayUtils.subarray(keys, i, keys.length)).toList());
+                return Pair.of(result, Arrays.stream(ArrayUtils.subarray(keys, i, keys.length)).collect(Collectors.toList()));
             }
         }
-        return Pair.of(null, Arrays.stream(keys).toList());
+        return Pair.of(null, Arrays.stream(keys).collect(Collectors.toList()));
     }
 
     public static String getPropertiesCompletionValue(@Nonnull final String template, @Nonnull final Connection<?, ?> connection) {

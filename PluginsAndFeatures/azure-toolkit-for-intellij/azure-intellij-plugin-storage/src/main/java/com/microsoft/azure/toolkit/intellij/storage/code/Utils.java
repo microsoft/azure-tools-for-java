@@ -25,7 +25,8 @@ public class Utils {
 
     public static List<StorageAccount> getConnectedStorageAccounts(@Nonnull final Module module) {
         return AzureModule.from(module).getConnections(StorageAccountResourceDefinition.INSTANCE).stream()
-            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
+            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData)
+            .collect(Collectors.toList());
     }
 
     public static List<Connection<?, ?>> getConnectionWithStorageAccount(@Nonnull final StorageAccount account, @Nonnull final Module module) {

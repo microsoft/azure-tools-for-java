@@ -44,9 +44,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBFunctionAnnotationCompletionContributor.COSMOS_ANNOTATIONS;
@@ -82,10 +82,10 @@ public class CosmosDBContainerNameCompletionProvider extends CompletionProvider<
         if (Objects.isNull(database) && (StringUtils.isNotBlank(connectionValue) || StringUtils.isNotBlank(databaseValue))) {
             return;
         }
-        final List<SqlDatabase> databasesToSearch = Objects.nonNull(database) ? List.of(database) :
+        final Stream<SqlDatabase> databasesToSearch = Objects.nonNull(database) ? Stream.of(database) :
                 AzureModule.from(module).getConnections(SqlCosmosDBAccountResourceDefinition.INSTANCE).stream()
-                    .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
-        databasesToSearch.stream()
+                    .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData);
+        databasesToSearch
                 .flatMap(db -> db.containers().list().stream())
                 .map(container -> createLookupElement(container, module))
                 .forEach(result::addElement);
