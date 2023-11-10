@@ -104,6 +104,11 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         @ExceptionNotification
         @AzureOperation(name = "user/connector.select_resource_completion_item_in_properties")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
+            final Optional<String> optKey = Optional.ofNullable(context.getFile().findElementAt(context.getStartOffset()))
+                .map(PsiElement::getParent).map(PsiElement::getFirstChild).map(PsiElement::getText).map(String::trim);;
+            if(optKey.isEmpty()) {
+                return;
+            }
             context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
@@ -112,22 +117,20 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
                 .ifPresent(connectionManager -> connectionManager
                     .getConnectionsByConsumerId(module.getName()).stream()
                     .filter(c -> Objects.equals(resource, c.getResource())).findAny()
-                    .ifPresentOrElse(c -> insert(c, context),
-                        () -> connectionManager.getProfile().getModule().connect(resource, c -> insert(c, context))));
+                    .ifPresentOrElse(c -> insert(c, context, optKey.get()),
+                        () -> connectionManager.getProfile().getModule().connect(resource, c -> insert(c, context, optKey.get()))));
         }
 
         @AzureOperation(name = "user/connector.insert_value_in_properties")
-        public static void insert(@Nullable Connection<?, ?> c, @Nonnull InsertionContext context) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.isNull(element) || Objects.isNull(c)) {
+        public static void insert(@Nullable Connection<?, ?> c, @Nonnull InsertionContext context, String key) {
+            if (Objects.isNull(c)) {
                 return;
             }
-            final String k0 = element.getParent().getFirstChild().getText().trim();
-            final List<Pair<String, String>> properties = SpringSupported.getProperties(c, k0);
+            final List<Pair<String, String>> properties = SpringSupported.getProperties(c, key);
             if (properties.size() < 1) {
                 return;
             }
-            properties.stream().filter(p -> p.getKey().equals(k0)).findAny().ifPresent(p -> {
+            properties.stream().filter(p -> p.getKey().equals(key)).findAny().ifPresent(p -> {
                 properties.remove(p);
                 properties.add(0, p);
             });
