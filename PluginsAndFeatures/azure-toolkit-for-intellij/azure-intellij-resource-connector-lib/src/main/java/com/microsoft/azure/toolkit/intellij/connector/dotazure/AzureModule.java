@@ -3,6 +3,7 @@ package com.microsoft.azure.toolkit.intellij.connector.dotazure;
 import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
@@ -13,7 +14,7 @@ import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.IWebAppRunConfiguration;
-import com.microsoft.azure.toolkit.intellij.connector.IConnectionAware;
+import com.microsoft.azure.toolkit.intellij.connector.*;
 import com.microsoft.azure.toolkit.intellij.facet.AzureFacet;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -249,6 +251,54 @@ public class AzureModule {
                     StringUtils.equals(artifactId, "com.microsoft.azure:azure-client-runtime") ||
                     StringUtils.equals(artifactId, "com.microsoft.azure.functions:azure-functions-java-library");
             });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<Connection<T, ?>> getConnections(@Nonnull ResourceDefinition<T> definition) {
+        return Optional.ofNullable(this.getDefaultProfile())
+            .map(Profile::getConnectionManager).stream()
+            .flatMap(m -> m.getConnections().stream())
+            .filter(c -> c.getDefinition().getResourceDefinition().getName().equalsIgnoreCase(definition.getName()))
+            .map(c -> (Connection<T, ?>) c)
+            .collect(Collectors.toList());
+    }
+
+    @AzureOperation(name = "internal/connector.create_connection")
+    public void connect(@Nonnull Resource<?> resource, @Nonnull Consumer<Connection<?, ?>> then) {
+        final Project project = this.module.getProject();
+        if (resource.canConnectSilently()) {
+            connectSilently(resource, then);
+        } else {
+            AzureTaskManager.getInstance().runLater(() -> {
+                final var dialog = new ConnectorDialog(project);
+                dialog.setConsumer(new ModuleResource(this.module.getName()));
+                dialog.setResource(resource);
+                if (dialog.showAndGet()) {
+                    final Connection<?, ?> c = dialog.getValue();
+                    WriteCommandAction.runWriteCommandAction(project, () -> then.accept(c));
+                } else {
+                    WriteCommandAction.runWriteCommandAction(project, () -> then.accept(null));
+                }
+            });
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @AzureOperation(name = "internal/connector.creating_connection_silently")
+    public void connectSilently(@Nonnull Resource resource, Consumer<Connection<?, ?>> then) {
+        final Resource consumer = ModuleResource.Definition.IJ_MODULE.define(this.getName());
+        final ConnectionDefinition<?, ?> connectionDefinition = ConnectionManager.getDefinitionOrDefault(resource.getDefinition(), consumer.getDefinition());
+        final Connection<?, ?> connection = connectionDefinition.define(resource, consumer);
+        final AzureTaskManager taskManager = AzureTaskManager.getInstance();
+        AzureTaskManager.getInstance().runLater(() -> taskManager.write(() -> {
+            final Profile profile = this.initializeWithDefaultProfileIfNot();
+            if (resource.getDefinition().isEnvPrefixSupported()) {
+                connection.setEnvPrefix(profile.getConnectionManager().getNewPrefix(resource, consumer));
+            }
+            profile.createOrUpdateConnection(connection);
+            profile.save();
+            WriteCommandAction.runWriteCommandAction(this.getProject(), () -> then.accept(connection));
+        }));
     }
 
     @Nonnull

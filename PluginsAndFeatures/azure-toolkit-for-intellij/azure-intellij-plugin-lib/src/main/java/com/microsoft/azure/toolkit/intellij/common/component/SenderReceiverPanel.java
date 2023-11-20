@@ -13,9 +13,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.message.ISenderReceiver;
@@ -129,10 +127,12 @@ public class SenderReceiverPanel extends JPanel {
 
     private static class ConsoleMessager extends IntellijAzureMessager {
         private final ConsoleView view;
+
         public ConsoleMessager(ConsoleView view) {
             super();
             this.view = view;
         }
+
         @Override
         public boolean show(IAzureMessage msg) {
             final IAzureMessage raw = msg.getRawMessage();
@@ -148,7 +148,7 @@ public class SenderReceiverPanel extends JPanel {
             } else if (raw.getType() == IAzureMessage.Type.WARNING) {
                 view.print(raw.getMessage().toString(), ConsoleViewContentType.LOG_WARNING_OUTPUT);
             } else if (raw.getType() == IAzureMessage.Type.ERROR) {
-                view.print(raw.getMessage().toString(), ConsoleViewContentType.ERROR_OUTPUT);
+                view.print(StringUtils.appendIfMissing(raw.getMessage().toString(), StringUtils.LF), ConsoleViewContentType.ERROR_OUTPUT);
             }
             return super.show(msg);
         }

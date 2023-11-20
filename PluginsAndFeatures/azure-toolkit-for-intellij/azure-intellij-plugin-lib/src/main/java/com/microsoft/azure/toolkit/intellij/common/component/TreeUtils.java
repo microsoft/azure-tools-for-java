@@ -52,11 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TreeUtils {
@@ -284,11 +279,11 @@ public class TreeUtils {
             public boolean contains(final TreePath path) {
                 final Object current = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
                 final ResourceId resourceId = ResourceId.fromString(resource.getId() + "DUMMY");
-                if (underTypeGroup && current instanceof AzService s && s.getName().equalsIgnoreCase(resourceId.providerNamespace())) {
+                if (underTypeGroup && current instanceof AzService && ((AzService) current).getName().equalsIgnoreCase(resourceId.providerNamespace())) {
                     return true;
                 }
                 // why append? consider resource `xxx/abc` and `xxx/abcd`
-                return (current instanceof AzComponent c && StringUtils.containsIgnoreCase(resource.getId(), StringUtils.appendIfMissing(c.getId(), "/")));
+                return (current instanceof AzComponent && StringUtils.containsIgnoreCase(resource.getId(), StringUtils.appendIfMissing(((AzComponent) current).getId(), "/")));
             }
         }, new TreePath(n.getPath())));
     }

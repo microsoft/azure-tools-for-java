@@ -71,13 +71,13 @@ public class AzureExplorer extends Tree {
         TreeHoverListener.DEFAULT.addTo(this);
         this.setCellRenderer(new InlineActionSupportedNodeRenderer());
         AzureEventBus.on("azure.explorer.select_resource", new AzureEventBus.EventListener(e -> {
-            if (e.getSource() instanceof AzComponent c) {
-                TreeUtils.selectResourceNode(this, c);
+            if (e.getSource() instanceof AzComponent) {
+                TreeUtils.selectResourceNode(this, (AzComponent) e.getSource());
             }
         }));
         AzureEventBus.on("resource.creation_started.resource", new AzureEventBus.EventListener(e -> {
-            if (e.getSource() instanceof AzComponent c) {
-                TreeUtils.selectResourceNode(this, c);
+            if (e.getSource() instanceof AzComponent) {
+                TreeUtils.selectResourceNode(this, (AzComponent) e.getSource());
             }
         }));
         AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener(e -> {

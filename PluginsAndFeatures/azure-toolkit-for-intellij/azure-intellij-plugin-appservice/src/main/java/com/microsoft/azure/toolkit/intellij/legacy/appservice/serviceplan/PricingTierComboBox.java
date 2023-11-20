@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -38,8 +39,9 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
             return EMPTY_ITEM;
         }
         final PricingTier pricingTier = (PricingTier) item;
-        return Objects.equals(pricingTier, PricingTier.CONSUMPTION) ?
-            message("appService.pricingTier.consumption") : pricingTier.getTier() + "_" + pricingTier.getSize();
+        // todo: move display name method to toolkit lib to share among azure tooling
+        return pricingTier.isConsumption() || pricingTier.isFlexConsumption() ? pricingTier.toString() :
+                String.format("%s %s", StringUtils.capitalize(pricingTier.getTier()), StringUtils.upperCase(pricingTier.getSize()));
     }
 
     @Nonnull

@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.model.FlexConsumptionConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployFunctionAppTask;
@@ -45,6 +46,7 @@ public class FunctionAppService {
                 .diagnosticConfig(functionApp.getDiagnosticConfig())
                 .applicationInsightsConfig(ApplicationInsightsConfig.builder().instrumentationKey(applicationInsightsKey).build())
                 .build();
+        final FlexConsumptionConfiguration flexConsumptionConfiguration = functionApp.getFlexConsumptionConfiguration();
         return FunctionAppConfig.builder()
                 .resourceId(functionApp.getId())
                 .name(functionApp.getName())
@@ -54,6 +56,7 @@ public class FunctionAppService {
                 .subscription(functionApp.getSubscription())
                 .appSettings(functionApp.getAppSettings())
                 .monitorConfig(monitorConfig)
+                .flexConsumptionConfiguration(flexConsumptionConfiguration)
                 .servicePlan(AppServicePlanConfig.fromResource(functionApp.getAppServicePlan())).build();
     }
 
@@ -91,6 +94,8 @@ public class FunctionAppService {
             result.deploymentSlotConfigurationSource(slot.getConfigurationSource());
         });
         Optional.ofNullable(config.getMonitorConfig()).map(MonitorConfig::getDiagnosticConfig).ifPresent(result::diagnosticConfig);
+        // currently ide did not support set flex consumption options, so use default values
+        Optional.ofNullable(config.getFlexConsumptionConfiguration()).ifPresent(result::flexConsumptionConfiguration);
         return result;
     }
 

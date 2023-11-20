@@ -16,6 +16,7 @@ import com.intellij.patterns.*;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationParameterList;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -27,6 +28,9 @@ import com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralCom
 import com.microsoft.azure.toolkit.intellij.storage.code.Utils;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.table.Table;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +55,7 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
                             return StringUtils.equalsAnyIgnoreCase(psiAnnotation.getQualifiedName(), TABLE_ANNOTATIONS);
                         }
                     })));
-    public static final PsiJavaElementPattern<?, ?> TABLE_NAME_PATTERN = psiElement().withSuperParent(2, TABLE_NAME_PAIR_PATTERN);
+    public static final PsiJavaElementPattern<?, ?> TABLE_NAME_PATTERN = psiElement().withParent(PsiLiteralExpression.class).withSuperParent(2, TABLE_NAME_PAIR_PATTERN);
 
     static {
         FunctionAnnotationTypeHandler.registerKeyPairPattern(TABLE_NAME_PAIR_PATTERN);
@@ -61,7 +65,9 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
-        final String fullPrefix = StringUtils.substringBefore(element.getText(), StringLiteralCompletionContributor.DUMMY_IDENTIFIER).replace("\"", "").trim();
+        final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
+        final String value = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
+        final String fullPrefix = StringUtils.substringBefore(value, StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
         final Module module = ModuleUtil.findModuleForFile(parameters.getOriginalFile());
         if (Objects.isNull(module) || !Azure.az(AzureAccount.class).isLoggedIn()) {
             return;
@@ -73,6 +79,7 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
                 .filter(table -> StringUtils.startsWithIgnoreCase(table.getName(), fullPrefix))
                 .map(queue -> createLookupElement(queue, module))
                 .forEach(result::addElement);
+        AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_table_name"));
     }
 
     private LookupElement createLookupElement(Table table, Module module) {

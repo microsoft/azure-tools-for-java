@@ -40,7 +40,7 @@ public class StringLiteralResourceAnnotator implements Annotator {
         if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element)) {
             final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
             final String valueWithPrefix = StringUtils.substringBefore((String) literal.getValue(), StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
-            if (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://")) {
+            if (Objects.nonNull(valueWithPrefix) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://"))) {
                 final String prefix = valueWithPrefix.startsWith("azure-blob://") ? "azure-blob://" : "azure-file://";
                 final String path = valueWithPrefix.substring(prefix.length());
                 if (StringUtils.isBlank(path)) {
@@ -48,11 +48,7 @@ public class StringLiteralResourceAnnotator implements Annotator {
                 }
                 final TextRange range = new TextRange(prefix.length() + 1, valueWithPrefix.length() + 1).shiftRight(element.getTextOffset());
                 if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-                    holder.newAnnotation(HighlightSeverity.WARNING, "You are not signed in to Azure")
-                        .range(range)
-                        .highlightType(ProblemHighlightType.WEAK_WARNING)
-                        .withFix(AnnotationFixes.signIn(AnnotationFixes.DO_NOTHING))
-                        .create();
+                    AnnotationFixes.createSignInAnnotation(element, holder);
                 } else {
                     final List<StorageAccount> accounts = Optional.of(element)
                         .map(ModuleUtil::findModuleForPsiElement)

@@ -1,19 +1,19 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition"/>
-        <completionMetadataProvider implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountCompletionProvider"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.storage.StorageNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceAnnotator"/>
-        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceReferenceContributor"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceReferenceContributor" order="first"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionStorageAccountResourceReferenceContributor"/>
         <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralStorageLineMarkerProvider"/>
         <completion.confidence id="azStorageStringLiteral" language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
         <completion.contributor id="azStorageFunctionAnnotation" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionAnnotationCompletionContributor"/>
+        <completion.contributor id="azStorageStringLiteralQuick" language="JAVA" order="first, before azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralPreCompletionContributor"/>
         <completion.contributor id="azStorageStringLiteral" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralCompletionContributor"/>
-        <completion.contributor id="azStorageStringLiteralQuick" language="JAVA" order="after azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralPreCompletionContributor"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionAnnotationResourcePathAnnotator"/>
         <typedHandler id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralTypeHandler"/>
         <lookup.charFilter id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralCharFilter"/>

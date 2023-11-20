@@ -19,9 +19,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
@@ -53,6 +55,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.listResourceForDefinition;
 
 public class StringLiteralResourceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
@@ -70,23 +77,37 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
             if (Objects.isNull(module)) {
                 return;
             }
-            final List<? extends StorageFile> files = getFiles(fullPrefix, Utils.getConnectedStorageAccounts(module));
-            final String[] parts = result.getPrefixMatcher().getPrefix().trim().split("/", -1);
-            result = result.withPrefixMatcher(parts[parts.length - 1]);
-            AzureTelemeter.info("connector.resources_count.storage_resources_code_completion", ImmutableMap.of("count", files.size() + ""));
-            final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
-                .withInsertHandler(new MyInsertHandler(title.endsWith("/")))
-                .withBoldness(true)
-                .withCaseSensitivity(false)
-                .withTypeText(file.getResourceTypeName())
-                .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(AbstractAzResource::getName).orElse(""))
-                .withIcon(IntelliJAzureIcons.getIcon(getFileIcon(file)));
-            for (final StorageFile file : files) {
-                result.addElement(builder.apply(file, file.getName()));
-                if (file.isDirectory()) {
-                    result.addElement(builder.apply(file, file.getName() + "/"));
+            final List<StorageAccount> accounts = Utils.getConnectedStorageAccounts(module);
+            if (accounts.isEmpty()) {
+                listResourceForDefinition(module.getProject(), StorageAccountResourceDefinition.INSTANCE).stream()
+                    .map(a -> LookupElementBuilder
+                        .create(a.getName())
+                        .withInsertHandler(new ConnectStorageAccountInsertHandler(a))
+                        .withBoldness(true)
+                        .withCaseSensitivity(false)
+                        .withTypeText(a.getData().getResourceTypeName())
+                        .withTailText(" " + a.getData().getResourceGroupName())
+                        .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.StorageAccount.MODULE))).forEach(result::addElement);
+            } else {
+                final List<? extends StorageFile> files = getFiles(fullPrefix, accounts);
+                final String[] parts = result.getPrefixMatcher().getPrefix().trim().split("/", -1);
+                result = result.withPrefixMatcher(parts[parts.length - 1]);
+                AzureTelemeter.info("connector.resources_count.storage_resources_code_completion", ImmutableMap.of("count", files.size() + ""));
+                final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
+                    .withInsertHandler(new MyInsertHandler(title.endsWith("/")))
+                    .withBoldness(true)
+                    .withCaseSensitivity(false)
+                    .withTypeText(file.getResourceTypeName())
+                    .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(AbstractAzResource::getName).orElse(""))
+                    .withIcon(IntelliJAzureIcons.getIcon(getFileIcon(file)));
+                for (final StorageFile file : files) {
+                    result.addElement(builder.apply(file, file.getName()));
+                    if (file.isDirectory()) {
+                        result.addElement(builder.apply(file, file.getName() + "/"));
+                    }
                 }
             }
+            result.stopHere();
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_storage_resources_in_string_literal"));
         }
     }
@@ -97,10 +118,14 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
         final var getModule = fullPrefix.startsWith("azure-blob://") ?
             (Function<StorageAccount, BlobContainerModule>) StorageAccount::getBlobContainerModule :
             (Function<StorageAccount, ShareModule>) StorageAccount::getShareModule;
-        List<? extends StorageFile> files = accounts.stream().map(getModule).flatMap(m -> m.list().stream()).map(r -> ((StorageFile) r)).toList();
+        List<? extends StorageFile> files = accounts.stream().map(getModule)
+            .flatMap(m -> emptyIfException(() -> m.list().stream()))
+            .map(r -> ((StorageFile) r)).collect(Collectors.toList());
         for (int i = 1; i < parts.length; i++) {
             final String parentName = parts[i - 1];
-            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName)).filter(StorageFile::isDirectory).flatMap(f -> f.getSubFileModule().list().stream()).toList();
+            files = files.stream().filter(f -> f.getName().equalsIgnoreCase(parentName))
+                .filter(StorageFile::isDirectory)
+                .flatMap(f -> emptyIfException(() -> f.getSubFileModule().list().stream())).collect(Collectors.toList());
         }
         return files;
     }
@@ -111,7 +136,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
             .flatMap(m -> m.getConnections().stream())
             .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
             .filter(c -> c.getResource().isValidResource())
-            .toList();
+            .collect(Collectors.toList());
     }
 
     @Nullable
@@ -127,7 +152,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
     }
 
     @RequiredArgsConstructor
-    public static class MyInsertHandler implements InsertHandler<LookupElement> {
+    private static class MyInsertHandler implements InsertHandler<LookupElement> {
         private final boolean popup;
 
         @Override
@@ -135,6 +160,21 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
             if (popup) {
                 AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor());
             }
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class ConnectStorageAccountInsertHandler implements InsertHandler<LookupElement> {
+        private final Resource<StorageAccount> account;
+
+        @Override
+        public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement item) {
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
+            final Module module = ModuleUtil.findModuleForFile(context.getFile());
+            Optional.ofNullable(ModuleUtil.findModuleForFile(context.getFile()))
+                .map(AzureModule::from)
+                .ifPresent(m -> m.connect(account,
+                    (c) -> AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor())));
         }
     }
 
@@ -168,6 +208,14 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
                     });
                 }
             }
+        }
+    }
+
+    private static <T> Stream<T> emptyIfException(Supplier<Stream<T>> func) {
+        try {
+            return func.get();
+        } catch (final Throwable e) {
+            return Stream.empty();
         }
     }
 }

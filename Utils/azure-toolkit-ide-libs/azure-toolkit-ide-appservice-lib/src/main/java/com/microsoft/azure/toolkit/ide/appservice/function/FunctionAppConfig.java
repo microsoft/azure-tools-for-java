@@ -12,9 +12,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
-import com.microsoft.azure.toolkit.lib.appservice.model.JavaVersion;
-import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
-import com.microsoft.azure.toolkit.lib.appservice.model.PricingTier;
+import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -51,6 +49,8 @@ public class FunctionAppConfig extends AppServiceConfig {
     public static final Runtime DEFAULT_RUNTIME = Runtime.FUNCTION_WINDOWS_JAVA17;
     @Builder.Default
     protected Runtime runtime = DEFAULT_RUNTIME;
+    @Builder.Default
+    protected FlexConsumptionConfiguration flexConsumptionConfiguration = FlexConsumptionConfiguration.DEFAULT;
 
     public static FunctionAppConfig getFunctionAppDefaultConfig() {
         return getFunctionAppDefaultConfig(StringUtils.EMPTY);

@@ -4,6 +4,7 @@
     <depends>org.jetbrains.plugins.yaml</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionReferenceContributor"/>
         <runConfigurationExtension implementation="com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvRunConfigurationExtension"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.JavaResourceConnectionAnnotator"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionAnnotator"/>
@@ -15,7 +16,8 @@
         <completion.confidence language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationCompletionConfidence" order="before javaSkipAutopopupInStrings" id="azFunctionAnnotation" />
         <completion.contributor language="Properties" id="azPropertiesQuickCompletion" order="before azPropertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesQuickCompletionContributor"/>
         <completion.contributor language="Properties" id="azPropertiesCompletion" order="before propertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesCompletionContributor"/>
-        <completion.contributor language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.ResourceConnectionCompletionContributor"/>
+        <completion.contributor language="JAVA" id="azFunctionConnectionCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionContributor"/>
+        <completion.contributor language="JAVA" id="azFunctionConnectionQuickCompletion" order="before azFunctionConnectionCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionQuickCompletionContributor"/>
         <completion.contributor language="yaml" id="azYamlQuickCompletion" order="first, before azYamlCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlCompletionContributor"/>
         <completion.contributor language="yaml" id="azYamlCompletion" order="first, before springBootYamlToken" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlQuickCompletionContributor"/>
         <!--        <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.connector.spring.properties.SpringPropertiesLineMarkerProvider"/>-->
@@ -27,11 +29,6 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <connectionProvider implementation="com.microsoft.azure.toolkit.intellij.connector.JavaConnection$JavaConnectionProvider"/>
     </extensions>
-
-    <extensionPoints>
-        <extensionPoint name="completionMetadataProvider"
-                        interface="com.microsoft.azure.toolkit.intellij.connector.code.CompletionMetadataProvider"/>
-    </extensionPoints>
 
     <projectListeners>
         <listener class="com.microsoft.azure.toolkit.intellij.connector.dotazure.BeforeRunTaskAdder"

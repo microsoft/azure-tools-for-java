@@ -41,7 +41,7 @@ public class YamlQuickCompletionContributor extends CompletionContributor implem
                         AzureTelemeter.info("connector.not_signed_in.yaml_value_code_completion", ImmutableMap.of("key", key));
                         result.addElement(LookupElements.buildSignInLookupElement());
                     } else {
-                        result.addElement(LookupElements.buildConnectLookupElement(definitions.get(0), YamlUtils::insertYamlConnection));
+                        result.addElement(LookupElements.buildConnectLookupElement(definitions.get(0), (c, ctx) -> YamlUtils.insertYamlConnection(c, ctx, key)));
                     }
                 }
             }

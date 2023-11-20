@@ -11,12 +11,10 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
-import com.intellij.openapi.fileEditor.FileDocumentManagerListener;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.fileEditor.impl.LoadTextUtil;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolderBase;
@@ -75,6 +73,13 @@ public class VirtualFileActions {
     @AzureOperation(name = "boundary/common.open_file_in_editor.file", params = {"file.getName()"})
     public static void openFileInEditor(VirtualFile file, final Function<? super String, Boolean> onSave, Runnable onClose, FileEditorManager manager) {
         final Project project = manager.getProject();
+        final FileType type = FileTypeManager.getInstance().getKnownFileTypeOrAssociate(file, project);
+        if (type == null) {
+            return;
+        } else if (type.isBinary()) {
+            AzureMessager.getMessager().alert("Binary file is not supported to open in editor.");
+            return;
+        }
         final FileEditor[] editors = manager.openFile(file, true, true);
         if (editors.length == 0) {
             throw new AzureToolkitRuntimeException(String.format("Failed to open file %s in editor. Try downloading it first and open it manually.", file.getName()));

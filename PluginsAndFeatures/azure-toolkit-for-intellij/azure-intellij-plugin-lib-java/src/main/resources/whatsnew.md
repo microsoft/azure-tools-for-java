@@ -1,5 +1,16 @@
-<!-- Version: 3.80.0 -->
+<!-- Version: 3.82.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.82.0
+### Added
+- Code assistance of Azure resources for Spring and Azure Functions.       
+  <img alt="spring cloud code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.springcodeassistance.gif" width="1000"/>    
+  <img alt="function code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.functioncodeassistance.gif" width="1000"/>   
+- Azure Functions flex consumption tier support.      
+
+### Fixed
+- [#7907](https://github.com/microsoft/azure-tools-for-java/issues/7907): Uncaught Exception Operator called default onErrorDropped java.lang.InterruptedException.
+- other known issues.
 
 ## 3.81.1
 ### Fixed

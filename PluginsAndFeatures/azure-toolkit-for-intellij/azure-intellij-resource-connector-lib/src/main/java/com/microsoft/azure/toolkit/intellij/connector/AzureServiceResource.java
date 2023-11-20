@@ -25,6 +25,7 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -54,6 +55,7 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
         this.definition = definition;
     }
 
+    @Nullable
     public T getData() {
         return this.definition.getResource(this.id.id());
     }
@@ -134,6 +136,7 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
             return new AzureServiceResource<>(dataId, this);
         }
 
+        @Nullable
         public abstract T getResource(String dataId);
 
         @Override

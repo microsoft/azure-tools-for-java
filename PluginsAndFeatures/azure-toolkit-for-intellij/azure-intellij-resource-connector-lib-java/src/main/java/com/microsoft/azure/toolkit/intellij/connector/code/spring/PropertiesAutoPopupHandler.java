@@ -10,6 +10,7 @@ import com.intellij.codeInsight.editorActions.TypedHandlerDelegate;
 import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -19,7 +20,7 @@ public class PropertiesAutoPopupHandler extends TypedHandlerDelegate {
 
     @Override
     public @NotNull Result checkAutoPopup(char charTyped, @NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
-        if (charTyped != '=' || !(file instanceof PropertiesFileImpl)) {
+        if (DumbService.isDumb(project) || charTyped != '=' || !(file instanceof PropertiesFileImpl)) {
             return Result.CONTINUE;
         }
         final PsiElement eqElement = file.findElementAt(editor.getCaretModel().getOffset());

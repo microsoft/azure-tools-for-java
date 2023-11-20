@@ -19,7 +19,6 @@ import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.LookupElements;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -28,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
@@ -55,7 +53,7 @@ public class StringLiteralPreCompletionContributor extends CompletionContributor
                     if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                         AzureTelemeter.info("connector.not_signed_in.storage_string_code_completion");
                         result.addElement(LookupElements.buildSignInLookupElement());
-                    } else if (!hasValidConnections(module)) {
+                    } else if (AzureModule.from(module).getConnections(StorageAccountResourceDefinition.INSTANCE).stream().noneMatch(Connection::isValidConnection)) {
                         AzureTelemeter.info("connector.signed_in_no_connections.storage_string_code_completion");
                         result.addElement(LookupElements.buildConnectLookupElement(StorageAccountResourceDefinition.INSTANCE, (definition, ctx) -> {
                             if (Objects.nonNull(definition)) {
@@ -63,17 +61,8 @@ public class StringLiteralPreCompletionContributor extends CompletionContributor
                             }
                         }));
                     }
-                    result.stopHere();
                 }
             }
         });
-    }
-
-    private static boolean hasValidConnections(Module module) {
-        return Optional.of(module).map(AzureModule::from)
-            .map(AzureModule::getDefaultProfile).map(Profile::getConnectionManager).stream()
-            .flatMap(m -> m.getConnections().stream())
-            .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
-            .anyMatch(Connection::isValidConnection);
     }
 }

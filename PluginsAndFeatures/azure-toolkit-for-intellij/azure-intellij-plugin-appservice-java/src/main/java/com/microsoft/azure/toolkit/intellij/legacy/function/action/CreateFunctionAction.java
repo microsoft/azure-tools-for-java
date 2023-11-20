@@ -90,7 +90,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                 final String newName = packageName.replace('.', '/');
                 operation.trackProperty(TelemetryConstants.TRIGGER_TYPE, triggerType);
 
-                final String functionClassContent = bindingTemplate.generateContent(parameters);
+                final String functionClassContent = bindingTemplate.generateContent(parameters).replaceAll("\\r", "");
                 if (StringUtils.isNotEmpty(functionClassContent)) {
                     AzureTaskManager.getInstance().write(() -> {
                         final CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(

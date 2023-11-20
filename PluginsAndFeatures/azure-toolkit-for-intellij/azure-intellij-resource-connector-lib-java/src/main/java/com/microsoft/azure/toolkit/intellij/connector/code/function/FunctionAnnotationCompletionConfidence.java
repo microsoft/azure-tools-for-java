@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionProvider.FUNCTION_ANNOTATION_CONNECTION_PATTERN;
+import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionContributor.FUNCTION_ANNOTATION_CONNECTION_PATTERN;
 
 public class FunctionAnnotationCompletionConfidence extends CompletionConfidence {
     public static Set<ElementPattern> FUNCTION_CODE_COMPLETION_PATTERN_SET = new HashSet<>();

@@ -9,7 +9,6 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiElement;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
@@ -43,6 +42,7 @@ public class LookupElements {
             .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE.getIconPath()))
             .withPresentableText("Sign in to Azure to select resources...")
             .withTypeText("Action")
+            .withCaseSensitivity(false)
             .withInsertHandler(new SignInInsertHandler());
     }
 
@@ -51,11 +51,7 @@ public class LookupElements {
         @ExceptionNotification
         @AzureOperation(name = "user/connector.sign_in_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                final int end = context.getEditor().getCaretModel().getOffset();
-                context.getDocument().deleteString(end - SIGN_IN_TO_AZURE.length(), end);
-            }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                 AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle((a) ->
                     AzureTaskManager.getInstance().runLater(() ->
@@ -69,6 +65,7 @@ public class LookupElements {
             .withIcon(IntelliJAzureIcons.getIcon(Optional.ofNullable(definition).map(ResourceDefinition::getIcon).orElse(AzureIcons.Common.AZURE.getIconPath())))
             .withPresentableText(String.format("Connect %s...", Optional.ofNullable(definition).map(ResourceDefinition::getTitle).orElse("Azure resource")))
             .withTypeText("Action")
+            .withCaseSensitivity(false)
             .withInsertHandler(new ConnectInsertHandler(definition, onResult));
     }
 
@@ -82,11 +79,8 @@ public class LookupElements {
         @ExceptionNotification
         @AzureOperation(name = "user/connector.create_connection_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                final int end = context.getEditor().getCaretModel().getOffset();
-                context.getDocument().deleteString(end - CONNECT_AZURE_RESOURCE.length(), end);
-            }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
+            context.commitDocument();
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
             AzureTaskManager.getInstance().write(() -> Optional.ofNullable(module).map(AzureModule::from)

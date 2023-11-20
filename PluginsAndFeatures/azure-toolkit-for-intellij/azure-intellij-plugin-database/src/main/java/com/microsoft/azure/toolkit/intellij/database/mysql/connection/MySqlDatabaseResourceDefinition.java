@@ -21,6 +21,8 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefinition<MySqlDatabase> {
     public static final MySqlDatabaseResourceDefinition INSTANCE = new MySqlDatabaseResourceDefinition();
@@ -38,8 +40,14 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
     public List<Resource<MySqlDatabase>> getResources(Project project) {
         return Azure.az(AzureMySql.class).list().stream()
             .flatMap(m -> m.servers().list().stream())
-            .flatMap(s -> s.databases().list().stream())
-            .map(this::define).toList();
+            .flatMap(s -> {
+                try {
+                    return s.databases().list().stream();
+                } catch (final Throwable e) {
+                    return Stream.empty();
+                }
+            })
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override

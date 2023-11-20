@@ -14,12 +14,14 @@ import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraKeyspace;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<CassandraKeyspace> implements SpringSupported<CassandraKeyspace> {
     public static final CassandraCosmosDBAccountResourceDefinition INSTANCE = new CassandraCosmosDBAccountResourceDefinition();
@@ -38,8 +40,14 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
         return Azure.az(AzureCosmosService.class).list().stream()
             .flatMap(m -> m.getCosmosDBAccountModule().list().stream())
             .filter(a -> a instanceof CassandraCosmosDBAccount)
-            .flatMap(a -> ((CassandraCosmosDBAccount) a).keySpaces().list().stream())
-            .map(this::define).toList();
+            .flatMap(s -> {
+                try {
+                    return ((CassandraCosmosDBAccount) s).keySpaces().list().stream();
+                } catch (final Throwable e) {
+                    return Stream.empty();
+                }
+            })
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override
@@ -66,7 +74,7 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
     }
 
     @Override
-    public List<Pair<String, String>> getSpringProperties() {
+    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
         properties.add(Pair.of("spring.data.cassandra.contact-points", String.format("${%s_CONTACT_POINT}", Connection.ENV_PREFIX)));
         properties.add(Pair.of("spring.data.cassandra.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));

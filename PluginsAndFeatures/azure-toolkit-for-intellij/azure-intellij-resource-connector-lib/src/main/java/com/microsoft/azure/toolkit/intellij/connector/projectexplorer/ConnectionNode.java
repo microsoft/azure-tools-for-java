@@ -9,6 +9,7 @@ import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -36,6 +37,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,7 +85,7 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
             children.add(new ActionNode<>(this.getProject(), ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
         }
         if (connection.getResource() instanceof AzureServiceResource) {
-            children.add(createResourceNode(connection));
+            Optional.ofNullable(createResourceNode(connection)).ifPresent(children::add);
         }
         final Profile profile = connection.getProfile();
         final Boolean envFileExists = Optional.ofNullable(profile).map(Profile::getDotEnvFile).map(VirtualFile::exists).orElse(false);
@@ -93,6 +95,7 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
         return children;
     }
 
+    @Nullable
     private AbstractAzureFacetNode<?> createResourceNode(Connection<?, ?> connection) {
         try {
             final Object resource = connection.getResource().getData();
@@ -103,6 +106,10 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
             final Node<?> node = AzureExplorer.manager.createNode(resource, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
             return new ResourceNode(this.getProject(), node, this);
         } catch (final Throwable e) {
+            final Throwable cause = ExceptionUtils.getRootCause(e);
+            if(cause instanceof ProcessCanceledException || cause instanceof InterruptedException) {
+                return null;
+            }
             log.warn(e.getMessage(), e);
             return toExceptionNode(e, this.getProject());
         }

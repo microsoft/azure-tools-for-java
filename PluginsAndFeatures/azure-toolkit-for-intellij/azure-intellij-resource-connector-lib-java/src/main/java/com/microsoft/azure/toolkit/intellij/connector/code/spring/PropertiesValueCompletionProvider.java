@@ -32,7 +32,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +39,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PropertiesValueCompletionProvider extends CompletionProvider<CompletionParameters> {
     @Override
@@ -78,18 +79,19 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         return definitions.stream().flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream().map(r -> LookupElementBuilder.create(r, r.getName())
             .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(r.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath())))
             .bold()
+            .withCaseSensitivity(false)
             .withLookupStrings(Arrays.asList(r.getName(), ((AzResource) r.getData()).getResourceGroupName()))
             .withInsertHandler(new PropertyValueInsertHandler(r))
             .withTailText(" " + ((AzResource) r.getData()).getResourceTypeName())
-            .withTypeText(d.getSpringPropertyTypes().get(key)))).toList();
+            .withTypeText(d.getSpringPropertyTypes().get(key)))).collect(Collectors.toList());
     }
 
     public static List<? extends SpringSupported<?>> getSupportedDefinitions(String key) {
         final List<ResourceDefinition<?>> definitions = ResourceManager.getDefinitions(ResourceDefinition.RESOURCE).stream()
-            .filter(d -> d instanceof SpringSupported<?>).toList();
+            .filter(d -> d instanceof SpringSupported<?>).collect(Collectors.toList());
         return definitions.stream().map(d -> (SpringSupported<?>) d)
-            .filter(d -> d.getSpringProperties().stream().anyMatch(p -> p.getKey().equals(key)))
-            .toList();
+            .filter(d -> d.getSpringProperties(key).stream().anyMatch(p -> p.getKey().equals(key)))
+            .collect(Collectors.toList());
     }
 
     @RequiredArgsConstructor
@@ -102,35 +104,33 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         @ExceptionNotification
         @AzureOperation(name = "user/connector.select_resource_completion_item_in_properties")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            if (Objects.nonNull(element)) {
-                context.getDocument().deleteString(element.getTextOffset(), element.getTextOffset() + element.getTextLength());
+            final Optional<String> optKey = Optional.ofNullable(context.getFile().findElementAt(context.getStartOffset()))
+                .map(PsiElement::getParent).map(PsiElement::getFirstChild).map(PsiElement::getText).map(String::trim);;
+            if(optKey.isEmpty()) {
+                return;
             }
+            context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
             final Project project = context.getProject();
             final Module module = ModuleUtil.findModuleForFile(context.getFile().getVirtualFile(), project);
-            AzureTaskManager.getInstance().write(() -> Optional.ofNullable(module).map(AzureModule::from)
+            Optional.ofNullable(module).map(AzureModule::from)
                 .map(AzureModule::initializeWithDefaultProfileIfNot).map(Profile::getConnectionManager)
                 .ifPresent(connectionManager -> connectionManager
                     .getConnectionsByConsumerId(module.getName()).stream()
                     .filter(c -> Objects.equals(resource, c.getResource())).findAny()
-                    .ifPresentOrElse(c -> insert(c, context),
-                        () -> Utils.createAndInsert(module, resource, context, connectionManager,
-                            PropertyValueInsertHandler::insert, PropertyValueInsertHandler::cancel))));
-        }
-
-        @AzureOperation(name = "user/connector.cancel_creating_connection_in_properties")
-        private static void cancel(@Nonnull InsertionContext context) {
+                    .ifPresentOrElse(c -> insert(c, context, optKey.get()),
+                        () -> connectionManager.getProfile().getModule().connect(resource, c -> insert(c, context, optKey.get()))));
         }
 
         @AzureOperation(name = "user/connector.insert_value_in_properties")
-        public static void insert(Connection<?, ?> c, @Nonnull InsertionContext context) {
-            final PsiElement element = context.getFile().findElementAt(context.getStartOffset());
-            final List<Pair<String, String>> properties = SpringSupported.getProperties(c);
-            if (properties.size() < 1 || Objects.isNull(element)) {
+        public static void insert(@Nullable Connection<?, ?> c, @Nonnull InsertionContext context, String key) {
+            if (Objects.isNull(c)) {
                 return;
             }
-            final String k0 = element.getParent().getFirstChild().getText().trim();
-            properties.stream().filter(p -> p.getKey().equals(k0)).findAny().ifPresent(p -> {
+            final List<Pair<String, String>> properties = SpringSupported.getProperties(c, key);
+            if (properties.size() < 1) {
+                return;
+            }
+            properties.stream().filter(p -> p.getKey().equals(key)).findAny().ifPresent(p -> {
                 properties.remove(p);
                 properties.add(0, p);
             });

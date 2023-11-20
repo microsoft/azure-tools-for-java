@@ -142,7 +142,7 @@ public class DotEnvBeforeRunTaskProvider extends BeforeRunTaskProvider<DotEnvBef
                     .map(Profile::getConnections)
                     .stream().flatMap(List::stream)
                     .filter(c -> !c.isValidConnection())
-                    .map(c -> ResourceConnectionActionsContributor.fixResourceConnection(c, project))
+                    .map(c -> ResourceConnectionActionsContributor.fixResourceConnection(c, () -> project))
                     .filter(Objects::nonNull)
                     .forEach(connection -> connection.getEnvironmentVariables(project)
                             .forEach((key, value) -> result.add(Pair.of(key, value))));

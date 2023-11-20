@@ -8,6 +8,8 @@ package com.microsoft.azure.toolkit.intellij.connector.code;
 import com.intellij.codeInsight.intention.choice.ChoiceVariantIntentionAction;
 import com.intellij.codeInspection.util.IntentionFamilyName;
 import com.intellij.codeInspection.util.IntentionName;
+import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -16,6 +18,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.SmartPsiElementPointer;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,6 +50,7 @@ public class ChangeEnvironmentVariableFix extends ChoiceVariantIntentionAction {
     }
 
     @Override
+    @AzureOperation("user/connector.change_to_existing_connection_quick_fix")
     public void applyFix(@Nonnull Project project, PsiFile file, @Nullable Editor editor) {
         if (Objects.isNull(editor)) {
             return;
@@ -55,7 +59,9 @@ public class ChangeEnvironmentVariableFix extends ChoiceVariantIntentionAction {
         final PsiElement element = pointer.getElement();
         final TextRange textRange = element.getTextRange();
         final String newValue = StringUtils.isEmpty(origin) ? String.format("\"%s\"", value) : StringUtils.replace(element.getText(), origin, value);
-        document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), newValue);
-        PsiDocumentManager.getInstance(project).commitDocument(document);
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            document.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), newValue);
+            PsiDocumentManager.getInstance(project).commitDocument(document);
+        });
     }
 }

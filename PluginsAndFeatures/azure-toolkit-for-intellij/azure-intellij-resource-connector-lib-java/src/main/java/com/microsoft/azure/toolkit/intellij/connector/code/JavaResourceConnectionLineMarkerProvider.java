@@ -11,7 +11,6 @@ import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -25,7 +24,7 @@ public class JavaResourceConnectionLineMarkerProvider extends AbstractResourceCo
     }
 
     @Override
-    protected Connection<? extends AzResource, ?> getConnectionForPsiElement(@Nonnull PsiElement element) {
+    protected Connection<?, ?> getConnectionForPsiElement(@Nonnull PsiElement element) {
         final String value = StringUtils.strip(element.getText(), "\"");
         final Module module = ModuleUtil.findModuleForPsiElement(element);
         return Utils.getConnectionWithEnvironmentVariable(module, value);

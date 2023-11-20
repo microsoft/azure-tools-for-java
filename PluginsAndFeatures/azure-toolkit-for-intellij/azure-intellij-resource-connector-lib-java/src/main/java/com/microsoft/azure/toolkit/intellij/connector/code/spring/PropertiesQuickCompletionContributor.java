@@ -39,7 +39,7 @@ public class PropertiesQuickCompletionContributor extends CompletionContributor 
                         AzureTelemeter.info("connector.not_signed_in.properties_value_code_completion", ImmutableMap.of("key", key));
                         result.addElement(LookupElements.buildSignInLookupElement());
                     } else {
-                        result.addElement(LookupElements.buildConnectLookupElement(definitions.get(0), PropertiesValueCompletionProvider.PropertyValueInsertHandler::insert));
+                        result.addElement(LookupElements.buildConnectLookupElement(definitions.get(0), (c, i) -> PropertiesValueCompletionProvider.PropertyValueInsertHandler.insert(c, i, key)));
                     }
                 }
             }

@@ -24,9 +24,8 @@ public class EditorUtils {
             final CaretModel caretModel = editor.getCaretModel();
             final String text = editor.getDocument().getText();
             final int index = text.indexOf(targetContent);
-            final int lineNumber = editor.getDocument().getLineNumber(index);
             if (index >= 0) {
-                 caretModel.moveToOffset(index);
+                caretModel.moveToOffset(index);
             }
             // caretModel.getCurrentCaret().setSelection(index, index + targetContent.length());
         }

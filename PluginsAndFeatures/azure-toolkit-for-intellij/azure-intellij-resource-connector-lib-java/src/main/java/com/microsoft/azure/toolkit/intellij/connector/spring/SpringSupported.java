@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public interface SpringSupported<T> extends ResourceDefinition<T> {
-    static List<Pair<String, String>> getProperties(Connection<?, ?> c) {
+    static List<Pair<String, String>> getProperties(Connection<?, ?> c, final String propKey) {
         final ResourceDefinition<?> rd = c.getResource().getDefinition();
         if (rd instanceof SpringSupported) {
-            return ((SpringSupported<?>) rd).getSpringProperties().stream()
+            return ((SpringSupported<?>) rd).getSpringProperties(propKey).stream()
                 .map(p -> Pair.of(p.getKey(), p.getValue().replaceAll(Connection.ENV_PREFIX, c.getEnvPrefix())))
                 .collect(Collectors.toList());
         }
@@ -33,7 +33,11 @@ public interface SpringSupported<T> extends ResourceDefinition<T> {
         return Collections.emptyMap();
     }
 
-    List<Pair<String, String>> getSpringProperties();
+    List<Pair<String, String>> getSpringProperties(String key);
+
+    default List<Pair<String, String>> getSpringProperties() {
+        return getSpringProperties(null);
+    }
 
     /**
      * get the binding fields of configuration properties.

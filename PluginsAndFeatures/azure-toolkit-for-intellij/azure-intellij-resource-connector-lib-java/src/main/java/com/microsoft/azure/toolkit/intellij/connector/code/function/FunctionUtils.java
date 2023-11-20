@@ -24,8 +24,13 @@ public class FunctionUtils {
 
     @Nullable
     public static String getConnectionValueFromAnnotation(@Nonnull final PsiAnnotation annotation) {
-        final PsiAnnotationMemberValue connectionValue = Optional.ofNullable(annotation.findAttributeValue("connection"))
-                .orElseGet(() -> annotation.findAttributeValue("value"));
+        return StringUtils.firstNonBlank(getPropertyValueFromAnnotation(annotation, "connection"),
+                getPropertyValueFromAnnotation(annotation, "value"));
+    }
+
+    @Nullable
+    public static String getPropertyValueFromAnnotation(@Nonnull final PsiAnnotation annotation, @Nonnull final String property) {
+        final PsiAnnotationMemberValue connectionValue = annotation.findAttributeValue(property);
         return Objects.isNull(connectionValue) ? null : connectionValue.getText().replace("\"", "");
     }
 

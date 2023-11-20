@@ -8,8 +8,10 @@ package com.microsoft.azure.toolkit.intellij.connector.code.function;
 import com.intellij.codeInsight.AutoPopupController;
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiNameValuePair;
@@ -21,11 +23,15 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionProvider.CONNECTION_NAME_VALUE;
+import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionContributor.CONNECTION_NAME_VALUE;
+import static com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionConnectionCompletionContributor.STORAGE_ACCOUNT;
 
 public class FunctionAnnotationTypeHandler extends TypedHandlerDelegate {
 
-    public static Set<ElementPattern> FUNCTION_ANNOTATION_KEY_PAIR_PATTERN_SET = new HashSet<>();
+    public static final Set<ElementPattern> FUNCTION_ANNOTATION_KEY_PAIR_PATTERN_SET = new HashSet<>();
+    public static final ElementPattern STORAGE_ACCOUNT_VALUE_PATTERN =
+            psiElement().withSuperParent(2, PsiJavaPatterns.psiAnnotation().qName(STORAGE_ACCOUNT));
 
     static {
         FUNCTION_ANNOTATION_KEY_PAIR_PATTERN_SET.add(CONNECTION_NAME_VALUE);
@@ -37,16 +43,17 @@ public class FunctionAnnotationTypeHandler extends TypedHandlerDelegate {
 
     @Override
     public @Nonnull Result checkAutoPopup(char charTyped, @Nonnull Project project, @Nonnull Editor editor, @Nonnull PsiFile file) {
-        if (!(file instanceof PsiJavaFileImpl)) {
+        if (DumbService.isDumb(project) || !(file instanceof PsiJavaFileImpl)) {
             return Result.CONTINUE;
         }
         final PsiElement ele = file.findElementAt(editor.getCaretModel().getOffset());
         if (Objects.isNull(ele)) {
             return Result.CONTINUE;
         }
-        if (charTyped == '=' || charTyped == '"') {
+        if (charTyped == '"') {
             final PsiNameValuePair nameValuePair = getPrevNameValuePair(ele);
-            if (Objects.nonNull(nameValuePair) && FUNCTION_ANNOTATION_KEY_PAIR_PATTERN_SET.stream().anyMatch(pattern -> pattern.accepts(nameValuePair))) {
+            if (STORAGE_ACCOUNT_VALUE_PATTERN.accepts(ele)
+                    || (Objects.nonNull(nameValuePair) && FUNCTION_ANNOTATION_KEY_PAIR_PATTERN_SET.stream().anyMatch(pattern -> pattern.accepts(nameValuePair)))) {
                 AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
                 return Result.STOP;
             }

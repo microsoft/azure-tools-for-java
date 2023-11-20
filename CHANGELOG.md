@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.82.0](#3820)
   - [3.81.0](#3810)
   - [3.80.0](#3800)
   - [3.79.1](#3791)
@@ -102,6 +103,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.82.0
+### Added
+- Code assistance of Azure resources for Spring and Azure Functions.
+- Azure Functions flex consumption tier support.
+
+### Fixed
+- [#7907](https://github.com/microsoft/azure-tools-for-java/issues/7907): Uncaught Exception Operator called default onErrorDropped java.lang.InterruptedException.
+- other known issues.
 
 ## 3.81.1
 ### Fixed

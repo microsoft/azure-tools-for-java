@@ -11,6 +11,7 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.popup.list.GroupedItemsListRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
+import com.microsoft.azure.toolkit.lib.appservice.model.WebContainer;
 import com.microsoft.azure.toolkit.lib.legacy.webapp.WebAppService;
 
 import javax.annotation.Nonnull;
@@ -70,7 +71,11 @@ public class RuntimeComboBox extends AzureComboBox<Runtime> {
     }
 
     private String getSeparatorCaption(Runtime item) {
-        return item.isDocker() ? "Docker" : String.format("%s & %s", item.getOperatingSystem().toString(), item.getJavaVersion().toString());
+        if (item.isDocker()) {
+            return "Docker";
+        }
+        return Objects.equals(item.getWebContainer(), WebContainer.JAVA_OFF) ? item.getOperatingSystem().toString() :
+                String.format("%s & %s", item.getOperatingSystem().toString(), item.getJavaVersion().toString());
     }
 
     class RuntimeItemDescriptor extends ListItemDescriptorAdapter<Runtime> {

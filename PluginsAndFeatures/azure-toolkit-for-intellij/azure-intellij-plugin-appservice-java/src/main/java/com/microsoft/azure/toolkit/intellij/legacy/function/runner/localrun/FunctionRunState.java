@@ -71,13 +71,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -254,18 +248,17 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
                 processHandler.println(inputLine, ProcessOutputTypes.STDERR);
             }
         });
-        int result;
+        // Pending for function cli
         try {
-            // Pending for function cli
-            result = process.waitFor();
-        } catch (final InterruptedException ie) {
-            // swallow interrupt exception, which is caused by user click the stop button
-            result = 0;
+            final int result = process.waitFor();
+            if (result != 0) {
+                throw new AzureToolkitRuntimeException(error[0]);
+            }
+            return result;
+        } catch (final InterruptedException i) {
+            // swallow interrupted exception which is caused by user stop
+            return 0;
         }
-        if (result != 0) {
-            throw new AzureToolkitRuntimeException(error[0]);
-        }
-        return result;
     }
 
     private boolean isFuncInitialized(String input) {
@@ -354,21 +347,26 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             final String error = String.format("failed prepare staging folder[%s]", folder);
             throw new AzureToolkitRuntimeException(error, e);
         }
-        if (installProcess != null) {
-            readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
-                if (processHandler.isProcessRunning()) {
-                    processHandler.println(inputLine, ProcessOutputTypes.STDERR);
-                }
-            });
-            readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
-                if (processHandler.isProcessRunning()) {
-                    processHandler.setText(inputLine);
-                }
-            });
+        if (Objects.isNull(installProcess)) {
+            return;
+        }
+        readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
+            if (processHandler.isProcessRunning()) {
+                processHandler.println(inputLine, ProcessOutputTypes.STDERR);
+            }
+        });
+        readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
+            if (processHandler.isProcessRunning()) {
+                processHandler.setText(inputLine);
+            }
+        });
+        try {
             final int exitCode = installProcess.waitFor();
             if (exitCode != 0) {
                 throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
             }
+        } catch (final InterruptedException e) {
+            // swallow interrupted exception which is caused by user cancel
         }
     }
 

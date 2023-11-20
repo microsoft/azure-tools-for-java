@@ -33,8 +33,12 @@ public class AzureResourceIconProvider<T extends AzResource> implements AzureIco
         return this;
     }
 
+    @Nullable
     @Override
-    public AzureIcon getIcon(T resource) {
+    public AzureIcon getIcon(@Nullable T resource) {
+        if (Objects.isNull(resource)) {
+            return null;
+        }
         final AzResource.FormalStatus formalStatus = resource.getFormalStatus();
         if (formalStatus.isWaiting()) {
             return AzureIcons.Common.REFRESH_ICON;

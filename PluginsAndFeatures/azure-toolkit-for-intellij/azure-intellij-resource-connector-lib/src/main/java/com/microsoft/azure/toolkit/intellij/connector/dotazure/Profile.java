@@ -193,9 +193,12 @@ public class Profile {
         });
     }
 
+    public boolean isEnvFileValid() {
+        return Optional.ofNullable(dotEnvFile).map(VirtualFile::isValid).orElse(false);
+    }
+
     @Nonnull
     @SneakyThrows(IOException.class)
-    @AzureOperation(value = "boundary/connector.get_generated_env_from_dotenv.resource", params = "connection.getResource().getName()")
     public List<Pair<String, String>> getGeneratedEnvironmentVariables(@Nonnull Connection<?, ?> connection) {
         if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
             throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
