@@ -5,15 +5,16 @@
 
 package com.microsoft.azure.toolkit.intellij.keyvaults;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
+import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.cli.AzureCliUtils;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -23,21 +24,19 @@ import com.microsoft.azure.toolkit.lib.keyvaults.CredentialVersion;
 import com.microsoft.azure.toolkit.lib.keyvaults.secret.SecretVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.apache.commons.io.filefilter.FileFileFilter;
-import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class KeyVaultCredentialActions {
@@ -46,7 +45,10 @@ public class KeyVaultCredentialActions {
 
     public static void showCredential(@Nonnull final CredentialVersion resource, @Nullable final Project project) {
         ensureAzureCli(project);
-        final String command = resource.getShowCredentialCommand();
+        final String azureCliPath = Azure.az().config().getAzureCliPath();
+        final String rawCommand = resource.getShowCredentialCommand();
+        final String command = isAzureCliConfigured() ?
+                StringUtils.replace(rawCommand, "az", azureCliPath, 1) : rawCommand;
         TerminalUtils.executeInTerminal(project, command);
     }
 
@@ -59,8 +61,11 @@ public class KeyVaultCredentialActions {
             final VirtualFile vf = FileChooser.chooseFile(fileChooserDescriptor, null, null);
             if (vf != null) {
                 final Path path = Paths.get(vf.getPath(), getFileName(resource, Paths.get(vf.getPath())));
-                final String downloadCredentialCommand = resource.getDownloadCredentialCommand(path.toString());
-                TerminalUtils.executeInTerminal(project, downloadCredentialCommand);
+                final String azureCliPath = Azure.az().config().getAzureCliPath();
+                final String rawCommand = resource.getDownloadCredentialCommand(path.toString());
+                final String command = isAzureCliConfigured() ?
+                        StringUtils.replace(rawCommand, "az", azureCliPath, 1) : rawCommand;
+                TerminalUtils.executeInTerminal(project, command);
                 final File file = path.toFile();
                 AzureTaskManager.getInstance().runOnPooledThread(() -> showNotification(project, file));
             }
@@ -68,7 +73,7 @@ public class KeyVaultCredentialActions {
     }
 
     private static String getFileName(@Nonnull final CredentialVersion resource, @Nonnull final Path path) {
-        final String extension = getFileExtensionName(resource);
+        final String extension = resource instanceof SecretVersion ? "txt" : "pem";
         try {
             final String defaultName = resource.getCredential().getName() + "_" + resource.getName();
             final Set<String> existingFiles = FileUtils.listFiles(path.toFile(), new String[]{extension}, false).stream()
@@ -85,10 +90,6 @@ public class KeyVaultCredentialActions {
         return String.format("%s.%s", UUID.randomUUID().toString(), extension);
     }
 
-    private static String getFileExtensionName(@Nonnull final CredentialVersion resource) {
-        return resource instanceof SecretVersion ? "txt" : "pem";
-    }
-
     private static void showNotification(@Nonnull final Project project, @Nonnull final File file) {
         final File result = Mono.fromCallable(() -> file)
                 .delayElement(Duration.ofSeconds(1))
@@ -102,10 +103,15 @@ public class KeyVaultCredentialActions {
     }
 
     private static void ensureAzureCli(@Nullable final Project project) {
-        boolean appropriateCliInstalled = AzureCliUtils.isAppropriateCliInstalled();
-        if (!appropriateCliInstalled) {
+        final boolean cliInstalled = AzureCliUtils.isAppropriateCliInstalled() || isAzureCliConfigured();
+        if (!cliInstalled) {
             throw new AzureToolkitRuntimeException("Please install Azure CLI first.", getAzureCliNotExistsActions(project));
         }
+    }
+
+    private static boolean isAzureCliConfigured() {
+        final String azureCliPath = Azure.az().config().getAzureCliPath();
+        return StringUtils.isNotBlank(azureCliPath) && FileUtil.exists(azureCliPath);
     }
 
     private static Action<?>[] getAzureCliNotExistsActions(@Nonnull final Project project) {

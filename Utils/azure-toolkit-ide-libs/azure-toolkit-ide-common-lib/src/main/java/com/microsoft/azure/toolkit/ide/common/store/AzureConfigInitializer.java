@@ -42,6 +42,7 @@ public class AzureConfigInitializer {
     public static final String MONITOR_TABLE_ROWS = "monitor_table_rows";
     public static final String CONSUMER_GROUP_NAME = "consumer_group_name";
     public static final String AZURITE_PATH = "azurite_path";
+    public static final String AZURE_CLI_PATH = "azure_cli_path";
     public static final String AZURITE_WORKSPACE = "azurite_workspace";
     public static final String ENABLE_LEASE_MODE = "enable_lease_mode";
 
@@ -67,6 +68,11 @@ public class AzureConfigInitializer {
         final String funcPath = ideStore.getProperty(FUNCTION, FUNCTION_CORE_TOOLS_PATH, "");
         if (StringUtils.isNotBlank(funcPath) && Files.exists(Paths.get(funcPath))) {
             config.setFunctionCoreToolsPath(funcPath);
+        }
+
+        final String cliPath = ideStore.getProperty(COMMON, AZURE_CLI_PATH, "");
+        if (StringUtils.isNotBlank(cliPath) && Files.exists(Paths.get(cliPath))) {
+            config.setAzureCliPath(cliPath);
         }
 
         final String storageExplorerPath = ideStore.getProperty(STORAGE, STORAGE_EXPLORER_PATH, "");
@@ -139,6 +145,7 @@ public class AzureConfigInitializer {
         ideStore.setProperty(FUNCTION, FUNCTION_CORE_TOOLS_PATH, config.getFunctionCoreToolsPath());
         ideStore.setProperty(STORAGE, STORAGE_EXPLORER_PATH, config.getStorageExplorerPath());
         ideStore.setProperty(COMMON, PAGE_SIZE, String.valueOf(config.getPageSize()));
+        ideStore.setProperty(COMMON, AZURE_CLI_PATH, String.valueOf(config.getAzureCliPath()));
         ideStore.setProperty(COSMOS, DOCUMENTS_LABEL_FIELDS, String.join(";", config.getDocumentsLabelFields()));
         // don't save pluginVersion, it is saved in AzurePlugin class
         ideStore.setProperty(BICEP, DOTNET_RUNTIME_PATH, config.getDotnetRuntimePath());
