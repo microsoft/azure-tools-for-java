@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.keyvault.creation.KeyVaultCreationDialog">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="11" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="549" height="347"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="7b168" class="javax.swing.JLabel" binding="lblSubscription">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Subscription:"/>
+          <toolTipText value="All resources in an Azure subscription are billed together."/>
+        </properties>
+      </component>
+      <vspacer id="68d9a">
+        <constraints>
+          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="a4ba7" class="javax.swing.JLabel" binding="lblResourceGroup">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Resource Group:"/>
+          <toolTipText value="A resource group is a collection of resources that share the same lifecycle, permissions, and policies."/>
+        </properties>
+      </component>
+      <component id="8965" class="com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox" binding="cbResourceGroup">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="283be" class="javax.swing.JLabel" binding="lblName">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Name:"/>
+          <toolTipText value="Vault name must only contain alphanumeric characters and dashes and cannot start with a number."/>
+        </properties>
+      </component>
+      <component id="7ce5e" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtName">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="ba36c" class="javax.swing.JLabel" binding="lblRegion">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Region:"/>
+        </properties>
+      </component>
+      <component id="2f46" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="selectorSubscription">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="330aa" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="selectorRegion">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="aa35e" class="javax.swing.JLabel" binding="lblSku">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Sku:"/>
+        </properties>
+      </component>
+      <component id="6fdeb" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBox" binding="cbSku" custom-create="true">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="46da9" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+            <minimum-size width="130" height="24"/>
+            <preferred-size width="130" height="24"/>
+            <maximum-size width="130" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Permission Model:"/>
+          <toolTipText value="Grant data plane access by using a Azure RBAC or Key Vault access policy "/>
+        </properties>
+      </component>
+      <component id="45b87" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Project Details"/>
+          <titleFont style="1"/>
+          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+        </properties>
+      </component>
+      <component id="2300" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Access Configuration"/>
+          <titleFont style="1"/>
+          <toolTipText value="To access a Key Vault in data plane, all callers (users or applications) must have proper authentication and authorization. Authentication establishes the identity of the caller. Authorization determines which operations the caller can execute."/>
+        </properties>
+      </component>
+      <component id="a4b12" class="com.intellij.ui.TitledSeparator">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Instace Details"/>
+          <titleFont style="1"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <component id="45be1" class="javax.swing.JRadioButton" binding="rdoRBAC">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Azure RBAC  (recommended)"/>
+        </properties>
+      </component>
+      <component id="3963a" class="javax.swing.JRadioButton" binding="rdoVaultAccess">
+        <constraints>
+          <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Vault access policy"/>
+        </properties>
+      </component>
+      <hspacer id="a5b9">
+        <constraints>
+          <grid row="8" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="6484b" class="com.intellij.ui.components.JBLabel" binding="lblPermissionDoc" custom-create="true">
+        <constraints>
+          <grid row="9" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="400" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

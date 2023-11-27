@@ -60,6 +60,11 @@ public class IntelliJReferenceBookActionContributor implements IActionsContribut
             put("Microsoft.ServiceBus/namespaces", "Service Bus");
             put("Microsoft.CognitiveServices", "OpenAI");
             put("Microsoft.CognitiveServices/accounts", "OpenAI");
+            put("Microsoft.KeyVault", "Key Vault");
+            put("Microsoft.KeyVault/vaults", "Key Vault");
+            put("Microsoft.KeyVault/vaults/keys", "Key Vault - Keys");
+            put("Microsoft.KeyVault/vaults/secrets", "Key Vault - Secrets");
+            put("Microsoft.KeyVault/vaults/certificates", "Key Vault - Certificates");
         }
     };
 

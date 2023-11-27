@@ -15,7 +15,6 @@ import com.microsoft.azure.toolkit.ide.common.dotnet.DotnetRuntimeHandler;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
-import com.microsoft.azure.toolkit.lib.common.exception.SystemException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import kotlin.Unit;
@@ -24,11 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.jetbrains.plugins.textmate.TextMateService;
 import org.jetbrains.plugins.textmate.configuration.BundleConfigBean;
 import org.jetbrains.plugins.textmate.configuration.TextMateSettings;
 import org.jetbrains.plugins.textmate.configuration.TextMateSettings.TextMateSettingsState;
+import org.jetbrains.plugins.textmate.configuration.TextMateUserBundlesSettings;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
 import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuilderServerDefinition;
 
@@ -39,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.locks.Lock;
 
 @Slf4j
 public class BicepStartupActivity implements StartupActivity, PluginStateListener {

@@ -13,8 +13,8 @@ import org.jetbrains.yaml.psi.YAMLMapping;
 
 public class YamlCompletionContributor extends CompletionContributor {
 
-    public static final ElementPattern<? extends PsiFile> APPLICATION_YAML_FILES = PlatformPatterns.psiFile(YAMLFile.class).withName(StandardPatterns.string().startsWith("application"));
-    public static final PsiJavaElementPattern.Capture<PsiElement> YAML_TEXT = PsiJavaPatterns.psiElement(YAMLTokenTypes.TEXT).inFile(APPLICATION_YAML_FILES);
+    public static final ElementPattern<? extends PsiFile> APPLICATION_YAML_FILE = PlatformPatterns.psiFile(YAMLFile.class).withName(StandardPatterns.string().startsWith("application"));
+    public static final PsiElementPattern.Capture<PsiElement> YAML_TEXT = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).inFile(APPLICATION_YAML_FILE);
 
     public YamlCompletionContributor() {
         super();

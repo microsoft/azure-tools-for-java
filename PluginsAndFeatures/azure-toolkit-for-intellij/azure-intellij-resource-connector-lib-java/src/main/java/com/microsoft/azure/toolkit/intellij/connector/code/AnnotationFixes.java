@@ -51,7 +51,7 @@ public class AnnotationFixes {
             @Override
             public @Nonnull
             @IntentionFamilyName String getFamilyName() {
-                return "Azure General fixes";
+                return "Azure general fixes";
             }
 
             @Override
@@ -96,7 +96,7 @@ public class AnnotationFixes {
             @Override
             public @Nonnull
             @IntentionFamilyName String getFamilyName() {
-                return "Azure General fixes";
+                return "Azure general fixes";
             }
 
             @Override

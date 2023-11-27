@@ -94,8 +94,8 @@ allprojects {
 
     dependencyManagement {
         imports {
-            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.39.0-SNAPSHOT'
-            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.39.0-SNAPSHOT'
+            mavenBom 'com.microsoft.azure:azure-toolkit-libs:0.39.0'
+            mavenBom 'com.microsoft.azure:azure-toolkit-ide-libs:0.39.0'
             mavenBom 'com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.0'
         }
     }
@@ -152,6 +152,7 @@ dependencies {
     implementation project(path: ':azure-intellij-plugin-bicep', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-eventhubs', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-servicebus', configuration: 'instrumentedJar')
+    implementation project(path: ':azure-intellij-plugin-keyvault', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-resource-connector-aad', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-hdinsight-lib', configuration: 'instrumentedJar')
     implementation project(path: ':azure-intellij-plugin-sqlserverbigdata', configuration: 'instrumentedJar')

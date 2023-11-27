@@ -85,6 +85,7 @@ public class AzureSettingsPanel {
     private JCheckBox chkLooseMode;
     private AzureFileInput txtAzurite;
     private AzuriteWorkspaceComboBox txtAzuriteWorkspace;
+    private AzureFileInput txtAzureCli;
 
     private AzureConfiguration originalConfig;
 
@@ -140,6 +141,9 @@ public class AzureSettingsPanel {
         if (StringUtils.isNotBlank(config.getAzuritePath())) {
             txtAzurite.setValue(config.getAzuritePath());
         }
+        if (StringUtils.isNotBlank(config.getAzureCliPath())) {
+            txtAzureCli.setValue(config.getAzureCliPath());
+        }
         allowTelemetryCheckBox.setSelected(oldTelemetryEnabled);
         enableAuthPersistence.setSelected(oldEnableAuthPersistence);
         chkLooseMode.setSelected(BooleanUtils.isTrue(config.getEnableLeaseMode()));
@@ -183,6 +187,9 @@ public class AzureSettingsPanel {
         }
         if (StringUtils.isNotBlank(txtAzurite.getValue())) {
             data.setAzuritePath(txtAzurite.getValue());
+        }
+        if (StringUtils.isNotBlank(txtAzureCli.getValue())) {
+            data.setAzureCliPath(txtAzureCli.getValue());
         }
         data.setEnableLeaseMode(chkLooseMode.isSelected());
         return data;
@@ -260,7 +267,7 @@ public class AzureSettingsPanel {
         this.originalConfig.setAzuritePath(newConfig.getAzuritePath());
         this.originalConfig.setAzuriteWorkspace(newConfig.getAzuriteWorkspace());
         this.originalConfig.setEnableLeaseMode(newConfig.getEnableLeaseMode());
-
+        this.originalConfig.setAzureCliPath(newConfig.getAzureCliPath());
         if (StringUtils.isNotBlank(newConfig.getCloud())) {
             Azure.az(AzureCloud.class).setByName(newConfig.getCloud());
         }
@@ -303,6 +310,7 @@ public class AzureSettingsPanel {
             !Objects.equals(newConfig.getDocumentsLabelFields(), originalConfig.getDocumentsLabelFields()) ||
             !Objects.equals(newConfig.getAzuritePath(), originalConfig.getAzuritePath()) ||
             !Objects.equals(newConfig.getAzuriteWorkspace(), originalConfig.getAzuriteWorkspace()) ||
+            !Objects.equals(newConfig.getAzureCliPath(), originalConfig.getAzureCliPath()) ||
             !Objects.equals(newConfig.getEnableLeaseMode(), originalConfig.getEnableLeaseMode());
     }
 
@@ -319,6 +327,9 @@ public class AzureSettingsPanel {
         this.txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Storage Explorer", null, txtStorageExplorer,
             null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
+        this.txtAzureCli = new AzureFileInput();
+        this.txtAzureCli.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Command-Line Interface (CLI)", null, txtStorageExplorer,
+                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.txtAzurite = new AzureFileInput();
         this.txtAzurite.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azurite", null, txtAzurite,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));

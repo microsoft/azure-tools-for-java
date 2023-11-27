@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.service;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.util.EnvironmentUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -65,7 +66,7 @@ public class MachineTaggingService {
 
     private static List<Path> getPathNames() {
         final FileSystem fs = FileSystems.getDefault();
-        return Arrays.stream(System.getenv("PATH").split(File.pathSeparator))
+        return Arrays.stream(EnvironmentUtil.getEnvironmentMap().get("PATH").split(File.pathSeparator))
             .filter(StringUtils::isNotBlank)
             .map(it -> {
                 try {

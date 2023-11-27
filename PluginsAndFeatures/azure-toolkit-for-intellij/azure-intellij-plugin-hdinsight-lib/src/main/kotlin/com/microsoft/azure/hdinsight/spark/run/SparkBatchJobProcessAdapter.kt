@@ -64,4 +64,8 @@ class SparkBatchJobProcessAdapter(val sparkJobProcess: SparkBatchJobRemoteProces
     override fun killProcessTree(): Boolean {
         return sparkJobProcess.killProcessTree()
     }
+
+    override fun setWindowSize(columns: Int, rows: Int) {
+
+    }
 }

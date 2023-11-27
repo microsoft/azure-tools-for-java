@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.keyvault.property.key.KeyPropertiesEditor">
+  <grid id="8b7b6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
+    <constraints>
+      <xy x="20" y="20" width="816" height="619"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <scrollpane id="4d460">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="27dc6" binding="pnlContent" layout-manager="GridLayoutManager" row-count="6" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="dbbd3" binding="propertyActionPanel" layout-manager="GridLayoutManager" row-count="1" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="d8031" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnRefresh">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Refresh"/>
+                    </properties>
+                  </component>
+                  <hspacer id="16116">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <component id="ce8e5" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="saveButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Save"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="87d76" class="com.intellij.ui.components.ActionLink" binding="resetButton">
+                    <constraints>
+                      <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Reset"/>
+                      <visible value="false"/>
+                      <visited value="false"/>
+                    </properties>
+                  </component>
+                  <component id="2877b" class="com.microsoft.azure.toolkit.intellij.common.AzureActionButton" binding="btnDownload">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Download Public Key"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <component id="5d481" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="propertiesSeparator">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Properties"/>
+                </properties>
+              </component>
+              <grid id="c04fc" binding="pnlProperties" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="56bde" class="javax.swing.JLabel" binding="lblCreated">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Created:"/>
+                    </properties>
+                  </component>
+                  <component id="ffa84" class="com.intellij.ui.components.JBLabel" binding="createdTextField">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <text value="&lt;Loading&gt;"/>
+                    </properties>
+                  </component>
+                  <component id="8ee63" class="javax.swing.JLabel" binding="lblUpdated">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Updated:"/>
+                    </properties>
+                  </component>
+                  <component id="7dfc1" class="com.intellij.ui.components.JBLabel" binding="updatedTextField">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <text value="&lt;Loading&gt;"/>
+                    </properties>
+                  </component>
+                  <component id="f1116" class="javax.swing.JLabel" binding="lblKeyIdentifier">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Key Identifier:"/>
+                    </properties>
+                  </component>
+                  <component id="5dbe9" class="com.microsoft.azure.toolkit.intellij.common.component.AzureTextFieldWithCopyButton" binding="keyIdentifierTextField">
+                    <constraints>
+                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <vspacer id="60c6d">
+                <constraints>
+                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+              <component id="67875" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="settingsSeparator">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Settings"/>
+                </properties>
+              </component>
+              <grid id="a9286" binding="pnlSettings" layout-manager="GridLayoutManager" row-count="4" column-count="7" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="false"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="124b6" class="javax.swing.JLabel" binding="lblActivationDate">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Activation Date:"/>
+                    </properties>
+                  </component>
+                  <component id="1be9a" class="com.intellij.ui.components.JBLabel" binding="activationDateTextField">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <text value="&lt;Loading&gt;"/>
+                    </properties>
+                  </component>
+                  <component id="368f0" class="javax.swing.JLabel" binding="lblExpirationDate">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Expiration Date:"/>
+                    </properties>
+                  </component>
+                  <component id="d15af" class="com.intellij.ui.components.JBLabel" binding="expirationDateTextField">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <text value="&lt;Loading&gt;"/>
+                    </properties>
+                  </component>
+                  <component id="3de6" class="javax.swing.JLabel" binding="lblTags">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Tags:"/>
+                    </properties>
+                  </component>
+                  <component id="3ebf5" class="com.intellij.ui.components.JBLabel" binding="tagsTextField">
+                    <constraints>
+                      <grid row="2" column="1" row-span="1" col-span="6" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <text value="&lt;Loading&gt;"/>
+                    </properties>
+                  </component>
+                  <component id="423d4" class="javax.swing.JLabel" binding="lblPermittedOperations">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                        <minimum-size width="144" height="24"/>
+                        <preferred-size width="144" height="24"/>
+                        <maximum-size width="144" height="24"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <font style="1"/>
+                      <text value="Permitted Operations:"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="3a9ba" class="javax.swing.JCheckBox" binding="chkEncrypt">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Encrypt"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="ac898" class="javax.swing.JCheckBox" binding="chkDecrypt">
+                    <constraints>
+                      <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Decrypt"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="68878" class="javax.swing.JCheckBox" binding="chkUnwrapKey">
+                    <constraints>
+                      <grid row="3" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Unwrap Key"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="b4209" class="javax.swing.JCheckBox" binding="chkSign">
+                    <constraints>
+                      <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Sign"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="e31c8" class="javax.swing.JCheckBox" binding="chkVerify">
+                    <constraints>
+                      <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Verify"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                  <component id="c1200" class="javax.swing.JCheckBox" binding="chkWrapKey">
+                    <constraints>
+                      <grid row="3" column="5" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="false"/>
+                      <text value="Wrap Key"/>
+                      <visible value="false"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>

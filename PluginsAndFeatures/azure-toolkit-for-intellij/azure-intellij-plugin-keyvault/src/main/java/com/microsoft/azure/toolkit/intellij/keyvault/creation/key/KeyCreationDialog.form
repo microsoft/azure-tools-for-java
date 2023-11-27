@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.keyvault.creation.key.KeyCreationDialog">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="8" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="236"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="f20a4" class="javax.swing.JLabel" binding="lblName">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="135" height="24"/>
+            <preferred-size width="135" height="24"/>
+            <maximum-size width="135" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Key Name:"/>
+          <toolTipText value="Please provide a valid key name. Key names can only contain alphanumeric characters and dashes. The value you provide may be copied globally for the purpose of running the service. The value provided should not include personally identifiable or sensitive information."/>
+        </properties>
+      </component>
+      <vspacer id="3e3d2">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="e3b8d" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtName">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="49274" class="javax.swing.JLabel" binding="lblKeyType">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="135" height="24"/>
+            <preferred-size width="135" height="24"/>
+            <maximum-size width="135" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Key Type:"/>
+          <toolTipText value="Type of key to create."/>
+        </properties>
+      </component>
+      <component id="19fb6" class="javax.swing.JRadioButton" binding="rdoRsa">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="RSA"/>
+        </properties>
+      </component>
+      <component id="b12de" class="javax.swing.JRadioButton" binding="rdoEc">
+        <constraints>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="EC"/>
+        </properties>
+      </component>
+      <hspacer id="11519">
+        <constraints>
+          <grid row="2" column="3" row-span="1" col-span="3" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="a59c1" class="javax.swing.JLabel" binding="lblRsaKeySize">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="135" height="24"/>
+            <preferred-size width="135" height="24"/>
+            <maximum-size width="135" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="RSA Key Size:"/>
+          <toolTipText value=""/>
+        </properties>
+      </component>
+      <component id="51a4f" class="javax.swing.JRadioButton" binding="rsa2048">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="2048"/>
+        </properties>
+      </component>
+      <component id="ef850" class="javax.swing.JRadioButton" binding="rsa3072">
+        <constraints>
+          <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="3072"/>
+        </properties>
+      </component>
+      <component id="471fe" class="javax.swing.JRadioButton" binding="rsa4096">
+        <constraints>
+          <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="4096"/>
+        </properties>
+      </component>
+      <hspacer id="c6510">
+        <constraints>
+          <grid row="3" column="4" row-span="1" col-span="2" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="a85e5" class="javax.swing.JLabel" binding="lblCurveName">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="135" height="24"/>
+            <preferred-size width="135" height="24"/>
+            <maximum-size width="135" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Elliptic curve name:"/>
+          <toolTipText value=""/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="15120" class="javax.swing.JRadioButton" binding="p256">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="P-256"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="db9fd" class="javax.swing.JRadioButton" binding="p384">
+        <constraints>
+          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="P-384"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="c1197" class="javax.swing.JRadioButton" binding="p521">
+        <constraints>
+          <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="P-521"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="7bbf" class="javax.swing.JRadioButton" binding="p256k">
+        <constraints>
+          <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="P-256K"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <hspacer id="461c0">
+        <constraints>
+          <grid row="4" column="5" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="c096" class="javax.swing.JLabel" binding="lblEnabled">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="135" height="24"/>
+            <preferred-size width="135" height="24"/>
+            <maximum-size width="135" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Enabled:"/>
+          <toolTipText value="Please provide a valid key name. Key names can only contain alphanumeric characters and dashes. The value you provide may be copied globally for the purpose of running the service. The value provided should not include personally identifiable or sensitive information."/>
+        </properties>
+      </component>
+      <component id="6d479" class="javax.swing.JRadioButton" binding="rdoYes">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Yes"/>
+        </properties>
+      </component>
+      <component id="1a96b" class="javax.swing.JRadioButton" binding="rdoNo">
+        <constraints>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="No"/>
+        </properties>
+      </component>
+      <component id="4abf9" class="com.intellij.ui.TitledSeparator" binding="titleInstance">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="6" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Instance Details"/>
+          <titleFont style="1"/>
+          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+        </properties>
+      </component>
+      <component id="389bb" class="com.intellij.ui.TitledSeparator" binding="titleSettings">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="6" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Settings"/>
+          <titleFont style="1"/>
+          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

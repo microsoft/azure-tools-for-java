@@ -32,9 +32,8 @@ public class BicepEditorHighlighterProvider extends TextMateEditorHighlighterPro
         try {
             final TextMateLanguageDescriptor descriptor = TextMateService.getInstance().getLanguageDescriptorByExtension("bicep");
             if (Objects.isNull(descriptor)) { // register textmate if not registered
-                if (BicepStartupActivity.registerBicepTextMateBundle()) {
-                    TextMateService.getInstance().reloadEnabledBundles();
-                }
+                BicepStartupActivity.registerBicepTextMateBundle();
+                TextMateService.getInstance().reloadEnabledBundles();
             }
             return super.getEditorHighlighter(project, fileType, virtualFile, colors);
         } catch (final ProcessCanceledException e) {

@@ -116,18 +116,20 @@ public class WebAppDeployConfigurationPanel extends JPanel implements AzureFormP
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
         btnSlotHover.setToolTipText(message("webapp.deploy.hint.deploymentSlot"));
         btnSlotHover.addFocusListener(new FocusListener() {
+            private IdeTooltipManager instance = IdeTooltipManager.getInstance();
+
             @Override
             public void focusGained(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(true);
                 final MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED,
                         System.currentTimeMillis(), 0, 10, 10, 0, false);
-                AzureTaskManager.getInstance().runLater(() -> IdeTooltipManager.getInstance().eventDispatched(phantom));
+                AzureTaskManager.getInstance().runLater(() -> instance.show(instance.getCustomTooltip(btnSlotHover), true));
             }
 
             @Override
             public void focusLost(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(false);
-                IdeTooltipManager.getInstance().dispose();
+                instance.dispose();
             }
         });
 
