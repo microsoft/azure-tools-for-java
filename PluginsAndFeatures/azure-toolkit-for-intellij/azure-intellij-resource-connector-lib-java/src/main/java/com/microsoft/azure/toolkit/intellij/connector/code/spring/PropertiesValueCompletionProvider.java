@@ -84,7 +84,7 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
                 .withLookupStrings(Arrays.asList(r.getName(), ((AzResource) r.getData()).getResourceGroupName()))
                 .withInsertHandler(new PropertyValueInsertHandler(r))
                 .withTailText(" " + ((AzResource) r.getData()).getResourceGroupName())
-                .withTypeText(((AzResource) r.getData()).getResourceTypeName()))).collect(Collectors.toList());;
+                .withTypeText(((AzResource) r.getData()).getResourceTypeName()))).collect(Collectors.toList());
     }
 
     public static List<? extends SpringSupported<?>> getSupportedDefinitions(String key) {
