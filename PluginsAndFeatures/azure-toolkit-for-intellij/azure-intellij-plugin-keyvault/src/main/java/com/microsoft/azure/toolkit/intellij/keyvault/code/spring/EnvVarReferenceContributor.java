@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
@@ -50,7 +51,7 @@ public class EnvVarReferenceContributor extends PsiReferenceContributor {
         if (EnvVarCompletionContributor.hasEnvVars(text) && hasVaults) {
             return getEnvVarRanges(element.getText()).stream()
                 .map(r -> new EnvVarReference(element, r))
-                .toList();
+                .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

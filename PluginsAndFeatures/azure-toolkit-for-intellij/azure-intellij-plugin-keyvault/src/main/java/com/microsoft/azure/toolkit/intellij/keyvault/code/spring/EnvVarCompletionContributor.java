@@ -43,6 +43,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesCompletionContributor.APPLICATION_PROPERTIES_FILE;
 import static com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlCompletionContributor.APPLICATION_YAML_FILE;
@@ -88,7 +89,7 @@ public class EnvVarCompletionContributor extends CompletionContributor {
                 return;
             }
             final List<KeyVault> vaults = AzureModule.from(module).getConnections(KeyVaultResourceDefinition.INSTANCE).stream()
-                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
+                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).collect(Collectors.toList());
             if (!vaults.isEmpty()) {
                 vaults.stream().flatMap(v -> listSecrets(v).stream())
                     .map(s -> LookupElementBuilder.create(String.format("${%s}", s.getName()))

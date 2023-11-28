@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public class KeyVaultResourceDefinition extends AzureServiceResource.Definition<KeyVault> implements SpringSupported<KeyVault> {
@@ -75,7 +76,7 @@ public class KeyVaultResourceDefinition extends AzureServiceResource.Definition<
     public List<Resource<KeyVault>> getResources(Project project) {
         return Azure.az(AzureKeyVault.class).list().stream()
             .flatMap(m -> m.getKeyVaultModule().list().stream())
-            .map(this::define).toList();
+            .map(this::define).collect(Collectors.toList());
     }
 
     @Override
