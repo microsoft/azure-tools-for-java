@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.AzureFunctions;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -43,11 +43,11 @@ public class TriggerFunctionTask implements Task {
         final String trigger = (String) context.getParameter(TRIGGER);
         final FunctionApp functionApp = Azure.az(AzureFunctions.class).functionApp(functionId);
         final List<FunctionEntity> functionEntities = Objects.requireNonNull(functionApp, String.format("failed to find function with id (%s) in Azure",
-                functionId)).listFunctions(true);
+            functionId)).listFunctions(true);
         final FunctionEntity target = functionEntities.stream().filter(entity -> StringUtils.equals(entity.getName(), trigger))
-                .findFirst().orElse(functionEntities.get(0));
+            .findFirst().orElse(functionEntities.get(0));
         final Action.Id<FunctionEntity> action = PlatformUtils.isIdeaUltimate() ?
-                FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT : FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER;
+            FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT : FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER;
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
         final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
         IntellijAzureActionManager.getInstance().getAction(action).handle(target, event);

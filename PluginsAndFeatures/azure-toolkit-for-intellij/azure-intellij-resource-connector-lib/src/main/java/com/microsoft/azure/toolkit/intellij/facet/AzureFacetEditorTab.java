@@ -1,16 +1,12 @@
 package com.microsoft.azure.toolkit.intellij.facet;
 
-import com.intellij.facet.ui.FacetEditorContext;
-import com.intellij.facet.ui.FacetEditorTab;
-import com.intellij.facet.ui.FacetEditorValidator;
-import com.intellij.facet.ui.FacetValidatorsManager;
-import com.intellij.facet.ui.ValidationResult;
+import com.intellij.facet.ui.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.facet.AzureFacetConfiguration.AzureFacetState;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 
 import javax.annotation.Nonnull;
@@ -29,7 +25,7 @@ public class AzureFacetEditorTab extends FacetEditorTab {
      * @param validator Facet validator manager, can be used to get and apply a custom validator for this facet.
      */
     public AzureFacetEditorTab(@Nonnull AzureFacetState state, @Nonnull FacetEditorContext context,
-                                      @Nonnull FacetValidatorsManager validator) {
+                               @Nonnull FacetValidatorsManager validator) {
         super();
         this.state = state;
         this.panel = new AzureFacetEditorPanel(context.getModule());

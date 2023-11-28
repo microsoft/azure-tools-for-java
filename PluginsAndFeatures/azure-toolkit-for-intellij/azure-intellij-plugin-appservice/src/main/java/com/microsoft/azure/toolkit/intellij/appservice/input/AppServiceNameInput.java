@@ -3,7 +3,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.input;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 

@@ -31,9 +31,9 @@ import java.util.Objects;
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
-public class StringLiteralPreCompletionContributor extends CompletionContributor {
+public class StoragePathPreCompletionContributor extends CompletionContributor {
 
-    public StringLiteralPreCompletionContributor() {
+    public StoragePathPreCompletionContributor() {
         super();
         extend(null, psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new CompletionProvider<>() {
             @Override
@@ -41,7 +41,7 @@ public class StringLiteralPreCompletionContributor extends CompletionContributor
                 final PsiElement element = parameters.getPosition();
                 final PsiLiteralExpression literal = ((PsiLiteralExpression) element.getParent());
                 final String value = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
-                final String fullPrefix = StringUtils.substringBefore(value, StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
+                final String fullPrefix = StringUtils.substringBefore(value, StoragePathCompletionContributor.DUMMY_IDENTIFIER);
                 final boolean isBlobContainer = fullPrefix.startsWith("azure-blob://");
                 final boolean isFileShare = fullPrefix.startsWith("azure-file://");
 

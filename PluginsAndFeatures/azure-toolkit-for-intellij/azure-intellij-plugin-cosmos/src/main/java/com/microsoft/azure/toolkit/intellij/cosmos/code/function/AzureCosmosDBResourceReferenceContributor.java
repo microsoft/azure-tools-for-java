@@ -12,7 +12,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationResourceReference;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class AzureCosmosDBResourceReferenceContributor extends PsiReferenceContr
                 if (StringUtils.isNotBlank(value)) {
                     final TextRange range = new TextRange(1, value.length() + 1);
                     return new PsiReference[]{new FunctionAnnotationResourceReference(element, range,
-                            (ann, con) -> CosmosDBDatabaseNameCompletionProvider.getConnectedDatabase(ann))};
+                        (ann, con) -> CosmosDBDatabaseNameCompletionProvider.getConnectedDatabase(ann))};
                 }
                 return PsiReference.EMPTY_ARRAY;
             }

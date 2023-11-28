@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -30,10 +30,10 @@ public class ProjectLibraryService {
         final List<String> libs = new ArrayList<>();
         OrderEnumerator.orderEntries(project).forEachLibrary(library -> libs.add(library.getName()));
         return libs.stream().filter(StringUtils::isNotBlank)
-                .map(PATTERN::matcher)
-                .filter(Matcher::matches)
-                .map(m -> new ProjectLibEntity(m.group(2).trim(), m.group(3).trim(), m.group(4).trim()))
-                .collect(Collectors.toList());
+            .map(PATTERN::matcher)
+            .filter(Matcher::matches)
+            .map(m -> new ProjectLibEntity(m.group(2).trim(), m.group(3).trim(), m.group(4).trim()))
+            .collect(Collectors.toList());
     }
 
     @Getter

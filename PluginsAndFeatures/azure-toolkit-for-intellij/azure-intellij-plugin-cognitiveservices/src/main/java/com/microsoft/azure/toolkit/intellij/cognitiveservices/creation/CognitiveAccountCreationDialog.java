@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -37,7 +37,7 @@ import java.util.Optional;
 
 public class CognitiveAccountCreationDialog extends AzureDialog<CognitiveAccountDraft> implements AzureForm<CognitiveAccountDraft> {
     public static final String REGISTER_SUBSCRIPTION_TEXT = "Azure OpenAI Service is currently available to customers via an application form. The selected subscription has not been enabled for use of the service and does not have quota for any pricing tiers. " +
-            "<a href = \"https://aka.ms/oai/access\">Click here to request access to Azure OpenAI service</a>.\u2197";
+        "<a href = \"https://aka.ms/oai/access\">Click here to request access to Azure OpenAI service</a>.\u2197";
     private JLabel lblSubscription;
     private CognitiveSubscriptionComboBox cbSubscription;
     private JLabel lblResourceGroup;
@@ -112,7 +112,7 @@ public class CognitiveAccountCreationDialog extends AzureDialog<CognitiveAccount
             @Override
             protected @NotNull HyperlinkListener createHyperlinkListener() {
                 return event -> Optional.of(event).filter(e -> e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
-                        .ifPresent(ignore -> AzureActionManager.getInstance().getAction(CognitiveServicesActionsContributor.ENABLE_OPENAI).handle(cbSubscription.getValue()));
+                    .ifPresent(ignore -> AzureActionManager.getInstance().getAction(CognitiveServicesActionsContributor.ENABLE_OPENAI).handle(cbSubscription.getValue()));
             }
         };
 
@@ -139,7 +139,7 @@ public class CognitiveAccountCreationDialog extends AzureDialog<CognitiveAccount
         final String name = Objects.requireNonNull(txtName.getValue());
         final ResourceGroup resourceGroup = Objects.requireNonNull(cbResourceGroup.getValue());
         final CognitiveAccountDraft draft = Azure.az(AzureCognitiveServices.class)
-                .accounts(subscription.getId()).create(name, resourceGroup.getName());
+            .accounts(subscription.getId()).create(name, resourceGroup.getName());
         final CognitiveAccountDraft.Config config = new CognitiveAccountDraft.Config();
         config.setResourceGroup(resourceGroup);
         config.setName(name);

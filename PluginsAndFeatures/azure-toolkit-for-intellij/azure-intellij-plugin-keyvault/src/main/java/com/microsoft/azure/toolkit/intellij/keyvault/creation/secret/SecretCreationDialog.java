@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.keyvault.KeyVaultCredentialActions;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.keyvault.secret.SecretDraft;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;

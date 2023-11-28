@@ -201,7 +201,7 @@ public class Profile {
     @SneakyThrows(IOException.class)
     public List<Pair<String, String>> getGeneratedEnvironmentVariables(@Nonnull Connection<?, ?> connection) {
         if (Objects.isNull(this.dotEnvFile) || !this.dotEnvFile.isValid()) {
-            throw new AzureToolkitRuntimeException(String.format("'.azure/%s/.env' doesn't exist.", this.name));
+            return Collections.emptyList();
         }
         final List<String> lines = Files.readAllLines(this.dotEnvFile.toNioPath());
         final String startMark = "# connection.id=" + connection.getId();

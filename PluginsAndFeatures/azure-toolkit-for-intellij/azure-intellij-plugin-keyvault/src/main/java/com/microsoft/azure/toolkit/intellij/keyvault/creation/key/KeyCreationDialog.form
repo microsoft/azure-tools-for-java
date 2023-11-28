@@ -207,7 +207,7 @@
           <font/>
           <text value="Instance Details"/>
           <titleFont style="1"/>
-          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+          <toolTipText value=""/>
         </properties>
       </component>
       <component id="389bb" class="com.intellij.ui.TitledSeparator" binding="titleSettings">
@@ -218,7 +218,7 @@
           <font/>
           <text value="Settings"/>
           <titleFont style="1"/>
-          <toolTipText value="Select the subscription to manage deployed resources and costs. Use resource groups like folders to organize and manage all your resources. "/>
+          <toolTipText value=""/>
         </properties>
       </component>
     </children>

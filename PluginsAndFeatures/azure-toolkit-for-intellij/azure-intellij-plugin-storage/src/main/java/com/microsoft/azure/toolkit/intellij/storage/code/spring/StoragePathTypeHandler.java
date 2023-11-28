@@ -19,10 +19,10 @@ import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionBlobPathCompletionProvider.BLOB_PATH_PATTERN;
 
-public class StringLiteralTypeHandler extends TypedHandlerDelegate {
+public class StoragePathTypeHandler extends TypedHandlerDelegate {
     @Override
     public @Nonnull Result checkAutoPopup(char charTyped, @Nonnull Project project, @Nonnull Editor editor, @Nonnull PsiFile file) {
-        if (DumbService.isDumb(project) || !StringLiteralCompletionContributor.SPECIAL_CHARS.contains(charTyped) || !(file instanceof PsiJavaFileImpl)) {
+        if (DumbService.isDumb(project) || !StoragePathCompletionContributor.SPECIAL_CHARS.contains(charTyped) || !(file instanceof PsiJavaFileImpl)) {
             return Result.CONTINUE;
         }
         final PsiElement ele = file.findElementAt(editor.getCaretModel().getOffset());
@@ -30,7 +30,7 @@ public class StringLiteralTypeHandler extends TypedHandlerDelegate {
             return Result.CONTINUE;
         }
         final String text = ele.getText().replace("\"", "");
-        if (StringLiteralCompletionContributor.PREFIX_PLACES.accepts(ele)
+        if (StoragePathCompletionContributor.PREFIX_PLACES.accepts(ele)
             || BLOB_PATH_PATTERN.accepts(ele)
             || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor);

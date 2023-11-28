@@ -22,14 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 
-public class StringLiteralStoragePrefixCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class StoragePathPrefixCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context, @Nonnull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
         final PsiLiteralExpression literal = ((PsiLiteralExpression) element.getParent());
         final String value = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
-        final String fullPrefix = StringUtils.substringBefore(value, StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
+        final String fullPrefix = StringUtils.substringBefore(value, StoragePathCompletionContributor.DUMMY_IDENTIFIER);
         final boolean isBlobContainer = fullPrefix.startsWith("azure-blob://");
         final boolean isFileShare = fullPrefix.startsWith("azure-file://");
 

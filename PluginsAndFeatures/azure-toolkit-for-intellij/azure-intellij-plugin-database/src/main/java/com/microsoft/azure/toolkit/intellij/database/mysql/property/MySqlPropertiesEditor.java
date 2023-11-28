@@ -153,7 +153,7 @@ public class MySqlPropertiesEditor extends AzResourcePropertiesEditor<MySqlServe
             this.draft.commit();
             this.refreshButtons();
         };
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, "Saving updates", false, runnable));
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(this.project, "save updates", false, runnable));
     }
 
     private void refreshButtons() {

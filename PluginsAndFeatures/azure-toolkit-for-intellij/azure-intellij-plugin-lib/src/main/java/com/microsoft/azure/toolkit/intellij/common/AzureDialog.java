@@ -20,7 +20,6 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,7 +100,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
         final Map<String, String> properties = new HashMap<>();
         final Action.Id<T> id = Optional.ofNullable(okAction).map(Action::getId).orElse(null);
         properties.put(SERVICE_NAME, Optional.ofNullable(id).map(
-                Action.Id::getService).orElse(SYSTEM));
+            Action.Id::getService).orElse(SYSTEM));
         properties.put(OPERATION_NAME, Optional.ofNullable(id).map(Action.Id::getOperation).map(op -> op + "_" + CANCEL).orElse(SYSTEM));
         properties.put(OP_TYPE, Operation.Type.USER);
         properties.put(OP_NAME, Optional.ofNullable(okAction).map(Action::getId).map(Action.Id::getId).orElse(CANCEL_DIALOG));

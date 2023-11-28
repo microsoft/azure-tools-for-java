@@ -38,22 +38,13 @@ import java.util.stream.Collectors;
 public class Utils {
     public static final Pattern SPRING_PROPERTY_VALUE_PATTERN = Pattern.compile("\\$\\{(.*)}");
 
+    public static boolean hasEnvVars(final String value) {
+        return value.matches(".*\\$\\{[^}]+}.*");
+    }
+
     public static String extractVariableFromSpringProperties(final String origin) {
         final Matcher matcher = SPRING_PROPERTY_VALUE_PATTERN.matcher(origin);
         return matcher.matches() ? matcher.group(1) : origin;
-    }
-
-    public static <T> List<T> getConnectedResources(@Nonnull final Module module, @Nonnull final ResourceDefinition<T> definition) {
-        //noinspection unchecked
-        return Optional.of(module).map(AzureModule::from)
-                .map(AzureModule::getDefaultProfile).map(Profile::getConnectionManager).stream()
-                .flatMap(m -> m.getConnections().stream())
-                .filter(c -> Objects.equals(c.getDefinition().getResourceDefinition(), definition))
-                .map(Connection::getResource)
-                .filter(Resource::isValidResource)
-                .map(Resource::getData)
-                .map(resource -> (T) resource)
-                .collect(Collectors.toList());
     }
 
     @Nullable

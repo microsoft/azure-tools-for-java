@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.lib.common.cache.Cacheable;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
@@ -22,11 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,8 +33,8 @@ public class GuidanceConfigManager {
     private static final GuidanceConfigManager instance = new GuidanceConfigManager();
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory().disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
     private static final ObjectMapper JSON_MAPPER = new JsonMapper()
-            .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public static GuidanceConfigManager getInstance() {
         return instance;
@@ -81,18 +77,18 @@ public class GuidanceConfigManager {
     @Cacheable(value = "guidance/courses")
     public List<CourseConfig> loadCourses() {
         return Optional.of(new Reflections("guidance", Scanners.Resources))
-                .map(reflections -> {
-                    try {
-                        return reflections.getResources(Pattern.compile(".*\\.json"));
-                    } catch (final Exception exception) {
-                        return Collections.emptySet();
-                    }
-                })
-                .orElse(Collections.emptySet())
-                .stream().map(uri -> GuidanceConfigManager.loadCourseByUri("/" + uri))
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(CourseConfig::getPriority))
-                .collect(Collectors.toList());
+            .map(reflections -> {
+                try {
+                    return reflections.getResources(Pattern.compile(".*\\.json"));
+                } catch (final Exception exception) {
+                    return Collections.emptySet();
+                }
+            })
+            .orElse(Collections.emptySet())
+            .stream().map(uri -> GuidanceConfigManager.loadCourseByUri("/" + uri))
+            .filter(Objects::nonNull)
+            .sorted(Comparator.comparing(CourseConfig::getPriority))
+            .collect(Collectors.toList());
     }
 
     @Nullable

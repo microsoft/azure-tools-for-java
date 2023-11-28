@@ -85,8 +85,8 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
                 .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(definition.getIcon(), AzureIcons.Common.AZURE.getIconPath())))
                 .withBoldness(true)
                 .withPresentableText(resource.getName())
-                .withTypeText("String")
-                .withTailText(" " + ((AzResource) resource.getData()).getResourceTypeName())
+                .withTypeText(((AzResource) resource.getData()).getResourceTypeName())
+                .withTailText(" " + ((AzResource) resource.getData()).getResourceGroupName())
                 .withLookupStrings(Arrays.asList(resource.getName(), ((AzResource) resource.getData()).getResourceGroupName()))
                 .withInsertHandler((context, item) -> handleYamlConnection(azureModule, resource, context));
     }

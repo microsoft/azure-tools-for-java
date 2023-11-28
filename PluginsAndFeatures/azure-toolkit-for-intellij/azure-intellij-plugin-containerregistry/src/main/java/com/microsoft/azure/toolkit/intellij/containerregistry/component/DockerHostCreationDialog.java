@@ -22,8 +22,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DockerHostCreationDialog extends AzureDialog<DockerHost>
-        implements AzureForm<DockerHost> {
+    implements AzureForm<DockerHost> {
     public static final String CONNECTION_SUCCEEDED = "Connection Succeeded";
     private JPanel pnlRoot;
     private JCheckBox chkEnableTLS;
@@ -67,7 +67,7 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         txtCertPath.addValueChangedListener(ignore -> resetValidationMessage());
         txtCertPath.addValidator(this::validateCertPath);
         txtCertPath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Cert for Docker Host", null, txtCertPath,
-                project, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+            project, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
     }
 
     private AzureValidationInfo validateCertPath() {
@@ -144,19 +144,19 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         outputPanel.setText("Connecting...");
         outputStatusIcon.setIcon(AnimatedIcon.Default.INSTANCE);
         Mono.fromRunnable(() -> {
-                    final AzureDockerClient dockerClient = AzureDockerClient.from(getValue());
-                    dockerClient.ping();
-                }).subscribeOn(Schedulers.boundedElastic())
-                .doOnError(e -> AzureTaskManager.getInstance().runLater(() -> {
-                    outputContainer.setVisible(true);
-                    outputPanel.setText(ExceptionUtils.getRootCauseMessage(e));
-                    outputStatusIcon.setIcon(AllIcons.General.Error);
-                }, AzureTask.Modality.ANY))
-                .doOnSuccess(e -> AzureTaskManager.getInstance().runLater(() -> {
-                    outputContainer.setVisible(true);
-                    outputPanel.setText(CONNECTION_SUCCEEDED);
-                    outputStatusIcon.setIcon(AllIcons.General.InspectionsOK);
-                }, AzureTask.Modality.ANY)).subscribe();
+                final AzureDockerClient dockerClient = AzureDockerClient.from(getValue());
+                dockerClient.ping();
+            }).subscribeOn(Schedulers.boundedElastic())
+            .doOnError(e -> AzureTaskManager.getInstance().runLater(() -> {
+                outputContainer.setVisible(true);
+                outputPanel.setText(ExceptionUtils.getRootCauseMessage(e));
+                outputStatusIcon.setIcon(AllIcons.General.Error);
+            }, AzureTask.Modality.ANY))
+            .doOnSuccess(e -> AzureTaskManager.getInstance().runLater(() -> {
+                outputContainer.setVisible(true);
+                outputPanel.setText(CONNECTION_SUCCEEDED);
+                outputStatusIcon.setIcon(AllIcons.General.InspectionsOK);
+            }, AzureTask.Modality.ANY)).subscribe();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

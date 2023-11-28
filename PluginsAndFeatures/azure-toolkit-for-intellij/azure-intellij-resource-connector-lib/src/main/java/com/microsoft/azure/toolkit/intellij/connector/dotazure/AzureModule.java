@@ -263,6 +263,11 @@ public class AzureModule {
             .collect(Collectors.toList());
     }
 
+    public <T> List<T> getConnectedResources(@Nonnull ResourceDefinition<T> definition) {
+        return this.getConnections(definition).stream()
+            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
+    }
+
     @AzureOperation(name = "internal/connector.create_connection")
     public void connect(@Nonnull Resource<?> resource, @Nonnull Consumer<Connection<?, ?>> then) {
         final Project project = this.module.getProject();

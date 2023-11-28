@@ -14,7 +14,7 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class StringLiteralCharFilter extends CharFilter {
+public class StoragePathCharFilter extends CharFilter {
     @Override
     public Result acceptChar(char c, final int prefixLength, final Lookup lookup) {
         final PsiFile file = lookup.getPsiFile();
@@ -26,7 +26,7 @@ public class StringLiteralCharFilter extends CharFilter {
             return null;
         }
         final String text = ele.getText().replace("\"", "");
-        if (StringLiteralCompletionContributor.PREFIX_PLACES.accepts(ele)
+        if (StoragePathCompletionContributor.PREFIX_PLACES.accepts(ele)
             || text.startsWith("azure-blob") || text.startsWith("azure-file")) {
             return Result.ADD_TO_PREFIX;
         }

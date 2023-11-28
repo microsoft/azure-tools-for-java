@@ -19,7 +19,7 @@ import java.util.List;
 
 import static com.intellij.patterns.PsiJavaPatterns.*;
 
-public class StringLiteralCompletionContributor extends CompletionContributor {
+public class StoragePathCompletionContributor extends CompletionContributor {
 
     public static final String DUMMY_IDENTIFIER = CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED;
     public static final List<Character> SPECIAL_CHARS = Arrays.asList(':', '/', '-');
@@ -41,9 +41,9 @@ public class StringLiteralCompletionContributor extends CompletionContributor {
             azureStorageFileProtocolResolverGetResources
         ))));
 
-    public StringLiteralCompletionContributor() {
+    public StoragePathCompletionContributor() {
         super();
-        extend(null, PREFIX_PLACES, new StringLiteralStoragePrefixCompletionProvider());
-        extend(null, psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new StringLiteralResourceCompletionProvider());
+        extend(null, PREFIX_PLACES, new StoragePathPrefixCompletionProvider());
+        extend(null, psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new StoragePathResourceCompletionProvider());
     }
 }

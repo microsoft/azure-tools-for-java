@@ -18,11 +18,11 @@ import com.microsoft.azure.toolkit.ide.common.store.IIdeStore;
 import com.microsoft.azure.toolkit.lib.common.operation.*;
 import com.microsoft.azure.toolkit.lib.common.utils.InstallationIdUtils;
 import lombok.Data;
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.time.DateUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -11,13 +11,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationResourceReference;
-import com.microsoft.azure.toolkit.intellij.storage.code.Utils;
-import com.microsoft.azure.toolkit.intellij.storage.code.spring.StringLiteralResourceReferenceContributor;
+import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathResourceReferenceContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -46,7 +45,7 @@ public class FunctionStorageAccountResourceReferenceContributor extends PsiRefer
                 final PsiAnnotation annotation = Objects.requireNonNull(PsiTreeUtil.getParentOfType(element, PsiAnnotation.class));
                 final StorageAccount storageAccount = Utils.getBindingStorageAccount(annotation);
                 if (Objects.nonNull(storageAccount)) {
-                    return StringLiteralResourceReferenceContributor.getStorageFileReferences(StringUtils.EMPTY, "azure-blob://", literal, storageAccount);
+                    return StoragePathResourceReferenceContributor.getStorageFileReferences(StringUtils.EMPTY, "azure-blob://", literal, storageAccount);
                 }
                 return PsiReference.EMPTY_ARRAY;
             }
@@ -60,8 +59,8 @@ public class FunctionStorageAccountResourceReferenceContributor extends PsiRefer
                 final BiFunction<PsiAnnotation, Connection<?, ?>, AzResource> function = (annotation, connection) -> {
                     final StorageAccount storageAccount = Utils.getBindingStorageAccount(annotation);
                     return Optional.ofNullable(storageAccount)
-                            .map(account -> account.getQueueModule().get(value, account.getResourceGroupName()))
-                            .orElse(null);
+                        .map(account -> account.getQueueModule().get(value, account.getResourceGroupName()))
+                        .orElse(null);
                 };
                 if (StringUtils.isNotBlank(value)) {
                     final TextRange range = new TextRange(1, value.length() + 1);
@@ -79,8 +78,8 @@ public class FunctionStorageAccountResourceReferenceContributor extends PsiRefer
                 final BiFunction<PsiAnnotation, Connection<?, ?>, AzResource> function = (annotation, connection) -> {
                     final StorageAccount storageAccount = Utils.getBindingStorageAccount(annotation);
                     return Optional.ofNullable(storageAccount)
-                            .map(account -> account.getTableModule().get(value, account.getResourceGroupName()))
-                            .orElse(null);
+                        .map(account -> account.getTableModule().get(value, account.getResourceGroupName()))
+                        .orElse(null);
                 };
                 if (StringUtils.isNotBlank(value)) {
                     final TextRange range = new TextRange(1, value.length() + 1);

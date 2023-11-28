@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -112,8 +112,8 @@ public class Phase implements Disposable {
 
     public boolean validateInputs() {
         final AzureValidationInfo azureValidationInfo = getInputs().stream().map(input -> input.getAllValidationInfos(true))
-                .flatMap(List::stream)
-                .filter(info -> !info.isValid()).findFirst().orElse(null);
+            .flatMap(List::stream)
+            .filter(info -> !info.isValid()).findFirst().orElse(null);
         if (azureValidationInfo != null) {
             final IAzureMessager messager = Optional.ofNullable(output).orElseGet(AzureMessager::getMessager);
             messager.warning(azureValidationInfo.getMessage());

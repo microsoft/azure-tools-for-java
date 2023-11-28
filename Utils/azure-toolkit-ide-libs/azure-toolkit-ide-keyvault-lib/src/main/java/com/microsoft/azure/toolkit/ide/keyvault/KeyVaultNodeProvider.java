@@ -89,7 +89,6 @@ public class KeyVaultNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof CertificateVersion) {
             return new AzResourceNode<>((CertificateVersion) data)
                     .withDescription(KeyVaultNodeProvider::getCertificateVersionDescription)
-                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .onDoubleClicked(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .withActions(KeyVaultActionsContributor.CERTIFICATE_VERSION_ACTIONS);
         } else if (data instanceof SecretModule) {
@@ -110,7 +109,6 @@ public class KeyVaultNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof SecretVersion) {
             return new AzResourceNode<>((SecretVersion) data)
                     .withDescription(KeyVaultNodeProvider::getSecretVersionDescription)
-                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .onDoubleClicked(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .withActions(KeyVaultActionsContributor.SECRET_VERSION_ACTIONS);
         } else if (data instanceof KeyModule) {
@@ -131,7 +129,6 @@ public class KeyVaultNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof KeyVersion) {
             return new AzResourceNode<>((KeyVersion) data)
                     .withDescription(KeyVaultNodeProvider::getKeyVersionDescription)
-                    .addInlineAction(ResourceCommonActionsContributor.PIN)
                     .onDoubleClicked(ResourceCommonActionsContributor.OPEN_PORTAL_URL)
                     .withActions(KeyVaultActionsContributor.KEY_VERSION_ACTIONS);
         }

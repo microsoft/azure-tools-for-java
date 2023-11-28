@@ -76,14 +76,15 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
     @Nonnull
     @AzureOperation("boundary/connector.build_value_completion_items_in_properties")
     private static List<LookupElementBuilder> buildCompletionItems(final List<? extends SpringSupported<?>> definitions, final Module module, final String key) {
-        return definitions.stream().flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream().map(r -> LookupElementBuilder.create(r, r.getName())
-            .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(r.getDefinition().getIcon(), AzureIcons.Common.AZURE.getIconPath())))
-            .bold()
-            .withCaseSensitivity(false)
-            .withLookupStrings(Arrays.asList(r.getName(), ((AzResource) r.getData()).getResourceGroupName()))
-            .withInsertHandler(new PropertyValueInsertHandler(r))
-            .withTailText(" " + ((AzResource) r.getData()).getResourceTypeName())
-            .withTypeText(d.getSpringPropertyTypes().get(key)))).collect(Collectors.toList());
+        return definitions.stream().flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream()
+            .map(r -> LookupElementBuilder.create(r, r.getName())
+                .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(d.getIcon(), AzureIcons.Common.AZURE.getIconPath())))
+                .bold()
+                .withCaseSensitivity(false)
+                .withLookupStrings(Arrays.asList(r.getName(), ((AzResource) r.getData()).getResourceGroupName()))
+                .withInsertHandler(new PropertyValueInsertHandler(r))
+                .withTailText(" " + ((AzResource) r.getData()).getResourceGroupName())
+                .withTypeText(((AzResource) r.getData()).getResourceTypeName()))).collect(Collectors.toList());;
     }
 
     public static List<? extends SpringSupported<?>> getSupportedDefinitions(String key) {
@@ -105,8 +106,8 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         @AzureOperation(name = "user/connector.select_resource_completion_item_in_properties")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement lookupElement) {
             final Optional<String> optKey = Optional.ofNullable(context.getFile().findElementAt(context.getStartOffset()))
-                .map(PsiElement::getParent).map(PsiElement::getFirstChild).map(PsiElement::getText).map(String::trim);;
-            if(optKey.isEmpty()) {
+                .map(PsiElement::getParent).map(PsiElement::getFirstChild).map(PsiElement::getText).map(String::trim);
+            if (optKey.isEmpty()) {
                 return;
             }
             context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());

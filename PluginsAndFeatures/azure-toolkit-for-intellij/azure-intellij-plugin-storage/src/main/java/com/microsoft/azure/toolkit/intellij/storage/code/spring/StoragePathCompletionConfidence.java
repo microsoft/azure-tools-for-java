@@ -16,14 +16,14 @@ import javax.annotation.Nonnull;
 /**
  * https://intellij-support.jetbrains.com/hc/en-us/community/posts/206114249-How-to-complete-string-literal-expressions-
  */
-public class StringLiteralCompletionConfidence extends CompletionConfidence {
+public class StoragePathCompletionConfidence extends CompletionConfidence {
 
     @Nonnull
     @Override
     public ThreeState shouldSkipAutopopup(@Nonnull PsiElement element, @Nonnull PsiFile psiFile, int offset) {
         final String text = element.getText().replace("\"", "");
         if (element.getParent() instanceof PsiLiteralExpression
-            && (StringLiteralCompletionContributor.PREFIX_PLACES.accepts(element) || text.startsWith("azure-blob://") || text.startsWith("azure-file://"))) {
+            && (StoragePathCompletionContributor.PREFIX_PLACES.accepts(element) || text.startsWith("azure-blob://") || text.startsWith("azure-file://"))) {
             return ThreeState.NO;
         }
         return ThreeState.UNSURE;

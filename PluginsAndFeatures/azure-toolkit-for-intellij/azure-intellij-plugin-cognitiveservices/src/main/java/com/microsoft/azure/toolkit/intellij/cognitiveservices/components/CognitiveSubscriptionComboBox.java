@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.cognitiveservices.AzureCognitiveServices;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -29,15 +29,15 @@ public class CognitiveSubscriptionComboBox extends SubscriptionComboBox {
     @Override
     protected List<Subscription> loadItems() {
         final List<Subscription> subscriptions = Optional.of(super.loadItems()).filter(CollectionUtils::isNotEmpty)
-                .orElseGet(this::getAllSubscriptions);
+            .orElseGet(this::getAllSubscriptions);
         this.status = subscriptions.stream().collect(Collectors.toMap(subscription -> subscription,
-                subscription -> Azure.az(AzureCognitiveServices.class).isOpenAIEnabled(subscription.getId())));
+            subscription -> Azure.az(AzureCognitiveServices.class).isOpenAIEnabled(subscription.getId())));
         return subscriptions;
     }
 
     private List<Subscription> getAllSubscriptions() {
         return listUnselectedSubscriptions && Azure.az(AzureAccount.class).isLoggedIn() ?
-                Azure.az(AzureAccount.class).getAccount().getSubscriptions() : Collections.emptyList();
+            Azure.az(AzureAccount.class).getAccount().getSubscriptions() : Collections.emptyList();
     }
 
     @Override

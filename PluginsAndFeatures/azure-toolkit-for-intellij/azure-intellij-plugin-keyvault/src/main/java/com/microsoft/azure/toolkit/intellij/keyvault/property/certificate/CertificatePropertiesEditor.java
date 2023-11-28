@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.keyvault.certificate.Certificate;
 import com.microsoft.azure.toolkit.lib.keyvault.certificate.CertificateVersion;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -195,6 +196,7 @@ public class CertificatePropertiesEditor extends AzResourcePropertiesEditor<Cert
         activationDateTextField.setText(Optional.ofNullable(properties.getNotBefore()).map(date -> date.format(dateTimeFormatter)).orElse(N_A));
         expirationDateTextField.setText(Optional.ofNullable(properties.getExpiresOn()).map(date -> date.format(dateTimeFormatter)).orElse(N_A));
         final String labels = Optional.ofNullable(properties.getTags())
+                .filter(MapUtils::isNotEmpty)
                 .map(tags -> tags.entrySet().stream()
                         .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
                         .collect(Collectors.joining(", "))).orElse(N_A);

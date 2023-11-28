@@ -26,30 +26,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class StringLiteralResourceReference extends PsiReferenceBase<PsiElement> {
+public class StoragePathResourceReference extends PsiReferenceBase<PsiElement> {
     private StorageAccount account;
     private String fullNameWithPrefix;
 
-    public StringLiteralResourceReference(@Nonnull PsiElement element, TextRange rangeInElement, boolean soft) {
+    public StoragePathResourceReference(@Nonnull PsiElement element, TextRange rangeInElement, boolean soft) {
         super(element, rangeInElement, soft);
     }
 
-    public StringLiteralResourceReference(@Nonnull PsiElement element, TextRange rangeInElement, final @Nonnull String fullNameWithPrefix) {
+    public StoragePathResourceReference(@Nonnull PsiElement element, TextRange rangeInElement, final @Nonnull String fullNameWithPrefix) {
         this(element, rangeInElement, fullNameWithPrefix, null);
     }
 
-    public StringLiteralResourceReference(@Nonnull PsiElement element, TextRange rangeInElement,
-                                          @Nonnull final String fullNameWithPrefix, @Nullable final StorageAccount account) {
+    public StoragePathResourceReference(@Nonnull PsiElement element, TextRange rangeInElement,
+                                        @Nonnull final String fullNameWithPrefix, @Nullable final StorageAccount account) {
         super(element, rangeInElement);
         this.fullNameWithPrefix = fullNameWithPrefix;
         this.account = account;
     }
 
-    public StringLiteralResourceReference(@Nonnull PsiElement element, boolean soft) {
+    public StoragePathResourceReference(@Nonnull PsiElement element, boolean soft) {
         super(element, soft);
     }
 
-    public StringLiteralResourceReference(@Nonnull PsiElement element) {
+    public StoragePathResourceReference(@Nonnull PsiElement element) {
         super(element);
     }
 
@@ -59,8 +59,8 @@ public class StringLiteralResourceReference extends PsiReferenceBase<PsiElement>
             return null;
         }
         return Optional.of(this.getElement()).map(ModuleUtil::findModuleForPsiElement)
-                .map(m -> Objects.isNull(account) ? StringLiteralResourceCompletionProvider.getFile(fullNameWithPrefix, m) :
-                        StringLiteralResourceCompletionProvider.getFile(fullNameWithPrefix, List.of(account)))
+                .map(m -> Objects.isNull(account) ? StoragePathResourceCompletionProvider.getFile(fullNameWithPrefix, m) :
+                        StoragePathResourceCompletionProvider.getFile(fullNameWithPrefix, List.of(account)))
                 .map(AzureStorageResourcePsiElement::new)
                 .orElse(null);
     }
@@ -82,7 +82,7 @@ public class StringLiteralResourceReference extends PsiReferenceBase<PsiElement>
         @AzureOperation("user/connector.navigate_to_storage_resource_from_string_literal")
         public void navigate(boolean requestFocus) {
             final Module module = ModuleUtil.findModuleForPsiElement(getElement());
-            StringLiteralResourceCompletionProvider.navigateToFile(this.file, module);
+            StoragePathResourceCompletionProvider.navigateToFile(this.file, module);
         }
 
         @Override
@@ -97,7 +97,7 @@ public class StringLiteralResourceReference extends PsiReferenceBase<PsiElement>
 
         @Override
         public @Nullable String getLocationString() {
-            final StorageAccount account = StringLiteralResourceCompletionProvider.getStorageAccount(this.file);
+            final StorageAccount account = StoragePathResourceCompletionProvider.getStorageAccount(this.file);
             if (Objects.nonNull(account)) {
                 return this.file.getResourceGroupName() + "/" + account.getName();
             } else {
@@ -107,7 +107,7 @@ public class StringLiteralResourceReference extends PsiReferenceBase<PsiElement>
 
         @Override
         public @Nullable Icon getIcon(final boolean open) {
-            return IntelliJAzureIcons.getIcon(StringLiteralResourceCompletionProvider.getFileIcon(this.file));
+            return IntelliJAzureIcons.getIcon(StoragePathResourceCompletionProvider.getFileIcon(this.file));
         }
 
         @Override

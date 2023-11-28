@@ -31,7 +31,7 @@ public class KeyVaultResourceDefinition extends AzureServiceResource.Definition<
     public static final KeyVaultResourceDefinition INSTANCE = new KeyVaultResourceDefinition();
 
     public KeyVaultResourceDefinition() {
-        super("Microsoft.KeyVault", "Key Vault", AzureIcons.KeyVault.MODULE.getIconPath());
+        super("Microsoft.KeyVault", "Azure Key Vault", AzureIcons.KeyVault.MODULE.getIconPath());
     }
 
     @Override

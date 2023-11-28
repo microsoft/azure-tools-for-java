@@ -14,7 +14,6 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessHandlerFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.execution.ui.actions.CloseAction;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
@@ -30,10 +29,8 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.ContentManagerListener;
-import com.intellij.util.EnvironmentUtil;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
-import com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
@@ -41,14 +38,13 @@ import com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContri
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.CommandUtils;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -121,10 +117,10 @@ public class AzuriteService {
 
     private Action<?>[] getAzuriteFailureActions(@Nonnull final Project project) {
         final Action<?> installAzuriteAction = AzureActionManager.getInstance().getAction(IntellijStorageActionsContributor.INSTALL_AZURITE)
-                .bind(project);
+            .bind(project);
         final Action<Object> settingAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
         final Action<String> learnAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL)
-                .bind(INSTALL_AZURITE_LINK).withLabel("Learn More");
+            .bind(INSTALL_AZURITE_LINK).withLabel("Learn More");
         return isNodeMeetAzuriteRequirement() ? new Action[]{installAzuriteAction, settingAction, learnAction} : new Action[]{settingAction, learnAction};
     }
 
@@ -140,7 +136,7 @@ public class AzuriteService {
             final GeneralCommandLine commandLine = new GeneralCommandLine("node", "-v");
             final String nodeVersion = ExecUtil.execAndGetOutput(commandLine).getStdout();
             return Optional.ofNullable(Version.parseVersion(StringUtils.removeStartIgnoreCase(nodeVersion, "v")))
-                    .map(version -> version.compareTo(MIN_NODE_MAJOR_VERSION) >= 0).orElse(false);
+                .map(version -> version.compareTo(MIN_NODE_MAJOR_VERSION) >= 0).orElse(false);
         } catch (final Exception e) {
             return false;
         }
@@ -150,8 +146,8 @@ public class AzuriteService {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Run");
         if (Objects.nonNull(toolWindow)) {
             Arrays.stream(toolWindow.getContentManager().getContents())
-                    .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), AZURITE_DISPLAY_NAME))
-                    .findFirst().ifPresent(content -> toolWindow.getContentManager().setSelectedContent(content));
+                .filter(content -> StringUtils.equalsIgnoreCase(content.getDisplayName(), AZURITE_DISPLAY_NAME))
+                .findFirst().ifPresent(content -> toolWindow.getContentManager().setSelectedContent(content));
         }
     }
 
@@ -219,8 +215,8 @@ public class AzuriteService {
         }
         final List<String> azurite = CommandUtils.resolveCommandPath(AZURITE);
         return azurite.stream().filter(StringUtils::isNoneBlank)
-                .filter(file -> !(SystemInfo.isWindows && StringUtils.isBlank(FilenameUtils.getExtension(file)))) // for windows, azurite did not work as PATH_EXT is not supported with Java Process
-                .findFirst().orElse(SystemInfo.isWindows ? AZURITE_CMD : AZURITE);
+            .filter(file -> !(SystemInfo.isWindows && StringUtils.isBlank(FilenameUtils.getExtension(file)))) // for windows, azurite did not work as PATH_EXT is not supported with Java Process
+            .findFirst().orElse(SystemInfo.isWindows ? AZURITE_CMD : AZURITE);
     }
 
     public void stopAzurite() {

@@ -27,7 +27,6 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
-import com.microsoft.azure.toolkit.intellij.storage.code.Utils;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -61,14 +60,14 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.listResourceForDefinition;
 
-public class StringLiteralResourceCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class StoragePathResourceCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context, @Nonnull CompletionResultSet result) {
         final PsiElement element = parameters.getPosition();
         final PsiLiteralExpression literal = ((PsiLiteralExpression) element.getParent());
         final String value = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
-        final String fullPrefix = StringUtils.substringBefore(value, StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
+        final String fullPrefix = StringUtils.substringBefore(value, StoragePathCompletionContributor.DUMMY_IDENTIFIER);
         final boolean isBlobContainer = fullPrefix.startsWith("azure-blob://");
         final boolean isFileShare = fullPrefix.startsWith("azure-file://");
 
@@ -77,7 +76,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
             if (Objects.isNull(module)) {
                 return;
             }
-            final List<StorageAccount> accounts = Utils.getConnectedStorageAccounts(module);
+            final List<StorageAccount> accounts = AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE);
             if (accounts.isEmpty()) {
                 listResourceForDefinition(module.getProject(), StorageAccountResourceDefinition.INSTANCE).stream()
                     .map(a -> LookupElementBuilder
@@ -141,7 +140,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
 
     @Nullable
     public static StorageFile getFile(String fullPrefix, Module module) {
-        return getFile(fullPrefix, Utils.getConnectedStorageAccounts(module));
+        return getFile(fullPrefix, AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE));
     }
 
     @Nullable
@@ -198,7 +197,7 @@ public class StringLiteralResourceCompletionProvider extends CompletionProvider<
 
     public static void navigateToFile(StorageFile file, Module module) {
         if (Objects.nonNull(module)) {
-            final List<Connection<?, ?>> connections = StringLiteralResourceCompletionProvider.getConnections(module);
+            final List<Connection<?, ?>> connections = StoragePathResourceCompletionProvider.getConnections(module);
             if (connections.size() > 0) {
                 AbstractAzureFacetNode.selectConnectedResource(connections.get(0), file.getId(), file.isDirectory());
                 if (!file.isDirectory()) {

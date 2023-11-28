@@ -22,7 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -71,8 +71,8 @@ public class AzureSdkProjectDependencyPanel {
     private void init() {
         cbModule.addItemListener(e -> onSelectModule());
         final Action<Void> addDependency = new Action<Void>(Action.Id.of("user/sdk.add_dependency"))
-                .withAuthRequired(false)
-                .withHandler(ignore -> onAddDependency());
+            .withAuthRequired(false)
+            .withHandler(ignore -> onAddDependency());
         btnAddDependency.setAction(addDependency);
         lblMessageIcon.setIcon(AllIcons.General.BalloonInformation);
     }

@@ -15,7 +15,8 @@ import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.microsoft.azure.toolkit.intellij.connector.code.AnnotationFixes;
-import com.microsoft.azure.toolkit.intellij.storage.code.Utils;
+import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -34,12 +35,12 @@ import java.util.stream.Collectors;
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
-public class StringLiteralResourceAnnotator implements Annotator {
+public class StoragePathResourceAnnotator implements Annotator {
     @Override
     public void annotate(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element)) {
             final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
-            final String valueWithPrefix = StringUtils.substringBefore((String) literal.getValue(), StringLiteralCompletionContributor.DUMMY_IDENTIFIER);
+            final String valueWithPrefix = StringUtils.substringBefore((String) literal.getValue(), StoragePathCompletionContributor.DUMMY_IDENTIFIER);
             if (Objects.nonNull(valueWithPrefix) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://"))) {
                 final String prefix = valueWithPrefix.startsWith("azure-blob://") ? "azure-blob://" : "azure-file://";
                 final String path = valueWithPrefix.substring(prefix.length());
@@ -51,8 +52,8 @@ public class StringLiteralResourceAnnotator implements Annotator {
                     AnnotationFixes.createSignInAnnotation(element, holder);
                 } else {
                     final List<StorageAccount> accounts = Optional.of(element)
-                        .map(ModuleUtil::findModuleForPsiElement)
-                        .map(Utils::getConnectedStorageAccounts)
+                        .map(ModuleUtil::findModuleForPsiElement).map(AzureModule::from)
+                        .map(module -> module.getConnectedResources(StorageAccountResourceDefinition.INSTANCE))
                         .orElse(Collections.emptyList());
                     if (accounts.isEmpty()) {
                         holder.newAnnotation(HighlightSeverity.WARNING, "No Azure Storage account connected")
@@ -61,12 +62,15 @@ public class StringLiteralResourceAnnotator implements Annotator {
                             .withFix(AnnotationFixes.createNewConnection(StorageAccountResourceDefinition.INSTANCE, AnnotationFixes.DO_NOTHING_CONSUMER))
                             .create();
                     } else {
-                        final StorageFile file = StringLiteralResourceCompletionProvider.getFile(valueWithPrefix, accounts);
+                        if (Utils.hasEnvVars(valueWithPrefix)) { // skip if environment variables are used.
+                            return;
+                        }
+                        final StorageFile file = StoragePathResourceCompletionProvider.getFile(valueWithPrefix, accounts);
                         if (Objects.isNull(file)) {
                             final String message = String.format("Could not find '%s' in connected Azure Storage account(s) [%s]", path, accounts.stream().map(AbstractAzResource::getName).collect(Collectors.joining(",")));
-                            holder.newAnnotation(HighlightSeverity.ERROR, message)
+                            holder.newAnnotation(HighlightSeverity.WARNING, message)
                                 .range(range)
-                                .highlightType(ProblemHighlightType.GENERIC_ERROR_OR_WARNING)
+                                .highlightType(ProblemHighlightType.WEAK_WARNING)
                                 .create();
                         }
                     }

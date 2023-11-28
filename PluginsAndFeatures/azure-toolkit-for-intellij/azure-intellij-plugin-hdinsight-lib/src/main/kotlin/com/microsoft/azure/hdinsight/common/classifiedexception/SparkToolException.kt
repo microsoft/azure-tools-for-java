@@ -29,7 +29,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.azuretools.adauth.AuthException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.intellij.forms.ErrorMessageForm
-import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.io.FileNotFoundException
 
 const val ToolPackageSuffix: String = "com.microsoft.azure"
@@ -38,7 +38,7 @@ class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Azure Plugin for IntelliJ Error"
     override val errorType = ErrorType.toolError
 
-    override fun handleByUser(){
+    override fun handleByUser() {
         AzureTaskManager.getInstance().runLater {
             val toolErrorDialog = ErrorMessageForm(title)
             toolErrorDialog.showErrorMessageForm(message, stackTrace)

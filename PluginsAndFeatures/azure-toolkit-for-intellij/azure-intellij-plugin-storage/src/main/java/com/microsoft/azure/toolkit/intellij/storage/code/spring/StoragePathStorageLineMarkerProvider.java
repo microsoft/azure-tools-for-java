@@ -30,7 +30,7 @@ import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 import static com.microsoft.azure.toolkit.intellij.connector.code.ResourceConnectionLineMarkerInfo.LINE_MARKER_NAVIGATE_TOOLTIP;
 
-public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvider {
+public class StoragePathStorageLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     @Nullable
@@ -41,7 +41,7 @@ public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvide
             final String valueWithPrefix = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
             if (Objects.nonNull(module) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://")) && Azure.az(AzureAccount.class).isLoggedIn()) {
                 final String prefix = valueWithPrefix.startsWith("azure-blob://") ? "azure-blob://" : "azure-file://";
-                final StorageFile file = StringLiteralResourceCompletionProvider.getFile(valueWithPrefix, module);
+                final StorageFile file = StoragePathResourceCompletionProvider.getFile(valueWithPrefix, module);
                 if (Objects.nonNull(file)) {
                     return new ResourceLineMarkerInfo(element, file);
                 }
@@ -56,13 +56,13 @@ public class StringLiteralStorageLineMarkerProvider implements LineMarkerProvide
 
         public ResourceLineMarkerInfo(final PsiElement element, final StorageFile file) {
             super(element, element.getTextRange(),
-                IntelliJAzureIcons.getIcon(StringLiteralResourceCompletionProvider.getFileIcon(file)),
+                IntelliJAzureIcons.getIcon(StoragePathResourceCompletionProvider.getFileIcon(file)),
                 ignore -> Azure.az(AzureAccount.class).isLoggedIn()?
                     String.format(LINE_MARKER_NAVIGATE_TOOLTIP, file.getResourceTypeName(), file.getName()):
                     "Navigate to Azure Storage in Project Explorer",
                 null, (e, element1) -> {
                     final Module module = ModuleUtil.findModuleForPsiElement(element1);
-                    StringLiteralResourceCompletionProvider.navigateToFile(file, module);
+                    StoragePathResourceCompletionProvider.navigateToFile(file, module);
                 }, GutterIconRenderer.Alignment.LEFT, file::getName);
             this.file = file;
         }

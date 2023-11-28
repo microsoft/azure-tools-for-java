@@ -21,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.keyvault.secret.Secret;
 import com.microsoft.azure.toolkit.lib.keyvault.secret.SecretVersion;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -172,6 +173,7 @@ public class SecretPropertiesEditor extends AzResourcePropertiesEditor<SecretVer
         activationDateTextField.setText(Optional.ofNullable(properties.getNotBefore()).map(date -> date.format(dateTimeFormatter)).orElse(N_A));
         expirationDateTextField.setText(Optional.ofNullable(properties.getExpiresOn()).map(date -> date.format(dateTimeFormatter)).orElse(N_A));
         final String labels = Optional.ofNullable(properties.getTags())
+                .filter(MapUtils::isNotEmpty)
                 .map(tags -> tags.entrySet().stream()
                         .map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue()))
                         .collect(Collectors.joining(", "))).orElse(N_A);

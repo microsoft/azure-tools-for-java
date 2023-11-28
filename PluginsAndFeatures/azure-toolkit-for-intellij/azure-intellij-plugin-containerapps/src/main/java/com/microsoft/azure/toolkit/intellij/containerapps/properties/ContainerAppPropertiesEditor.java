@@ -21,7 +21,6 @@ import com.microsoft.azure.toolkit.intellij.containerapps.component.EnableComboB
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
@@ -154,12 +153,11 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
                 .withIdParam(this.containerApp.getName())
                 .withHandler(ignore -> this.refresh());
         this.btnRefresh.setAction(refreshAction);
-        final AzureString saveTitle = AzureString.format("Saving updates of app(%s)", this.draft.getName());
         final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/containerapps.update_container_app.app"))
                 .withAuthRequired(true)
                 .withSource(this.containerApp)
                 .withIdParam(this.containerApp.getName())
-                .withHandler(ignore -> tm.runInBackground(saveTitle, this::save));
+                .withHandler(ignore -> this.save());
         this.saveButton.setAction(saveAction);
     }
 
@@ -239,7 +237,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         final ContainerAppDraft.Config config = Optional.ofNullable(this.draft.getConfig()).orElseGet(ContainerAppDraft.Config::new);
         config.setIngressConfig(ingressConfig);
         draft.setConfig(config);
-        AzureTaskManager.getInstance().runInBackground("Saving updates", this.draft::commit);
+        AzureTaskManager.getInstance().runInBackground("save updates", this.draft::commit);
     }
 
     private void reset() {

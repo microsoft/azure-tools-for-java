@@ -24,7 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
@@ -40,9 +40,9 @@ import java.util.function.Consumer;
 public class SystemMessagePanel implements AzureForm<SystemMessage> {
     private static final int DEBOUNCE_DELAY = 200;
     public static final String SYSTEM_MESSAGE_DESCRIPTION = "Use a template to get started, or just start writing your own system " +
-            "message below. Want some tips? <a href = \"https://go.microsoft.com/fwlink/?linkid=2235756\">Learn more</a>\u2197";
+        "message below. Want some tips? <a href = \"https://go.microsoft.com/fwlink/?linkid=2235756\">Learn more</a>\u2197";
     public static final String EXAMPLE_DESCRIPTION = "Add examples to show the chat what responses you want. " +
-            "It will try to mimic any responses you add here so make sure they match the rules you laid out in the system message.";
+        "It will try to mimic any responses you add here so make sure they match the rules you laid out in the system message.";
     public static final String CHANGE_SYSTEM_MESSAGE_CONFIRM_MESSAGE = "Loading a new example will replace the current system message and start a new chat session. To save the current system message, copy it to a separate document before continuing.";
     public static final String UPDATE_SYSTEM_MESSAGE = "Update system message?";
     private JPanel pnlRoot;
@@ -74,8 +74,8 @@ public class SystemMessagePanel implements AzureForm<SystemMessage> {
 
     private void init() {
         final Action<Void> addExampleAction = new Action<Void>(Action.Id.of("user/openai.add_example"))
-                .withAuthRequired(false)
-                .withHandler(ignore -> this.onAddNewExample());
+            .withAuthRequired(false)
+            .withHandler(ignore -> this.onAddNewExample());
         this.btnAddExample.setAction(addExampleAction);
         this.btnAddExample.setIcon(AllIcons.General.Add);
 

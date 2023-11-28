@@ -23,7 +23,7 @@ package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
-import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 
 abstract class ClassifiedException(exp: Throwable?) : Throwable(exp), ILogger {
     abstract val title: String
@@ -39,6 +39,6 @@ abstract class ClassifiedException(exp: Throwable?) : Throwable(exp), ILogger {
         log().warn("$title: $stackTrace")
     }
 
-    open fun handleByUser(){
+    open fun handleByUser() {
     }
 }

@@ -57,19 +57,19 @@ public class IntelliJKeyVaultActionsContributor implements IActionsContributor {
         am.registerHandler(KeyVaultActionsContributor.SHOW_CREDENTIAL_VERSION, certificateCondition,
                 (CredentialVersion r, AnActionEvent e) -> KeyVaultCredentialActions.showCredential(r, e.getProject()));
 
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SecretModule,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof SecretModule && ((SecretModule) r).getParent().getFormalStatus().isRunning(),
                 (Object r, AnActionEvent e) -> SecretCreationActions.createNewSecret(((SecretModule) r).getParent(), e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Secret,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Secret && ((Secret) r).getFormalStatus().isConnected(),
                 (Object r, AnActionEvent e) -> SecretCreationActions.createNewSecretVersion((Secret) r, e.getProject()));
 
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CertificateModule,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CertificateModule && ((CertificateModule) r).getParent().getFormalStatus().isRunning(),
                 (Object r, AnActionEvent e) -> CertificateCreationActions.createNewCertificate(((CertificateModule) r).getParent(), e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Certificate,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Certificate && ((Certificate) r).getFormalStatus().isConnected(),
                 (Object r, AnActionEvent e) -> CertificateCreationActions.createNewCertificateVersion((Certificate) r, e.getProject()));
 
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof KeyModule,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof KeyModule && ((KeyModule) r).getParent().getFormalStatus().isRunning(),
                 (Object r, AnActionEvent e) -> KeyCreationActions.createNewKey(((KeyModule) r).getParent(), e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Key,
+        am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof Key && ((Key) r).getFormalStatus().isConnected(),
                 (Object r, AnActionEvent e) -> KeyCreationActions.createNewKeyVersion((Key) r, e.getProject()));
     }
 

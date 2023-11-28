@@ -10,17 +10,14 @@ import com.intellij.lang.ASTNode;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtil;
-import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.gradle.internal.impldep.org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +30,7 @@ import java.util.Objects;
 
 public class DockerRunLineMarkerProvider implements LineMarkerProvider {
     private static final ExtensionPointName<DockerfileActionsProvider> exPoints =
-            ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.dockerfileActionsProvider");
+        ExtensionPointName.create("com.microsoft.tooling.msservices.intellij.azure.dockerfileActionsProvider");
     private static List<DockerfileActionsProvider> providers;
 
     @Override
@@ -104,10 +101,10 @@ public class DockerRunLineMarkerProvider implements LineMarkerProvider {
     @Nonnull
     public static AnAction[] getDockerfileActions(@Nonnull final VirtualFile dockerfile) {
         return getTaskProviders().stream()
-                .sorted(Comparator.comparing(DockerfileActionsProvider::getPriority))
-                .map(provider -> provider.getActions(dockerfile))
-                .filter(Objects::nonNull)
-                .flatMap(Arrays::stream)
-                .toArray(AnAction[]::new);
+            .sorted(Comparator.comparing(DockerfileActionsProvider::getPriority))
+            .map(provider -> provider.getActions(dockerfile))
+            .filter(Objects::nonNull)
+            .flatMap(Arrays::stream)
+            .toArray(AnAction[]::new);
     }
 }
