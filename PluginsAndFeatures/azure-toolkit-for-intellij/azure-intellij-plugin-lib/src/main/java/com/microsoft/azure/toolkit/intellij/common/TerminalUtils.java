@@ -11,7 +11,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalView;
 
@@ -43,8 +42,6 @@ public class TerminalUtils {
             final ShellTerminalWidget shellTerminalWidget = terminalView.getWidgets().stream()
                     .filter(widget -> widget instanceof ShellTerminalWidget)
                     .map(widget -> (ShellTerminalWidget) widget)
-                    .filter(widget -> StringUtils.isBlank(terminalTabTitle) ||
-                            StringUtils.equals(widget.getTerminalTitle().buildTitle(), terminalTabTitle))
                     .filter(widget -> !widget.hasRunningCommands())
                     .findFirst()
                     .orElseGet(() -> terminalView.createLocalShellWidget(workingDirectory, terminalTabTitle));
