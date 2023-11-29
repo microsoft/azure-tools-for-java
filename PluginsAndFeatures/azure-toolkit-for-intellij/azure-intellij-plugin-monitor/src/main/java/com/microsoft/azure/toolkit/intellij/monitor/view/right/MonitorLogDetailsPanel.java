@@ -13,9 +13,9 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.EditorTextField;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -37,9 +37,11 @@ public class MonitorLogDetailsPanel {
     }
 
     public void setStatus(String statusText) {
-        this.cellDetailsPanel.setVisible(false);
-        this.statusPanel.setVisible(true);
-        this.statusLabel.setText(statusText);
+        AzureTaskManager.getInstance().runLater(() -> {
+            this.cellDetailsPanel.setVisible(false);
+            this.statusPanel.setVisible(true);
+            this.statusLabel.setText(statusText);
+        });
     }
 
     @AzureOperation(name = "user/monitor.select_table_cell")

@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
-public class StoragePathResourceAnnotator implements Annotator {
+public class StoragePathAnnotator implements Annotator {
     @Override
     public void annotate(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element)) {
@@ -65,7 +65,7 @@ public class StoragePathResourceAnnotator implements Annotator {
                         if (Utils.hasEnvVars(valueWithPrefix)) { // skip if environment variables are used.
                             return;
                         }
-                        final StorageFile file = StoragePathResourceCompletionProvider.getFile(valueWithPrefix, accounts);
+                        final StorageFile file = StoragePathCompletionProvider.getFile(valueWithPrefix, accounts);
                         if (Objects.isNull(file)) {
                             final String message = String.format("Could not find '%s' in connected Azure Storage account(s) [%s]", path, accounts.stream().map(AbstractAzResource::getName).collect(Collectors.joining(",")));
                             holder.newAnnotation(HighlightSeverity.WARNING, message)

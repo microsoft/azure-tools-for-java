@@ -6,15 +6,15 @@
 package com.microsoft.azure.toolkit.intellij.keyvault.code.spring;
 
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.keyvault.connection.KeyVaultResourceDefinition;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import javax.annotation.Nonnull;
@@ -26,28 +26,36 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesCompletionContributor.APPLICATION_PROPERTIES_FILE;
+import static com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlCompletionContributor.APPLICATION_YAML_FILE;
+import static com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor.VALUE_ANNOTATION;
 
 public class EnvVarReferenceContributor extends PsiReferenceContributor {
     static final Pattern pattern = Pattern.compile("\\$\\{[A-Za-z0-9-]{1,127}}");
 
     @Override
     public void registerReferenceProviders(@Nonnull PsiReferenceRegistrar registrar) {
-        registrar.registerReferenceProvider(PlatformPatterns.or(psiElement(PropertyValueImpl.class), psiElement(YAMLPlainTextImpl.class)), new PsiReferenceProvider() {
-            @Override
-            public PsiReference[] getReferencesByElement(@Nonnull PsiElement element, @Nonnull ProcessingContext context) {
-                return getEnvVarReferences(element).toArray(new PsiReference[0]);
-            }
-        }, PsiReferenceRegistrar.HIGHER_PRIORITY);
+        registrar.registerReferenceProvider(
+            PlatformPatterns.or(
+                PlatformPatterns.psiElement(PropertyValueImpl.class).inFile(APPLICATION_PROPERTIES_FILE),
+                PlatformPatterns.psiElement(YAMLPlainTextImpl.class).withParent(PlatformPatterns.psiElement(YAMLKeyValue.class)).inFile(APPLICATION_YAML_FILE),
+                PsiJavaPatterns.psiElement(PsiLiteralExpression.class).insideAnnotationParam(VALUE_ANNOTATION)
+            ), // NOTE: not sure why KEYVAULT_SECRET_ENV_VAR_PLACES (uses token types) doesn't work
+            new PsiReferenceProvider() {
+                @Override
+                public PsiReference[] getReferencesByElement(@Nonnull PsiElement element, @Nonnull ProcessingContext context) {
+                    return getEnvVarReferences(element).toArray(new PsiReference[0]);
+                }
+            },
+            PsiReferenceRegistrar.HIGHER_PRIORITY
+        );
     }
 
     @Nonnull
     static List<EnvVarReference> getEnvVarReferences(final @Nonnull PsiElement element) {
         final String text = element.getText();
-        final Module module = ModuleUtil.findModuleForPsiElement(element);
-        final boolean hasVaults = Optional.ofNullable(ModuleUtil.findModuleForPsiElement(element)).map(AzureModule::from).stream()
-            .flatMap(m -> m.getConnections(KeyVaultResourceDefinition.INSTANCE).stream())
-            .anyMatch(Connection::isValidConnection);
+        final boolean hasVaults = Optional.ofNullable(ModuleUtil.findModuleForPsiElement(element)).map(AzureModule::from)
+            .map(m -> m.hasValidConnections(KeyVaultResourceDefinition.INSTANCE)).orElse(false);
         if (EnvVarCompletionContributor.hasEnvVars(text) && hasVaults) {
             return getEnvVarRanges(element.getText()).stream()
                 .map(r -> new EnvVarReference(element, r))

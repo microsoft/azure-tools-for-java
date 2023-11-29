@@ -12,7 +12,7 @@
         <annotator language="yaml" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlResourceConnectionAnnotator"/>
         <typedHandler implementation="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationTypeHandler" id="azFunctionAnnotation"/>
         <typedHandler implementation="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesAutoPopupHandler" id="azPropertiesAuto"/>
-        <lookup.charFilter implementation="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesKeyCharFilter" id="azProperties"/>
+        <lookup.charFilter implementation="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesKeyCharFilter" id="azProperties" order="first, before liveTemplate"/>
         <completion.confidence language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationCompletionConfidence" order="before javaSkipAutopopupInStrings" id="azFunctionAnnotation" />
         <completion.contributor language="Properties" id="azPropertiesQuickCompletion" order="before azPropertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesQuickCompletionContributor"/>
         <completion.contributor language="Properties" id="azPropertiesCompletion" order="before propertiesCompletion" implementationClass="com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesCompletionContributor"/>

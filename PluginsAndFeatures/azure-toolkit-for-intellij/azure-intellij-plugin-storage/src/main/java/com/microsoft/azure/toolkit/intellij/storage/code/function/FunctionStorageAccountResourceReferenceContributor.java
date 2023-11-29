@@ -11,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationResourceReference;
-import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathResourceReferenceContributor;
+import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathReferenceContributor;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
@@ -45,7 +45,7 @@ public class FunctionStorageAccountResourceReferenceContributor extends PsiRefer
                 final PsiAnnotation annotation = Objects.requireNonNull(PsiTreeUtil.getParentOfType(element, PsiAnnotation.class));
                 final StorageAccount storageAccount = Utils.getBindingStorageAccount(annotation);
                 if (Objects.nonNull(storageAccount)) {
-                    return StoragePathResourceReferenceContributor.getStorageFileReferences(StringUtils.EMPTY, "azure-blob://", literal, storageAccount);
+                    return StoragePathReferenceContributor.getStorageFileReferences(StringUtils.EMPTY, "azure-blob://", literal, storageAccount);
                 }
                 return PsiReference.EMPTY_ARRAY;
             }

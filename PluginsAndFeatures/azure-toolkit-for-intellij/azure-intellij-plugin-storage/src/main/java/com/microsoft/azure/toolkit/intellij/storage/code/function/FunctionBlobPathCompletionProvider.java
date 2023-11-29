@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
-import static com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathResourceCompletionProvider.*;
+import static com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionProvider.*;
 
 public class FunctionBlobPathCompletionProvider extends CompletionProvider<CompletionParameters> {
     public static final String[] BLOB_ANNOTATIONS = new String[]{

@@ -44,6 +44,6 @@ public class StoragePathCompletionContributor extends CompletionContributor {
     public StoragePathCompletionContributor() {
         super();
         extend(null, PREFIX_PLACES, new StoragePathPrefixCompletionProvider());
-        extend(null, psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new StoragePathResourceCompletionProvider());
+        extend(null, psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()), new StoragePathCompletionProvider());
     }
 }

@@ -13,16 +13,16 @@ import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.openapi.roots.OrderEnumerator;
-import com.intellij.patterns.ElementPattern;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.patterns.PsiElementPattern;
+import com.intellij.patterns.*;
+import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
+import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.code.LookupElements;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
@@ -41,38 +41,46 @@ import org.jetbrains.yaml.psi.YAMLPsiElement;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
+import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.listResourceForDefinition;
 import static com.microsoft.azure.toolkit.intellij.connector.code.spring.PropertiesCompletionContributor.APPLICATION_PROPERTIES_FILE;
 import static com.microsoft.azure.toolkit.intellij.connector.code.spring.YamlCompletionContributor.APPLICATION_YAML_FILE;
 
 public class EnvVarCompletionContributor extends CompletionContributor {
 
-    public static final List<Character> SPECIAL_CHARS = Arrays.asList('$', '{', '}');
+    public static final Pattern KEYVAULT_DEPENDENCY = Pattern.compile("(Gradle|Maven): com\\.azure\\.spring:spring-cloud-azure-starter-keyvault:(.+)");
+    public static final String VALUE_ANNOTATION = "org.springframework.beans.factory.annotation.Value";
+    public static final List<Character> SPECIAL_CHARS = Arrays.asList('$', '{');
     public static final PsiElementPattern.Capture<PsiElement> PROPERTY_VALUE = PlatformPatterns.psiElement(PropertiesTokenTypes.VALUE_CHARACTERS).inFile(APPLICATION_PROPERTIES_FILE);
     public static final PsiElementPattern.Capture<PsiElement> YAML_VALUE = PlatformPatterns.psiElement(YAMLTokenTypes.TEXT).withSuperParent(2, PlatformPatterns.psiElement(YAMLKeyValue.class)).inFile(APPLICATION_YAML_FILE);
-    public static final ElementPattern<PsiElement> SPRING_CONFIG_VALUE_PLACES = PlatformPatterns.or(PROPERTY_VALUE, YAML_VALUE);
+    public static final PsiJavaElementPattern.Capture<PsiElement> ANNOTATION_VALUE = PsiJavaPatterns.psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).insideAnnotationParam(VALUE_ANNOTATION);
+    public static final ElementPattern<PsiElement> KEYVAULT_SECRET_ENV_VAR_PLACES = PlatformPatterns.or(PROPERTY_VALUE, YAML_VALUE, ANNOTATION_VALUE);
 
     public EnvVarCompletionContributor() {
         super();
-        extend(CompletionType.BASIC, SPRING_CONFIG_VALUE_PLACES, new PropertiesKeyVaultVariableCompletionProvider());
+        extend(CompletionType.BASIC, KEYVAULT_SECRET_ENV_VAR_PLACES, new EnvVarCompletionProvider());
     }
 
-    private static class PropertiesKeyVaultVariableCompletionProvider extends CompletionProvider<CompletionParameters> {
+    private static class EnvVarCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@Nonnull final CompletionParameters parameters, @Nonnull final ProcessingContext context, @Nonnull CompletionResultSet result) {
-            final Module module = ModuleUtil.findModuleForFile(parameters.getOriginalFile());
+            final PsiFile file = parameters.getOriginalFile();
+            final PsiElement element = parameters.getPosition();
+            final Module module = ModuleUtil.findModuleForFile(file);
+            final Optional<String> key = file instanceof PropertiesFileImpl ?
+                Optional.of(element).map(PsiElement::getParent).map(PsiElement::getFirstChild).map(PsiElement::getText) :
+                Optional.of(element).map(e -> PsiTreeUtil.getParentOfType(e, YAMLPsiElement.class)).map(YAMLUtil::getConfigFullName);
+            final boolean isSecretSupported = file instanceof PsiJavaFile || key.map(EnvVarCompletionContributor::isSecretKey).orElse(false);
+            if (Objects.isNull(module) || !AzureModule.from(module).hasDependencies(KEYVAULT_DEPENDENCY) || !isSecretSupported) {
+                return;
+            }
             final String prefix = result.getPrefixMatcher().getPrefix();
-            if (Objects.isNull(module) || !hasKeyVaultDependencies(module)) {
+            if (!StringUtils.contains(prefix, "$")) {
                 return;
-            }
-            if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-                result.addElement(LookupElements.buildSignInLookupElement());
-                return;
-            }
-            if (StringUtils.contains(prefix, "$")) {
+            } else {
                 final String after = StringUtils.substringAfterLast(prefix, "$");
                 if (after.contains("}")) {
                     return;
@@ -80,39 +88,34 @@ public class EnvVarCompletionContributor extends CompletionContributor {
                     result = result.withPrefixMatcher("$" + after);
                 }
             }
-            final Optional<String> key = parameters.getOriginalFile() instanceof PropertiesFileImpl ?
-                Optional.of(parameters.getPosition()).map(PsiElement::getParent).map(PsiElement::getFirstChild)
-                    .map(PsiElement::getText) :
-                Optional.of(parameters.getPosition()).map(e -> PsiTreeUtil.getParentOfType(e, YAMLPsiElement.class))
-                    .map(YAMLUtil::getConfigFullName);
-            if (!key.map(EnvVarCompletionContributor::isSecretKey).orElse(false)) {
+            if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+                result.withPrefixMatcher("").addElement(LookupElements.buildSignInLookupElement("Sign in to Azure to select Key Vault secrets..."));
                 return;
             }
-            final List<KeyVault> vaults = AzureModule.from(module).getConnections(KeyVaultResourceDefinition.INSTANCE).stream()
-                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).collect(Collectors.toList());
-            if (!vaults.isEmpty()) {
+            final List<KeyVault> vaults = AzureModule.from(module).getConnectedResources(KeyVaultResourceDefinition.INSTANCE);
+            if (vaults.isEmpty() && result.getPrefixMatcher().getPrefix().startsWith("$")) {
+                result = result.withPrefixMatcher("");
+                listResourceForDefinition(module.getProject(), KeyVaultResourceDefinition.INSTANCE).stream()
+                    .map(a -> LookupElementBuilder
+                        .create(a.getName())
+                        .withInsertHandler(new ConnectKeyVaultInsertHandler(a))
+                        .withBoldness(true)
+                        .withCaseSensitivity(false)
+                        .withTypeText(a.getData().getResourceTypeName())
+                        .withTailText(" " + a.getData().getResourceGroupName())
+                        .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.KeyVault.MODULE)))
+                    .forEach(result::addElement);
+            } else {
                 vaults.stream().flatMap(v -> listSecrets(v).stream())
                     .map(s -> LookupElementBuilder.create(String.format("${%s}", s.getName()))
                         .withBoldness(true)
+                        .withInsertHandler(new SecretInsertHandler())
                         .withCaseSensitivity(false)
                         .withTypeText(s.getResourceTypeName())
                         .withTailText(" " + s.getParent().getName())
                         .withIcon(IntelliJAzureIcons.getIcon(AzureResourceIconProvider.getResourceBaseIconPath(s))))
                     .forEach(result::addElement);
             }
-        }
-
-
-        private static boolean hasKeyVaultDependencies(@Nonnull final Module module) {
-            final Pattern PATTERN = Pattern.compile("(Gradle|Maven): com\\.azure\\.spring:spring-cloud-azure-starter-keyvault:(.+)");
-            final boolean[] hasKeyVaultDependencies = {false};
-            OrderEnumerator.orderEntries(module).forEachLibrary(library -> {
-                Optional.ofNullable(library.getName()).filter(StringUtils::isNotBlank)
-                    .map(PATTERN::matcher).filter(Matcher::matches)
-                    .ifPresent(m -> hasKeyVaultDependencies[0] = true);
-                return !hasKeyVaultDependencies[0];
-            });
-            return hasKeyVaultDependencies[0];
         }
     }
 
@@ -139,15 +142,19 @@ public class EnvVarCompletionContributor extends CompletionContributor {
         private final Resource<KeyVault> vault;
 
         @Override
-        @AzureOperation("user/connector.insert_keyvault_secrets_in_spring_config_from_code_completion")
+        @AzureOperation("user/connector.connect_keyvault_from_code_completion")
         public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement item) {
             context.getDocument().deleteString(context.getStartOffset(), context.getTailOffset());
-            final Module module = ModuleUtil.findModuleForFile(context.getFile());
-            Optional.ofNullable(ModuleUtil.findModuleForFile(context.getFile()))
-                .map(AzureModule::from)
-                .ifPresent(m -> m.connect(vault,
-                    (c) -> AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor())));
+            Optional.ofNullable(ModuleUtil.findModuleForFile(context.getFile())).map(AzureModule::from).ifPresent(
+                m -> m.connect(vault, (c) ->
+                    AutoPopupController.getInstance(context.getProject()).scheduleAutoPopup(context.getEditor())));
         }
     }
 
+    private static class SecretInsertHandler implements InsertHandler<LookupElement> {
+        @Override
+        @AzureOperation("user/connector.insert_keyvault_secret_from_code_completion")
+        public void handleInsert(@Nonnull InsertionContext context, @Nonnull LookupElement item) {
+        }
+    }
 }

@@ -38,12 +38,12 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor.SPRING_CONFIG_VALUE_PLACES;
+import static com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor.KEYVAULT_SECRET_ENV_VAR_PLACES;
 
 public class PlainTextSecretAnnotator implements Annotator {
     @Override
     public void annotate(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
-        if (SPRING_CONFIG_VALUE_PLACES.accepts(element)) {
+        if (KEYVAULT_SECRET_ENV_VAR_PLACES.accepts(element)) {
             final String key = element.getContainingFile() instanceof PropertiesFileImpl ?
                 Optional.of(element).map(PsiElement::getParent).map(PsiElement::getFirstChild)
                     .map(PsiElement::getText).orElse("") :

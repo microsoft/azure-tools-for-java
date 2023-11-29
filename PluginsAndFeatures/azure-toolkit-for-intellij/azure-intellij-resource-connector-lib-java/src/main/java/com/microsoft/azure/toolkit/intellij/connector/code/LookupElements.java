@@ -38,10 +38,14 @@ public class LookupElements {
     public static final String CONNECT_AZURE_RESOURCE = "Connect Azure resource";
 
     public static LookupElement buildSignInLookupElement() {
+        return buildSignInLookupElement("Sign in to Azure to select resources...");
+    }
+
+    public static LookupElement buildSignInLookupElement(String text) {
         return LookupElementBuilder.create(SIGN_IN_TO_AZURE)
             .withIcon(IntelliJAzureIcons.getIcon(AzureIcons.Common.AZURE.getIconPath()))
-            .withPresentableText("Sign in to Azure to select resources...")
-            .withTypeText("Action")
+            .withPresentableText(text)
+            .withTypeText("Sign in")
             .withCaseSensitivity(false)
             .withInsertHandler(new SignInInsertHandler());
     }

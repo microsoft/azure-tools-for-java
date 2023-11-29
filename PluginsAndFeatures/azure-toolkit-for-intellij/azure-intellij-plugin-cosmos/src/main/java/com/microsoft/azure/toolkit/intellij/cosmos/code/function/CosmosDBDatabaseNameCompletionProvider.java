@@ -82,10 +82,9 @@ public class CosmosDBDatabaseNameCompletionProvider extends CompletionProvider<C
         if (Objects.isNull(database) && StringUtils.isNotBlank(connectionValue)) {
             return;
         }
-        final Stream<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? Stream.of(database) :
-            AzureModule.from(module).getConnections(SqlCosmosDBAccountResourceDefinition.INSTANCE).stream()
-                .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData);
-        accountsToSearch
+        final List<SqlDatabase> accountsToSearch = Objects.nonNull(database) ? List.of(database) :
+            AzureModule.from(module).getConnectedResources(SqlCosmosDBAccountResourceDefinition.INSTANCE);
+        accountsToSearch.stream()
                 .map(d -> createLookupElement(d, module))
                 .forEach(result::addElement);
         AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_cosmos_database"));

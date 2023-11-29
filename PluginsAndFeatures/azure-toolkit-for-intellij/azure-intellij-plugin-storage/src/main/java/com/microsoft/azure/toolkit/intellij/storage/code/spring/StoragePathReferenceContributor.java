@@ -18,7 +18,7 @@ import java.util.List;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
 
-public class StoragePathResourceReferenceContributor extends PsiReferenceContributor {
+public class StoragePathReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(@Nonnull PsiReferenceRegistrar registrar) {
@@ -42,7 +42,7 @@ public class StoragePathResourceReferenceContributor extends PsiReferenceContrib
         final String text = element.getText();
         final String valueWithPrefix = element.getValue() instanceof String ? (String) element.getValue() : StringUtils.EMPTY;
         final String[] parts = new TextRange(prefix.length() + 1, valueWithPrefix.length() + 1).substring(text).split("/", -1);
-        final List<StoragePathResourceReference> references = new ArrayList<>();
+        final List<StoragePathReference> references = new ArrayList<>();
         final int startOffset = prefix.length() + 1;
         int offset = startOffset;
         for (final String part : parts) {
@@ -52,7 +52,7 @@ public class StoragePathResourceReferenceContributor extends PsiReferenceContrib
             final int endOffset = offset + part.length();
             final TextRange range = new TextRange(offset, endOffset);
             final String fullNameWithPrefix = protocol + new TextRange(startOffset, endOffset).substring(text);
-            references.add(new StoragePathResourceReference(element, range, fullNameWithPrefix, account));
+            references.add(new StoragePathReference(element, range, fullNameWithPrefix, account));
             offset = endOffset + 1;
         }
         return references.toArray(new PsiReference[0]);

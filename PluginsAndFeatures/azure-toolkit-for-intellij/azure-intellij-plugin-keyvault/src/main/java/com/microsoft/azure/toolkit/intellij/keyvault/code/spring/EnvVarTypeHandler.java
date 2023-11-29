@@ -15,20 +15,24 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.yaml.psi.impl.YAMLFileImpl;
 import org.jetbrains.yaml.psi.impl.YAMLPlainTextImpl;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.Optional;
+
+import static com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor.ANNOTATION_VALUE;
 
 public class EnvVarTypeHandler extends TypedHandlerDelegate {
     @Override
     public @Nonnull Result checkAutoPopup(char charTyped, @Nonnull Project project, @Nonnull Editor editor, @Nonnull PsiFile file) {
         if (DumbService.isDumb(project) // indexing
             || !EnvVarCompletionContributor.SPECIAL_CHARS.contains(charTyped) // not related special chars
-            || (!(file instanceof PropertiesFileImpl) && !(file instanceof YAMLFileImpl))) {
+            || !(file instanceof PropertiesFileImpl || file instanceof YAMLFileImpl || file instanceof PsiJavaFile)) {
             return Result.CONTINUE;
         }
         final PsiElement ele = file.findElementAt(editor.getCaretModel().getOffset() - 1); // generated psi element doesn't contain the typed char.
@@ -41,7 +45,8 @@ public class EnvVarTypeHandler extends TypedHandlerDelegate {
             Optional.ofNullable(ele).map(PsiElement::getNode).map(ASTNode::getElementType)
                 .filter(t -> t == PropertiesTokenTypes.KEY_VALUE_SEPARATOR || t == PropertiesTokenTypes.VALUE_CHARACTERS)
                 .isPresent();
-        if (isPropertyValue || isYamlValue || EnvVarCompletionContributor.SPRING_CONFIG_VALUE_PLACES.accepts(ele)) {
+        final boolean inValueAnnotation = file instanceof PsiJavaFile && Objects.nonNull(ele) && ANNOTATION_VALUE.accepts(ele) || ANNOTATION_VALUE.accepts(ele.getParent());
+        if (isPropertyValue || isYamlValue || inValueAnnotation) {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
             return Result.STOP;
         }

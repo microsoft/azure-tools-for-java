@@ -253,6 +253,21 @@ public class AzureModule {
             });
     }
 
+    public boolean hasDependencies(@Nonnull final Pattern libPattern) {
+        final boolean[] hasDependencies = {false};
+        OrderEnumerator.orderEntries(this.module).forEachLibrary(library -> {
+            Optional.ofNullable(library.getName()).filter(StringUtils::isNotBlank)
+                .map(libPattern::matcher).filter(Matcher::matches)
+                .ifPresent(m -> hasDependencies[0] = true);
+            return !hasDependencies[0];
+        });
+        return hasDependencies[0];
+    }
+
+    public boolean hasValidConnections(@Nonnull final ResourceDefinition<?> definition) {
+        return this.getConnections(definition).stream().anyMatch(Connection::isValidConnection);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> List<Connection<T, ?>> getConnections(@Nonnull ResourceDefinition<T> definition) {
         return Optional.ofNullable(this.getDefaultProfile())
