@@ -81,9 +81,9 @@ public class CosmosDBContainerNameCompletionProvider extends CompletionProvider<
         if (Objects.isNull(database) && (StringUtils.isNotBlank(connectionValue) || StringUtils.isNotBlank(databaseValue))) {
             return;
         }
-        final List<SqlDatabase> databasesToSearch = Objects.nonNull(database) ? List.of(database) :
-                AzureModule.from(module).getConnectedResources(SqlCosmosDBAccountResourceDefinition.INSTANCE);
-        databasesToSearch.stream()
+        final Stream<SqlDatabase> databasesToSearch = Objects.nonNull(database) ? Stream.of(database) :
+            AzureModule.from(module).getConnectedResources(SqlCosmosDBAccountResourceDefinition.INSTANCE).stream();
+        databasesToSearch
                 .flatMap(db -> db.containers().list().stream())
                 .map(container -> createLookupElement(container, module))
                 .forEach(result::addElement);
