@@ -30,7 +30,7 @@ public class KeyPropertiesEditorProvider implements FileEditorProvider, DumbAwar
     @Nonnull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/redis.create_properties_editor.redis", params = {"virtualFile.getName()"})
+    @AzureOperation(name = "user/keyvault.create_properties_editor.key", params = {"virtualFile.getName()"})
     public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         final Key data = (Key) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert data != null;

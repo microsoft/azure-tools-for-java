@@ -86,6 +86,7 @@ public class AzureSettingsPanel {
     private AzureFileInput txtAzurite;
     private AzuriteWorkspaceComboBox txtAzuriteWorkspace;
     private AzureFileInput txtAzureCli;
+    private JLabel lblAzureCliPath;
 
     private AzureConfiguration originalConfig;
 
@@ -328,8 +329,9 @@ public class AzureSettingsPanel {
             null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
         this.txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.txtAzureCli = new AzureFileInput();
-        this.txtAzureCli.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Command-Line Interface (CLI)", null, txtStorageExplorer,
+        this.txtAzureCli.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Command-Line Interface (CLI)", null, txtAzureCli,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.txtAzureCli.addValidator(this::validateAzureCliPath);
         this.txtAzurite = new AzureFileInput();
         this.txtAzurite.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azurite", null, txtAzurite,
                 null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
@@ -348,6 +350,21 @@ public class AzureSettingsPanel {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
             AzureActionManager.getInstance().getAction(INSTALL_DOTNET_RUNTIME).handle(null);
         });
+    }
+
+    public AzureValidationInfo validateAzureCliPath() {
+        final String path = txtAzureCli.getValue();
+        if (StringUtils.isEmpty(path)) {
+            return AzureValidationInfo.ok(txtAzureCli);
+        }
+        final File file = new File(path);
+        if (!FileUtil.exists(path)) {
+            return AzureValidationInfo.error("Target file does not exist", txtAzureCli);
+        }
+        if (FileUtils.isDirectory(file)) {
+            return AzureValidationInfo.error("Please select correct path for Azure CLI executable", txtAzureCli);
+        }
+        return AzureValidationInfo.ok(txtStorageExplorer);
     }
 
     public AzureValidationInfo validateStorageExplorerPath() {

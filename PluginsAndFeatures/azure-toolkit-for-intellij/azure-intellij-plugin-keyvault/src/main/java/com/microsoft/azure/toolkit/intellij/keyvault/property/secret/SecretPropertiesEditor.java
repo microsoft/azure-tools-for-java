@@ -101,7 +101,7 @@ public class SecretPropertiesEditor extends AzResourcePropertiesEditor<SecretVer
         final Action<Void> refreshAction = new Action<Void>(Action.Id.of("user/keyvault.refresh_properties_view.secret"))
                 .withAuthRequired(true)
                 .withSource(this.resource)
-                .withIdParam(this.resource.getName())
+                .withIdParam(Optional.ofNullable(this.resource).map(AzResource::getName).orElse(StringUtils.EMPTY))
                 .withHandler(ignore -> this.refresh());
         this.btnRefresh.setAction(refreshAction);
 

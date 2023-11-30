@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.code.function;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.intellij.patterns.PsiJavaPatterns.literalExpression;
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
@@ -82,8 +84,10 @@ public class FunctionConnectionCompletionContributor extends CompletionContribut
                 final Module module = ModuleUtil.findModuleForPsiElement(parameters.getPosition());
                 final AzureModule azureModule = Optional.ofNullable(module).map(AzureModule::from).orElse(null);
                 // get all connection string from function definition
-                addExistingConnectionLookupElements(azureModule, result, resourceDefinition);
+                final List<LookupElement> elements = getExistingConnectionLookupElements(azureModule, result, resourceDefinition);
+                elements.forEach(result::addElement);
                 AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_function_connection"));
+                AzureTelemeter.info("connector.resources_count.function_connection_code_completion", ImmutableMap.of("count", elements.size() + "", "key", annotation.getQualifiedName()));
             }
         });
     }
@@ -98,15 +102,15 @@ public class FunctionConnectionCompletionContributor extends CompletionContribut
                 .findFirst().orElse(null);
     }
 
-    private void addExistingConnectionLookupElements(AzureModule azureModule, CompletionResultSet result, FunctionSupported<?> resourceDefinition) {
+    private List<LookupElement> getExistingConnectionLookupElements(AzureModule azureModule, CompletionResultSet result, FunctionSupported<?> resourceDefinition) {
         final List<Connection<?, ?>> connections = Optional.ofNullable(azureModule)
                 .map(AzureModule::getDefaultProfile)
                 .map(Profile::getConnections).orElse(Collections.emptyList());
-        connections.stream()
+        return connections.stream()
                 .filter(connection -> Objects.equals(connection.getResource().getDefinition(), resourceDefinition))
                 .filter(Connection::isValidConnection)
                 .map(this::createExistingLookupElement)
-                .forEach(result::addElement);
+                .collect(Collectors.toList());
     }
 
     private LookupElement createExistingLookupElement(Connection<?, ?> connection) {

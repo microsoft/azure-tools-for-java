@@ -30,7 +30,7 @@ public class SecretVersionPropertiesEditorProvider implements FileEditorProvider
     @Nonnull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/redis.create_properties_editor.redis", params = {"virtualFile.getName()"})
+    @AzureOperation(name = "user/keyvault.create_properties_editor.secret_version", params = {"virtualFile.getName()"})
     public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         final SecretVersion data = (SecretVersion) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert data != null;

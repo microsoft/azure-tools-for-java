@@ -30,7 +30,7 @@ public class SecretPropertiesEditorProvider implements FileEditorProvider, DumbA
     @Nonnull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/redis.create_properties_editor.redis", params = {"virtualFile.getName()"})
+    @AzureOperation(name = "user/keyvault.create_properties_editor.secret", params = {"virtualFile.getName()"})
     public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         final Secret data = (Secret) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert data != null;

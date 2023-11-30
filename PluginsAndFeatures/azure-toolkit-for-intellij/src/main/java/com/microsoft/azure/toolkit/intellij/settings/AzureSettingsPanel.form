@@ -303,12 +303,12 @@
           <toolTipText value="Specify the number of rows returned by per query"/>
         </properties>
       </component>
-      <component id="96ba1" class="javax.swing.JLabel">
+      <component id="96ba1" class="javax.swing.JLabel" binding="lblAzureCliPath">
         <constraints>
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Azure Cli path:"/>
+          <text value="Azure CLI path:"/>
         </properties>
       </component>
       <component id="4ef4d" class="com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput" binding="txtAzureCli" custom-create="true">

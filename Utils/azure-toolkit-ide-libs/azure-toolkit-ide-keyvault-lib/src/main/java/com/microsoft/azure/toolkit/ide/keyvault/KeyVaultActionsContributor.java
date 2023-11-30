@@ -53,7 +53,7 @@ public class KeyVaultActionsContributor implements IActionsContributor {
 
         new Action<>(ENABLE_CREDENTIAL_VERSION)
                 .withLabel("Enable")
-                .withIdParam(AzResource::getResourceTypeName)
+                .withIdParam(r -> r.getCredential().getResourceTypeName())
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .enableWhen(s -> BooleanUtils.isFalse(s.isEnabled()))
@@ -70,7 +70,7 @@ public class KeyVaultActionsContributor implements IActionsContributor {
 
         new Action<>(DISABLE_CREDENTIAL_VERSION)
                 .withLabel("Disable")
-                .withIdParam(AzResource::getResourceTypeName)
+                .withIdParam(r -> r.getCredential().getResourceTypeName())
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .enableWhen(s -> BooleanUtils.isTrue(s.isEnabled()))
@@ -87,7 +87,7 @@ public class KeyVaultActionsContributor implements IActionsContributor {
 
         new Action<>(DOWNLOAD_CREDENTIAL_VERSION)
                 .withLabel("Download")
-                .withIdParam(AzResource::getResourceTypeName)
+                .withIdParam(r -> r.getCredential().getResourceTypeName())
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .register(am);
@@ -102,7 +102,7 @@ public class KeyVaultActionsContributor implements IActionsContributor {
 
         new Action<>(SHOW_CREDENTIAL_VERSION)
                 .withLabel("Show")
-                .withIdParam(AzResource::getResourceTypeName)
+                .withIdParam(r -> r.getCredential().getResourceTypeName())
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .register(am);

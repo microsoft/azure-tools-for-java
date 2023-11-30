@@ -21,6 +21,7 @@ import com.intellij.util.DocumentUtil;
 import com.intellij.util.ProcessingContext;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.connector.ResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -35,11 +36,17 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLPsiElement;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 
 import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.getPropertyField;
 
 public class YamlKeyCompletionProvider extends CompletionProvider<CompletionParameters> implements DumbAware {
+    private static final List<? extends SpringSupported<?>> definitions = ResourceManager
+            .getDefinitions(ResourceDefinition.RESOURCE).stream()
+            .filter(d -> d instanceof SpringSupported)
+            .map(d -> (SpringSupported<?>) d).toList();
+
     @Override
     protected void addCompletions(@Nonnull CompletionParameters parameters, @Nonnull ProcessingContext context,
                                   @Nonnull CompletionResultSet result) {
@@ -54,9 +61,7 @@ public class YamlKeyCompletionProvider extends CompletionProvider<CompletionPara
             return;
         }
         ProgressManager.checkCanceled();
-        ResourceManager.getDefinitions().stream()
-                .filter(d -> d instanceof SpringSupported<?>)
-                .map(d -> (SpringSupported<?>) d)
+        definitions.stream()
                 .flatMap(d -> d.getSpringProperties(key).stream().map(p -> Triple.of(p.getKey(), p.getValue(), d)))
                 .filter(t -> !StringUtils.startsWith(t.getLeft(), "#")) // filter out commented properties
                 .filter(t -> StringUtils.isBlank(key) || (StringUtils.startsWith(t.getLeft(), key) && !StringUtils.equals(t.getLeft(), key)))

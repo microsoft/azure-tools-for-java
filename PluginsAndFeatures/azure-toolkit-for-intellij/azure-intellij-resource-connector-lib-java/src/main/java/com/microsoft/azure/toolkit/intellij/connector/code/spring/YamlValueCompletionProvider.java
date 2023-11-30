@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.code.spring;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -70,11 +71,13 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
                 .flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream())
                 .collect(Collectors.toList());
         ProgressManager.checkCanceled();
-        resources.stream()
+        final List<LookupElement> elements = resources.stream()
                 .map(resource -> createYamlValueLookupElement(module, resource))
                 .filter(Objects::nonNull)
-                .forEach(result::addElement);
+                .collect(Collectors.toList());
+        elements.forEach(result::addElement);
         AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_values_in_yaml"));
+        AzureTelemeter.info("connector.resources_count.yaml_value_code_completion", ImmutableMap.of("count", elements.size() + "", "key", key));
     }
 
     @Nullable
@@ -111,7 +114,7 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
         final PsiElement element = PsiUtil.getElementAtOffset(context.getFile(), context.getStartOffset());
         final YAMLPsiElement yamlElement = Objects.requireNonNull(PsiTreeUtil.getParentOfType(element, YAMLPsiElement.class));
         final String key = YAMLUtil.getConfigFullName(yamlElement);
-        final SpringSupported<?> definition = (SpringSupported<?>)connection.getResource().getDefinition();
+        final SpringSupported<?> definition = (SpringSupported<?>) connection.getResource().getDefinition();
         final String value = definition.getSpringProperties(key).stream()
                 .filter(pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key))
                 .findFirst()

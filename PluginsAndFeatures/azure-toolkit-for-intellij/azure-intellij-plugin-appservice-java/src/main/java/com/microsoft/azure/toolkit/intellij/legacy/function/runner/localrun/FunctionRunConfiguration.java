@@ -131,7 +131,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     @javax.annotation.Nullable
     public String getDefaultLocalSettingsJsonPath(final Module module) {
         // workaround to get module file, todo: investigate the process canceled exception with FilenameIndex API
-        return Objects.isNull(module) ? null : Paths.get(ModuleUtil.getModuleDirPath(module), "local.settings.json").toString();
+        return Objects.isNull(module) || Objects.isNull(module.getModuleFilePath()) ? null : Paths.get(ModuleUtil.getModuleDirPath(module), "local.settings.json").toString();
     }
 
     public Map<String, String> getAppSettings() {

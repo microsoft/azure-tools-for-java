@@ -30,7 +30,7 @@ public class CertificatePropertiesEditorProvider implements FileEditorProvider, 
     @Nonnull
     @Override
     @ExceptionNotification
-    @AzureOperation(name = "user/redis.create_properties_editor.redis", params = {"virtualFile.getName()"})
+    @AzureOperation(name = "user/keyvault.create_properties_editor.certificate", params = {"virtualFile.getName()"})
     public FileEditor createEditor(@Nonnull Project project, @Nonnull VirtualFile virtualFile) {
         final Certificate redis = (Certificate) virtualFile.getUserData(AzureResourceEditorViewManager.AZURE_RESOURCE_KEY);
         assert redis != null;
