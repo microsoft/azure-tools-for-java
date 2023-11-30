@@ -49,10 +49,10 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
         final String suffix = Azure.az(AzureCloud.class).get().getStorageEndpointSuffix();
-        properties.add(Pair.of("spring.redis.host", String.format("${%s_HOST}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.redis.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.redis.password", String.format("${%s_KEY}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.redis.ssl", String.format("${%s_SSL}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.data.redis.host", String.format("${%s_HOST}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.data.redis.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.data.redis.password", String.format("${%s_KEY}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.data.redis.ssl.enabled", String.format("${%s_SSL}", Connection.ENV_PREFIX)));
         return properties;
     }
 

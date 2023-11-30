@@ -310,7 +310,7 @@ public class TreeUtils {
         listener.set(new TreeModelAdapter() {
             @Override
             protected void process(@NotNull final TreeModelEvent event, @NotNull final EventType type) {
-                if (event.getTreePath().equals(checkpoint.get()) && type != EventType.NodesRemoved) {
+                if (event.getTreePath().equals(checkpoint.get()) && type != EventType.NodesRemoved && type != EventType.NodesChanged) {
                     doSelectNode(tree, finder, checkpoint, listener.get());
                 }
             }

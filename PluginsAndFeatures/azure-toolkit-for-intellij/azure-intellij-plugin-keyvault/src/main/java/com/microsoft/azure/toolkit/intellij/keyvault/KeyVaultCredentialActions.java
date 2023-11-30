@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.keyvault;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -22,6 +23,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.keyvault.CredentialVersion;
 import com.microsoft.azure.toolkit.lib.keyvault.secret.SecretVersion;
 import org.apache.commons.io.FileUtils;
@@ -123,8 +125,10 @@ public class KeyVaultCredentialActions {
     private static void ensureAzureCli(@Nullable final Project project) {
         final boolean cliInstalled = AzureCliUtils.isAppropriateCliInstalled() || isAzureCliConfigured();
         if (!cliInstalled) {
+            AzureTelemeter.info("keyvault.azure_cli_install_status", ImmutableMap.of("cli_installed", String.valueOf(false)));
             throw new AzureToolkitRuntimeException("Please install Azure CLI first.", getAzureCliNotExistsActions(project));
         }
+        AzureTelemeter.info("keyvault.azure_cli_install_status", ImmutableMap.of("cli_installed", String.valueOf(true)));
     }
 
     private static boolean isAzureCliConfigured() {

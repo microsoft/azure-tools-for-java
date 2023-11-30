@@ -70,19 +70,21 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
         env.put(String.format("%s_USERNAME", Connection.ENV_PREFIX), account.getName());
         env.put(String.format("%s_PASSWORD", Connection.ENV_PREFIX), account.listKeys().getPrimaryMasterKey());
         env.put(String.format("%s_KEYSPACE", Connection.ENV_PREFIX), keyspace.getName());
+        env.put(String.format("%s_REGION", Connection.ENV_PREFIX), keyspace.getRegion().getLabel());
         return env;
     }
 
     @Override
     public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
         final List<Pair<String, String>> properties = new ArrayList<>();
-        properties.add(Pair.of("spring.data.cassandra.contact-points", String.format("${%s_CONTACT_POINT}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.cassandra.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.cassandra.username", String.format("${%s_USERNAME}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.cassandra.password", String.format("${%s_PASSWORD}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.cassandra.keyspace-name", String.format("${%s_KEYSPACE}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.cassandra.schema-action", "create_if_not_exists"));
-        properties.add(Pair.of("spring.data.cassandra.ssl", "true"));
+        properties.add(Pair.of("spring.cassandra.contact-points", String.format("${%s_CONTACT_POINT}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.cassandra.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.cassandra.username", String.format("${%s_USERNAME}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.cassandra.password", String.format("${%s_PASSWORD}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.cassandra.keyspace-name", String.format("${%s_KEYSPACE}", Connection.ENV_PREFIX)));
+        properties.add(Pair.of("spring.cassandra.schema-action", "create_if_not_exists"));
+        properties.add(Pair.of("spring.cassandra.ssl.enabled", "true"));
+        properties.add(Pair.of("spring.cassandra.local-datacenter", String.format("${%s_REGION}", Connection.ENV_PREFIX)));
         return properties;
     }
 }
