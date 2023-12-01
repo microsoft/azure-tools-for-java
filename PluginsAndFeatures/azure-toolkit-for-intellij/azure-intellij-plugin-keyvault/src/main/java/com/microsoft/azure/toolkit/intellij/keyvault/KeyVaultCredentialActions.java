@@ -22,6 +22,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.keyvault.CredentialVersion;
@@ -65,6 +66,7 @@ public class KeyVaultCredentialActions {
 
     public static void showCredential(@Nonnull final CredentialVersion resource, @Nullable final Project project) {
         ensureAzureCli(project);
+        OperationContext.action().setTelemetryProperty("resourceType", resource.getResourceTypeName());
         final String azureCliPath = Azure.az().config().getAzureCliPath();
         final String rawCommand = resource.getShowCredentialCommand();
         final String command = isAzureCliConfigured() ?
@@ -74,6 +76,7 @@ public class KeyVaultCredentialActions {
 
     public static void downloadCredential(@Nonnull final CredentialVersion resource, @Nullable final Project project) {
         ensureAzureCli(project);
+        OperationContext.action().setTelemetryProperty("resourceType", resource.getResourceTypeName());
         final AzureTaskManager manager = AzureTaskManager.getInstance();
         manager.runLater(() -> {
             final FileChooserDescriptor fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();

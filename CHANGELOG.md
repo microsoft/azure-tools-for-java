@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.83.0](#3830)
   - [3.82.0](#3820)
   - [3.81.0](#3810)
   - [3.80.0](#3800)
@@ -103,6 +104,20 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.83.0
+### Added
+- Add Azure Key Vault support in Azure Toolkits
+  * Resource Management features in Azure explorer
+    - Create new secret/certificate/key in toolkts
+    - View/Download secret/certificate/key (need Azure CLI installed)
+  * Code assistance of Key Vault for Spring project
+
+### Fixed
+- Get the error of "AzureToolkitRuntimeException" when opening project with resource connection configuration file
+- Get duplicate property key when connect resource from .properties
+- Generate deprecated configurations with code completions in spring properties
+- Build task will be removed for project with resource connection
 
 ## 3.82.0
 ### Added

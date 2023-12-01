@@ -11,8 +11,8 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.action.IActionGroup;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.keyvault.Credential;
 import com.microsoft.azure.toolkit.lib.keyvault.CredentialVersion;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
@@ -48,7 +48,10 @@ public class KeyVaultActionsContributor implements IActionsContributor {
                 .withIdParam(AzResource::getResourceTypeName)
                 .withIdParam(AzResource::getName)
                 .enableWhen(s -> BooleanUtils.isFalse(s.isEnabled()))
-                .withHandler((s, r) -> s.enable())
+                .withHandler((s, r) -> {
+                    OperationContext.action().setTelemetryProperty("resourceType", s.getResourceTypeName());
+                    s.enable();
+                })
                 .register(am);
 
         new Action<>(ENABLE_CREDENTIAL_VERSION)
@@ -57,7 +60,10 @@ public class KeyVaultActionsContributor implements IActionsContributor {
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .enableWhen(s -> BooleanUtils.isFalse(s.isEnabled()))
-                .withHandler((s, r) -> s.enable())
+                .withHandler((s, r) -> {
+                    OperationContext.action().setTelemetryProperty("resourceType", s.getResourceTypeName());
+                    s.enable();
+                })
                 .register(am);
 
         new Action<>(DISABLE_CREDENTIAL)
@@ -65,7 +71,10 @@ public class KeyVaultActionsContributor implements IActionsContributor {
                 .withIdParam(AzResource::getResourceTypeName)
                 .withIdParam(AzResource::getName)
                 .enableWhen(s -> BooleanUtils.isTrue(s.isEnabled()))
-                .withHandler((s, r) -> s.disable())
+                .withHandler((s, r) -> {
+                    OperationContext.action().setTelemetryProperty("resourceType", s.getResourceTypeName());
+                    s.disable();
+                })
                 .register(am);
 
         new Action<>(DISABLE_CREDENTIAL_VERSION)
@@ -74,7 +83,10 @@ public class KeyVaultActionsContributor implements IActionsContributor {
                 .withIdParam(AzResource::getName)
                 .withIdParam(version -> version.getCredential().getName())
                 .enableWhen(s -> BooleanUtils.isTrue(s.isEnabled()))
-                .withHandler((s, r) -> s.disable())
+                .withHandler((s, r) -> {
+                    OperationContext.action().setTelemetryProperty("resourceType", s.getResourceTypeName());
+                    s.disable();
+                })
                 .register(am);
 
         new Action<>(DOWNLOAD_CREDENTIAL)
@@ -180,7 +192,7 @@ public class KeyVaultActionsContributor implements IActionsContributor {
                 "---",
                 ResourceCommonActionsContributor.REFRESH,
                 "---",
-                am.getAction(ResourceCommonActionsContributor.CREATE).bind(null).withLabel("Create New Key"),
+                am.getAction(ResourceCommonActionsContributor.CREATE).bind(null).withLabel("Create New Version"),
                 ResourceCommonActionsContributor.DELETE,
                 "---",
                 ResourceCommonActionsContributor.SHOW_PROPERTIES,
