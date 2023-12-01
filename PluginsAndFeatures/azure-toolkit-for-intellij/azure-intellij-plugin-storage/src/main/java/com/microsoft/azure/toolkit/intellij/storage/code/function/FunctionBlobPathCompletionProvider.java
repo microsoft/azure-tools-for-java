@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnno
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationTypeHandler;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationValueInsertHandler;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionContributor;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -44,6 +43,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.getConnectedResources;
 import static com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionProvider.*;
 
 public class FunctionBlobPathCompletionProvider extends CompletionProvider<CompletionParameters> {
@@ -83,7 +83,7 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
         final String value = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
         final String fullPrefix = StringUtils.substringBefore(value, StoragePathCompletionContributor.DUMMY_IDENTIFIER);
-        final List<StorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE);
+        final List<StorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
         final List<? extends StorageFile> files = getFiles("azure-blob://" + fullPrefix, accountsToSearch);
         final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
                 .withInsertHandler(new FunctionAnnotationValueInsertHandler(title.endsWith("/"), getAdditionalPropertiesFromCompletion(getStorageAccount(file), module)))

@@ -19,6 +19,7 @@ import com.intellij.ui.tree.TreeVisitor;
 import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.favorite.Favorite;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijAzureActionManager;
@@ -262,12 +263,18 @@ public class TreeUtils {
     }
 
     public static void selectResourceNode(@Nonnull JTree tree, @Nonnull AzComponent resource) {
-        selectResourceNode(tree, resource, false);
+        final DefaultMutableTreeNode r = (DefaultMutableTreeNode) tree.getModel().getRoot();
+        DefaultMutableTreeNode root = ((DefaultMutableTreeNode) r.getChildAt(1)); // apps root
+        if (resource instanceof Favorite) {
+            resource = ((Favorite) resource).getResource();
+            root = (DefaultMutableTreeNode) r.getChildAt(0); // favorite root
+        }
+        if (Objects.nonNull(resource)) {
+            selectResourceNode(tree, resource, root);
+        }
     }
 
-    public static void selectResourceNode(@Nonnull JTree tree, @Nonnull AzComponent resource, boolean underTypeGroup) {
-        final DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
-        final DefaultMutableTreeNode node = TreeUtil.findNode(root, underTypeGroup ? TreeUtils::underTypeGroups : TreeUtils::underAppGroups);
+    public static void selectResourceNode(@Nonnull JTree tree, @Nonnull AzComponent resource, DefaultMutableTreeNode node) {
         tree.putClientProperty(HIGHLIGHTED_RESOURCE_KEY, resource);
         Optional.ofNullable(node).ifPresent(n -> TreeUtils.selectNode(tree, new NodeFinder() {
             @Override
@@ -279,7 +286,7 @@ public class TreeUtils {
             public boolean contains(final TreePath path) {
                 final Object current = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
                 final ResourceId resourceId = ResourceId.fromString(resource.getId() + "DUMMY");
-                if (underTypeGroup && current instanceof AzService && ((AzService) current).getName().equalsIgnoreCase(resourceId.providerNamespace())) {
+                if (current instanceof AzService && ((AzService) current).getName().equalsIgnoreCase(resourceId.providerNamespace())) {
                     return true;
                 }
                 // why append? consider resource `xxx/abc` and `xxx/abcd`

@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.ide.storage.StorageActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
@@ -59,8 +60,6 @@ import java.util.stream.Collectors;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.listResourceForDefinition;
-
 public class StoragePathCompletionProvider extends CompletionProvider<CompletionParameters> {
 
     @Override
@@ -77,9 +76,9 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
             if (Objects.isNull(module)) {
                 return;
             }
-            final List<StorageAccount> accounts = AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE);
+            final List<StorageAccount> accounts = Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
             if (accounts.isEmpty()) {
-                listResourceForDefinition(module.getProject(), StorageAccountResourceDefinition.INSTANCE).stream()
+                Utils.checkCancelled(() -> StorageAccountResourceDefinition.INSTANCE.getResources(module.getProject())).stream()
                     .map(a -> LookupElementBuilder
                         .create(a.getName())
                         .withInsertHandler(new ConnectStorageAccountInsertHandler(a))
@@ -141,7 +140,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
 
     @Nullable
     public static StorageFile getFile(String fullPrefix, Module module) {
-        return getFile(fullPrefix, AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE));
+        return getFile(fullPrefix, Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE));
     }
 
     @Nullable

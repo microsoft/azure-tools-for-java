@@ -24,7 +24,6 @@ import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationCompletionConfidence;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationTypeHandler;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionAnnotationValueInsertHandler;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionContributor;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -42,6 +41,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiElement;
+import static com.microsoft.azure.toolkit.intellij.connector.code.Utils.getConnectedResources;
 
 public class FunctionTableNameCompletionProvider extends CompletionProvider<CompletionParameters> {
     public static final String[] TABLE_ANNOTATIONS = new String[]{
@@ -75,7 +75,7 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
         final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
-        final List<StorageAccount> accounts = Objects.isNull(account) ? AzureModule.from(module).getConnectedResources(StorageAccountResourceDefinition.INSTANCE) : List.of(account);
+        final List<StorageAccount> accounts = Objects.isNull(account) ? getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE) : List.of(account);
         accounts.stream().flatMap(a -> a.getTableModule().list().stream())
                 .filter(table -> StringUtils.startsWithIgnoreCase(table.getName(), fullPrefix))
                 .map(queue -> createLookupElement(queue, module))

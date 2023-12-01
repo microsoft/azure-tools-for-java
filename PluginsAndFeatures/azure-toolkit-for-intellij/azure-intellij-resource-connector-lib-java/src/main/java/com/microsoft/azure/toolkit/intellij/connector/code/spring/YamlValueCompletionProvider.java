@@ -68,7 +68,7 @@ public class YamlValueCompletionProvider extends CompletionProvider<CompletionPa
             return;
         }
         final List<? extends Resource<?>> resources = definitions.stream()
-                .flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream())
+                .flatMap(d -> Utils.checkCancelled(() -> d.getResources(module.getProject())).stream())
                 .collect(Collectors.toList());
         ProgressManager.checkCanceled();
         final List<LookupElement> elements = resources.stream()

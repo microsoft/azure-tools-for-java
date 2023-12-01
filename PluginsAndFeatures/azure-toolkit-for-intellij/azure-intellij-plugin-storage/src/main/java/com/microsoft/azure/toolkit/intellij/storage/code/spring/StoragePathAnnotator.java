@@ -16,7 +16,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.microsoft.azure.toolkit.intellij.connector.code.AnnotationFixes;
 import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -52,8 +51,8 @@ public class StoragePathAnnotator implements Annotator {
                     AnnotationFixes.createSignInAnnotation(element, holder);
                 } else {
                     final List<StorageAccount> accounts = Optional.of(element)
-                        .map(ModuleUtil::findModuleForPsiElement).map(AzureModule::from)
-                        .map(module -> module.getConnectedResources(StorageAccountResourceDefinition.INSTANCE))
+                        .map(ModuleUtil::findModuleForPsiElement)
+                        .map(module -> Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE))
                         .orElse(Collections.emptyList());
                     if (accounts.isEmpty()) {
                         holder.newAnnotation(HighlightSeverity.WARNING, "No Azure Storage account connected")

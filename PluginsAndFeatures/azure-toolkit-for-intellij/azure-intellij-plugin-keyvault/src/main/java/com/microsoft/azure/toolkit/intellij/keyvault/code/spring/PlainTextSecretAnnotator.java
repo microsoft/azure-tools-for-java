@@ -23,6 +23,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.AnnotationFixes;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
 import com.microsoft.azure.toolkit.intellij.keyvault.connection.KeyVaultResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.keyvault.creation.secret.SecretCreationActions;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -75,21 +76,21 @@ public class PlainTextSecretAnnotator implements Annotator {
                             }
                             final AzureTaskManager tm = AzureTaskManager.getInstance();
                             tm.runOnPooledThread(() -> {
-                                final Optional<Connection<KeyVault, ?>> optVault = Optional.ofNullable(ModuleUtil.findModuleForFile(file)).map(AzureModule::from).stream()
+                                final Optional<Connection<KeyVault, ?>> optConn = Optional.ofNullable(ModuleUtil.findModuleForFile(file)).map(AzureModule::from).stream()
                                     .flatMap(m -> m.getConnections(KeyVaultResourceDefinition.INSTANCE).stream()).filter(Connection::isValidConnection).findAny();
-                                if (optVault.isEmpty()) { // has no Azure KeyVault connection.
+                                if (optConn.isEmpty()) { // has no Azure KeyVault connection.
                                     tm.runLater(() -> AnnotationFixes.createNewConnection(KeyVaultResourceDefinition.INSTANCE, (c) -> {
                                         final KeyVault vault = (KeyVault) c.getResource().getData();
-                                        createSecretAndReplace(project, editor, vault);
+                                        createSecretAndReplace(c, project, editor, vault);
                                     }).invoke(project, editor, file));
                                 } else {
-                                    final KeyVault vault = optVault.get().getResource().getData();
-                                    createSecretAndReplace(project, editor, vault);
+                                    final KeyVault vault = optConn.get().getResource().getData();
+                                    createSecretAndReplace(optConn.get(), project, editor, vault);
                                 }
                             });
                         }
 
-                        private void createSecretAndReplace(@Nonnull Project project, Editor editor, KeyVault vault) {
+                        private void createSecretAndReplace(final Connection<?, ?> connection, @Nonnull Project project, Editor editor, KeyVault vault) {
                             final SecretDraft.Config config = new SecretDraft.Config();
                             config.setValue(value);
                             SecretCreationActions.createNewSecret(vault, config, s -> WriteCommandAction.runWriteCommandAction(project, () ->
@@ -97,6 +98,7 @@ public class PlainTextSecretAnnotator implements Annotator {
                                     final Document document = editor.getDocument();
                                     document.replaceString(range.getStartOffset(), range.getEndOffset(), String.format("${%s}", s.getName()));
                                     PsiDocumentManager.getInstance(project).commitDocument(document);
+                                    AbstractAzureFacetNode.selectConnectedResource(connection, s.getId(), true);
                                 })
                             ));
                         }

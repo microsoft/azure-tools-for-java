@@ -12,6 +12,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJvmModifiersOwner;
@@ -55,10 +56,12 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
         }
         final String key = parameters.getPosition().getParent().getFirstChild().getText();
         final List<? extends SpringSupported<?>> definitions = getSupportedDefinitions(key);
+        ProgressManager.checkCanceled();
         if (!definitions.isEmpty()) {
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_resources_in_properties"));
             if (Azure.az(AzureAccount.class).isLoggedIn()) {
                 final List<LookupElementBuilder> elements = buildCompletionItems(definitions, module, key);
+                ProgressManager.checkCanceled();
                 AzureTelemeter.info("connector.resources_count.properties_value_code_completion", ImmutableMap.of("count", elements.size() + "", "key", key));
                 elements.forEach(result::addElement);
                 result.addLookupAdvertisement("Press enter to configure all required properties to connect Azure resource.");
@@ -76,7 +79,7 @@ public class PropertiesValueCompletionProvider extends CompletionProvider<Comple
     @Nonnull
     @AzureOperation("boundary/connector.build_value_completion_items_in_properties")
     private static List<LookupElementBuilder> buildCompletionItems(final List<? extends SpringSupported<?>> definitions, final Module module, final String key) {
-        return definitions.stream().flatMap(d -> Utils.listResourceForDefinition(module.getProject(), d).stream()
+        return definitions.stream().flatMap(d -> Utils.checkCancelled(() -> d.getResources(module.getProject())).stream()
             .map(r -> LookupElementBuilder.create(r, r.getName())
                 .withIcon(IntelliJAzureIcons.getIcon(StringUtils.firstNonBlank(d.getIcon(), AzureIcons.Common.AZURE.getIconPath())))
                 .bold()
