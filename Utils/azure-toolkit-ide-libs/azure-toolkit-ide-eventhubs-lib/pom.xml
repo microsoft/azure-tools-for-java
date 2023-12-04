@@ -5,7 +5,7 @@
     <parent>
         <artifactId>azure-toolkit-ide-libs</artifactId>
         <groupId>com.microsoft.azure</groupId>
-        <version>0.39.0</version>
+        <version>0.40.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>azure-toolkit-ide-eventhubs-lib</artifactId>
