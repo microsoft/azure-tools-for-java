@@ -222,11 +222,21 @@
                     <groupId>org.xerial.snappy</groupId>
                     <artifactId>snappy-java</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency><!-- hadoop-common 3.3.3 CVE-2023-34455 -->
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
+        </dependency>
+        <dependency><!-- hadoop-common 3.3.3 CVE-2023-44981 -->
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <scope>provided</scope>
+            <version>3.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
@@ -320,6 +330,14 @@
                 <exclusion>
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>
+                </exclusion>
+                <exclusion><!-- CVE-2023-44487 -->
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-http2</artifactId>
+                </exclusion>
+                <exclusion><!-- CVE-2023-34462 -->
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-handler</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
