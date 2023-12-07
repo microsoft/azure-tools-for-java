@@ -31,8 +31,8 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azure.toolkit-lib.version>0.39.0</azure.toolkit-lib.version>
-        <azure.toolkit-ide-lib.version>0.39.0</azure.toolkit-ide-lib.version>
+        <azure.toolkit-lib.version>0.39.2</azure.toolkit-lib.version>
+        <azure.toolkit-ide-lib.version>0.39.2</azure.toolkit-ide-lib.version>
         <hdinsight.toolkit-ide-lib.version>0.1.0</hdinsight.toolkit-ide-lib.version>
     </properties>
     <modules>
