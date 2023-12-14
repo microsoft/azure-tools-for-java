@@ -3,18 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-package com.microsoft.azure.toolkit.ide.guidance.view.components;
-
-import com.intellij.ui.RoundedLineBorder;
+package com.microsoft.azure.toolkit.intellij.common.component;
 
 import java.awt.*;
 
-public class TagLineBorder extends RoundedLineBorder {
-    public TagLineBorder(Color color) {
+public class RoundedLineBorder extends com.intellij.ui.RoundedLineBorder {
+    public RoundedLineBorder(Color color) {
         super(color);
     }
 
-    public TagLineBorder(Color color, int thickness) {
+    public RoundedLineBorder(Color color, int thickness) {
         super(color, thickness);
     }
 

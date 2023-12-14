@@ -1,0 +1,3 @@
+<idea-plugin>
+    <depends optional="true" config-file="azure-intellij-plugin-samples-git4idea.xml">Git4Idea</depends>
+</idea-plugin>

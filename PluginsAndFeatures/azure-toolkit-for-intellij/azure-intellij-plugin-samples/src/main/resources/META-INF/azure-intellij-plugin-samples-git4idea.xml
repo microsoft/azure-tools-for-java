@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.samples.IntelliJAzureSamplesActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <openapi.vcs.ui.cloneDialog.VcsCloneDialogExtension
+                id="com.microsoft.azure.toolkit.intellij.samples.view.AzureSamplesCloneDialogExtension"
+                implementation="com.microsoft.azure.toolkit.intellij.samples.view.AzureSamplesCloneDialogExtension"
+                order="after com.intellij.util.ui.cloneDialog.RepositoryUrlCloneDialogExtension"/>
+    </extensions>
+</idea-plugin>

@@ -139,8 +139,8 @@ public class ChatBox {
         this.messageBox.removeAll();
         this.messageBox.setVisible(false);
         this.placeholder.setVisible(true);
-        this.contentPanel.revalidate();
-        this.contentPanel.repaint();
+        this.scrollPane.revalidate();
+        this.scrollPane.repaint();
     }
 
     @AzureOperation(value = "user/openai.send_message.deployment",
@@ -153,8 +153,8 @@ public class ChatBox {
         if (this.messageBox.getComponentCount() == 0) {
             this.placeholder.setVisible(false);
             this.messageBox.setVisible(true);
-            this.contentPanel.revalidate();
-            this.contentPanel.repaint();
+            this.scrollPane.revalidate();
+            this.scrollPane.repaint();
         }
         this.sendBtn.setEnabled(false);
         this.clearBtn.setEnabled(false);
@@ -186,6 +186,8 @@ public class ChatBox {
             this.messageBox.add(message);
             this.messageBox.revalidate();
             this.messageBox.repaint();
+            this.scrollPane.revalidate();
+            this.scrollPane.repaint();
 
             this.scrollToBottom();
         });

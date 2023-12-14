@@ -1,7 +1,9 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
+import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
@@ -11,9 +13,8 @@ import com.microsoft.azure.toolkit.ide.guidance.action.ShowGettingStartAction;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.intellij.common.component.RoundedPanel;
+import com.microsoft.azure.toolkit.intellij.common.component.RoundedLineBorder;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import lombok.Getter;
 
@@ -109,7 +110,7 @@ public class CoursePanel {
 
     private JLabel decorateTagLabel(String tag) {
         final JLabel label = new JLabel(tag);
-        final Border borderLine = new TagLineBorder(new JBColor(12895428, 6185056), 2);
+        final Border borderLine = new RoundedLineBorder(new JBColor(12895428, 6185056), 2);
         final Border margin = JBUI.Borders.empty(0, 6);
         label.setBorder(new CompoundBorder(borderLine, margin));
         label.setFont(JBFont.regular().lessOn(2));
@@ -123,8 +124,9 @@ public class CoursePanel {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
-        this.rootPanel = new RoundedPanel(5);
+        //noinspection UnstableApiUsage
+        this.rootPanel = new RoundedPanel(new GridLayoutManager(3, 3), 5);
+        this.rootPanel.setBorder(BorderFactory.createEmptyBorder());
         this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-8));
     }

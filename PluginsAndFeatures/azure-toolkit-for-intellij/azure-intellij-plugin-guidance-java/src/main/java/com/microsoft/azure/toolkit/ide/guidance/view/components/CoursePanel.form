@@ -6,7 +6,7 @@
       <xy x="20" y="20" width="255" height="138"/>
     </constraints>
     <properties/>
-    <border type="none"/>
+    <border type="empty"/>
     <children>
       <hspacer id="5f93c">
         <constraints>

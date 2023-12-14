@@ -25,7 +25,6 @@ import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.*;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
-import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinker;
 import com.microsoft.azure.toolkit.lib.servicelinker.ServiceLinkerModule;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudApp;
@@ -73,6 +72,11 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
     public static final Action.Id<ServiceLinker> FOCUS_ON_CONNECTED_SERVICE = Action.Id.of("user/common.focus_on_connected_service");
     public static final Action.Id<ServiceLinkerModule> CREATE_SERVICE_LINKER_IN_PORTAL = Action.Id.of("user/$resource.create_service_linker_in_portal");
     public static final Action.Id<AbstractAzService<?, ?>> GETTING_STARTED = Action.Id.of("user/$resource.open_getting_start.service");
+    public static final Action.Id<Object> BROWSE_AZURE_SAMPLES = Action.Id.of("user/samples.browse_samples");
+    public static final Action.Id<String> SEARCH_INSTALLED_PLUGIN = Action.Id.of("user/common.search_installed_plugin.keyword");
+    public static final Action.Id<String> SEARCH_MARKETPLACE_PLUGIN = Action.Id.of("user/common.search_marketplace_plugin.keyword");
+    public static final Action.Id<String> ENABLE_PLUGIN = Action.Id.of("user/common.enable_plugin.pluginid");
+    public static final Action.Id<String> ENABLE_PLUGIN_AND_RESTART = Action.Id.of("user/common.enable_plugin_and_restart.pluginid");
     public static final Action.Id<Object> SHOW_COURSES = Action.Id.of("user/$resource.show_courses");
     public static final Action.Id<Object> OPEN_MONITOR = Action.Id.of("user/monitor.open_azure_monitor");
     public static final Action.Id<Action.Id<?>> SUPPRESS_ACTION = Action.Id.of("user/common.never_show_again");
@@ -345,6 +349,30 @@ public class ResourceCommonActionsContributor implements IActionsContributor {
 
         new Action<>(SUPPRESS_ACTION)
             .withLabel("Don't show again")
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(SEARCH_INSTALLED_PLUGIN)
+            .withLabel("Search installed plugin")
+            .withIdParam(s -> s)
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(SEARCH_MARKETPLACE_PLUGIN)
+            .withLabel("Search plugin in marketplace")
+            .withIdParam(s -> s)
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(ENABLE_PLUGIN)
+            .withLabel("Enable plugin")
+            .withIdParam(s -> s)
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(ENABLE_PLUGIN_AND_RESTART)
+            .withLabel("Enable plugin and Restart")
+            .withIdParam(s -> s)
             .withAuthRequired(false)
             .register(am);
     }

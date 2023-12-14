@@ -78,11 +78,14 @@ public class IntellijAzureActionManager extends AzureActionManager {
         }
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
     @Override
     public <D> Action<D> getAction(Action.Id<D> id) {
         final AnAction origin = ActionManager.getInstance().getAction(id.getId());
-        if (origin instanceof AnActionWrapper) {
+        if (Objects.isNull(origin)) {
+            return null;
+        } else if (origin instanceof AnActionWrapper) {
             return (Action<D>) ((AnActionWrapper<?>) origin).getAction();
         } else {
             return new Action<>(id)

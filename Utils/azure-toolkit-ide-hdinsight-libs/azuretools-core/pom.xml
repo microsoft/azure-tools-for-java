@@ -56,6 +56,7 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
+<<<<<<< HEAD
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -131,6 +132,8 @@
                 </executions>
             </plugin>
         </plugins>
+=======
+>>>>>>> origin/develop
         <resources>
             <resource>
                 <directory>src</directory>
@@ -144,10 +147,6 @@
         </resources>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-toolkit-common-lib</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-ide-common-lib</artifactId>
