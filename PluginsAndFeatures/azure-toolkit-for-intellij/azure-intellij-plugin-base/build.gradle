@@ -96,7 +96,7 @@ subprojects {
 intellij {
     pluginName = 'azure-intellij-plugin-base'
     version = intellij_version
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins]
+    plugins = ['java', 'maven', 'maven-model', 'gradle']
     downloadSources = Boolean.valueOf(sources)
 }
 
