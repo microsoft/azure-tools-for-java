@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -106,7 +107,7 @@ public class OpenKubernetesPluginAction {
         }
         final KubernetesApiProjectSettings projectSettings = KubernetesApiProjectSettings.Companion.getInstance(project);
         final KubernetesApiProvider apiProvider = KubernetesApiProvider.Companion.getInstance(project);
-        apiProvider.addContext$intellij_clouds_kubernetes(result);
+        apiProvider.addContexts$intellij_clouds_kubernetes(List.of(result));
         final MessageBus messageBus = project.getMessageBus();
         final MessageBusConnection connect = messageBus.connect();
         connect.subscribe(ServiceEventListener.TOPIC, (ServiceEventListener) serviceEvent -> {
