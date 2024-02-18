@@ -36,7 +36,7 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     public void updateSbtVersions() {
         final String[][] versions = new String[1][1];
         ProgressManager.getInstance().runProcess(() -> {
-            versions[0] = (String[]) Versions.SBT$.MODULE$.loadVersionsWithProgress().versions().toArray(ClassTag.apply(String.class));
+            versions[0] = (String[]) Versions.SBT$.MODULE$.loadVersionsWithProgress(null).versions().toArray(ClassTag.apply(String.class));
         }, null);
 
         for (String version : versions[0]) {
