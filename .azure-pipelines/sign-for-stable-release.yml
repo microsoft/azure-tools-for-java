@@ -136,6 +136,29 @@ extends:
                   SourceFolder: $(system.defaultworkingdirectory)/artifacts
                   Contents: "*.zip"
                   TargetFolder: $(build.artifactstagingdirectory)
+              
+              ### Copy files for APIScan
+              - task: CopyFiles@2
+                displayName: 'Copy Files for APIScan'
+                inputs:
+                  SourceFolder: $(system.defaultworkingdirectory)/artifacts/intellij/folder
+                  Contents: "*.jar"
+                  TargetFolder: $(Agent.TempDirectory)\APIScanFiles
+                condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
+
+              ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
+              - task: APIScan@2
+                displayName: Run APIScan
+                inputs:
+                  softwareFolder: $(Agent.TempDirectory)\APIScanFiles
+                  softwareName: 'Azure Toolkit for Java'
+                  softwareVersionNum: '$(Build.BuildId)'
+                  isLargeApp: false
+                  toolVersion: 'Latest'
+                condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
+                env:
+                  AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
+
               - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
                 displayName: "Manifest Generator "
                 inputs:
