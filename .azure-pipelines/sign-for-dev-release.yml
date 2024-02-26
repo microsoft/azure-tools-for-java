@@ -15,7 +15,7 @@ resources:
   repositories:
     - repository: self
       type: git
-      ref: refs/heads/wangmi/1es
+      ref: refs/heads/develop
     - repository: 1esPipelines
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
@@ -55,17 +55,6 @@ extends:
                   versionSpec: "17"
                   jdkArchitectureOption: x64
                   jdkSourceOption: PreInstalled
-              - task: Bash@3
-                displayName: Set up environment and resources
-                inputs:
-                  targetType: inline
-                  script: |-
-                    # Set Environment Variables
-                    export JAVA_HOME=$JAVA_HOME_17_X64
-                    export PATH=$JAVA_HOME/bin:$PATH
-
-                    echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-                    echo "##vso[task.setvariable variable=PATH]$PATH"
               - task: Bash@3
                 displayName: Build Toolkit Libs@$(TOOLKIT_BRANCH)
                 inputs:
