@@ -26,8 +26,8 @@ extends:
   parameters:
     pool:
       name: 1ES_JavaTooling_Pool
-      image: 1ES_JavaTooling_Ubuntu-2004
-      os: linux
+      image: 1ES_JavaTooling_Windows_2022
+      os: windows
     sdl:
       sourceAnalysisPool:
         name: 1ES_JavaTooling_Pool
