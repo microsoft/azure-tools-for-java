@@ -60,7 +60,8 @@ extends:
                 inputs:
                   targetType: inline
                   script: |-
-                    # Write your commands here
+                    export JAVA_HOME=$JAVA_HOME_17_X64
+                    export PATH=$JAVA_HOME/bin:$PATH
 
                     # ./gradlew buildUtils || exit -1
                     mvn install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true
@@ -68,7 +69,10 @@ extends:
                 displayName: Build IntelliJ
                 inputs:
                   targetType: inline
-                  script: |
+                  script: |-
+                    export JAVA_HOME=$JAVA_HOME_17_X64
+                    export PATH=$JAVA_HOME/bin:$PATH
+
                     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY) -PneedPatchVersion=false -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false)
 
                     mkdir -p ./artifacts/intellij/
