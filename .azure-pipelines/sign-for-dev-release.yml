@@ -60,9 +60,7 @@ extends:
                 inputs:
                   targetType: inline
                   script: |-
-                    export JAVA_HOME=$JAVA_HOME_17_X64
-                    export PATH=$JAVA_HOME/bin:$PATH
-
+                    mvn -v
                     TARGET_BRANCH=$(TOOLKIT_BRANCH)
 
                     ls ~/.m2/repository/com/microsoft/azure/azure-toolkit-*
@@ -87,19 +85,15 @@ extends:
                 inputs:
                   targetType: inline
                   script: |-
-                    export JAVA_HOME=$JAVA_HOME_17_X64
-                    export PATH=$JAVA_HOME/bin:$PATH
+                    mvn -v
 
                     # ./gradlew buildUtils || exit -1
-                    mvn install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true
+                    mvn install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
               - task: Bash@3
                 displayName: Build IntelliJ
                 inputs:
                   targetType: inline
                   script: |-
-                    export JAVA_HOME=$JAVA_HOME_17_X64
-                    export PATH=$JAVA_HOME/bin:$PATH
-
                     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY)  -PneedPatchVersion=true -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false)
 
                     mkdir -p ./artifacts/intellij/
@@ -162,7 +156,7 @@ extends:
                 displayName: Run APIScan
                 inputs:
                   softwareFolder: $(Agent.TempDirectory)\APIScanFiles
-                  softwareName: 'Azure Toolkit for Java'
+                  softwareName: 'microsoft.azure-intellij-plugin.sign-dev'
                   softwareVersionNum: '$(Build.BuildId)'
                   isLargeApp: false
                   toolVersion: 'Latest'
