@@ -134,7 +134,7 @@ extends:
                   script: |
                     # Write your commands here
 
-                    (cd ./artifacts/intellij/folder && zip -r ../../azure-toolkit-for-intellij-$(Build.BuildNumber).zip ./azure-toolkit-for-intellij/)
+                    (cd ./artifacts/intellij/folder && git archive --format zip -o ../../azure-toolkit-for-intellij-$(Build.BuildNumber).zip HEAD azure-toolkit-for-intellij)
               - task: CopyFiles@2
                 displayName: "Copy Files to: $(build.artifactstagingdirectory)"
                 inputs:
