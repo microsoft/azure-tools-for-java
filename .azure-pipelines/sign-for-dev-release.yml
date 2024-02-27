@@ -96,15 +96,15 @@ extends:
                   script: |-
                     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY)  -PneedPatchVersion=true -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false)
 
-                    mkdir -p ./artifacts/intellij/
-                    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/*.zip ./artifacts/intellij/azure-toolkit-for-intellij.zip
-                    unzip ./artifacts/intellij/azure-toolkit-for-intellij.zip -d ./artifacts/intellij/folder
-                    rm  ./artifacts/intellij/azure-toolkit-for-intellij.zip
+                    mkdir -p ./artifacts/
+                    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/*.zip ./artifacts/azure-toolkit-for-intellij.zip
+                    unzip ./artifacts/azure-toolkit-for-intellij.zip -d ./artifacts/azure-toolkit-for-intellij
+                    rm  ./artifacts/azure-toolkit-for-intellij.zip
               - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
                 displayName: Sign IntelliJ
                 inputs:
                   ConnectedServiceName: vscjavaci_esrp_codesign
-                  FolderPath: artifacts/intellij/folder
+                  FolderPath: artifacts/azure-toolkit-for-intellij
                   Pattern: azure-intellij-*.jar, azure-toolkit-*.jar, azuretools-core-*.jar,azure-explorer-common-*.jar,hdinsight-node-common-*.jar, azure-sdk-reference-book.jar
                   signConfigType: inlineSignParams
                   inlineOperation: |-
@@ -134,7 +134,7 @@ extends:
                   script: |
                     # Write your commands here
 
-                    (cd ./artifacts/intellij/folder && git archive --format zip -o ../../azure-toolkit-for-intellij-$(Build.BuildNumber).zip HEAD azure-toolkit-for-intellij)
+                    (cd ./artifacts && git archive --format zip -o ./azure-toolkit-for-intellij-$(Build.BuildNumber).zip HEAD azure-toolkit-for-intellij)
               - task: CopyFiles@2
                 displayName: "Copy Files to: $(build.artifactstagingdirectory)"
                 inputs:
@@ -146,16 +146,16 @@ extends:
               - task: CopyFiles@2
                 displayName: 'Copy Files for APIScan'
                 inputs:
-                  SourceFolder: $(system.defaultworkingdirectory)/artifacts/intellij/folder
+                  SourceFolder: $(system.defaultworkingdirectory)/artifacts/azure-toolkit-for-intellij
                   Contents: "*.jar"
-                  TargetFolder: $(Agent.TempDirectory)\APIScanFiles
+                  TargetFolder: $(Agent.TempDirectory)/APIScanFiles
                 condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
 
               ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
               - task: APIScan@2
                 displayName: Run APIScan
                 inputs:
-                  softwareFolder: $(Agent.TempDirectory)\APIScanFiles
+                  softwareFolder: $(Agent.TempDirectory)/APIScanFiles
                   softwareName: 'microsoft.azure-intellij-plugin.sign-dev'
                   softwareVersionNum: '$(Build.BuildId)'
                   isLargeApp: false
