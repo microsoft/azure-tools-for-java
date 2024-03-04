@@ -90,6 +90,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         Optional.ofNullable(element.getChild(JAVA_VERSION))
                 .map(javaVersionElement -> javaVersionElement.getAttributeValue(JAVA_VERSION))
                 .ifPresent(webAppSettingModel::setWebAppJavaVersion);
+        Optional.ofNullable(this.getAppSettingsKey())
+                .ifPresent(key -> webAppSettingModel.getConfig().setAppSettings(FunctionUtils.loadAppSettingsFromSecurityStorage(getAppSettingsKey())));
     }
 
     @Override
