@@ -30,7 +30,7 @@ extends:
     customBuildTags:
       - MigrationTooling-mseng-VSJava-10780-Tool
     stages:
-      - stage: Stage
+      - stage: Build
         jobs:
           - job: Job_1
             timeoutInMinutes: 0
@@ -56,6 +56,8 @@ extends:
                   targetType: inline
                   script: |-
                     mvn -v
+                    git fetch origin $(BRANCH) 
+                    git checkout $(BRANCH)
                     # ./gradlew buildUtils || exit -1
                     mvn clean install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
                     mvn clean -f ./Utils/pom.xml
@@ -66,48 +68,8 @@ extends:
                   script: |-
                     mkdir -p ./out/
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
-                    ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY)  -PneedPatchVersion=false -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false
+                    ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY) -PneedPatchVersion=false -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false
                     cp ./build/distributions/*.zip ../../out/azure-toolkit-for-intellij.zip
-                    ./gradlew clean
-                    cd ../../
-                    unzip ./out/azure-toolkit-for-intellij.zip -d ./out
-                    rm  ./out/azure-toolkit-for-intellij.zip
-              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
-                displayName: Sign Plugin
-                inputs:
-                  ConnectedServiceName: vscjavaci_esrp_codesign
-                  FolderPath: out
-                  Pattern: azure-intellij-*.jar,instrumented-azure-*.jar,azure-toolkit-ide-*.jar,azuretools-core-*.jar,azure-explorer-common-*.jar,hdinsight-node-common-*.jar
-                  signConfigType: inlineSignParams
-                  inlineOperation: |-
-                    [
-                            {
-                                "KeyCode" : "$(KEY_CODE)",
-                                "OperationCode" : "JavaSign",
-                                "Parameters" : {
-                                    "SigAlg" : "SHA256withRSA",
-                                    "Timestamp" : "-tsa http://sha256timestamp.ws.digicert.com/sha256/timestamp"
-                                },
-                                "ToolName" : "sign",
-                                "ToolVersion" : "1.0"
-                            },
-                            {
-                                "KeyCode" : "$(KEY_CODE)",
-                                "OperationCode" : "JavaVerify",
-                                "Parameters" : {},
-                                "ToolName" : "sign",
-                                "ToolVersion" : "1.0"
-                            }
-                    ]
-              - task: PowerShell@2
-                displayName: Repackage
-                inputs:
-                  targetType: inline
-                  script: |
-                    # Write your commands here
-                    Compress-Archive -Path ./out/azure-toolkit-for-intellij -DestinationPath ./out/azure-toolkit-for-intellij-$(Build.BuildNumber).zip
-                    rm -r ./out/azure-toolkit-for-intellij/
-                    # git archive --format zip -o ./out/azure-toolkit-for-intellij-$(Build.BuildNumber).zip HEAD ./out/azure-toolkit-for-intellij
               ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
               - task: APIScan@2
                 displayName: Run APIScan
