@@ -340,7 +340,6 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
     @Override
     public IntelliJWebAppSettingModel getValue() {
         final IntelliJWebAppSettingModel model = new IntelliJWebAppSettingModel();
-        Optional.ofNullable(comboBoxWebApp.getValue()).ifPresent(model::setConfig);
         Optional.ofNullable(comboBoxArtifact.getValue()).ifPresent(a -> {
             model.setAzureArtifactType(a.getType());
             model.setArtifactIdentifier(a.getIdentifier());
@@ -354,8 +353,9 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
                     .map(value -> StringUtils.equalsIgnoreCase(value, DO_NOT_CLONE_SLOT_CONFIGURATION) ? NEW_CONFIGURATION_SOURCE : value).orElse(null);
             slotConfig.setConfigurationSource(useExistingSlot ? null : source);
         }
-        model.getConfig().setSlotConfig(slotConfig);
-        model.getConfig().setAppSettings(appSettingsTable.getAppSettings());
+        Optional.ofNullable(comboBoxWebApp.getValue())
+                .map(c -> c.toBuilder().slotConfig(slotConfig).appSettings(appSettingsTable.getAppSettings()).build())
+                .ifPresent(model::setConfig);
         model.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
         model.setSlotPanelVisible(slotDecorator.isExpanded());
         return model;
