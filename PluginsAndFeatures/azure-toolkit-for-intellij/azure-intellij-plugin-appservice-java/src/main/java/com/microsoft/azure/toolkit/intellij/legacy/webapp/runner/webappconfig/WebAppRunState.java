@@ -32,6 +32,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -90,7 +91,11 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", artifact.getAbsolutePath()));
         }
         final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTarget();
-        // todo: support java agent resource connections, currently there is no java agent resource definition
+        // todo: remove workaround after fix reset issue in toolkit lib
+        if (deployTarget instanceof AzResource.Draft<?, ?> draft) {
+            draft.reset();
+        }
+        webAppConfiguration.setWebApp(deployTarget);
         deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot());
         return deployTarget;
     }
