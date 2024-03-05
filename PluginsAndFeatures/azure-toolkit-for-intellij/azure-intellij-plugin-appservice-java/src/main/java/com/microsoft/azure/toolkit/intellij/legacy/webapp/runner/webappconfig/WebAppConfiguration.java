@@ -169,8 +169,8 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setWebApp(@Nonnull WebAppBase<?,?,?> webApp) {
         final AppServiceConfig config = AppServiceConfigUtils.fromAppService(webApp);
-        config.setAppSettings(webApp.getAppSettings()); // todo: move this to app service toolkit lib
         this.webAppSettingModel.setConfig(config);
+        Optional.ofNullable(webApp.getAppSettings()).ifPresent(values -> this.saveAppSettings(getAppSettingsKey(), values));
     }
 
     public void setArtifact(AzureArtifact azureArtifact) {
@@ -199,6 +199,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveAppSettings(@Nonnull final String appSettingsKey, @Nonnull final Map<String, String> appSettings) {
         this.webAppSettingModel.setAppSettingsKey(appSettingsKey);
+        this.webAppSettingModel.getConfig().setAppSettings(appSettings);
         FunctionUtils.saveAppSettingsToSecurityStorage(appSettingsKey, appSettings);
     }
 
