@@ -115,7 +115,8 @@ public class DeployFunctionAppAction extends AnAction {
         final RunConfiguration runConfiguration = settings.getConfiguration();
         if (runConfiguration instanceof FunctionDeployConfiguration) {
             if (Objects.nonNull(app) && app.getFormalStatus().isConnected()) {
-                final FunctionAppConfig config = AppServiceConfigUtils.fromFunctionApp(app, app.getAppServicePlan());
+                final FunctionAppConfig config = AppServiceConfigUtils.fromFunctionApp(app);
+                config.setAppSettings(app.getAppSettings());
                 ((FunctionDeployConfiguration) runConfiguration).saveConfig(config);
             }
             if (Objects.nonNull(module)) {
