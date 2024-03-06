@@ -107,6 +107,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.85.1
+### Fixed
+- [#8206](https://github.com/microsoft/azure-tools-for-java/issues/8206): After saving the web app run configuration, the app settings will be cleared.
+
 ## 3.85.0
 ### Added
 - Support for containerized FunctionApps (based on Azure Container Apps) 
