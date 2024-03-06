@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.ide.containerservice;
 
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
+import com.microsoft.azure.toolkit.ide.common.component.ActionNode;
 import com.microsoft.azure.toolkit.ide.common.component.AzResourceNode;
 import com.microsoft.azure.toolkit.ide.common.component.AzServiceNode;
 import com.microsoft.azure.toolkit.ide.common.component.Node;
@@ -48,10 +49,13 @@ public class ContainerServiceNodeProvider implements IExplorerNodeProvider {
                 .withActions(ContainerServiceActionsContributor.SERVICE_ACTIONS)
                 .addChildren(clusters, (cluster, serviceNode) -> this.createNode(cluster, serviceNode, manager));
         } else if (data instanceof KubernetesCluster) {
-            return new AzResourceNode<>((KubernetesCluster) data)
-                .addInlineAction(ResourceCommonActionsContributor.PIN)
-                .onDoubleClicked(ResourceCommonActionsContributor.SHOW_PROPERTIES)
-                .withActions(ContainerServiceActionsContributor.CLUSTER_ACTIONS);
+            final ActionNode<KubernetesCluster> actionNode = new ActionNode<>(ContainerServiceActionsContributor.OPEN_KUBERNETES_PLUGIN, (KubernetesCluster) data);
+            final Node<KubernetesCluster> clusterNode = new AzResourceNode<>((KubernetesCluster) data)
+                    .addInlineAction(ResourceCommonActionsContributor.PIN)
+                    .addInlineAction(ContainerServiceActionsContributor.OPEN_KUBERNETES_PLUGIN)
+                    .onDoubleClicked(ResourceCommonActionsContributor.SHOW_PROPERTIES)
+                    .withActions(ContainerServiceActionsContributor.CLUSTER_ACTIONS);
+            return actionNode.isEnabled() ? clusterNode.addChild(actionNode) : clusterNode;
 //                    .addChildren(cluster -> cluster.agentPools().list(), (agentPool, clusterNode) -> this.createNode(agentPool, clusterNode, manager));
         }
 //        else if (data instanceof KubernetesClusterAgentPool) {

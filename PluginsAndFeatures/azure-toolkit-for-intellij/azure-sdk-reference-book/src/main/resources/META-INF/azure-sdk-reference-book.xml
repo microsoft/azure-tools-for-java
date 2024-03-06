@@ -8,6 +8,7 @@
         <dependencySupport displayName="Azure SDK client libraries(Track 2)" coordinate="com.azure:azure-core" kind="java"/>
         <dependencySupport displayName="Azure SDK client libraries" coordinate="com.microsoft.azure:azure-client-runtime" kind="java"/>
         <dependencySupport displayName="Library for Azure Java Functions" coordinate="com.microsoft.azure.functions:azure-functions-java-library" kind="java"/>
+        <dependencySupport displayName="Azure Command-Line Interface (CLI)"  kind="executable" coordinate="az"/>
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.azuresdk.ProjectSdkIntrospectionStartupActivity"/>
     </extensions>
 

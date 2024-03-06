@@ -4,6 +4,7 @@
     <depends>org.jetbrains.idea.maven</depends>
     <depends>com.intellij.gradle</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
+    <depends optional="true" config-file="azure-intellij-plugin-containerregistry-docker.xml">Docker</depends>
     <extensionPoints>
         <extensionPoint name="dockerfileActionsProvider"
                         interface="com.microsoft.azure.toolkit.intellij.containerregistry.runner.DockerfileActionsProvider"/>

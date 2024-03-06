@@ -1,13 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.vm.runtarget;
 
 import com.intellij.execution.Platform;
-import com.intellij.execution.target.BrowsableTargetEnvironmentType;
-import com.intellij.execution.target.CustomToolLanguageRuntimeType;
-import com.intellij.execution.target.LanguageRuntimeType;
-import com.intellij.execution.target.TargetEnvironmentConfiguration;
-import com.intellij.execution.target.TargetEnvironmentRequest;
-import com.intellij.execution.target.TargetEnvironmentType;
-import com.intellij.execution.target.TargetPlatform;
+import com.intellij.execution.target.*;
 import com.intellij.ide.wizard.AbstractWizardStepEx;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.options.Configurable;
@@ -15,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.NlsContexts;
-import com.intellij.remote.AuthType;
 import com.intellij.ssh.config.unified.SshConfig;
 import com.intellij.ssh.ui.unified.SshUiData;
 import com.jetbrains.plugins.remotesdk.RemoteSdkBundle;
@@ -23,19 +16,12 @@ import com.jetbrains.plugins.remotesdk.target.ssh.target.SshRemoteEnvironmentReq
 import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetConfigurable;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetEnvironmentConfiguration;
 import com.jetbrains.plugins.remotesdk.target.ssh.target.SshTargetType;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.TempSshTargetEnvironmentConfigurationBase;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.ConnectionData;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshConfigureCustomToolStep;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetAuthStep;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetIntrospectionStep;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetLanguageStep;
-import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.SshTargetWizardModel;
+import com.jetbrains.plugins.remotesdk.target.ssh.target.wizard.*;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +31,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -132,13 +117,6 @@ public class AzureVmTargetType extends TargetEnvironmentType<AzureVmTargetEnviro
                 if (configuration instanceof SshTargetEnvironmentConfiguration) {
                     final SshConfig sshConfig = ((SshTargetEnvironmentConfiguration) configuration).findSshConfig(project);
                     final SshUiData uiData = sshConfig != null ? new SshUiData(sshConfig, true) : null;
-                    SshTargetType.Companion.handleBrowsing$intellij_remoteRun(uiData, project, title, component, textComponentAccessor);
-                } else if (configuration instanceof TempSshTargetEnvironmentConfigurationBase) {
-                    final SshUiData uiData = ((TempSshTargetEnvironmentConfigurationBase) configuration).getTempSshData();
-                    final SshConfig config = uiData.getConfig();
-                    if (config.getAuthType() == AuthType.KEY_PAIR && StringUtils.isBlank(config.getKeyPath())) {
-                        config.setKeyPath(System.getProperty("user.home") + File.separator + ".ssh" + File.separator + "id_rsa");
-                    }
                     SshTargetType.Companion.handleBrowsing$intellij_remoteRun(uiData, project, title, component, textComponentAccessor);
                 } else {
                     Messages.showWarningDialog(component, RemoteSdkBundle.message("dialog.message.got.unexpected.settings.for.browsing", new Object[0]), title);

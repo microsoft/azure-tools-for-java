@@ -19,16 +19,14 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesCluster;
 import com.microsoft.azure.toolkit.lib.containerservice.KubernetesClusterAgentPool;
-import com.microsoft.azure.toolkit.lib.containerservice.model.ContainerServiceNetworkProfile;
-import com.microsoft.azure.toolkit.lib.containerservice.model.LoadBalancerSku;
-import com.microsoft.azure.toolkit.lib.containerservice.model.NetworkPlugin;
-import com.microsoft.azure.toolkit.lib.containerservice.model.NetworkPolicy;
+import com.microsoft.azure.toolkit.lib.containerservice.model.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class KubernetesServicePropertiesEditor extends AzResourcePropertiesEditor<KubernetesCluster> {
@@ -162,15 +160,20 @@ public class KubernetesServicePropertiesEditor extends AzResourcePropertiesEdito
         txtDndServiceIp.setText(Optional.ofNullable(profile).map(ContainerServiceNetworkProfile::getDnsServiceIp).orElse("N/A"));
         txtDockerBridgeCidr.setText("N/A");
         AzureTaskManager.getInstance().runInBackground("Loading node pools", () -> cluster.agentPools().list())
-            .thenAccept(pools -> AzureTaskManager.getInstance().runLater(() -> fillNodePools(pools)));
+                .thenAccept(pools -> AzureTaskManager.getInstance().runLater(() -> fillNodePools(pools)));
     }
 
     private void fillNodePools(final List<KubernetesClusterAgentPool> agentPools) {
         txtNodePools.setText(String.format("%d node pools", agentPools.size()));
         final DefaultTableModel model = (DefaultTableModel) this.nodeTables.getModel();
         model.setRowCount(0);
-        agentPools.forEach(i -> model.addRow(new Object[]{i.getName(), i.getStatus(), i.getPowerStatus().getValue(), i.getAgentPoolMode().getValue(),
-                i.getKubernetesVersion(), i.getVirtualMachineSize().getValue(), i.getOsType().getValue()}));
+        agentPools.forEach(pool -> {
+            final String powerStatus = Optional.ofNullable(pool.getPowerStatus()).map(PowerState::getValue).orElse("N/A");
+            final String agentPoolMode = Optional.ofNullable(pool.getAgentPoolMode()).map(AgentPoolMode::getValue).orElse("N/A");
+            final String virtualMachineSize = Optional.ofNullable(pool.getVirtualMachineSize()).map(VirtualMachineSize::getValue).orElse("N/A");
+            final String osType = Optional.ofNullable(pool.getOsType()).map(OsType::getValue).orElse("N/A");
+            model.addRow(new Object[]{pool.getName(), pool.getStatus(), powerStatus, agentPoolMode, pool.getKubernetesVersion(), virtualMachineSize, osType});
+        });
         final int rows = model.getRowCount() < 5 ? 5 : agentPools.size();
         model.setRowCount(rows);
         this.nodeTables.setVisibleRowCount(rows);

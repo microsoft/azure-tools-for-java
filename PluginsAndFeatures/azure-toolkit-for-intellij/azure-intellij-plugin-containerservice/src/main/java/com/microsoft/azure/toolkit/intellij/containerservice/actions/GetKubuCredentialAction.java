@@ -6,6 +6,9 @@
 package com.microsoft.azure.toolkit.intellij.containerservice.actions;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.ide.containerservice.ContainerServiceActionsContributor;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -26,12 +29,17 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class GetKubuCredentialAction {
+
+    public static final String KUBECONFIG_MERGE_MESSAGE = "Kubeconfig for %s has been merged to local kube config and set as default context.";
+
     public static void getKubuCredential(@Nonnull KubernetesCluster cluster, @Nonnull Project project, boolean isAdmin) {
         try {
             final byte[] content = isAdmin ? cluster.getAdminKubeConfig() : cluster.getUserKubeConfig();
             mergeConfigToKubConfig(content);
-            AzureMessager.getMessager().info(AzureString.format("Kubeconfig for %s has been merged to local kube config and set as default context", cluster.getName()),
-                null, KubernetesUtils.getConnectKubernetesActions(project));
+            final Action action = KubernetesUtils.isKubernetesPluginEnabled() ?
+                    AzureActionManager.getInstance().getAction(ContainerServiceActionsContributor.OPEN_KUBERNETES_PLUGIN).bind(cluster) :
+                    KubernetesUtils.getInstallKubernetesPluginAction();
+            AzureMessager.getMessager().info(AzureString.format(KUBECONFIG_MERGE_MESSAGE, cluster.getName()), null, action);
         } catch (final IOException e) {
             AzureMessager.getMessager().error(e);
         }
@@ -81,7 +89,7 @@ public class GetKubuCredentialAction {
                 final Object existingObject = result.stream().filter(map -> (map instanceof Map) &&
                     StringUtils.equals(((Map<?, ?>) map).get("name").toString(), name)).findFirst().orElse(null);
                 if (existingObject != null) {
-                    AzureMessager.getMessager().info(AzureString.format("skip merging as %s (%s) already exists in kubeconfig", type, name));
+                    AzureMessager.getMessager().info(AzureString.format("skip merging as %s (%s) already exists in kubeconfig.", type, name));
                 } else {
                     result.add(o);
                 }

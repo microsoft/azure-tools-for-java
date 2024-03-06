@@ -3,10 +3,10 @@ intellij {
 }
 
 dependencies {
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv', {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml', {
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2', {
         exclude group: "com.fasterxml.jackson", module: "jackson-bom"
     }
     compileOnly project(path: ':azure-intellij-plugin-lib')

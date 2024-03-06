@@ -69,6 +69,7 @@ public class IntelliJAzureIcons {
             put(AzureIcons.Action.LOG, AllIcons.Nodes.LogFolder);
             put(AzureIcons.AppService.APP_SETTING, AllIcons.Nodes.Variable);
             put(AzureIcons.AppService.APP_SETTINGS, AllIcons.Actions.Properties);
+            put(AzureIcons.Common.SERVICES, AllIcons.Toolwindows.ToolWindowServices);
         }
     };
 

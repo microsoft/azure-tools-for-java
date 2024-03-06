@@ -1,4 +1,5 @@
 <idea-plugin>
+    <depends optional="true" config-file="azure-intellij-plugin-containerservice-kubernetes.xml">com.intellij.kubernetes</depends>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.containerservice.ContainerServiceNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.containerservice.ContainerServiceActionsContributor"/>

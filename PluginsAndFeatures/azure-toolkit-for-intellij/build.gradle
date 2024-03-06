@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
-    id "org.jetbrains.intellij" version "1.13.3"
+    id "org.jetbrains.intellij" version "1.15.0"
     id "org.jetbrains.kotlin.jvm" version "1.9.10"
     id "com.github.ben-manes.versions" version "0.39.0"
     id "io.freefair.aspectj.post-compile-weaving" version "6.5.1"
@@ -177,7 +177,7 @@ buildSearchableOptions.onlyIf { false }
 defaultTasks 'buildPlugin'
 
 wrapper() {
-    gradleVersion = '7.5.1'
+    gradleVersion = '7.6.3'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 

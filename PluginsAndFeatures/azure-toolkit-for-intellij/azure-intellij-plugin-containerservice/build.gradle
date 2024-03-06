@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+intellij {
+    plugins = ['com.intellij.kubernetes']
+}
+
 repositories {
     mavenCentral()
 }

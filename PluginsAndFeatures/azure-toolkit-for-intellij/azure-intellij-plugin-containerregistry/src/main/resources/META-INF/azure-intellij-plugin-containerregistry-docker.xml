@@ -1,0 +1,17 @@
+<idea-plugin>
+    <actions>
+        <action id="AzureToolkit.ServiceView.AddContainerRegistry" text="Azure Container Registry"
+                description="Container registry allows you to build, store, and manage container images and artifacts in a private registry for all types of container deployments."
+                icon="/icons/Microsoft.ContainerRegistry/default.svg"
+                class="com.microsoft.azure.toolkit.intellij.containerregistry.servicesview.AddContainerRegistryServiceAction">
+            <add-to-group group-id="AzureToolkit.ServiceView.AddAzureService"/>
+        </action>
+    </actions>
+    <extensions defaultExtensionNs="com.intellij">
+        <docker.registry.provider
+                implementation="com.microsoft.azure.toolkit.intellij.containerregistry.servicesview.AzureContainerRegistryProvider"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.containerregistry.IntelliJContainerRegistryActionsContributorForDockerPlugin"/>
+    </extensions>
+</idea-plugin>

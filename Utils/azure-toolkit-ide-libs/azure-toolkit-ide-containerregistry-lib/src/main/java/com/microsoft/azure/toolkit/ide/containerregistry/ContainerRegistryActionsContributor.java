@@ -274,7 +274,9 @@ public class ContainerRegistryActionsContributor implements IActionsContributor 
             ContainerRegistryActionsContributor.COPY_USERNAME,
             ContainerRegistryActionsContributor.COPY_PASSWORD,
             "---",
-            ContainerRegistryActionsContributor.PUSH_IMAGE
+            ContainerRegistryActionsContributor.PUSH_IMAGE,
+            "---",
+            ResourceCommonActionsContributor.OPEN_IN_SERVICES_VIEW
         );
         am.registerGroup(REGISTRY_ACTIONS, registryActionGroup);
 

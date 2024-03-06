@@ -1,5 +1,5 @@
 intellij {
-    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java', 'terminal']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', 'gradle-java', 'terminal', 'Docker']
 }
 
 repositories {

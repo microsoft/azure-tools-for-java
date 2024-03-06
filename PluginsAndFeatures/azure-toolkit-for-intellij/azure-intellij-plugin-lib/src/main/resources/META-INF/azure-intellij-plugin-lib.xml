@@ -38,5 +38,8 @@
                 text="View Documentation"/>
         <action id="AzureToolkit.ViewDevBlogs" class="com.microsoft.azure.toolkit.intellij.common.action.ViewDevBlogsAction"
                 text="View Dev Blogs"/>
+        <group id="AzureToolkit.ServiceView.AddAzureService" text="Azure" description="Add Microsoft Azure services" icon="/icons/Common/Azure.svg" popup="true">
+            <add-to-group group-id="ServiceView.AddService" anchor="last"/>
+        </group>
     </actions>
 </idea-plugin>

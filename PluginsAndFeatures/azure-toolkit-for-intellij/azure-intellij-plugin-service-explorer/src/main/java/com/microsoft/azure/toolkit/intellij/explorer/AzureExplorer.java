@@ -42,12 +42,15 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzComponent;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.common.view.IView;
 import com.microsoft.azure.toolkit.lib.resource.AzureResources;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -97,6 +100,26 @@ public class AzureExplorer extends Tree {
             appGroupedResourcesRoot.clearChildren();
             typeGroupedResourcesRoot.clearChildren();
         }));
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        // add tooltip for hover actions
+        final TreePath path = this.getPathForRow(this.getClosestRowForLocation(event.getX(), event.getY()));
+        final Object o = Optional.ofNullable(path).map(TreePath::getLastPathComponent).orElse(null);
+        if (o instanceof Tree.TreeNode) {
+            final Tree.TreeNode<?> node = (Tree.TreeNode<?>) o;
+            final List<IView.Label> actions = node.getInlineActionViews();
+            final IView.Label actionLabel = Optional.ofNullable(actions)
+                    .map(l -> TreeUtils.getHoverInlineActionIndex(this, event, l.size()))
+                    .filter(i -> i >= 0 && i < actions.size())
+                    .map(Objects.requireNonNull(actions)::get)
+                    .orElse(null);
+            if (Objects.nonNull(actionLabel)) {
+                return actionLabel.getLabel();
+            }
+        }
+        return super.getToolTipText(event);
     }
 
     private Node<Azure> buildTypeGroupedResourcesRoot() {
