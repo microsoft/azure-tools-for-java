@@ -229,6 +229,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        AccessibilityUtils.addFocusListenerForScrolledComposite(container.getChildren(), scrolledComposite);
         return scrolledComposite;
     }
 
@@ -438,7 +439,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 fillSlot();
             }
         });
-
+        
         DefaultToolTip iconTooltip = new DefaultToolTip(btnDeployToSlot, SWT.NONE, false);
         iconTooltip.setText(DEPLOYMENT_SLOT_HOVER);
         btnDeployToSlot.addFocusListener(new FocusListener() {
