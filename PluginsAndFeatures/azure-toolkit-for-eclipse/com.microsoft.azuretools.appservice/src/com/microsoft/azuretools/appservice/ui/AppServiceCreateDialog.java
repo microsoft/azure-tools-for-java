@@ -47,12 +47,16 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -367,6 +371,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             btnOSGroupWin.setSelection(true);
         }
         radioRuntimeLogic();
+        AccessibilityUtils.addFocusListenerForScrolledComposite(scrolledComposite);
 
         return scrolledComposite;
     }
@@ -648,7 +653,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         tblAppSettings = new Table(cpAppSettings, SWT.BORDER | SWT.FULL_SELECTION);
         tblAppSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         tblAppSettings.setHeaderVisible(true);
-        tblAppSettings.setLinesVisible(true);
+        tblAppSettings.setLinesVisible(false);
         tblAppSettings.addListener(SWT.MouseDoubleClick, event -> onTblAppSettingMouseDoubleClick(event));
         tblAppSettings.addTraverseListener(new TraverseListener() {
             @Override
@@ -662,6 +667,19 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     }
                 }
             }
+        });
+
+        tblAppSettings.addFocusListener(new FocusListener(){
+
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				tblAppSettings.setLinesVisible(true);
+			}
+
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				tblAppSettings.setLinesVisible(false);
+			}
         });
         AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
 
