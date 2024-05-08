@@ -653,7 +653,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         tblAppSettings = new Table(cpAppSettings, SWT.BORDER | SWT.FULL_SELECTION);
         tblAppSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         tblAppSettings.setHeaderVisible(true);
-        tblAppSettings.setLinesVisible(false);
+        tblAppSettings.setLinesVisible(true);
         tblAppSettings.addListener(SWT.MouseDoubleClick, event -> onTblAppSettingMouseDoubleClick(event));
         tblAppSettings.addTraverseListener(new TraverseListener() {
             @Override
@@ -668,17 +668,26 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 }
             }
         });
-
+        tblAppSettings.addPaintListener(e -> {
+        	if(tblAppSettings.isFocusControl()) {
+        		GC gc = e.gc;
+        		gc.setLineWidth(1);
+                gc.setLineStyle(SWT.LINE_DOT);
+                Rectangle rect = tblAppSettings.getClientArea();
+                int headerHeight = tblAppSettings.getHeaderHeight();
+                gc.drawRectangle(rect.x + 1, rect.y + headerHeight + 1 , rect.width - 2, rect.height - headerHeight - 2);	
+        	}
+        });
         tblAppSettings.addFocusListener(new FocusListener(){
 
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				tblAppSettings.setLinesVisible(true);
+				tblAppSettings.redraw();
 			}
 
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				tblAppSettings.setLinesVisible(false);
+				tblAppSettings.redraw();
 			}
         });
         AccessibilityUtils.addAccessibilityNameForUIComponent(tblAppSettings, "App settings");
