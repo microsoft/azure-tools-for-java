@@ -11,6 +11,7 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.utils.AccessibilityUtils;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.sdkmanage.IdentityAzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -135,7 +136,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             }
         });
         btnDeselectAll.setText("Deselect All");
-
+        AccessibilityUtils.addAccessibilityNameForUIComponent(table, "subscriptions");
         return area;
     }
 

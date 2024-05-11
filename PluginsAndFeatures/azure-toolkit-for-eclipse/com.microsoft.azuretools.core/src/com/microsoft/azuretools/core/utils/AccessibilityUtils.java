@@ -24,6 +24,11 @@ package com.microsoft.azuretools.core.utils;
 
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 public class AccessibilityUtils {
@@ -46,5 +51,35 @@ public class AccessibilityUtils {
                 e.result = description;
             }
         });
+    }
+
+    public static void addFocusListenerForScrolledComposite(ScrolledComposite composite) {
+    	addFocusListenerForScrolledComposite(composite.getChildren(), composite);
+    }
+
+    public static void addFocusListenerForScrolledComposite(Control[] controls, ScrolledComposite composite) {
+    	for(Control c : controls) {
+    		c.addFocusListener(new FocusListener() {
+                @Override
+            	// When the button gains focus, scroll to it
+                public void focusGained(FocusEvent e) {
+                    // Get the scroll position of the ScrolledComposite
+                    final Point scroll = composite.getOrigin();
+                	final Point p = composite.toControl(c.toDisplay(0, 0));
+                	composite.setOrigin(p.x + scroll.x, p.y + scroll.y);
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    // Do nothing when the button loses focus
+                }
+            });
+    		if(c instanceof Composite) {
+    			Composite co = (Composite) c;
+    			if(co.getChildren() != null && co.getChildren().length > 0) {
+    				addFocusListenerForScrolledComposite(co.getChildren(), composite);
+    			}
+    		}
+    	}
     }
 }
