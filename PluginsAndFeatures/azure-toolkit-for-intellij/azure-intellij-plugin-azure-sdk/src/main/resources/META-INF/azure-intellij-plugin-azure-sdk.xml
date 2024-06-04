@@ -1,0 +1,33 @@
+<idea-plugin>
+    <depends>org.jetbrains.idea.maven</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <actions>
+            <action
+                    class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
+                    id="AzSdkHelpAction"
+                    text="Ask Azure SDK Help">
+                <add-to-group group-id="ToolsMenu" anchor="last" />
+            </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <localInspection
+                language="XML"
+                shortName="MavenProjectInspection"
+                displayName="Check Maven Project"
+                groupName="Maven"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
+        </localInspection>
+    </extensions>
+
+<!--    <projectListeners>-->
+<!--        <listener-->
+<!--                class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectListener"-->
+<!--                topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>-->
+<!--    </projectListeners>-->
+</idea-plugin>
