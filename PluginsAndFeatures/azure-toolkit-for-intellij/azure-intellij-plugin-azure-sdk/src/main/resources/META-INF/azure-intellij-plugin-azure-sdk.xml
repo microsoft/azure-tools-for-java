@@ -24,10 +24,4 @@
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
     </extensions>
-
-<!--    <projectListeners>-->
-<!--        <listener-->
-<!--                class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectListener"-->
-<!--                topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>-->
-<!--    </projectListeners>-->
 </idea-plugin>
