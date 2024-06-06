@@ -28,7 +28,7 @@ public class ApplicationInsightsResourceDefinition extends AzureServiceResource.
     }
 
     @Override
-    public ApplicationInsight getResource(String dataId) {
+    public ApplicationInsight getResource(String dataId, final String id) {
         return Azure.az(AzureApplicationInsights.class).getById(dataId);
     }
 

@@ -84,8 +84,9 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
         if (!connection.isValidConnection()) {
             children.add(new ActionNode<>(this.getProject(), ResourceConnectionActionsContributor.FIX_CONNECTION, connection));
         }
-        if (connection.getResource() instanceof AzureServiceResource) {
-            Optional.ofNullable(createResourceNode(connection)).ifPresent(children::add);
+        final Resource<?> resource = connection.getResource();
+        if (resource instanceof AzureServiceResource) {
+            Optional.ofNullable(createResourceNode(resource)).ifPresent(children::add);
         }
         final Profile profile = connection.getProfile();
         final Boolean envFileExists = Optional.ofNullable(profile).map(Profile::getDotEnvFile).map(VirtualFile::exists).orElse(false);
@@ -96,14 +97,14 @@ public class ConnectionNode extends AbstractAzureFacetNode<Connection<?, ?>> {
     }
 
     @Nullable
-    private AbstractAzureFacetNode<?> createResourceNode(Connection<?, ?> connection) {
+    private AbstractAzureFacetNode<?> createResourceNode(Resource<?> resource) {
         try {
-            final Object resource = connection.getResource().getData();
-            if (Objects.isNull(resource)) {
-                final ResourceId resourceId = ResourceId.fromString(connection.getResource().getDataId());
+            final Object data = resource.getData();
+            if (Objects.isNull(data)) {
+                final ResourceId resourceId = ResourceId.fromString(resource.getDataId());
                 return new GenericResourceNode(this.getProject(), resourceId, "Deleted");
             }
-            final Node<?> node = AzureExplorer.manager.createNode(resource, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
+            final Node<?> node = AzureExplorer.manager.createNode(data, null, IExplorerNodeProvider.ViewType.APP_CENTRIC);
             return new ResourceNode(this.getProject(), node, this);
         } catch (final Throwable e) {
             final Throwable cause = ExceptionUtils.getRootCause(e);

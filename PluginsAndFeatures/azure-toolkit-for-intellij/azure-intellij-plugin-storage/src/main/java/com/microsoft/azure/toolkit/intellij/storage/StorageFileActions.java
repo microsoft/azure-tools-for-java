@@ -100,7 +100,6 @@ public class StorageFileActions {
                 .withLabel("Create")
                 .withIdParam(s -> s)
                 .withSource(file)
-                .withAuthRequired(true)
                 .withHandler(p -> {
                     final Path rawPath = Paths.get(p);
                     IBlobFile current = file;
@@ -133,7 +132,6 @@ public class StorageFileActions {
                 .withLabel("Create")
                 .withIdParam(s -> s)
                 .withSource(file)
-                .withAuthRequired(true)
                 .withHandler(name -> {
                     final AbstractAzResourceModule<? extends StorageFile, ? extends StorageFile, ?> module = file.getSubFileModule();
                     final AzResource.Draft<? extends StorageFile, ?> draft = module.create(name, "");
@@ -152,7 +150,6 @@ public class StorageFileActions {
                 .withLabel("Create")
                 .withIdParam(s -> s)
                 .withSource(file)
-                .withAuthRequired(true)
                 .withHandler(name -> {
                     final StorageFile.Draft<?, ?> draft = (StorageFile.Draft<?, ?>) file.getSubFileModule().create(name, "");
                     draft.setDirectory(true);

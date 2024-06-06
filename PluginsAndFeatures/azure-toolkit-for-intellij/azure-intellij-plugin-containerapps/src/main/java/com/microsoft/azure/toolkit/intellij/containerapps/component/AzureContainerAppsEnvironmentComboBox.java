@@ -1,35 +1,35 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.containerapps.creation.ContainerAppsEnvironmentCreationDialog;
 import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
-import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspaceDraft;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
-import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
-import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerAppsServiceSubscription;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<ContainerAppsEnvironment> {
+    @Nullable
     private Subscription subscription;
+    @Nullable
     private ResourceGroup resourceGroup;
+    @Nullable
     private Region region;
     private final List<ContainerAppsEnvironment> draftItems = new LinkedList<>();
 
@@ -42,7 +42,7 @@ public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<Contain
     protected String getItemText(Object item) {
         if (item instanceof ContainerAppsEnvironment) {
             final ContainerAppsEnvironment environment = (ContainerAppsEnvironment) item;
-            return environment.isDraftForCreating() ? "(New) " + environment.getName() : environment.getName();
+            return (environment.isDraftForCreating() ? "(New) " + environment.getName() : environment.getName()) + "(" + environment.getRegion().getLabel() + ")";
         }
         return super.getItemText(item);
     }
@@ -97,27 +97,33 @@ public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<Contain
     @Override
     protected ContainerAppsEnvironment doGetDefaultValue() {
         return CacheManager.getUsageHistory(ContainerAppsEnvironment.class)
-                .peek(g -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), g.getSubscriptionId()));
+            .peek(g -> Objects.isNull(subscription) || Objects.equals(subscription.getId(), g.getSubscriptionId()));
     }
 
     @Nonnull
     @Override
     protected List<? extends ContainerAppsEnvironment> loadItems() {
-        Stream<AzureContainerAppsServiceSubscription> stream = Azure.az(AzureContainerApps.class).list().stream();
+        Stream<ContainerAppsEnvironment> stream = Azure.az(AzureContainerApps.class).list().stream().flatMap(s -> s.environments().list().stream())
+            .filter(env -> env.getFormalStatus().isConnected());
+        Stream<ContainerAppsEnvironment> draftStream = this.draftItems.stream();
         if (Objects.nonNull(this.subscription)) {
-            stream = stream.filter(s -> s.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
+            stream = stream.filter(env -> env.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
+            draftStream = draftStream.filter(env -> env.getSubscriptionId().equalsIgnoreCase(this.subscription.getId()));
         }
-        final List<ContainerAppsEnvironment> remoteEnvironments = stream.flatMap(s -> s.environments().list().stream())
-                .filter(env -> env.getFormalStatus().isConnected())
-                .filter(env -> Objects.equals(env.getRegion(), this.region))
-                .filter(env -> Objects.isNull(env.getResourceGroup()) || Objects.equals(env.getResourceGroup(), this.resourceGroup))
-                .sorted(Comparator.comparing(ContainerAppsEnvironment::getName)).toList();
+        if (Objects.nonNull(this.resourceGroup)) {
+            stream = stream.filter(env -> Objects.isNull(env.getResourceGroup()) || Objects.equals(env.getResourceGroup(), this.resourceGroup));
+            draftStream = draftStream.filter(env -> Objects.isNull(env.getResourceGroup()) || Objects.equals(env.getResourceGroup(), this.resourceGroup));
+        }
+        if (Objects.nonNull(this.region)) {
+            stream = stream.filter(env -> Objects.equals(env.getRegion(), this.region));
+            draftStream = draftStream.filter(env -> Objects.equals(env.getRegion(), this.region));
+        }
+        final List<ContainerAppsEnvironment> remoteEnvironments = stream
+            .sorted(Comparator.comparing(ContainerAppsEnvironment::getName)).toList();
         final List<ContainerAppsEnvironment> environments = new ArrayList<>(remoteEnvironments);
-        final ContainerAppsEnvironment draftItem = this.draftItems.stream()
-                .filter(i -> StringUtils.equalsIgnoreCase(this.subscription.getId(), i.getSubscriptionId()) &&
-                        Objects.equals(i.getRegion(), this.region))
-                .filter(i -> !remoteEnvironments.contains(i)) // filter out the draft item which has been created
-                .findFirst().orElseGet(this::getEnvironmentDraft);
+        final ContainerAppsEnvironment draftItem = draftStream
+            .filter(i -> !remoteEnvironments.contains(i)) // filter out the draft item which has been created
+            .findFirst().orElse(null);
         if (Objects.nonNull(draftItem)) {
             if (CollectionUtils.isEmpty(environments) || (getValue() != null && getValue().isDraftForCreating())) {
                 super.setValue(draftItem);
@@ -133,30 +139,35 @@ public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<Contain
         super.refreshItems();
     }
 
-    @Nullable
-    private ContainerAppsEnvironmentDraft getEnvironmentDraft() {
-        if (ObjectUtils.anyNull(region, resourceGroup, subscription)) {
-            return null;
-        }
-        final String defaultEnvironmentName = Utils.generateRandomResourceName(String.format("ace-%s", resourceGroup.getName()), 32);
-        final ContainerAppsEnvironmentDraft result = Azure.az(AzureContainerApps.class).environments(subscription.getId()).create(defaultEnvironmentName, resourceGroup.getName());
-        final ContainerAppsEnvironmentDraft.Config config = new ContainerAppsEnvironmentDraft.Config();
-        config.setName(defaultEnvironmentName);
-        config.setSubscription(subscription);
-        config.setRegion(region);
-        config.setResourceGroup(resourceGroup);
-        config.setLogAnalyticsWorkspace(getWorkspaceDraft());
-        result.setConfig(config);
-        return result;
+    @Nonnull
+    @Override
+    protected List<ExtendableTextComponent.Extension> getExtensions() {
+        final List<ExtendableTextComponent.Extension> extensions = super.getExtensions();
+        final KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.ALT_DOWN_MASK);
+        final String tooltip = String.format("Create Environment (%s)", KeymapUtil.getKeystrokeText(keyStroke));
+        final ExtendableTextComponent.Extension addEx = ExtendableTextComponent.Extension.create(AllIcons.General.Add, tooltip, this::showEnvironmentCreationPopup);
+        this.registerShortcut(keyStroke, addEx);
+        extensions.add(addEx);
+        return extensions;
     }
 
-    private LogAnalyticsWorkspaceDraft getWorkspaceDraft() {
-        if (ObjectUtils.anyNull(region, resourceGroup, subscription)) {
-            return null;
-        }
-        final String defaultName = Utils.generateRandomResourceName(String.format("workspace-%s", resourceGroup.getName()), 63);
-        final LogAnalyticsWorkspaceDraft result = Azure.az(AzureLogAnalyticsWorkspace.class).logAnalyticsWorkspaces(subscription.getId()).create(defaultName, resourceGroup.getName());
-        result.setRegion(region);
-        return result;
+    private void showEnvironmentCreationPopup() {
+        final ContainerAppsEnvironmentCreationDialog dialog = new ContainerAppsEnvironmentCreationDialog(null);
+        Optional.ofNullable(this.subscription).ifPresent(s -> dialog.setSubscription(s, true));
+        Optional.ofNullable(this.resourceGroup).ifPresent(r -> dialog.setResourceGroup(r, true));
+        Optional.ofNullable(this.region).ifPresent(r -> dialog.setRegion(r, true));
+        final Action.Id<ContainerAppsEnvironmentDraft.Config> actionId = Action.Id.of("user/containerapps.create_container_apps_environment.environment");
+        dialog.setOkAction(new Action<>(actionId)
+            .withLabel("Create")
+            .withIdParam(ContainerAppsEnvironmentDraft.Config::getName)
+            .withSource(ContainerAppsEnvironmentDraft.Config::getResourceGroup)
+            .withAuthRequired(true)
+            .withHandler(config -> {
+                final ContainerAppsEnvironmentDraft draft = Azure.az(AzureContainerApps.class).environments(config.getSubscription().getId())
+                    .create(config.getName(), config.getResourceGroup().getName());
+                draft.setConfig(config);
+                this.setValue(draft);
+            }));
+        dialog.show();
     }
 }

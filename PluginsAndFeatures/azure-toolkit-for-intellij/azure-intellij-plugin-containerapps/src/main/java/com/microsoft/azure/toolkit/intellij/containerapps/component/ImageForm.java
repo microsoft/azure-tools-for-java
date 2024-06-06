@@ -10,27 +10,34 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
+import java.util.*;
+import java.util.function.Consumer;
 
-public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig> {
+public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>, DeploymentSourceForm {
     private JPanel pnlRoot;
-    private ContainerRegistryTypeComboBox selectorRegistryType;
+    private ImageSourceTypeComboBox selectorRegistryType;
     private JPanel formImageContainer;
     private JLabel lblRegistryType;
-    private AzureFormJPanel<ContainerAppDraft.ImageConfig> formImage;
-    private List<AzureValueChangeListener<ContainerAppDraft.ImageConfig>> listeners = new ArrayList<>();
+    private DeploymentSourceForm formContent;
+    private final List<AzureValueChangeListener<ContainerAppDraft.ImageConfig>> listeners = new ArrayList<>();
+    @Setter
+    private Consumer<String> onImageFormChanged = type -> {
+    };
+    @Getter
+    private ContainerApp containerApp;
+
     public ImageForm() {
         super();
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
@@ -39,9 +46,9 @@ public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>
 
     private void init() {
         this.selectorRegistryType.addItemListener(this::onRegistryTypeChanged);
-        final String defaultType = ContainerRegistryTypeComboBox.ACR;
+        final String defaultType = ImageSourceTypeComboBox.QUICK_START;
         this.selectorRegistryType.setSelectedItem(defaultType);
-        this.updateImagePanel(defaultType);
+        this.updateContentForm(defaultType);
     }
 
     @Override
@@ -52,54 +59,68 @@ public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>
     @Override
     public void setValue(ContainerAppDraft.ImageConfig imageConfig) {
         final ContainerRegistry registry = imageConfig.getContainerRegistry();
-        final String type = registry != null ? ContainerRegistryTypeComboBox.ACR :
-                imageConfig.getFullImageName().startsWith("docker.io") ?
-                        ContainerRegistryTypeComboBox.DOCKER_HUB : ContainerRegistryTypeComboBox.OTHER;
-        this.formImage = this.updateImagePanel(type);
+        final String type;
+        if (registry != null) {
+            type = ImageSourceTypeComboBox.ACR;
+        } else if (imageConfig.getFullImageName().startsWith("docker.io")) {
+            type = ImageSourceTypeComboBox.DOCKER_HUB;
+        } else if (imageConfig.getFullImageName().equalsIgnoreCase(QuickStartImageForm.QUICK_START_IMAGE)) {
+            type = ImageSourceTypeComboBox.QUICK_START;
+        } else {
+            type = ImageSourceTypeComboBox.OTHER;
+        }
+        this.formContent = this.updateContentForm(type);
         this.selectorRegistryType.setSelectedItem(type);
-        this.formImage.setValue(imageConfig);
+        this.formContent.setValue(imageConfig);
     }
 
     private void onRegistryTypeChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            this.formImage = this.updateImagePanel((String) e.getItem());
+            this.formContent = this.updateContentForm((String) e.getItem());
         }
     }
 
-    private synchronized AzureFormJPanel<ContainerAppDraft.ImageConfig> updateImagePanel(String type) {
+    public String getRegistryType() {
+        return (String) this.selectorRegistryType.getSelectedItem();
+    }
+
+    private synchronized DeploymentSourceForm updateContentForm(String type) {
         final GridConstraints constraints = new GridConstraints();
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setHSizePolicy(GridConstraints.SIZEPOLICY_WANT_GROW);
         constraints.setUseParentLayout(true);
-        final AzureFormJPanel<ContainerAppDraft.ImageConfig> newFormImage = switch (type) {
-            case ContainerRegistryTypeComboBox.ACR -> new ACRImageForm();
-            case ContainerRegistryTypeComboBox.DOCKER_HUB -> new DockerHubImageForm();
-            case ContainerRegistryTypeComboBox.OTHER -> new OtherPublicRegistryImageForm();
+        final DeploymentSourceForm newFormImage = switch (type) {
+            case ImageSourceTypeComboBox.QUICK_START -> new QuickStartImageForm();
+            case ImageSourceTypeComboBox.ACR -> new ACRImageSourceForm();
+            case ImageSourceTypeComboBox.DOCKER_HUB -> new DockerHubImageForm();
+            case ImageSourceTypeComboBox.OTHER -> new OtherPublicRegistryImageForm();
             default -> throw new IllegalArgumentException("Unsupported registry type: " + type);
         };
         this.formImageContainer.removeAll();
         this.formImageContainer.add(newFormImage.getContentPanel(), constraints);
         this.formImageContainer.revalidate();
         this.formImageContainer.repaint();
-        this.formImage = newFormImage;
+        this.formContent = newFormImage;
+        this.onImageFormChanged.accept(type);
         this.listeners.forEach(this::addValueChangeListenerToAllComponents);
+        this.formContent.setContainerApp(this.containerApp);
         return newFormImage;
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(this.formImage);
+        return Collections.singletonList(this.formContent);
     }
 
     @Override
     public ContainerAppDraft.ImageConfig getValue() {
-        return Optional.ofNullable(formImage).map(AzureFormPanel::getValue).orElse(null);
+        return Optional.ofNullable(formContent).map(AzureFormPanel::getValue).orElse(null);
     }
 
     public void setEnabled(boolean enabled) {
         lblRegistryType.setEnabled(enabled);
         selectorRegistryType.setEnabled(enabled);
-        Optional.ofNullable(formImage).map(AzureFormJPanel::getContentPanel).ifPresent(panel -> setEnableForComponent(panel, enabled));
+        Optional.ofNullable(formContent).map(AzureFormJPanel::getContentPanel).ifPresent(panel -> setEnableForComponent(panel, enabled));
     }
 
     private void setEnableForComponent(@Nonnull final Component component, final boolean enable) {
@@ -121,13 +142,19 @@ public class ImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>
             listeners.add(listener);
         }
         final Queue<AzureFormInput<?>> inputs = new ArrayDeque<>();
-        inputs.add(formImage);
+        inputs.add(formContent);
         while (!inputs.isEmpty()) {
             final AzureFormInput<?> input = inputs.poll();
             input.addValueChangedListener(ignore -> listener.accept(this.getValue()));
             if (input instanceof AzureForm<?>) {
-                ((AzureForm<?>) input).getInputs().forEach(inputs::add);
+                inputs.addAll(((AzureForm<?>) input).getInputs());
             }
         }
+    }
+
+    @Override
+    public void setContainerApp(final ContainerApp containerApp) {
+        this.containerApp = containerApp;
+        Optional.ofNullable(formContent).ifPresent(imageForm -> imageForm.setContainerApp(containerApp));
     }
 }

@@ -25,7 +25,6 @@ import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import java.nio.file.Paths;
@@ -58,29 +57,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     public void reset(@NotNull T configuration) {
-        // legacy initialize, will be removed later
-        if (oldMode) {
-            if (configuration.isFirstTimeCreated() && shouldInitializeBeforeRunTasks()) {
-                if (MavenUtils.isMavenProject(project)) {
-                    MavenRunTaskUtil.addMavenPackageBeforeRunTask(configuration);
-                } else {
-                    final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                    if (artifacts.size() > 0) {
-                        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, configuration, artifacts.get(0));
-                    }
-                }
-            }
-            configuration.setFirstTimeCreated(false);
-            if (!isMavenProject()) {
-                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                setupArtifactCombo(artifacts, configuration.getTargetPath());
-            } else {
-                List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-                setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
-            }
-        } else {
-            setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
-        }
+        setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
         this.currentArtifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
 
         resetFromConfig(configuration);
@@ -88,10 +65,6 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
     protected boolean isMavenProject() {
         return MavenUtils.isMavenProject(project);
-    }
-
-    protected boolean shouldInitializeBeforeRunTasks() {
-        return true;
     }
 
     protected String getProjectBasePath() {

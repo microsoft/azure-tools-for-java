@@ -8,16 +8,13 @@ package com.microsoft.azure.toolkit.intellij.container.model;
 import com.github.dockerjava.api.model.Image;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
+import lombok.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.io.File;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,14 +29,18 @@ public class DockerImage {
     @Builder.Default
     @EqualsAndHashCode.Include
     private boolean isDraft = true;
+    @Nonnull
     @EqualsAndHashCode.Include
     private String repositoryName;
+    @Nonnull
     @EqualsAndHashCode.Include
     private String tagName;
+    @Nullable
     @EqualsAndHashCode.Include
-    private File dockerFile;
+    private String dockerFile;
     private String imageId;
-    private File baseDirectory;
+    @Nullable
+    private String baseDirectory;
     // todo: check whether we need to add artifact as a field of image
     private AzureArtifact azureArtifact;
 
@@ -52,10 +53,10 @@ public class DockerImage {
 
     public DockerImage(@Nonnull final VirtualFile virtualFile) {
         this.isDraft = true;
-        this.dockerFile = new File(virtualFile.getPath());
-        this.baseDirectory = this.dockerFile.getParentFile();
+        this.dockerFile = virtualFile.getPath();
+        this.baseDirectory = virtualFile.getParent().getPath();
         this.repositoryName = "image";
-        this.tagName = "latest";
+        this.tagName = Utils.getTimestamp();
     }
 
     public DockerImage(@Nonnull final  DockerImage value) {
@@ -64,6 +65,8 @@ public class DockerImage {
         this.repositoryName = value.repositoryName;
         this.tagName = value.tagName;
         this.imageId = value.imageId;
+        this.baseDirectory = value.baseDirectory;
+        this.azureArtifact = value.azureArtifact;
     }
 
     public static List<DockerImage> fromImage(@Nonnull final Image image) {

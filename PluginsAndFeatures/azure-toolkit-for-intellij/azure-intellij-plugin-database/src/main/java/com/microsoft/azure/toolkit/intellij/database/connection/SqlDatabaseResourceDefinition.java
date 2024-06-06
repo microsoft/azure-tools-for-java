@@ -65,12 +65,9 @@ public abstract class SqlDatabaseResourceDefinition<T extends IDatabase> extends
     }
 
     @Override
-    public Resource<T> define(@Nonnull T resource) {
+    public Resource<T> define(@Nonnull T resource, String id) {
         return new SqlDatabaseResource<>(resource, null, this);
     }
-
-    @Override
-    public abstract T getResource(String dataId);
 
     @Override
     public abstract AzureFormJPanel<Resource<T>> getResourcePanel(Project project);

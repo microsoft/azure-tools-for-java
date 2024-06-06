@@ -26,5 +26,9 @@
             <groupId>com.microsoft.hdinsight</groupId>
             <artifactId>hdinsight-node-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.azure.resourcemanager</groupId>
+            <artifactId>azure-resourcemanager-cosmos</artifactId>
+        </dependency>
     </dependencies>
 </project>

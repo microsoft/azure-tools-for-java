@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class SelectSubscriptionTask implements Task {
-    public static final String SUBSCRIPTION_ID = "subscriptionId";
+    public static final String SUBSCRIPTION = "subscription";
 
     private final ComponentContext context;
     private AzureEventBus.EventListener accountListener;
@@ -58,7 +58,7 @@ public class SelectSubscriptionTask implements Task {
             selectedSubscriptions = account.getSelectedSubscriptions();
         }
         final Subscription subscription = selectedSubscriptions.get(0);
-        context.applyResult(SUBSCRIPTION_ID, subscription.getId());
+        context.applyResult(SUBSCRIPTION, subscription);
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription \"%s [%s]\"", subscription.getName(), subscription.getId()));
     }
 

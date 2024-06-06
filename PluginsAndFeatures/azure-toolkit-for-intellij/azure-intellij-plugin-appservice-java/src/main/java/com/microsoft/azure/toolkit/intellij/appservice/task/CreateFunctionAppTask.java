@@ -2,15 +2,11 @@ package com.microsoft.azure.toolkit.intellij.appservice.task;
 
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
-import com.microsoft.azure.toolkit.ide.guidance.task.SignInTask;
+import com.microsoft.azure.toolkit.ide.guidance.task.SelectSubscriptionTask;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceIntelliJActionsContributor;
-import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.config.FunctionAppConfig;
-import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
-import com.microsoft.azure.toolkit.lib.appservice.model.FunctionAppRuntime;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -39,8 +35,7 @@ public class CreateFunctionAppTask implements Task {
     @AzureOperation(name = "internal/guidance.create_function_app")
     public void execute() throws Exception {
         final String name = (String) Objects.requireNonNull(context.getParameter(FUNCTION_APP_NAME), "`name` is required to create function app");
-        final Subscription subscription = Optional.ofNullable((String) context.getParameter(SignInTask.SUBSCRIPTION_ID))
-                .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
+        final Subscription subscription = Optional.ofNullable((Subscription) context.getParameter(SelectSubscriptionTask.SUBSCRIPTION))
                 .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get subscription to create function app"));
 
         final FunctionAppConfig functionAppConfig = AppServiceIntelliJActionsContributor.getDefaultFunctionAppConfig(null);

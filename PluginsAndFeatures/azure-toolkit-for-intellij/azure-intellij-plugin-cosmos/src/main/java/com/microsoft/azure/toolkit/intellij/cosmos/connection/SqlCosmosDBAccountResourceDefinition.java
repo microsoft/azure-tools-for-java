@@ -35,7 +35,7 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
     }
 
     @Override
-    public SqlDatabase getResource(String dataId) {
+    public SqlDatabase getResource(String dataId, final String id) {
         return Azure.az(AzureCosmosService.class).getById(dataId);
     }
 

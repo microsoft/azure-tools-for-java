@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.storage.component;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.table.TableModule;
 import lombok.Setter;
@@ -18,7 +19,7 @@ public class StorageNameTextField extends AzureTextInput {
     private static final Pattern STORAGE_NAME_PATTERN = Pattern.compile("^[a-z0-9-]{3,63}$");
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[a-z0-9]{3,36}$");
     @Setter
-    private AbstractAzResourceModule<?, StorageAccount, ?> module;
+    private AbstractAzResourceModule<?, ? extends IStorageAccount, ?> module;
 
     public StorageNameTextField() {
         super();

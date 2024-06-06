@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class AnnotationFixes {
@@ -40,12 +41,53 @@ public class AnnotationFixes {
     }
 
     public static IntentionAction createNewConnection(ResourceDefinition<?> definition, Consumer<Connection<?, ?>> callback, String defaultEnvPrefix) {
+        return simple("Connect an " + definition.getTitle(), new BiConsumer<>() {
+            @Override
+            @AzureOperation("user/connector.create_connection_quick_fix")
+            public void accept(final Editor editor, final PsiFile file) {
+                final Module module = ModuleUtil.findModuleForFile(file);
+                if (Objects.nonNull(module)) {
+                    final var dialog = new ConnectorDialog(editor.getProject());
+                    dialog.setConsumer(new ModuleResource(module.getName()));
+                    dialog.setResourceDefinition(definition);
+                    Optional.ofNullable(defaultEnvPrefix).filter(StringUtils::isNoneBlank).ifPresent(dialog::setEnvPrefix);
+                    if (dialog.showAndGet()) {
+                        callback.accept(dialog.getValue());
+                    } else {
+                        callback.accept(null);
+                    }
+                }
+            }
+        });
+    }
+
+    public static IntentionAction signIn(Runnable callback) {
+        return simple("Sign in to Azure", new BiConsumer<>() {
+            @Override
+            @AzureOperation("user/connector.sign_in_quick_fix")
+            public void accept(final Editor editor, final PsiFile file) {
+                if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+                    AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle((a) -> callback.run());
+                }
+            }
+        });
+    }
+
+    public static void createSignInAnnotation(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
+        holder.newAnnotation(HighlightSeverity.WEAK_WARNING, "You are not signed in to Azure")
+            .range(element.getTextRange())
+            .highlightType(ProblemHighlightType.WEAK_WARNING)
+            .withFix(AnnotationFixes.signIn(AnnotationFixes.DO_NOTHING))
+            .create();
+    }
+
+    public static IntentionAction simple(String text, BiConsumer<Editor, PsiFile> action) {
         return new IntentionAction() {
 
             @Override
             public @IntentionName
             @Nonnull String getText() {
-                return "Connect an " + definition.getTitle();
+                return text;
             }
 
             @Override
@@ -62,19 +104,7 @@ public class AnnotationFixes {
             @Override
             @AzureOperation("user/connector.create_connection_quick_fix")
             public void invoke(@Nonnull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
-                final Module module = ModuleUtil.findModuleForFile(file);
-                if (Objects.nonNull(module)) {
-                    final var dialog = new ConnectorDialog(project);
-                    dialog.setConsumer(new ModuleResource(module.getName()));
-                    dialog.setResourceDefinition(definition);
-                    Optional.ofNullable(defaultEnvPrefix).filter(StringUtils::isNoneBlank).ifPresent(dialog::setEnvPrefix);
-                    if (dialog.showAndGet()) {
-                        callback.accept(dialog.getValue());
-                    } else {
-                        callback.accept(null);
-                    }
-
-                }
+                action.accept(editor, file);
             }
 
             @Override
@@ -82,49 +112,5 @@ public class AnnotationFixes {
                 return false;
             }
         };
-    }
-
-    public static IntentionAction signIn(Runnable callback) {
-        return new IntentionAction() {
-
-            @Override
-            public @IntentionName
-            @Nonnull String getText() {
-                return "Sign in to Azure";
-            }
-
-            @Override
-            public @Nonnull
-            @IntentionFamilyName String getFamilyName() {
-                return "Azure general fixes";
-            }
-
-            @Override
-            public boolean isAvailable(@Nonnull Project project, Editor editor, PsiFile file) {
-                return true;
-            }
-
-            @Override
-            @AzureOperation("user/connector.sign_in_quick_fix")
-            public void invoke(@Nonnull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
-                if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-                    AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH).handle((a) -> callback.run());
-                }
-            }
-
-            @Override
-            public boolean startInWriteAction() {
-                return false;
-            }
-        };
-    }
-
-
-    public static void createSignInAnnotation(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
-        holder.newAnnotation(HighlightSeverity.WEAK_WARNING, "You are not signed in to Azure")
-                .range(element.getTextRange())
-                .highlightType(ProblemHighlightType.WEAK_WARNING)
-                .withFix(AnnotationFixes.signIn(AnnotationFixes.DO_NOTHING))
-                .create();
     }
 }

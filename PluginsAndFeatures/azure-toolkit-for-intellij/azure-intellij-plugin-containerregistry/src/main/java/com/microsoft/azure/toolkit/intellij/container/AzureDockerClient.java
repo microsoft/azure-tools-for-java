@@ -121,7 +121,7 @@ public class AzureDockerClient {
     }
 
     @AzureOperation(name = "boundary/docker.build_image.image|file", params = {"imageNameWithTag", "dockerFile"})
-    public void buildImage(String imageNameWithTag, @Nonnull File dockerFile, File baseDir, @Nullable BuildImageResultCallback callback) {
+    public void buildImage(String imageNameWithTag, @Nonnull File dockerFile, @Nullable File baseDir, @Nullable BuildImageResultCallback callback) {
         this.ping();
         baseDir = Optional.ofNullable(baseDir).orElseGet(dockerFile::getParentFile);
         final String imageId = this.client.buildImageCmd()
@@ -243,7 +243,15 @@ public class AzureDockerClient {
 
     @Nonnull
     public static List<Integer> getExposedPortsOfDockerfile(@Nonnull DockerImage image) throws IOException {
-        final String dockerFileContent = FileUtil.loadFile(image.getDockerFile());
+        if (!FileUtil.exists(image.getDockerFile())) {
+            return Collections.emptyList();
+        }
+        return getExposedPortsOfDockerfile(new File(image.getDockerFile()));
+    }
+
+    @Nonnull
+    public static List<Integer> getExposedPortsOfDockerfile(@Nonnull File dockerfile) throws IOException {
+        final String dockerFileContent = FileUtil.loadFile(dockerfile);
         return Arrays.stream(dockerFileContent.split("\\R+"))
                 .map(PORT_PATTERN::matcher)
                 .filter(Matcher::matches)

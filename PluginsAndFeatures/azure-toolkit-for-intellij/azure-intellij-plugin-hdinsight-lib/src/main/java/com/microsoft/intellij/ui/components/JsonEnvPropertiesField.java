@@ -10,6 +10,7 @@ import com.intellij.execution.configuration.EnvironmentVariablesData;
 import com.intellij.execution.util.EnvironmentVariable;
 import com.intellij.icons.AllIcons;
 import com.intellij.idea.ActionsBundle;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -240,6 +241,11 @@ public class JsonEnvPropertiesField extends TextFieldWithBrowseButton implements
                                 if (isModifiedSysEnv(variable)) return true;
                             }
                             return false;
+                        }
+
+                        @Override
+                        public @NotNull ActionUpdateThread getActionUpdateThread() {
+                            return ActionUpdateThread.BGT;
                         }
                     });
         }

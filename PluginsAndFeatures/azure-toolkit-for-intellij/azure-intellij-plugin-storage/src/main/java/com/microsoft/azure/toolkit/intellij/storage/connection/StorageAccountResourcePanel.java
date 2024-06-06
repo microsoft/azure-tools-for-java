@@ -5,10 +5,14 @@
 
 package com.microsoft.azure.toolkit.intellij.storage.connection;
 
+import com.intellij.ui.components.JBPasswordField;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
+import com.microsoft.azure.toolkit.intellij.common.auth.IntelliJSecureStore;
+import com.microsoft.azure.toolkit.intellij.common.component.AzurePasswordFieldInput;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.SignInHyperLinkLabel;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -16,46 +20,49 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.ConnectionStringStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import lombok.Getter;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
-public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<StorageAccount>> {
-    public static final String NOT_SIGNIN_TIPS = "<html><a href=\"\">Sign in</a> to select an existing Azure Storage account.</html>";
+import static com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition.*;
+
+public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<IStorageAccount>> {
     protected SubscriptionComboBox subscriptionComboBox;
-    protected AzureComboBox<StorageAccount> accountComboBox;
+    protected AzureComboBox<IStorageAccount> accountComboBox;
     @Getter
     protected JPanel contentPanel;
     private JPanel pnlAzure;
     private JRadioButton btnAzure;
     private JRadioButton btnLocal;
+    private JRadioButton btnConnectionString;
     private JLabel lblSubScription;
     private JLabel lblEnvironment;
     private JLabel lblAccount;
-//    private AzureEventBus.EventListener signInOutListener;
+    private JPanel pnlConnectionString;
+    private JBPasswordField passwordConnectionString;
+    private JLabel lblConnectionString;
+    private SignInHyperLinkLabel signInHyperLinkLabel;
+    private AzurePasswordFieldInput txtConnectionString;
 
     public StorageAccountResourcePanel() {
         this.init();
     }
 
     private void init() {
-        final ButtonGroup environmentGroup = new ButtonGroup();
-        environmentGroup.add(btnAzure);
-        environmentGroup.add(btnLocal);
+        this.txtConnectionString = new AzurePasswordFieldInput(this.passwordConnectionString);
+
         btnAzure.addItemListener(ignore -> onSelectEnvironment());
         btnLocal.addItemListener(ignore -> onSelectEnvironment());
+        btnConnectionString.addItemListener(ignore -> onSelectEnvironment());
 
-        btnAzure.setSelected(true);
         this.onSelectEnvironment();
 
         this.subscriptionComboBox.addItemListener(e -> {
@@ -69,22 +76,35 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         lblSubScription.setLabelFor(subscriptionComboBox);
         lblEnvironment.setLabelFor(btnAzure);
         lblAccount.setLabelFor(accountComboBox);
+        lblConnectionString.setLabelFor(txtConnectionString);
+        txtConnectionString.setLabel("Connection string");
     }
 
     private void onSelectEnvironment() {
         pnlAzure.setVisible(btnAzure.isSelected());
         accountComboBox.setRequired(btnAzure.isSelected());
+        pnlConnectionString.setVisible(btnConnectionString.isSelected());
+        txtConnectionString.setRequired(btnConnectionString.isSelected());
+        if (btnConnectionString.isSelected()) {
+            txtConnectionString.requestFocusInWindow();
+        }
         if (Objects.nonNull(accountComboBox.getValidationInfo())) {
             accountComboBox.validateValueAsync();
+        }
+        if (Objects.nonNull(txtConnectionString.getValidationInfo())) {
+            txtConnectionString.validateValueAsync();
         }
     }
 
     @Override
-    public void setValue(Resource<StorageAccount> accountResource) {
-        final StorageAccount account = accountResource.getData();
+    public void setValue(Resource<IStorageAccount> accountResource) {
+        final IStorageAccount account = accountResource.getData();
         Optional.ofNullable(account).ifPresent((a -> {
             if (a instanceof AzuriteStorageAccount) {
                 btnLocal.setSelected(true);
+            } else if (a instanceof ConnectionStringStorageAccount) {
+                btnConnectionString.setSelected(true);
+                this.txtConnectionString.setValue(a.getConnectionString());
             } else {
                 btnAzure.setSelected(true);
                 this.subscriptionComboBox.setValue(a.getSubscription());
@@ -93,44 +113,67 @@ public class StorageAccountResourcePanel implements AzureFormJPanel<Resource<Sto
         }));
     }
 
+    public void setMethod(int method) {
+        switch (method) {
+            case METHOD_AZURE:
+                btnAzure.setSelected(true);
+                break;
+            case METHOD_AZURITE:
+                btnLocal.setSelected(true);
+                break;
+            case METHOD_STRING:
+                btnConnectionString.setSelected(true);
+                break;
+            default:
+                break;
+        }
+    }
+
     @Nullable
     @Override
-    public Resource<StorageAccount> getValue() {
+    public Resource<IStorageAccount> getValue() {
         final AzureValidationInfo info = this.getValidationInfo(true);
         if (!info.isValid()) {
             return null;
         }
-        final StorageAccount account = btnAzure.isSelected() ? this.accountComboBox.getValue() : AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT;
-        return StorageAccountResourceDefinition.INSTANCE.define(account);
+        final String connectionString = this.txtConnectionString.getValue();
+        final IStorageAccount account = btnAzure.isSelected() ? this.accountComboBox.getValue() :
+            btnLocal.isSelected() ? AzuriteStorageAccount.AZURITE_STORAGE_ACCOUNT :
+                Azure.az(AzureStorageAccount.class).getOrInitByConnectionString(connectionString);
+        final String predefinedId = StringUtils.isNotBlank(connectionString) ? DigestUtils.md5Hex(connectionString) : null;
+        if (account instanceof ConnectionStringStorageAccount && StringUtils.isNoneBlank(predefinedId, connectionString)) {
+            IntelliJSecureStore.getInstance().savePassword(StorageAccountResourceDefinition.class.getName(), predefinedId, null, connectionString);
+        }
+        return StorageAccountResourceDefinition.INSTANCE.define(account, predefinedId);
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(
             this.accountComboBox,
-            this.subscriptionComboBox
+            this.subscriptionComboBox,
+            this.txtConnectionString
         );
     }
 
     protected void createUIComponents() {
-        final Supplier<List<? extends StorageAccount>> loader = () -> Optional
-                .ofNullable(this.subscriptionComboBox)
-                .map(AzureComboBox::getValue)
-                .map(Subscription::getId)
-                .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
-                .orElse(Collections.emptyList());
+        final Supplier<List<? extends IStorageAccount>> loader = () -> Optional
+            .ofNullable(this.subscriptionComboBox)
+            .map(AzureComboBox::getValue)
+            .map(Subscription::getId)
+            .map(id -> Azure.az(AzureStorageAccount.class).accounts(id).list())
+            .orElse(Collections.emptyList());
         this.accountComboBox = new AzureComboBox<>(loader) {
-
             @Nullable
             @Override
-            protected StorageAccount doGetDefaultValue() {
-                return CacheManager.getUsageHistory(StorageAccount.class)
+            protected IStorageAccount doGetDefaultValue() {
+                return CacheManager.getUsageHistory(IStorageAccount.class)
                     .peek(v -> Objects.isNull(subscriptionComboBox) || Objects.equals(subscriptionComboBox.getValue(), v.getSubscription()));
             }
 
             @Override
             protected String getItemText(Object item) {
-                return Optional.ofNullable(item).map(i -> ((StorageAccount) i).getName()).orElse(StringUtils.EMPTY);
+                return Optional.ofNullable(item).map(i -> ((IStorageAccount) i).getName()).orElse(StringUtils.EMPTY);
             }
 
             @Override

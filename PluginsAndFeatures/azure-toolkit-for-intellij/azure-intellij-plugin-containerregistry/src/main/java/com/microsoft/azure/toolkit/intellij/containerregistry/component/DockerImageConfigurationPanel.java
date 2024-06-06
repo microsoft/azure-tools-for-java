@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 
+import com.google.common.hash.Hashing;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.ActionLink;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -14,10 +15,15 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistryDraft;
+import com.microsoft.azure.toolkit.lib.containerregistry.model.Sku;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +43,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.*;
+import static com.microsoft.azure.toolkit.lib.Azure.az;
 
 public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfiguration> {
     @Getter
@@ -46,7 +54,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     private JLabel lblRepository;
     private JLabel lblTagName;
     private AzureTextInput txtTagName;
-    private AzureContainerRegistryComboBox cbContainerRegistry;
+    private ACRRegistryComboBox cbContainerRegistry;
     private JLabel lblRepositoryPrefix;
     private JPanel pnlImageName;
     private JPanel pnlContainerRegistry;
@@ -60,6 +68,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     @Setter
     private boolean enableCustomizedImageName = true;
     private DockerImage image;
+    private ContainerApp containerApp;
 
     public DockerImageConfigurationPanel(final Project project) {
         this.project = project;
@@ -96,7 +105,6 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
     }
 
     @Nonnull
-
     private AzureValidationInfo validateRepositoryName() {
         final String repositoryName = txtRepositoryName.getValue();
         if (StringUtils.isBlank(repositoryName) || repositoryName.length() < 1 || repositoryName.length() > REPO_LENGTH) {
@@ -228,6 +236,44 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         pnlImageName.setVisible(isDraftImage || enableCustomizedImageName);
     }
 
+    // todo: remove duplicate with ImageForm
+    public void setContainerApp(final ContainerApp containerApp) {
+        this.containerApp = containerApp;
+        if (Objects.nonNull(containerApp)) {
+            // update the draft value
+            this.cbContainerRegistry.setSubscription(containerApp.getSubscription());
+            final Object rawValue = this.cbContainerRegistry.getRawValue();
+            final ContainerRegistryDraft draft = getDraftRegistry();
+            final List<ContainerRegistry> draftItems = cbContainerRegistry.getDraftItems();
+            draftItems.clear();
+            draftItems.add(draft);
+            if (Objects.isNull(rawValue)) {
+                cbContainerRegistry.setValue(val -> val.isAdminUserEnabled() &&
+                        StringUtils.equalsIgnoreCase(val.getResourceGroupName(), containerApp.getResourceGroupName()));
+            } else if (rawValue instanceof ContainerRegistryDraft) {
+                cbContainerRegistry.setValue(draft);
+            }
+            cbContainerRegistry.reloadItems();
+        }
+    }
+
+    // todo: remove duplicate with ImageForm
+    @Nullable
+    private ContainerRegistryDraft getDraftRegistry() {
+        if (Objects.isNull(this.containerApp)) {
+            return null;
+        }
+        final String originalString = containerApp.getSubscriptionId() + "/" + containerApp.getResourceGroupName()
+                + "/" + Optional.ofNullable(containerApp.getManagedEnvironment()).map(AbstractAzResource::getName).orElse(containerApp.getName());
+        final String acrRegistryName = "ca" + Hashing.sha256().hashString(originalString, StandardCharsets.UTF_8).toString().substring(0, 10) + "acr";  // ACR names must start + end in a letter
+        final ContainerRegistryDraft draft = az(AzureContainerRegistry.class)
+                .registry(containerApp.getSubscriptionId()).create(acrRegistryName, containerApp.getResourceGroupName());
+        draft.setSku(Sku.Standard);
+        draft.setAdminUserEnabled(true);
+        draft.setRegion(Optional.ofNullable(containerApp.getRegion()).orElse(Region.US_EAST));
+        return draft;
+    }
+
     public void addImageListener(@Nonnull final AzureValueChangeListener<DockerImage> listener) {
         this.cbDockerImage.addValueChangedListener(listener);
     }
@@ -241,7 +287,7 @@ public class DockerImageConfigurationPanel implements AzureForm<DockerPushConfig
         // TODO: place custom component creation code here
         this.cbDockerHost = new AzureDockerHostComboBox(project);
         this.cbDockerImage = new AzureDockerImageComboBox(project);
-        this.cbContainerRegistry = new AzureContainerRegistryComboBox(true);
+        this.cbContainerRegistry = new ACRRegistryComboBox();
     }
 
     private void $$$setupUI$$$() {

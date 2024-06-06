@@ -34,7 +34,7 @@ public class DockerHostRunConfigurationSettingPanel extends AzureSettingPanel<Do
     private final DockerHostRunConfiguration runConfiguration;
 
     public DockerHostRunConfigurationSettingPanel(@Nonnull Project project, DockerHostRunConfiguration runConfiguration) {
-        super(project, false);
+        super(project);
         this.project = project;
         this.runConfiguration = runConfiguration;
         $$$setupUI$$$();

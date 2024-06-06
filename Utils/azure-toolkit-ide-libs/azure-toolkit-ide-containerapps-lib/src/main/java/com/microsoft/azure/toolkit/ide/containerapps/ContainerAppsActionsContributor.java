@@ -61,11 +61,17 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
     public static final Action.Id<Revision> OPEN_IN_BROWSER = Action.Id.of("user/containerapps.open_in_browser.revision");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.create_container_app.group");
     public static final Action.Id<ResourceGroup> GROUP_CREATE_CONTAINER_APPS_ENVIRONMENT = Action.Id.of("user/containerapps.create_container_apps_environment.group");
+    public static final Action.Id<Object> SERVICE_CREATE_CONTAINER_APP = Action.Id.of("user/containerapps.service_create_container_app");
 
     @Override
     public void registerActions(AzureActionManager am) {
         new Action<>(CREATE_CONTAINER_APP)
             .withLabel("Container App")
+            .register(am);
+
+        new Action<>(SERVICE_CREATE_CONTAINER_APP)
+            .withLabel("Create Container App")
+            .withIcon(AzureIcons.Action.CREATE.getIconPath())
             .register(am);
 
         new Action<>(START_ENV_LOG_STREAM)
@@ -83,7 +89,6 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
         new Action<>(CREATE_CONTAINER_APPS_ENVIRONMENT)
                 .withLabel("Create Container Apps Environment")
                 .withIcon(AzureIcons.Action.CREATE.getIconPath())
-                .withShortcut(am.getIDEDefaultShortcuts().add())
                 .register(am);
 
         new Action<>(BROWSE)
@@ -138,8 +143,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             .register(am);
 
         new Action<>(UPDATE_IMAGE)
-            .withLabel("Update Image")
-            .withIcon(AzureIcons.Action.UPLOAD.getIconPath())
+            .withLabel("Update Deployment")
+            .withIcon(AzureIcons.Action.DEPLOY.getIconPath())
             .withIdParam(AbstractAzResource::getName)
             .visibleWhen(s -> s instanceof ContainerApp)
             .enableWhen(s -> s.getFormalStatus().isConnected())
@@ -247,7 +252,8 @@ public class ContainerAppsActionsContributor implements IActionsContributor {
             ResourceCommonActionsContributor.OPEN_AZURE_REFERENCE_BOOK,
             ResourceCommonActionsContributor.BROWSE_SERVICE_AZURE_SAMPLES,
             "---",
-            ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT
+            ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT,
+            ContainerAppsActionsContributor.SERVICE_CREATE_CONTAINER_APP
         );
         am.registerGroup(SERVICE_ACTIONS, serviceActionGroup);
 

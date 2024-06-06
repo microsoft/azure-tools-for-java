@@ -32,12 +32,11 @@ import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountRes
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainerModule;
 import com.microsoft.azure.toolkit.lib.storage.blob.IBlobFile;
@@ -70,12 +69,12 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
         final boolean isBlobContainer = fullPrefix.startsWith("azure-blob://");
         final boolean isFileShare = fullPrefix.startsWith("azure-file://");
 
-        if ((isBlobContainer || isFileShare) && Azure.az(AzureAccount.class).isLoggedIn()) {
+        if ((isBlobContainer || isFileShare)) {
             final Module module = ModuleUtil.findModuleForFile(parameters.getOriginalFile());
             if (Objects.isNull(module)) {
                 return;
             }
-            final List<StorageAccount> accounts = Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
+            final List<IStorageAccount> accounts = Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
             if (accounts.isEmpty()) {
                 Utils.checkCancelled(() -> StorageAccountResourceDefinition.INSTANCE.getResources(module.getProject())).stream()
                     .map(a -> LookupElementBuilder
@@ -96,7 +95,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
                     .withBoldness(true)
                     .withCaseSensitivity(false)
                     .withTypeText(file.getResourceTypeName())
-                    .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(AbstractAzResource::getName).orElse(""))
+                    .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(IStorageAccount::getName).orElse(""))
                     .withIcon(IntelliJAzureIcons.getIcon(getFileIcon(file)));
                 for (final StorageFile file : files) {
                     result.addElement(builder.apply(file, file.getName()));
@@ -110,12 +109,12 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
         }
     }
 
-    public static List<? extends StorageFile> getFiles(String fullPrefix, @Nonnull final List<StorageAccount> accounts) {
+    public static List<? extends StorageFile> getFiles(String fullPrefix, @Nonnull final List<IStorageAccount> accounts) {
         final String fixedFullPrefix = fullPrefix.replace("azure-blob://", "").replace("azure-file://", "").trim();
         final String[] parts = fixedFullPrefix.split("/", -1);
         final var getModule = fullPrefix.startsWith("azure-blob://") ?
-            (Function<StorageAccount, BlobContainerModule>) StorageAccount::getBlobContainerModule :
-            (Function<StorageAccount, ShareModule>) StorageAccount::getShareModule;
+            (Function<IStorageAccount, BlobContainerModule>) IStorageAccount::getBlobContainerModule :
+            (Function<IStorageAccount, ShareModule>) IStorageAccount::getShareModule;
         List<? extends StorageFile> files = accounts.stream().map(getModule)
             .flatMap(m -> emptyIfException(() -> m.list().stream()))
             .map(r -> ((StorageFile) r)).toList();
@@ -143,7 +142,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
     }
 
     @Nullable
-    public static StorageFile getFile(String fullPrefix, @Nonnull final List<StorageAccount> accounts) {
+    public static StorageFile getFile(String fullPrefix, @Nonnull final List<IStorageAccount> accounts) {
         final List<? extends StorageFile> files = getFiles(fullPrefix, accounts);
         final String[] parts = fullPrefix.trim().split("/", -1);
         return files.stream().filter(f -> f.getName().equalsIgnoreCase(parts[parts.length - 1].trim())).findFirst().orElse(null);
@@ -163,7 +162,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
 
     @RequiredArgsConstructor
     private static class ConnectStorageAccountInsertHandler implements InsertHandler<LookupElement> {
-        private final Resource<StorageAccount> account;
+        private final Resource<IStorageAccount> account;
 
         @Override
         @AzureOperation("user/connector.connect_storage_account_from_code_completion")
@@ -176,7 +175,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
     }
 
     @Nullable
-    public static StorageAccount getStorageAccount(final StorageFile file) {
+    public static IStorageAccount getStorageAccount(final StorageFile file) {
         if (file instanceof IBlobFile) {
             return ((IBlobFile) file).getContainer().getParent();
         } else if (file instanceof IShareFile) {

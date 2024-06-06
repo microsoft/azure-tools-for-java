@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class ContainerService {
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         tm.runOnPooledThread(() -> Optional.of(image)
             .map(DockerImage::getDockerFile)
-            .map(f -> VfsUtil.findFileByIoFile(f, true))
+            .map(f -> VfsUtil.findFileByIoFile(new File(f), true))
             .map(f -> AzureModule.from(f, configuration.getProject()))
             .ifPresent(module -> tm.runLater(() -> tm.write(() -> module
                 .initializeWithDefaultProfileIfNot()

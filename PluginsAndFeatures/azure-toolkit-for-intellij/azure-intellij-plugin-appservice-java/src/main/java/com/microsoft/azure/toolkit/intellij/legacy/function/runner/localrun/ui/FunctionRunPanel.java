@@ -61,7 +61,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     private Module previousModule = null;
 
     public FunctionRunPanel(@NotNull Project project, FunctionRunConfiguration functionRunConfiguration) {
-        super(project, false);
+        super(project);
         this.functionRunConfiguration = functionRunConfiguration;
         $$$setupUI$$$();
         init();
@@ -226,11 +226,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 break;
             }
         }
-    }
-
-    @Override
-    protected boolean shouldInitializeBeforeRunTasks() {
-        return false;
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

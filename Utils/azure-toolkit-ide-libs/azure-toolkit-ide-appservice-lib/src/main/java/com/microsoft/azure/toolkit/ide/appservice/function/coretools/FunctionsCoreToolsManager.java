@@ -14,12 +14,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -28,6 +34,7 @@ public class FunctionsCoreToolsManager {
     private ReleaseInfo releaseInfoCache;
     private final String RELEASE_TAG = "v4";
     private static final FunctionsCoreToolsManager instance = new FunctionsCoreToolsManager();
+
     public static FunctionsCoreToolsManager getInstance() {
         return instance;
     }
@@ -41,7 +48,7 @@ public class FunctionsCoreToolsManager {
 
     /**
      * refer to https://github.com/JetBrains/azure-tools-for-intellij
-     * */
+     */
     private void cacheReleaseInfoFromFeed() {
         final ReleaseFilter releaseFilter = generateFilter();
         final ReleaseFeedData releaseFeedData = ReleaseService.getInstance().getReleaseFeedData();
@@ -52,26 +59,26 @@ public class FunctionsCoreToolsManager {
             final String releaseVersion = data.getTags().get(RELEASE_TAG).getRelease();
             final ReleaseFeedData.ReleaseData releaseData = releaseFeedData.getReleases().get(releaseVersion);
             releaseData.getCoreTools().stream()
-                    // Match OS and ensure a download link is present
-                    .filter(it -> releaseFilter.os.equalsIgnoreCase(it.getOs()) && StringUtils.isNotBlank(it.getDownloadLink()))
-                    // Sort by architecture. Use 9999 when no match is found.
-                    .sorted((o1, o2) -> {
-                        final int rank1 = IntStream.range(0, releaseFilter.architectures.size())
-                                .filter(i -> releaseFilter.architectures.get(i).equalsIgnoreCase(o1.getArchitecture()))
-                                .findFirst().orElse(9999);
-                        final int rank2 = IntStream.range(0, releaseFilter.architectures.size())
-                                .filter(i -> releaseFilter.architectures.get(i).equalsIgnoreCase(o2.getArchitecture()))
-                                .findFirst().orElse(9999);
-                        return rank1 - rank2;
-                    }).min((o1, o2) -> {    // Sort by size. Use 9999 when no match is found.
-                        final int rank1 = IntStream.range(0, releaseFilter.sizes.size())
-                                .filter(i -> releaseFilter.sizes.get(i).equalsIgnoreCase(o1.getSize()))
-                                .findFirst().orElse(9999);
-                        final int rank2 = IntStream.range(0, releaseFilter.sizes.size())
-                                .filter(i -> releaseFilter.sizes.get(i).equalsIgnoreCase(o2.getSize()))
-                                .findFirst().orElse(9999);
-                        return rank1 - rank2;
-                    }).ifPresent(releaseCoreTool -> this.releaseInfoCache = new ReleaseInfo(releaseVersion.toLowerCase(), releaseCoreTool.getDownloadLink()));
+                // Match OS and ensure a download link is present
+                .filter(it -> releaseFilter.os.equalsIgnoreCase(it.getOs()) && StringUtils.isNotBlank(it.getDownloadLink()))
+                // Sort by architecture. Use 9999 when no match is found.
+                .sorted((o1, o2) -> {
+                    final int rank1 = IntStream.range(0, releaseFilter.architectures.size())
+                        .filter(i -> releaseFilter.architectures.get(i).equalsIgnoreCase(o1.getArchitecture()))
+                        .findFirst().orElse(9999);
+                    final int rank2 = IntStream.range(0, releaseFilter.architectures.size())
+                        .filter(i -> releaseFilter.architectures.get(i).equalsIgnoreCase(o2.getArchitecture()))
+                        .findFirst().orElse(9999);
+                    return rank1 - rank2;
+                }).min((o1, o2) -> {    // Sort by size. Use 9999 when no match is found.
+                    final int rank1 = IntStream.range(0, releaseFilter.sizes.size())
+                        .filter(i -> releaseFilter.sizes.get(i).equalsIgnoreCase(o1.getSize()))
+                        .findFirst().orElse(9999);
+                    final int rank2 = IntStream.range(0, releaseFilter.sizes.size())
+                        .filter(i -> releaseFilter.sizes.get(i).equalsIgnoreCase(o2.getSize()))
+                        .findFirst().orElse(9999);
+                    return rank1 - rank2;
+                }).ifPresent(releaseCoreTool -> this.releaseInfoCache = new ReleaseInfo(releaseVersion.toLowerCase(), releaseCoreTool.getDownloadLink()));
         });
     }
 
@@ -84,8 +91,8 @@ public class FunctionsCoreToolsManager {
         final String AZURE_FUNCTIONS = "AzureFunctions";
         try {
             final File tempFile = File.createTempFile(
-                    String.format("%s-%s", AZURE_FUNCTIONS, releaseInfo.releaseVersion),
-                    ".zip", Files.createTempDirectory(AZURE_FUNCTIONS).toFile());
+                String.format("%s-%s", AZURE_FUNCTIONS, releaseInfo.releaseVersion),
+                ".zip", Files.createTempDirectory(AZURE_FUNCTIONS).toFile());
             final FileOutputStream outputStream = new FileOutputStream(tempFile);
             outputStream.getChannel().transferFrom(Channels.newChannel(new URL(releaseInfo.downloadLink).openStream()), 0, Long.MAX_VALUE);
             unzip(tempFile, unzipRootDir);
@@ -107,7 +114,10 @@ public class FunctionsCoreToolsManager {
         final ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile));
         ZipEntry zipEntry = zipInputStream.getNextEntry();
         while (zipEntry != null) {
-            final File zipEntryFile = new File(destDirPath + File.separator + zipEntry.getName());
+            final File zipEntryFile = new File(destDirPath, zipEntry.getName());
+            if (!zipEntryFile.toPath().normalize().startsWith(destDirPath)) {
+                throw new Exception("Bad zip entry");
+            }
             if (zipEntry.isDirectory()) {
                 Files.createDirectories(zipEntryFile.toPath());
             } else {
@@ -125,7 +135,7 @@ public class FunctionsCoreToolsManager {
 
     /**
      * refer to https://github.com/JetBrains/azure-tools-for-intellij
-     * */
+     */
     private ReleaseFilter generateFilter() {
         final String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         final String architectureName = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
@@ -153,6 +163,7 @@ public class FunctionsCoreToolsManager {
     private static class ReleaseInfo {
         private final String releaseVersion;
         private final String downloadLink;
+
         ReleaseInfo(String releaseVersion, String downloadLink) {
             this.releaseVersion = releaseVersion;
             this.downloadLink = downloadLink;
@@ -163,6 +174,7 @@ public class FunctionsCoreToolsManager {
         private final String os;
         private final List<String> architectures;
         private final List<String> sizes;   // todo only one size(full-size), should change list to string
+
         public ReleaseFilter(String os, List<String> architectures, List<String> sizes) {
             this.os = os;
             this.architectures = architectures;

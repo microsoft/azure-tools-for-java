@@ -5,9 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.deployimage;
 
-import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
+import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
@@ -23,17 +24,16 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerregistry.AzureContainerRegistry;
 import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistry;
+import com.microsoft.azure.toolkit.lib.containerregistry.ContainerRegistryDraft;
+import com.microsoft.azure.toolkit.lib.containerregistry.model.Sku;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     private final DeployImageModel dataModel;
@@ -49,36 +49,58 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
     @AzureOperation(name = "platform/containerapps.deploy_image.app", params = {"nameFromResourceId(this.dataModel.getContainerAppId())"})
     public ContainerApp executeSteps(@Nonnull RunProcessHandler processHandler, @Nonnull Operation operation) throws Exception {
         OperationContext.current().setMessager(getProcessHandlerMessenger());
-        final DockerImage image = configuration.getDockerImageConfiguration();
-        final ContainerRegistry registry = Azure.az(AzureContainerRegistry.class).getById(dataModel.getContainerRegistryId());
-        ContainerService.getInstance().pushDockerImage(configuration);
-        // update Image
         final String containerAppId = dataModel.getContainerAppId();
-        final ContainerApp containerApp = Objects.requireNonNull(Azure.az(AzureContainerApps.class).getById(containerAppId), String.format("Container app %s was not found", dataModel.getContainerAppId()));
-        final AzureTaskManager tm = AzureTaskManager.getInstance();
-        tm.runOnPooledThread(() -> Optional.ofNullable(image)
-            .map(DockerImage::getDockerFile)
-            .map(f -> VfsUtil.findFileByIoFile(f, true))
-            .map(f -> AzureModule.from(f, this.project))
-            .ifPresent(module -> tm.runLater(() -> tm.write(() -> {
-                final Profile p = module.initializeWithDefaultProfileIfNot();
+        final ContainerApp containerApp = Objects.requireNonNull(Azure.az(AzureContainerApps.class)
+                .getById(containerAppId), String.format("Container app %s was not found", dataModel.getContainerAppId()));
+        final ContainerRegistry registry = Optional.ofNullable(dataModel.getContainerRegistryId())
+                .filter(StringUtils::isNotBlank)
+                .map(id -> (ContainerRegistry) Azure.az(AzureContainerRegistry.class).getById(id))
+                .orElseGet(() -> initContainerRegistry(containerApp));
+        if (registry instanceof ContainerRegistryDraft draft) {
+            draft.commit();
+        }
+        if (!dataModel.isRemoteBuild()) {
+            final DockerImage image = configuration.getDockerImageConfiguration();
+            if(Objects.isNull(registry)){
+                initContainerRegistry(containerApp);
+            }
+            ContainerService.getInstance().pushDockerImage(configuration);
+        }
+        // update Image
+
+        final Module module = Arrays.stream(ModuleManager.getInstance(project).getModules())
+                .filter(m -> StringUtils.equalsAnyIgnoreCase(m.getName(), dataModel.getModuleName()))
+                .findFirst().orElse(null);
+        if (Objects.nonNull(module)) {
+            final AzureTaskManager tm = AzureTaskManager.getInstance();
+            final AzureModule azureModule = AzureModule.from(module);
+            tm.runLater(() -> tm.write(() -> {
+                final Profile p = azureModule.initializeWithDefaultProfileIfNot();
                 Optional.ofNullable(registry).ifPresent(p::addApp);
                 Optional.of(containerApp).ifPresent(p::addApp);
                 p.save();
-            }))));
+            }));
+        }
         final ContainerAppDraft draft = (ContainerAppDraft) containerApp.update();
-        final ContainerAppDraft.Config config = new ContainerAppDraft.Config();
-        final List<EnvironmentVar> vars = dataModel.getEnvironmentVariables().entrySet().stream()
-            .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
-            .collect(Collectors.toList());
-        final ContainerAppDraft.ImageConfig imageConfig = new ContainerAppDraft.ImageConfig(configuration.getFinalImageName());
-        imageConfig.setContainerRegistry(registry);
-        imageConfig.setEnvironmentVariables(vars);
-        config.setImageConfig(imageConfig);
-        config.setIngressConfig(dataModel.getIngressConfig());
-        draft.setConfig(config);
+        draft.setConfig(dataModel.getContainerAppConfig());
         draft.updateIfExist();
         return containerApp;
+    }
+
+    @Nullable
+    private ContainerRegistryDraft initContainerRegistry(@Nonnull final ContainerApp containerApp) {
+        final String id = dataModel.getContainerRegistryId();
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        final AzureContainerRegistry acr = Azure.az(AzureContainerRegistry.class);
+        final ResourceId resourceId = ResourceId.fromString(id);
+        final ContainerRegistryDraft draft = acr.registry(resourceId.subscriptionId())
+                .create(resourceId.name(), resourceId.resourceGroupName());
+        draft.setAdminUserEnabled(true);
+        draft.setRegion(containerApp.getRegion());
+        draft.setSku(Sku.Standard);
+        return draft;
     }
 
     @Nonnull
@@ -89,8 +111,11 @@ public class DeployImageRunState extends AzureRunProfileState<ContainerApp> {
 
     @Override
     protected void onSuccess(@Nonnull final ContainerApp app, @Nonnull RunProcessHandler processHandler) {
-        final String image = Optional.ofNullable(configuration.getDockerImageConfiguration()).map(DockerImage::getImageName).orElse(null);
-        processHandler.setText(String.format("Image (%s) has been deployed to Container App (%s).", image, app.getName()));
+        final String image = Optional.ofNullable(configuration.getDockerImageConfiguration())
+                .map(DockerImage::getImageName)
+                .map(name -> String.format("Image (%s)", name))
+                .orElse("Image");
+        processHandler.setText(String.format("%s has been deployed to Container App (%s).", image, app.getName()));
         if (app.isIngressEnabled()) {
             processHandler.setText(String.format("URL: https://%s", app.getIngressFqdn()));
         }

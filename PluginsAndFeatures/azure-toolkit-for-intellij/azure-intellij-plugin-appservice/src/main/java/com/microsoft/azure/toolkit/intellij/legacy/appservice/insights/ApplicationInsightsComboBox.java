@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import lombok.Setter;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;

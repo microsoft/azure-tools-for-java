@@ -338,7 +338,7 @@ public class TreeUtils {
             }
         });
         tree.getModel().addTreeModelListener(listener.get());
-        doSelectNode(tree, finder, checkpoint, listener.get());
+        AzureTaskManager.getInstance().runLater(()-> doSelectNode(tree, finder, checkpoint, listener.get()));
     }
 
     private static void doSelectNode(final @Nonnull JTree tree, final @Nonnull NodeFinder matcher, final AtomicReference<TreePath> checkpoint, final TreeModelListener listener) {

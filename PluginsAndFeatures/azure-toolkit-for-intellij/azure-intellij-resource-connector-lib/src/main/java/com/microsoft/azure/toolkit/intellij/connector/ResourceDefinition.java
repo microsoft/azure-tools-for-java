@@ -40,7 +40,11 @@ public interface ResourceDefinition<T> {
 
     String getName();
 
-    Resource<T> define(T resource);
+    default Resource<T> define(T resource) {
+        return this.define(resource, null);
+    }
+
+    Resource<T> define(T resource, String id);
 
     /**
      * get resource selection panel<br>
@@ -63,6 +67,7 @@ public interface ResourceDefinition<T> {
     /**
      * read/deserialize a instance of {@link T} from {@code element}
      */
+    @Nullable
     Resource<T> read(@Nonnull final Element element);
 
     default boolean isEnvPrefixSupported() {

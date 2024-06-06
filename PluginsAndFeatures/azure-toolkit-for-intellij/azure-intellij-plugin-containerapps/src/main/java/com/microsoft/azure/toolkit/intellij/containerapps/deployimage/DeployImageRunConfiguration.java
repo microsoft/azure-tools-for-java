@@ -5,23 +5,29 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.deployimage;
 
-import com.intellij.configurationStore.XmlSerializer;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.util.xmlb.Accessor;
+import com.intellij.util.xmlb.SerializationFilterBase;
+import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerHost;
 import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import com.microsoft.azure.toolkit.intellij.containerregistry.IDockerPushConfiguration;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.lang.model.element.Element;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DeployImageRunConfiguration extends LocatableConfigurationBase<Element> implements LocatableConfiguration, IDockerPushConfiguration {
@@ -58,19 +64,28 @@ public class DeployImageRunConfiguration extends LocatableConfigurationBase<Elem
     }
 
     @Override
-    public void readExternal(org.jdom.@NotNull Element element) throws InvalidDataException {
+    public void readExternal(@NotNull Element element) throws InvalidDataException {
         super.readExternal(element);
-        this.dataModel = Optional.ofNullable(element.getChild("SpringCloudAppConfig"))
-                .map(e -> XmlSerializer.deserialize(e, DeployImageModel.class))
-                .orElse(DeployImageModel.builder().build());
+        final List<Element> models = element.getChildren("DeployImageModel");
+        final Element source = CollectionUtils.isNotEmpty(models) ? models.get(0) : element;
+        try {
+            XmlSerializer.deserializeInto(dataModel, source);
+        } catch (final Error e) {
+            // swallow exception during deserialization
+        }
     }
 
     @Override
-    public void writeExternal(org.jdom.@NotNull Element element) {
+    public void writeExternal(@NotNull Element element) {
         super.writeExternal(element);
-        Optional.ofNullable(this.dataModel)
-                .map(config -> XmlSerializer.serialize(config, (accessor, o) -> !"containerRegistry".equalsIgnoreCase(accessor.getName())))
-                .ifPresent(element::addContent);
+        if (Objects.nonNull(this.dataModel)) {
+            XmlSerializer.serializeInto(this.dataModel, element, new SerializationFilterBase() {
+                @Override
+                protected boolean accepts(@Nonnull Accessor accessor, @Nonnull Object bean, @Nullable Object beanValue) {
+                    return !StringUtils.equalsAnyIgnoreCase(accessor.getName(), "containerRegistry", "ImageConfig", "ContainerAppConfig");
+                }
+            });
+        }
     }
 
     @Override
@@ -94,5 +109,21 @@ public class DeployImageRunConfiguration extends LocatableConfigurationBase<Elem
 
     public void setFinalTagName(final String value) {
         getDataModel().setFinalTagName(value);
+    }
+
+    public void setModuleName(final String moduleName){
+        getDataModel().setModuleName(moduleName);
+    }
+
+    public String getModuleName() {
+        return getDataModel().getModuleName();
+    }
+
+    public void setDeploymentType(final DeploymentType type){
+        getDataModel().setDeploymentType(type);
+    }
+
+    public DeploymentType getDeploymentType() {
+        return getDataModel().getDeploymentType();
     }
 }

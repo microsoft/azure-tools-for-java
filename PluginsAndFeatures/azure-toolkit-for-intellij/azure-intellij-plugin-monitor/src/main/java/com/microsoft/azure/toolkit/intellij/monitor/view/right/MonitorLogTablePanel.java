@@ -10,6 +10,7 @@ import com.azure.monitor.query.models.LogsTableCell;
 import com.azure.monitor.query.models.LogsTableRow;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -322,6 +323,11 @@ public class MonitorLogTablePanel implements Disposable {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 exportQueryResult();
+            }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
         this.exportAction.setExternalLinkIcon();

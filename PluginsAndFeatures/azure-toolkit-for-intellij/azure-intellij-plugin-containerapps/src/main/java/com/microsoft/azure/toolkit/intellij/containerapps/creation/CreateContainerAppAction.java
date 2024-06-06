@@ -39,15 +39,16 @@ public class CreateContainerAppAction {
         });
     }
 
-    private static void doCreate(final ContainerAppDraft.Config config, final Project project) {
+    public static ContainerAppDraft doCreate(final ContainerAppDraft.Config config, final Project project) {
         final ResourceGroup rg = config.getResourceGroup();
         if (rg.isDraftForCreating()) {
-            new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getRegion()).execute();
+            new CreateResourceGroupTask(rg.getSubscriptionId(), rg.getName(), config.getEnvironment().getRegion()).execute();
         }
         final ContainerAppModule module = az(AzureContainerApps.class).containerApps(config.getSubscription().getId());
         final ContainerAppDraft draft = module.create(config.getName(), config.getResourceGroup().getName());
         CacheManager.getUsageHistory(ContainerApp.class).push(draft);
         draft.setConfig(config);
         draft.commit();
+        return draft;
     }
 }

@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -59,6 +61,13 @@ public class ProjectUtils {
             project = ProjectManager.getInstance().getDefaultProject();
         }
         return project;
+    }
+
+    public static Project getProject(@Nullable Component component) {
+        return Optional.ofNullable(component).map(c -> DataManager.getInstance().getDataContext(c))
+            .or(() -> Optional.of(DataManager.getInstance().getDataContext()))
+            .map(c -> c.getData(CommonDataKeys.PROJECT))
+            .orElseGet(ProjectUtils::getProject);
     }
 
     public static boolean isSameModule(@Nullable final Module first, @Nullable final Module second) {

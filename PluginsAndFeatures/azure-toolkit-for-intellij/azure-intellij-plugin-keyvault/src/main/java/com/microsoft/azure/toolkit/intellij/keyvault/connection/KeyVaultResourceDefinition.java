@@ -67,7 +67,7 @@ public class KeyVaultResourceDefinition extends AzureServiceResource.Definition<
     }
 
     @Override
-    public KeyVault getResource(String dataId) {
+    public KeyVault getResource(String dataId, final String id) {
         return Azure.az(AzureKeyVault.class).getById(dataId);
     }
 

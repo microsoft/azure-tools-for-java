@@ -32,7 +32,7 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
     }
 
     @Override
-    public MongoDatabase getResource(String dataId) {
+    public MongoDatabase getResource(String dataId, final String id) {
         return Azure.az(AzureCosmosService.class).getById(dataId);
     }
 

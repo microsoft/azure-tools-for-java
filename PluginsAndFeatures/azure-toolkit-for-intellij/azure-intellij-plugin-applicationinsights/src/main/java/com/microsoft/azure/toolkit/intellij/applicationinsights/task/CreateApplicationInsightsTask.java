@@ -18,10 +18,11 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.ide.guidance.task.SelectSubscriptionTask.SUBSCRIPTION;
+
 public class CreateApplicationInsightsTask implements Task {
 
     public static final String APPLICATION_INSIGHTS_NAME = "applicationInsightsName";
-    public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String RESOURCE_GROUP = "resourceGroup";
     public static final String RESOURCE_ID = "resourceId";
     public static final String DEFAULT_APPLICATION_INSIGHTS_NAME = "defaultApplicationInsightsName";
@@ -37,8 +38,7 @@ public class CreateApplicationInsightsTask implements Task {
     public void execute() {
         final String name = (String) Objects.requireNonNull(context.getParameter(APPLICATION_INSIGHTS_NAME),
                 "`name` is required to create application insights");
-        final Subscription subscription = Optional.ofNullable((String) context.getParameter(SUBSCRIPTION_ID))
-                .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
+        final Subscription subscription = Optional.ofNullable((Subscription) context.getParameter(SUBSCRIPTION))
                 .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get subscription to create application insights"));
         final ResourceGroup resourceGroup = Optional.ofNullable((String) context.getParameter(RESOURCE_GROUP))
                 .map(rg -> Azure.az(AzureResources.class).groups(subscription.getId()).get(rg, rg))

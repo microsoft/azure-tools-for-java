@@ -4,6 +4,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
@@ -18,10 +19,12 @@ import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.ide.guidance.view.components.PhasePanel.OPEN_IN_BROWSER;
+
 public class StepPanel extends JPanel {
     private JPanel contentPanel;
     private JLabel statusIcon;
-    private JLabel titleLabel;
+    private JTextPane titleLabel;
     private JTextPane descPanel;
     private JTextArea outputPanel;
     private com.intellij.ui.components.ActionLink actionButton;
@@ -39,6 +42,11 @@ public class StepPanel extends JPanel {
         this.setLayout(new GridLayoutManager(1, 1));
         this.add(this.contentPanel, new GridConstraints(0, 0, 1, 1, 0, 3, 3, 3, null, null, null, 0));
         this.step.addStatusListener(this::updateStatus);
+        this.titleLabel.setBorder(null);
+        this.titleLabel.setContentType("text/html");
+        this.titleLabel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
+        this.titleLabel.addHyperlinkListener(OPEN_IN_BROWSER);
+
         this.actionButton.setText("Run");
         this.actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.actionButton.addActionListener(e -> execute());

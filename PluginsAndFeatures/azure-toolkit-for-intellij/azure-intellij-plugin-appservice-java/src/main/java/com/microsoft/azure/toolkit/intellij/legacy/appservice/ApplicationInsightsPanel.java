@@ -10,7 +10,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.appservice.insights.Applicati
 import com.microsoft.azure.toolkit.lib.appservice.model.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import lombok.Getter;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nullable;
 import javax.swing.*;

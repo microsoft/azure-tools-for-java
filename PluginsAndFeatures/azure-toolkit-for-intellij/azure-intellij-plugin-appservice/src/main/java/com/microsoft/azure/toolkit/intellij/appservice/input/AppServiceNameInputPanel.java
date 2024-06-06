@@ -2,8 +2,6 @@ package com.microsoft.azure.toolkit.intellij.appservice.input;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 
@@ -30,8 +28,7 @@ public class AppServiceNameInputPanel implements AzureFormJPanel<String> {
         this.appNameInput.setValue(value);
     }
 
-    public void setSubscriptionId(@Nonnull final String subscriptionId) {
-        final Subscription subscription = Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+    public void setSubscription(@Nonnull final Subscription subscription) {
         this.appNameInput.setSubscription(subscription);
     }
 

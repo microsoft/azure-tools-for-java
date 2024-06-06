@@ -9,6 +9,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.MergeableLineMarkerInfo;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
@@ -113,6 +114,11 @@ public class ResourceConnectionLineMarkerInfo extends MergeableLineMarkerInfo<Ps
                     }
                     AbstractAzureFacetNode.selectConnectedResource(connection, true);
                 }
+
+                @Override
+                public ActionUpdateThread getActionUpdateThread() {
+                    return ActionUpdateThread.BGT;
+                }
             };
             this.editConnectionAction = new AnAction("Edit Connection", "Edit resource connection for current resource", AllIcons.Actions.Edit) {
                 @Override
@@ -120,12 +126,22 @@ public class ResourceConnectionLineMarkerInfo extends MergeableLineMarkerInfo<Ps
                 public void actionPerformed(@NotNull AnActionEvent e) {
                     AzureActionManager.getInstance().getAction(ResourceConnectionActionsContributor.EDIT_CONNECTION).handle(connection, e);
                 }
+
+                @Override
+                public ActionUpdateThread getActionUpdateThread() {
+                    return ActionUpdateThread.BGT;
+                }
             };
             this.editEnvAction = new AnAction("Edit Environment Variables", "Edit environment variables for current resource", AllIcons.Actions.Edit) {
                 @Override
                 @AzureOperation("user/connector.edit_env_in_line_marker")
                 public void actionPerformed(@NotNull AnActionEvent e) {
                     AzureActionManager.getInstance().getAction(ResourceConnectionActionsContributor.EDIT_ENV_FILE_IN_EDITOR).handle(connection, e);
+                }
+
+                @Override
+                public ActionUpdateThread getActionUpdateThread() {
+                    return ActionUpdateThread.BGT;
                 }
             };
             this.popupMenuActions = new ActionGroup() {

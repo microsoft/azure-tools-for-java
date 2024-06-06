@@ -31,7 +31,7 @@ public class MySqlDatabaseResourceDefinition extends SqlDatabaseResourceDefiniti
     }
 
     @Override
-    public MySqlDatabase getResource(String dataId) {
+    public MySqlDatabase getResource(String dataId, final String id) {
         return Azure.az(AzureMySql.class).getById(dataId);
     }
 

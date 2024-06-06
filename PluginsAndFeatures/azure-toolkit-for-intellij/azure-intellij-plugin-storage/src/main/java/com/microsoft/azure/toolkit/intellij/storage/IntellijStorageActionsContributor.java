@@ -20,10 +20,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainerModule;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageAccountConfig;
@@ -86,7 +86,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
     }
 
     private void createStorage(Object m, Object e) {
-        @SuppressWarnings("unchecked") final AbstractAzResourceModule<?, StorageAccount, ?> module = (AbstractAzResourceModule<?, StorageAccount, ?>) m;
+        @SuppressWarnings("unchecked") final AbstractAzResourceModule<?, IStorageAccount, ?> module = (AbstractAzResourceModule<?, IStorageAccount, ?>) m;
         final AnActionEvent event = (AnActionEvent) e;
         AzureTaskManager.getInstance().runLater(() -> {
             final StorageCreationDialog dialog = new StorageCreationDialog(module, event.getProject());
@@ -95,7 +95,7 @@ public class IntellijStorageActionsContributor implements IActionsContributor {
                 .withLabel("Create")
                 .withIdParam(n -> n)
                 .withSource(module)
-                .withAuthRequired(n -> !module.getParent().isEmulatorResource())
+                .withAuthRequired(n -> module.isAuthRequiredForCreating())
                 .withHandler(c -> module.create(c, "").createIfNotExist()));
             dialog.show();
         });

@@ -38,7 +38,7 @@ public class StoragePathLineMarkerProvider implements LineMarkerProvider {
         if (psiElement(JavaTokenType.STRING_LITERAL).withParent(literalExpression()).accepts(element) && element.getParent() instanceof PsiLiteralExpression literal) {
             final Module module = ModuleUtil.findModuleForPsiElement(element);
             final String valueWithPrefix = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();
-            if (Objects.nonNull(module) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://")) && Azure.az(AzureAccount.class).isLoggedIn()) {
+            if (Objects.nonNull(module) && (valueWithPrefix.startsWith("azure-blob://") || valueWithPrefix.startsWith("azure-file://"))) {
                 final String prefix = valueWithPrefix.startsWith("azure-blob://") ? "azure-blob://" : "azure-file://";
                 final StorageFile file = StoragePathCompletionProvider.getFile(valueWithPrefix, module);
                 if (Objects.nonNull(file)) {

@@ -28,7 +28,6 @@ import com.microsoft.azure.toolkit.intellij.container.model.DockerImage;
 import lombok.Getter;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -84,7 +83,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     @Override
     protected String getItemText(Object item) {
         if (item instanceof DockerImage) {
-            return ((DockerImage) item).isDraft() ? Optional.ofNullable(((DockerImage) item).getDockerFile()).map(File::getAbsolutePath).orElse("Unknown Docker File") : ((DockerImage) item).getImageName();
+            return ((DockerImage) item).isDraft() ? Optional.ofNullable(((DockerImage) item).getDockerFile()).orElse("Unknown Docker File") : ((DockerImage) item).getImageName();
         }
         return super.getItemText(item);
     }
@@ -148,7 +147,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     private void selectDockerFile() {
         final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
         descriptor.withTitle("Select Dockerfile");
-        final VirtualFile toSelect = Optional.ofNullable(this.getValue()).map(DockerImage::getDockerFile).map(file -> LocalFileSystem.getInstance().findFileByIoFile(file)).orElse(null);
+        final VirtualFile toSelect = Optional.ofNullable(this.getValue()).map(DockerImage::getDockerFile).map(file -> LocalFileSystem.getInstance().findFileByIoFile(new File(file))).orElse(null);
         final VirtualFile[] files = FileChooser.chooseFiles(descriptor, project, toSelect);
         if (ArrayUtils.isNotEmpty(files)) {
             final VirtualFile file = files[0];
@@ -162,7 +161,7 @@ public class AzureDockerImageComboBox extends AzureComboBox<DockerImage> {
     class DockerImageDescriptor extends ListItemDescriptorAdapter<DockerImage> {
         @Override
         public String getTextFor(DockerImage image) {
-            return image.isDraft() ? Optional.ofNullable(image.getDockerFile()).map(File::getAbsolutePath).orElse("Unknown Docker File") : image.getImageName();
+            return image.isDraft() ? Optional.ofNullable(image.getDockerFile()).orElse("Unknown Docker File") : image.getImageName();
         }
 
         @Override

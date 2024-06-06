@@ -21,8 +21,8 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
-import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
-import com.microsoft.azure.toolkit.intellij.function.connection.ConnectionTarget;
+import com.microsoft.azure.toolkit.intellij.connector.keyvalue.KeyValueData;
+import com.microsoft.azure.toolkit.intellij.connector.keyvalue.KeyValueResource;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -188,10 +188,10 @@ public class FunctionConnectionCreationDialog extends AzureDialog<FunctionConnec
 
     private Resource<?> getResource() {
         if (rdoConnectionString.isSelected()) {
-            final ConnectionTarget target = ConnectionTarget.builder()
-                    .name(txtConnectionName.getValue())
-                    .connectionString(txtConnectionString.getValue()).build();
-            return CommonConnectionResource.Definition.INSTANCE.define(target);
+            final KeyValueData target = KeyValueData.builder()
+                    .key(txtConnectionName.getValue())
+                    .value(txtConnectionString.getValue()).build();
+            return KeyValueResource.Definition.INSTANCE.define(target);
         } else {
             return Objects.requireNonNull(resourcePanel).getValue();
         }

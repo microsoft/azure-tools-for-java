@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.legacy.function.FlexConsumptionConfigurationPanel">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="7" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="527" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <vspacer id="f1c3">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+      <component id="8036e" class="com.microsoft.azure.toolkit.intellij.common.AzureComboBox" binding="cbAuthMethod" custom-create="true">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="8a433" class="javax.swing.JLabel" binding="lblIdentityId">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Identity Id:"/>
+          <toolTipText value="The resource ID of the identity"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="6d652" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtIdentityId">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="8bb86" class="javax.swing.JLabel" binding="lblHttpConcurrency">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Http Concurrency:"/>
+          <toolTipText value=""/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="a6595" class="javax.swing.JLabel" binding="lblMaxInstances">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Maximum Instance:"/>
+          <toolTipText value="The maximum number of instances for the function app.  Value must be in range [40, 1000]"/>
+        </properties>
+      </component>
+      <component id="7f762" class="javax.swing.JLabel" binding="lblAuthMethod">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Auth Method:"/>
+          <toolTipText value="The authentication method to access the storage account for deployment."/>
+        </properties>
+      </component>
+      <component id="caa98" class="javax.swing.JLabel" binding="lblInstanceMemory">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Instance Memory:"/>
+          <toolTipText value="Set the amount of memory allocated to each instance of the function app in MB."/>
+        </properties>
+      </component>
+      <component id="5f7bd" class="javax.swing.JRadioButton" binding="rdo512">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="512MB"/>
+        </properties>
+      </component>
+      <component id="1f5a0" class="javax.swing.JRadioButton" binding="rdo2048">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="2048MB"/>
+        </properties>
+      </component>
+      <component id="a1d43" class="javax.swing.JRadioButton" binding="rdo4096">
+        <constraints>
+          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="4096MB"/>
+        </properties>
+      </component>
+      <hspacer id="b581b">
+        <constraints>
+          <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="5c5ce" class="javax.swing.JLabel" binding="lblConnectionKey">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+            <minimum-size width="160" height="24"/>
+            <preferred-size width="160" height="24"/>
+            <maximum-size width="160" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <text value="Storage Connection:"/>
+          <toolTipText value="Set the name of the app setting that has the storage account connection string"/>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="22cce" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtConnectionKey">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <visible value="false"/>
+        </properties>
+      </component>
+      <component id="8e033" class="com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput" binding="txtMaxInstances">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="de1e6" class="com.microsoft.azure.toolkit.intellij.common.AzureIntegerInput" binding="txtHttpConcurrency">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <visible value="false"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

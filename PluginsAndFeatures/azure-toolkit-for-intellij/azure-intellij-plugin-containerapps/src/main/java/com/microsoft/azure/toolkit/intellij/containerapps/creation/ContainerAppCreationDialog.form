@@ -1,47 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.containerapps.creation.ContainerAppCreationDialog">
-  <grid id="57ab1" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="9" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="57ab1" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="10" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="543" height="587"/>
+      <xy x="20" y="20" width="707" height="891"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
       <vspacer id="d5b87">
         <constraints>
-          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
       <component id="824c" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleIngress">
         <constraints>
-          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Application Ingress Settings"/>
-          <titleFont style="1"/>
-        </properties>
-      </component>
-      <component id="225e1" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleAppSettings">
-        <constraints>
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="App Settings"/>
+          <text value="Ingress Settings"/>
           <titleFont style="1"/>
         </properties>
       </component>
-      <component id="e2a30" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleContainerAppsEnvironment">
+      <component id="225e1" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleDeployment">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Container Apps Environment "/>
+          <text value="Deployment"/>
           <titleFont style="1"/>
-          <toolTipText value="The environment is a secure boundary around one or more container apps that can communicate with each other and share a virtual network, logging, and Dapr."/>
         </properties>
       </component>
-      <component id="590bf" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleProjectDetails">
+      <component id="590bf" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleApp">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -50,75 +40,7 @@
           <titleFont style="1"/>
         </properties>
       </component>
-      <grid id="65348" binding="pnlIngressSettingsHolder" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
-        <constraints>
-          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <nested-form id="fbcec" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/IngressConfigurationPanel.form" binding="pnlIngressConfiguration">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </nested-form>
-        </children>
-      </grid>
-      <grid id="4678c" binding="pnlAppSettings" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
-        <constraints>
-          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <component id="d582" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
-                <minimum-size width="130" height="24"/>
-                <preferred-size width="130" height="24"/>
-                <maximum-size width="130" height="24"/>
-              </grid>
-            </constraints>
-            <properties>
-              <text value="Quickstart:"/>
-            </properties>
-          </component>
-          <component id="2cac4" class="javax.swing.JCheckBox" binding="chkUseQuickStart">
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Use Quick Start Image"/>
-            </properties>
-          </component>
-          <nested-form id="c8b19" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/ImageForm.form" binding="pnlContainer">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
-            </constraints>
-          </nested-form>
-          <component id="4f4b5" class="javax.swing.JLabel" binding="lblEnv">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
-                <minimum-size width="130" height="24"/>
-                <preferred-size width="130" height="24"/>
-                <maximum-size width="130" height="24"/>
-              </grid>
-            </constraints>
-            <properties>
-              <text value="Env Variables:"/>
-            </properties>
-          </component>
-          <component id="62991" class="com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton" binding="inputEnv">
-            <constraints>
-              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-          </component>
-        </children>
-      </grid>
-      <grid id="47402" binding="pnlContainerAppsEnvironment" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="4678c" binding="pnlDeployment" layout-manager="GridLayoutManager" row-count="4" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -126,7 +48,12 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="578e7" class="javax.swing.JLabel" binding="lblRegion">
+          <nested-form id="c8b19" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/ImageForm.form" binding="formImage">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+            </constraints>
+          </nested-form>
+          <component id="9948f" class="javax.swing.JLabel">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
                 <minimum-size width="130" height="24"/>
@@ -135,36 +62,53 @@
               </grid>
             </constraints>
             <properties>
-              <text value="Region:"/>
+              <text value="Source:"/>
             </properties>
           </component>
-          <component id="e934b" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="cbRegion">
+          <component id="ef7dc" class="javax.swing.JRadioButton" binding="btnDeployCode">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-          </component>
-          <component id="ead2" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
-                <minimum-size width="130" height="24"/>
-                <preferred-size width="130" height="24"/>
-                <maximum-size width="130" height="24"/>
-              </grid>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Environment:"/>
+              <selected value="true"/>
+              <text value="Source code"/>
+              <visible value="true"/>
             </properties>
           </component>
-          <component id="ad919" class="com.microsoft.azure.toolkit.intellij.containerapps.component.AzureContainerAppsEnvironmentComboBox" binding="cbEnvironment" custom-create="true">
+          <component id="ccdde" class="javax.swing.JRadioButton" binding="btnDeployArtifact">
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <text value="Artifact"/>
+            </properties>
           </component>
+          <component id="24101" class="javax.swing.JRadioButton" binding="btnDeployImage">
+            <constraints>
+              <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Container image"/>
+            </properties>
+          </component>
+          <nested-form id="45371" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/CodeForm.form" binding="formCode" custom-create="true">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+            </constraints>
+          </nested-form>
+          <nested-form id="6d03" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/ArtifactForm.form" binding="formArtifact" custom-create="true">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="1" use-parent-layout="false"/>
+            </constraints>
+          </nested-form>
+          <hspacer id="334dd">
+            <constraints>
+              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
         </children>
       </grid>
-      <grid id="65037" binding="pnlProjectDetails" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="65037" binding="pnlApp" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -214,7 +158,7 @@
           </component>
           <component id="9ef9d" class="javax.swing.JLabel" binding="lblContainerAppName">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
                 <minimum-size width="130" height="24"/>
                 <preferred-size width="130" height="24"/>
                 <maximum-size width="130" height="24"/>
@@ -226,12 +170,123 @@
           </component>
           <component id="924e3" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtContainerAppName">
             <constraints>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="ead2" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                <minimum-size width="130" height="24"/>
+                <preferred-size width="130" height="24"/>
+                <maximum-size width="130" height="24"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Environment:"/>
+            </properties>
+          </component>
+          <component id="ad919" class="com.microsoft.azure.toolkit.intellij.containerapps.component.AzureContainerAppsEnvironmentComboBox" binding="cbEnvironment" custom-create="true">
+            <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
         </children>
       </grid>
+      <component id="145c6" class="com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator" binding="titleOther">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Other"/>
+          <titleFont style="1"/>
+        </properties>
+      </component>
+      <grid id="6d890" binding="pnlOther" layout-manager="GridLayoutManager" row-count="2" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="true"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="1db20" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                <minimum-size width="130" height="24"/>
+                <preferred-size width="130" height="24"/>
+                <maximum-size width="130" height="24"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Env Variables:"/>
+            </properties>
+          </component>
+          <component id="1931f" class="com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton" binding="inputEnv">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+          </component>
+          <component id="4339f" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                <minimum-size width="130" height="24"/>
+                <preferred-size width="130" height="24"/>
+                <maximum-size width="130" height="24"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Min Replicas:"/>
+            </properties>
+          </component>
+          <component id="be2e9" class="com.intellij.ui.JBIntSpinner" binding="intMinReplicas" custom-create="true">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <max value="300"/>
+              <min value="0"/>
+              <number value="0"/>
+            </properties>
+          </component>
+          <component id="8adb9" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                <minimum-size width="130" height="24"/>
+                <preferred-size width="130" height="24"/>
+                <maximum-size width="130" height="24"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value="Max Replicas:"/>
+            </properties>
+          </component>
+          <component id="5ce6b" class="com.intellij.ui.JBIntSpinner" binding="intMaxReplicas" custom-create="true">
+            <constraints>
+              <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <max value="300"/>
+              <min value="0"/>
+              <number value="10"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <nested-form id="fbcec" form-file="com/microsoft/azure/toolkit/intellij/containerapps/component/IngressConfigurationPanel.form" binding="pnlIngress">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="true"/>
+        </constraints>
+      </nested-form>
     </children>
   </grid>
+  <buttonGroups>
+    <group name="deploymentSource">
+      <member id="ef7dc"/>
+      <member id="ccdde"/>
+      <member id="24101"/>
+    </group>
+  </buttonGroups>
 </form>

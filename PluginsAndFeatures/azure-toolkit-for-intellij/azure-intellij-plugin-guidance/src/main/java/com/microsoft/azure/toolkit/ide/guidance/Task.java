@@ -25,6 +25,10 @@ public interface Task extends Disposable {
         return false;
     }
 
+    default boolean isToSkip() {
+        return false;
+    }
+
     @Nonnull
     String getName();
 

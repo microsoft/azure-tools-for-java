@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.FileSaverDescriptor;
@@ -23,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.utils.JsonUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -62,6 +64,11 @@ public class FunctionAppSettingsTableUtils {
             public void actionPerformed(AnActionEvent anActionEvent) {
                 importAppSettings(appSettingsTable);
             }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
         importButton.registerCustomShortcutSet(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK, result);
 
@@ -70,6 +77,11 @@ public class FunctionAppSettingsTableUtils {
             @AzureOperation(name = "user/function.export_app_settings")
             public void actionPerformed(AnActionEvent anActionEvent) {
                 exportAppSettings(appSettingsTable);
+            }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         };
         exportButton.registerCustomShortcutSet(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK, result);

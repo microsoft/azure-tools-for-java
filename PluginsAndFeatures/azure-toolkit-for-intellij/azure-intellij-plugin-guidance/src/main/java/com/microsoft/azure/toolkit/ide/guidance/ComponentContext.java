@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ComponentContext {
+    public static final String PARAM_PREFIX = "prefix";
     @Nonnull
     private final Context context;
     @Nonnull
@@ -51,7 +52,7 @@ public class ComponentContext {
         context.setProperty(mappedKey, value);
     }
 
-    public void applyResult(@Nonnull final String key, @Nonnull final Object value) {
+    public void applyResult(@Nonnull final String key, @Nullable final Object value) {
         final String mappedKey = resultMapping.getOrDefault(key, key);
         context.setProperty(mappedKey, value);
     }

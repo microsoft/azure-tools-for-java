@@ -5,11 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.connector;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.ide.DataManager;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -26,8 +21,6 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -64,11 +57,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private TitledSeparator resourceTitle;
     private TitledSeparator consumerTitle;
     protected JTextField envPrefixTextField;
-    private HyperlinkLabel lblSignIn;
     private JPanel descriptionContainer;
     private JTextPane descriptionPane;
     private JPanel pnlEnvPrefix;
     private JLabel lblEnvPrefix;
+    private SignInHyperLinkLabel signInHyperLinkLabel1;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
 
@@ -90,7 +83,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     @Override
     protected void init() {
         super.init();
-        this.lblSignIn.setVisible(!Azure.az(AzureAccount.class).isLoggedIn());
+        this.contentPane.setPreferredSize(new Dimension(600, -1));
+        this.contentPane.setMaximumSize(new Dimension(600, -1));
         final Action.Id<Connection<?, ?>> actionId = Action.Id.of("user/connector.create_or_update_connection.consumer|resource");
         this.setOkAction(new Action<>(actionId)
             .withLabel("Save")
@@ -303,17 +297,6 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
                 return Collections.emptyList();
             }
         };
-
-        this.lblSignIn = new HyperlinkLabel();
-        this.lblSignIn.setHtmlText(NOT_SIGNIN_TIPS);
-        this.lblSignIn.setIcon(AllIcons.General.Information);
-        this.lblSignIn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        this.lblSignIn.addHyperlinkListener(e -> {
-            final DataContext context = DataManager.getInstance().getDataContext(this.lblSignIn);
-            final AnActionEvent event = AnActionEvent.createFromInputEvent(e.getInputEvent(), "ConnectorDialog", new Presentation(), context);
-            AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH)
-                .handle((a) -> this.lblSignIn.setVisible(!Azure.az(AzureAccount.class).isLoggedIn()), event);
-        });
     }
 
     public void setDescription(@Nonnull final String description) {

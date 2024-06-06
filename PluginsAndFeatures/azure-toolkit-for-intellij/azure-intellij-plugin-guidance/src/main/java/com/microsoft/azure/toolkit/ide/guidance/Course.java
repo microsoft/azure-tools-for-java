@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.ide.guidance.config.CourseConfig;
 import com.microsoft.azure.toolkit.ide.guidance.phase.PhaseManager;
+import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -50,6 +51,8 @@ public class Course implements Disposable {
     @Nonnull
     private final Context context;
     @Nonnull
+    private final String timestamp;
+    @Nonnull
     private Status status = Status.INITIAL;
     private List<BiConsumer<Phase, Phase>> phaseListeners = new CopyOnWriteArrayList<>();
     private Phase currentPhase;
@@ -65,6 +68,7 @@ public class Course implements Disposable {
         this.uri = courseConfig.getUri();
         this.icon = courseConfig.getIcon();
         this.priority = courseConfig.getPriority();
+        this.timestamp = Utils.getTimestamp();
         this.phases = courseConfig.getPhases().stream().map(config -> PhaseManager.createPhase(config, this)).collect(Collectors.toList());
         this.initPhaseStatusListener();
     }

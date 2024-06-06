@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.*;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractConnectionStringAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.Emulatable;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.view.IView;
@@ -178,7 +179,9 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
             if (source instanceof Emulatable && ((Emulatable) source).isEmulatorResource()) {
                 visible = view.isVisible();
-            } else if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscription().getId())) {
+            } else if (isAbstractAzResource && AbstractConnectionStringAzResourceModule.CONNECTION_STRING_SUBSCRIPTION_ID.equals(((AbstractAzResource<?, ?, ?>) source).getSubscriptionId())) {
+                visible = true;
+            } else if (isAbstractAzResource && "[LinkedCluster]".equals(((AbstractAzResource<?, ?, ?>) source).getSubscriptionId())) {
                 visible = true;
             } else {
                 final boolean isResourceInOtherSubs = isAbstractAzResource && !((AbstractAzResource<?, ?, ?>) source).getSubscription().isSelected();

@@ -1,0 +1,163 @@
+{
+  "$schema": "../flow-schema/Course.json",
+  "name": "containerapps-albumapi-java",
+  "title": "Deploy Your First Container App to Azure",
+  "description": "This tutorial shows how to build and deploy a microservice to Azure Container Apps from local source code using Java. In this quickstart, you create a backend web API service that returns a static collection of music albums.",
+  "repository": "https://github.com/Azure-Samples/containerapps-albumapi-java.git",
+  "tags": ["Container App", "For beginners", "Quickstart"],
+  "priority" : 10,
+  "icon": "/icons/Microsoft.App/default.svg",
+  "context": {
+    "repository": "https://github.com/Azure-Samples/containerapps-albumapi-java.git",
+    "branch": "azure-tooling-getting-started",
+    "targetPort": 8080,
+    "prefix": "albumapi-java",
+    "deployModule": "containerapps-albumapi-java"
+  },
+  "phases": [
+    {
+      "title": "Clone",
+      "description": "Clone <a href='https://github.com/Azure-Samples/containerapps-albumapi-java/tree/azure-tooling-getting-started'>demo project</a> to your local machine",
+      "steps": [
+        {
+          "title": "Clone",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.common.file-chooser",
+              "paramMapping": {
+                "value": "defaultLocation"
+              }
+            }
+          ],
+          "task": {
+            "name": "task.clone",
+            "resultMapping": {
+              "defaultGitDirectory": "defaultLocation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sign-in",
+      "description": "Sign in with your <a href='https://azure.microsoft.com/en-us/free'>Azure account</a>",
+      "steps": [
+        {
+          "title": "Sign-in",
+          "description": null,
+          "task": {
+            "name": "task.signin"
+          }
+        },
+        {
+          "title": "Select Subscription",
+          "description": null,
+          "task": {
+            "name": "task.select_subscription"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Prepare",
+      "description": "Create related resources for deployment",
+      "steps": [
+        {
+          "title": "Create <a href='https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#what-is-a-resource-group'>resource group</a>",
+          "description": null,
+          "task": {
+            "name": "task.common.create_resource_group",
+            "description": "create resource group"
+          }
+        },
+        {
+          "title": "Create <a href='https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview'>Log analytics workspace</a>",
+          "description": null,
+          "task": {
+            "name": "task.common.create_log_analytics_workspace",
+            "description": "Create Log analytics workspace"
+          }
+        },
+        {
+          "title": "Create <a href='https://learn.microsoft.com/en-us/azure/container-apps/environment'>Container Apps environment</a>",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.containerapp.env"
+            }
+          ],
+          "task": {
+            "name": "task.containerapp.create_env",
+            "description": "Create Azure Container Apps environment"
+          }
+        },
+        {
+          "title": "Create <a href='https://learn.microsoft.com/en-us/azure/container-apps/overview'>Container App</a>",
+          "description": null,
+          "inputs": [
+            {
+              "name": "input.containerapp.name"
+            }
+          ],
+          "task": {
+            "name": "task.containerapp.create_app",
+            "description": "Create Azure Container App ${context.containerAppName}"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Deploy",
+      "description": "Build artifacts, prepare dependent resources and deploy your project to Azure Container App ${context.containerApp.name}",
+      "steps": [
+        {
+          "title": "Create <a href='https://learn.microsoft.com/en-us/azure/container-registry/container-registry-intro'>Azure Container Registry</a>(for building image from source code)",
+          "description": null,
+          "task": {
+            "name": "task.containerapp.create_container_registry",
+            "description": "Create Azure Container Registry"
+          }
+        },
+        {
+          "title": "Deploy",
+          "description": "Deploy to Azure Container App ${context.containerApp?.name}",
+          "task": {
+            "name": "task.containerapp.deploy"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Congratulations!",
+      "type": "summary",
+      "description": "Your project has been deployed to Azure Container App, enjoy your Azure experience!",
+      "steps": [
+        {
+          "title": "View in Azure Explorer",
+          "description": null,
+          "task": {
+            "name": "task.common.focus_resource_in_explorer",
+            "paramMapping": {
+              "resource": "containerApp"
+            }
+          }
+        },
+        {
+          "title": "Open in Browser",
+          "description": null,
+          "task": {
+            "name": "task.containerapp.open_in_browser"
+          }
+        },
+        {
+          "title": "Open Log Streaming",
+          "description": null,
+          "task": {
+            "name": "task.containerapp.log_streaming"
+          }
+        }
+      ]
+    }
+  ]
+}

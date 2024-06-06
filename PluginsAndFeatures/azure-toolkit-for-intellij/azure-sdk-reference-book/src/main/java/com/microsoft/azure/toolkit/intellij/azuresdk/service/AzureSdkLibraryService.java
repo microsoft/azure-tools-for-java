@@ -169,7 +169,7 @@ public class AzureSdkLibraryService {
         // > The value is either true to hide or empty to not hide. This is useful to filter older packages that are still on the package managers,
         // > but we don't want to promote or display anywhere.
         return entities.stream()
-                .filter(e -> Boolean.TRUE.equals(e.getIsHide()) || (StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport())))
+                .filter(e -> StringUtils.isNotBlank(e.getReplace()) && !"active".equals(e.getSupport()))
                 .collect(Collectors.toList());
     }
 

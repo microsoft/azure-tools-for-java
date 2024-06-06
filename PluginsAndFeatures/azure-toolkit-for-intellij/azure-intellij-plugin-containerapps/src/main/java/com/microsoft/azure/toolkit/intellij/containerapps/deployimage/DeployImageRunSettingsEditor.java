@@ -9,7 +9,7 @@ import com.intellij.execution.impl.CheckableRunConfigurationEditor;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.containerapps.deployimage.ui.DeployImageSettingPanel;
+import com.microsoft.azure.toolkit.intellij.containerapps.deployimage.ui.DockerDeploymentSettingPanel;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class DeployImageRunSettingsEditor extends SettingsEditor<DeployImageRunConfiguration> implements CheckableRunConfigurationEditor<DeployImageRunConfiguration> {
-    private final DeployImageSettingPanel panel;
+    private final DockerDeploymentSettingPanel panel;
     private final DeployImageRunConfiguration configuration;
 
     public DeployImageRunSettingsEditor(Project project, DeployImageRunConfiguration configuration) {
         super();
-        this.panel = new DeployImageSettingPanel(project, configuration);
+        this.panel = new DockerDeploymentSettingPanel(project, configuration);
         this.configuration = configuration;
     }
 

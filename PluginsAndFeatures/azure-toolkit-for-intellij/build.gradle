@@ -17,7 +17,7 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins, "properties", 'terminal', 'gradle-java', 'org.intellij.plugins.markdown']
+    plugins = ['java', 'maven', 'maven-model', 'gradle', scala_plugin, "properties", 'terminal', 'gradle-java', 'org.intellij.plugins.markdown']
     downloadSources = Boolean.valueOf(sources)
 }
 
@@ -91,15 +91,15 @@ allprojects {
     }
 
     dependencies {
-        implementation platform('com.microsoft.azure:azure-toolkit-libs:0.43.0-SNAPSHOT')
-        implementation platform('com.microsoft.azure:azure-toolkit-ide-libs:0.43.0-SNAPSHOT')
+        implementation platform('com.microsoft.azure:azure-toolkit-libs:0.46.0-SNAPSHOT')
+        implementation platform('com.microsoft.azure:azure-toolkit-ide-libs:0.46.0-SNAPSHOT')
         implementation platform('com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1')
 
         compileOnly 'org.projectlombok:lombok:1.18.24'
         compileOnly 'org.jetbrains:annotations:24.0.0'
         annotationProcessor 'org.projectlombok:lombok:1.18.24'
-        implementation 'com.microsoft.azure:azure-toolkit-common-lib:0.43.0-SNAPSHOT'
-        aspect "com.microsoft.azure:azure-toolkit-common-lib:0.43.0-SNAPSHOT"
+        implementation 'com.microsoft.azure:azure-toolkit-common-lib:0.46.0-SNAPSHOT'
+        aspect "com.microsoft.azure:azure-toolkit-common-lib:0.46.0-SNAPSHOT"
     }
 
     configurations {

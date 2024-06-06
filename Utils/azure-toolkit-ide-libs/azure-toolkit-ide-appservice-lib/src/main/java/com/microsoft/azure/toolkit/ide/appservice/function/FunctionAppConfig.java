@@ -55,7 +55,7 @@ public class FunctionAppConfig extends AppServiceConfig {
     protected ContainerAppDraft.ImageConfig image;
     protected ContainerAppFunctionConfiguration containerConfiguration;
     @Builder.Default
-    protected FlexConsumptionConfiguration flexConsumptionConfiguration = FlexConsumptionConfiguration.DEFAULT;
+    protected FlexConsumptionConfiguration flexConsumptionConfiguration = FlexConsumptionConfiguration.DEFAULT_CONFIGURATION;
 
     public static FunctionAppConfig getFunctionAppDefaultConfig() {
         return getFunctionAppDefaultConfig(StringUtils.EMPTY);

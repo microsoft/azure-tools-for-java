@@ -14,18 +14,26 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.common.runconfig.RunConfigurationUtils;
+import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
+import com.microsoft.azure.toolkit.lib.common.exception.StreamingDiagnosticsException;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
+import com.microsoft.azure.toolkit.lib.common.utils.StreamingLogSupport;
 import com.microsoft.azuretools.telemetrywrapper.DefaultOperation;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import lombok.Getter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import reactor.core.Disposable;
@@ -107,5 +115,12 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_RESULT, false);
         processHandler.putUserData(RunConfigurationUtils.AZURE_RUN_STATE_EXCEPTION, error);
         processHandler.notifyProcessTerminated(-1);
+        final Throwable rootCause = ExceptionUtils.getRootCause(error);
+        if (rootCause instanceof StreamingDiagnosticsException root) {
+            final Action<StreamingLogSupport> action = AzureActionManager.getInstance().getAction(StreamingLogSupport.OPEN_STREAMING_LOG);
+            final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
+            final AnActionEvent event = AnActionEvent.createFromDataContext("azure.run_state.deploy_image", null, context);
+            action.handle(root.getStreamingLog(), event);
+        }
     }
 }

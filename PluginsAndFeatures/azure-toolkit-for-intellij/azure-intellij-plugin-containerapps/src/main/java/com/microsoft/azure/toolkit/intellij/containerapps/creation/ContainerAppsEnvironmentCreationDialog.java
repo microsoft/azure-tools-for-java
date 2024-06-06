@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
+import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +33,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,11 +53,8 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
     private JLabel lblRegion;
     private RegionComboBox cbRegion;
 
-    private final Project project;
-
     public ContainerAppsEnvironmentCreationDialog(final Project project) {
         super(project);
-        this.project = project;
         $$$setupUI$$$();
         init();
     }
@@ -104,6 +103,24 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
         Optional.ofNullable(data.getLogAnalyticsWorkspace())
                 .map(this::convertLogAnalyticsWorkspaceToConfig)
                 .ifPresent(cbWorkspace::setValue);
+    }
+
+    public void setSubscription(final Subscription subscription, final boolean fixed) {
+        if (Objects.nonNull(subscription)) {
+            this.cbSubscription.setValue(subscription, fixed);
+        }
+    }
+
+    public void setResourceGroup(final ResourceGroup resourceGroup, final boolean fixed) {
+        if (Objects.nonNull(resourceGroup)) {
+            this.cbResourceGroup.setValue(resourceGroup, fixed);
+        }
+    }
+
+    public void setRegion(final Region region, final boolean fixed) {
+        if (Objects.nonNull(region)) {
+            this.cbRegion.setValue(region, fixed);
+        }
     }
 
     private LogAnalyticsWorkspaceConfig convertLogAnalyticsWorkspaceToConfig(final LogAnalyticsWorkspace workspace) {

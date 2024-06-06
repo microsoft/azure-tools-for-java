@@ -274,6 +274,33 @@
             "resourceId": {
               "title": "id of the resource to be focused",
               "type": "string"
+            },
+            "resource": {
+              "title": "the resource to be focused",
+              "type": "string"
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "open url in browser",
+      "properties": {
+        "name": {
+          "const": "task.common.open_url"
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "title": "the url to be opened",
+              "type": "string"
             }
           }
         },

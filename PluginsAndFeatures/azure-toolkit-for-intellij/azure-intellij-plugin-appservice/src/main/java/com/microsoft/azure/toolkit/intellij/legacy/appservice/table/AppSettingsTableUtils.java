@@ -7,17 +7,20 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.table;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.SearchTextField;
-import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.*;
 import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.common.component.HighLightedCellRenderer;
 import com.nimbusds.jose.util.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
@@ -30,6 +33,11 @@ public class AppSettingsTableUtils {
             public void actionPerformed(AnActionEvent anActionEvent) {
                 appSettingsTable.addAppSettings();
             }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         };
         btnAdd.registerCustomShortcutSet(KeyEvent.VK_ADD, InputEvent.ALT_DOWN_MASK, appSettingsTable);
 
@@ -37,6 +45,11 @@ public class AppSettingsTableUtils {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 appSettingsTable.removeAppSettings();
+            }
+
+            @Override
+            public @NotNull ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         };
         btnRemove.registerCustomShortcutSet(KeyEvent.VK_SUBTRACT, InputEvent.ALT_DOWN_MASK, appSettingsTable);
@@ -53,6 +66,20 @@ public class AppSettingsTableUtils {
             appSettingsTable.filter(stringToFilter);
         });
         appSettingsTable.setDefaultRenderer(Object.class, new HighLightedCellRenderer(searchTextField.getTextEditor()));
+        appSettingsTable.addFocusListener(new FocusListener() {
+            private final Border border = appSettingsTable.getBorder();
+            private final Border focusedBorder = new RoundedLineBorder(JBColor.namedColor("Component.focusColor"), 5, 2);
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                appSettingsTable.setBorder(focusedBorder);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                appSettingsTable.setBorder(border);
+            }
+        });
         final JPanel panel = tableToolbarDecorator.createPanel();
         tableToolbarDecorator.getActionsPanel().add(searchTextField, BorderLayout.WEST);
         return panel;

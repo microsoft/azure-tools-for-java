@@ -1,12 +1,3 @@
-# This pipeline was generated from the classic pipeline "[IntelliJ] sign-for-dev-release" on 2024-01-16 with https://aka.ms/1ESPTMigration (v1.1.0): https://dev.azure.com/mseng/VSJava/_build?definitionId=11383
-#
-# The following items require attention:
-# Variables were exported from the classic pipeline, confirm that `variables` values do not contain private information. If a variable contains private information, follow the guidance on handling secret variables: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-secret-variables
-# Agent Queue 'Azure Pipelines' was used with unrecognized Agent Specification, vmImage property must be specified to determine image - https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#software
-# No trigger found, defaulting to 'none'. Update the trigger as needed.
-# No name found, setting the default value '$(Date:yyyyMMdd).$(Rev:r)'. This value determines how your pipeline runs are numbered. Update the name as needed: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/run-number?view=azure-devops&tabs=yaml
-# The pipeline uses service connection "vscjavaci_esrp_codesign", you will need to grant the new pipeline access: https://dev.azure.com/mseng/VSJava/_settings/adminservices?resourceId=d5f51b85-6feb-48f6-a077-37426b5911f4
-
 name: $(Date:yyyyMMdd).$(Rev:r)
 variables:
   - name: Codeql.Enabled
@@ -15,7 +6,7 @@ resources:
   repositories:
     - repository: self
       type: git
-      ref: refs/heads/develop
+      ref: refs/heads/wangmi/1es
     - repository: 1esPipelines
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
@@ -26,8 +17,8 @@ extends:
   parameters:
     pool:
       name: 1ES_JavaTooling_Pool
-      image: 1ES_JavaTooling_Windows_2022
-      os: windows
+      image: 1ES_JavaTooling_Ubuntu-2004
+      os: linux
     sdl:
       sourceAnalysisPool:
         name: 1ES_JavaTooling_Pool
@@ -39,7 +30,6 @@ extends:
       - stage: Stage
         jobs:
           - job: Job_1
-            timeoutInMinutes: 0
             displayName: Build and Sign Azure Plugin for IntelliJ
             templateContext:
               outputs:
@@ -61,7 +51,6 @@ extends:
                 inputs:
                   targetType: inline
                   script: |-
-                    mvn -v
                     TARGET_BRANCH=$(TOOLKIT_BRANCH)
 
                     ls ~/.m2/repository/com/microsoft/azure/azure-toolkit-*
@@ -87,25 +76,31 @@ extends:
                   targetType: inline
                   script: |-
                     mvn -v
-
                     # ./gradlew buildUtils || exit -1
-                    mvn install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+                    mvn clean install -f ./Utils/pom.xml -T 1C -Dcheckstyle.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+                    mvn clean -f ./Utils/pom.xml
               - task: Bash@3
-                displayName: Build IntelliJ
+                displayName: Build Plugin
                 inputs:
                   targetType: inline
-                  script: |-
-                    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY)  -PneedPatchVersion=true -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false)
+                  script: |
+                    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=$(INTELLIJ_KEY) -PneedPatchVersion=$(PATCH_VERSION) -Psources=false -Porg.gradle.configureondemand=false -Porg.gradle.daemon=false -Porg.gradle.unsafe.configuration-cache=false -Porg.gradle.caching=false)
 
-                    mkdir -p ./artifacts/
-                    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/*.zip ./artifacts/azure-toolkit-for-intellij.zip
-                    unzip ./artifacts/azure-toolkit-for-intellij.zip -d ./artifacts/azure-toolkit-for-intellij
-                    rm  ./artifacts/azure-toolkit-for-intellij.zip
-              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@3
+                    mkdir -p ./artifacts/intellij/
+                    cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/*.zip ./artifacts/intellij/azure-toolkit-for-intellij.zip
+                    unzip ./artifacts/intellij/azure-toolkit-for-intellij.zip -d ./artifacts/intellij/folder
+                    rm  ./artifacts/intellij/azure-toolkit-for-intellij.zip
+              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
                 displayName: Sign IntelliJ
+                condition: and(succeeded(), ne(variables['DisableCodeSign'], 'true'))
                 inputs:
-                  ConnectedServiceName: vscjavaci_esrp_codesign
-                  FolderPath: artifacts/azure-toolkit-for-intellij
+                  ConnectedServiceName: 'ESRP-Release-Test'
+                  AppRegistrationClientId: '1992ee18-e9d2-42d6-ab20-94dd947a44b6'
+                  AppRegistrationTenantId: '72f988bf-86f1-41af-91ab-2d7cd011db47'
+                  AuthAKVName: 'vscjavaci'
+                  AuthCertName: 'vscjava-esrprelease-auth'
+                  AuthSignCertName: 'VSCJava-CodeSign'
+                  FolderPath: artifacts/intellij/folder
                   Pattern: azure-intellij-*.jar, azure-toolkit-*.jar, azuretools-core-*.jar,azure-explorer-common-*.jar,hdinsight-node-common-*.jar, azure-sdk-reference-book.jar
                   signConfigType: inlineSignParams
                   inlineOperation: |-
@@ -128,43 +123,20 @@ extends:
                                 "ToolVersion" : "1.0"
                             }
                     ]
-              - task: PowerShell@2
-                displayName: Build IntelliJ Package
+              - task: Bash@3
+                displayName: Repackage
                 inputs:
                   targetType: inline
                   script: |
                     # Write your commands here
-                    Compress-Archive -Path ./artifacts/azure-toolkit-for-intellij -DestinationPath ./artifacts/azure-toolkit-for-intellij-$(Build.BuildNumber).zip
-                    # git archive --format zip -o ./artifacts/azure-toolkit-for-intellij-$(Build.BuildNumber).zip HEAD ./artifacts/azure-toolkit-for-intellij
+
+                    (cd ./artifacts/intellij/folder && zip -r ../../azure-toolkit-for-intellij-$(Build.BuildNumber).zip ./azure-toolkit-for-intellij/)
               - task: CopyFiles@2
                 displayName: "Copy Files to: $(build.artifactstagingdirectory)"
                 inputs:
                   SourceFolder: $(system.defaultworkingdirectory)/artifacts
                   Contents: "*.zip"
                   TargetFolder: $(build.artifactstagingdirectory)
-              
-              ### Copy files for APIScan
-              - task: CopyFiles@2
-                displayName: 'Copy Files for APIScan'
-                inputs:
-                  SourceFolder: $(system.defaultworkingdirectory)/artifacts
-                  Contents: "*.zip"
-                  TargetFolder: $(Agent.TempDirectory)/APIScanFiles
-                condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
-
-              ### Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
-              - task: APIScan@2
-                displayName: Run APIScan
-                inputs:
-                  softwareFolder: $(Agent.TempDirectory)/APIScanFiles
-                  softwareName: 'microsoft.azure-intellij-plugin.sign-dev'
-                  softwareVersionNum: '$(Build.BuildId)'
-                  isLargeApp: false
-                  toolVersion: 'Latest'
-                condition: and(succeeded(), ne(variables['DisableAPIScan'], 'true'))
-                env:
-                  AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
-
               - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
                 displayName: "Manifest Generator "
                 inputs:

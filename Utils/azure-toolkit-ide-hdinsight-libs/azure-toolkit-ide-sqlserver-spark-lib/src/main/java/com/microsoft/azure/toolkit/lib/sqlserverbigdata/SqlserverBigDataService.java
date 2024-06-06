@@ -20,25 +20,29 @@ public class SqlserverBigDataService extends AbstractAzService<SqlserverBigDataS
     @NotNull
     @Override
     protected SqlserverBigDataServiceSubscription newResource(@NotNull SqlserverBigDataManager sqlserverBigDataManager) {
-        return null;
+        return new SqlserverBigDataServiceSubscription();
     }
 
     public List<SqlserverBigDataNode> listCluster() {
-        List<SqlserverBigDataNode> list = new ArrayList<>();
+        final List<SqlserverBigDataNode> list = new ArrayList<>();
 
-        List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+        final List<IClusterDetail> clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
                 .filter(clusterDetail -> clusterDetail instanceof SqlBigDataLivyLinkClusterDetail)
-                .collect(Collectors.toList());
-        for (IClusterDetail iClusterDetail : clusterDetailList) {
-            SqlserverBigDataNode node = new SqlserverBigDataNode(iClusterDetail.getName(),"",SqlserverBigDataModule.getInstance());
+                .toList();
+        for (final IClusterDetail iClusterDetail : clusterDetailList) {
+            final SqlserverBigDataNode node = new SqlserverBigDataNode(iClusterDetail.getName(),"",SqlserverBigDataModule.getInstance());
             node.setiClusterDetail(iClusterDetail);
             list.add(node);
         }
         return list;
     }
 
-    protected boolean isAuthRequiredForListing() {
+    public boolean isAuthRequiredForListing() {
         return false;
     }
 
+    @Override
+    public boolean isAuthRequiredForCreating() {
+        return false;
+    }
 }

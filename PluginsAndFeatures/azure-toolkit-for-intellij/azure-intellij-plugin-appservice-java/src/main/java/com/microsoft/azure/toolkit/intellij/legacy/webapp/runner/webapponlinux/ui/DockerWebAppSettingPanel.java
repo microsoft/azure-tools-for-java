@@ -42,7 +42,7 @@ public class DockerWebAppSettingPanel extends AzureSettingPanel<WebAppOnLinuxDep
     private final WebAppOnLinuxDeployConfiguration configuration;
 
     public DockerWebAppSettingPanel(@Nonnull Project project, @Nonnull final WebAppOnLinuxDeployConfiguration configuration) {
-        super(project, false);
+        super(project);
         this.configuration = configuration;
         $$$setupUI$$$();
         this.init();

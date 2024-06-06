@@ -31,7 +31,7 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
     }
 
     @Override
-    public CassandraKeyspace getResource(String dataId) {
+    public CassandraKeyspace getResource(String dataId, final String id) {
         return Azure.az(AzureCosmosService.class).getById(dataId);
     }
 

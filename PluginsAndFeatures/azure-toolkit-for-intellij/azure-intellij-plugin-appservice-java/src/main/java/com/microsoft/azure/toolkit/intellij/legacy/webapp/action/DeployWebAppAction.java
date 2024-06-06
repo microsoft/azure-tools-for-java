@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.auth.AzureLoginHelper;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigurationType;
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
@@ -102,8 +103,12 @@ public class DeployWebAppAction extends AnAction {
             settings = manager.createConfiguration(runConfigurationName, factory);
         }
         final RunConfiguration runConfiguration = settings.getConfiguration();
-        if (runConfiguration instanceof WebAppConfiguration && Objects.nonNull(webApp)) {
-            ((WebAppConfiguration) runConfiguration).setWebApp(webApp);
+        if (runConfiguration instanceof WebAppConfiguration configuration && Objects.nonNull(webApp)) {
+            configuration.setWebApp(webApp);
+            AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts()
+                    .stream().filter(azureArtifact -> Objects.equals(azureArtifact.getModule(), module))
+                    .findFirst()
+                    .ifPresent(configuration::setArtifact);
         }
         return settings;
     }

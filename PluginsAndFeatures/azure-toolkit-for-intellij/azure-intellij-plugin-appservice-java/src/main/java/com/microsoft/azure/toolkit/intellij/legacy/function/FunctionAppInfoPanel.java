@@ -21,6 +21,8 @@ import com.microsoft.azure.toolkit.intellij.containerapps.component.ImageForm;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
+import com.microsoft.azure.toolkit.lib.Azure;
+import com.microsoft.azure.toolkit.lib.appservice.AzureAppService;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServicePlanConfig;
 import com.microsoft.azure.toolkit.lib.appservice.config.FunctionAppConfig;
@@ -28,7 +30,10 @@ import com.microsoft.azure.toolkit.lib.appservice.config.RuntimeConfig;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
+import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -42,6 +47,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<FunctionAppConfig> {
@@ -82,6 +88,9 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
     private JPanel pnlAppServicePlan;
     private JPanel pnlImageContainer;
     private JPanel pnlImage;
+    private TitledSeparator titleConsumption;
+    private FlexConsumptionConfigurationPanel flexConfigurationPanel;
+    private JPanel pnlFlexConsumption;
 
     private FunctionAppConfig config;
 
@@ -105,7 +114,11 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
             Optional.ofNullable(this.selectorServicePlan.getValue()).ifPresent(plan -> {
                 config.servicePlanName(plan.getName());
                 config.servicePlanResourceGroup(plan.isDraftForCreating() ? config.getResourceGroup() : plan.getResourceGroupName());
-                config.pricingTier(plan.getPricingTier());
+                final PricingTier pricingTier = plan.getPricingTier();
+                config.pricingTier(pricingTier);
+                if (Objects.nonNull(pricingTier) && pricingTier.isFlexConsumption()) {
+                    config.setFlexConsumptionConfiguration(flexConfigurationPanel.getValue());
+                }
             });
         } else if (rdoContainerAppsEnvironment.isSelected()) {
             config.diagnosticConfig(null);
@@ -141,6 +154,7 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
                     .ifPresent(selectorServicePlan::setValue);
             Optional.ofNullable(config.environment()).filter(ignore -> useEnvironment)
                     .ifPresent(env -> cbEnvironment.setValue(r -> StringUtils.equalsIgnoreCase(r.getName(), env)));
+            Optional.ofNullable(config.getFlexConsumptionConfiguration()).ifPresent(flexConfigurationPanel::setValue);
             final ContainerAppDraft.ImageConfig imageConfig = DockerUtils.convertRuntimeConfigToImageConfig(config.getRuntime());
             final boolean useDefaultImage = Objects.isNull(imageConfig) || StringUtils.equalsIgnoreCase(QUICK_START_IMAGE.getFullImageName(), imageConfig.getFullImageName());
             chkUseQuickStart.setSelected(useDefaultImage);
@@ -158,7 +172,8 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
             this.selectorRuntime,
             this.selectorRegion,
             this.selectorServicePlan,
-            this.cbEnvironment
+            this.cbEnvironment,
+            this.flexConfigurationPanel
         };
         return Arrays.asList(inputs);
     }
@@ -191,7 +206,8 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.selectorGroup.addItemListener(this::onGroupChanged);
         this.selectorGroup.setUsePreferredSizeAsMinimum(false);
 
-        this.selectorRuntime.setPlatformList(FunctionAppRuntime.getMajorRuntimes());
+        this.selectorRegion.setItemsLoader(this::getValidRegions);
+        this.selectorRuntime.setItemsLoader(this::getValidRuntimes);
         this.selectorServicePlan.setValidPricingTierList(new ArrayList<>(PricingTier.FUNCTION_PRICING), PricingTier.CONSUMPTION);
 
         this.textName.setRequired(true);
@@ -213,6 +229,29 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.lblAppServicePlan.setIcon(AllIcons.General.ContextHelp);
     }
 
+    private List<? extends Region> getValidRegions() {
+        final Subscription subscription = selectorSubscription.getValue();
+        final PricingTier pricingTier = Optional.ofNullable(selectorServicePlan.getValue()).map(AppServicePlan::getPricingTier).orElse(null);
+        if (Objects.isNull(subscription)) {
+            return Collections.emptyList();
+        } else if (Objects.isNull(pricingTier)) {
+            return Azure.az(AzureAccount.class).listRegions(subscription.getId());
+        } else {
+            return Azure.az(AzureAppService.class).forSubscription(subscription.getId()).functionApps().listRegions(pricingTier);
+        }
+    }
+
+    private List<? extends Runtime> getValidRuntimes() {
+        final Subscription subscription = selectorSubscription.getValue();
+        final Region region = selectorRegion.getValue();
+        if (Objects.isNull(subscription) || rdoContainerAppsEnvironment.isSelected() || !isFlexConsumptionApp()) {
+            return FunctionAppRuntime.getMajorRuntimes();
+        } else {
+            return Objects.isNull(region) ? Arrays.asList(FunctionAppLinuxRuntime.FUNCTION_JAVA17, FunctionAppLinuxRuntime.FUNCTION_JAVA11) :
+                    Azure.az(AzureAppService.class).forSubscription(subscription.getId()).functionApps().listFlexConsumptionRuntimes(region);
+        }
+    }
+
     private void toggleImageType(final boolean useQuickStart){
         pnlContainer.setVisible(!useQuickStart);
     }
@@ -222,6 +261,7 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.pnlContainerAppsEnvironment.setVisible(!useServicePlan);
         this.titleServicePlan.setVisible(useServicePlan);
         this.pnlAppServicePlan.setVisible(useServicePlan);
+        this.pnlFlexConsumption.setVisible(useServicePlan && isFlexConsumptionApp());
 
         this.selectorServicePlan.setRequired(useServicePlan);
         this.selectorServicePlan.revalidate();
@@ -230,6 +270,11 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         if (!useServicePlan) {
             this.selectorRuntime.setValue(FunctionAppDockerRuntime.INSTANCE);
         }
+        if (useServicePlan && isFlexConsumptionApp()) {
+            // as flex did not support docker runtime, clear it when switch back from environment host
+            this.selectorRuntime.clear();
+        }
+        this.selectorRuntime.reloadItems();
     }
 
     private void onGroupChanged(ItemEvent e) {
@@ -249,16 +294,21 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
     }
 
     private void onRuntimeChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Runtime runtime = (Runtime) e.getItem();
+        final Runtime runtime = (Runtime) e.getItem();
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             final OperatingSystem operatingSystem = Objects.isNull(runtime) ? null :
-                                                    // Docker runtime use Linux service plan too
-                                                    runtime.isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
+                    // Docker runtime use Linux service plan too
+                    runtime.isWindows() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
             this.selectorServicePlan.setOperatingSystem(operatingSystem);
 
             final boolean isDocker = Optional.ofNullable(runtime).map(Runtime::isDocker).orElse(false);
             this.imageTitle.setVisible(isDocker);
             this.pnlImage.setVisible(isDocker);
+        } else if (e.getStateChange() == ItemEvent.DESELECTED && runtime.isDocker()) {
+            // hide image panel when docker runtime is deselected
+            // as sometime runtime may select null, this case could not be handled by logic in ItemEvent.SELECTED
+            this.imageTitle.setVisible(false);
+            this.pnlImage.setVisible(false);
         }
     }
 
@@ -280,8 +330,15 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
             if (plan == null || plan.getPricingTier() == null) {
                 return;
             }
-            final String pricing = plan.getPricingTier().toString();
-            this.textSku.setText(pricing);
+            final PricingTier pricingTier = plan.getPricingTier();
+            this.textSku.setText(pricingTier.toString());
+            this.pnlFlexConsumption.setVisible(pricingTier.isFlexConsumption());
+            if (pricingTier.isFlexConsumption()) {
+                this.selectorRuntime.clear();
+                this.selectorRegion.clear();
+            }
+            this.selectorRuntime.reloadItems();
+            this.selectorRegion.reloadItems();
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
         }
@@ -293,5 +350,33 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.pnlContainer = new ImageForm();
         this.pnlImageContainer.add(this.pnlContainer.getContentPanel(), new GridConstraints(0, 0, 1, 1, 0,
                 GridConstraints.FILL_BOTH, 7, 7, null, null, null, 0));
+    }
+
+    private boolean isFlexConsumptionApp() {
+        final AppServicePlan value = selectorServicePlan.getValue();
+        return Optional.ofNullable(value).map(AppServicePlan::getPricingTier).map(PricingTier::isFlexConsumption).orElse(false);
+    }
+
+    @Override
+    public List<AzureValidationInfo> validateAdditionalInfo() {
+        final String subsId = Optional.ofNullable(selectorSubscription.getValue()).map(Subscription::getId).orElse(StringUtils.EMPTY);
+        if (StringUtils.isNotBlank(subsId) && isFlexConsumptionApp()) {
+            final List<Region> validRegions = Azure.az(AzureAppService.class).forSubscription(subsId)
+                    .functionApps().listRegions(PricingTier.FLEX_CONSUMPTION);
+            final Region region = selectorRegion.getValue();
+            final String supportedRegionsValue = validRegions.stream().map(Region::getName).collect(Collectors.joining(","));
+            if (Objects.nonNull(region) && !validRegions.contains(region)) {
+                return Collections.singletonList(AzureValidationInfo.error(String.format("`%s` is not a valid region for flex consumption app, supported values are %s", region.getName(), supportedRegionsValue), selectorRegion));
+            }
+            // runtime
+            final List<? extends FunctionAppRuntime> validFlexRuntimes = Objects.isNull(region) ? Collections.emptyList() :
+                    Azure.az(AzureAppService.class).forSubscription(subsId).functionApps().listFlexConsumptionRuntimes(region);
+            final Runtime appRuntime = selectorRuntime.getValue();
+            if (Objects.nonNull(region) && !validFlexRuntimes.contains(appRuntime)) {
+                final String validValues = validFlexRuntimes.stream().map(FunctionAppRuntime::getDisplayName).collect(Collectors.joining(","));
+                return Collections.singletonList(AzureValidationInfo.error(String.format("`%s` is not a valid runtime for flex consumption app, supported values are %s", appRuntime.getDisplayName(), validValues), selectorRuntime));
+            }
+        }
+        return AzureFormPanel.super.validateAdditionalInfo();
     }
 }

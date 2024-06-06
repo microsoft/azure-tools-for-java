@@ -13,10 +13,8 @@ import com.intellij.psi.PsiReferenceBase;
 import com.intellij.psi.SyntheticElement;
 import com.intellij.psi.impl.FakePsiElement;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 
 import javax.annotation.Nonnull;
@@ -27,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class StoragePathReference extends PsiReferenceBase<PsiElement> {
-    private StorageAccount account;
+    private IStorageAccount account;
     private String fullNameWithPrefix;
 
     public StoragePathReference(@Nonnull PsiElement element, TextRange rangeInElement, boolean soft) {
@@ -39,7 +37,7 @@ public class StoragePathReference extends PsiReferenceBase<PsiElement> {
     }
 
     public StoragePathReference(@Nonnull PsiElement element, TextRange rangeInElement,
-                                @Nonnull final String fullNameWithPrefix, @Nullable final StorageAccount account) {
+                                @Nonnull final String fullNameWithPrefix, @Nullable final IStorageAccount account) {
         super(element, rangeInElement);
         this.fullNameWithPrefix = fullNameWithPrefix;
         this.account = account;
@@ -55,9 +53,6 @@ public class StoragePathReference extends PsiReferenceBase<PsiElement> {
 
     @Override
     public @Nullable PsiElement resolve() {
-        if(!Azure.az(AzureAccount.class).isLoggedIn()){
-            return null;
-        }
         return Optional.of(this.getElement()).map(ModuleUtil::findModuleForPsiElement)
                 .map(m -> Objects.isNull(account) ? StoragePathCompletionProvider.getFile(fullNameWithPrefix, m) :
                         StoragePathCompletionProvider.getFile(fullNameWithPrefix, List.of(account)))
@@ -97,7 +92,7 @@ public class StoragePathReference extends PsiReferenceBase<PsiElement> {
 
         @Override
         public @Nullable String getLocationString() {
-            final StorageAccount account = StoragePathCompletionProvider.getStorageAccount(this.file);
+            final IStorageAccount account = StoragePathCompletionProvider.getStorageAccount(this.file);
             if (Objects.nonNull(account)) {
                 return this.file.getResourceGroupName() + "/" + account.getName();
             } else {

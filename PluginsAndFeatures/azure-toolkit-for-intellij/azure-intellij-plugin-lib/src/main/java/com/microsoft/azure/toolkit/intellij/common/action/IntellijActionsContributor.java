@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.fileexplorer.VirtualFileActions;
 import com.microsoft.azure.toolkit.intellij.common.properties.IntellijShowPropertiesViewAction;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.ActionGroup;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -32,6 +33,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.common.utils.StreamingLogSupport;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -54,6 +56,10 @@ public class IntellijActionsContributor implements IActionsContributor {
         am.<AzResource, AnActionEvent>registerHandler(ResourceCommonActionsContributor.SHOW_PROPERTIES,
             (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
             (s, e) -> IntellijShowPropertiesViewAction.showPropertyView(s, Objects.requireNonNull(e.getProject())));
+
+        am.<StreamingLogSupport, AnActionEvent>registerHandler(StreamingLogSupport.OPEN_STREAMING_LOG,
+                (s, e) -> Objects.nonNull(s) && Objects.nonNull(e.getProject()),
+                (s, e) -> StreamingLogsManager.getInstance().showStreamingLog(e.getProject(), s.getId(), s.getDisplayName(), s.streamingLogs(true)));
 
         final BiConsumer<Object, AnActionEvent> highlightResource = (r, e) -> {
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_EXPLORER).handle(null, e);

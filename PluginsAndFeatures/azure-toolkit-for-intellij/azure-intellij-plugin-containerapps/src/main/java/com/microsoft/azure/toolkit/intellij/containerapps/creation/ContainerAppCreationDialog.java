@@ -7,34 +7,37 @@ package com.microsoft.azure.toolkit.intellij.containerapps.creation;
 
 import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.TitledSeparator;
+import com.intellij.ui.JBIntSpinner;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
-import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.containerapps.component.AzureContainerAppsEnvironmentComboBox;
-import com.microsoft.azure.toolkit.intellij.containerapps.component.ImageForm;
-import com.microsoft.azure.toolkit.intellij.containerapps.component.IngressConfigurationPanel;
+import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
+import com.microsoft.azure.toolkit.intellij.containerapps.component.*;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Availability;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
+import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppModule;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -43,42 +46,48 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.toolkit.lib.Azure.az;
+
+@Slf4j
 public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Config> implements AzureForm<ContainerAppDraft.Config> {
-    private static final Pattern CONTAINER_APP_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]{0,30}[a-z0-9]$");
-    private static final String CONTAINER_APP_NAME_VALIDATION_MESSAGE = "A name must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character and cannot have '--'. The length must not be more than 32 characters.";
+    public static final Pattern CONTAINER_APP_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]{0,30}[a-z0-9]$");
+    public static final String CONTAINER_APP_NAME_VALIDATION_MESSAGE = "A name must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character and cannot have '--'. The length must not be more than 32 characters.";
+    private JPanel pnlRoot;
+
+    private AzureHideableTitledSeparator titleApp;
+    private JPanel pnlApp;
     private JLabel lblSubscription;
     private SubscriptionComboBox cbSubscription;
     private JLabel lblResourceGroup;
     private ResourceGroupComboBox cbResourceGroup;
+    private AzureContainerAppsEnvironmentComboBox cbEnvironment;
     private JLabel lblContainerAppName;
     private AzureTextInput txtContainerAppName;
-    private JLabel lblRegion;
-    private RegionComboBox cbRegion;
-    private JPanel pnlRoot;
-    private JCheckBox chkUseQuickStart;
-    private ImageForm pnlContainer;
-    private AzureContainerAppsEnvironmentComboBox cbEnvironment;
-    private TitledSeparator titleContainerDetails;
+
     private AzureHideableTitledSeparator titleIngress;
+    private IngressConfigurationPanel pnlIngress;
+
+    private AzureHideableTitledSeparator titleDeployment;
+    private JPanel pnlDeployment;
+    private JRadioButton btnDeployCode;
+    private JRadioButton btnDeployArtifact;
+    private JRadioButton btnDeployImage;
+    private CodeForm formCode;
+    private ArtifactForm formArtifact;
+    private ImageForm formImage;
+
+    private AzureHideableTitledSeparator titleOther;
+    private JPanel pnlOther;
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
-    private JLabel lblEnv;
-    private AzureHideableTitledSeparator titleAppSettings;
-    private AzureHideableTitledSeparator titleProjectDetails;
-    private AzureHideableTitledSeparator titleContainerAppsEnvironment;
-    private JPanel pnlIngressSettingsHolder;
-    private JPanel pnlAppSettings;
-    private JPanel pnlProjectDetails;
-    private JPanel pnlContainerAppsEnvironment;
-    private IngressConfigurationPanel pnlIngressConfiguration;
+    private JBIntSpinner intMinReplicas;
+    private JBIntSpinner intMaxReplicas;
 
-    public static final ContainerAppDraft.ImageConfig QUICK_START_IMAGE = new ContainerAppDraft.ImageConfig("mcr.microsoft.com/azuredocs/containerapps-helloworld:latest");
+    private DeploymentSourceForm formDeploymentSource;
+
     public static final IngressConfig QUICK_START_INGRESS = IngressConfig.builder().enableIngress(true).external(true).targetPort(80).build();
-
-    private final Project project;
 
     public ContainerAppCreationDialog(final Project project) {
         super(project);
-        this.project = project;
         $$$setupUI$$$();
         init();
     }
@@ -88,39 +97,81 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         super.init();
         this.cbSubscription.setRequired(true);
         this.cbResourceGroup.setRequired(true);
-        this.cbRegion.setRequired(true);
         this.txtContainerAppName.setRequired(true);
+        this.cbEnvironment.setRequired(true);
 
         this.txtContainerAppName.addValidator(this::validateContainerAppName);
+        this.txtContainerAppName.addValueChangedListener(this::onAppNameChanged);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
-        this.cbRegion.addItemListener(this::onRegionChanged); // trigger validation after resource group changed
         this.cbResourceGroup.addItemListener(this::onResourceGroupChanged);
-        this.chkUseQuickStart.addItemListener(e -> this.onSelectQuickImage(chkUseQuickStart.isSelected()));
 
-        this.chkUseQuickStart.setSelected(true);
+        this.btnDeployCode.addItemListener(this::onDeploymentSourceChanged);
+        this.btnDeployArtifact.addItemListener(this::onDeploymentSourceChanged);
+        this.btnDeployImage.addItemListener(this::onDeploymentSourceChanged);
+        this.btnDeployCode.setSelected(true);
+        this.formCode.setVisible(true);
+        this.formImage.setVisible(false);
+        this.formArtifact.setVisible(false);
+        this.formImage.setOnImageFormChanged(this::onImageFormChanged);
+        this.formCode.setOnFolderChanged(this::onSelectedFolderChanged);
+        this.formDeploymentSource = this.formCode;
 
         this.lblSubscription.setLabelFor(cbSubscription);
         this.lblResourceGroup.setLabelFor(cbResourceGroup);
         this.lblContainerAppName.setLabelFor(txtContainerAppName);
-        this.lblRegion.setLabelFor(cbRegion);
 
-        this.titleProjectDetails.addContentComponent(pnlProjectDetails);
-        this.titleContainerAppsEnvironment.addContentComponent(pnlContainerAppsEnvironment);
-        this.titleAppSettings.addContentComponent(pnlAppSettings);
-        this.titleIngress.addContentComponent(pnlIngressSettingsHolder);
+        this.titleApp.addContentComponent(pnlApp);
+        this.titleDeployment.addContentComponent(pnlDeployment);
+        this.titleIngress.addContentComponent(pnlIngress.getPnlRoot());
+        this.titleOther.addContentComponent(pnlOther);
 
-        this.titleProjectDetails.expand();
-        this.titleContainerAppsEnvironment.expand();
-        this.titleAppSettings.expand();
-        this.titleIngress.collapse();
+        this.titleApp.expand();
+        this.titleDeployment.expand();
+        this.titleIngress.expand();
+        this.titleOther.expand();
+    }
+
+    private void onImageFormChanged(final String type) {
+        final boolean useQuickStartImage = this.formDeploymentSource == this.formImage && Objects.equals(type, ImageSourceTypeComboBox.QUICK_START);
+        if (useQuickStartImage) {
+            pnlIngress.setValue(QUICK_START_INGRESS);
+        }
+        this.titleIngress.toggle(!useQuickStartImage);
+        this.titleIngress.setVisible(!useQuickStartImage);
+        this.pnlIngress.setVisible(!useQuickStartImage);
+        this.inputEnv.setEnabled(!useQuickStartImage);
+        this.intMaxReplicas.setEnabled(!useQuickStartImage);
+        this.intMinReplicas.setEnabled(!useQuickStartImage);
+    }
+
+    private void onSelectedFolderChanged(final Path folder) {
+        if (this.formDeploymentSource != this.formCode && Objects.nonNull(folder) && Files.isDirectory(folder)) {
+            return;
+        }
+        final Path dockerfile = folder.resolve("Dockerfile");
+        if (Files.isRegularFile(dockerfile)) {
+            try {
+                final List<Integer> ports = AzureDockerClient.getExposedPortsOfDockerfile(dockerfile.toFile());
+                if (!ports.isEmpty()) {
+                    final IngressConfig ingressConfig = IngressConfig.builder().enableIngress(true).external(true).targetPort(ports.get(0)).build();
+                    this.pnlIngress.setValue(ingressConfig);
+                }
+            } catch (final IOException e) {
+                log.error("Failed to parse Dockerfile", e);
+            }
+        }
+    }
+
+    private void onAppNameChanged(String s) {
+        Optional.ofNullable(getContainerAppDraft()).ifPresent(this.formImage::setContainerApp);
     }
 
     private void mergeContainerConfiguration(final ImageForm target, final ContainerAppDraft.ImageConfig value) {
         try {
             final ContainerAppDraft.ImageConfig targetValue = target.getValue();
             if (ObjectUtils.allNotNull(targetValue, value)) {
-                if (!Objects.equals(targetValue.getContainerRegistry(), value.getContainerRegistry()) ||
-                        !Objects.equals(targetValue.getFullImageName(), value.getFullImageName())) {
+                if (!Objects.equals(Objects.requireNonNull(targetValue).getContainerRegistry(), value.getContainerRegistry()) ||
+                    !Objects.equals(targetValue.getFullImageName(), value.getFullImageName())) {
                     target.setValue(value);
                 }
             }
@@ -134,14 +185,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         if (itemEvent.getStateChange() == ItemEvent.SELECTED && itemEvent.getItem() instanceof ResourceGroup) {
             final ResourceGroup resourceGroup = (ResourceGroup) itemEvent.getItem();
             this.cbEnvironment.setResourceGroup(resourceGroup);
-        }
-    }
-
-    private void onRegionChanged(ItemEvent itemEvent) {
-        if (itemEvent.getStateChange() == ItemEvent.SELECTED && itemEvent.getItem() instanceof Region) {
-            final Region region = (Region) itemEvent.getItem();
-            this.txtContainerAppName.validateValueAsync();
-            this.cbEnvironment.setRegion(region);
+            Optional.ofNullable(getContainerAppDraft()).ifPresent(this.formImage::setContainerApp);
         }
     }
 
@@ -149,9 +193,25 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         if (itemEvent.getStateChange() == ItemEvent.SELECTED && itemEvent.getItem() instanceof Subscription) {
             final Subscription subscription = (Subscription) itemEvent.getItem();
             this.cbResourceGroup.setSubscription(subscription);
-            this.cbRegion.setSubscription(subscription);
             this.cbEnvironment.setSubscription(subscription);
+            Optional.ofNullable(getContainerAppDraft()).ifPresent(this.formImage::setContainerApp);
         }
+    }
+
+    @Nullable
+    private ContainerAppDraft getContainerAppDraft() {
+        final Subscription subscription = cbSubscription.getValue();
+        final ResourceGroup resourceGroup = cbResourceGroup.getValue();
+        final String appName = txtContainerAppName.getValue();
+        if (ObjectUtils.anyNull(subscription, resourceGroup) || StringUtils.isBlank(appName)) {
+            return null;
+        }
+        final ContainerAppModule module = az(AzureContainerApps.class).containerApps(subscription.getId());
+        final ContainerAppDraft draft = module.create(appName, resourceGroup.getName());
+        final ContainerAppDraft.Config config = new ContainerAppDraft.Config();
+        config.setEnvironment(cbEnvironment.getValue());
+        draft.setConfig(config);
+        return draft;
     }
 
     private AzureValidationInfo validateContainerAppName() {
@@ -160,11 +220,11 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         if (value != null && !value.isDraftForCreating()) {
             final Availability availability = value.checkContainerAppNameAvailability(name);
             return availability.isAvailable() ? AzureValidationInfo.success(txtContainerAppName) :
-                    AzureValidationInfo.error(availability.getUnavailabilityMessage(), txtContainerAppName);
+                AzureValidationInfo.error(availability.getUnavailabilityMessage(), txtContainerAppName);
         } else {
             final Matcher matcher = CONTAINER_APP_NAME_PATTERN.matcher(name);
             return matcher.matches() && !StringUtils.contains(name, "--") ? AzureValidationInfo.success(txtContainerAppName) :
-                    AzureValidationInfo.error(CONTAINER_APP_NAME_VALIDATION_MESSAGE, txtContainerAppName);
+                AzureValidationInfo.error(CONTAINER_APP_NAME_VALIDATION_MESSAGE, txtContainerAppName);
         }
     }
 
@@ -172,27 +232,21 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         // TODO: place custom component creation code here
         this.cbEnvironment = new AzureContainerAppsEnvironmentComboBox();
         this.cbEnvironment.setRequired(true);
+        this.formCode = new CodeForm(this.project);
+        this.formArtifact = new ArtifactForm(this.project);
+        this.intMaxReplicas = new JBIntSpinner(10, 1, 300);
+        this.intMinReplicas = new JBIntSpinner(0, 0, 300);
     }
 
-    private void onSelectQuickImage(boolean useQuickStartImage) {
-        if (useQuickStartImage) {
-            // set image config
-            this.pnlContainer.setValue(QUICK_START_IMAGE);
-            // set ingress config
-            pnlIngressConfiguration.setValue(QUICK_START_INGRESS);
-        }
-        // toggle app settings enable status
-        this.pnlContainer.setEnabled(!useQuickStartImage);
-        this.pnlContainer.setVisible(!useQuickStartImage);
-        this.titleIngress.setEnabled(!useQuickStartImage);
-        if (!useQuickStartImage) {
-            titleIngress.expand();
-        } else {
-            titleIngress.collapse();
-        }
-        this.pnlIngressConfiguration.setEnabled(!useQuickStartImage);
-        this.lblEnv.setEnabled(!useQuickStartImage);
-        this.inputEnv.setEnabled(!useQuickStartImage);
+    private void onDeploymentSourceChanged(ItemEvent event) {
+        this.formImage.setVisible(this.btnDeployImage.isSelected());
+        this.formArtifact.setVisible(this.btnDeployArtifact.isSelected());
+        this.formCode.setVisible(this.btnDeployCode.isSelected());
+
+        this.formDeploymentSource = this.btnDeployImage.isSelected() ? this.formImage :
+            this.btnDeployArtifact.isSelected() ? this.formArtifact : this.formCode;
+        this.onImageFormChanged(this.formImage.getRegistryType());
+        this.onSelectedFolderChanged(this.formCode.getSourceFolder());
     }
 
     @Override
@@ -206,7 +260,8 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     }
 
     @Override
-    protected @Nullable JComponent createCenterPanel() {
+    @Nullable
+    protected JComponent createCenterPanel() {
         return pnlRoot;
     }
 
@@ -216,15 +271,27 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         result.setSubscription(cbSubscription.getValue());
         result.setResourceGroup(cbResourceGroup.getValue());
         result.setName(txtContainerAppName.getValue());
-        result.setRegion(cbRegion.getValue());
         result.setEnvironment(cbEnvironment.getValue());
-        final ContainerAppDraft.ImageConfig value = pnlContainer.getValue();
+        result.setIngressConfig(pnlIngress.getValue());
+
+        // set app for image form so that it can get correct ImageConfig
+        final ContainerAppModule module = az(AzureContainerApps.class).containerApps(result.getSubscription().getId());
+        final ContainerAppDraft draft = module.create(result.getName(), result.getResourceGroup().getName());
+        draft.setConfig(result);
+        this.formDeploymentSource.setContainerApp(draft);
+
+        final ContainerAppDraft.ImageConfig imageConfig = this.formDeploymentSource.getValue();
         final List<EnvironmentVar> vars = inputEnv.getEnvironmentVariables().entrySet().stream()
-                .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
-                .collect(Collectors.toList());
-        Optional.ofNullable(value).ifPresent(config -> config.setEnvironmentVariables(vars));
-        result.setImageConfig(value);
-        result.setIngressConfig(pnlIngressConfiguration.getValue());
+            .map(e -> new EnvironmentVar().withName(e.getKey()).withValue(e.getValue()))
+            .collect(Collectors.toList());
+        Optional.ofNullable(imageConfig).ifPresent(config -> config.setEnvironmentVariables(vars));
+        result.setImageConfig(imageConfig);
+
+        final ContainerAppDraft.ScaleConfig scaleConfig = ContainerAppDraft.ScaleConfig.builder()
+            .maxReplicas(this.intMaxReplicas.getNumber())
+            .minReplicas(this.intMinReplicas.getNumber())
+            .build();
+        result.setScaleConfig(scaleConfig);
         return result;
     }
 
@@ -233,22 +300,34 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         Optional.ofNullable(data.getSubscription()).ifPresent(cbSubscription::setValue);
         Optional.ofNullable(data.getResourceGroup()).ifPresent(cbResourceGroup::setValue);
         Optional.ofNullable(data.getName()).ifPresent(txtContainerAppName::setValue);
-        Optional.ofNullable(data.getRegion()).ifPresent(cbRegion::setValue);
         Optional.ofNullable(data.getEnvironment()).ifPresent(cbEnvironment::setValue);
+        Optional.ofNullable(data.getScaleConfig()).ifPresent(c -> {
+            // https://learn.microsoft.com/en-us/azure/container-apps/scale-app?pivots=azure-cli
+            this.intMaxReplicas.setNumber(Optional.ofNullable(c.getMaxReplicas()).orElse(10));
+            this.intMinReplicas.setNumber(Optional.ofNullable(c.getMinReplicas()).orElse(0));
+        });
         final ContainerAppDraft.ImageConfig imageConfig = data.getImageConfig();
-        if (Objects.isNull(imageConfig)) {
-            // use quick start image by default
-            onSelectQuickImage(true);
-        } else {
-            this.pnlContainer.setValue(imageConfig);
-            // todo: add logic to set envs
-            Optional.ofNullable(data.getIngressConfig()).ifPresent(pnlIngressConfiguration::setValue);
+        if (Objects.nonNull(imageConfig)) {
+            final Optional<Path> source = Optional.ofNullable(imageConfig.getBuildImageConfig()).map(ContainerAppDraft.BuildImageConfig::getSource);
+            if (source.isEmpty()) {
+                this.btnDeployImage.setSelected(true);
+                this.formImage.setValue(imageConfig);
+            } else if (source.map(Files::isDirectory).orElse(false)) {
+                this.btnDeployCode.setSelected(true);
+                this.formCode.setValue(imageConfig);
+            } else {
+                this.btnDeployArtifact.setSelected(true);
+                this.formArtifact.setValue(imageConfig);
+            }
+            this.inputEnv.setEnvironmentVariables(imageConfig.getEnvironmentVariables().stream()
+                .collect(Collectors.toMap(EnvironmentVar::name, EnvironmentVar::value)));
+            Optional.ofNullable(data.getIngressConfig()).ifPresent(pnlIngress::setValue);
         }
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return Arrays.asList(cbSubscription, cbResourceGroup, txtContainerAppName, cbRegion, pnlContainer);
+        return Arrays.asList(cbSubscription, cbResourceGroup, txtContainerAppName, this.formDeploymentSource);
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

@@ -8,10 +8,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.idea.ActionsBundle;
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.fileTypes.FileType;
@@ -135,6 +132,11 @@ public class AzureSdkArtifactGroupPanel {
                 OperationContext.action().setTelemetryProperty("tools", AzureSdkArtifactGroupPanel.type.getName());
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         });
         group.add(new DependencyTypeSelector(this::onDependencyTypeSelected, AzureSdkArtifactGroupPanel.type));
         return new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, false);
@@ -203,7 +205,17 @@ public class AzureSdkArtifactGroupPanel {
                 public void actionPerformed(@NotNull final AnActionEvent e) {
                     onSelected.run();
                 }
+
+                @Override
+                public ActionUpdateThread getActionUpdateThread() {
+                    return ActionUpdateThread.BGT;
+                }
             };
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
         }
     }
 

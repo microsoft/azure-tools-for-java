@@ -53,7 +53,8 @@ public class StoragePathPreCompletionContributor extends CompletionContributor {
                     if (!Azure.az(AzureAccount.class).isLoggedIn()) {
                         AzureTelemeter.info("connector.not_signed_in.storage_string_code_completion");
                         result.addElement(LookupElements.buildSignInLookupElement());
-                    } else if (AzureModule.from(module).getConnections(StorageAccountResourceDefinition.INSTANCE).stream().noneMatch(Connection::isValidConnection)) {
+                    }
+                    if (AzureModule.from(module).getConnections(StorageAccountResourceDefinition.INSTANCE).stream().noneMatch(Connection::isValidConnection)) {
                         AzureTelemeter.info("connector.signed_in_no_connections.storage_string_code_completion");
                         result.addElement(LookupElements.buildConnectLookupElement(StorageAccountResourceDefinition.INSTANCE, (definition, ctx) -> {
                             if (Objects.nonNull(definition)) {

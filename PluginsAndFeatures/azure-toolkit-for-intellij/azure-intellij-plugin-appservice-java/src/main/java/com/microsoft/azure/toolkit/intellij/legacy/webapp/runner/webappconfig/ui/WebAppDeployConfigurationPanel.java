@@ -9,8 +9,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeTooltip;
 import com.intellij.ide.IdeTooltipManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
-import com.intellij.ui.ClientProperty;
+import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
@@ -49,7 +48,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -104,7 +102,12 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
 
         $$$setupUI$$$();
         comboBoxWebApp.addValueChangedListener((AzureValueChangeBiListener<AppServiceConfig>) this::onWebAppChanged);
-        comboBoxArtifact.addItemListener(e -> chkToRoot.setVisible(isAbleToDeployToRoot(comboBoxArtifact.getValue())));
+        comboBoxArtifact.addItemListener(e -> {
+            final AzureArtifact artifact = comboBoxArtifact.getValue();
+            this.chkToRoot.setVisible(isAbleToDeployToRoot(artifact));
+            webAppConfiguration.setArtifact(artifact);
+            syncBeforeRunTasks(artifact, webAppConfiguration);
+        });
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
         slotButtonGroup.add(rbtNewSlot);
@@ -120,21 +123,19 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
         btnSlotHover.setToolTipText(message("webapp.deploy.hint.deploymentSlot"));
         // workaround to support the hover notification
         // todo: validate whether tooltip could be read by screen reader, if so, the workaround could be removed
-        ClientProperty.get(btnSlotHover, Key.create("custom.tooltip"));
         btnSlotHover.addFocusListener(new FocusListener() {
             private final IdeTooltipManager instance = IdeTooltipManager.getInstance();
 
             @Override
             public void focusGained(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(true);
-                final MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED,
-                        System.currentTimeMillis(), 0, 10, 10, 0, false);
-                AzureTaskManager.getInstance().runLater(() -> {
-                    final IdeTooltip tooltip = instance.getCustomTooltip(btnSlotHover);
-                    if (tooltip != null) {
-                        instance.show(tooltip, true);
-                    }
-                });
+                final JLabel tooltipContent = new JLabel(message("webapp.deploy.hint.deploymentSlot"));
+                // Create an instance of IdeTooltip
+                final IdeTooltip tooltip = new IdeTooltip(btnSlotHover, btnSlotHover.getLocation(), tooltipContent);
+                // Set the preferred position of the tooltip
+                tooltip.setPreferredPosition(Balloon.Position.above);
+                // Use IdeTooltipManager to show the tooltip
+                IdeTooltipManager.getInstance().show(tooltip, true);
             }
 
             @Override
@@ -340,7 +341,6 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
     @Override
     public IntelliJWebAppSettingModel getValue() {
         final IntelliJWebAppSettingModel model = new IntelliJWebAppSettingModel();
-        Optional.ofNullable(comboBoxWebApp.getValue()).ifPresent(model::setConfig);
         Optional.ofNullable(comboBoxArtifact.getValue()).ifPresent(a -> {
             model.setAzureArtifactType(a.getType());
             model.setArtifactIdentifier(a.getIdentifier());
@@ -354,8 +354,9 @@ public class WebAppDeployConfigurationPanel extends AzureSettingPanel<WebAppConf
                     .map(value -> StringUtils.equalsIgnoreCase(value, DO_NOT_CLONE_SLOT_CONFIGURATION) ? NEW_CONFIGURATION_SOURCE : value).orElse(null);
             slotConfig.setConfigurationSource(useExistingSlot ? null : source);
         }
-        model.getConfig().setSlotConfig(slotConfig);
-        model.getConfig().setAppSettings(appSettingsTable.getAppSettings());
+        Optional.ofNullable(comboBoxWebApp.getValue())
+                .map(c -> c.toBuilder().slotConfig(slotConfig).appSettings(appSettingsTable.getAppSettings()).build())
+                .ifPresent(model::setConfig);
         model.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
         model.setSlotPanelVisible(slotDecorator.isExpanded());
         return model;

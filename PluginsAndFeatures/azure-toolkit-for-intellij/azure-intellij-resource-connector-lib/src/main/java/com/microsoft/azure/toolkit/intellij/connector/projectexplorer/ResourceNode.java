@@ -49,8 +49,7 @@ public class ResourceNode extends AbstractAzureFacetNode<Node<?>> implements Nod
         if (node.hasMoreChildren()) {
             final Action<Object> loadMoreAction = new Action<>(Action.Id.of("user/common.load_more"))
                 .withHandler(i -> node.loadMoreChildren())
-                .withLabel("load more")
-                .withAuthRequired(true);
+                .withLabel("load more");
             children.add(new ActionNode<>(this.getProject(), loadMoreAction));
         }
         return children;

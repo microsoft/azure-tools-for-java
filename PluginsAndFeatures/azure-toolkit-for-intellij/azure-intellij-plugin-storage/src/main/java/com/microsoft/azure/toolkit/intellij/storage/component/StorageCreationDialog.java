@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
 
 import javax.annotation.Nullable;
@@ -20,12 +21,12 @@ import java.util.List;
 
 public class StorageCreationDialog extends AzureDialog<String>
     implements AzureForm<String> {
-    private final AbstractAzResourceModule<?, StorageAccount, ?> module;
+    private final AbstractAzResourceModule<?, ? extends IStorageAccount, ?> module;
     private JBLabel labelDescription;
     private JPanel contentPanel;
     private StorageNameTextField textName;
 
-    public StorageCreationDialog(AbstractAzResourceModule<?, StorageAccount, ?> module, Project project) {
+    public StorageCreationDialog(AbstractAzResourceModule<?, ? extends IStorageAccount, ?> module, Project project) {
         super(project);
         this.setTitle("New " + module.getResourceTypeName());
         this.module = module;

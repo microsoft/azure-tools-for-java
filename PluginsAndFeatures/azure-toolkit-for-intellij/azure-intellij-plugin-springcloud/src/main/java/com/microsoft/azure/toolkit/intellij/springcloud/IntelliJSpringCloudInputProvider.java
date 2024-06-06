@@ -19,15 +19,12 @@ import javax.annotation.Nullable;
 public class IntelliJSpringCloudInputProvider implements GuidanceInputProvider {
     @Nullable
     @Override
-    public GuidanceInput createInputComponent(@Nonnull InputConfig config, @Nonnull Context context) {
+    public GuidanceInput<?> createInputComponent(@Nonnull InputConfig config, @Nonnull Context context) {
         final ComponentContext inputContext = new ComponentContext(config, context);
-        switch (config.getName()) {
-            case "input.springcloud.cluster":
-                return new SpringAppClusterInput(config, inputContext);
-            case "input.springcloud.name":
-                return new SpringAppNameInput(config, inputContext);
-            default:
-                return null;
-        }
+        return switch (config.getName()) {
+            case "input.springcloud.cluster" -> new SpringAppClusterInput(config, inputContext);
+            case "input.springcloud.name" -> new SpringAppNameInput(config, inputContext);
+            default -> null;
+        };
     }
 }

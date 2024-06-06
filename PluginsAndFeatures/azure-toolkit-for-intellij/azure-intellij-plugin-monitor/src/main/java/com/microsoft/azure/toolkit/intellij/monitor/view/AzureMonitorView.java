@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.monitor.view;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -154,6 +155,11 @@ public class AzureMonitorView extends JPanel implements Disposable {
                         Optional.ofNullable(dialog.getWorkspace()).ifPresent(w -> AzureEventBus.emit("azure.monitor.change_workspace", w));
                     }
                 });
+            }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
         this.monitorTreePanel = new MonitorTreePanel(project, this);

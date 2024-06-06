@@ -15,6 +15,7 @@ import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -463,6 +464,11 @@ public class IDEHelperImpl implements IDEHelper {
             public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
                 RevealFileAction.openFile(dest);
             }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         });
         notification.addAction(new AnAction("Open In Editor") {
             @Override
@@ -472,6 +478,11 @@ public class IDEHelperImpl implements IDEHelper {
                 if (Objects.nonNull(virtualFile)) {
                     fileEditorManager.openFile(virtualFile, true, true);
                 }
+            }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
         Notifications.Bus.notify(notification);

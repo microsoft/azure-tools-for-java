@@ -5,20 +5,19 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps;
 
-import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsActionsContributor;
-import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
 import com.microsoft.azure.toolkit.ide.containerregistry.ContainerRegistryActionsContributor;
-import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageToAzureContainerAppAction;
+import com.microsoft.azure.toolkit.intellij.common.streaminglog.StreamingLogsManager;
+import com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.creation.CreateContainerAppsEnvironmentAction;
 import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.ContainerSelectionDialog;
 import com.microsoft.azure.toolkit.intellij.containerapps.streaminglog.StreamingToolwindowSelectionDialog;
-import com.microsoft.azure.toolkit.intellij.containerapps.updateimage.UpdateContainerImageAction;
+import com.microsoft.azure.toolkit.intellij.containerapps.update.UpdateAppAction;
 import com.microsoft.azure.toolkit.intellij.monitor.AzureMonitorManager;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAzureAccount;
@@ -38,15 +37,16 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
+import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
-import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,14 +62,24 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
     @Override
     public void registerHandlers(AzureActionManager am) {
         final BiPredicate<ContainerApp, AnActionEvent> serviceCondition = (r, e) -> r != null;
-        am.<ContainerApp, AnActionEvent>registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, UpdateContainerImageAction::openUpdateDialog);
-        am.<Tag, AnActionEvent>registerHandler(ContainerRegistryActionsContributor.DEPLOY_IMAGE_ACA, UpdateContainerImageAction::openUpdateDialog);
+        am.<ContainerApp, AnActionEvent>registerHandler(ContainerAppsActionsContributor.UPDATE_IMAGE, UpdateAppAction::openUpdateDialog);
+        am.<Tag, AnActionEvent>registerHandler(ContainerRegistryActionsContributor.DEPLOY_IMAGE_ACA, UpdateAppAction::openUpdateDialog);
 
         am.registerHandler(ContainerAppsActionsContributor.CREATE_CONTAINER_APP,
                 (ContainerAppsEnvironment r, AnActionEvent e) -> r.getFormalStatus().isConnected(),
                 (ContainerAppsEnvironment r, AnActionEvent e) -> CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(r, null)));
         am.registerHandler(ContainerAppsActionsContributor.GROUP_CREATE_CONTAINER_APP,
                 (ResourceGroup r, AnActionEvent e) -> CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(null, r)));
+        am.registerHandler(ContainerAppsActionsContributor.SERVICE_CREATE_CONTAINER_APP,
+                (Object r, AnActionEvent e) -> {
+                    if (r instanceof ContainerAppsEnvironment env && env.getFormalStatus().isConnected()) {
+                        CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(env, null));
+                    } else if (r instanceof ResourceGroup rg) {
+                        CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(null, rg));
+                    } else {
+                        CreateContainerAppAction.create(e.getProject(), getContainerAppDefaultConfig(null, null));
+                    }
+                });
         am.registerHandler(ContainerAppsActionsContributor.CREATE_CONTAINER_APPS_ENVIRONMENT,
                 (AzureContainerApps r, AnActionEvent e) -> CreateContainerAppsEnvironmentAction.create(e.getProject(), getContainerAppsEnvironmentDefaultConfig(null)));
         am.registerHandler(ContainerAppsActionsContributor.GROUP_CREATE_CONTAINER_APPS_ENVIRONMENT,
@@ -114,11 +124,12 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 .withLabel("Deploy Image to Container App")
                 .withIcon("/icons/ContainerAppDeploy.svg")
                 .visibleWhen(s -> s instanceof VirtualFile)
-                .withHandler(DeployImageToAzureContainerAppAction::deployImageToAzureContainerApps)
+                .withHandler((final VirtualFile file, final AnActionEvent event) ->
+                        DeployImageAction.deployImageToAzureContainerApps(file, null, event))
                 .register(am);
     }
 
-    private ContainerAppDraft.Config getContainerAppDefaultConfig(final ContainerAppsEnvironment o, final ResourceGroup resourceGroup) {
+    private ContainerAppDraft.Config getContainerAppDefaultConfig(@Nullable final ContainerAppsEnvironment o, @Nullable final ResourceGroup resourceGroup) {
         final ContainerAppDraft.Config result = new ContainerAppDraft.Config();
         result.setName(Utils.generateRandomResourceName("aca", 32));
         final List<Subscription> subs = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions();
@@ -136,10 +147,6 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         final ResourceGroup rg = Optional.ofNullable(resourceGroup).orElseGet(() ->
                 Optional.ofNullable(cae).map(ContainerAppsEnvironment::getResourceGroup).orElse(historyRg));
         result.setResourceGroup(rg);
-        final List<Region> regions = az(AzureAccount.class).listRegions(sub.getId());
-        final Region historyRegion = CacheManager.getUsageHistory(Region.class).peek(regions::contains);
-        final Region region = Optional.ofNullable(cae).map(ContainerAppsEnvironment::getRegion).orElse(historyRegion);
-        result.setRegion(region);
         return result;
     }
 
@@ -176,7 +183,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         return result;
     }
 
-    private void showConsoleStreamingLog(Project project, ContainerApp app) {
+    public static void showConsoleStreamingLog(Project project, ContainerApp app) {
         AzureTaskManager.getInstance().runLater(() -> {
             final ContainerSelectionDialog dialog = new ContainerSelectionDialog(project, app);
             dialog.show();

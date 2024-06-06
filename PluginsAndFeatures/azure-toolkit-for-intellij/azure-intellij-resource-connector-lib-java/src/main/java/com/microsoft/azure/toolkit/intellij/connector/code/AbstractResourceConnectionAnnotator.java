@@ -21,7 +21,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -106,7 +106,8 @@ public abstract class AbstractResourceConnectionAnnotator implements Annotator {
 
     private void validateConnectionResource(@Nonnull final PsiElement element, @Nonnull final AnnotationHolder holder,
                                             @Nonnull final Connection<?, ?> connection) {
-        if (!Azure.az(AzureAccount.class).isLoggedIn()) {
+        final Object data = connection.getResource().getData();
+        if (!Azure.az(AzureAccount.class).isLoggedIn() && data instanceof AbstractAzResource<?,?,?> r && !r.isMocked()) {
             AnnotationFixes.createSignInAnnotation(element, holder);
             return;
         }

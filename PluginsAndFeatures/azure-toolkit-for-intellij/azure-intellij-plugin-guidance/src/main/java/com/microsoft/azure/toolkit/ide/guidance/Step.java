@@ -87,7 +87,8 @@ public class Step implements Disposable {
     }
 
     public void execute() {
-        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run task '%s'", this.getTitle()), () -> {
+        final String title = this.getTitle().replaceAll("<[^>]*>", "");
+        AzureTaskManager.getInstance().runInBackground(new AzureTask<>(AzureString.format("run task '%s'", title), () -> {
             OperationContext.current().setMessager(output);
             try {
                 setStatus(Status.RUNNING);
@@ -111,9 +112,11 @@ public class Step implements Disposable {
         }));
     }
 
-    @Nullable
     @AzureOperation(name = "internal/guidance.execute_task.step", params = "this.title")
     private boolean executeTask() throws Exception {
+        if (this.task.isDone() || this.task.isToSkip()) {
+            return true;
+        }
         OperationContext.current().setMessager(output);
         this.task.execute();
         return true;
@@ -141,7 +144,7 @@ public class Step implements Disposable {
 
     public void prepare() {
         task.prepare();
-        this.setStatus(task.isDone() ? Status.SUCCEED : Status.READY);
+        this.setStatus(task.isDone()|| task.isToSkip() ? Status.SUCCEED : Status.READY);
     }
 
     public boolean isReady() {

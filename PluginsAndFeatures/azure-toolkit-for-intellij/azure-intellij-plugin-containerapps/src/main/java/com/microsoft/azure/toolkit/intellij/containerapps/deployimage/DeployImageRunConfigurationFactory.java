@@ -17,7 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class DeployImageRunConfigurationFactory extends ConfigurationFactory {
-    public static final String FACTORY_NAME = "Deploy Image to Azure Container App";
+    public static final String FACTORY_NAME = "Deploy to Azure Container App";
+    public static final String FACTORY_ID = "Deploy Image to Azure Container App";
 
     public DeployImageRunConfigurationFactory(AzureContainerAppConfigurationType configurationType) {
         super(configurationType);
@@ -46,6 +47,6 @@ public class DeployImageRunConfigurationFactory extends ConfigurationFactory {
 
     @Override
     public @NotNull @NonNls String getId() {
-        return FACTORY_NAME;
+        return FACTORY_ID;
     }
 }

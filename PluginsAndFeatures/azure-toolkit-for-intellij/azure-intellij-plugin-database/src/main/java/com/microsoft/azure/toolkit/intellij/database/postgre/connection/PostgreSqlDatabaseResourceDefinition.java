@@ -31,7 +31,7 @@ public class PostgreSqlDatabaseResourceDefinition extends SqlDatabaseResourceDef
     }
 
     @Override
-    public PostgreSqlDatabase getResource(String dataId) {
+    public PostgreSqlDatabase getResource(String dataId, final String id) {
         return Azure.az(AzurePostgreSql.class).getById(dataId);
     }
 

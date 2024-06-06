@@ -85,8 +85,8 @@ public class DockerImageCreationDialog extends AzureDialog<DockerImage>
                 .repositoryName(txtImageName.getValue())
                 .tagName(txtTagName.getValue())
                 .azureArtifact(cbAzureArtifact.getValue())
-                .dockerFile(new File(txtDockerFile.getValue()))
-                .baseDirectory(new File(txtBaseDirectory.getValue()))
+                .dockerFile(txtDockerFile.getValue())
+                .baseDirectory(txtBaseDirectory.getValue())
                 .isDraft(true)
                 .build();
     }
@@ -95,8 +95,8 @@ public class DockerImageCreationDialog extends AzureDialog<DockerImage>
     public void setValue(@Nonnull final DockerImage data) {
         Optional.ofNullable(data.getRepositoryName()).ifPresent(file -> txtImageName.setValue(file));
         Optional.ofNullable(data.getTagName()).ifPresent(file -> txtTagName.setValue(file));
-        Optional.ofNullable(data.getDockerFile()).ifPresent(file -> txtDockerFile.setValue(file.getAbsolutePath()));
-        Optional.ofNullable(data.getBaseDirectory()).ifPresent(file -> txtBaseDirectory.setValue(file.getAbsolutePath()));
+        Optional.ofNullable(data.getDockerFile()).ifPresent(file -> txtDockerFile.setValue(file));
+        Optional.ofNullable(data.getBaseDirectory()).ifPresent(file -> txtBaseDirectory.setValue(file));
         Optional.ofNullable(data.getAzureArtifact()).ifPresent(file -> cbAzureArtifact.setValue(file));
     }
 

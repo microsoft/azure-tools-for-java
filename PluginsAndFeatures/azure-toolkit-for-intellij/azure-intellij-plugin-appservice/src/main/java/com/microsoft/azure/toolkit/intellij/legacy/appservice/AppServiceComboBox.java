@@ -88,7 +88,8 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
         config.runtime(null);
         AzureTaskManager.getInstance().runOnPooledThread(() -> {
             try {
-                AppServiceConfigUtils.fromAppService(appService, appService.getAppServicePlan(), config);
+                final AppServiceConfig fullConfig = AppServiceConfigUtils.fromAppService(appService);
+                AppServiceConfigUtils.mergeAppServiceConfig(config, fullConfig);
                 if (config.equals(this.getValue())) {
                     this.setValue((T) null);
                     this.setValue(config);
@@ -174,6 +175,9 @@ public abstract class AppServiceComboBox<T extends AppServiceConfig> extends Azu
                 } else {
                     setText(app.appName());
                 }
+
+                getAccessibleContext().setAccessibleDescription(app.appName());
+
                 this.repaint();
             }
         }

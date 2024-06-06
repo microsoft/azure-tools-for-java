@@ -64,7 +64,7 @@ public final class ModuleResource implements Resource<String> {
         }
 
         @Override
-        public Resource<String> define(String resource) {
+        public Resource<String> define(String resource, String id) {
             return new ModuleResource(resource);
         }
 

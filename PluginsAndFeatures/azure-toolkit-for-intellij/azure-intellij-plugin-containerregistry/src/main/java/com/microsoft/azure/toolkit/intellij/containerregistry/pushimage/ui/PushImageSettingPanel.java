@@ -29,7 +29,7 @@ public class PushImageSettingPanel extends AzureSettingPanel<PushImageRunConfigu
     private DockerImageConfigurationPanel pnlConfiguration;
 
     public PushImageSettingPanel(@NotNull Project project, PushImageRunConfiguration runConfiguration) {
-        super(project, false);
+        super(project);
         this.runConfiguration = runConfiguration;
         $$$setupUI$$$();
         this.init();

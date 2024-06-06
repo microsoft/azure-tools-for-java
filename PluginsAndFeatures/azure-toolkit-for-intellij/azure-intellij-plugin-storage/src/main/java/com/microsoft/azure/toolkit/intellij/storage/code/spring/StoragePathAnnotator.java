@@ -14,13 +14,15 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
+import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.code.AnnotationFixes;
 import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.model.AzComponent;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,31 +49,33 @@ public class StoragePathAnnotator implements Annotator {
                     return;
                 }
                 final TextRange range = new TextRange(prefix.length() + 1, valueWithPrefix.length() + 1).shiftRight(element.getTextOffset());
-                if (!Azure.az(AzureAccount.class).isLoggedIn()) {
-                    AnnotationFixes.createSignInAnnotation(element, holder);
+                final List<Connection<IStorageAccount, ?>> connections = Optional.of(element)
+                    .map(ModuleUtil::findModuleForPsiElement)
+                    .map(module -> Utils.getConnections(module, StorageAccountResourceDefinition.INSTANCE))
+                    .orElse(Collections.emptyList());
+                if (connections.isEmpty()) {
+                    holder.newAnnotation(HighlightSeverity.WARNING, "No Azure Storage account connected")
+                        .range(range)
+                        .highlightType(ProblemHighlightType.WEAK_WARNING)
+                        .withFix(AnnotationFixes.createNewConnection(StorageAccountResourceDefinition.INSTANCE, AnnotationFixes.DO_NOTHING_CONSUMER))
+                        .create();
                 } else {
-                    final List<StorageAccount> accounts = Optional.of(element)
-                        .map(ModuleUtil::findModuleForPsiElement)
-                        .map(module -> Utils.getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE))
-                        .orElse(Collections.emptyList());
-                    if (accounts.isEmpty()) {
-                        holder.newAnnotation(HighlightSeverity.WARNING, "No Azure Storage account connected")
+                    if (Utils.hasEnvVars(valueWithPrefix)) { // skip if environment variables are used.
+                        return;
+                    }
+                    final List<IStorageAccount> accounts = connections.stream()
+                        .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).filter(Objects::nonNull).toList();
+                    if (accounts.isEmpty() && !Azure.az(AzureAccount.class).isLoggedIn()) {
+                        AnnotationFixes.createSignInAnnotation(element, holder);
+                        return;
+                    }
+                    final StorageFile file = StoragePathCompletionProvider.getFile(valueWithPrefix, accounts);
+                    if (Objects.isNull(file)) {
+                        final String message = String.format("Could not find '%s' in connected Azure Storage account(s) [%s]", path, accounts.stream().map(AzComponent::getName).collect(Collectors.joining(",")));
+                        holder.newAnnotation(HighlightSeverity.WARNING, message)
                             .range(range)
                             .highlightType(ProblemHighlightType.WEAK_WARNING)
-                            .withFix(AnnotationFixes.createNewConnection(StorageAccountResourceDefinition.INSTANCE, AnnotationFixes.DO_NOTHING_CONSUMER))
                             .create();
-                    } else {
-                        if (Utils.hasEnvVars(valueWithPrefix)) { // skip if environment variables are used.
-                            return;
-                        }
-                        final StorageFile file = StoragePathCompletionProvider.getFile(valueWithPrefix, accounts);
-                        if (Objects.isNull(file)) {
-                            final String message = String.format("Could not find '%s' in connected Azure Storage account(s) [%s]", path, accounts.stream().map(AbstractAzResource::getName).collect(Collectors.joining(",")));
-                            holder.newAnnotation(HighlightSeverity.WARNING, message)
-                                .range(range)
-                                .highlightType(ProblemHighlightType.WEAK_WARNING)
-                                .create();
-                        }
                     }
                 }
             }

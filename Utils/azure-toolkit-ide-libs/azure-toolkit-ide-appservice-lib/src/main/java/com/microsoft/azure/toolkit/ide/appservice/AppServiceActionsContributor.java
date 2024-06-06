@@ -60,7 +60,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withLabel("Start Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
-            .visibleWhen(s -> s instanceof AppServiceAppBase&& !(s instanceof FunctionApp functionApp && (StringUtils.isNotBlank(functionApp.getEnvironmentId()))))
+            .visibleWhen(s -> s instanceof AppServiceAppBase && !(s instanceof FunctionApp app && (app.isContainerHostingFunctionApp() || app.isFlexConsumptionApp())))
             .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
@@ -68,7 +68,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withLabel("Stop Streaming Logs")
             .withIcon(AzureIcons.Action.LOG.getIconPath())
             .withIdParam(AzResource::getName)
-            .visibleWhen(s -> s instanceof AppServiceAppBase&& !(s instanceof FunctionApp functionApp && (StringUtils.isNotBlank(functionApp.getEnvironmentId()))))
+            .visibleWhen(s -> s instanceof AppServiceAppBase && !(s instanceof FunctionApp app && (app.isContainerHostingFunctionApp() || app.isFlexConsumptionApp())))
             .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
 
@@ -100,7 +100,7 @@ public class AppServiceActionsContributor implements IActionsContributor {
             .withIcon(AzureIcons.Common.AZURE_MONITOR.getIconPath())
             .withIdParam(AzResource::getName)
             .visibleWhen(s -> s instanceof AppServiceAppBase)
-            .enableWhen(s -> s.getFormalStatus().isRunning() || (s instanceof FunctionApp function && StringUtils.isNotBlank(function.getEnvironmentId())))
+            .visibleWhen(s -> s instanceof AppServiceAppBase && !(s instanceof FunctionApp app && (app.isContainerHostingFunctionApp() || app.isFlexConsumptionApp())))
             .register(am);
 
         new Action<>(COPY_FULL_APP_SETTINGS)

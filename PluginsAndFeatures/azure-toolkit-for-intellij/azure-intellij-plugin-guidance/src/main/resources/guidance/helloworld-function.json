@@ -90,7 +90,7 @@
     },
     {
       "title": "Build & Deploy",
-      "description": "Build artifacts, prepare dependent resources and deploy your project to Function App ${context.newFunctionAppName}",
+      "description": "Build artifacts and deploy project to Function App ${context.newFunctionAppName}",
       "steps": [
         {
           "title": "Deploy",
@@ -104,7 +104,7 @@
     {
       "title": "Congratulations!",
       "type": "summary",
-      "description": "Your project has been deployed to Aure Functions, enjoy your Azure experience!",
+      "description": "Your project has been deployed to Aure Functions, enjoy!",
       "steps": [
         {
           "title": "View in Azure Explorer",

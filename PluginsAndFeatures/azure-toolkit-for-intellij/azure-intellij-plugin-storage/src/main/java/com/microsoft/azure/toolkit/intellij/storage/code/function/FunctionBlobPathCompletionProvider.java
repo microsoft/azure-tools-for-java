@@ -28,11 +28,10 @@ import com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompl
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +74,7 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
-        final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
+        final IStorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         final String connection = FunctionUtils.getConnectionValueFromAnnotation(annotation);
         if (Objects.isNull(account) && StringUtils.isNotBlank(connection)) {
             return;
@@ -83,14 +82,14 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         final PsiLiteralExpression literal = (PsiLiteralExpression) element.getParent();
         final String value = literal.getValue() instanceof String ? (String) literal.getValue() : StringUtils.EMPTY;
         final String fullPrefix = StringUtils.substringBefore(value, StoragePathCompletionContributor.DUMMY_IDENTIFIER);
-        final List<StorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
+        final List<IStorageAccount> accountsToSearch = Objects.nonNull(account) ? List.of(account) : getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE);
         final List<? extends StorageFile> files = getFiles("azure-blob://" + fullPrefix, accountsToSearch);
         final BiFunction<StorageFile, String, LookupElementBuilder> builder = (file, title) -> LookupElementBuilder.create(title)
                 .withInsertHandler(new FunctionAnnotationValueInsertHandler(title.endsWith("/"), getAdditionalPropertiesFromCompletion(getStorageAccount(file), module)))
                 .withBoldness(true)
                 .withCaseSensitivity(false)
                 .withTypeText(file.getResourceTypeName())
-                .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(AbstractAzResource::getName).orElse(""))
+                .withTailText(" " + Optional.ofNullable(getStorageAccount(file)).map(IStorageAccount::getName).orElse(""))
                 .withIcon(IntelliJAzureIcons.getIcon(getFileIcon(file)));
         for (final StorageFile file : files) {
             result.addElement(builder.apply(file, file.getName()));
@@ -101,9 +100,9 @@ public class FunctionBlobPathCompletionProvider extends CompletionProvider<Compl
         AzureTelemeter.log(AzureTelemetry.Type.OP_END, OperationBundle.description("boundary/connector.complete_blob_path"));
     }
 
-    public static Map<String, String> getAdditionalPropertiesFromCompletion(@Nullable final StorageAccount account, @Nonnull final Module module) {
+    public static Map<String, String> getAdditionalPropertiesFromCompletion(@Nullable final IStorageAccount account, @Nonnull final Module module) {
         final Connection<?, ?> connection = Objects.isNull(account) ? null :
-                Utils.getConnectionWithStorageAccount(account, module).stream().findFirst().orElse(null);
+            Utils.getConnectionWithStorageAccount(account, module).stream().findFirst().orElse(null);
         return connection == null ? Collections.emptyMap() : Collections.singletonMap("connection", connection.getEnvPrefix());
     }
 }

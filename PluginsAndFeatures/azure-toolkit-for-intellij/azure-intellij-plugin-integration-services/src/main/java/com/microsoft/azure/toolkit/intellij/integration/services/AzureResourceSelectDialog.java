@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.*;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -51,6 +52,7 @@ public class AzureResourceSelectDialog extends AzureDialog<List<AbstractAzResour
 
     public void init() {
         super.init();
+        this.contentPanel.setPreferredSize(new Dimension(755, 574));
 
         this.lblLoading.setIcon(IconUtil.scale(IntelliJAzureIcons.getIcon(AzureIcons.Common.REFRESH_ICON), lblLoading, 1.5f));
         this.lblLoading.setFont(JBFont.h2());

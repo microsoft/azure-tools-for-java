@@ -10,8 +10,10 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -19,13 +21,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class DockerHubImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig> {
+public class DockerHubImageForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>, DeploymentSourceForm {
     @Getter
     private JPanel contentPanel;
     private AzureTextInput txtImage;
     private JLabel lblImage;
 
     final Pattern dockerHubImage = Pattern.compile("^(?<registry>[\\w.\\-_]+((?::\\d+|)(?=/[a-z0-9._\\-]+/[a-z0-9._\\-]+))|)(?:/|)(?<image>[a-z0-9.\\-_]+(?:/[a-z0-9.\\-_]+|))(:(?<tag>[\\w.\\-_]{1,127})|)$");
+
+    @Setter
+    @Getter
+    private ContainerApp containerApp;
 
     public DockerHubImageForm() {
         super();

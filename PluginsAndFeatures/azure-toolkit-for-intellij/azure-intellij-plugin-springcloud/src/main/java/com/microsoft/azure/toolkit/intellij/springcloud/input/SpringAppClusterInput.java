@@ -8,12 +8,14 @@ package com.microsoft.azure.toolkit.intellij.springcloud.input;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.config.InputConfig;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
+import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 
 import javax.annotation.Nonnull;
 
+import static com.microsoft.azure.toolkit.ide.guidance.task.SelectSubscriptionTask.SUBSCRIPTION;
+
 public class SpringAppClusterInput  implements GuidanceInput<SpringCloudCluster> {
-    public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String SPRING_APP_CLUSTER = "springAppCluster";
     private final InputConfig config;
     private final ComponentContext context;
@@ -25,8 +27,8 @@ public class SpringAppClusterInput  implements GuidanceInput<SpringCloudCluster>
         this.context = context;
         this.panel = new SpringAppClusterPanel();
 
-        this.panel.setSubscriptionId((String) context.getParameter(SUBSCRIPTION_ID));
-        context.addPropertyListener(SUBSCRIPTION_ID, id -> panel.setSubscriptionId((String) id));
+        this.panel.setSubscription((Subscription) context.getParameter(SUBSCRIPTION));
+        context.addPropertyListener(SUBSCRIPTION, s -> panel.setSubscription((Subscription) s));
     }
 
     @Override

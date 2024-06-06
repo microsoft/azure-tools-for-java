@@ -280,7 +280,7 @@ public class AzureModule {
 
     public <T> List<T> getConnectedResources(@Nonnull ResourceDefinition<T> definition) {
         return this.getConnections(definition).stream()
-            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).toList();
+            .filter(Connection::isValidConnection).map(Connection::getResource).map(Resource::getData).filter(Objects::nonNull).toList();
     }
 
     @AzureOperation(name = "internal/connector.create_connection")

@@ -56,7 +56,7 @@ public class RedisResourceDefinition extends AzureServiceResource.Definition<Red
     }
 
     @Override
-    public RedisCache getResource(String dataId) {
+    public RedisCache getResource(String dataId, final String id) {
         return Azure.az(AzureRedis.class).getById(dataId);
     }
 

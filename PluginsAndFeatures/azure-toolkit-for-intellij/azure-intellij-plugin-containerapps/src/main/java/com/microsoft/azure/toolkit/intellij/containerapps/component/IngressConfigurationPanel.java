@@ -7,13 +7,19 @@ package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
 import com.intellij.ui.JBIntSpinner;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class IngressConfigurationPanel implements AzureFormPanel<IngressConfig> {
+    @Getter
     private JPanel pnlRoot;
     private JLabel lblIngress;
     private JCheckBox chkIngress;
@@ -21,6 +27,9 @@ public class IngressConfigurationPanel implements AzureFormPanel<IngressConfig> 
     private JBIntSpinner txtTargetPort;
     private JCheckBox chkExternalTraffic;
     private JLabel lblExternalTraffic;
+    @Getter
+    @Setter
+    private ContainerApp containerApp;
 
     public IngressConfigurationPanel() {
         $$$setupUI$$$();
@@ -41,21 +50,32 @@ public class IngressConfigurationPanel implements AzureFormPanel<IngressConfig> 
 
     @Override
     public void setValue(final IngressConfig config) {
+        if (Objects.isNull(config)) {
+            return;
+        }
         chkIngress.setSelected(config.isEnableIngress());
         chkExternalTraffic.setSelected(config.isExternal());
         txtTargetPort.setValue(config.getTargetPort());
     }
 
+    public void setValueFromContainerApp(final ContainerApp containerApp) {
+        if (Objects.equals(containerApp, this.containerApp)) {
+            return;
+        }
+        this.containerApp = containerApp;
+        Optional.ofNullable(containerApp.getIngressConfig()).ifPresent(this::setValue);
+    }
+
     @Override
     public IngressConfig getValue() {
         return IngressConfig.builder().enableIngress(chkIngress.isSelected())
-                .external(chkExternalTraffic.isSelected())
-                .targetPort(txtTargetPort.getNumber()).build();
+            .external(chkExternalTraffic.isSelected())
+            .targetPort(txtTargetPort.getNumber()).build();
     }
 
     public void setEnabled(boolean enable) {
         Stream.of(lblTargetPort, lblIngress, lblExternalTraffic, chkExternalTraffic, chkIngress, txtTargetPort)
-                .forEach(component -> component.setEnabled(enable));
+            .forEach(component -> component.setEnabled(enable));
     }
 
     private void onSelectIngress(boolean enableIngress) {
@@ -64,4 +84,5 @@ public class IngressConfigurationPanel implements AzureFormPanel<IngressConfig> 
         this.lblTargetPort.setVisible(enableIngress);
         this.txtTargetPort.setVisible(enableIngress);
     }
+
 }

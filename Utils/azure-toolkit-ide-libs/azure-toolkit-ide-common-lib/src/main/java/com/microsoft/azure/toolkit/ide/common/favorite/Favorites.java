@@ -282,7 +282,7 @@ public class Favorites extends AbstractAzResourceModule<Favorite, AzResource.Non
             });
     }
 
-    protected boolean isAuthRequiredForListing() {
+    public boolean isAuthRequiredForListing() {
         return false;
     }
 }

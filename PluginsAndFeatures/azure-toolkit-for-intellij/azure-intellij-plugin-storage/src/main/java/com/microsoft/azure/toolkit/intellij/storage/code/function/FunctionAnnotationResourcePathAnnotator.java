@@ -15,7 +15,7 @@ import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.blob.BlobContainer;
 import com.microsoft.azure.toolkit.lib.storage.model.StorageFile;
 import com.microsoft.azure.toolkit.lib.storage.queue.Queue;
@@ -46,7 +46,7 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
 
     private void validateTableName(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
+        final IStorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("tableName"))) {
             return;
         }
@@ -65,7 +65,7 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
 
     private void validateQueueName(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
+        final IStorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("queueName"))) {
             return;
         }
@@ -84,7 +84,7 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
 
     private void validateBlobPath(@Nonnull PsiElement element, @Nonnull AnnotationHolder holder) {
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        final StorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
+        final IStorageAccount storageAccount = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
         if (Objects.isNull(storageAccount) || Objects.isNull(annotation.findAttribute("path"))) {
             return;
         }
@@ -103,7 +103,7 @@ public class FunctionAnnotationResourcePathAnnotator implements Annotator {
     }
 
     @Nullable
-    private StorageFile getFileByPath(@Nonnull final String fullPrefix, @Nonnull final StorageAccount storageAccount) {
+    private StorageFile getFileByPath(@Nonnull final String fullPrefix, @Nonnull final IStorageAccount storageAccount) {
         final String container = fullPrefix.contains("/") ? fullPrefix.substring(0, fullPrefix.indexOf("/")) : fullPrefix;
         final String path = fullPrefix.contains("/") ? fullPrefix.substring(fullPrefix.indexOf("/") + 1) : "";
         final BlobContainer blobContainer = storageAccount.getBlobContainerModule().get(container, storageAccount.getResourceGroupName());

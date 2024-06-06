@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeExcep
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -80,6 +81,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         OperationContext.current().setMessager(new RunProcessHandlerMessenger(processHandler));
         applyResourceConnection();
         final FunctionAppBase<?, ?, ?> target = createOrUpdateFunctionApp(functionDeployConfiguration.getConfig());
+        if (target instanceof AzResource.Draft<?, ?> draft) {
+            draft.reset();
+        }
+        functionDeployConfiguration.setAppSettings(target.getAppSettings()); // save app settings
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, operation);
         // deploy function to Azure

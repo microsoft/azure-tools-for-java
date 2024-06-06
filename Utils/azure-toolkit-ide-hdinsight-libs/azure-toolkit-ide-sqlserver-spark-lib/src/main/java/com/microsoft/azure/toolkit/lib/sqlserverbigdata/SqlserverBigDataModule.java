@@ -38,7 +38,12 @@ public class SqlserverBigDataModule extends AbstractAzResourceModule<SqlserverBi
         return null;
     }
 
-    protected boolean isAuthRequiredForListing() {
+    public boolean isAuthRequiredForListing() {
+        return false;
+    }
+
+    @Override
+    public boolean isAuthRequiredForCreating() {
         return false;
     }
 

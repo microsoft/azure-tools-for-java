@@ -6,6 +6,7 @@
         <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijStorageActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.java.ConnectionStringStorageClientAnnotator"/>
         <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathAnnotator"/>
         <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathReferenceContributor" order="first"/>
         <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionStorageAccountResourceReferenceContributor"/>

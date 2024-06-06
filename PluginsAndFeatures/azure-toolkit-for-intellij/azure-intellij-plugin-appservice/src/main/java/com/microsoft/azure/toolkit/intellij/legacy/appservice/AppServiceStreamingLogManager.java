@@ -158,7 +158,7 @@ public enum AppServiceStreamingLogManager {
         @Override
         public Flux<String> getStreamingLogContent() {
             final OperatingSystem operatingSystem = Optional.ofNullable(functionApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null);
-            if (operatingSystem == OperatingSystem.LINUX) {
+            if (operatingSystem == OperatingSystem.LINUX || operatingSystem == OperatingSystem.DOCKER) {
                 // For linux function, we will just open the "Live Metrics Stream" view in the portal
                 openLiveMetricsStream();
                 return null;

@@ -95,8 +95,10 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             FunctionAppActionsContributor.DISABLE_REMOTE_DEBUGGING,
             "---",
             ResourceCommonActionsContributor.START,
-            ResourceCommonActionsContributor.STOP,
-            ResourceCommonActionsContributor.RESTART,
+            am.getAction(ResourceCommonActionsContributor.STOP).bind(null)
+                        .visibleWhen(s -> s instanceof FunctionApp app && StringUtils.isBlank(app.getEnvironmentId())),
+            am.getAction(ResourceCommonActionsContributor.RESTART).bind(null)
+                        .visibleWhen(s -> s instanceof FunctionApp app && StringUtils.isBlank(app.getEnvironmentId())),
             ResourceCommonActionsContributor.DELETE,
             "---",
             AppServiceActionsContributor.START_STREAM_LOG,

@@ -88,6 +88,62 @@
           }
         }
       }
+    },
+    {
+      "additionalProperties": false,
+      "description": "input container app name",
+      "properties": {
+        "name": {
+          "const": "input.containerapp.name",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "containerAppName": {
+              "type": "string",
+              "description": "default container app name."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "containerAppName": {
+              "type": "string",
+              "description": "user input container app name."
+            }
+          }
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "input container app name",
+      "properties": {
+        "name": {
+          "const": "input.containerapp.env",
+          "description": "use this component to ask user to provide webapp name."
+        },
+        "paramMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "containerAppName": {
+              "type": "string",
+              "description": "default container app name."
+            }
+          }
+        },
+        "resultMapping": {
+          "additionalProperties": false,
+          "properties": {
+            "containerAppName": {
+              "type": "string",
+              "description": "user input container app name."
+            }
+          }
+        }
+      }
     }
   ]
 }

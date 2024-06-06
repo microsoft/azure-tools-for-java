@@ -20,6 +20,8 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.ide.guidance.task.SelectSubscriptionTask.SUBSCRIPTION;
+
 public class CreateWebAppTask implements Task {
     public static final String WEBAPP_NAME = "webAppName";
     public static final String WEBAPP_ID = "webappId";
@@ -42,8 +44,7 @@ public class CreateWebAppTask implements Task {
     @AzureOperation(name = "internal/guidance.create_webapp")
     public void execute() throws Exception {
         final String name = (String) Objects.requireNonNull(context.getParameter(WEBAPP_NAME), "`name` is required to create web app");
-        final Subscription subscription = Optional.ofNullable((String) context.getParameter(SignInTask.SUBSCRIPTION_ID))
-                .map(id -> Azure.az(AzureAccount.class).account().getSubscription(id))
+        final Subscription subscription = Optional.ofNullable((Subscription) context.getParameter(SUBSCRIPTION))
                 .orElseThrow(() -> new AzureToolkitRuntimeException("Failed to get subscription to create web app"));
 
         final AppServiceConfig webAppConfig = AppServiceIntelliJActionsContributor.getDefaultWebAppConfig(null);

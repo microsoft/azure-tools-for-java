@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.containerregistry.dockerhost.DockerHostRunConfiguration.validateDockerHostConfiguration;
@@ -115,7 +114,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         final DockerHostRunSetting dockerHostRunSetting = Optional.ofNullable(getDockerHostRunSetting()).orElseGet(DockerHostRunSetting::new);
         dockerHostRunSetting.setImageName(Optional.ofNullable(image).map(DockerImage::getRepositoryName).orElse(null));
         dockerHostRunSetting.setTagName(Optional.ofNullable(image).map(DockerImage::getTagName).orElse(null));
-        dockerHostRunSetting.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).map(File::getAbsolutePath).orElse(null));
+        dockerHostRunSetting.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).orElse(null));
         this.getModel().setDockerHostRunSetting(dockerHostRunSetting);
     }
 
@@ -135,7 +134,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         }
         image.setRepositoryName(dockerHostRunSetting.getImageName());
         image.setTagName(dockerHostRunSetting.getTagName());
-        image.setDockerFile(Optional.ofNullable(dockerHostRunSetting.getDockerFilePath()).map(File::new).orElse(null));
+        image.setDockerFile(Optional.ofNullable(dockerHostRunSetting.getDockerFilePath()).orElse(null));
         image.setDraft(StringUtils.isNoneBlank(dockerHostRunSetting.getDockerFilePath()));
         return image;
     }

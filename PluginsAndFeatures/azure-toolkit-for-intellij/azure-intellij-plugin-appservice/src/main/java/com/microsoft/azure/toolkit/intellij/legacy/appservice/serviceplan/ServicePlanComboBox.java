@@ -89,6 +89,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     public void setRegion(Region region) {
+        if (region == this.region) {
+            return;
+        }
         this.region = region;
         if (region == null) {
             this.clear();

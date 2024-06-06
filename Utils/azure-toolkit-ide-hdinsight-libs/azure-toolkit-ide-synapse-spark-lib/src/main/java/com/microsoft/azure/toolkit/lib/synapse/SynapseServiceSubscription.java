@@ -4,7 +4,7 @@ import com.azure.resourcemanager.hdinsight.HDInsightManager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResourceModule;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzServiceSubscription;
 import org.apache.commons.lang3.StringUtils;
-
+import com.azure.resourcemanager.synapse.SynapseManager;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;

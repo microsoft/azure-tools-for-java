@@ -27,8 +27,7 @@ import java.util.stream.Collectors;
 public class SelectSubscriptionTask implements Task {
     public static final String DEFAULT_SUBSCRIPTION = "default_subscription";
     public static final String SUBSCRIPTION = "subscription";
-    public static final String SUBSCRIPTION_ID = "subscription_id";
-    private ComponentContext context;
+    private final ComponentContext context;
 
     public SelectSubscriptionTask(ComponentContext taskContext) {
         this.context = taskContext;
@@ -58,7 +57,6 @@ public class SelectSubscriptionTask implements Task {
             account.setSelectedSubscriptions(selectedSubscriptions.stream().map(Subscription::getId).collect(Collectors.toList()));
         }
         context.applyResult(SUBSCRIPTION, subscription);
-        context.applyResult(SUBSCRIPTION_ID, subscription.getId());
         AzureMessager.getMessager().info(AzureString.format("Sign in successfully with subscription \"%s [%s]\"", subscription.getName(), subscription.getId()));
     }
 

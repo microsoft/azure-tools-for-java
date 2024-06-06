@@ -7,12 +7,9 @@ package com.microsoft.azure.toolkit.intellij.springcloud.input;
 
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.springcloud.component.SpringCloudClusterComboBox;
-import com.microsoft.azure.toolkit.lib.Azure;
-import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.Collections;
@@ -23,7 +20,7 @@ public class SpringAppClusterPanel implements AzureFormJPanel<SpringCloudCluster
     private SpringCloudClusterComboBox cbCluster;
     private JPanel pnlRoot;
 
-    private String subscriptionId;
+    private Subscription subscription;
 
     public SpringAppClusterPanel() {
         $$$setupUI$$$();
@@ -50,13 +47,11 @@ public class SpringAppClusterPanel implements AzureFormJPanel<SpringCloudCluster
         return pnlRoot;
     }
 
-    public void setSubscriptionId(final String subscriptionId){
-        if (Objects.equals(subscriptionId, this.subscriptionId)) {
+    public void setSubscription(final Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
             return;
         }
-        this.subscriptionId = subscriptionId;
-        final Subscription subscription = StringUtils.isEmpty(subscriptionId) ? null :
-                Azure.az(AzureAccount.class).account().getSubscription(subscriptionId);
+        this.subscription = subscription;
         this.cbCluster.setSubscription(subscription);
     }
 }

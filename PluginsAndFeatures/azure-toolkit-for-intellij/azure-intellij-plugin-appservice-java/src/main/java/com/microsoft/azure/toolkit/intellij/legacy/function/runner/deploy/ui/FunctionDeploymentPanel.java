@@ -233,10 +233,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         // reload app settings when switch slot configuration
         if (chkSlot.isSelected() && Objects.nonNull(function) && Objects.nonNull(slot)) {
             final FunctionAppBase<?, ?, ?> resource = getResource(function, slot.getName());
-            loadAppSettings(Objects.requireNonNull(resource).getId(), !resource.exists());
+            Optional.ofNullable(resource).ifPresent(r -> loadAppSettings(r.getId(), !r.exists()));
         } else if (!chkSlot.isSelected() && Objects.nonNull(function)) {
             final FunctionAppBase<?, ?, ?> resource = getResource(function, null);
-            loadAppSettings(Objects.requireNonNull(resource).getId(), !resource.exists());
+            Optional.ofNullable(resource).ifPresent(r -> loadAppSettings(r.getId(), !r.exists()));
         }
     }
 
@@ -305,10 +305,5 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @Nullable
     private String getResourceId(@Nonnull FunctionAppConfig config, String slot) {
         return Optional.ofNullable(getResource(config, slot)).map(AbstractAzResource::getId).orElse(null);
-    }
-
-    @Override
-    protected boolean shouldInitializeBeforeRunTasks() {
-        return false;
     }
 }

@@ -76,6 +76,7 @@ public class ContainerAppsNodeProvider implements IExplorerNodeProvider {
         } else if (data instanceof ContainerApp) {
             return new AzResourceNode<>((ContainerApp) data)
                 .addInlineAction(ResourceCommonActionsContributor.PIN)
+                .onDoubleClicked(ResourceCommonActionsContributor.SHOW_PROPERTIES)
                 .addChildren(ContainerApp::getSubModules, (revision, appNode) -> this.createNode(revision, appNode, manager))
                 .withActions(ContainerAppsActionsContributor.CONTAINER_APP_ACTIONS)
                 .withMoreChildren(a -> a.revisions().hasMoreResources(), a -> a.revisions().loadMoreResources());

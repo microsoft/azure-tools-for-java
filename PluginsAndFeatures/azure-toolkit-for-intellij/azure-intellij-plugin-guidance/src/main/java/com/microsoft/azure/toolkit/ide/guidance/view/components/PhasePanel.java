@@ -6,6 +6,7 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.ui.GraphicsConfig;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.JBColor;
@@ -21,12 +22,12 @@ import com.microsoft.azure.toolkit.ide.guidance.Status;
 import com.microsoft.azure.toolkit.ide.guidance.Step;
 import com.microsoft.azure.toolkit.ide.guidance.input.GuidanceInput;
 import com.microsoft.azure.toolkit.intellij.common.AzureActionButton;
+import com.microsoft.azure.toolkit.intellij.common.messager.IntellijAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEvent;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessage;
 import com.microsoft.azure.toolkit.lib.common.messager.IAzureMessager;
-import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +37,8 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -65,6 +68,11 @@ public class PhasePanel extends JPanel {
     private JTextPane outputPanel;
     private boolean isOutputBlank = true;
     private AzureEventBus.EventListener listener;
+    public static final HyperlinkListener OPEN_IN_BROWSER = e -> {
+        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            BrowserUtil.open(e.getURL().toString());
+        }
+    };
 
     public PhasePanel(@Nonnull Phase phase) {
         super();
@@ -95,6 +103,9 @@ public class PhasePanel extends JPanel {
         this.toggleIcon.setIcon(AllIcons.Actions.FindAndShowNextMatches);
         this.toggleIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.descPanel.setBorder(null);
+        this.descPanel.setContentType("text/html");
+        this.descPanel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
+        this.descPanel.addHyperlinkListener(OPEN_IN_BROWSER);
         this.descPanel.setVisible(StringUtils.isNotBlank(this.phase.getDescription()));
         this.initOutputPanel();
         this.detailsPanel.setVisible(false);
@@ -173,14 +184,16 @@ public class PhasePanel extends JPanel {
         final IAzureMessager messager = new ConsoleTextMessager();
         this.phase.setOutput(messager);
         this.outputPanel.setBorder(null);
+        this.outputPanel.addHyperlinkListener(OPEN_IN_BROWSER);
         this.outputPanel.setEditorKit(new UIUtil.JBWordWrapHtmlEditorKit());
         this.outputContainer.setVisible(false);
     }
 
     class ConsoleTextMessager implements IAzureMessager {
         @Override
-        public boolean show(IAzureMessage message) {
+        public boolean show(IAzureMessage rawMessage) {
             try {
+                final IAzureMessage message = new IntellijAzureMessage(rawMessage);
                 final String content = message.getContent();
                 PhasePanel.this.isOutputBlank = StringUtils.isBlank(content);
                 PhasePanel.this.outputPanel.setText(content);
@@ -193,7 +206,7 @@ public class PhasePanel extends JPanel {
     }
 
     private void updateStatus(Status status) {
-        UIUtil.invokeAndWaitIfNeeded((Runnable) () -> {
+        UIUtil.invokeAndWaitIfNeeded(() -> {
             this.updateStatusIcon(status);
             this.updateView(status, this.detailsPanel.isVisible());
             final boolean focused = status == Status.READY || status == Status.RUNNING || status == Status.FAILED;
@@ -291,7 +304,7 @@ public class PhasePanel extends JPanel {
     static void setTextAsync(final Supplier<String> supplier, @Nonnull final Consumer<String> consumer) {
         Mono.fromCallable(supplier::get)
                 .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(text ->SwingUtilities.invokeLater(() -> consumer.consume(text)), (e) -> {
+                .subscribe(text -> SwingUtilities.invokeLater(() -> consumer.consume(text)), (e) -> {
                     // swallow exception when update text
                 });
     }

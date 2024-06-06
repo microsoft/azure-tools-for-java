@@ -22,7 +22,7 @@ import com.microsoft.azure.toolkit.intellij.common.ProjectUtils;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource;
+import com.microsoft.azure.toolkit.intellij.connector.keyvalue.KeyValueResource;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -185,7 +185,7 @@ public class FunctionConnectionComboBox extends AzureComboBox<FunctionConnection
 
         public ConnectionConfiguration(final Connection<?, ?> connection) {
             // for common connection, use connection name, for app service connection, use env prefix
-            this.name = connection.getResource().getDefinition() instanceof CommonConnectionResource.Definition ?
+            this.name = connection.getResource().getDefinition() instanceof KeyValueResource.Definition ?
                 connection.getResource().getName() : connection.getEnvPrefix();
             this.icon = connection.getResource().getDefinition().getIcon();
         }

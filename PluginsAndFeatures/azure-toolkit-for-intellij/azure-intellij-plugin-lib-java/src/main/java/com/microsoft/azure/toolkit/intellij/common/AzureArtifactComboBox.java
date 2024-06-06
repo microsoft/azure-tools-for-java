@@ -10,6 +10,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ColoredListCellRenderer;
@@ -19,6 +20,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.Type;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessageBundle;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -36,7 +39,9 @@ import java.util.stream.Collectors;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private final Project project;
-    private final boolean fileArtifactOnly;
+    @Getter
+    @Setter
+    private boolean fileArtifactOnly;
     @Nonnull
     private Predicate<? super VirtualFile> fileFilter = artifact -> true;
     @Nonnull
@@ -148,6 +153,10 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         } else {
             this.setSelectedItem(existingArtifact);
         }
+    }
+
+    public void setModule(Module module) {
+        this.artifactFilter = artifact -> artifact.getModule() == module;
     }
 
     public static class ArtifactItemRenderer extends ColoredListCellRenderer<AzureArtifact> {

@@ -9,9 +9,16 @@
         <dockerfileActionsProvider implementation="com.microsoft.azure.toolkit.intellij.containerapps.AzureContainerAppsDockerfileActionsProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.containerapps.ContainerAppsActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.containerapps.IntelliJContainerAppsActionsContributor"/>
+        <guidanceTaskProvider implementation="com.microsoft.azure.toolkit.intellij.containerapps.guidance.ContainerAppTaskProvider"/>
+        <guidanceInputProvider implementation="com.microsoft.azure.toolkit.intellij.containerapps.guidance.ContainerAppInputProvider"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.containerapps.properties.ContainerAppPropertiesEditorProvider"/>
         <configurationType implementation="com.microsoft.azure.toolkit.intellij.containerapps.AzureContainerAppConfigurationType"/>
     </extensions>
+    <actions>
+        <action id="Actions.ContainerDeployAction" class="com.microsoft.azure.toolkit.intellij.containerapps.action.DeployImageAction"
+                text="Deploy to Azure Container Apps..." description="Deploy selected module to Azure Container Apps"
+                icon="/icons/ContainerAppDeploy.svg"/>
+    </actions>
 </idea-plugin>

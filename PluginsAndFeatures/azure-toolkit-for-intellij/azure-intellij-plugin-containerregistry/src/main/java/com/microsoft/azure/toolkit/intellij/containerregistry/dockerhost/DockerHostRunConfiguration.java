@@ -22,7 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class DockerHostRunConfiguration extends AzureRunConfigurationBase<DockerHostRunSetting> implements IDockerConfiguration {
@@ -93,7 +94,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         if (image == null) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
-        if (image.isDraft() && (image.getDockerFile() == null || !image.getDockerFile().exists())) {
+        if (image.isDraft() && (image.getDockerFile() == null || !Files.exists(Path.of(image.getDockerFile())))) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);
         }
         final String imageTag = image.getImageName();
@@ -210,7 +211,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
         image.setDraft(false);
         image.setRepositoryName(getImageName());
         image.setTagName(getTagName());
-        image.setDockerFile(Optional.ofNullable(getDockerFilePath()).map(File::new).orElse(null));
+        image.setDockerFile(getDockerFilePath());
         image.setDraft(StringUtils.isNoneBlank(this.getDockerFilePath()));
         return image;
     }
@@ -222,7 +223,7 @@ public class DockerHostRunConfiguration extends AzureRunConfigurationBase<Docker
     public void setDockerImage(@Nullable DockerImage image) {
         this.setImageName(Optional.ofNullable(image).map(DockerImage::getRepositoryName).orElse(null));
         this.setTagName(Optional.ofNullable(image).map(DockerImage::getTagName).orElse(null));
-        this.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).map(File::getAbsolutePath).orElse(null));
+        this.setDockerFilePath(Optional.ofNullable(image).map(DockerImage::getDockerFile).orElse(null));
     }
 
     public void setHost(@Nullable DockerHost host) {

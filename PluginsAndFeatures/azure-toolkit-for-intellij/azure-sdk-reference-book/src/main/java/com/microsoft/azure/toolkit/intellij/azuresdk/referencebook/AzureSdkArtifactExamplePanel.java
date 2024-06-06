@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.azuresdk.referencebook;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.idea.ActionsBundle;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -112,6 +113,11 @@ public class AzureSdkArtifactExamplePanel {
                     .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 CopyPasteManager.getInstance().setContents(new StringSelection(viewer.getText()));
             }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
+            }
         });
         group.add(new AnAction("Browse", "Browse source code", IntelliJAzureIcons.getIcon(AzureIcons.Common.OPEN_IN_PORTAL)) {
             @Override
@@ -123,6 +129,11 @@ public class AzureSdkArtifactExamplePanel {
                     .filter(v -> v != ExampleComboBox.NONE)
                     .map(AzureJavaSdkArtifactExampleEntity::getId).orElse(-1)));
                 Optional.ofNullable(value).ifPresent(v -> AzureActionManager.getInstance().getAction(OPEN_URL).handle(v.getGithubUrl(), e));
+            }
+
+            @Override
+            public ActionUpdateThread getActionUpdateThread() {
+                return ActionUpdateThread.BGT;
             }
         });
         final ActionToolbarImpl result = new ActionToolbarImpl("toolbar", group, true);

@@ -93,7 +93,7 @@ public abstract class AbstractHDIAzureStorageExplorerHandler {
         final AzureActionManager am = AzureActionManager.getInstance();
         final Action.Id<IClusterDetail> OPEN = Action.Id.of("user/storage.open_portal_storage_browser.account");
         final Action<IClusterDetail> openInAzureAction = new Action<>(OPEN)
-            .withLabel("Open in Azure")
+            .withLabel("Open in Portal")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(IClusterDetail::getName)
             .enableWhen(s -> s instanceof IClusterDetail)

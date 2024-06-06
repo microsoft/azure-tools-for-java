@@ -21,10 +21,7 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> {
@@ -70,7 +67,7 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
 
     private void createResource() {
         final List<DeploymentSlotConfig> existingSlots = this.getItems().stream()
-            .filter(config -> false)
+            .filter(config -> !isDraftResource(config))
             .collect(Collectors.toList());
         final DeploymentSlotCreationDialog dialog = new DeploymentSlotCreationDialog(project, existingSlots);
         final Action.Id<DeploymentSlotConfig> actionId = Action.Id.of("user/function.create_slot.slot");
@@ -90,11 +87,17 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
             .flatMap(r -> r.getSubModules().stream().filter(m -> m instanceof IDeploymentSlotModule).findFirst())
             .orElse(null);
         if (module == null) {
-            return Collections.emptyList();
+            return this.draftItems;
         }
         final List<DeploymentSlotConfig> result = module.list().stream().map(slot ->
             DeploymentSlotConfig.builder().name(slot.getName()).build()).collect(Collectors.toList());
-        this.draftItems.stream().filter(config -> !result.contains(config)).forEach(result::add);
+        final DeploymentSlotConfig current = getValue();
+        if (isDraftResource(current)) {
+            result.stream().filter(value -> StringUtils.equalsIgnoreCase(value.getName(), current.getName())).findFirst().ifPresent(this::setValue);
+        }
+        // remove draft items if it has been created
+        final List<String> existingSlotNames = result.stream().map(DeploymentSlotConfig::getName).collect(Collectors.toList());
+        draftItems.stream().filter(draft -> !existingSlotNames.contains(draft.getName())).forEach(result::add);
         return result;
     }
 
@@ -109,6 +112,6 @@ public class DeploymentSlotComboBox extends AzureComboBox<DeploymentSlotConfig> 
     }
 
     private boolean isDraftResource(DeploymentSlotConfig val) {
-        return StringUtils.isNotEmpty(val.getConfigurationSource());
+        return Objects.nonNull(val) && StringUtils.isNotEmpty(val.getConfigurationSource());
     }
 }

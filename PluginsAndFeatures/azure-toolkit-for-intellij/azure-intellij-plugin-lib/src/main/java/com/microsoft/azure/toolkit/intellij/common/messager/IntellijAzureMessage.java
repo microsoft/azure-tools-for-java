@@ -60,7 +60,7 @@ public class IntellijAzureMessage extends AzureHtmlMessage {
     protected String getValueColor() {
         // color from compile_dark.svg and compile.svg
         //noinspection UnstableApiUsage
-        return StartupUiUtil.INSTANCE.isDarkTheme() ? "#499C54" : "#59A869";
+        return StartupUiUtil.INSTANCE.isDarkTheme() ? "#688457" : "#59A869";
     }
 }
 

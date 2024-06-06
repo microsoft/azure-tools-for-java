@@ -17,7 +17,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.ApplicationInsightsConfi
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nonnull;
 import javax.swing.*;

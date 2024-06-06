@@ -31,7 +31,7 @@ public class SqlServerDatabaseResourceDefinition extends SqlDatabaseResourceDefi
     }
 
     @Override
-    public MicrosoftSqlDatabase getResource(String dataId) {
+    public MicrosoftSqlDatabase getResource(String dataId, final String id) {
         return Azure.az(AzureSqlServer.class).getById(dataId);
     }
 

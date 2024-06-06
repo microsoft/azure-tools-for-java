@@ -42,8 +42,8 @@ allprojects {
     }
 
     ext {
-        azureToolkitLibsVersion = "0.43.0-SNAPSHOT"
-        azureToolkitIdeLibsVersion = "0.43.0-SNAPSHOT"
+        azureToolkitLibsVersion = "0.46.0-SNAPSHOT"
+        azureToolkitIdeLibsVersion = "0.46.0-SNAPSHOT"
     }
 
     dependencyManagement {
@@ -96,7 +96,7 @@ subprojects {
 intellij {
     pluginName = 'azure-intellij-plugin-base'
     version = intellij_version
-    plugins = ['java', 'maven', 'maven-model', 'gradle', dep_plugins]
+    plugins = ['java', 'maven', 'maven-model', 'gradle', scala_plugin]
     downloadSources = Boolean.valueOf(sources)
 }
 

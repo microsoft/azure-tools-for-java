@@ -27,6 +27,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
+import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft.ScaleConfig;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
 import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
 import com.microsoft.azure.toolkit.lib.containerapps.model.RevisionMode;
@@ -88,6 +89,10 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private HyperlinkLabel linkApplicationUrl;
     private JTextField txtInsecureConnections;
     private JTextField txtTransportMethod;
+    private AzureHideableTitledSeparator titleScale;
+    private JPanel pnlScale;
+    private JBIntSpinner intMinReplicas;
+    private JBIntSpinner intMaxReplicas;
     private final JTextField[] readOnlyComponents = new JTextField[]{txtInsecureConnections, txtTransportMethod};
 
     private final ContainerApp containerApp;
@@ -138,6 +143,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.overviewSeparator.addContentComponent(pnlOverview);
         this.revisionsSeparator.addContentComponent(pnlNodePools);
         this.ingressSeparator.addContentComponent(pnlNetworking);
+        this.titleScale.addContentComponent(pnlScale);
     }
 
     private void initListeners() {
@@ -145,19 +151,21 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         final AzureTaskManager tm = AzureTaskManager.getInstance();
         final Runnable runnable = () -> AzureTaskManager.getInstance().runOnPooledThread(ContainerAppPropertiesEditor.this::refreshToolbar);
         this.txtTargetPort.addChangeListener(e -> runnable.run());
+        this.intMinReplicas.addChangeListener(e -> runnable.run());
+        this.intMaxReplicas.addChangeListener(e -> runnable.run());
         this.cbExternalAccess.addValueChangedListener(ignore -> runnable.run());
         this.cbIngress.addValueChangedListener(ignore -> toggleIngress());
         final Action<Void> refreshAction = new Action<Void>(Action.Id.of("user/containerapps.refresh_properties_view.app"))
-                .withAuthRequired(true)
-                .withSource(this.containerApp)
-                .withIdParam(this.containerApp.getName())
-                .withHandler(ignore -> this.refresh());
+            .withAuthRequired(true)
+            .withSource(this.containerApp)
+            .withIdParam(this.containerApp.getName())
+            .withHandler(ignore -> this.refresh());
         this.btnRefresh.setAction(refreshAction);
         final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/containerapps.update_container_app.app"))
-                .withAuthRequired(true)
-                .withSource(this.containerApp)
-                .withIdParam(this.containerApp.getName())
-                .withHandler(ignore -> this.save());
+            .withAuthRequired(true)
+            .withSource(this.containerApp)
+            .withIdParam(this.containerApp.getName())
+            .withHandler(ignore -> this.save());
         this.saveButton.setAction(saveAction);
     }
 
@@ -182,6 +190,8 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         this.cbIngress.setEditable(enabled);
         this.cbExternalAccess.setEnabled(enabled);
         this.cbExternalAccess.setEditable(enabled);
+        this.intMaxReplicas.setEnabled(enabled);
+        this.intMinReplicas.setEnabled(enabled);
     }
 
     private void refreshToolbar() {
@@ -208,13 +218,15 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
 
     @Override
     public boolean isModified() {
-        final IngressConfig config = this.containerApp.getIngressConfig();
-        final IngressConfig draftConfig = this.getConfig();
-        return !Objects.equals(config, draftConfig);
+        final IngressConfig ingressConfig = this.containerApp.getIngressConfig();
+        final IngressConfig draftIngressConfig = this.getIngressConfig();
+        final ScaleConfig scaleConfig = this.containerApp.getScaleConfig();
+        final ScaleConfig draftScaleConfig = this.getScaleConfig();
+        return !Objects.equals(ingressConfig, draftIngressConfig) || !Objects.equals(scaleConfig, draftScaleConfig);
     }
 
     @Nullable
-    private IngressConfig getConfig() {
+    private IngressConfig getIngressConfig() {
         // todo: replace with copy constructor
         final boolean enableIngress = Optional.ofNullable(cbIngress).map(AzureComboBox::getValue).orElse(false);
         if (enableIngress) {
@@ -230,12 +242,22 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         }
     }
 
+    @Nullable
+    private ScaleConfig getScaleConfig() {
+        return ContainerAppDraft.ScaleConfig.builder()
+            .maxReplicas(this.intMaxReplicas.getNumber())
+            .minReplicas(this.intMinReplicas.getNumber())
+            .build();
+    }
+
     private void save() {
         // todo: add confirm when disable ingress like portal
         this.setEnabled(false);
-        final IngressConfig ingressConfig = getConfig();
+        final IngressConfig ingressConfig = getIngressConfig();
+        final ScaleConfig scaleConfig = getScaleConfig();
         final ContainerAppDraft.Config config = Optional.ofNullable(this.draft.getConfig()).orElseGet(ContainerAppDraft.Config::new);
         config.setIngressConfig(ingressConfig);
+        config.setScaleConfig(scaleConfig);
         draft.setConfig(config);
         AzureTaskManager.getInstance().runInBackground("save updates", this.draft::commit);
     }
@@ -283,12 +305,18 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
             linkApplicationUrl.setHyperlinkTarget("https://" + ingressFqdn);
         }
         // ingress
-        final IngressConfig ingressConfig = containerApp.getIngressConfig();
-        cbIngress.setValue(Optional.ofNullable(ingressConfig).map(IngressConfig::isEnableIngress).orElse(false));
-        cbExternalAccess.setValue(Optional.ofNullable(ingressConfig).map(IngressConfig::isExternal).orElse(false));
-        txtInsecureConnections.setText(Optional.ofNullable(ingressConfig).map(IngressConfig::isAllowInsecure).map(String::valueOf).orElse("false"));
-        txtTransportMethod.setText(Optional.ofNullable(ingressConfig).map(IngressConfig::getTransport).map(TransportMethod::getDisplayName).orElse(null));
-        txtTargetPort.setNumber(Optional.ofNullable(ingressConfig).map(IngressConfig::getTargetPort).orElse(80));
+        Optional.ofNullable(containerApp.getIngressConfig()).ifPresent(c -> {
+            this.cbIngress.setValue(c.isEnableIngress());
+            this.cbExternalAccess.setValue(c.isExternal());
+            this.txtInsecureConnections.setText(Optional.of(c.isAllowInsecure()).map(String::valueOf).orElse("false"));
+            this.txtTransportMethod.setText(Optional.ofNullable(c.getTransport()).map(TransportMethod::getDisplayName).orElse(null));
+            this.txtTargetPort.setNumber(c.getTargetPort());
+        });
+        Optional.ofNullable(containerApp.getScaleConfig()).ifPresent(c -> {
+            // https://learn.microsoft.com/en-us/azure/container-apps/scale-app?pivots=azure-cli
+            this.intMaxReplicas.setNumber(Optional.ofNullable(c.getMaxReplicas()).orElse(10));
+            this.intMinReplicas.setNumber(Optional.ofNullable(c.getMinReplicas()).orElse(0));
+        });
 
         AzureTaskManager.getInstance().runInBackground("Loading revisions.", () -> this.containerApp.revisions().list())
             .thenAccept(pools -> AzureTaskManager.getInstance().runLater(() -> fillRevisions(pools)));
@@ -300,8 +328,8 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         pools.forEach(i -> {
             final String date = Optional.ofNullable(i.getCreatedTime())
-                    .map(odt -> odt.atZoneSameInstant(zoneId))
-                    .map(formatter::format).orElse(N_A);
+                .map(odt -> odt.atZoneSameInstant(zoneId))
+                .map(formatter::format).orElse(N_A);
             model.addRow(new Object[]{i.getName(), date, i.getProvisioningState(), i.getTrafficWeight(), i.isActive()});
         });
         final int rows = model.getRowCount() < 5 ? 5 : pools.size();
@@ -316,5 +344,7 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
 
     private void createUIComponents() {
         this.txtTargetPort = new JBIntSpinner(80, 1, 65535);
+        this.intMaxReplicas = new JBIntSpinner(10, 1, 300);
+        this.intMinReplicas = new JBIntSpinner(0, 0, 300);
     }
 }

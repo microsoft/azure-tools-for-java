@@ -9,7 +9,6 @@
         <actions implementation="com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor"/>
         <guidanceInputProvider implementation="com.microsoft.azure.toolkit.intellij.appservice.AppServiceInputProvider"/>
-        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.function.connection.CommonConnectionResource$Definition"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <facetType implementation="com.microsoft.azure.toolkit.intellij.legacy.function.wizard.facet.FunctionsFacetType"/>

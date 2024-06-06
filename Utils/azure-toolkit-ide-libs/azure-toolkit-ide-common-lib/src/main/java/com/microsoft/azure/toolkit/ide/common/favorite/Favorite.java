@@ -64,7 +64,7 @@ public class Favorite extends AbstractAzResource<Favorite, AzResource.None, Abst
     }
 
     @Override
-    protected boolean isAuthRequired() {
+    public boolean isAuthRequired() {
         return false;
     }
 }

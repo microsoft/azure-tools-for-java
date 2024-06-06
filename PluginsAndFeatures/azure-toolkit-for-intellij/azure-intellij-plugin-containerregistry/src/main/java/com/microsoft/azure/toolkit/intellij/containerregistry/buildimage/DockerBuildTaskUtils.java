@@ -45,15 +45,15 @@ public class DockerBuildTaskUtils {
             addTask(editor, tasks, task, config);
         } else {
             // in case there are more than one docker build tasks, remove all of them and add a new one
-            removeTasks(editor, tasks);
+            removeTasks(editor, tasks, config);
             addTask(editor, null, task, config);
         }
     }
 
     public static void removeBeforeRunTask(@Nonnull ConfigurationSettingsEditorWrapper editor, @Nonnull RunConfiguration config) {
-        final List<? extends BeforeRunTask<?>> tasks = findDockerBuildTasks(editor);
+        final List<BeforeRunTask<?>> tasks = findDockerBuildTasks(editor);
         if (CollectionUtils.isNotEmpty(tasks)) {
-            removeTasks(editor, tasks);
+            removeTasks(editor, tasks, config);
         }
     }
 

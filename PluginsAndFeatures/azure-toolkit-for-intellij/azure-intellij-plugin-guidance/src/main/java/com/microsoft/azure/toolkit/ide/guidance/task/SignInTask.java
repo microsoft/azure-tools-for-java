@@ -26,7 +26,6 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 public class SignInTask implements Task {
-    public static final String SUBSCRIPTION_ID = "subscriptionId";
 
     @Nonnull
     private final ComponentContext context;

@@ -113,7 +113,7 @@ public abstract class AbstractAzureStorageExplorerHandler {
     protected Action<?>[] getStorageNotFoundActions(@Nonnull final StorageAccount storageAccount) {
         final AzureActionManager am = AzureActionManager.getInstance();
         final Action<Void> openInAzureAction = new Action<>(Action.Id.<Void>of("user/storage.open_portal_storage_browser.account"))
-            .withLabel("Open in Azure")
+            .withLabel("Open in Portal")
             .withIcon(AzureIcons.Action.PORTAL.getIconPath())
             .withIdParam(storageAccount.getId())
             .withHandler((ignore, e) -> am.getAction(ResourceCommonActionsContributor.OPEN_URL).handle(storageAccount.getPortalUrl() + "/storagebrowser", e))

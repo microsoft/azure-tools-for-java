@@ -8,7 +8,7 @@ package com.microsoft.azure.toolkit.intellij.storage.code.spring;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.util.ProcessingContext;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -38,7 +38,7 @@ public class StoragePathReferenceContributor extends PsiReferenceContributor {
     }
 
     public static PsiReference[] getStorageFileReferences(@Nonnull final String prefix, @Nonnull final String protocol,
-                                                          @Nonnull final PsiLiteralExpression element, @Nullable final StorageAccount account) {
+                                                          @Nonnull final PsiLiteralExpression element, @Nullable final IStorageAccount account) {
         final String text = element.getText();
         final String valueWithPrefix = element.getValue() instanceof String ? (String) element.getValue() : StringUtils.EMPTY;
         final String[] parts = new TextRange(prefix.length() + 1, valueWithPrefix.length() + 1).substring(text).split("/", -1);

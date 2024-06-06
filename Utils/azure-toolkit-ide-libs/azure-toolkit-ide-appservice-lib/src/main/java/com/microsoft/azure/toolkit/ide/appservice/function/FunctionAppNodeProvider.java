@@ -5,18 +5,13 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.function;
 
-import com.microsoft.azure.toolkit.ide.appservice.AppServiceDeploymentSlotsNode;
+import com.microsoft.azure.toolkit.ide.appservice.appsettings.AppSettingsNode;
 import com.microsoft.azure.toolkit.ide.appservice.file.AppServiceFileNode;
 import com.microsoft.azure.toolkit.ide.appservice.function.node.FunctionsNode;
-import com.microsoft.azure.toolkit.ide.appservice.appsettings.AppSettingsNode;
 import com.microsoft.azure.toolkit.ide.appservice.webapp.WebAppNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.IExplorerNodeProvider;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
-import com.microsoft.azure.toolkit.ide.common.component.AzModuleNode;
-import com.microsoft.azure.toolkit.ide.common.component.AzResourceNode;
-import com.microsoft.azure.toolkit.ide.common.component.AzServiceNode;
-import com.microsoft.azure.toolkit.ide.common.component.AzureResourceIconProvider;
-import com.microsoft.azure.toolkit.ide.common.component.Node;
+import com.microsoft.azure.toolkit.ide.common.component.*;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcon;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIconProvider;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -71,10 +66,12 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
                 .addInlineAction(ResourceCommonActionsContributor.DEPLOY)
                 .withActions(FunctionAppActionsContributor.FUNCTION_APP_ACTIONS)
                 .addChildren(Arrays::asList, (app, webAppNode) -> new FunctionsNode(app));
-            if (StringUtils.isBlank(function.getEnvironmentId())) {
-                appNode.addChild(FunctionApp::getDeploymentModule, (module, functionAppNode) -> createNode(module, functionAppNode, manager))
-                       .addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager)) // Files
-                       .addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager));
+            if (!function.isContainerHostingFunctionApp()) {
+                appNode.addChild(AppServiceFileNode::getRootFileNodeForAppService, (d, p) -> this.createNode(d, p, manager));
+                if(!function.isFlexConsumptionApp()){
+                    appNode.addChild(AppServiceFileNode::getRootLogNodeForAppService, (d, p) -> this.createNode(d, p, manager))
+                            .addChild(FunctionApp::getDeploymentModule, (module, functionAppNode) -> createNode(module, functionAppNode, manager));
+                }
             }
             return appNode.addChild(app -> new AppSettingsNode(app.getValue()));
         } else if (data instanceof FunctionAppDeploymentSlotModule) {
@@ -90,12 +87,5 @@ public class FunctionAppNodeProvider implements IExplorerNodeProvider {
             return new AppServiceFileNode((AppServiceFile) data);
         }
         return null;
-    }
-
-    private Node<?> createDeploymentSlotNode(@Nonnull FunctionAppDeploymentSlotModule module, @Nonnull Manager manager) {
-        return new AppServiceDeploymentSlotsNode(module.getParent())
-            .withActions(FunctionAppActionsContributor.DEPLOYMENT_SLOTS_ACTIONS)
-            .addChildren(a -> module.list(), (d, p) -> this.createNode(d, p, manager))
-            .withMoreChildren(a -> module.hasMoreResources(), a -> module.loadMoreResources());
     }
 }

@@ -31,7 +31,7 @@ import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
-import com.microsoft.azure.toolkit.lib.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.table.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -74,8 +74,8 @@ public class FunctionTableNameCompletionProvider extends CompletionProvider<Comp
             return;
         }
         final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
-        final StorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
-        final List<StorageAccount> accounts = Objects.isNull(account) ? getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE) : List.of(account);
+        final IStorageAccount account = Optional.ofNullable(annotation).map(Utils::getBindingStorageAccount).orElse(null);
+        final List<IStorageAccount> accounts = Objects.isNull(account) ? getConnectedResources(module, StorageAccountResourceDefinition.INSTANCE) : List.of(account);
         accounts.stream().flatMap(a -> a.getTableModule().list().stream())
                 .filter(table -> StringUtils.startsWithIgnoreCase(table.getName(), fullPrefix))
                 .map(queue -> createLookupElement(queue, module))

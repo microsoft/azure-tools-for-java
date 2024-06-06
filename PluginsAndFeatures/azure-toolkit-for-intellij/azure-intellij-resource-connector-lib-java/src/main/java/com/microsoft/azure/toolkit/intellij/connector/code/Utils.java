@@ -136,6 +136,10 @@ public class Utils {
         return checkCancelled(() -> AzureModule.from(module).getConnectedResources(definition));
     }
 
+    public static <T> List<Connection<T, ?>> getConnections(@Nonnull Module module, @Nonnull ResourceDefinition<T> definition) {
+        return checkCancelled(() -> AzureModule.from(module).getConnections(definition));
+    }
+
     public static <T> List<T> checkCancelled(Supplier<List<T>> supplier) {
         final CompletableFuture<List<T>> future = CompletableFuture.supplyAsync(() -> {
             try {

@@ -13,7 +13,6 @@ import com.microsoft.azure.toolkit.lib.springcloud.SpringCloudCluster;
 import javax.annotation.Nonnull;
 
 public class SpringAppNameInput implements GuidanceInput<String> {
-    public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String SPRING_APP_NAME = "springAppName";
     public static final String SPRING_APP_CLUSTER = "springAppCluster";
     private final InputConfig config;
