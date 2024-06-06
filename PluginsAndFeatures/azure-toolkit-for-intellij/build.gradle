@@ -8,9 +8,9 @@ plugins {
 }
 
 processResources {
-//     filesMatching('ApplicationInsights.xml') {
-//         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
-//     }
+     filesMatching('ApplicationInsights.xml') {
+         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
+     }
 }
 
 intellij {
