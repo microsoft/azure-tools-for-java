@@ -23,5 +23,16 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
+
+        <localInspection
+            language="XML"
+            shortName="HelloWorld"
+            displayName="Hello World"
+            groupName="Azure SDK Rules"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HelloWorld">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HelloWorld</class>
+        </localInspection>
     </extensions>
 </idea-plugin>
