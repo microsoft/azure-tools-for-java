@@ -44,3 +44,6 @@ gen-external-apklibs/
 
 # Jar dependencies generated in build
 **/resources/spark/spark-tools-*.jar
+
+# IntelliJ
+.idea/
