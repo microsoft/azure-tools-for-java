@@ -23,5 +23,19 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ConnectionStringCheck"
+                displayName="Connection String Check"
+                groupName="Maven"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ClosingCloseableClientsCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
