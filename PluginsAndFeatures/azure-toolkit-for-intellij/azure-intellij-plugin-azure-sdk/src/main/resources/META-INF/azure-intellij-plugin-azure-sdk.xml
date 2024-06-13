@@ -26,13 +26,16 @@
 
         <localInspection
             language="JAVA"
-            shortName="UseStorageAPIsWithLengthParameter"
-            displayName="Use Storage APIs with Length Parameter"
+            shortName="StorageUploadWithoutLengthCheck"
+            displayName="Storage Upload Without LengthCheck"
             groupName="Azure SDK Rules"
             enabledByDefault="true"
-            level="WARNING"
-            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseStorageAPIsWithLengthParameter">
-            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseStorageAPIsWithLengthParameter</class>
+            level="INFO"
+
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseStorageAPIsWithLengthParameter
+            </class>
         </localInspection>
     </extensions>
 </idea-plugin>

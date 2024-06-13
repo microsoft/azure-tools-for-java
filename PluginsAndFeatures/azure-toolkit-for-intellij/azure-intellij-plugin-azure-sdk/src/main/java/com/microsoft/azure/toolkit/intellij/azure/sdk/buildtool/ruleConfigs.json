@@ -1,0 +1,5 @@
+{
+  "StorageUploadWithoutLengthCheck": {
+    "methodsToCheck": ["uploadFromFile", "upload", "uploadWithResponse"]
+  }
+}

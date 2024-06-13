@@ -10,5 +10,5 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     aspect 'com.microsoft.azure:azure-toolkit-common-lib'
-
+    implementation group: 'org.json', name: 'json', version: '20240303'
 }
