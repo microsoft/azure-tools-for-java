@@ -23,5 +23,19 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiverAsyncClientCheck"
+                displayName="ServiceBusReceiverAsyncClient Check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
