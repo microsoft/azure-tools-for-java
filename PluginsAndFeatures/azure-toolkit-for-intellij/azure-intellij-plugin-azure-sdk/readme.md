@@ -12,11 +12,7 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 - **Quick-Fix Actions**: This feature identifies issues and suggests quick actions within the tool window, facilitating immediate problem resolution.
 
 ## User Interface
-
-- **Analysis Button**: Users can initiate code analysis which provides immediate feedback and sends telemetry information.
-- **Results Display**: This is a central area where users can view detailed violations and outcomes of the analysis.
 - **Rule Configuration Panel** : This space allows users to toggle rules for customization and disable telemetry if desired.
-- **Refresh/Clear Functionality**: Users can clear previous results and re-run the analysis at any time.
 
 ## Rules
 1. #### Storage Upload without Length Check
