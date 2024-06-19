@@ -23,5 +23,15 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ReportTelemetry"
+                displayName="Report Telemetry"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
+        </localInspection>
     </extensions>
 </idea-plugin>
