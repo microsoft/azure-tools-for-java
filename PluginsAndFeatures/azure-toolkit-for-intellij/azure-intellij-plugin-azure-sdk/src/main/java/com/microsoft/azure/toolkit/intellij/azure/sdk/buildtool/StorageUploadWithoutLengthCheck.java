@@ -2,8 +2,14 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.psi.*;
-import org.json.*;
+import com.intellij.psi.JavaRecursiveElementWalkingVisitor;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiNewExpression;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,27 +34,28 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Use Storage APIs With Length Parameter";
+        return "Ensure Storage APIs use Length Parameter";
     }
 
     private static final List<String> METHODS_TO_CHECK = getMethodsToCheck();
 
     private static List<String> getMethodsToCheck() {
         try {
-            InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream("META-INF/ruleConfigs.json");
+            String configFileName = "META-INF/ruleConfigs.json";
+            InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(configFileName);
             if (inputStream == null) {
-                throw new FileNotFoundException();
+                throw new FileNotFoundException("Configuration file not found");
             }
-            JSONObject jsonObject = new JSONObject(new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.joining()));
-            JSONArray methods = jsonObject.getJSONObject("StorageUploadWithoutLengthCheck").getJSONArray("methodsToCheck");
-            return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
-
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+                JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
+                JSONArray methods = jsonObject.getJSONObject("StorageUploadWithoutLengthCheck").getJSONArray("methodsToCheck");
+                return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
         }
     }
-
 
     @NotNull
     @Override
@@ -67,35 +74,17 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                     PsiExpression[] arguments = argumentList.getExpressions();
 
                     for (PsiExpression arg : arguments) {
+                        // Check if the argument is of type 'long'
                         if (arg.getType().toString().equals("PsiType:long")) {
                             hasLengthArg = true;
                             break;
                         }
-
                         if (arg instanceof PsiMethodCallExpression) {
                             PsiMethodCallExpression argMethodCall = (PsiMethodCallExpression) arg;
                             PsiExpression qualifier = argMethodCall.getMethodExpression().getQualifierExpression();
 
-                            while (qualifier instanceof PsiMethodCallExpression) {
-                                PsiMethodCallExpression qualifierMethodCall = (PsiMethodCallExpression) qualifier;
-                                PsiExpressionList qualifierArgumentList = qualifierMethodCall.getArgumentList();
-                                PsiExpression[] qualifierArguments = qualifierArgumentList.getExpressions();
-
-                                qualifier = qualifierMethodCall.getMethodExpression().getQualifierExpression();
-
-                                if (qualifier instanceof PsiNewExpression) {
-                                    PsiNewExpression newExpression = (PsiNewExpression) qualifier;
-                                    PsiExpressionList newExpressionArgumentList = newExpression.getArgumentList();
-                                    PsiExpression[] newExpressionArguments = newExpressionArgumentList.getExpressions();
-
-                                    for (PsiExpression newExpressionArgument : newExpressionArguments) {
-                                        if (newExpressionArgument.getType().toString().equals("PsiType:long")) {
-                                            hasLengthArg = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                            // Analysing arguments that are chained method calls
+                            hasLengthArg = checkMethodCallChain(argMethodCall);
                         }
                     }
                     if (!hasLengthArg) {
@@ -105,4 +94,32 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
             }
         };
     };
+
+    // Analysing arguments that are chained method calls
+    private boolean checkMethodCallChain (PsiMethodCallExpression expression) {
+
+        // Iterating up the chain of method calls
+        PsiExpression qualifier = expression.getMethodExpression().getQualifierExpression();
+        while (qualifier instanceof PsiMethodCallExpression) {
+            PsiMethodCallExpression qualifierMethodCall = (PsiMethodCallExpression) qualifier;
+            PsiExpressionList qualifierArgumentList = qualifierMethodCall.getArgumentList();
+            PsiExpression[] qualifierArguments = qualifierArgumentList.getExpressions();
+
+            qualifier = qualifierMethodCall.getMethodExpression().getQualifierExpression();
+
+            // Checking for constructor with 'long' type arguments
+            if (qualifier instanceof PsiNewExpression) {
+                PsiNewExpression newExpression = (PsiNewExpression) qualifier;
+                PsiExpressionList newExpressionArgumentList = newExpression.getArgumentList();
+                PsiExpression[] newExpressionArguments = newExpressionArgumentList.getExpressions();
+
+                for (PsiExpression newExpressionArgument : newExpressionArguments) {
+                    if (newExpressionArgument.getType().toString().equals("PsiType:long")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

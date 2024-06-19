@@ -16,6 +16,7 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 
 ## Rules
 1. #### Storage Upload without Length Check
-   Using Azure Storage upload APIs that don’t take a length parameter. This approach can lead to OutOfMemoryErrors, especially when dealing with large files or high-volume uploads
-    ##### Severity: INFO. 
-    #### Solution: Use APIs that take a length parameter.
+    Anti-Pattern: Using Azure Storage upload APIs that don’t take a length parameter. As a result, the entire data payload is buffered into memory before uploading.
+    Issue: This approach can lead to OutOfMemoryErrors, especially when dealing with large files or high-volume uploads
+       ##### Severity: INFO. 
+       #### Solution: Use APIs that take a length parameter. [Click here for more details](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-upload-java)
