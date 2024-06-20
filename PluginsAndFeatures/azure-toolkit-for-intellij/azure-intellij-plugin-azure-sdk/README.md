@@ -12,4 +12,4 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 - **Quick-Fix Actions**: This feature identifies issues and suggests quick actions within the tool window, facilitating immediate problem resolution.
 
 ## User Interface
-- **Rule Configuration Panel** : This space allows users to enable or disable telemetry if desired.
+- **Telemetry Configuration Panel** : This space allows users to enable or disable telemetry if desired.
