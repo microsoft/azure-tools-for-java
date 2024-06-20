@@ -5,11 +5,9 @@
 
 package com.microsoft.azure.toolkit.intellij.cognitiveservices.chatbox;
 
-import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.NotificationBalloonRoundShadowBorderProvider;
+import com.intellij.ui.components.panels.BackgroundRoundedPanel;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
@@ -52,6 +50,6 @@ public class UserMessagePane {
     private void createUIComponents() {
         // final int arc = NotificationBalloonRoundShadowBorderProvider.CORNER_RADIUS.get();
         //noinspection UnstableApiUsage
-        this.messageContainer = new RoundedPanel(new GridLayoutManager(1, 1), 5);
+        this.messageContainer = new BackgroundRoundedPanel(5, new GridLayoutManager(1, 1));
     }
 }

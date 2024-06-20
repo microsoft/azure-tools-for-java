@@ -1,8 +1,8 @@
 package com.microsoft.azure.toolkit.ide.guidance.view.components;
 
-import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.panels.BackgroundRoundedPanel;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
@@ -21,7 +21,6 @@ import lombok.Getter;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ public class CoursePanel {
     private boolean isStartedActionTriggered;
     private final boolean showNewUIFlag;
     public static final JBColor NOTIFICATION_BACKGROUND_COLOR =
-            JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
+        JBColor.namedColor("StatusBar.hoverBackground", new JBColor(15595004, 4606541));
 
     public CoursePanel(@Nonnull final CourseConfig course, @Nonnull final Project project) {
         super();
@@ -66,9 +65,9 @@ public class CoursePanel {
         }
         this.startButton.setVisible(false);
         final Action<Void> startAction = new Action<Void>(Action.Id.of("user/guidance.open_course.course"))
-                .withAuthRequired(false)
-                .withIdParam(ignore -> this.course.getTitle())
-                .withHandler(ignore -> openGuidance());
+            .withAuthRequired(false)
+            .withIdParam(ignore -> this.course.getTitle())
+            .withHandler(ignore -> openGuidance());
         this.startButton.setAction(startAction);
         this.areaDescription.setFont(JBFont.medium());
         this.areaDescription.setText(course.getDescription());
@@ -130,7 +129,7 @@ public class CoursePanel {
 
     private void createUIComponents() {
         //noinspection UnstableApiUsage
-        this.rootPanel = new RoundedPanel(new GridLayoutManager(3, 3), 5);
+        this.rootPanel = new BackgroundRoundedPanel(5, new GridLayoutManager(3, 3));
         this.rootPanel.setBorder(BorderFactory.createEmptyBorder());
         this.tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         this.tagsPanel.setBorder(JBUI.Borders.emptyLeft(-8));
