@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.common.feedback;
 
-import com.intellij.collaboration.ui.codereview.comment.RoundedPanel;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
@@ -16,6 +15,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.NotificationBalloonRoundShadowBorderProvider;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.ActionLink;
+import com.intellij.ui.components.panels.BackgroundRoundedPanel;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.IconUtil;
 import com.intellij.util.ui.JBUI;
@@ -74,7 +74,7 @@ public class RatePopup {
     private void createUIComponents() {
         final int arc = NotificationBalloonRoundShadowBorderProvider.CORNER_RADIUS.get();
         //noinspection UnstableApiUsage
-        this.contentPanel = new RoundedPanel(new GridLayoutManager(4, 1), arc);
+        this.contentPanel = new BackgroundRoundedPanel(arc, new GridLayoutManager(4, 1));
         this.contentPanel.setPreferredSize(new Dimension(338, 112));
         this.contentPanel.setBackground(BACKGROUND_COLOR);
         this.contentPanel.setBorder(BorderFactory.createEmptyBorder());
