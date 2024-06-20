@@ -20,7 +20,6 @@ plugins {
 }
 
 group = properties("pluginGroup").get()
-version = properties("pluginVersion").get()
 
 dependencies {
     intellijPlatform {
@@ -89,7 +88,6 @@ intellijPlatform {
     pluginConfiguration {
         id = properties("pluginId").get()
         name = properties("pluginName").get()
-        version = properties("pluginVersion").get()
 
         ideaVersion {
             sinceBuild = properties("pluginSinceBuild")

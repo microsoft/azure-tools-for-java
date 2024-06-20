@@ -28,11 +28,13 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-base" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-lib" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-integration-services" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-keyvault" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-monitor" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-redis" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-samples" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-service-explorer" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-servicebus" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-sparkoncosmos" />
