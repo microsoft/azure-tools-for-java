@@ -1,0 +1,6 @@
+{
+  "ServiceBusReceiverAsyncClientCheck": {
+    "clientName": "ServiceBusReceiverAsyncClient",
+    "suggestion": "ServiceBusProcessorClient"
+  }
+}

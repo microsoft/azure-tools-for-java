@@ -13,3 +13,16 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 
 ## User Interface
 - **Telemetry Configuration Panel** : This space allows users to enable or disable telemetry if desired.
+
+
+## Rules
+1. #### Use ServiceBusProcessorClient instead of ServiceBusReceiverAsyncClient.
+The use of the Reactor receiver, specifically the `ServiceBusReceiverAsyncClient`, is discouraged due to its low-level API. 
+This API provides fine-grained control over message handling, making it suitable for scenarios where full control over message processing is required. 
+However, it necessitates a proficiency in Reactive programming and is primarily beneficial when constructing a Reactive library or an end-to-end Reactive application.
+
+As a recommendation, consider using the `ServiceBusProcessorClient` instead of the low-level `ServiceBusReceiverAsyncClient`. 
+The ServiceBusProcessorClient is a higher-level abstraction that simplifies message consumption and is tailored for most common use cases. 
+It should be the primary choice for consuming messages.
+
+Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient) for additional information.

@@ -1,8 +1,27 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
-import com.intellij.codeInspection.*;
-import com.intellij.psi.*;
+import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiNewExpression;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 
 /**
@@ -11,24 +30,56 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
+    public static final String configFileName = "META-INF/ruleConfigs.json";
+
+    public static List<String> getClientToCheck() {
+        try {
+
+            InputStream inputStream = ServiceBusReceiverAsyncClientCheck.class.getClassLoader().getResourceAsStream(configFileName);
+            if (inputStream == null) {
+                throw new FileNotFoundException("Configuration file not found");
+            }
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+                JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
+                String clientName = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString("clientName");
+                String suggestedClient = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString("suggestion");
+                return Arrays.asList(clientName, suggestedClient);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
 
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-
         return new JavaElementVisitor() {
 
             @Override
-            public void visitLocalVariable(PsiLocalVariable variable) {
-                super.visitLocalVariable(variable);
+            public void visitTypeElement(PsiTypeElement element) {
+                super.visitTypeElement(element);
 
-                final PsiType type = variable.getType();
-                final String qualifiedName = type.getCanonicalText();
+                if (element instanceof PsiTypeElement) {
 
-                if (qualifiedName.equals("com.azure.messaging.servicebus.ServiceBusReceiverAsyncClient")) {
-                    holder.registerProblem(variable, "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead.");
+                    PsiType type = element.getType();
+                    if (type != null) {
+                        String typeOfElement = type.getPresentableText();
+
+                        List<String> clientData = getClientToCheck();
+                        if (clientData.isEmpty()) {
+                            return;
+                        }
+                        String clientName = clientData.get(0);
+                        String suggestedClient = clientData.get(1);
+
+                        if (element.getType().getPresentableText().equals(clientName)) {
+                            holder.registerProblem(element, "Use of "+clientName+" detected. Use "+suggestedClient+" instead.");
+                        }
+                    }
                 }
             }
+
         };
     }
 }
