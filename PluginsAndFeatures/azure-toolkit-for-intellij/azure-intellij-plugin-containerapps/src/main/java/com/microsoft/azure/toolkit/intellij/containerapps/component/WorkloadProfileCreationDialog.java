@@ -83,7 +83,7 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
                 .name(txtName.getValue())
                 .maximumCount(txtMaximumCount.getValue())
                 .minimumCount(txtMinimumCount.getValue())
-                .workloadProfileType(Objects.requireNonNull(cbSize.getValue()).getName()).build();
+                .type(WorkloadProfileType.builder().name(Objects.requireNonNull(cbSize.getValue()).getName()).build()).build();
     }
 
     @Override

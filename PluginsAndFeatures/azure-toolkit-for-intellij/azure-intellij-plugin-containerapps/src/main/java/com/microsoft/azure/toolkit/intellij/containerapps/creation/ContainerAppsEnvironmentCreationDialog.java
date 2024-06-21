@@ -256,6 +256,11 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
             public @NotNull ActionUpdateThread getActionUpdateThread() {
                 return ActionUpdateThread.BGT;
             }
+
+            @Override
+            public boolean isEnabled() {
+                return workloadProfilesTable.getSelectedRow() > 0;
+            }
         };
         btnRemove.registerCustomShortcutSet(KeyEvent.VK_SUBTRACT, InputEvent.ALT_DOWN_MASK, workloadProfilesTable);
 
