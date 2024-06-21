@@ -3,11 +3,6 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
-import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiNewExpression;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +27,7 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
     public static final String configFileName = "META-INF/ruleConfigs.json";
 
+    // loading the client data from the configuration file
     public static List<String> getClientToCheck() {
         try {
 
@@ -60,23 +56,20 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             public void visitTypeElement(PsiTypeElement element) {
                 super.visitTypeElement(element);
 
-                if (element instanceof PsiTypeElement) {
+                // Check if the element is an instance of PsiTypeElement and if the type matches the discouraged client
+                if (element instanceof PsiTypeElement && element.getType() != null) {
 
-                    PsiType type = element.getType();
-                    if (type != null) {
-                        String typeOfElement = type.getPresentableText();
-
-                        List<String> clientData = getClientToCheck();
-                        if (clientData.isEmpty()) {
-                            return;
-                        }
-                        String clientName = clientData.get(0);
-                        String suggestedClient = clientData.get(1);
-
-                        if (element.getType().getPresentableText().equals(clientName)) {
-                            holder.registerProblem(element, "Use of "+clientName+" detected. Use "+suggestedClient+" instead.");
-                        }
+                    List<String> clientData = getClientToCheck();
+                    if (clientData.isEmpty()) {
+                        return;
                     }
+                    String clientName = clientData.get(0);
+                    String suggestedClient = clientData.get(1);
+
+                    if (element.getType().getPresentableText().equals(clientName)) {
+                        holder.registerProblem(element, "Use of "+clientName+" detected. Use "+suggestedClient+" instead.");
+                    }
+
                 }
             }
 
