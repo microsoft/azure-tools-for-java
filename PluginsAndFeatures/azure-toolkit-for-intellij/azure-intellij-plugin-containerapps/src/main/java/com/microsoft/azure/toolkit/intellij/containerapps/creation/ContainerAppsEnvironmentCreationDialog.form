@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.containerapps.creation.ContainerAppsEnvironmentCreationDialog">
-  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="8" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="11" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="289"/>
+      <xy x="20" y="20" width="565" height="395"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -24,12 +24,12 @@
       </component>
       <vspacer id="1867c">
         <constraints>
-          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
       <component id="cbf8d" class="com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox" binding="cbSubscription">
         <constraints>
-          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
@@ -49,7 +49,7 @@
       </component>
       <component id="8d5c3" class="com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox" binding="cbResourceGroup">
         <constraints>
-          <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
@@ -67,13 +67,13 @@
       </component>
       <component id="9394d" class="com.microsoft.azure.toolkit.intellij.common.AzureTextInput" binding="txtEnvironmentName">
         <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
       <component id="2a205" class="javax.swing.JLabel">
         <constraints>
-          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
             <minimum-size width="-1" height="24"/>
             <preferred-size width="-1" height="24"/>
             <maximum-size width="-1" height="24"/>
@@ -85,18 +85,18 @@
       </component>
       <component id="6e417" class="com.intellij.ui.TitledSeparator">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <font/>
-          <text value="Environment details "/>
+          <text value="Environment Details "/>
           <titleFont style="1"/>
           <toolTipText value=""/>
         </properties>
       </component>
       <component id="97e5a" class="com.intellij.ui.TitledSeparator">
         <constraints>
-          <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="8" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <font/>
@@ -107,7 +107,7 @@
       </component>
       <component id="404cd" class="com.microsoft.azure.toolkit.intellij.monitor.view.left.WorkspaceComboBox" binding="cbWorkspace">
         <constraints>
-          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="9" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
@@ -125,10 +125,69 @@
       </component>
       <component id="47457" class="com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox" binding="cbRegion">
         <constraints>
-          <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="3" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
+      <component id="31153" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true">
+            <minimum-size width="-1" height="24"/>
+            <preferred-size width="-1" height="24"/>
+            <maximum-size width="-1" height="24"/>
+          </grid>
+        </constraints>
+        <properties>
+          <text value="Type:"/>
+        </properties>
+      </component>
+      <component id="5ce98" class="javax.swing.JRadioButton" binding="rdoWorkloadProfile">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Workload Profiles"/>
+          <toolTipText value="Supports the Consumption and Dedicated plans. Run serverless apps with support for scale-to-zero and pay only for resources your apps use. Optionally, run apps with customized hardware and increased cost predictability using Dedicated workload profiles."/>
+        </properties>
+      </component>
+      <component id="e28ee" class="javax.swing.JRadioButton" binding="rdoConsumptionOnly">
+        <constraints>
+          <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Consumption only"/>
+          <toolTipText value="Supports the Consumption plan. Run serverless apps with support for scale-to-zero and pay only for resources your apps use."/>
+        </properties>
+      </component>
+      <hspacer id="f938a">
+        <constraints>
+          <grid row="5" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="60f7f" class="com.intellij.ui.TitledSeparator" binding="titleWorkloadProfiles">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <text value="Workload Profiles "/>
+          <titleFont style="1"/>
+          <toolTipText value=""/>
+          <visible value="true"/>
+        </properties>
+      </component>
+      <grid id="b32e9" binding="pnlWorkloadProfiles" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <visible value="true"/>
+        </properties>
+        <border type="none"/>
+        <children/>
+      </grid>
     </children>
   </grid>
 </form>

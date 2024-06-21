@@ -37,6 +37,7 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
+import com.microsoft.azure.toolkit.lib.containerapps.model.EnvironmentType;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -129,7 +130,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
                 .register(am);
     }
 
-    private ContainerAppDraft.Config getContainerAppDefaultConfig(@Nullable final ContainerAppsEnvironment o, @Nullable final ResourceGroup resourceGroup) {
+    public static ContainerAppDraft.Config getContainerAppDefaultConfig(@Nullable final ContainerAppsEnvironment o, @Nullable final ResourceGroup resourceGroup) {
         final ContainerAppDraft.Config result = new ContainerAppDraft.Config();
         result.setName(Utils.generateRandomResourceName("aca", 32));
         final List<Subscription> subs = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions();
@@ -150,7 +151,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         return result;
     }
 
-    private ContainerAppsEnvironmentDraft.Config getContainerAppsEnvironmentDefaultConfig(final ResourceGroup resourceGroup) {
+    public static ContainerAppsEnvironmentDraft.Config getContainerAppsEnvironmentDefaultConfig(final ResourceGroup resourceGroup) {
         final ContainerAppsEnvironmentDraft.Config result = new ContainerAppsEnvironmentDraft.Config();
         result.setName(Utils.generateRandomResourceName("cae", 32));
         final List<Subscription> subs = Azure.az(IAzureAccount.class).account().getSelectedSubscriptions();
@@ -166,6 +167,7 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         final ResourceGroup historyRg = CacheManager.getUsageHistory(ResourceGroup.class)
                 .peek(r -> r.getSubscriptionId().equals(sub.getId()));
         result.setResourceGroup(ObjectUtils.firstNonNull(resourceGroup, historyRg));
+        result.setEnvironmentType(EnvironmentType.WorkloadProfiles);
         return result;
     }
 

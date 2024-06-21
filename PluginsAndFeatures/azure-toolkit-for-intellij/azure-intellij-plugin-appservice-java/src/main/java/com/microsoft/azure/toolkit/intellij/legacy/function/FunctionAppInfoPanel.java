@@ -12,12 +12,14 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.toolkit.intellij.appservice.DockerUtils;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.AzureContainerAppsEnvironmentComboBox;
 import com.microsoft.azure.toolkit.intellij.containerapps.component.ImageForm;
+import com.microsoft.azure.toolkit.intellij.containerapps.component.WorkloadProfileComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.platform.RuntimeComboBox;
 import com.microsoft.azure.toolkit.intellij.legacy.appservice.serviceplan.ServicePlanComboBox;
@@ -31,13 +33,16 @@ import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.model.*;
 import com.microsoft.azure.toolkit.lib.appservice.plan.AppServicePlan;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
-import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
+import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
+import com.microsoft.azure.toolkit.lib.containerapps.model.EnvironmentType;
+import com.microsoft.azure.toolkit.lib.containerapps.model.ResourceConfiguration;
+import com.microsoft.azure.toolkit.lib.containerapps.model.WorkloadProfile;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -91,6 +96,17 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
     private TitledSeparator titleConsumption;
     private FlexConsumptionConfigurationPanel flexConfigurationPanel;
     private JPanel pnlFlexConsumption;
+    private WorkloadProfileComboBox cbWorkloadProfile;
+    private JSpinner spinnerCpu;
+    private AzureComboBox<ResourceConfiguration> cbCpuAndMemory;
+    private JSpinner spinnerMemory;
+    private JLabel lblMemory;
+    private JLabel lblCpu;
+    private JLabel lblProfile;
+    private JLabel lblCpuAndMemory;
+    private JPanel pnlWorkloadProfile;
+    private JPanel pnlProfile;
+    private JPanel pnlConsumption;
 
     private FunctionAppConfig config;
 
@@ -123,6 +139,22 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         } else if (rdoContainerAppsEnvironment.isSelected()) {
             config.diagnosticConfig(null);
             Optional.ofNullable(cbEnvironment.getValue()).ifPresent(environment -> config.environment(environment.getName()));
+            if (pnlWorkloadProfile.isVisible()) {
+                final ContainerAppFunctionConfiguration containerConfiguration = new ContainerAppFunctionConfiguration();
+                Optional.ofNullable(cbWorkloadProfile.getValue()).ifPresent(profile -> containerConfiguration.setWorkloadProfileMame(profile.getName()));
+                if (pnlProfile.isVisible()) {
+                    final Double cpu = spinnerCpu.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerCpu.getValue();
+                    final Double memory = spinnerMemory.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerMemory.getValue();
+                    Optional.ofNullable(cpu).ifPresent(containerConfiguration::setCpu);
+                    Optional.ofNullable(memory).ifPresent(value -> containerConfiguration.setMemory(value + "Gi"));
+                } else {
+                    Optional.ofNullable(cbCpuAndMemory.getValue()).ifPresent(configuration -> {
+                        containerConfiguration.setCpu(configuration.getCpu());
+                        containerConfiguration.setMemory(configuration.getMemory());
+                    });
+                }
+                config.containerConfiguration(containerConfiguration);
+            }
         }
         final Boolean isDocker = Optional.ofNullable(selectorRuntime.getValue()).map(Runtime::isDocker).orElse(false);
         if (isDocker) {
@@ -223,10 +255,41 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.lblPlatform.setLabelFor(selectorRuntime);
         this.lblRegion.setLabelFor(selectorRegion);
         this.lblAppServicePlan.setLabelFor(selectorServicePlan);
+        
+        this.cbEnvironment.addItemListener(this::onEnvironmentChanged);
+        this.cbWorkloadProfile.addItemListener(this::onWorkloadProfileChanged);
 
         this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
         this.lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
         this.lblAppServicePlan.setIcon(AllIcons.General.ContextHelp);
+    }
+
+    private void onWorkloadProfileChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final WorkloadProfile profile = (WorkloadProfile) e.getItem();
+            if (Objects.isNull(profile)) {
+                this.pnlProfile.setVisible(false);
+                this.pnlConsumption.setVisible(false);
+                return;
+            }
+            final boolean isConsumption = StringUtils.equalsIgnoreCase(profile.getWorkloadProfileType(), WorkloadProfile.CONSUMPTION);
+            this.pnlProfile.setVisible(!isConsumption);
+            this.pnlConsumption.setVisible(isConsumption);
+        }
+    }
+
+    private void onEnvironmentChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final ContainerAppsEnvironment environment = (ContainerAppsEnvironment) e.getItem();
+            if (Objects.isNull(environment)) {
+                this.cbWorkloadProfile.setEnvironment(null);
+                this.pnlWorkloadProfile.setVisible(false);
+                return;
+            }
+            final boolean isWorkloadProfile = environment.getEnvironmentType() == EnvironmentType.WorkloadProfiles;
+            this.cbWorkloadProfile.setEnvironment(isWorkloadProfile ? environment : null);
+            this.pnlWorkloadProfile.setVisible(isWorkloadProfile);
+        }
     }
 
     private List<? extends Region> getValidRegions() {
@@ -281,15 +344,19 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
             final ResourceGroup item = (ResourceGroup) e.getItem();
             this.selectorServicePlan.setResourceGroup(item);
-            this.cbEnvironment.setResourceGroup(item);
+            this.cbEnvironment.setResourceGroupWithDraftItems(item);
         }
     }
 
     private void onRegionChanged(final ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Region region = (Region) e.getItem();
-            this.selectorServicePlan.setRegion(region);
-            this.cbEnvironment.setRegion(region);
+        try {
+            if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+                final Region region = (Region) e.getItem();
+                this.selectorServicePlan.setRegion(region);
+                this.cbEnvironment.setRegionWithDraftItem(region);
+            }
+        } catch (final Throwable t) {
+            t.printStackTrace();
         }
     }
 
@@ -350,6 +417,15 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         this.pnlContainer = new ImageForm();
         this.pnlImageContainer.add(this.pnlContainer.getContentPanel(), new GridConstraints(0, 0, 1, 1, 0,
                 GridConstraints.FILL_BOTH, 7, 7, null, null, null, 0));
+
+        this.cbWorkloadProfile = new WorkloadProfileComboBox();
+        this.cbCpuAndMemory = new AzureComboBox<>(()-> ResourceConfiguration.CONSUMPTION_CONFIGURATIONS) {
+            @Override
+            protected String getItemText(Object item) {
+                return item instanceof ResourceConfiguration configuration ?
+                        String.format("%s CPU cores, %s Gi memory", configuration.getCpu(), configuration.getMemory()) : super.getItemText(item);
+            }
+        };
     }
 
     private boolean isFlexConsumptionApp() {

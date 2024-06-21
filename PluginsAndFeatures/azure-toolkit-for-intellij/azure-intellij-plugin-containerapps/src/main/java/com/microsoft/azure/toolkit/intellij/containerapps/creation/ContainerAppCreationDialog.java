@@ -8,10 +8,7 @@ package com.microsoft.azure.toolkit.intellij.containerapps.creation;
 import com.azure.resourcemanager.appcontainers.models.EnvironmentVar;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBIntSpinner;
-import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
-import com.microsoft.azure.toolkit.intellij.common.AzureHideableTitledSeparator;
-import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
-import com.microsoft.azure.toolkit.intellij.common.EnvironmentVariablesTextFieldWithBrowseButton;
+import com.microsoft.azure.toolkit.intellij.common.*;
 import com.microsoft.azure.toolkit.intellij.common.component.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.component.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.container.AzureDockerClient;
@@ -20,13 +17,15 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.model.Availability;
-import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppModule;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
+import com.microsoft.azure.toolkit.lib.containerapps.model.EnvironmentType;
 import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
+import com.microsoft.azure.toolkit.lib.containerapps.model.ResourceConfiguration;
+import com.microsoft.azure.toolkit.lib.containerapps.model.WorkloadProfile;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -81,6 +80,18 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     private EnvironmentVariablesTextFieldWithBrowseButton inputEnv;
     private JBIntSpinner intMinReplicas;
     private JBIntSpinner intMaxReplicas;
+    private WorkloadProfileComboBox cbWorkloadProfile;
+    private AzureHideableTitledSeparator titleResource;
+    private JPanel pnlContainerResource;
+    private JLabel lblWorkloadProfile;
+    private JPanel pnlProfile;
+    private JLabel lblCpu;
+    private JSpinner spinnerCpu;
+    private JLabel lblMemory;
+    private JSpinner spinnerMemory;
+    private JPanel pnlConsumption;
+    private JLabel lblCpuAndMemory;
+    private AzureComboBox<ResourceConfiguration> cbCpuAndMemory;
 
     private DeploymentSourceForm formDeploymentSource;
 
@@ -104,6 +115,8 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.txtContainerAppName.addValueChangedListener(this::onAppNameChanged);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbResourceGroup.addItemListener(this::onResourceGroupChanged);
+        this.cbEnvironment.addItemListener(this::onEnvironmentChanged);
+        this.cbWorkloadProfile.addItemListener(this::onWorkloadProfileChanged);
 
         this.btnDeployCode.addItemListener(this::onDeploymentSourceChanged);
         this.btnDeployArtifact.addItemListener(this::onDeploymentSourceChanged);
@@ -129,6 +142,36 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.titleDeployment.expand();
         this.titleIngress.expand();
         this.titleOther.expand();
+    }
+
+    private void onWorkloadProfileChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final WorkloadProfile profile = (WorkloadProfile) e.getItem();
+            if (Objects.isNull(profile)) {
+                this.pnlProfile.setVisible(false);
+                this.pnlConsumption.setVisible(false);
+                return;
+            }
+            final boolean isConsumption = StringUtils.equalsIgnoreCase(profile.getWorkloadProfileType(), WorkloadProfile.CONSUMPTION);
+            this.pnlProfile.setVisible(!isConsumption);
+            this.pnlConsumption.setVisible(isConsumption);
+        }
+    }
+
+    private void onEnvironmentChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final ContainerAppsEnvironment environment = (ContainerAppsEnvironment) e.getItem();
+            if (Objects.isNull(environment)) {
+                this.cbWorkloadProfile.setEnvironment(null);
+                this.titleResource.setVisible(false);
+                this.pnlContainerResource.setVisible(false);
+                return;
+            }
+            final boolean isWorkloadProfile = environment.getEnvironmentType() == EnvironmentType.WorkloadProfiles;
+            this.cbWorkloadProfile.setEnvironment(isWorkloadProfile ? environment : null);
+            this.titleResource.setVisible(isWorkloadProfile);
+            this.pnlContainerResource.setVisible(isWorkloadProfile);
+        }
     }
 
     private void onImageFormChanged(final String type) {
@@ -236,6 +279,15 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         this.formArtifact = new ArtifactForm(this.project);
         this.intMaxReplicas = new JBIntSpinner(10, 1, 300);
         this.intMinReplicas = new JBIntSpinner(0, 0, 300);
+
+        this.cbWorkloadProfile = new WorkloadProfileComboBox();
+        this.cbCpuAndMemory = new AzureComboBox<>(()-> ResourceConfiguration.CONSUMPTION_CONFIGURATIONS) {
+            @Override
+            protected String getItemText(Object item) {
+                return item instanceof ResourceConfiguration configuration ?
+                        String.format("%s CPU cores, %s Gi memory", configuration.getCpu(), configuration.getMemory()) : super.getItemText(item);
+            }
+        };
     }
 
     private void onDeploymentSourceChanged(ItemEvent event) {
@@ -273,6 +325,21 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         result.setName(txtContainerAppName.getValue());
         result.setEnvironment(cbEnvironment.getValue());
         result.setIngressConfig(pnlIngress.getValue());
+        if (titleResource.isVisible()) {
+            final ResourceConfiguration configuration = ResourceConfiguration.builder().workloadProfile(cbWorkloadProfile.getValue()).build();
+            if (pnlProfile.isVisible()) {
+                final Double cpu = spinnerCpu.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerCpu.getValue();
+                final Double memory = spinnerMemory.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerMemory.getValue();
+                Optional.ofNullable(cpu).ifPresent(configuration::setCpu);
+                Optional.ofNullable(memory).ifPresent(value -> configuration.setMemory(value + "Gi"));
+            } else if (pnlConsumption.isVisible()) {
+                Optional.ofNullable(cbCpuAndMemory.getValue()).ifPresent(c -> {
+                    configuration.setCpu(c.getCpu());
+                    configuration.setMemory(c.getMemory());
+                });
+            }
+            result.setResourceConfiguration(configuration);
+        }
 
         // set app for image form so that it can get correct ImageConfig
         final ContainerAppModule module = az(AzureContainerApps.class).containerApps(result.getSubscription().getId());
@@ -306,6 +373,7 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
             this.intMaxReplicas.setNumber(Optional.ofNullable(c.getMaxReplicas()).orElse(10));
             this.intMinReplicas.setNumber(Optional.ofNullable(c.getMinReplicas()).orElse(0));
         });
+        Optional.ofNullable(data.getResourceConfiguration()).map(ResourceConfiguration::getWorkloadProfile).ifPresent(cbWorkloadProfile::setValue);
         final ContainerAppDraft.ImageConfig imageConfig = data.getImageConfig();
         if (Objects.nonNull(imageConfig)) {
             final Optional<Path> source = Optional.ofNullable(imageConfig.getBuildImageConfig()).map(ContainerAppDraft.BuildImageConfig::getSource);

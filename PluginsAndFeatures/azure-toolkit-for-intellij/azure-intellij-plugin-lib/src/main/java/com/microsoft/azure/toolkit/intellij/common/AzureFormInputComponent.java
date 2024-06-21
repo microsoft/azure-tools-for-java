@@ -74,7 +74,7 @@ public interface AzureFormInputComponent<T> extends AzureFormInput<T>, Disposabl
             input instanceof JComponent c ? c : null;
         final ValidationInfo v = new ValidationInfo(Optional.ofNullable(info.getMessage()).orElse("Unknown error"), component);
         if (info.getType() == WARNING) {
-            v.asWarning();
+            v.asWarning().withOKEnabled();
         }
         return v;
     }
