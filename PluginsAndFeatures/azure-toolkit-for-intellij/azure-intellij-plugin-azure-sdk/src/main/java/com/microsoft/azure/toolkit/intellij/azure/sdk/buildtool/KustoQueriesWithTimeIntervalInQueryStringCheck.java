@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class is an inspection tool that checks for Kusto queries with time intervals in the query string.
- * Kusto queries should not use time intervals in the query string as it can lead to incorrect results.
+ * This approach makes queries less flexible and harder to troubleshoot.
  * This inspection tool checks for the following anti-patterns:
  * 1. Queries that use the "ago" function with a time interval.
  * 2. Queries that use the "datetime" function with a specific datetime.
@@ -45,8 +45,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
 
     /**
      * This method builds the visitor for the inspection tool
-     * @param holder
-     * @param isOnTheFly
+     * @param holder ProblemsHolder is used to register problems found in the code
+     * @param isOnTheFly boolean to indicate if the inspection is done on the fly
      * @return PsiElementVisitor
      */
     @NotNull
@@ -84,11 +84,26 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
         Pattern KQL_ANTI_PATTERN_START_OF_PERIOD = Pattern.compile(loadRuleConfigurations().get(REGEX_PATTERNS_KEY).get(3));
         Pattern KQL_ANTI_PATTERN_BETWEEN = Pattern.compile(loadRuleConfigurations().get(REGEX_PATTERNS_KEY).get(4));
 
+        /**
+         * Constructor for the KustoQueriesVisitor class
+         * The constructor initializes the ProblemsHolder and isOnTheFly variables
+         * @param holder
+         * @param isOnTheFly
+         */
         public KustoQueriesVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
             this.isOnTheFly = isOnTheFly;
         }
 
+        /**
+         * This method visits the element and checks for the anti-patterns
+         * The method checks if the element is a PsiPolyadicExpression or a PsiLocalVariable
+         * If the element is a PsiLocalVariable, the method checks the initializer of the variable
+         * If the element is a PsiPolyadicExpression, the method processes the expression to replace the variables with their values
+         * The method then checks the expression for the anti-patterns by matching regex patterns with the expression text
+         * and registers a problem if an anti-pattern is detected
+         * @param element
+         */
         @Override
         public void visitElement(@NotNull PsiElement element) {
             super.visitElement(element);
@@ -96,7 +111,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             if (!(element instanceof PsiPolyadicExpression || element instanceof PsiLocalVariable)) {
                 return;
             }
-
             PsiExpression initializer = null;
             PsiPolyadicExpression originalExpression = null;
 
@@ -108,7 +122,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                     checkExpression(initializer, element, holder);
                 }
             }
-
             // if element is a polyadic expression, extract the value.
             // PsiPolyadicExpressions are used to represent expressions with multiple operands
             // eg ("datetime" + startDate), where startDate is a variable
@@ -165,7 +178,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 if (!(resolved instanceof PsiVariable)) {
                     continue;
                 }
-
                 // Extract the value of the variable
                 // Resolve means to find the declaration of the variable
                 // Initializer is the value assigned to the variable
@@ -174,7 +186,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 if (initializer == null) {
                     continue;
                 }
-
                 // Initializer.getText() returns the value of the variable in string format
                 // Create a new expression from the variable value and replace the variable with the value
                 String variableValue = initializer.getText();
@@ -184,7 +195,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                     operands[i] = newExpression;
                 }
             }
-
             // Create a new expression from the operands after replacing the variables with their values
             // Return the new expression if it is not null, else return the original element
             PsiElementFactory factory = JavaPsiFacade.getInstance(element.getProject()).getElementFactory();
@@ -209,16 +219,16 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             final String KQL_ANTI_PATTERN_BETWEEN = "KQL_ANTI_PATTERN_BETWEEN";
 
             try {
-                InputStream inputStream = KustoQueriesWithTimeIntervalInQueryStringCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
+                final InputStream inputStream = KustoQueriesWithTimeIntervalInQueryStringCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
                 if (inputStream == null) {
                     throw new FileNotFoundException("Configuration file not found");
                 }
                 try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                    JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                    JSONObject kustoCheckObject = jsonObject.getJSONObject("KustoQueriesWithTimeIntervalInQueryStringCheck");
-                    JSONObject regexPatterns = kustoCheckObject.getJSONObject(REGEX_PATTERNS_KEY);
+                    final JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
+                    final JSONObject kustoCheckObject = jsonObject.getJSONObject("KustoQueriesWithTimeIntervalInQueryStringCheck");
+                    final JSONObject regexPatterns = kustoCheckObject.getJSONObject(REGEX_PATTERNS_KEY);
 
-                    Map<String, List<String>> ruleConfigurations = new HashMap<>();
+                    final Map<String, List<String>> ruleConfigurations = new HashMap<>();
                     ruleConfigurations.put(REGEX_PATTERNS_KEY, Arrays.asList(
                             regexPatterns.getString(KQL_ANTI_PATTERN_AGO),
                             regexPatterns.getString(KQL_ANTI_PATTERN_DATETIME),
@@ -234,7 +244,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 return Collections.emptyMap();
             }
         }
-    };
-
+    }
 }
 
