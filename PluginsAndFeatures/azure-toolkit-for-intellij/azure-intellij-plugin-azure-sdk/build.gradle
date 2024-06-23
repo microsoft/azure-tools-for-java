@@ -10,5 +10,14 @@ dependencies {
     implementation 'com.microsoft.azure:azure-toolkit-common-lib'
     implementation 'com.microsoft.azure:azure-toolkit-ide-common-lib'
     aspect 'com.microsoft.azure:azure-toolkit-common-lib'
+    implementation group: 'org.json', name: 'json', version: '20240303'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    testImplementation group: 'org.mockito', name: 'mockito-core'
+
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
