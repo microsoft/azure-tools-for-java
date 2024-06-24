@@ -40,7 +40,8 @@ public class TelemetryClientProvider extends LocalInspectionTool {
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
         Project project = holder.getProject();
         TelemetryClientProvider.setProject(project);
-
+        // Reset the methodCounts map for each new visitor
+        methodCounts.clear();
         return new JavaElementVisitor() {
 
             //  will only track the methods that are being called in the code
@@ -78,8 +79,6 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             telemetryClient.trackEvent("Method in use " + methodName);
         }
 
-        // Clear the methodCounts map for the next interval
-        methodCounts.clear();
         telemetryClient.flush();
     }
 
