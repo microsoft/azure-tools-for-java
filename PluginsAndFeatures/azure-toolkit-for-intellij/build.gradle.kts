@@ -21,88 +21,6 @@ plugins {
 
 group = properties("pluginGroup").get()
 
-dependencies {
-    intellijPlatform {
-        intellijIdeaUltimate(properties("platformVersion").get())
-        pluginVerifier()
-        // jetbrainsRuntime()
-
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugin("com.intellij.java")
-        bundledPlugin("org.jetbrains.idea.maven")
-        bundledPlugin("org.jetbrains.idea.maven.model")
-        bundledPlugin("com.intellij.gradle")
-        bundledPlugin("com.intellij.properties")
-        bundledPlugin("org.jetbrains.plugins.terminal")
-        bundledPlugin("org.intellij.plugins.markdown")
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(properties("platformPlugins").map { it.split(',') })
-    }
-    implementation(project(":azure-intellij-plugin-lib"))
-    implementation(project(":azure-intellij-plugin-lib-java"))
-    implementation(project(":azure-intellij-resource-connector-lib"))
-    implementation(project(":azure-intellij-resource-connector-lib-java"))
-    implementation(project(":azure-intellij-plugin-service-explorer"))
-    implementation(project(":azure-intellij-plugin-guidance"))
-    implementation(project(":azure-intellij-plugin-guidance-java"))
-    implementation(project(":azure-sdk-reference-book"))
-    implementation(project(":azure-intellij-plugin-springcloud"))
-    implementation(project(":azure-intellij-plugin-storage"))
-    implementation(project(":azure-intellij-plugin-appservice"))
-    implementation(project(":azure-intellij-plugin-appservice-java"))
-    implementation(project(":azure-intellij-plugin-arm"))
-    implementation(project(":azure-intellij-plugin-applicationinsights"))
-    implementation(project(":azure-intellij-plugin-cosmos"))
-    implementation(project(":azure-intellij-plugin-cognitiveservices"))
-    implementation(project(":azure-intellij-plugin-monitor"))
-    implementation(project(":azure-intellij-plugin-containerregistry"))
-    implementation(project(":azure-intellij-plugin-containerservice"))
-    implementation(project(":azure-intellij-plugin-containerapps"))
-    implementation(project(":azure-intellij-plugin-database"))
-    implementation(project(":azure-intellij-plugin-database-java"))
-    implementation(project(":azure-intellij-plugin-vm"))
-    implementation(project(":azure-intellij-plugin-redis"))
-    implementation(project(":azure-intellij-plugin-samples"))
-    implementation(project(":azure-intellij-plugin-bicep"))
-    implementation(project(":azure-intellij-plugin-eventhubs"))
-    implementation(project(":azure-intellij-plugin-servicebus"))
-    implementation(project(":azure-intellij-plugin-keyvault"))
-    implementation(project(":azure-intellij-resource-connector-aad"))
-    implementation(project(":azure-intellij-plugin-hdinsight-lib"))
-    implementation(project(":azure-intellij-plugin-sqlserverbigdata"))
-    implementation(project(":azure-intellij-plugin-hdinsight"))
-    implementation(project(":azure-intellij-plugin-synapse"))
-    implementation(project(":azure-intellij-plugin-sparkoncosmos"))
-    implementation(project(":azure-intellij-plugin-hdinsight-base"))
-    implementation(project(":azure-intellij-plugin-integration-services"))
-    implementation("commons-io:commons-io")
-    implementation("org.apache.commons:commons-lang3")
-    implementation("com.microsoft.azure:azure-toolkit-common-lib")
-    implementation("com.microsoft.azure:azure-toolkit-auth-lib")
-    implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
-    implementation("com.microsoft.azure:azure-toolkit-ide-appservice-lib")
-}
-
-intellijPlatform {
-    projectName = "azure-toolkit-for-intellij"
-
-    pluginConfiguration {
-        id = properties("pluginId").get()
-        name = properties("pluginName").get()
-
-        ideaVersion {
-            sinceBuild = properties("pluginSinceBuild")
-            untilBuild = properties("pluginUntilBuild")
-        }
-    }
-
-    verifyPlugin {
-        ides {
-            recommended()
-        }
-    }
-}
-
 allprojects {
     apply {
         plugin("java")
@@ -121,11 +39,6 @@ allprojects {
         jvmToolchain(17)
     }
 
-    intellijPlatform {
-        buildSearchableOptions = false
-        instrumentCode = true
-    }
-
     repositories {
         mavenCentral()
         mavenLocal()
@@ -135,15 +48,10 @@ allprojects {
 
         intellijPlatform {
             defaultRepositories()
-            marketplace()
         }
     }
 
     dependencies {
-        intellijPlatform {
-            intellijIdeaUltimate(properties("platformVersion").get())
-            instrumentationTools()
-        }
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.46.0"))
         implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.46.0"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
@@ -205,6 +113,111 @@ allprojects {
             }
         }
     }
+}
+
+subprojects{
+    apply {
+        plugin("org.jetbrains.intellij.platform.module")
+    }
+
+    intellijPlatform {
+        buildSearchableOptions = false
+        instrumentCode = true
+    }
+
+    dependencies {
+        intellijPlatform {
+            intellijIdeaUltimate(properties("platformVersion").get())
+            instrumentationTools()
+        }
+    }
+}
+
+intellijPlatform {
+    projectName = "azure-toolkit-for-intellij"
+    buildSearchableOptions = false
+    instrumentCode = true
+
+    pluginConfiguration {
+        id = properties("pluginId").get()
+        name = properties("pluginName").get()
+
+        ideaVersion {
+            sinceBuild = properties("pluginSinceBuild")
+            untilBuild = properties("pluginUntilBuild")
+        }
+    }
+
+    verifyPlugin {
+        ides {
+            recommended()
+        }
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        intellijIdeaUltimate(properties("platformVersion").get())
+        // run from a local idea installation
+        // local(File("C:\\Program Files\\JetBrains\\IntelliJ IDEA 242.16677.21"));
+        instrumentationTools()
+        pluginVerifier()
+        // jetbrainsRuntime()
+
+        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
+        bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.idea.maven")
+        bundledPlugin("org.jetbrains.idea.maven.model")
+        bundledPlugin("com.intellij.gradle")
+        bundledPlugin("com.intellij.properties")
+        bundledPlugin("org.jetbrains.plugins.terminal")
+        bundledPlugin("org.intellij.plugins.markdown")
+        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
+        plugins(properties("platformPlugins").map { it.split(',') })
+    }
+    implementation(project(":azure-intellij-plugin-lib"))
+    implementation(project(":azure-intellij-plugin-lib-java"))
+    implementation(project(":azure-intellij-resource-connector-lib"))
+    implementation(project(":azure-intellij-resource-connector-lib-java"))
+    implementation(project(":azure-intellij-plugin-service-explorer"))
+    implementation(project(":azure-intellij-plugin-guidance"))
+    implementation(project(":azure-intellij-plugin-guidance-java"))
+    implementation(project(":azure-sdk-reference-book"))
+    implementation(project(":azure-intellij-plugin-springcloud"))
+    implementation(project(":azure-intellij-plugin-storage"))
+    implementation(project(":azure-intellij-plugin-appservice"))
+    implementation(project(":azure-intellij-plugin-appservice-java"))
+    implementation(project(":azure-intellij-plugin-arm"))
+    implementation(project(":azure-intellij-plugin-applicationinsights"))
+    implementation(project(":azure-intellij-plugin-cosmos"))
+    implementation(project(":azure-intellij-plugin-cognitiveservices"))
+    implementation(project(":azure-intellij-plugin-monitor"))
+    implementation(project(":azure-intellij-plugin-containerregistry"))
+    implementation(project(":azure-intellij-plugin-containerservice"))
+    implementation(project(":azure-intellij-plugin-containerapps"))
+    implementation(project(":azure-intellij-plugin-database"))
+    implementation(project(":azure-intellij-plugin-database-java"))
+    implementation(project(":azure-intellij-plugin-vm"))
+    implementation(project(":azure-intellij-plugin-redis"))
+    implementation(project(":azure-intellij-plugin-samples"))
+    implementation(project(":azure-intellij-plugin-bicep"))
+    implementation(project(":azure-intellij-plugin-eventhubs"))
+    implementation(project(":azure-intellij-plugin-servicebus"))
+    implementation(project(":azure-intellij-plugin-keyvault"))
+    implementation(project(":azure-intellij-resource-connector-aad"))
+    implementation(project(":azure-intellij-plugin-hdinsight-lib"))
+    implementation(project(":azure-intellij-plugin-sqlserverbigdata"))
+    implementation(project(":azure-intellij-plugin-hdinsight"))
+    implementation(project(":azure-intellij-plugin-synapse"))
+    implementation(project(":azure-intellij-plugin-sparkoncosmos"))
+    implementation(project(":azure-intellij-plugin-hdinsight-base"))
+    implementation(project(":azure-intellij-plugin-integration-services"))
+    implementation("commons-io:commons-io")
+    implementation("org.apache.commons:commons-lang3")
+    implementation("com.microsoft.azure:azure-toolkit-common-lib")
+    implementation("com.microsoft.azure:azure-toolkit-auth-lib")
+    implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
+    implementation("com.microsoft.azure:azure-toolkit-ide-appservice-lib")
 }
 
 tasks {
@@ -286,5 +299,3 @@ tasks {
     //        dependsOn(patchChangelog)
     //    }
 }
-
-
