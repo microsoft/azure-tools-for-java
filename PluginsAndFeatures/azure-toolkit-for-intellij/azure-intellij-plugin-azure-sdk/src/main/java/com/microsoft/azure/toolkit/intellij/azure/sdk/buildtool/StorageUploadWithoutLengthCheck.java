@@ -38,17 +38,25 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
     }
 
     private static final List<String> METHODS_TO_CHECK = getMethodsToCheck();
+    private static final String LENGTH_TYPE = "PsiType:long";
 
+
+    // Get the list of methods to check from the configuration file
     private static List<String> getMethodsToCheck() {
+
+        final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
+        final String RULE_NAME = "StorageUploadWithoutLengthCheck";
+        final String METHODS_TO_CHECK = "methodsToCheck";
+
         try {
-            String configFileName = "META-INF/ruleConfigs.json";
-            InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(configFileName);
+//            String configFileName = "META-INF/ruleConfigs.json";
+            InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
             if (inputStream == null) {
                 throw new FileNotFoundException("Configuration file not found");
             }
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
                 JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                JSONArray methods = jsonObject.getJSONObject("StorageUploadWithoutLengthCheck").getJSONArray("methodsToCheck");
+                JSONArray methods = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK);
                 return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
             }
         } catch (Exception e) {
@@ -57,6 +65,13 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         }
     }
 
+    /**
+     * This method is used to build a PsiElementVisitor that will be used to visit the method calls in the code.
+     *
+     * @param holder
+     * @param isOnTheFly
+     * @return
+     */
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -67,57 +82,81 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                 super.visitMethodCallExpression(expression);
                 String methodName = expression.getMethodExpression().getReferenceName();
 
-                if (METHODS_TO_CHECK.contains(methodName)) {
-                    boolean hasLengthArg = false;
+                if (!METHODS_TO_CHECK.contains(methodName)) {
+                    return;
+                }
 
-                    PsiExpressionList argumentList = expression.getArgumentList();
-                    PsiExpression[] arguments = argumentList.getExpressions();
+                boolean hasLengthArg = false;
 
-                    for (PsiExpression arg : arguments) {
-                        // Check if the argument is of type 'long'
-                        if (arg.getType().toString().equals("PsiType:long")) {
-                            hasLengthArg = true;
-                            break;
-                        }
-                        if (arg instanceof PsiMethodCallExpression) {
-                            PsiMethodCallExpression argMethodCall = (PsiMethodCallExpression) arg;
-                            PsiExpression qualifier = argMethodCall.getMethodExpression().getQualifierExpression();
+                PsiExpressionList argumentList = expression.getArgumentList();
+                PsiExpression[] arguments = argumentList.getExpressions();
 
-                            // Analysing arguments that are chained method calls
-                            hasLengthArg = checkMethodCallChain(argMethodCall);
-                        }
+                for (PsiExpression arg : arguments) {
+                    // Check if the argument is of type 'long'
+                    if (arg.getType() != null && arg.getType().toString().equals(LENGTH_TYPE)) {
+                        hasLengthArg = true;
+                        break;
                     }
-                    if (!hasLengthArg) {
-                     holder.registerProblem(expression, "Azure Storage upload API without length parameter detected");
+                    // Check if the argument is a method call
+                    if (arg instanceof PsiMethodCallExpression) {
+                        PsiMethodCallExpression argMethodCall = (PsiMethodCallExpression) arg;
+
+                        // Analysing arguments that are method calls to check for 'long' type arguments
+                        hasLengthArg = checkMethodCallChain(argMethodCall);
                     }
                 }
+                if (!hasLengthArg) {
+                    holder.registerProblem(expression, "Azure Storage upload API without length parameter detected");
+                }
+
             }
         };
-    };
+    }
 
-    // Analysing arguments that are chained method calls
-    private boolean checkMethodCallChain (PsiMethodCallExpression expression) {
+    /**
+     * Analysing arguments that are chained method calls
+     * This method is used to check if the method call chain has a constructor with 'long' type arguments.
+     * The iteration starts from the end of the chain and goes up the chain.
+     * The qualifier of the method call is checked for a constructor with 'long' type arguments.
+     *
+     * @param expression
+     * @return boolean
+     */
+    public boolean checkMethodCallChain(PsiMethodCallExpression expression) {
 
         // Iterating up the chain of method calls
         PsiExpression qualifier = expression.getMethodExpression().getQualifierExpression();
+
         while (qualifier instanceof PsiMethodCallExpression) {
             PsiMethodCallExpression qualifierMethodCall = (PsiMethodCallExpression) qualifier;
-            PsiExpressionList qualifierArgumentList = qualifierMethodCall.getArgumentList();
-            PsiExpression[] qualifierArguments = qualifierArgumentList.getExpressions();
 
             qualifier = qualifierMethodCall.getMethodExpression().getQualifierExpression();
 
             // Checking for constructor with 'long' type arguments
             if (qualifier instanceof PsiNewExpression) {
-                PsiNewExpression newExpression = (PsiNewExpression) qualifier;
-                PsiExpressionList newExpressionArgumentList = newExpression.getArgumentList();
-                PsiExpression[] newExpressionArguments = newExpressionArgumentList.getExpressions();
+                return isLengthArgumentInCall (qualifier);
+            }
+        }
+        return false;
+    }
 
-                for (PsiExpression newExpressionArgument : newExpressionArguments) {
-                    if (newExpressionArgument.getType().toString().equals("PsiType:long")) {
-                        return true;
-                    }
-                }
+    /**
+     * This method is used to check if the constructor of the new expression has a 'long' type argument.
+     *
+     * @param qualifier - The qualifier of the method call
+     * @return boolean
+     */
+    private boolean isLengthArgumentInCall (PsiExpression qualifier) {
+        PsiNewExpression newExpression = (PsiNewExpression) qualifier;
+
+        // Getting the arguments of the constructor
+        PsiExpressionList newExpressionArgumentList = newExpression.getArgumentList();
+        PsiExpression[] newExpressionArguments = newExpressionArgumentList.getExpressions();
+
+        // Checking if the arguments are of type 'long'
+        for (PsiExpression newExpressionArgument : newExpressionArguments) {
+            if (newExpressionArgument.getType().toString().equals(LENGTH_TYPE)) {
+                return true;
             }
         }
         return false;
