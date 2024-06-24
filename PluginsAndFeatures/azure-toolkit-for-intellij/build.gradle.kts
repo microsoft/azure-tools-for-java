@@ -144,15 +144,15 @@ allprojects {
             intellijIdeaUltimate(properties("platformVersion").get())
             instrumentationTools()
         }
-        implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.46.0-SNAPSHOT"))
-        implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.46.0-SNAPSHOT"))
+        implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.46.0"))
+        implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.46.0"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
 
         compileOnly("org.projectlombok:lombok:1.18.24")
         compileOnly("org.jetbrains:annotations:24.0.0")
         annotationProcessor("org.projectlombok:lombok:1.18.24")
-        implementation("com.microsoft.azure:azure-toolkit-common-lib:0.46.0-SNAPSHOT")
-        aspect("com.microsoft.azure:azure-toolkit-common-lib:0.46.0-SNAPSHOT")
+        implementation("com.microsoft.azure:azure-toolkit-common-lib:0.46.0")
+        aspect("com.microsoft.azure:azure-toolkit-common-lib:0.46.0")
     }
 
     configurations {
