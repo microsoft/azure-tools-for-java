@@ -23,6 +23,7 @@ group = properties("pluginGroup").get()
 
 dependencies {
     intellijPlatform {
+        intellijIdeaUltimate(properties("platformVersion").get())
         pluginVerifier()
         // jetbrainsRuntime()
 
@@ -140,7 +141,6 @@ allprojects {
 
     dependencies {
         intellijPlatform {
-            // create(properties("platformType"), properties("platformVersion"))
             intellijIdeaUltimate(properties("platformVersion").get())
             instrumentationTools()
         }

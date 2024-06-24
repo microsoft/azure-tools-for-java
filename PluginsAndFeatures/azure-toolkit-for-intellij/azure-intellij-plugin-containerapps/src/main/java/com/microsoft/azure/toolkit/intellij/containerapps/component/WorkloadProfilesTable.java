@@ -107,7 +107,7 @@ public class WorkloadProfilesTable extends JBTable implements AzureFormInputComp
             return switch (columnIndex) {
                 case 0 -> workloadProfile.getName();
                 case 1 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "-" : String.format("%s-%s", workloadProfile.getMinimumCount(), workloadProfile.getMaximumCount());
-                case 2 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "-" : String.format("%s vCPUs / %s Gi", workloadProfile.getMinimumCount(), workloadProfile.getMaximumCount());
+                case 2 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "Up to 4 vCpus / 8 Gi" : String.format("vCPUs: %s, Memory: %s Gi", workloadProfile.getMinimumCount(), workloadProfile.getMaximumCount());
                 default -> null;
             };
         }
