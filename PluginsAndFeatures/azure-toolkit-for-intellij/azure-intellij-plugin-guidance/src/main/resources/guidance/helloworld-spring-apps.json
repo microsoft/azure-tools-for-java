@@ -13,7 +13,7 @@
   ],
   "context": {
     "repository": "https://github.com/Azure-Samples/ASA-Samples-Web-Application.git",
-    "branch": "quickstart",
+    "branch": "main",
     "deployModule": "simple-todo-web",
     "packageModule": "simple-todo-parent"
   },
