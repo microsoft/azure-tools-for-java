@@ -50,7 +50,7 @@ public class TerminalUtils {
     }
 
     @Nonnull
-    private static TerminalWidget createTerminalWidget(@Nonnull Project project, @Nullable Path workingDir, String terminalTabTitle) {
+    public static TerminalWidget createTerminalWidget(@Nonnull Project project, @Nullable Path workingDir, String terminalTabTitle) {
         final TerminalToolWindowManager manager = TerminalToolWindowManager.getInstance(project);
         final String workingDirectory = Optional.ofNullable(workingDir).map(Path::toString).orElse(null);
         return manager.createShellWidget(workingDirectory, terminalTabTitle, true, true);
