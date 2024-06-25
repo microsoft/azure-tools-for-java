@@ -1,6 +1,6 @@
 {
   "ServiceBusReceiverAsyncClientCheck": {
     "clientName": "ServiceBusReceiverAsyncClient",
-    "suggestion": "ServiceBusProcessorClient"
+    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   }
 }

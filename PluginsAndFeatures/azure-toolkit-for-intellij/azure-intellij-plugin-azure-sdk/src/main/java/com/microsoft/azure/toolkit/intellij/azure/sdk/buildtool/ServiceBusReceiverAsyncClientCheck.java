@@ -22,31 +22,21 @@ import java.util.stream.Collectors;
 /**
  * This class extends the LocalInspectionTool to check for the use of ServiceBusReceiverAsyncClient
  * in the code and suggests using ServiceBusProcessorClient instead.
+ * The client data is loaded from the configuration file and the client name is checked against the
+ * discouraged client name. If the client name matches, a problem is registered with the suggestion message.
  */
 public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
-    public static final String configFileName = "META-INF/ruleConfigs.json";
+    static final List<String> CLIENT_DATA = getClientToCheck();
 
-    // loading the client data from the configuration file
-    public static List<String> getClientToCheck() {
-        try {
 
-            InputStream inputStream = ServiceBusReceiverAsyncClientCheck.class.getClassLoader().getResourceAsStream(configFileName);
-            if (inputStream == null) {
-                throw new FileNotFoundException("Configuration file not found");
-            }
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                String clientName = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString("clientName");
-                String suggestedClient = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString("suggestion");
-                return Arrays.asList(clientName, suggestedClient);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
+    /**
+     * This method builds a visitor to check for the discouraged client name in the code.
+     * If the client name matches the discouraged client, a problem is registered with the suggestion message.
+     * @param holder
+     * @param isOnTheFly
+     * @return PsiElementVisitor
+     */
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
@@ -56,23 +46,51 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             public void visitTypeElement(PsiTypeElement element) {
                 super.visitTypeElement(element);
 
-                // Check if the element is an instance of PsiTypeElement and if the type matches the discouraged client
+                // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
 
-                    List<String> clientData = getClientToCheck();
-                    if (clientData.isEmpty()) {
+                    if (CLIENT_DATA.isEmpty()) {
                         return;
                     }
-                    String clientName = clientData.get(0);
-                    String suggestedClient = clientData.get(1);
+                    String clientName = CLIENT_DATA.get(0);
+                    String suggestion = CLIENT_DATA.get(1);
 
+                    // Register a problem if the client used matches the discouraged client
                     if (element.getType().getPresentableText().equals(clientName)) {
-                        holder.registerProblem(element, "Use of "+clientName+" detected. Use "+suggestedClient+" instead.");
+                        holder.registerProblem(element, suggestion);
                     }
-
                 }
             }
 
         };
+    }
+
+    /**
+     * Loading the client data from the configuration file.
+     *
+     * @return List of client name and suggestion message
+     */
+    static List<String> getClientToCheck() {
+
+        // Define constants for string literals
+        final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
+        final String SUGGESTION_KEY = "antipattern_message";
+        final String CLIENT_NAME_KEY = "clientName";
+
+        try {
+            final InputStream inputStream = ServiceBusReceiverAsyncClientCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
+            if (inputStream == null) {
+                throw new FileNotFoundException("Configuration file not found");
+            }
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+                final JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
+                final String clientName = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString(CLIENT_NAME_KEY);
+                final String suggestion= jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString(SUGGESTION_KEY);
+                return Arrays.asList(clientName, suggestion);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 }

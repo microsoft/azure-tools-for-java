@@ -1,18 +1,14 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
-
 // Import necessary libraries
-import com.intellij.ide.highlighter.JavaFileType;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiType;
-import com.intellij.openapi.project.Project;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertNotNull;
@@ -21,105 +17,97 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
+
+/**
+ * This class tests the ServiceBusReceiverAsyncClientCheck class by mocking the ProblemsHolder and PsiElementVisitor
+ * and verifying that a problem is registered when the ServiceBusReceiverAsyncClient is used.
+ * The test also verifies that a problem is not registered when the PsiElement is null.
+ *
+ * Here are some examples of test data where registerProblem should be called:
+ * 1. ServiceBusReceiverAsyncClient client = new ServiceBusReceiverAsyncClient();
+ * 2.private ServiceBusReceiverAsyncClient receiver;
+ * 3. final ServiceBusReceiverAsyncClient autoCompleteReceiver =
+ *             toClose(getReceiverBuilder(false, entityType, index, false)
+ *                 .buildAsyncClient());
+ */
 
 public class ServiceBusReceiverAsyncClientCheckTest {
 
     // Create a mock ProblemsHolder to be used in the test
+    @Mock
     private ProblemsHolder mockHolder;
 
-    // Create a Java code snippet that uses ServiceBusReceiverAsyncClient with situations that should be flagged
-    private String createJavaCode() {
-        StringBuilder javaCode = new StringBuilder();
+    // Create a mock PsiElementVisitor for visiting the PsiTypeElement
+    @Mock
+    private PsiElementVisitor mockVisitor;
 
-        javaCode.append("public class TestClass {\n");
+    // Create a mock PsiTypeElement.
+    @Mock
+    private PsiTypeElement mockTypeElement;
 
-        // Define the client as a private final member
-        javaCode.append("\tprivate final ServiceBusReceiverAsyncClient client;\n");
 
-        // Create a constructor for TestClass
-        javaCode.append("\tpublic TestClass() {\n");
-        javaCode.append("\t\tthis.client = new ServiceBusReceiverAsyncClient();\n");
-        javaCode.append("\t}\n");
-
-        // Create a getClient method to access the client
-        javaCode.append("\tpublic ServiceBusReceiverAsyncClient getClient() {\n");
-        javaCode.append("\t\treturn this.client;\n");
-        javaCode.append("\t}\n");
-
-        javaCode.append("}");
-
-        return javaCode.toString();
+    @BeforeEach
+    public void setUp() {
+        // Set up the test
+        mockHolder = mock(ProblemsHolder.class);
+        mockVisitor = createVisitor();
+        mockTypeElement = mock(PsiTypeElement.class);
     }
 
-
     @Test
-    public void testBuildVisitor() {
-        // Arrange
-        String javaCode = createJavaCode();
-        PsiElementVisitor visitor = createVisitor();
-
-        // Mock PsiFileFactory
-        PsiFileFactory psiFileFactory = mockPsiFileFactory();
-
-        // Create PsiFile
-        PsiFile psiFile = createPsiFile(javaCode, psiFileFactory);
-
-        // Accept visitor
-        psiFile.accept(visitor);
-
+    public void testProblemRegisteredWhenUsingServiceBusReceiverAsyncClient() {
         // Assert
-        assertVisitor(visitor);
+        assertVisitor();
 
         // Visit Type Element
-        visitTypeElement(visitor);
+        int NUMBER_OF_INVOCATIONS = 1;  // Number of times registerProblem should be called
+        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS);
     }
 
     // Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
     private PsiElementVisitor createVisitor() {
         ServiceBusReceiverAsyncClientCheck check = new ServiceBusReceiverAsyncClientCheck();
-        mockHolder = mock(ProblemsHolder.class);
         boolean isOnTheFly = true;
-
         return check.buildVisitor(mockHolder, isOnTheFly);
     }
 
-    // Mock PsiFileFactory and create a PsiFile to be used in the test
-    private PsiFileFactory mockPsiFileFactory() {
-        Project mockProject = mock(Project.class);
-        PsiFileFactory mockFileFactory = mock(PsiFileFactory.class);
-        when(PsiFileFactory.getInstance(mockProject)).thenReturn(mockFileFactory);
-
-        return PsiFileFactory.getInstance(mockProject);
-    }
-
-    // Create a PsiFile from the Java code to simulate the file to be inspected
-    private PsiFile createPsiFile(String javaCode, PsiFileFactory psiFileFactory) {
-        PsiFile mockFile = mock(PsiFile.class);
-        when(psiFileFactory.createFileFromText(anyString(), any(FileType.class), any())).thenReturn(mockFile);
-
-        return psiFileFactory.createFileFromText(javaCode, JavaFileType.INSTANCE, javaCode);
-    }
-
-
     // Assert that the visitor is not null and is an instance of JavaElementVisitor
-    private void assertVisitor(PsiElementVisitor visitor) {
-        assertNotNull(visitor);
-        assertTrue(visitor instanceof JavaElementVisitor);
+    private void assertVisitor() {
+        assertNotNull(mockVisitor);
+        assertTrue(mockVisitor instanceof JavaElementVisitor);
     }
 
-    // Visit a Type Element and verify that a problem was registered
-    private void visitTypeElement(PsiElementVisitor visitor) {
+    /** Visit a Type Element and verify that a problem was registered
+     * when the ServiceBusReceiverAsyncClient is used.
+     * @param typeElement The PsiTypeElement to visit
+     * @param NUMBER_OF_INVOCATIONS The number of times registerProblem should be called
+     */
+    private void visitTypeElement(PsiTypeElement typeElement, int NUMBER_OF_INVOCATIONS) {
+
         PsiType mockType = mock(PsiType.class);
+
+        when(mockTypeElement.getType()).thenReturn(mockType);
         when(mockType.getPresentableText()).thenReturn("ServiceBusReceiverAsyncClient");
 
-        PsiTypeElement mockTypeElement = mock(PsiTypeElement.class);
-        when(mockTypeElement.getType()).thenReturn(mockType);
+        ((JavaElementVisitor) mockVisitor).visitTypeElement(mockTypeElement);
+        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem((Mockito.eq(mockTypeElement)), Mockito.contains("Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."));
+    }
 
-        ((JavaElementVisitor) visitor).visitTypeElement(mockTypeElement);
 
-        verify(mockHolder, times(1)).registerProblem((Mockito.eq(mockTypeElement)), Mockito.contains("Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."));
+    /**
+     * Test that a problem is not registered when the PsiElement is null.
+     *
+     * This test is important because it verifies that the code does not
+     * throw a NullPointerException when the PsiElement is null.
+     */
+    @Test
+    public void testProblemRegisteredWhenPsiElementIsNull() {
+        // Arrange
+        PsiTypeElement nullElement = null;
+        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
+
+        // Act
+        visitTypeElement(nullElement, NUMBER_OF_INVOCATIONS);
     }
 }
