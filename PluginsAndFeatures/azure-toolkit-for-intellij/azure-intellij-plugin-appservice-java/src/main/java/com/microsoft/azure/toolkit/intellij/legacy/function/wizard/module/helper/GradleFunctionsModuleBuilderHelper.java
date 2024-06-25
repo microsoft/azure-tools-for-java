@@ -6,7 +6,6 @@
 package com.microsoft.azure.toolkit.intellij.legacy.function.wizard.module.helper;
 
 import com.intellij.ide.util.projectWizard.WizardContext;
-import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware;
 import com.intellij.openapi.externalSystem.importing.ImportSpecBuilder;
 import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl;
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil;
@@ -21,6 +20,7 @@ import com.intellij.util.io.PathKt;
 import com.microsoft.azure.toolkit.intellij.legacy.function.wizard.AzureFunctionsConstants;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.gradle.service.project.open.GradleProjectImportUtil;
 import org.jetbrains.plugins.gradle.service.project.wizard.AbstractGradleModuleBuilder;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
@@ -55,8 +55,9 @@ public class GradleFunctionsModuleBuilderHelper {
     }
 
     private static void linkGradleProject(@NotNull Project project) {
-        ExternalProjectsManagerImpl.getInstance(project).runWhenInitialized(() ->
-                ExternalSystemUnlinkedProjectAware.getInstance(GradleConstants.SYSTEM_ID).linkAndLoadProject(project, project.getBasePath()));
+        ExternalProjectsManagerImpl.getInstance(project).runWhenInitialized(() -> {
+            GradleProjectImportUtil.linkAndRefreshGradleProject(project.getBasePath(), project);
+        });
     }
 
     private static void reloadGradleProject(@NotNull Project project, @NotNull Path rootProjectPath) {
