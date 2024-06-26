@@ -34,7 +34,7 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
 
             <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ClosingCloseableClientsCheck
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck
             </class>
         </localInspection>
     </extensions>
