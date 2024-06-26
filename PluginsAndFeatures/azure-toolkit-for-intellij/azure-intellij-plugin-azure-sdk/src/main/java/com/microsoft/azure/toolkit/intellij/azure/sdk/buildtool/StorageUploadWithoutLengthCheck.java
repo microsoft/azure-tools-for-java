@@ -49,7 +49,6 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         final String METHODS_TO_CHECK = "methodsToCheck";
 
         try {
-//            String configFileName = "META-INF/ruleConfigs.json";
             InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
             if (inputStream == null) {
                 throw new FileNotFoundException("Configuration file not found");

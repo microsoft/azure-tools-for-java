@@ -68,6 +68,7 @@ public class StorageUploadWithoutLengthCheckTest {
 
     }
 
+    // Create a visitor for the class under test
     private PsiElementVisitor createVisitor() {
         boolean isOnTheFly = false;
 
@@ -76,11 +77,13 @@ public class StorageUploadWithoutLengthCheckTest {
         return check.buildVisitor(mockHolder, isOnTheFly);
     }
 
+    // Assert that the visitor is not null and is an instance of JavaRecursiveElementWalkingVisitor
     void assertVisitor(PsiElementVisitor visitor) {
         assertNotNull(visitor);
         assertTrue(visitor instanceof JavaRecursiveElementWalkingVisitor);
     }
 
+    // Verify that the registerProblem method is called when the visitor visits a method call expression with the method name METHOD_TO_CHECK.
     private void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS) {
 
         // Arrange
