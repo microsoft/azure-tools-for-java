@@ -23,5 +23,19 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.MavenProjectInspection</class>
         </localInspection>
+
+        <localInspection
+            language="JAVA"
+            shortName="StorageUploadWithoutLengthCheck"
+            displayName="Storage Upload Without Length Check"
+            groupName="Azure SDK Rules"
+            enabledByDefault="true"
+            level="INFO"
+
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
