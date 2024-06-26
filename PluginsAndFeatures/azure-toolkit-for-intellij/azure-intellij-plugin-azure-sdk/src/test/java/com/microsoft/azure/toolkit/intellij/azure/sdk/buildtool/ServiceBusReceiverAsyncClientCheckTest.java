@@ -60,9 +60,40 @@ public class ServiceBusReceiverAsyncClientCheckTest {
         // Assert
         assertVisitor();
 
+        String CLIENT_TO_CHECK = "ServiceBusReceiverAsyncClient";
+
         // Visit Type Element
         int NUMBER_OF_INVOCATIONS = 1;  // Number of times registerProblem should be called
-        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS);
+        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS, CLIENT_TO_CHECK);
+    }
+
+    /**
+     * Test that a problem is not registered when the client name is not ServiceBusReceiverAsyncClient.
+     *
+     * This test is important because it verifies that the code does not
+     * register a problem when the client name is not ServiceBusReceiverAsyncClient.
+     */
+
+    @Test
+    void testProblemNotRegisteredWhenCheckingForDiifferentClient() {
+
+        String CLIENT_TO_CHECK = "ServiceBusProcessorClient";
+
+        // Visit Type Element
+        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
+        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS, CLIENT_TO_CHECK);
+
+    }
+
+    /**
+     * Test that a problem is not registered when the PsiTypeElement is null and the client name is empty.
+     */
+    @Test
+    void testProblemNotRegisteredWhenClientIsEmpty() {
+        // Visit Type Element
+        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
+        String CLIENT_TO_CHECK = "";
+        visitTypeElement(null, NUMBER_OF_INVOCATIONS, "");
     }
 
     // Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
@@ -83,31 +114,15 @@ public class ServiceBusReceiverAsyncClientCheckTest {
      * @param typeElement The PsiTypeElement to visit
      * @param NUMBER_OF_INVOCATIONS The number of times registerProblem should be called
      */
-    private void visitTypeElement(PsiTypeElement typeElement, int NUMBER_OF_INVOCATIONS) {
+    private void visitTypeElement(PsiTypeElement typeElement, int NUMBER_OF_INVOCATIONS, String CLIENT_TO_CHECK) {
 
         PsiType mockType = mock(PsiType.class);
 
         when(mockTypeElement.getType()).thenReturn(mockType);
-        when(mockType.getPresentableText()).thenReturn("ServiceBusReceiverAsyncClient");
+        when(mockType.getPresentableText()).thenReturn(CLIENT_TO_CHECK);
 
         ((JavaElementVisitor) mockVisitor).visitTypeElement(mockTypeElement);
         verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem((Mockito.eq(mockTypeElement)), Mockito.contains("Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."));
     }
 
-
-    /**
-     * Test that a problem is not registered when the PsiElement is null.
-     *
-     * This test is important because it verifies that the code does not
-     * throw a NullPointerException when the PsiElement is null.
-     */
-    @Test
-    public void testProblemRegisteredWhenPsiElementIsNull() {
-        // Arrange
-        PsiTypeElement nullElement = null;
-        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
-
-        // Act
-        visitTypeElement(nullElement, NUMBER_OF_INVOCATIONS);
-    }
 }
