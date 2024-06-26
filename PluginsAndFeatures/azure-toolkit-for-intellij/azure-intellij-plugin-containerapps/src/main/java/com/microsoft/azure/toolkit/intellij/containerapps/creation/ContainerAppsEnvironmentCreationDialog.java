@@ -14,6 +14,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
 import com.microsoft.azure.toolkit.intellij.common.component.RegionComboBox;
@@ -54,6 +56,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<ContainerAppsEnvironmentDraft.Config> implements AzureForm<ContainerAppsEnvironmentDraft.Config> {
     private static final Pattern CONTAINER_APPS_ENVIRONMENT_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]{0,30}[a-z0-9]$");
     private static final String CONTAINER_APPS_ENVIRONMENT_NAME_VALIDATION_MESSAGE = "A name must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character and cannot have '--'. The length must not be more than 32 characters.";
+    public static final String WORKLOAD_PROFILE_DESCRIPTION = "Dedicated workload profiles allow you to run your apps on customized hardware options. You can add Dedicated workload profiles below. <a href=\"https://go.microsoft.com/fwlink/?linkid=2226081\">Learn More</a>\u2197";
 
     private JLabel lblSubscription;
     private SubscriptionComboBox cbSubscription;
@@ -69,6 +72,8 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
     private TitledSeparator titleWorkloadProfiles;
     private JRadioButton rdoWorkloadProfile;
     private JRadioButton rdoConsumptionOnly;
+    private JPanel pnlProfiles;
+    private JBLabel lblWorkloadProfiles;
 
     private WorkloadProfilesTable workloadProfilesTable;
 
@@ -109,7 +114,7 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
         final LogAnalyticsWorkspace workspace;
         if (workspaceConfig.isNewCreate()) {
             workspace = workspaceModule.create(workspaceConfig.getName(), result.getResourceGroup().getResourceGroupName());
-            ((LogAnalyticsWorkspaceDraft)workspace).setRegion(result.getRegion());
+            ((LogAnalyticsWorkspaceDraft) workspace).setRegion(result.getRegion());
         } else {
             workspace = workspaceModule.get(workspaceConfig.getResourceId());
         }
@@ -187,11 +192,15 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
         this.lblRegion.setLabelFor(cbRegion);
         this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
         this.lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
+
+        this.lblWorkloadProfiles.setText(WORKLOAD_PROFILE_DESCRIPTION);
+        this.lblWorkloadProfiles.setAllowAutoWrapping(true);
+        this.lblWorkloadProfiles.setCopyable(true);
     }
 
     private void toggleEnvironmentType() {
         this.titleWorkloadProfiles.setVisible(rdoWorkloadProfile.isSelected());
-        this.pnlWorkloadProfiles.setVisible(rdoWorkloadProfile.isSelected());
+        this.pnlProfiles.setVisible(rdoWorkloadProfile.isSelected());
     }
 
     private AzureValidationInfo validateContainerAppsEnvironmentName() {

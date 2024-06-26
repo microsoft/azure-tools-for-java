@@ -48,7 +48,6 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
     @Override
     protected void init() {
         super.init();
-        this.cbSize.setUsePreferredSizeAsMinimum(false);
 
         this.txtMinimumCount.setMinValue(0);
         this.txtMinimumCount.setMaxValue(20);
@@ -56,6 +55,14 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
         this.txtMaximumCount.setMinValue(0);
         this.txtMaximumCount.setMaxValue(20);
         this.lblMaximumCount.setLabelFor(txtMaximumCount);
+
+        this.txtMinimumCount.addValidator(() -> {
+            final Integer min = txtMinimumCount.getValue();
+            if (Objects.nonNull(min) && min < 3) {
+                return AzureValidationInfo.warning(MINIUM_COUNT_LESS_WARNING, txtMinimumCount);
+            }
+            return AzureValidationInfo.ok(txtMinimumCount);
+        });
     }
 
     private void createUIComponents() {
@@ -68,9 +75,6 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
         final List<AzureValidationInfo> result = new ArrayList<>();
         final Integer min = txtMinimumCount.getValue();
         final Integer max = txtMaximumCount.getValue();
-        if (Objects.nonNull(min) && min < 3) {
-            result.add(AzureValidationInfo.warning(MINIUM_COUNT_LESS_WARNING, txtMinimumCount));
-        }
         if (Objects.nonNull(max) && Objects.nonNull(min) && min > max) {
             result.add(AzureValidationInfo.error(INVALID_MAXIMUM_COUNT_ERROR, txtMaximumCount));
         }

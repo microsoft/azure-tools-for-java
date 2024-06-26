@@ -5,7 +5,6 @@
 
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
-import com.intellij.openapi.ui.popup.ListItemDescriptorAdapter;
 import com.intellij.openapi.ui.popup.ListSeparator;
 import com.intellij.ui.GroupedComboBoxRenderer;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -32,19 +31,6 @@ public class WorkloadProfileTypeComboBox extends AzureComboBox<WorkloadProfileTy
         super();
         this.subscriptionId = subscriptionId;
         this.region = region;
-        this.setUsePreferredSizeAsMinimum(false);
-//        this.setRenderer(new GroupedItemsListRenderer<>(new RuntimeItemDescriptor()) {
-//            @SuppressWarnings("UnstableApiUsage")
-//            @Override
-//            protected boolean hasSeparator(WorkloadProfileType value, int index) {
-//                return index >= 0 && super.hasSeparator(value, index);
-//            }
-//
-//            @Override
-//            protected void customizeComponent(JList<? extends WorkloadProfileType> list, WorkloadProfileType value, boolean isSelected) {
-//                super.customizeComponent(list, value, isSelected);
-//            }
-//        });
         this.setRenderer(new GroupedComboBoxRenderer<>(this){
 
             @Nullable
@@ -96,37 +82,6 @@ public class WorkloadProfileTypeComboBox extends AzureComboBox<WorkloadProfileTy
 
     @Override
     protected String getItemText(Object item) {
-        return item instanceof WorkloadProfileType type ? type.getDisplayName() : super.getItemText(item);
-    }
-
-    class RuntimeItemDescriptor extends ListItemDescriptorAdapter<WorkloadProfileType> {
-        @Override
-        public String getTextFor(WorkloadProfileType value) {
-            return Optional.ofNullable(value).map(WorkloadProfileType::getDisplayName).orElse(StringUtils.EMPTY);
-        }
-
-        @Override
-        public @Nullable String getTooltipFor(WorkloadProfileType value) {
-            return Optional.ofNullable(value)
-                    .map(type -> String.format("vCPU: %s, RAM(GiB): %s", type.getCores(), type.getMemory()))
-                    .orElse(StringUtils.EMPTY);
-        }
-
-        @Override
-        public String getCaptionAboveOf(WorkloadProfileType value) {
-            return Optional.ofNullable(value).map(WorkloadProfileType::getCategory).orElse(StringUtils.EMPTY);
-        }
-
-        @Override
-        public boolean hasSeparatorAboveOf(WorkloadProfileType value) {
-            final List<WorkloadProfileType> items = WorkloadProfileTypeComboBox.this.getItems();
-            final int index = items.indexOf(value);
-            if (index <= 0) {
-                return index == 0;
-            }
-            final String currentCaption = getCaptionAboveOf(value);
-            final String lastCaption = getCaptionAboveOf(items.get(index - 1));
-            return StringUtils.isNotBlank(currentCaption) && !Objects.equals(currentCaption, lastCaption);
-        }
+        return item instanceof WorkloadProfileType type ? String.format("%s (vCPU: %s, RAM: %s)", type.getDisplayName(), type.getCores(), type.getMemory()) : super.getItemText(item);
     }
 }
