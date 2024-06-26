@@ -51,7 +51,21 @@ allprojects {
         }
     }
 
+    intellijPlatform {
+        buildSearchableOptions = false
+        instrumentCode = true
+    }
+
     dependencies {
+        intellijPlatform {
+            intellijIdeaUltimate(properties("platformVersion").get())
+            // run from a local idea installation
+            // local(File("C:\\Program Files\\JetBrains\\IntelliJ IDEA 242.16677.21"));
+            instrumentationTools()
+            // https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-jetbrains-runtime.html#declared-explicitly
+            // jetbrainsRuntime()
+        }
+
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.46.0"))
         implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.46.0"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
@@ -115,24 +129,6 @@ allprojects {
     }
 }
 
-subprojects{
-    apply {
-        plugin("org.jetbrains.intellij.platform.module")
-    }
-
-    intellijPlatform {
-        buildSearchableOptions = false
-        instrumentCode = true
-    }
-
-    dependencies {
-        intellijPlatform {
-            intellijIdeaUltimate(properties("platformVersion").get())
-            instrumentationTools()
-        }
-    }
-}
-
 intellijPlatform {
     projectName = "azure-toolkit-for-intellij"
     buildSearchableOptions = false
@@ -157,12 +153,7 @@ intellijPlatform {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaUltimate(properties("platformVersion").get())
-        // run from a local idea installation
-        // local(File("C:\\Program Files\\JetBrains\\IntelliJ IDEA 242.16677.21"));
-        instrumentationTools()
         pluginVerifier()
-        // jetbrainsRuntime()
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("com.intellij.java")
@@ -286,6 +277,10 @@ tasks {
     runIde {
         jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
     }
+
+//    val runLocalIde by registering(CustomRunIdeTask::class) {
+//        localPath = file("C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2024.1")
+//    }
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     //    testIdeUi {

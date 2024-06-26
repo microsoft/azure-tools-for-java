@@ -1,6 +1,5 @@
 package com.microsoft.azure.toolkit.intellij.containerapps.component;
 
-import com.azure.resourcemanager.appcontainers.models.ManagedEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
@@ -10,7 +9,6 @@ import com.microsoft.azure.toolkit.intellij.containerapps.creation.ContainerApps
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.cache.CacheManager;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.model.Region;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.containerapps.AzureContainerApps;
@@ -47,7 +45,9 @@ public class AzureContainerAppsEnvironmentComboBox extends AzureComboBox<Contain
     protected String getItemText(Object item) {
         if (item instanceof ContainerAppsEnvironment) {
             final ContainerAppsEnvironment environment = (ContainerAppsEnvironment) item;
-            return (environment.isDraftForCreating() ? "(New) " + environment.getName() : environment.getName()) + "(" + environment.getRegion().getLabel() + ")";
+            final String text = (environment.isDraftForCreating() ? "(New) " + environment.getName() : environment.getName());
+            final Region region = environment.getRegion();
+            return (region == null ? text : text + "(" + region.getLabel() + ")");
         }
         return super.getItemText(item);
     }

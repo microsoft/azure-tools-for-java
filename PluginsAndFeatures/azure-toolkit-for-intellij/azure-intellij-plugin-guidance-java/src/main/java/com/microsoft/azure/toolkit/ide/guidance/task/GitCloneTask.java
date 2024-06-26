@@ -78,6 +78,7 @@ public class GitCloneTask implements Task {
             }
             // create new branch and check out
             git.fetch().setRemote(ORIGIN).call();
+            // TODO: use commit id to create branch
             git.branchCreate().setName(branch).setStartPoint(String.format("%s/%s", ORIGIN, branch)).call();
             git.checkout().setName(branch).call();
             AzureMessager.getMessager().info(AzureString.format("Clone project to %s successfully.", directory));
