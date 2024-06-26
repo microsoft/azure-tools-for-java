@@ -14,16 +14,10 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 ## User Interface
 - **Telemetry Configuration Panel** : This space allows users to enable or disable telemetry if desired.
 
-
 ## Rules
 1. #### Kusto Queries Having a Time Interval in the Query String
-
-Writing KQL queries with hard-coded time intervals directly in the query string is an anti-pattern. 
-Time intervals include using ago(1d) or between(datetime(2023-01-01), datetime(2023-01-02)). 
-This approach makes queries less flexible and harder to troubleshoot.
-
-Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the time interval for the query. 
-By passing the time range as an argument in the method call, you make it easier to troubleshoot and understand the context of an API call. 
-This approach enhances the flexibility and readability of your Kusto queries.
-
+- **Anti-pattern**: Writing KQL queries with hard-coded time intervals directly in the query string. Time intervals include using ago(1d) or between(datetime(2023-01-01), datetime(2023-01-02)). This approach makes queries less flexible and harder to troubleshoot.
+-**Issue**: Hard-coding time intervals directly in the query string reduces the flexibility of your queries and makes them harder to troubleshoot. It can be difficult to understand the context of an API call when the time interval is embedded within the query string.
+- **Severity**: WARNING. 
+**Recommendation**: Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the time interval for the query.
 Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable) for additional information.
