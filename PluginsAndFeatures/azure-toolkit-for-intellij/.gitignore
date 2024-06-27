@@ -47,3 +47,6 @@ gen-external-apklibs/
 
 #.idea
 /azure-intellij-plugin-azure-sdk/.idea/
+
+# IntelliJ
+.idea/

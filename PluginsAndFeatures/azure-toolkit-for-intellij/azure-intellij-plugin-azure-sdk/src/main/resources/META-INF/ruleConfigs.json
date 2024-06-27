@@ -1,6 +1,13 @@
 {
+  "StorageUploadWithoutLengthCheck": {
+    "methods_to_check": [
+      "upload",
+      "uploadWithResponse"
+    ]
+  },
+
   "ServiceBusReceiverAsyncClientCheck": {
-    "clientName": "ServiceBusReceiverAsyncClient",
+    "client_name": "ServiceBusReceiverAsyncClient",
     "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   }
 }

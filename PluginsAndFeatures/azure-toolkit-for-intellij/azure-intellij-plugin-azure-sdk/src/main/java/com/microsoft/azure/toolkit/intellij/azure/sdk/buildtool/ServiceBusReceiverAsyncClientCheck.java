@@ -46,6 +46,8 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             public void visitTypeElement(PsiTypeElement element) {
                 super.visitTypeElement(element);
 
+                System.out.println("CLIENT_DATA: " + CLIENT_DATA);
+
                 // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
 
@@ -75,7 +77,7 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
         // Define constants for string literals
         final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
         final String SUGGESTION_KEY = "antipattern_message";
-        final String CLIENT_NAME_KEY = "clientName";
+        final String CLIENT_NAME_KEY = "client_name";
 
         try {
             final InputStream inputStream = ServiceBusReceiverAsyncClientCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
