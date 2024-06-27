@@ -44,9 +44,11 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
     // Get the list of methods to check from the configuration file
     private static List<String> getMethodsToCheck() {
 
+        System.out.println("METHODS_TO_CHECK: " + METHODS_TO_CHECK);
+
         final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
         final String RULE_NAME = "StorageUploadWithoutLengthCheck";
-        final String METHODS_TO_CHECK = "methodsToCheck";
+        final String METHODS_TO_CHECK = "methods_to_check";
 
         try {
             InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
