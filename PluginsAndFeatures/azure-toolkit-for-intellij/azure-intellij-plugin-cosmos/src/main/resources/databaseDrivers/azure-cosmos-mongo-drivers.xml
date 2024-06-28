@@ -3,7 +3,7 @@
     <!--driver will use same icon as that of DBMS if not configured according to com/intellij/database/dataSource/DatabaseDriverImpl.class:644-->
     <!--set forced-dbms to prevent `Better Driver` warning, refer to com.intellij.database.dataSource.validation.BestDriverValidator.collectProblems-->
     <driver id="az_cosmos_mongo" name="Azure Cosmos DB API for MongoDB" forced-dbms="MONGO"
-            dialect="MongoDB" driver-class="com.dbschema.MongoJdbcDriver"
+            dialect="MongoDB" default-driver-class="com.dbschema.MongoJdbcDriver"
             icon-path="icons/Microsoft.DocumentDB/databaseAccounts/mongo.svg">
         <url-template name="default" template="[jdbc:]mongodb[+srv]://[{user:identifier}[:{password:param}]@]&lt;\,,{host::localhost}?[:{port::27017}]&gt;[/{database}?[/{account:cosmos_account_mongo}?]]/\?ssl=true&amp;replicaSet=globaldb&amp;retrywrites=false&amp;maxIdleTimeMS=120000[\?&lt;&amp;,{:identifier}={:param}&gt;]"/>
         <artifact name="MongoDB" use="true" rolling="true"/>

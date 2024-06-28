@@ -38,6 +38,7 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDr
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.model.EnvironmentType;
+import com.microsoft.azure.toolkit.lib.containerapps.model.ResourceConfiguration;
 import com.microsoft.azure.toolkit.lib.containerregistry.Tag;
 import com.microsoft.azure.toolkit.lib.monitor.AzureLogAnalyticsWorkspace;
 import com.microsoft.azure.toolkit.lib.monitor.LogAnalyticsWorkspace;
@@ -148,6 +149,10 @@ public class IntelliJContainerAppsActionsContributor implements IActionsContribu
         final ResourceGroup rg = Optional.ofNullable(resourceGroup).orElseGet(() ->
                 Optional.ofNullable(cae).map(ContainerAppsEnvironment::getResourceGroup).orElse(historyRg));
         result.setResourceGroup(rg);
+        final ResourceConfiguration rc = new ResourceConfiguration();
+        rc.setCpu(1.0);
+        rc.setMemory("2.0Gi");
+        result.setResourceConfiguration(rc);
         return result;
     }
 

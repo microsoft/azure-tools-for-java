@@ -328,10 +328,8 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
         if (titleResource.isVisible()) {
             final ResourceConfiguration configuration = ResourceConfiguration.builder().workloadProfile(cbWorkloadProfile.getValue()).build();
             if (pnlProfile.isVisible()) {
-                final Double cpu = spinnerCpu.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerCpu.getValue();
-                final Double memory = spinnerMemory.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerMemory.getValue();
-                Optional.ofNullable(cpu).ifPresent(configuration::setCpu);
-                Optional.ofNullable(memory).ifPresent(value -> configuration.setMemory(value + "Gi"));
+                Optional.ofNullable(getSpinnerValue(spinnerCpu)).ifPresent(configuration::setCpu);
+                Optional.ofNullable(getSpinnerValue(spinnerMemory)).ifPresent(value -> configuration.setMemory(value + "Gi"));
             } else if (pnlConsumption.isVisible()) {
                 Optional.ofNullable(cbCpuAndMemory.getValue()).ifPresent(c -> {
                     configuration.setCpu(c.getCpu());
@@ -374,6 +372,11 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
             this.intMinReplicas.setNumber(Optional.ofNullable(c.getMinReplicas()).orElse(0));
         });
         Optional.ofNullable(data.getResourceConfiguration()).map(ResourceConfiguration::getWorkloadProfile).ifPresent(cbWorkloadProfile::setValue);
+        Optional.ofNullable(data.getResourceConfiguration()).ifPresent(rc -> {
+            Optional.ofNullable(rc.getWorkloadProfile()).ifPresent(cbWorkloadProfile::setValue);
+            Optional.ofNullable(rc.getCpu()).ifPresent(spinnerCpu::setValue);
+            Optional.ofNullable(rc.getMemory()).map(m -> StringUtils.removeEndIgnoreCase(m, "Gi")).map(Double::valueOf).ifPresent(spinnerMemory::setValue);
+        });
         final ContainerAppDraft.ImageConfig imageConfig = data.getImageConfig();
         if (Objects.nonNull(imageConfig)) {
             final Optional<Path> source = Optional.ofNullable(imageConfig.getBuildImageConfig()).map(ContainerAppDraft.BuildImageConfig::getSource);
@@ -396,6 +399,31 @@ public class ContainerAppCreationDialog extends AzureDialog<ContainerAppDraft.Co
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Arrays.asList(cbSubscription, cbResourceGroup, txtContainerAppName, this.formDeploymentSource);
+    }
+
+    @Nullable
+    private Double getSpinnerValue(JSpinner spinner) {
+        try {
+            return spinner.getValue() instanceof Integer ? Double.valueOf((Integer) spinner.getValue()) : (Double) spinner.getValue();
+        } catch (final RuntimeException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<AzureValidationInfo> validateAdditionalInfo() {
+        if (pnlProfile.isVisible()) {
+            final Double cpu = getSpinnerValue(spinnerCpu);
+            if (cpu == null || cpu <= 0) {
+                return List.of(AzureValidationInfo.error("Invalid CPU value, which should be more than 0", spinnerCpu));
+            }
+
+            final Double memory = getSpinnerValue(spinnerMemory);
+            if (memory == null || memory <= 0) {
+                return List.of(AzureValidationInfo.error("Invalid Memory value, which should be more than 0", spinnerMemory));
+            }
+        }
+        return AzureForm.super.validateAdditionalInfo();
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

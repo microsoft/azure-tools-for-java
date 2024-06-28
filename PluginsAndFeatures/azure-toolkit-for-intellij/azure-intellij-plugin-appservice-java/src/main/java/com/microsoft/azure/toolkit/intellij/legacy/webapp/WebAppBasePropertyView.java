@@ -130,7 +130,7 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
                 });
         btnDiscard.setAction(discardAction);
 
-        final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/webapp.save_property_changes"))
+        final Action<Void> saveAction = new Action<Void>(Action.Id.of("user/webapp.save_property_changes.app"))
                 .withAuthRequired(false)
                 .withIdParam(resourceName)
                 .withHandler((ignore, e) -> {

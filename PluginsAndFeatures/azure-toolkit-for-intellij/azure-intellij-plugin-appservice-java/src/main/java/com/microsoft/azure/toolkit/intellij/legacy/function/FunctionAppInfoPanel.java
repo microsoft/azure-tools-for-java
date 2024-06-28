@@ -40,6 +40,7 @@ import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironment;
+import com.microsoft.azure.toolkit.lib.containerapps.environment.ContainerAppsEnvironmentDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.model.EnvironmentType;
 import com.microsoft.azure.toolkit.lib.containerapps.model.ResourceConfiguration;
 import com.microsoft.azure.toolkit.lib.containerapps.model.WorkloadProfile;
@@ -48,6 +49,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.text.SimpleDateFormat;
@@ -138,15 +140,19 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
             });
         } else if (rdoContainerAppsEnvironment.isSelected()) {
             config.diagnosticConfig(null);
-            Optional.ofNullable(cbEnvironment.getValue()).ifPresent(environment -> config.environment(environment.getName()));
+            Optional.ofNullable(cbEnvironment.getValue()).ifPresent(e -> {
+                if (e instanceof ContainerAppsEnvironmentDraft draft) {
+                    config.environmentConfig(draft.getConfig());
+                } else {
+                    config.environment(e.getName());
+                }
+            });
             if (pnlWorkloadProfile.isVisible()) {
                 final ContainerAppFunctionConfiguration containerConfiguration = new ContainerAppFunctionConfiguration();
                 Optional.ofNullable(cbWorkloadProfile.getValue()).ifPresent(profile -> containerConfiguration.setWorkloadProfileMame(profile.getName()));
                 if (pnlProfile.isVisible()) {
-                    final Double cpu = spinnerCpu.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerCpu.getValue();
-                    final Double memory = spinnerMemory.getValue() instanceof Integer integer ? Double.valueOf(integer) : (Double) spinnerMemory.getValue();
-                    Optional.ofNullable(cpu).ifPresent(containerConfiguration::setCpu);
-                    Optional.ofNullable(memory).ifPresent(value -> containerConfiguration.setMemory(value + "Gi"));
+                    Optional.ofNullable(getSpinnerValue(spinnerCpu)).ifPresent(containerConfiguration::setCpu);
+                    Optional.ofNullable(getSpinnerValue(spinnerMemory)).ifPresent(value -> containerConfiguration.setMemory(value + "Gi"));
                 } else {
                     Optional.ofNullable(cbCpuAndMemory.getValue()).ifPresent(configuration -> {
                         containerConfiguration.setCpu(configuration.getCpu());
@@ -186,6 +192,10 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
                     .ifPresent(selectorServicePlan::setValue);
             Optional.ofNullable(config.environment()).filter(ignore -> useEnvironment)
                     .ifPresent(env -> cbEnvironment.setValue(r -> StringUtils.equalsIgnoreCase(r.getName(), env)));
+            Optional.ofNullable(config.containerConfiguration()).ifPresent(rc -> {
+                Optional.ofNullable(rc.getCpu()).ifPresent(spinnerCpu::setValue);
+                Optional.ofNullable(rc.getMemory()).map(m -> StringUtils.removeEndIgnoreCase(m, "Gi")).map(Double::valueOf).ifPresent(spinnerMemory::setValue);
+            });
             Optional.ofNullable(config.getFlexConsumptionConfiguration()).ifPresent(flexConfigurationPanel::setValue);
             final ContainerAppDraft.ImageConfig imageConfig = DockerUtils.convertRuntimeConfigToImageConfig(config.getRuntime());
             final boolean useDefaultImage = Objects.isNull(imageConfig) || StringUtils.equalsIgnoreCase(QUICK_START_IMAGE.getFullImageName(), imageConfig.getFullImageName());
@@ -433,6 +443,15 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
         return Optional.ofNullable(value).map(AppServicePlan::getPricingTier).map(PricingTier::isFlexConsumption).orElse(false);
     }
 
+    @Nullable
+    private Double getSpinnerValue(JSpinner spinner) {
+        try {
+            return spinner.getValue() instanceof Integer ? Double.valueOf((Integer) spinner.getValue()) : (Double) spinner.getValue();
+        } catch (final RuntimeException e) {
+            return null;
+        }
+    }
+
     @Override
     public List<AzureValidationInfo> validateAdditionalInfo() {
         final String subsId = Optional.ofNullable(selectorSubscription.getValue()).map(Subscription::getId).orElse(StringUtils.EMPTY);
@@ -451,6 +470,17 @@ public class FunctionAppInfoPanel extends JPanel implements AzureFormPanel<Funct
             if (Objects.nonNull(region) && !validFlexRuntimes.contains(appRuntime)) {
                 final String validValues = validFlexRuntimes.stream().map(FunctionAppRuntime::getDisplayName).collect(Collectors.joining(","));
                 return Collections.singletonList(AzureValidationInfo.error(String.format("`%s` is not a valid runtime for flex consumption app, supported values are %s", appRuntime.getDisplayName(), validValues), selectorRuntime));
+            }
+        }
+        if (pnlProfile.isVisible()) {
+            final Double cpu = getSpinnerValue(spinnerCpu);
+            if (cpu == null || cpu <= 0) {
+                return List.of(AzureValidationInfo.error("Invalid CPU value, which should be more than 0", spinnerCpu));
+            }
+
+            final Double memory = getSpinnerValue(spinnerMemory);
+            if (memory == null || memory <= 0) {
+                return List.of(AzureValidationInfo.error("Invalid Memory value, which should be more than 0", spinnerMemory));
             }
         }
         return AzureFormPanel.super.validateAdditionalInfo();

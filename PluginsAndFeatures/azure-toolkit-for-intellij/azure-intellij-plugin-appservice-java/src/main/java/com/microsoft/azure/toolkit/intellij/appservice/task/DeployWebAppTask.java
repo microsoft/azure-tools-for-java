@@ -18,6 +18,7 @@ import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.WebAppConfigura
 import com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppConfiguration;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.AzureWebApp;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.utils.Utils;
 import com.microsoft.intellij.util.BuildArtifactBeforeRunTaskUtils;
 
@@ -42,6 +43,9 @@ public class DeployWebAppTask extends BaseDeployTask {
             ((WebAppConfiguration) runConfiguration).setWebApp(Objects.requireNonNull(Azure.az(AzureWebApp.class).webApp(appId)));
             final List<AzureArtifact> allSupportedAzureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
             // todo: change to use artifact build by maven in last step if not exist
+            if (allSupportedAzureArtifacts.size() < 1) {
+                throw new AzureToolkitRuntimeException("No supported artifact found, please confirm if project is loaded correctly.");
+            }
             final AzureArtifact azureArtifact = allSupportedAzureArtifacts.get(0);
             ((WebAppConfiguration) runConfiguration).setArtifact(azureArtifact);
             final List<BeforeRunTask> beforeRunTasks = new ArrayList<>();

@@ -56,7 +56,7 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<ContainerAppsEnvironmentDraft.Config> implements AzureForm<ContainerAppsEnvironmentDraft.Config> {
     private static final Pattern CONTAINER_APPS_ENVIRONMENT_NAME_PATTERN = Pattern.compile("^[a-z][a-z0-9\\-]{0,30}[a-z0-9]$");
     private static final String CONTAINER_APPS_ENVIRONMENT_NAME_VALIDATION_MESSAGE = "A name must consist of lower case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character and cannot have '--'. The length must not be more than 32 characters.";
-    public static final String WORKLOAD_PROFILE_DESCRIPTION = "Dedicated workload profiles allow you to run your apps on customized hardware options. You can add Dedicated workload profiles below. <a href=\"https://go.microsoft.com/fwlink/?linkid=2226081\">Learn More</a>\u2197";
+    public static final String WORKLOAD_PROFILE_DESCRIPTION = "Dedicated workload profiles enable you to run your apps on custom hardware. You can control costs by adjusting the minimum and maximum workload profile instance count. <a href=\"https://go.microsoft.com/fwlink/?linkid=2226081\">Learn More about workload profiles \u2197</a>";
 
     private JLabel lblSubscription;
     private SubscriptionComboBox cbSubscription;
@@ -193,9 +193,9 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
         this.lblSubscription.setIcon(AllIcons.General.ContextHelp);
         this.lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
 
-        this.lblWorkloadProfiles.setText(WORKLOAD_PROFILE_DESCRIPTION);
         this.lblWorkloadProfiles.setAllowAutoWrapping(true);
         this.lblWorkloadProfiles.setCopyable(true);
+        this.lblWorkloadProfiles.setText(WORKLOAD_PROFILE_DESCRIPTION);
     }
 
     private void toggleEnvironmentType() {
@@ -241,6 +241,7 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
                 final Region region = cbRegion.getValue();
                 if (Objects.nonNull(subs) && Objects.nonNull(region)) {
                     final WorkloadProfileCreationDialog creationDialog = new WorkloadProfileCreationDialog(subs.getId(), region);
+                    creationDialog.setValue(WorkloadProfileCreationDialog.DEFAULT_VALUE);
                     if (creationDialog.showAndGet()) {
                         final WorkloadProfile value = creationDialog.getValue();
                         workloadProfilesTable.addWorkloadProfile(value);

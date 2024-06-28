@@ -23,6 +23,8 @@ import javax.swing.*;
 import java.util.*;
 
 public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> implements AzureForm<WorkloadProfile> {
+    public static final WorkloadProfile DEFAULT_VALUE = WorkloadProfile.builder().minimumCount(3).maximumCount(5).build();
+    public static final String PROFILE_NAME_REGEX = "^[a-zA-Z]([a-zA-Z0-9_-]*[a-zA-Z0-9])?$";
     public static final String MINIUM_COUNT_LESS_WARNING = "Setting minimum instance count to less than 3 is not recommended for production workloads due to redundancy concerns.";
     public static final String INVALID_MAXIMUM_COUNT_ERROR = "Maximum count should be greater than or equal to minimum count.";
     private JLabel lblName;
@@ -49,6 +51,9 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
     protected void init() {
         super.init();
 
+        this.lblName.setLabelFor(txtName);
+        this.txtName.setRequired(true);
+        this.txtName.addValidator(this::validateProfileName);
         this.txtMinimumCount.setMinValue(0);
         this.txtMinimumCount.setMaxValue(20);
         this.lblMinimumCount.setLabelFor(txtMinimumCount);
@@ -63,6 +68,20 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
             }
             return AzureValidationInfo.ok(txtMinimumCount);
         });
+    }
+
+    private AzureValidationInfo validateProfileName() {
+        final String name = txtName.getValue();
+        if (StringUtils.isBlank(name)) {
+            return AzureValidationInfo.error("Name should not be empty.", txtName);
+        }
+        if (name.length() > 15) {
+            return AzureValidationInfo.error("Workload profile name must be at most 15 characters.", txtName);
+        }
+        if (!name.matches(PROFILE_NAME_REGEX)) {
+            return AzureValidationInfo.error("The workload profile name must begin with letters, contain only letters, numbers, underscores, or dashes, and not end with an underscore or dash.", txtName);
+        }
+        return AzureValidationInfo.ok(txtName);
     }
 
     private void createUIComponents() {
@@ -87,7 +106,7 @@ public class WorkloadProfileCreationDialog extends AzureDialog<WorkloadProfile> 
                 .name(txtName.getValue())
                 .maximumCount(txtMaximumCount.getValue())
                 .minimumCount(txtMinimumCount.getValue())
-                .type(WorkloadProfileType.builder().name(Objects.requireNonNull(cbSize.getValue()).getName()).build()).build();
+                .type(cbSize.getValue()).build();
     }
 
     @Override

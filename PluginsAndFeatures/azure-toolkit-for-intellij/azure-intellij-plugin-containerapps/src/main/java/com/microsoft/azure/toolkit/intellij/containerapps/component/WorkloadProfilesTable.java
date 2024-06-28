@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.containerapps.component;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.lib.containerapps.model.WorkloadProfile;
+import com.microsoft.azure.toolkit.lib.containerapps.model.WorkloadProfileType;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -104,10 +105,11 @@ public class WorkloadProfilesTable extends JBTable implements AzureFormInputComp
                 return null;
             }
             final WorkloadProfile workloadProfile = rowIndex == 0 ? WorkloadProfile.CONSUMPTION_PROFILE : data.get(rowIndex -1);
+            final WorkloadProfileType type = workloadProfile.getType();
             return switch (columnIndex) {
                 case 0 -> workloadProfile.getName();
                 case 1 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "-" : String.format("%s-%s Instances", workloadProfile.getMinimumCount(), workloadProfile.getMaximumCount());
-                case 2 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "Up to 4 vCpus / 8 Gi" : String.format("vCPUs: %s, Memory: %s Gi", workloadProfile.getMinimumCount(), workloadProfile.getMaximumCount());
+                case 2 -> workloadProfile == WorkloadProfile.CONSUMPTION_PROFILE ? "Up to 4 vCpus / 8 Gi" : String.format("vCPUs: %s, Memory: %s Gi", type.getCores(), type.getMemory());
                 default -> null;
             };
         }

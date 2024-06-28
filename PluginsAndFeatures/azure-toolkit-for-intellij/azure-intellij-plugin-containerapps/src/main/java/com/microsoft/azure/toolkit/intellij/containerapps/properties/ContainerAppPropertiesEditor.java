@@ -29,9 +29,7 @@ import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerApp;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.ContainerAppDraft.ScaleConfig;
 import com.microsoft.azure.toolkit.lib.containerapps.containerapp.Revision;
-import com.microsoft.azure.toolkit.lib.containerapps.model.IngressConfig;
-import com.microsoft.azure.toolkit.lib.containerapps.model.RevisionMode;
-import com.microsoft.azure.toolkit.lib.containerapps.model.TransportMethod;
+import com.microsoft.azure.toolkit.lib.containerapps.model.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -93,6 +91,8 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
     private JPanel pnlScale;
     private JBIntSpinner intMinReplicas;
     private JBIntSpinner intMaxReplicas;
+    private JLabel lblWorkloadProfile;
+    private JBLabel txtWorkloadProfile;
     private final JTextField[] readOnlyComponents = new JTextField[]{txtInsecureConnections, txtTransportMethod};
 
     private final ContainerApp containerApp;
@@ -317,7 +317,15 @@ public class ContainerAppPropertiesEditor extends AzResourcePropertiesEditor<Con
             this.intMaxReplicas.setNumber(Optional.ofNullable(c.getMaxReplicas()).orElse(10));
             this.intMinReplicas.setNumber(Optional.ofNullable(c.getMinReplicas()).orElse(0));
         });
-
+        final ResourceConfiguration resourceConfiguration = containerApp.getResourceConfiguration();
+        final boolean isWorkloadProfile = Optional.ofNullable(resourceConfiguration)
+                .map(ResourceConfiguration::getWorkloadProfile).isPresent();
+        lblWorkloadProfile.setVisible(isWorkloadProfile);
+        txtWorkloadProfile.setVisible(isWorkloadProfile);
+        txtWorkloadProfile.setText(Optional.ofNullable(resourceConfiguration)
+                .map(ResourceConfiguration::getWorkloadProfile)
+                .map(WorkloadProfile::getName)
+                .orElse(N_A));
         AzureTaskManager.getInstance().runInBackground("Loading revisions.", () -> this.containerApp.revisions().list())
             .thenAccept(pools -> AzureTaskManager.getInstance().runLater(() -> fillRevisions(pools)));
     }

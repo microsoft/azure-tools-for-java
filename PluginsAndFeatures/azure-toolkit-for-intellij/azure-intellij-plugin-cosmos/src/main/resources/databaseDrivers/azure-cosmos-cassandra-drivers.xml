@@ -3,7 +3,7 @@
     <!--driver will use same icon as that of DBMS if not configured according to com/intellij/database/dataSource/DatabaseDriverImpl.class:644-->
     <!--set forced-dbms to prevent `Better Driver` warning, refer to com.intellij.database.dataSource.validation.BestDriverValidator.collectProblems-->
     <driver id="az_cosmos_cassandra" name="Azure Cosmos DB API for Cassandra" forced-dbms="CASSANDRA"
-            dialect="CassandraQL" driver-class="com.dbschema.CassandraJdbcDriver"
+            dialect="CassandraQL" default-driver-class="com.dbschema.CassandraJdbcDriver"
             icon-path="icons/Microsoft.DocumentDB/databaseAccounts/cassandra.svg">
         <url-template name="default" template="jdbc:cassandra://&lt;\,,{host::localhost}?[:{port::10350}]&gt;[/{database:::keyspace}?[/{account:cosmos_account_cassandra}?][\?&lt;&amp;,user={user},password={password},{:identifier}={:identifier}&gt;]]"/>
         <artifact name="Cassandra" use="true" rolling="true"/>

@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice;
 
+import com.azure.resourcemanager.appservice.models.ResourceConfig;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -262,6 +263,10 @@ public class AppServiceIntelliJActionsContributor implements IActionsContributor
         result.appSettings(new HashMap<>());
         Optional.ofNullable(subscription).map(Subscription::getId).ifPresent(result::subscriptionId);
         Optional.ofNullable(group).map(ResourceGroup::getRegion).ifPresent(result::region);
+        final ContainerAppFunctionConfiguration container = new ContainerAppFunctionConfiguration();
+        container.setMemory("2.0Gi");
+        container.setCpu(1.0);
+        result.containerConfiguration(container);
         return result;
     }
 
