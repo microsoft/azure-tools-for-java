@@ -27,17 +27,13 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2 id="3-89-0">3.89.0</h2>
+      <h2 id="3-90-0">3.90.0</h2>
       <h3 id="added">Added</h3>
       <ul>
-      <li>Added a &quot;get started with Azure Container Apps&quot; course.</li>
-      </ul>
-      <h3 id="fixed">Fixed</h3>
-      <ul>
-      <li>Error occurs when pushing image to container registry with docker file.</li>
-      <li>WebApp of deploy WebApp run configuration shows incorrectly after deploying to a slot.</li>
-      <li>&quot;Load .env&quot; before run task doesn&#39;t show in cases when deploying Azure WebApp.</li>
-      <li>Some other know issues.</li>
+      <li>Support IntelliJ 2024.2 EAP</li>
+      <li>Support workload profiles environment type in Azure Container Apps<ul>
+      <li>Support create workload profiles during the creation of an Azure Container Apps environment.</li>
+      <li>Enable setting of workload profiles during the creation of container apps and function apps.</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

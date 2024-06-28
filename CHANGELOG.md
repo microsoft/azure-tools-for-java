@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.90.0](#3900)
   - [3.89.0](#3890)
   - [3.88.0](#3880)
   - [3.87.0](#3870)
@@ -110,6 +111,13 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.90.0
+### Added
+- Support IntelliJ 2024.2 EAP
+- Support workload profiles environment type in Azure Container Apps
+  - Support create workload profiles during the creation of an Azure Container Apps environment.
+  - Enable setting of workload profiles during the creation of container apps and function apps.
 
 ## 3.89.0
 ### Added

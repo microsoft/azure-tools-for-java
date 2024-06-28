@@ -1,6 +1,13 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.90.0
+### Added
+- Support IntelliJ 2024.2 EAP
+- Support workload profiles environment type in Azure Container Apps
+  - Support create workload profiles during the creation of an Azure Container Apps environment.
+  - Enable setting of workload profiles during the creation of container apps and function apps.
+
 ## 3.89.0
 ### Added
 - Added a "get started with Azure Container Apps" course.
