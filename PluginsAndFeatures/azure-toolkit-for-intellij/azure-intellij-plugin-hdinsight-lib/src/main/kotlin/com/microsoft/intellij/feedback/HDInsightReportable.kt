@@ -45,7 +45,7 @@ open class HDInsightReportable(private val shortMessage: String) : DumbAware {
     private val additionalInfo = mutableMapOf<String, String>()
 
     open fun getTitleTags(): Set<String> {
-        return setOf("IntelliJ", "ReportedByUser")
+        return setOf("IntelliJ")
     }
 
     open fun getTitle(): String {
