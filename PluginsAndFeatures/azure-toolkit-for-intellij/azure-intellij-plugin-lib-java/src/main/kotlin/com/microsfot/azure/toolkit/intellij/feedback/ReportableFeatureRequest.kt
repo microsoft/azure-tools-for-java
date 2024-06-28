@@ -32,7 +32,7 @@ class ReportableFeatureRequest(shortMessage: String) : Reportable(shortMessage) 
     )
 
     override fun getTitleTags(): Set<String> {
-        return setOf("IntelliJ", "ReportedByUser", "feature-request")
+        return setOf("IntelliJ", "feature-request")
     }
 
     override fun getBody(): String {

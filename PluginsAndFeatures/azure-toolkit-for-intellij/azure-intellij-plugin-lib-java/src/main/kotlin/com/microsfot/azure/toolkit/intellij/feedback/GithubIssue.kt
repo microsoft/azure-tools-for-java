@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets
 class GithubIssue<T : Reportable>(private val reportable: T) {
     private val plugin = reportable.plugin
     private val loginPrefix = "https://github.com/login"
-    private val labels = mutableSetOf("IntelliJ")
+    private val labels = mutableSetOf("IntelliJ Reported")
 
     private val pluginRepo: URI
         get() {
