@@ -37,13 +37,13 @@ import javax.annotation.Nullable;
 import javax.swing.*;
 import java.util.*;
 
+import static com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor.ACTIONS_DEPLOY_TO_AZURE;
 import static com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics.CONNECTION_CHANGED;
 import static com.microsoft.azure.toolkit.intellij.connector.DeploymentTargetTopics.TARGET_APP_CHANGED;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.CONNECT_TO_MODULE;
 
 @Slf4j
 public class AzureFacetRootNode extends AbstractProjectNode<AzureModule> implements IAzureFacetNode {
-    public static final String ACTIONS_DEPLOY_TO_AZURE = "user/common.deploy_to_azure";
 
     private final AzureEventBus.EventListener eventListener;
 

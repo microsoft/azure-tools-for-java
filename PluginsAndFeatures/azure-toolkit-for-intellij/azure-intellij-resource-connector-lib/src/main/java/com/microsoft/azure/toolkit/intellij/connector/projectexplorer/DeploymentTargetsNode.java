@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor.ACTIONS_DEPLOY_TO_AZURE;
 import static com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor.REFRESH_MODULE_TARGETS;
-import static com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AzureFacetRootNode.ACTIONS_DEPLOY_TO_AZURE;
 
 public class DeploymentTargetsNode extends AbstractAzureFacetNode<DeploymentTargetManager> {
 
