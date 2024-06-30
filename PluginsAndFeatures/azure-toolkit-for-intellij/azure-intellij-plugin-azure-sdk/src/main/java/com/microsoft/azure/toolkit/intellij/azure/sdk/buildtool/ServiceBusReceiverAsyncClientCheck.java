@@ -8,16 +8,11 @@ import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class extends the LocalInspectionTool to check for the use of ServiceBusReceiverAsyncClient
@@ -27,7 +22,22 @@ import java.util.stream.Collectors;
  */
 public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
-    static final List<String> CLIENT_DATA = getClientToCheck();
+    private static List<String> CLIENT_DATA = null;
+
+    // Define constants for string literals
+    private static final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
+    private static final String RULE_NAME = "ServiceBusReceiverAsyncClientCheck";
+    private static final String SUGGESTION_KEY = "antipattern_message";
+    private static final String CLIENT_NAME_KEY = "client_name";
+    private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
+
+    static {
+        try {
+            CLIENT_DATA = getClientToCheck();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error loading client data", e);
+        }
+    }
 
 
     /**
@@ -45,8 +55,6 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             @Override
             public void visitTypeElement(PsiTypeElement element) {
                 super.visitTypeElement(element);
-
-                System.out.println("CLIENT_DATA: " + CLIENT_DATA);
 
                 // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
@@ -72,27 +80,12 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
      *
      * @return List of client name and suggestion message
      */
-    static List<String> getClientToCheck() {
+    static List<String> getClientToCheck() throws IOException {
 
-        // Define constants for string literals
-        final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
-        final String SUGGESTION_KEY = "antipattern_message";
-        final String CLIENT_NAME_KEY = "client_name";
+        final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
+        final String clientName = jsonObject.getJSONObject(RULE_NAME).getString(CLIENT_NAME_KEY);
+        final String suggestion= jsonObject.getJSONObject(RULE_NAME).getString(SUGGESTION_KEY);
+        return Arrays.asList(clientName, suggestion);
 
-        try {
-            final InputStream inputStream = ServiceBusReceiverAsyncClientCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
-            if (inputStream == null) {
-                throw new FileNotFoundException("Configuration file not found");
-            }
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                final JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                final String clientName = jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString(CLIENT_NAME_KEY);
-                final String suggestion= jsonObject.getJSONObject("ServiceBusReceiverAsyncClientCheck").getString(SUGGESTION_KEY);
-                return Arrays.asList(clientName, suggestion);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
     }
 }

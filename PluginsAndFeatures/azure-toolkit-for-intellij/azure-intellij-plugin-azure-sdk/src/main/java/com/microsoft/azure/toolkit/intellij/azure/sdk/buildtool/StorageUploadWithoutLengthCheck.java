@@ -13,12 +13,10 @@ import org.json.JSONObject;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 
@@ -37,33 +35,28 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         return "Ensure Storage APIs use Length Parameter";
     }
 
-    private static final List<String> METHODS_TO_CHECK = getMethodsToCheck();
-    private static final String LENGTH_TYPE = "PsiType:long";
+    private static List<String> METHODS_TO_CHECK_LIST;
+    private static final String RULE_NAME = "StorageUploadWithoutLengthCheck";
+    private static final String METHODS_TO_CHECK_KEY = "methods_to_check";
+    private static final String LENGTH_TYPE = "long";
+    private static final Logger LOGGER = Logger.getLogger(StorageUploadWithoutLengthCheck.class.getName());
 
+
+
+    static {
+        try {
+            METHODS_TO_CHECK_LIST = getMethodsToCheck();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error loading methods to check", e);
+        }
+    }
 
     // Get the list of methods to check from the configuration file
-    private static List<String> getMethodsToCheck() {
+    private static List<String> getMethodsToCheck() throws IOException {
 
-        System.out.println("METHODS_TO_CHECK: " + METHODS_TO_CHECK);
-
-        final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
-        final String RULE_NAME = "StorageUploadWithoutLengthCheck";
-        final String METHODS_TO_CHECK = "methods_to_check";
-
-        try {
-            InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
-            if (inputStream == null) {
-                throw new FileNotFoundException("Configuration file not found");
-            }
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                JSONArray methods = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK);
-                return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
+        JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
+        JSONArray methods = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK_KEY);
+        return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
     }
 
     /**
@@ -83,7 +76,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                 super.visitMethodCallExpression(expression);
                 String methodName = expression.getMethodExpression().getReferenceName();
 
-                if (!METHODS_TO_CHECK.contains(methodName)) {
+                if (!METHODS_TO_CHECK_LIST.contains(methodName)) {
                     return;
                 }
 
