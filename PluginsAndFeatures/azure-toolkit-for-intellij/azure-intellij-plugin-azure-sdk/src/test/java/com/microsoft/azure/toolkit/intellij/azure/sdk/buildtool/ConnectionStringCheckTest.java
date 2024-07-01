@@ -74,35 +74,6 @@ public class ConnectionStringCheckTest {
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
     }
 
-
-    // Asserts that the visitor is not null and is an instance of JavaElementVisitor
-    void assertVisitor(PsiElementVisitor visitor) {
-        assertNotNull(visitor);
-        assertTrue(visitor instanceof JavaElementVisitor);
-    }
-
-    // Verifies that a warning is raised when a connection string being used to create a client is detected.
-    void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS, String CLASS_NAME) {
-
-        PsiMethodCallExpression methodCallExpression = mock(PsiMethodCallExpression.class);
-        PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
-        PsiMethod resolvedMethod = mock(PsiMethod.class);
-        PsiMethod method = mock(PsiMethod.class);
-        PsiClass containingClass = mock(PsiClass.class);
-
-        when(methodCallExpression.getMethodExpression()).thenReturn(methodExpression);
-        when(methodExpression.resolve()).thenReturn(resolvedMethod);
-        when(resolvedMethod.getContainingClass()).thenReturn(containingClass);
-        when(resolvedMethod.getName()).thenReturn(METHOD_TO_CHECK);
-        when(containingClass.getQualifiedName()).thenReturn(CLASS_NAME);
-
-        (visitor).visitElement(methodCallExpression);
-
-        // Verify problem is registered
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(methodCallExpression), Mockito.contains("Connection String detected. Use AzureKeyCredentials for azure service client authentication instead."));
-    }
-
-
     // Problem isn't registered because the method to check is different from the method that should be flagged
     @Test
     void differentMethodCheck() {
@@ -131,5 +102,32 @@ public class ConnectionStringCheckTest {
         String CLASS_NAME = null;
 
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
+    }
+
+    // Asserts that the visitor is not null and is an instance of JavaElementVisitor
+    void assertVisitor(PsiElementVisitor visitor) {
+        assertNotNull(visitor);
+        assertTrue(visitor instanceof JavaElementVisitor);
+    }
+
+    // Verifies that a warning is raised when a connection string being used to create a client is detected.
+    void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS, String CLASS_NAME) {
+
+        PsiMethodCallExpression methodCallExpression = mock(PsiMethodCallExpression.class);
+        PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
+        PsiMethod resolvedMethod = mock(PsiMethod.class);
+        PsiMethod method = mock(PsiMethod.class);
+        PsiClass containingClass = mock(PsiClass.class);
+
+        when(methodCallExpression.getMethodExpression()).thenReturn(methodExpression);
+        when(methodExpression.resolve()).thenReturn(resolvedMethod);
+        when(resolvedMethod.getContainingClass()).thenReturn(containingClass);
+        when(resolvedMethod.getName()).thenReturn(METHOD_TO_CHECK);
+        when(containingClass.getQualifiedName()).thenReturn(CLASS_NAME);
+
+        (visitor).visitElement(methodCallExpression);
+
+        // Verify problem is registered
+        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(methodCallExpression), Mockito.contains("Connection String detected. Use AzureKeyCredentials for azure service client authentication instead."));
     }
 }
