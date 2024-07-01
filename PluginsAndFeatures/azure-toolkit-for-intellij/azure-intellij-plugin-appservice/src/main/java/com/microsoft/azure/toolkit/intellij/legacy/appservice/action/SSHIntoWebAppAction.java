@@ -7,10 +7,13 @@ package com.microsoft.azure.toolkit.intellij.legacy.appservice.action;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.terminal.ui.TerminalWidget;
+import com.jediterm.terminal.TtyConnector;
+import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
+import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -19,10 +22,14 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.legacy.appservice.TunnelProxy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractList;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
@@ -101,13 +108,38 @@ public class SSHIntoWebAppAction {
         terminalWidget.getTtyConnectorAccessor().executeWithTtyConnector((connector) -> {
             terminalWidget.sendCommandToExecute(String.format(CMD_SSH_TO_LOCAL_PROXY, TunnelProxy.DEFAULT_SSH_USERNAME, port));
             AzureTaskManager.getInstance().runOnPooledThread(() -> {
+                final Action<String> copy = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.COPY_STRING)
+                        .bind(TunnelProxy.DEFAULT_SSH_PASSWORD)
+                        .withLabel("Copy Password");
                 try {
-                    Thread.sleep(3000);
-                    terminalWidget.sendCommandToExecute(TunnelProxy.DEFAULT_SSH_PASSWORD);
+                    if (waitForInputPassword(connector)) {
+                        connector.write(TunnelProxy.DEFAULT_SSH_PASSWORD + "\n");
+                    } else {
+                        AzureMessager.getMessager().warning("waiting too long, please input password manually.", copy);
+                    }
+                } catch (final IOException | IllegalAccessException e) {
+                    AzureMessager.getMessager().error("failed to input password automatically, please input password manually.", copy);
                 } catch (final InterruptedException e) {
-                    log.error("Error occurred when sending password to terminal", e);
+                    log.warn("interrupted when waiting for inputting password", e);
                 }
             });
         });
+    }
+
+    private static boolean waitForInputPassword(TtyConnector connector) throws IllegalAccessException, InterruptedException {
+        int count = 0;
+        final int interval = 500;
+        final int times = 30000 / interval;
+        while (count++ < times) {
+            final AbstractList<Byte> outputCache = (AbstractList<Byte>) FieldUtils.readField(connector, "outputCache", true);
+            Byte[] bytes = new Byte[outputCache.size()];
+            bytes = outputCache.toArray(bytes);
+            final byte[] myBuf = ArrayUtils.toPrimitive(bytes);
+            if (myBuf != null && new String(myBuf, StandardCharsets.UTF_8).contains("password:")) {
+                return true;
+            }
+            Thread.sleep(interval);
+        }
+        return false;
     }
 }
