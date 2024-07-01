@@ -25,6 +25,33 @@
         </localInspection>
 
         <localInspection
+                shortName="StorageUploadWithoutLengthCheck"
+                displayName="Storage Upload Without Length Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="INFO"
+
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiverAsyncClientCheck"
+                displayName="Low level ServiceBusReceiverAsyncClient check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+            </class>
+        </localInspection>
+
+        <localInspection
                 language="JAVA"
                 shortName="UseOfBlockOnAsyncClientsCheck"
                 displayName="Use Of Block On Async Clients Check"
@@ -33,9 +60,9 @@
                 level="WARNING"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseOfBlockOnAsyncClientsCheck">
 
-            <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseOfBlockOnAsyncClientsCheck
-            </class>
+        <class>
+            com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseOfBlockOnAsyncClientsCheck
+        </class>
         </localInspection>
     </extensions>
 </idea-plugin>
