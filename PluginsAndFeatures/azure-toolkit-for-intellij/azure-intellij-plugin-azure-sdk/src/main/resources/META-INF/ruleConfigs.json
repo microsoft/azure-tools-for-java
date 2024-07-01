@@ -1,0 +1,24 @@
+{
+  "StorageUploadWithoutLengthCheck": {
+    "methods_to_check": [
+      "upload",
+      "uploadWithResponse"
+    ],
+    "antipattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+  },
+
+  "ServiceBusReceiverAsyncClientCheck": {
+    "client_name": "ServiceBusReceiverAsyncClient",
+    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+  },
+
+  "UseOfBlockOnAsyncClientsCheck": {
+    "async_return_types_to_check": [
+      "reactor.core.publisher.Mono",
+      "reactor.core.publisher.Flux",
+      "com.azure.core.util.paging.PagedFlux",
+      "com.azure.core.util.polling.PollerFlux"
+    ],
+    "antipattern_message": "Use of block() on async clients detected. Switch to synchronous APIs instead."
+  }
+}

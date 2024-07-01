@@ -4,13 +4,18 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -21,7 +26,7 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
     @NotNull
     @Override
-    public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+    public JavaElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
         return new UseOfBlockOnAsyncClientsVisitor(holder, isOnTheFly);
     }
 
@@ -33,6 +38,34 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
         private final boolean isOnTheFly;
 
+        private static final String RULE_NAME = "UseOfBlockOnAsyncClientsCheck";
+        private static final Map<String, Object> RULE_CONFIGS_MAP;
+
+        private static final String ANTI_PATTERN_MESSAGE_KEY = "antipattern_message";
+        private static final String ASYNC_RETURN_TYPES_KEY = "async_return_types_to_check";
+        private static final List<String> ASYNC_RETURN_TYPES;
+        static final String ANTI_PATTERN_MESSAGE;
+
+        // Load the config file
+        static {
+            try {
+                RULE_CONFIGS_MAP = getAsyncReturnTypesToCheck();
+
+                // extract the async return types to check
+                ASYNC_RETURN_TYPES = (List<String>) RULE_CONFIGS_MAP.get(ASYNC_RETURN_TYPES_KEY);
+
+                ANTI_PATTERN_MESSAGE = (String) RULE_CONFIGS_MAP.get(ANTI_PATTERN_MESSAGE_KEY);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Error loading config file", e);
+            }
+        }
+
+        /**
+         * Constructor to initialize the visitor with the holder and isOnTheFly flag.
+         * @param holder ProblemsHolder
+         * @param isOnTheFly boolean
+         */
         public UseOfBlockOnAsyncClientsVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
             this.isOnTheFly = isOnTheFly;
@@ -51,15 +84,13 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
             if (expression instanceof PsiMethodCallExpression) {
                 PsiMethodCallExpression methodCall = expression;
 
-                System.out.println("methodCall.getMethodExpression().getReferenceName()): " + methodCall.getMethodExpression().getReferenceName());
-
-                // Check if the method call is block()
+                // Check if the method call is block() or a variant of block() method
                 if (methodCall.getMethodExpression().getReferenceName().startsWith("block")) {
                     boolean isAsyncContext = checkIfAsyncContext(methodCall);
+
+                    // Check if the method call is on an Azure SDK client and is in an async context
                     if (isAsyncContext && isAzureClient(methodCall)) {
-                        holder.registerProblem(expression, "Using block() method in an async client can lead to performance issues.");
-                    } else {
-                        holder.registerProblem(expression, "Consider using a synchronous client instead of block().");
+                        holder.registerProblem(expression, ANTI_PATTERN_MESSAGE);
                     }
                 }
             }
@@ -73,21 +104,21 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
          */
         private boolean checkIfAsyncContext(@NotNull PsiMethodCallExpression methodCall) {
             PsiExpression expression = methodCall.getMethodExpression().getQualifierExpression();
-            System.out.println("Expression: " + expression);
 
+            // Check if the method call is on a reactive type
             if (expression != null) {
                 PsiType type = expression.getType();
-                System.out.println("Type: " + type);
 
+                // Check if the type is a reactive type
                 if (type != null) {
                     String typeName = type.getCanonicalText();
-                    System.out.println("TypeName: " + typeName);
 
-                    // Check for common async/reactive types directly
-                    return typeName.startsWith("reactor.core.publisher.Mono") ||
-                        typeName.startsWith("reactor.core.publisher.Flux") ||
-                        typeName.startsWith("com.azure.core.util.paging.PagedFlux") ||
-                        typeName.startsWith("com.azure.core.util.polling.PollerFlux");
+                    // Check for common async/reactive types directly in the list asyncReturnTypes
+                    for (String asyncReturnType : ASYNC_RETURN_TYPES) {
+                        if (typeName.startsWith(asyncReturnType)) {
+                            return true;
+                        }
+                    }
                 }
             }
             return false;
@@ -101,11 +132,10 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
          */
         private boolean isAzureClient(@NotNull PsiMethodCallExpression methodCall) {
             PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
-            System.out.println("ContainingClass: " + containingClass);
 
+            // Check if the method call is on a class
             if (containingClass != null) {
                 String className = containingClass.getQualifiedName();
-                System.out.println("ClassName: " + className);
 
                 // Check if the class is part of the Azure SDK
                 if (className != null && className.startsWith("com.azure.")) {
@@ -113,6 +143,21 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
                 }
             }
             return false;
+        }
+
+        // helper method to load config from json
+        private static  Map<String, Object> getAsyncReturnTypesToCheck() throws IOException {
+
+            //load json object
+            JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
+
+            //get the async return types to check
+            JSONArray asyncReturnTypes = jsonObject.getJSONObject(RULE_NAME).getJSONArray(ASYNC_RETURN_TYPES_KEY);
+
+            // extract string from json object
+            String antiPatternMessage = jsonObject.getJSONObject(RULE_NAME).getString(ANTI_PATTERN_MESSAGE_KEY);
+
+            return Map.of(ASYNC_RETURN_TYPES_KEY, asyncReturnTypes.toList(), ANTI_PATTERN_MESSAGE_KEY, antiPatternMessage.toString());
         }
     }
 }
