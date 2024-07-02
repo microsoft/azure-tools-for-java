@@ -144,29 +144,30 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
                     }
                 }
             }
+            else if (blockChild instanceof PsiDeclarationStatement) {    // This is a check for the declaration statement
 
-            // This is a check for the declaration statement
-            PsiDeclarationStatement declarationStatement = (PsiDeclarationStatement) blockChild;
+                PsiDeclarationStatement declarationStatement = (PsiDeclarationStatement) blockChild;
 
-            // Traverse the declared elements within the declaration statement
-            for (PsiElement declaredElement : declarationStatement.getDeclaredElements()) {
+                // Traverse the declared elements within the declaration statement
+                for (PsiElement declaredElement : declarationStatement.getDeclaredElements()) {
 
-                // Check if the declared element is a local variable
-                if (!(declaredElement instanceof PsiLocalVariable)) {
-                    continue;
-                }
+                    // Check if the declared element is a local variable
+                    if (!(declaredElement instanceof PsiLocalVariable)) {
+                        continue;
+                    }
 
-                // Extract the local variable and its initializer
-                PsiLocalVariable localVariable = (PsiLocalVariable) declaredElement;
-                PsiExpression initializer = localVariable.getInitializer();
+                    // Extract the local variable and its initializer
+                    PsiLocalVariable localVariable = (PsiLocalVariable) declaredElement;
+                    PsiExpression initializer = localVariable.getInitializer();
 
-                if (!(initializer instanceof PsiMethodCallExpression)) {
-                    continue;
-                }
-                // Check if the initializer is a method call expression
-                PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) initializer;
-                if (isClientCreationMethod(methodCallExpression)) {
-                    holder.registerProblem(methodCallExpression, ANTI_PATTERN_MESSAGE);
+                    if (!(initializer instanceof PsiMethodCallExpression)) {
+                        continue;
+                    }
+                    // Check if the initializer is a method call expression
+                    PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) initializer;
+                    if (isClientCreationMethod(methodCallExpression)) {
+                        holder.registerProblem(methodCallExpression, ANTI_PATTERN_MESSAGE);
+                    }
                 }
             }
         }
