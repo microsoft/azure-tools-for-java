@@ -1,4 +1,16 @@
 {
+  "StorageUploadWithoutLengthCheck": {
+    "methods_to_check": [
+      "upload",
+      "uploadWithResponse"
+    ],
+    "antipattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+  },
+
+  "ServiceBusReceiverAsyncClientCheck": {
+    "client_name": "ServiceBusReceiverAsyncClient",
+    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+  },
   "KustoQueriesWithTimeIntervalInQueryStringCheck": {
     "regex_patterns": {
       "KQL_ANTI_PATTERN_AGO": "\"?ago\\(\"?\\+?\"?\\d+[smhdw]\"?\\+?\"?\\)?\"?",

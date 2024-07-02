@@ -26,8 +26,36 @@
 
         <localInspection
                 language="JAVA"
+                shortName="StorageUploadWithoutLengthCheck"
+                displayName="Storage Upload Without Length Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="INFO"
+
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiverAsyncClientCheck"
+                displayName="Low level ServiceBusReceiverAsyncClient check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
                 shortName="KustoQueriesWithTimeIntervalInQueryStringCheck"
-                displayName="Kusto Queries With TIme Interval In Query String Check"
+                displayName="Kusto Queries With Time Interval In Query String Check"
                 groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"

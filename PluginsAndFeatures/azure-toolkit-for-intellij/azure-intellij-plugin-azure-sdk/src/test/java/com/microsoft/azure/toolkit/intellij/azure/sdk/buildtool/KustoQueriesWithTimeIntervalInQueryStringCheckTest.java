@@ -25,7 +25,6 @@ import org.mockito.Mock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -45,6 +44,15 @@ import static org.mockito.Mockito.verify;
  * 5. "String query5 = \"| where timestamp > startofmonth()\";": This query uses the startofmonth function to get the start of the current month. This should be FLAGGED.
  * 6. "String query11 = \"| where timestamp > ago(\" + days + \")\";": This query uses a variable to define the time interval. This should be FLAGGED.
  * 7. "String query12 = \"| where timestamp > datetime(\" + date + \")\";": This query uses a variable to define the datetime. This should not be FLAGGED.
+ * If these queries are used in a method call to an Azure client, they should be flagged.
+ *
+ * eg BlobClient blobAsyncClient = new BlobClientBuilder().buildClient();
+ *
+ *     String kqlQueryOne = "ExampleTable\n" +
+ *         "| where TimeGenerated > ago(1h)" +
+ *         "| summarize count() by bin(TimeGenerated, 1h);";
+ *
+ *     String result = blobAsyncClient.query(kqlQueryOne);
  */
 
 public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
