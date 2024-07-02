@@ -23,12 +23,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is used to check for the dynamic creation of clients in the code.
+ * It extends the LocalInspectionTool class, which is used to create custom code inspections.
+ * The visitor inspects a for loop and checks for methodcall expressions that create clients using the buildClient or AsyncBuildClient methods.
+ * If a client creation method is found building a client from the com.azure package, a problem is registered.
+ */
 public class DynamicClientCreationCheck extends LocalInspectionTool {
 
 
     /**
      * ]
-     * This method builds a visitor to check for the discouraged client name in the code.
+     * This method builds the visitor that checks for the dynamic creation of clients in the code.
      *
      * @param holder
      * @param isOnTheFly
