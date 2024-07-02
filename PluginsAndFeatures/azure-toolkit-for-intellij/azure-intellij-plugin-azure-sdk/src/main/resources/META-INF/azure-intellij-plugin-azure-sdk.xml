@@ -42,13 +42,27 @@
                 language="JAVA"
                 shortName="ServiceBusReceiverAsyncClientCheck"
                 displayName="Low level ServiceBusReceiverAsyncClient check"
-                groupName="Azure SDK"
+                groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
 
             <class>
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DynamicClientCreationCheck"
+                displayName="Dynamic Client Creation Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck
             </class>
         </localInspection>
     </extensions>

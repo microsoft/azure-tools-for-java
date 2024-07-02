@@ -10,5 +10,13 @@
   "ServiceBusReceiverAsyncClientCheck": {
     "client_name": "ServiceBusReceiverAsyncClient",
     "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+  },
+
+  "DynamicClientCreationCheck": {
+    "methods_to_check": [
+      "buildClient",
+      "buildAsyncClient"
+    ],
+    "antipattern_message": "Dynamic client creation detected. Create a single client instance and reuse it instead."
   }
 }
