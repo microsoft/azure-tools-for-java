@@ -30,9 +30,13 @@ import static org.mockito.Mockito.verify;
  * 3. final ServiceBusReceiverAsyncClient autoCompleteReceiver =
  *             toClose(getReceiverBuilder(false, entityType, index, false)
  *                 .buildAsyncClient());
+ *
+ * 4. final EventHubConsumerAsyncClient consumerClient = partitionPump.getClient();
+ * 5. EventHubConsumerAsyncClient eventHubConsumer = eventHubClientBuilder.buildAsyncClient()
+ *                 .createConsumer(claimedOwnership.getConsumerGroup(), prefetch, true);
  */
 
-public class ServiceBusReceiverAsyncClientCheckTest {
+public class DetectDiscouragedClientCheckTest {
 
     // Create a mock ProblemsHolder to be used in the test
     @Mock
@@ -55,16 +59,42 @@ public class ServiceBusReceiverAsyncClientCheckTest {
         mockTypeElement = mock(PsiTypeElement.class);
     }
 
+    /**
+     * Test that a problem is registered when the client name is ServiceBusReceiverAsyncClient.
+     *
+     * This test is important because it verifies that the code registers a problem
+     * when the client name is ServiceBusReceiverAsyncClient.
+     */
     @Test
     public void testProblemRegisteredWhenUsingServiceBusReceiverAsyncClient() {
         // Assert
         assertVisitor();
 
-        String CLIENT_TO_CHECK = "ServiceBusReceiverAsyncClient";
+        String clientToCheck = "ServiceBusReceiverAsyncClient";
+        String suggestionMessage = "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead.";
 
         // Visit Type Element
-        int NUMBER_OF_INVOCATIONS = 1;  // Number of times registerProblem should be called
-        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS, CLIENT_TO_CHECK);
+        int numberOfInvocations = 1;  // Number of times registerProblem should be called
+        visitTypeElement(mockTypeElement, numberOfInvocations, clientToCheck, suggestionMessage);
+    }
+
+    /**
+     * Test that a problem is registered when the client name is EventHubConsumerAsyncClient.
+     *
+     * This test is important because it verifies that the code registers a problem
+     * when the client name is EventHubConsumerAsyncClient.
+     */
+    @Test
+    public void testProblemRegisteredWhenUsingEventHubConsumerAsyncClientCheck() {
+        // Assert
+        assertVisitor();
+
+        String clientToCheck = "EventHubConsumerAsyncClient";
+        String suggestionMessage = "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead.";
+
+        // Visit Type Element
+        int numberOfInvocations = 1;  // Number of times registerProblem should be called
+        visitTypeElement(mockTypeElement, numberOfInvocations, clientToCheck, suggestionMessage);
     }
 
     /**
@@ -75,13 +105,15 @@ public class ServiceBusReceiverAsyncClientCheckTest {
      */
 
     @Test
-    void testProblemNotRegisteredWhenCheckingForDiifferentClient() {
+    public void testProblemNotRegisteredWhenCheckingForDiifferentClient() {
 
-        String CLIENT_TO_CHECK = "ServiceBusProcessorClient";
+        String clientToCheck = "ServiceBusProcessorClient";
 
         // Visit Type Element
-        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
-        visitTypeElement(mockTypeElement, NUMBER_OF_INVOCATIONS, CLIENT_TO_CHECK);
+        int numberOfInvocations = 0;  // Number of times registerProblem should be called
+
+        String suggestionMessage = "";
+        visitTypeElement(mockTypeElement, numberOfInvocations, clientToCheck, suggestionMessage);
 
     }
 
@@ -89,21 +121,27 @@ public class ServiceBusReceiverAsyncClientCheckTest {
      * Test that a problem is not registered when the PsiTypeElement is null and the client name is empty.
      */
     @Test
-    void testProblemNotRegisteredWhenClientIsEmpty() {
+    public void testProblemNotRegisteredWhenClientIsEmpty() {
         // Visit Type Element
-        int NUMBER_OF_INVOCATIONS = 0;  // Number of times registerProblem should be called
-        String CLIENT_TO_CHECK = "";
-        visitTypeElement(null, NUMBER_OF_INVOCATIONS, "");
+        int numberOfInvocations = 0;  // Number of times registerProblem should be called
+        String clientToCheck = "";
+        String suggestionMessage = "";
+        visitTypeElement(null, numberOfInvocations, clientToCheck, suggestionMessage);
     }
 
-    // Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
+    /** Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
+     * and return the visitor.
+     * @return PsiElementVisitor
+     */
     private PsiElementVisitor createVisitor() {
-        ServiceBusReceiverAsyncClientCheck check = new ServiceBusReceiverAsyncClientCheck();
+        DetectDiscouragedClientCheck check = new DetectDiscouragedClientCheck();
         boolean isOnTheFly = true;
         return check.buildVisitor(mockHolder, isOnTheFly);
     }
 
-    // Assert that the visitor is not null and is an instance of JavaElementVisitor
+    /** Assert that the visitor is not null and is an instance of JavaElementVisitor
+     * to ensure that the visitor is created correctly.
+     */
     private void assertVisitor() {
         assertNotNull(mockVisitor);
         assertTrue(mockVisitor instanceof JavaElementVisitor);
@@ -112,17 +150,16 @@ public class ServiceBusReceiverAsyncClientCheckTest {
     /** Visit a Type Element and verify that a problem was registered
      * when the ServiceBusReceiverAsyncClient is used.
      * @param typeElement The PsiTypeElement to visit
-     * @param NUMBER_OF_INVOCATIONS The number of times registerProblem should be called
+     * @param numberOfInvocations The number of times registerProblem should be called
      */
-    private void visitTypeElement(PsiTypeElement typeElement, int NUMBER_OF_INVOCATIONS, String CLIENT_TO_CHECK) {
+    private void visitTypeElement(PsiTypeElement typeElement, int numberOfInvocations, String clientToCheck, String suggestionMessage) {
 
         PsiType mockType = mock(PsiType.class);
 
         when(mockTypeElement.getType()).thenReturn(mockType);
-        when(mockType.getPresentableText()).thenReturn(CLIENT_TO_CHECK);
+        when(mockType.getPresentableText()).thenReturn(clientToCheck);
 
         ((JavaElementVisitor) mockVisitor).visitTypeElement(mockTypeElement);
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem((Mockito.eq(mockTypeElement)), Mockito.contains("Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem((Mockito.eq(mockTypeElement)), Mockito.contains(suggestionMessage));
     }
-
 }

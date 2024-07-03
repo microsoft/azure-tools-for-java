@@ -9,27 +9,27 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class extends the LocalInspectionTool to check for the use of ServiceBusReceiverAsyncClient
- * in the code and suggests using ServiceBusProcessorClient instead.
+ * This class extends the LocalInspectionTool to check for the use of discouraged clients
+ * in the code and suggests using other clients instead.
  * The client data is loaded from the configuration file and the client name is checked against the
  * discouraged client name. If the client name matches, a problem is registered with the suggestion message.
  */
-public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
-    private static List<String> CLIENT_DATA = null;
+public class DetectDiscouragedClientCheck extends LocalInspectionTool {
+
+    private static Map<String, String> CLIENT_DATA;
 
     // Define constants for string literals
-    private static final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
-    private static final String RULE_NAME = "ServiceBusReceiverAsyncClientCheck";
+    private static final String RULE_NAME = "DetectDiscouragedClientCheck";
     private static final String SUGGESTION_KEY = "antipattern_message";
     private static final String CLIENT_NAME_KEY = "client_name";
-    private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DetectDiscouragedClientCheck.class.getName());
 
     static {
         try {
@@ -38,7 +38,6 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             LOGGER.log(Level.SEVERE, "Error loading client data", e);
         }
     }
-
 
     /**
      * This method builds a visitor to check for the discouraged client name in the code.
@@ -59,33 +58,38 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
                 // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
 
-                    if (CLIENT_DATA.isEmpty()) {
-                        return;
-                    }
-                    String clientName = CLIENT_DATA.get(0);
-                    String suggestion = CLIENT_DATA.get(1);
+                    String elementType = element.getType().getPresentableText();
 
-                    // Register a problem if the client used matches the discouraged client
-                    if (element.getType().getPresentableText().equals(clientName)) {
+                    // Use the map to get the suggestion message
+                    String suggestion = CLIENT_DATA.get(elementType);
+
+                    // Register a problem if the client used matches a discouraged client
+                    if (suggestion != null) {
                         holder.registerProblem(element, suggestion);
                     }
                 }
             }
-
         };
     }
 
     /**
      * Loading the client data from the configuration file.
-     *
-     * @return List of client name and suggestion message
+     * The client data is stored in a JSON object with the client name as the key and the suggestion message as the value.
+     * @return
      */
-    static List<String> getClientToCheck() throws IOException {
 
-        final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-        final String clientName = jsonObject.getJSONObject(RULE_NAME).getString(CLIENT_NAME_KEY);
-        final String suggestion= jsonObject.getJSONObject(RULE_NAME).getString(SUGGESTION_KEY);
-        return Arrays.asList(clientName, suggestion);
+    static Map<String, String> getClientToCheck() throws IOException {
+        JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
+        JSONObject clientData = jsonObject.getJSONObject(RULE_NAME);
 
+        Map<String, String> clientToCheckMap = new HashMap<>();
+
+        // iterate over the keys in the JSON object to get clients to check and their corresponding messages.
+        for (String key : clientData.keySet()) {
+            String clientName = clientData.getJSONObject(key).getString(CLIENT_NAME_KEY);
+            String suggestion = clientData.getJSONObject(key).getString(SUGGESTION_KEY);
+            clientToCheckMap.put(clientName, suggestion);
+        }
+        return clientToCheckMap;
     }
 }

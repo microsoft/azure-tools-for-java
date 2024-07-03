@@ -40,15 +40,15 @@
 
         <localInspection
                 language="JAVA"
-                shortName="ServiceBusReceiverAsyncClientCheck"
-                displayName="Low level ServiceBusReceiverAsyncClient check"
+                shortName="DetectDiscouragedClientCheck"
+                displayName="Detect Discouraged Client Check check"
                 groupName="Azure SDK"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck">
 
             <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
             </class>
         </localInspection>
     </extensions>
