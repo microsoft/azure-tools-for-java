@@ -41,8 +41,6 @@ public class LoadJsonConfigFile {
     // Load the JSON object from the configuration file
     private void loadJsonObject() throws IOException {
 
-        System.out.println("Start loading JSON configuration");
-
         try (InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH)) {
             if (inputStream == null) {
                 throw new FileNotFoundException("Configuration file not found");

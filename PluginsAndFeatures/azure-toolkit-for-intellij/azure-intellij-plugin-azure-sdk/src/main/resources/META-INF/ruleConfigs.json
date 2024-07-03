@@ -14,11 +14,9 @@
 
   "UseOfBlockOnAsyncClientsCheck": {
     "async_return_types_to_check": [
-      "reactor.core.publisher.Mono",
-      "reactor.core.publisher.Flux",
-      "com.azure.core.util.paging.PagedFlux",
-      "com.azure.core.util.polling.PollerFlux"
+      "Flux",
+        "Mono"
     ],
-    "antipattern_message": "Use of block() on async clients detected. Switch to synchronous APIs instead."
+    "antipattern_message": "Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."
   }
 }

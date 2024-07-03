@@ -115,7 +115,7 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
                     // Check for common async/reactive types directly in the list asyncReturnTypes
                     for (String asyncReturnType : ASYNC_RETURN_TYPES) {
-                        if (typeName.startsWith(asyncReturnType)) {
+                        if (typeName.contains(asyncReturnType)) {
                             return true;
                         }
                     }
@@ -145,7 +145,11 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
             return false;
         }
 
-        // helper method to load config from json
+        /** helper method to load config from json
+         *
+         * @return Map<String, Object>
+         * @throws IOException
+         */
         private static  Map<String, Object> getAsyncReturnTypesToCheck() throws IOException {
 
             //load json object

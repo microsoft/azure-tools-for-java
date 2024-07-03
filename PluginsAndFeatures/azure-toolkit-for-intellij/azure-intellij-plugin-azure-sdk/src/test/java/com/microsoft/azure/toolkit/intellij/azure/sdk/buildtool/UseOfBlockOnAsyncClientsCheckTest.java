@@ -68,13 +68,12 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         // assert visitor
         assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 1;
-        String METHOD_NAME = "block";
-        String AZURE_PACKAGE = "com.azure.";
+        int numberOfInvocations = 1;
+        String methodName = "block";
+        String packageName = "com.azure.";
 
         // verify register problem
-        verifyRegisterProblem(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
-
+        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
     }
 
     /**
@@ -87,12 +86,12 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         // assert visitor
         assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 1;
-        String METHOD_NAME = "blockOptional";
-        String AZURE_PACKAGE = "com.azure.";
+        int numberOfInvocations = 1;
+        String methodName = "blockOptional";
+        String packageName = "com.azure.";
 
         // verify register problem
-        verifyRegisterProblem(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
     }
 
     /**
@@ -105,12 +104,12 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         // assert visitor
         assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 0;
-        String METHOD_NAME = "blockFirst";
-        String AZURE_PACKAGE = "com.notAzure.";
+        int numberOfInvocations = 0;
+        String methodName = "blockFirst";
+        String packageName = "com.notAzure.";
 
         // verify register problem
-        verifyRegisterProblem(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
     }
 
     /**
@@ -123,29 +122,37 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         // assert visitor
         assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 0;
-        String METHOD_NAME = "nonBlockingMethod";
-        String AZURE_PACKAGE = "com.azure.";
+        int numberOfInvocations = 0;
+        String methodName = "nonBlockingMethod";
+        String packageName = "com.azure.";
 
         // verify register problem
-        verifyRegisterProblem(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
     }
 
-    // Create a visitor object for the test
-    JavaElementVisitor createVisitor() {
+    /** Create a visitor object for the test
+     * @return JavaElementVisitor
+     */
+    private JavaElementVisitor createVisitor() {
         boolean isOnTheFly = true;
         UseOfBlockOnAsyncClientsVisitor visitor = new UseOfBlockOnAsyncClientsCheck.UseOfBlockOnAsyncClientsVisitor(mockHolder, isOnTheFly);
         return visitor;
     }
 
-    // Assert that the visitor object is not null and is an instance of JavaElementVisitor
-    void assertVisitor() {
+    /** Assert that the visitor object is not null and is an instance of JavaElementVisitor
+     * @return void
+     */
+    private void assertVisitor() {
         assertNotNull(mockVisitor);
         assertTrue(mockVisitor instanceof JavaElementVisitor);
     }
 
-    // Verify that the registerProblem method is called the expected number of times
-    void verifyRegisterProblem(String METHOD_NAME, String AZURE_PACKAGE, int NUMBER_OF_INVOCATIONS) {
+    /** Verify that the registerProblem method is called the expected number of times
+     * @param methodName The name of the method call -- used to determine if the method call is a block method
+     * @param packageName The package name of the class containing the method call -- used to determine if the client is an Azure SDK client
+     * @param numberOfInvocations Number of times registerProblem should be called
+     */
+    private void verifyRegisterProblem(String methodName, String packageName, int numberOfInvocations) {
 
         // Arrange
         PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
@@ -154,22 +161,21 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         PsiClass containingClass = mock(PsiClass.class);
         PsiTreeUtil mockTreeUtil = mock(PsiTreeUtil.class);
 
-
         when(mockElement.getMethodExpression()).thenReturn(referenceExpression);
-        when(referenceExpression.getReferenceName()).thenReturn(METHOD_NAME);
+        when(referenceExpression.getReferenceName()).thenReturn(methodName);
 
         when(referenceExpression.getQualifierExpression()).thenReturn(expression);
         when(expression.getType()).thenReturn(type);
         when(type.getCanonicalText()).thenReturn("reactor.core.publisher.Flux");
 
         when(mockTreeUtil.getParentOfType(mockElement, PsiClass.class)).thenReturn(containingClass);
-        when(containingClass.getQualifiedName()).thenReturn(AZURE_PACKAGE);
+        when(containingClass.getQualifiedName()).thenReturn(packageName);
 
         // Act
         mockVisitor.visitMethodCallExpression(mockElement);
 
         // Verify registerProblem is not called
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(mockElement), Mockito.contains("Use of block() on async clients detected. Switch to synchronous APIs instead."));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(mockElement), Mockito.contains("Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."));
     }
 }
 
