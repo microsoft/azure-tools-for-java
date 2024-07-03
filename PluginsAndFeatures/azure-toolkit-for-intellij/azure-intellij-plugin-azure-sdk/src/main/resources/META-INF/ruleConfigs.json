@@ -14,7 +14,7 @@
 
   "ConnectionStringCheck": {
     "method_to_check": "connectionString",
-    "antipattern_message" : "Connection String detected. Use DefaultAzureCredential for azure service client authentication instead.",
-    "solution": "Do not construct a service client with a connection string unless such connection string is available within the Azure portal or Azure CLI. Use DefaultAzureCredential or other secure methods for client authentication instead."
+    "antipattern_message" : "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
+    "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
   }
 }

@@ -47,7 +47,6 @@ public class ConnectionStringCheck extends LocalInspectionTool {
         private static final Logger LOGGER = Logger.getLogger(ConnectionStringCheck.class.getName());
         private static String METHOD_TO_CHECK = "";
         private static String SUGGESTION = "";
-        private static String AZURE_PACKAGE_NAME = "";
 
         // Load the JSON configuration file to get the method to check and the suggestion message
         static {
@@ -59,7 +58,8 @@ public class ConnectionStringCheck extends LocalInspectionTool {
                 SUGGESTION = config.getSuggestionMessage(ruleName);
             } catch (IOException e) {
                 // make a descriptive message
-                LOGGER.log(Level.SEVERE, "Failed to load JSON configuration for rule '" + ruleName + "' from expected path: " + LoadJsonConfigFile.CONFIG_FILE_PATH, e);            }
+                LOGGER.log(Level.SEVERE, "Failed to load JSON configuration for rule '" + ruleName + "' from expected path: " + LoadJsonConfigFile.CONFIG_FILE_PATH, e);
+            }
         }
 
         /**

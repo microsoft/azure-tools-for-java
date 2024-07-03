@@ -33,4 +33,4 @@ Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/
 - **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
 - **Issue**: Cconnection strings authentication is not recommended in Azure SDKs for Java due to potential security vulnerabilities.
 - **Severity: WARNING**
-- **Recommendation**: Use [DefaultAzureCredential](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable) for azure service client authentication instead.
+- **Recommendation**: [DefaultAzureCredential](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable) for azure service client authentication is recommended if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based authentication.
