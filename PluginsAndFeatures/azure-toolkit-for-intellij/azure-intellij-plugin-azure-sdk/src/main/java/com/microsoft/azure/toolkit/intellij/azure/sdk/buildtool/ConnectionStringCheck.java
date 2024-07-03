@@ -11,11 +11,8 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,67 +22,88 @@ import java.util.logging.Logger;
  */
 public class ConnectionStringCheck extends LocalInspectionTool {
 
-    private static List <String> ruleConfigurations;
-    private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
 
-
-    // Load the rule configurations from the configuration file
-    static {
-        try {
-            ruleConfigurations = loadRuleConfigurations();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error loading client data", e);
-        }
-    }
-
-    private static final String RULE_NAME = "ConnectionStringCheck";
-    private static final String METHOD_TO_CHECK_KEY = "method_to_check";
-    private static final String SUGGESTION_KEY = "antipattern_message";
-
+    /**
+     * This method builds the visitor for the inspection tool.
+     * @param holder ProblemsHolder to register problems
+     * @param isOnTheFly boolean to check if the inspection is on the fly. If true, the inspection is performed as you type.
+     * @return
+     */
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        return new JavaElementVisitor() {
+        return new ConnectionStringVisitor(holder, isOnTheFly);
+    }
 
-            @Override
-            public void visitElement(@NotNull PsiElement element) {
-                super.visitElement(element);
+    /**
+     * This class extends the JavaElementVisitor to visit the elements in the code.
+     * It checks if the method call is a connection string call and if the class is an Azure client.
+     * If both conditions are met, a problem is registered with the suggestion message.
+     */
+    public static class ConnectionStringVisitor extends JavaElementVisitor {
 
-                String METHOD_TO_CHECK = ruleConfigurations.get(0);
-                String SUGGESTION = ruleConfigurations.get(1);
+        private final ProblemsHolder holder;
+        private final boolean isOnTheFly;
+        private static final Logger LOGGER = Logger.getLogger(ConnectionStringCheck.class.getName());
+        private static String METHOD_TO_CHECK = "";
+        private static String SUGGESTION = "";
+        private static String AZURE_PACKAGE_NAME = "";
 
-                // check if an element is an azure client
-                if (element instanceof PsiMethodCallExpression) {
+        // Load the JSON configuration file to get the method to check and the suggestion message
+        static {
+            String ruleName = "ConnectionStringCheck";
 
-                    PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) element;
-                    PsiReferenceExpression methodExpression = methodCallExpression.getMethodExpression();
+            try {
+                LoadJsonConfigFile config = LoadJsonConfigFile.getInstance();
+                METHOD_TO_CHECK = config.getMethodToCheck(ruleName);
+                SUGGESTION = config.getSuggestionMessage(ruleName);
+            } catch (IOException e) {
+                // make a descriptive message
+                LOGGER.log(Level.SEVERE, "Failed to load JSON configuration for rule '" + ruleName + "' from expected path: " + LoadJsonConfigFile.CONFIG_FILE_PATH, e);            }
+        }
 
-                    // resolvedMethod is the method that is being called
-                    PsiElement resolvedMethod = methodExpression.resolve();
+        /**
+         * Constructor to initialize the visitor with the holder and isOnTheFly flag.
+         * @param holder     ProblemsHolder
+         * @param isOnTheFly boolean
+         */
+        public ConnectionStringVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+            this.holder = holder;
+            this.isOnTheFly = isOnTheFly;
+        }
 
-                    // check if the method is a connectionString call
-                    if (resolvedMethod != null && resolvedMethod instanceof PsiElement && ((PsiMethod) resolvedMethod).getName().equals(METHOD_TO_CHECK)) {
-                        PsiMethod method = (PsiMethod) resolvedMethod;
+        /**
+         * This method visits the element in the code.
+         * It checks if the method call is a connection string call and if the class is an Azure client.
+         * If both conditions are met, a problem is registered with the suggestion message.
+         * @param element PsiElement
+         */
+        @Override
+        public void visitElement(@NotNull PsiElement element) {
+            super.visitElement(element);
 
-                        // containingClass is the client class that is being called
-                        PsiClass containingClass = method.getContainingClass();
+            // check if an element is an azure client
+            if (element instanceof PsiMethodCallExpression) {
 
-                        // check if the class is an azure client
-                        if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith("com.azure")) {
-                            holder.registerProblem(element, SUGGESTION);
-                        }
+                PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) element;
+                PsiReferenceExpression methodExpression = methodCallExpression.getMethodExpression();
+
+                // resolvedMethod is the method that is being called
+                PsiElement resolvedMethod = methodExpression.resolve();
+
+                // check if the method is a connectionString call
+                if (resolvedMethod != null && resolvedMethod instanceof PsiElement && ((PsiMethod) resolvedMethod).getName().equals(METHOD_TO_CHECK)) {
+                    PsiMethod method = (PsiMethod) resolvedMethod;
+
+                    // containingClass is the client class that is being called. check if the class is an azure client
+                    PsiClass containingClass = method.getContainingClass();
+
+                    // compare the package name of the containing class to the azure package name from the configuration file
+                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith(LoadJsonConfigFile.PACKAGE_NAME)) {
+                        holder.registerProblem(element, SUGGESTION);
                     }
                 }
             }
-        };
-    };
-
-    // Load the rule configurations from the configuration file
-    private static List<String> loadRuleConfigurations() throws IOException {
-
-        final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-        String methodToCheck = jsonObject.getJSONObject(RULE_NAME).getString(METHOD_TO_CHECK_KEY);
-        String antipatternMessage = jsonObject.getJSONObject(RULE_NAME).getString(SUGGESTION_KEY);
-        return Arrays.asList(methodToCheck, antipatternMessage);
+        }
     }
 }

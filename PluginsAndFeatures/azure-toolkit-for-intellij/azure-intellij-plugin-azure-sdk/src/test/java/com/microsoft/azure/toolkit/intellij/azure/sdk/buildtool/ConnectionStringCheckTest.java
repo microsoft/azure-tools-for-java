@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
+import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck.ConnectionStringVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -48,10 +49,14 @@ public class ConnectionStringCheckTest {
         mockVisitor = createVisitor();
     }
 
-    PsiElementVisitor createVisitor() {
+    /**
+     * This method creates a visitor for the ConnectionStringCheck class.
+     * @return PsiElementVisitor visitor
+     */
+    private PsiElementVisitor createVisitor() {
         boolean isOnTheFly = true;
-        ConnectionStringCheck check = new ConnectionStringCheck();
-        return check.buildVisitor(mockHolder, isOnTheFly);
+        ConnectionStringVisitor visitor = new ConnectionStringCheck.ConnectionStringVisitor(mockHolder, isOnTheFly);
+        return visitor;
     }
 
     /**
@@ -64,7 +69,7 @@ public class ConnectionStringCheckTest {
      * 2. BlobServiceClient blobServiceClient2 = new BlobServiceClientBuilder().connectionString(connectionString2).buildClient();
      */
     @Test
-    void testConnectionStringCheck() {
+    public void testConnectionStringCheck() {
 
         assertVisitor(mockVisitor);
         String METHOD_TO_CHECK = "connectionString";
@@ -74,9 +79,10 @@ public class ConnectionStringCheckTest {
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
     }
 
-    // Problem isn't registered because the method to check is different from the method that should be flagged
+    /** Problem isn't registered because the method to check is different from the method that should be flagged
+     */
     @Test
-    void differentMethodCheck() {
+    public void differentMethodCheck() {
         String METHOD_TO_CHECK = "differentMethod";
         int NUMBER_OF_INVOCATIONS = 0;
         String CLASS_NAME = "com.azure";
@@ -84,9 +90,10 @@ public class ConnectionStringCheckTest {
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
     }
 
-    // Problem isn't registered because the class name is different from the class that should be flagged
+    /** Problem isn't registered because the class name is different from the class that should be flagged
+     */
     @Test
-    void differentClassCheck() {
+    public void differentClassCheck() {
         String METHOD_TO_CHECK = "connectionString";
         int NUMBER_OF_INVOCATIONS = 0;
         String CLASS_NAME = "com.microsoft.azure";
@@ -94,9 +101,10 @@ public class ConnectionStringCheckTest {
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
     }
 
-    // Problem isn't registered because the class name is null
+    /**  Problem isn't registered because the class name is null
+     */
     @Test
-    void nullClassCheck() {
+    public void nullClassCheck() {
         String METHOD_TO_CHECK = "connectionString";
         int NUMBER_OF_INVOCATIONS = 0;
         String CLASS_NAME = null;
@@ -104,14 +112,21 @@ public class ConnectionStringCheckTest {
         verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
     }
 
-    // Asserts that the visitor is not null and is an instance of JavaElementVisitor
-    void assertVisitor(PsiElementVisitor visitor) {
+    /**  Asserts that the visitor is not null and is an instance of JavaElementVisitor
+     * @param visitor PsiElementVisitor
+     */
+    private void assertVisitor(PsiElementVisitor visitor) {
         assertNotNull(visitor);
         assertTrue(visitor instanceof JavaElementVisitor);
     }
 
-    // Verifies that a warning is raised when a connection string being used to create a client is detected.
-    void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS, String CLASS_NAME) {
+    /**  Verifies that a warning is raised when a connection string being used to create a client is detected.
+     * @param visitor PsiElementVisitor
+     * @param METHOD_TO_CHECK String
+     * @param NUMBER_OF_INVOCATIONS int
+     * @param CLASS_NAME String
+     */
+    private void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS, String CLASS_NAME) {
 
         PsiMethodCallExpression methodCallExpression = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
@@ -128,6 +143,6 @@ public class ConnectionStringCheckTest {
         (visitor).visitElement(methodCallExpression);
 
         // Verify problem is registered
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(methodCallExpression), Mockito.contains("Connection String detected. Use AzureKeyCredentials for azure service client authentication instead."));
+        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(methodCallExpression), Mockito.contains("Connection String detected. Use DefaultAzureCredential for azure service client authentication instead."));
     }
 }
