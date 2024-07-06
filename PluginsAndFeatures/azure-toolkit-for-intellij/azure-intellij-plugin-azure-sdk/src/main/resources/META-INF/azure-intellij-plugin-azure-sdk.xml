@@ -42,13 +42,27 @@
                 language="JAVA"
                 shortName="ServiceBusReceiverAsyncClientCheck"
                 displayName="Low level ServiceBusReceiverAsyncClient check"
-                groupName="Azure SDK"
+                groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
 
             <class>
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="SingleOperationInLoopCheck"
+                displayName="Single Operation In Loop Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck
             </class>
         </localInspection>
     </extensions>
