@@ -56,8 +56,8 @@ public class ConnectionStringCheck extends LocalInspectionTool {
 
             try {
                 LoadJsonConfigFile config = LoadJsonConfigFile.getInstance();
-                METHOD_TO_CHECK = config.getMethodToCheck(ruleName);
-                SUGGESTION = config.getSuggestionMessage(ruleName);
+                METHOD_TO_CHECK = config.getMethodsToCheck(ruleName).get(0);
+                SUGGESTION = config.getAntiPatternMessage(ruleName);
             } catch (FileNotFoundException e) {
                 LOGGER.log(Level.SEVERE, "Configuration file not found at path: " + LoadJsonConfigFile.CONFIG_FILE_PATH
                         + ". Please ensure the file exists and is accessible. Error: " + e.getMessage(), e);

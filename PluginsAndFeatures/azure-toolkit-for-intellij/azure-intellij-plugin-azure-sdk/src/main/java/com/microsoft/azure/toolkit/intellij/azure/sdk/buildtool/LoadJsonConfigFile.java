@@ -28,7 +28,7 @@ public class LoadJsonConfigFile {
 
     // The instance variable holds the single instance of the class
     private static LoadJsonConfigFile instance;
-    private JSONObject jsonObject;
+    private final JSONObject jsonObject = loadJsonObject();
 
     static final String CONFIG_FILE_PATH = "META-INF/ruleConfigs.json";
     static final String PACKAGE_NAME = "com.azure";
@@ -37,7 +37,7 @@ public class LoadJsonConfigFile {
 
 
     // The constructor is private, so it can't be called from outside the class
-    private LoadJsonConfigFile() throws IOException {
+    private LoadJsonConfigFile() {
         loadJsonObject();
     }
 
@@ -55,14 +55,15 @@ public class LoadJsonConfigFile {
     /** Load the JSON object from the configuration file
      * @throws IOException if the configuration file is not found
      */
-    private void loadJsonObject() throws IOException {
+    private JSONObject loadJsonObject(){
+        JSONObject tempObject = null;
 
-        try (InputStream inputStream = StorageUploadWithoutLengthCheck.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH)) {
+        try (InputStream inputStream = LoadJsonConfigFile.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH)) {
             if (inputStream == null) {
                 throw new FileNotFoundException("Configuration file not found");
             }
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
+                tempObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
             }
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.SEVERE, "Configuration file not found at path: " + CONFIG_FILE_PATH
@@ -76,7 +77,7 @@ public class LoadJsonConfigFile {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error while loading configuration. " + "Please investigate further. Error: " + e.getMessage(), e);
         }
-
+        return tempObject;
     }
 
     /**
@@ -88,17 +89,21 @@ public class LoadJsonConfigFile {
     }
 
 
-    /** Method to get the value for a given rule name and key as an Object
+    /**
+     * Base Method to get the value for a given rule name and key as an Object
      * If the rule name exists and has the key, return the value
+     * eg getConfigValue("ConnectionStringCheck", "method_to_check")
+     * this will return the value for the key "method_to_check" in the rule "ConnectionStringCheck"
+     *
      * @param ruleName String rule name
      * @param key String key
      * @return Object value for the key
      */
-    private Object getConfigValue(String ruleName, String key) {
+    private String getConfigurationValueByRuleAndKey(String ruleName, String key) {
         if (jsonObject.has(ruleName)) {
             JSONObject ruleConfig = jsonObject.getJSONObject(ruleName);
             if (ruleConfig.has(key)) {
-                return ruleConfig.get(key);
+                return ruleConfig.get(key).toString();
             }
         }
         return null;
@@ -111,18 +116,15 @@ public class LoadJsonConfigFile {
      */
     public List<String> getMethodsToCheck(String ruleName) {
         String key = "methods_to_check";
-        Object value = getConfigValue(ruleName, key);
-        return processMethodsToCheck(value);
-    }
+        Object value =  jsonObject.getJSONObject(ruleName).get(key);
 
-    /** Method to get the method to check for a given rule name, which is a String
-     * If the rule name exists and has the key, return the value
-     * @param ruleName String rule name
-     * @return String method to check
-     */
-    public String getMethodToCheck(String ruleName) {
-        String key = "method_to_check";
-        return (String) getConfigValue(ruleName, key);
+        // check if value is a JsonString
+        if (value instanceof String) {
+            List<String> methods = new ArrayList<>();
+            methods.add((String) value);
+            return methods;
+        }
+        return processMethodsToCheck(value);
     }
 
     /**
@@ -132,26 +134,17 @@ public class LoadJsonConfigFile {
      */
     public String getClientName(String ruleName) {
         String key = "client_name";
-        return (String) getConfigValue(ruleName, key);
-    }
-
-    /** Method to get the suggestion message for a given rule name
-     * @param ruleName String rule name
-     * @return String suggestion message
-     */
-    public String getSuggestionMessage(String ruleName) {
-        String key = "antipattern_message";
-        return (String) getConfigValue(ruleName, key);
+        return getConfigurationValueByRuleAndKey(ruleName, key);
     }
 
     /**
-     * Method to get the solution for a given rule name
+     * Method to get the suggestion message for a given rule name
      * @param ruleName String rule name
-     * @return String solution
+     * @return String suggestion message
      */
-    public String getSolution(String ruleName) {
-        String key = "solution";
-        return (String) getConfigValue(ruleName, key);
+    public String getAntiPatternMessage(String ruleName) {
+        String key = "antipattern_message";
+        return getConfigurationValueByRuleAndKey(ruleName, key);
     }
 
     /**

@@ -27,8 +27,6 @@ import static org.mockito.Mockito.when;
  * This class tests the ConnectionStringCheck class.
  * It tests the buildVisitor method and the visitElement method.
  * It tests the check for the usage of connection strings API to create clients in the Azure SDK for Java.
- *
- * This
  */
 public class ConnectionStringCheckTest {
 
@@ -72,61 +70,64 @@ public class ConnectionStringCheckTest {
     public void testConnectionStringCheck() {
 
         assertVisitor(mockVisitor);
-        String METHOD_TO_CHECK = "connectionString";
-        int NUMBER_OF_INVOCATIONS = 1;
-        String CLASS_NAME = "com.azure";
+        String methodToCheck = "connectionString";
+        int numOfInvocations = 1;
+        String packageName = "com.azure";
 
-        verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
+        verifyRegisterProblem(mockVisitor, methodToCheck, numOfInvocations, packageName);
     }
 
-    /** Problem isn't registered because the method to check is different from the method that should be flagged
+    /** Problem isn't registered because the method to check is different
+     * from the method that should be flagged
      */
     @Test
     public void differentMethodCheck() {
-        String METHOD_TO_CHECK = "differentMethod";
-        int NUMBER_OF_INVOCATIONS = 0;
-        String CLASS_NAME = "com.azure";
+        String methodToCheck = "differentMethod";
+        int numOfInvocations = 0;
+        String packageName = "com.azure";
 
-        verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
+        verifyRegisterProblem(mockVisitor, methodToCheck, numOfInvocations, packageName);
     }
 
-    /** Problem isn't registered because the class name is different from the class that should be flagged
+    /** Problem isn't registered because the class name is different
+     * from the class that should be flagged
      */
     @Test
     public void differentClassCheck() {
-        String METHOD_TO_CHECK = "connectionString";
-        int NUMBER_OF_INVOCATIONS = 0;
-        String CLASS_NAME = "com.microsoft.azure";
+        String methodToCheck = "connectionString";
+        int numOfInvocations = 0;
+        String packageName = "com.microsoft.azure";
 
-        verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
+        verifyRegisterProblem(mockVisitor, methodToCheck, numOfInvocations, packageName);
     }
 
-    /**  Problem isn't registered because the class name is null
+    /**
+     * Problem isn't registered because the class name is null
      */
     @Test
     public void nullClassCheck() {
-        String METHOD_TO_CHECK = "connectionString";
-        int NUMBER_OF_INVOCATIONS = 0;
-        String CLASS_NAME = null;
+        String methodToCheck = "connectionString";
+        int numOfInvocations = 0;
+        String packageName = null;
 
-        verifyRegisterProblem(mockVisitor, METHOD_TO_CHECK, NUMBER_OF_INVOCATIONS, CLASS_NAME);
+        verifyRegisterProblem(mockVisitor, methodToCheck, numOfInvocations, packageName);
     }
 
     /**  Asserts that the visitor is not null and is an instance of JavaElementVisitor
-     * @param visitor PsiElementVisitor
+     * @param visitor PsiElementVisitor visitor to inspect elements in the code
      */
     private void assertVisitor(PsiElementVisitor visitor) {
         assertNotNull(visitor);
         assertTrue(visitor instanceof JavaElementVisitor);
     }
 
-    /**  Verifies that a warning is raised when a connection string being used to create a client is detected.
-     * @param visitor PsiElementVisitor
-     * @param METHOD_TO_CHECK String
-     * @param NUMBER_OF_INVOCATIONS int
-     * @param CLASS_NAME String
+    /** Verifies that a warning is raised when a connection string being used to create a client is detected.
+     * @param visitor PsiElementVisitor visitor to inspect elements in the code
+     * @param methodToCheck String method to check for in the code
+     * @param numOfInvocations int number of times registerProblem should be called
+     * @param packageName String package name of the class
      */
-    private void verifyRegisterProblem(PsiElementVisitor visitor, String METHOD_TO_CHECK, int NUMBER_OF_INVOCATIONS, String CLASS_NAME) {
+    private void verifyRegisterProblem(PsiElementVisitor visitor, String methodToCheck, int numOfInvocations, String packageName) {
 
         PsiMethodCallExpression methodCallExpression = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
@@ -137,12 +138,13 @@ public class ConnectionStringCheckTest {
         when(methodCallExpression.getMethodExpression()).thenReturn(methodExpression);
         when(methodExpression.resolve()).thenReturn(resolvedMethod);
         when(resolvedMethod.getContainingClass()).thenReturn(containingClass);
-        when(resolvedMethod.getName()).thenReturn(METHOD_TO_CHECK);
-        when(containingClass.getQualifiedName()).thenReturn(CLASS_NAME);
+        when(resolvedMethod.getName()).thenReturn(methodToCheck);
+        when(containingClass.getQualifiedName()).thenReturn(packageName);
 
         (visitor).visitElement(methodCallExpression);
 
         // Verify problem is registered
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(methodCallExpression), Mockito.contains("Connection String detected. Use DefaultAzureCredential for azure service client authentication instead."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(Mockito.eq(methodCallExpression),
+                Mockito.contains("Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication)."));
     }
 }
