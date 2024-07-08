@@ -62,10 +62,10 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
      * Processing of polyadic expressions is also done to replace the variables with their values in the query string
      * before checking for the anti-patterns.
      */
-    public static class KustoQueriesVisitor extends JavaElementVisitor {
+    class KustoQueriesVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly;
+        private final boolean isOnTheFly; // boolean to indicate if the inspection is done on the fly
 
         // Define constants for string literals
         private static final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
