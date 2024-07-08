@@ -1,14 +1,20 @@
 {
-  "HardcodedAPIKeysAndTokensCheck": {
-    "clients_to_check": ["AzureKeyCredential", "AccessToken"],
-    "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
-    "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
-  },
-
     "StorageUploadWithoutLengthCheck": {
     "methods_to_check": [
       "upload",
       "uploadWithResponse"
-    ]
+    ],
+    "antipattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+  },
+
+  "ServiceBusReceiverAsyncClientCheck": {
+    "client_name": "ServiceBusReceiverAsyncClient",
+    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+  },
+
+  "HardcodedAPIKeysAndTokensCheck": {
+    "clients_to_check": ["AzureKeyCredential", "AccessToken"],
+    "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
+    "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   }
 }
