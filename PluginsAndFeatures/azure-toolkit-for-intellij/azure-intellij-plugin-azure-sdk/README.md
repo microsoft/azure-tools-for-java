@@ -25,7 +25,6 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 
 2. #### Use ServiceBusProcessorClient instead of ServiceBusReceiverAsyncClient.
 - **Anti-pattern**: The use of the Reactor receiver, specifically the `ServiceBusReceiverAsyncClient`, is an anti-pattern. This is because it's a low-level API that provides fine-grained control over message handling. While this might seem beneficial, it requires a high level of proficiency in Reactive programming and is mainly useful when building a Reactive library or an end-to-end Reactive application.
-
 - **Issue**: The main issue with using `ServiceBusReceiverAsyncClient` is its complexity and the requirement for a deep understanding of Reactive programming. This can make it difficult to use correctly and efficiently, especially for developers who are not familiar with Reactive programming paradigms.
 - **Severity: WARNING**
 - **Recommendation**: Instead of using the low-level `ServiceBusReceiverAsyncClient`, it's recommended to use the `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies message consumption. It's designed for most common use cases and should be the primary choice for consuming messages. This makes it a more suitable option for most developers and scenarios. 
@@ -33,7 +32,6 @@ Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/
 
 3. #### Use sync client operation if usage of block() on an async client.
 - **Anti-Pattern**: Using `block()` on an async client. This practice turns an asynchronous operation into a synchronous one.
-
 - **Issue**: The use of `block()` goes against the non-blocking nature of reactive streams. 
 It can lead to performance issues because it blocks one of the few available threads.
 In reactive applications, avoiding blocking operations is crucial for scalability and responsiveness.
