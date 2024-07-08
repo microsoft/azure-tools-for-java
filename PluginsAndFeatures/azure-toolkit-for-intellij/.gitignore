@@ -45,5 +45,8 @@ gen-external-apklibs/
 # Jar dependencies generated in build
 **/resources/spark/spark-tools-*.jar
 
-# InstrumentationKey
-PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-azure-sdk/src/main/resources/META-INF/applicationinsights.json
+#.idea
+/azure-intellij-plugin-azure-sdk/.idea/
+
+# IntelliJ
+.idea/
