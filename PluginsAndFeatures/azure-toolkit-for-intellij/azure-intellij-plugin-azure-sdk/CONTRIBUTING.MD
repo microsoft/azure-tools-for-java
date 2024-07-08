@@ -46,3 +46,37 @@ To prevent exposing your instrumentation key in version control, add the `applic
    ```
    resources/META-INF/applicationinsights.json
    ```
+
+#### 4. App Insights Configuration in Code
+1. **Accurate Tracking of Method Calls**:
+   - The `visitMethodCallExpression` method tracks the number of times each method of each client is called.
+   - The `methodCounts` map stores counts in a nested map structure, where the outer map's key is the client name, and the value is another map. This inner map's key is the method name, and the value is the count of calls to that method.
+
+2. **Periodic Reporting of Data**:
+   - The `startTelemetryService` method schedules the `sendTelemetryData` method to run at fixed intervals (every 3 minutes, starting 2 minutes after the service starts).
+   - Each execution of `sendTelemetryData` will report the accumulated counts since the last report.
+
+3. **Structured Telemetry Events**:
+   - Each method call count is reported as an event with the name `azure_sdk_usage_frequency`.
+   - Custom dimensions are added to these events, including:
+      - `clientName`: The name of the client (e.g., `BlobClient`).
+      - `methodName`: The name of the method (e.g., `download`).
+      - `count`: The count of calls to the method (e.g., `5`), stored as a string.
+
+### Sample Output
+
+The telemetry system will generate events that can be queried and analyzed. Here is an example of what the telemetry data might look like:
+
+#### Event 1
+- **Name**: `azure_sdk_usage_frequency`
+- **Custom Dimensions**:
+   - `clientName`: `BlobClient`
+   - `methodName`: `download`
+   - `count`: `5`
+
+#### Event 2
+- **Name**: `azure_sdk_usage_frequency`
+- **Custom Dimensions**:
+   - `clientName`: `BlobClient`
+   - `methodName`: `upload`
+   - `count`: `3`

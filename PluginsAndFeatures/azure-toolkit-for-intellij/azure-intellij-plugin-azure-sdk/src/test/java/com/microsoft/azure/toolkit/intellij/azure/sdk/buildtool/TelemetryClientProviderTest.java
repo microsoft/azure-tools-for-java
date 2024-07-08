@@ -25,7 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
+/**
+ * This class tests the TelemetryClientProvider class.
+ * It tests the buildVisitor, visitMethodCallExpression, and sendTelemetryData methods.
+ */
 public class TelemetryClientProviderTest {
 
     @Mock
@@ -44,6 +47,10 @@ public class TelemetryClientProviderTest {
         TelemetryClientProviderVisitor.methodCounts = new HashMap<>();
     }
 
+    /**
+     * This test method tests the buildVisitor method.
+     * It asserts that the visitor is not null and is an instance of JavaElementVisitor.
+     */
     @Test
     public void testBuildVisitor() {
 
@@ -51,6 +58,10 @@ public class TelemetryClientProviderTest {
         assertVisitor();
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method.
+     * It tests the method with an Azure package to ensure the method count is incremented correctly.
+     */
     @Test
     public void testVisitMethodCallExpressionWithAzurePackage() {
 
@@ -84,6 +95,10 @@ public class TelemetryClientProviderTest {
         }
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method.
+     * It tests the method with a non-Azure package to ensure the methodcount list is not incremented.
+     */
     @Test
     public void testVisitMethodCallExpressionWithNonAzurePackage() {
 
@@ -112,6 +127,10 @@ public class TelemetryClientProviderTest {
 
     }
 
+    /**
+     * This test method tests the sendTelemetryData method.
+     * It tests that the telemetry data is sent correctly.
+     */
     @Test
     public void testSendTelemetryData() {
         // Populate methodCounts with test data
@@ -131,6 +150,7 @@ public class TelemetryClientProviderTest {
         verify(mockTelemetryClient, times(1)).flush();
     }
 
+    // Helper method to create a visitor
     JavaElementVisitor createVisitor() {
         boolean isOnTheFly = false;
         TelemetryClientProviderVisitor visitor = new TelemetryClientProviderVisitor(mockProblemsHolder, false);
