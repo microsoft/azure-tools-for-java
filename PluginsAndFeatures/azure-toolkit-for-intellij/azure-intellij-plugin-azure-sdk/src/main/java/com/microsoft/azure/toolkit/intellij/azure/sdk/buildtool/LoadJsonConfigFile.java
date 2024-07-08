@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -28,7 +30,7 @@ public class LoadJsonConfigFile {
 
     // The instance variable holds the single instance of the class
     private static LoadJsonConfigFile instance;
-    private final JSONObject jsonObject = loadJsonObject();
+    private final JSONObject JSON_OBJECT = loadJsonObject();
 
     static final String CONFIG_FILE_PATH = "META-INF/ruleConfigs.json";
     static final String PACKAGE_NAME = "com.azure";
@@ -85,7 +87,7 @@ public class LoadJsonConfigFile {
      * @return JSONObject loaded JSON object
      */
     public JSONObject getJsonObject() {
-        return jsonObject;
+        return JSON_OBJECT;
     }
 
 
@@ -99,32 +101,41 @@ public class LoadJsonConfigFile {
      * @param key String key
      * @return Object value for the key
      */
-    private String getConfigurationValueByRuleAndKey(String ruleName, String key) {
-        if (jsonObject.has(ruleName)) {
-            JSONObject ruleConfig = jsonObject.getJSONObject(ruleName);
+    private Map<String, String> getRuleConfigurationValue(String ruleName, String key) {
+        Map<String, String> resultMap = new HashMap<>();
+        if (JSON_OBJECT.has(ruleName)) {
+            JSONObject ruleConfig = JSON_OBJECT.getJSONObject(ruleName);
             if (ruleConfig.has(key)) {
-                return ruleConfig.get(key).toString();
+                // Assuming all values are Strings or can be represented as Strings
+                resultMap.put(key, ruleConfig.getString(key));
             }
         }
-        return null;
+        return resultMap;
     }
 
     /**
      * Method to get the methods to check for a given rule name, which is a List of Strings
+     * or a singular String
      * @param ruleName String rule name
-     * @return List<String> methods to check
+     * @return List<String> methods to check. If the value is a singular String, return a List with one element
      */
     public List<String> getMethodsToCheck(String ruleName) {
         String key = "methods_to_check";
-        Object value =  jsonObject.getJSONObject(ruleName).get(key);
 
-        // check if value is a JsonString
-        if (value instanceof String) {
-            List<String> methods = new ArrayList<>();
-            methods.add((String) value);
-            return methods;
+        if (JSON_OBJECT.has(ruleName)) {
+            JSONObject ruleConfig = JSON_OBJECT.getJSONObject(ruleName);
+            if (ruleConfig.has(key) && ruleConfig.get(key) instanceof String) {
+                // If it's a string, convert it to a list with one element
+                String method = ruleConfig.getString(key);
+                return List.of(method);
+            } else if (ruleConfig.has(key) && ruleConfig.get(key) instanceof JSONArray) {
+                // If it's a JSONArray, process it
+                return processMethodsToCheck(ruleConfig.getJSONArray(key));
+            } else {
+                LOGGER.log(Level.WARNING, "No methods to check found for rule: " + ruleName);
+            }
         }
-        return processMethodsToCheck(value);
+        return new ArrayList<>();
     }
 
     /**
@@ -134,7 +145,8 @@ public class LoadJsonConfigFile {
      */
     public String getClientName(String ruleName) {
         String key = "client_name";
-        return getConfigurationValueByRuleAndKey(ruleName, key);
+        Map<String, String> ruleConfig = getRuleConfigurationValue(ruleName, "client_name");
+        return ruleConfig.get(key);
     }
 
     /**
@@ -144,7 +156,8 @@ public class LoadJsonConfigFile {
      */
     public String getAntiPatternMessage(String ruleName) {
         String key = "antipattern_message";
-        return getConfigurationValueByRuleAndKey(ruleName, key);
+        Map<String, String> ruleConfig = getRuleConfigurationValue(ruleName, "antipattern_message");
+        return ruleConfig.get(key);
     }
 
     /**
@@ -153,7 +166,7 @@ public class LoadJsonConfigFile {
      * @param methodsToCheck Object methods to check
      * @return List<String> methods to check
      */
-    private List<String> processMethodsToCheck(Object methodsToCheck) {
+    private List<String> processMethodsToCheck(JSONArray methodsToCheck) {
         List<String> methods = new ArrayList<>();
          if (methodsToCheck instanceof JSONArray) {
             JSONArray jsonArray = (JSONArray) methodsToCheck;
@@ -169,6 +182,6 @@ public class LoadJsonConfigFile {
      * @return JSONObject rule details
      */
     public JSONObject getCheckDetails(String ruleName) {
-        return jsonObject.optJSONObject(ruleName);
+        return JSON_OBJECT.optJSONObject(ruleName);
     }
 }
