@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiType;
+import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck.DetectDiscouragedClientVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -134,12 +135,14 @@ public class DetectDiscouragedClientCheckTest {
      * @return PsiElementVisitor
      */
     private PsiElementVisitor createVisitor() {
-        DetectDiscouragedClientCheck check = new DetectDiscouragedClientCheck();
+
         boolean isOnTheFly = true;
-        return check.buildVisitor(mockHolder, isOnTheFly);
+        DetectDiscouragedClientVisitor mockVisitor = new DetectDiscouragedClientVisitor(mockHolder, isOnTheFly);
+        return mockVisitor;
     }
 
-    /** Assert that the visitor is not null and is an instance of JavaElementVisitor
+    /**
+     * Assert that the visitor is not null and is an instance of JavaElementVisitor
      * to ensure that the visitor is created correctly.
      */
     private void assertVisitor() {
@@ -147,7 +150,8 @@ public class DetectDiscouragedClientCheckTest {
         assertTrue(mockVisitor instanceof JavaElementVisitor);
     }
 
-    /** Visit a Type Element and verify that a problem was registered
+    /**
+     * Visit a Type Element and verify that a problem was registered
      * when the ServiceBusReceiverAsyncClient is used.
      * @param typeElement The PsiTypeElement to visit
      * @param numberOfInvocations The number of times registerProblem should be called
