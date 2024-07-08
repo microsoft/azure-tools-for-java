@@ -151,7 +151,7 @@ public class TelemetryClientProviderTest {
     }
 
     // Helper method to create a visitor
-    JavaElementVisitor createVisitor() {
+    private JavaElementVisitor createVisitor() {
         boolean isOnTheFly = false;
         TelemetryClientProviderVisitor visitor = new TelemetryClientProviderVisitor(mockProblemsHolder, false);
 
@@ -159,7 +159,7 @@ public class TelemetryClientProviderTest {
     }
 
     // Helper method to assert visitor is not null and is an instance of JavaElementVisitor
-    void assertVisitor() {
+    private void assertVisitor() {
 
         assertNotNull(mockVisitor);
         assertTrue(mockVisitor instanceof JavaElementVisitor);
