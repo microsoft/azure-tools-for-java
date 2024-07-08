@@ -26,4 +26,4 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 - **Anti-pattern**: Hardcoding API keys and tokens in the source code.
 - **Issue**: The source code contains hardcoded API keys and tokens, which is a security risk. It exposes sensitive information that could be exploited if the code is publicly accessible or falls into the wrong hands.
 - **Severity**: WARNING.
-- **Recommendation**: Use secretless authentication with DefaultAzureCredential to avoid exposing sensitive information. This method provides a more secure way of handling API keys and tokens. [Click here for more details](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
+- **Recommendation**: DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication. Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)

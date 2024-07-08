@@ -1,8 +1,8 @@
 {
   "HardcodedAPIKeysAndTokensCheck": {
     "clients_to_check": ["AzureKeyCredential", "AccessToken"],
-    "anti_pattern_message": "Use of API keys or tokens in code is not recommended. We recommend Secretless authentication through DefaultAzureCredential.",
-    "solution": "We recommend Secretless authentication through DefaultAzureCredential."
+    "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
+    "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   },
 
     "StorageUploadWithoutLengthCheck": {

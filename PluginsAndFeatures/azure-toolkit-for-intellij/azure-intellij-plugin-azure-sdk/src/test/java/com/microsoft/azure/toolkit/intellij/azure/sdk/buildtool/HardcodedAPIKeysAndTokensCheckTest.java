@@ -128,7 +128,7 @@ public class HardcodedAPIKeysAndTokensCheckTest {
 
         // Verify registerProblem is called
         verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(eq(newExpression),
-                Mockito.contains("Use of API keys or tokens in code is not recommended. " +
-                        "We recommend Secretless authentication through DefaultAzureCredential"));
+                Mockito.contains("DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). " +
+                        "If not, then use Azure Key Credential for API key based authentication."));
     }
 }
