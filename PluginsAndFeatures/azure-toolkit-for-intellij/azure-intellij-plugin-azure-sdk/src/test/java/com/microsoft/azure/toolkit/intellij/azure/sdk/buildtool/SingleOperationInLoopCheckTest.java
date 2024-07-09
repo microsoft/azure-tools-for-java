@@ -10,6 +10,7 @@ import com.intellij.psi.PsiExpressionStatement;
 import com.intellij.psi.PsiForStatement;
 import com.intellij.psi.PsiForeachStatement;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.PsiWhileStatement;
@@ -22,9 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -86,11 +84,11 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiForStatement statement = mock(PsiForStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
+        String methodName = "detectLanguage";
         verifyRegisterProblemWithSinglePsiExpressionStatement(statement,
-                packageName, numberOfInvocations, numOfOperations);
+                packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -102,10 +100,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiForeachStatement statement = mock(PsiForeachStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -117,10 +115,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiWhileStatement statement = mock(PsiWhileStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -132,10 +130,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiDoWhileStatement statement = mock(PsiDoWhileStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -147,10 +145,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiForStatement statement = mock(PsiForStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -162,10 +160,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiForeachStatement statement = mock(PsiForeachStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -177,10 +175,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiWhileStatement statement = mock(PsiWhileStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -192,40 +190,10 @@ public class SingleOperationInLoopCheckTest {
         assertVisitor();
 
         PsiDoWhileStatement statement = mock(PsiDoWhileStatement.class);
-        String packageName = "com.azure.storage.blob";
+        String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
-    }
-
-    /**
-     * This test is used to verify a problem is NOT registered when multiple
-     * PsiExpressionStatement operations are found in a for loop.
-     */
-    @Test
-    public void testMultipleOperationsInLoopCheckPsiExpressionStatementInForEachStatement() {
-        assertVisitor();
-
-        PsiForeachStatement statement = mock(PsiForeachStatement.class);
-        String packageName = "com.azure.storage.blob";
-        int numberOfInvocations = 0;
-        int numOfOperations = 4;
-        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, numOfOperations);
-    }
-
-    /**
-     * This test is used to verify a problem is NOT registered when multiple
-     * PsiExpressionStatement operations are found in a while loop.
-     */
-    @Test
-    public void testMultipleOperationsInLoopCheckPsiDeclarationStatementInDoWhileStatement() {
-        assertVisitor();
-
-        PsiDoWhileStatement statement = mock(PsiDoWhileStatement.class);
-        String packageName = "com.azure.storage.blob";
-        int numberOfInvocations = 0;
-        int numOfOperations = 2;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -239,8 +207,23 @@ public class SingleOperationInLoopCheckTest {
         PsiForStatement statement = mock(PsiForStatement.class);
         String packageName = "com.microsoft.azure.storage.blob";
         int numberOfInvocations = 0;
-        int numOfOperations = 1;
-        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, numOfOperations);
+        String methodName = "detectLanguage";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
+    }
+
+    /**
+     * This test is used to verify a problem is NOT registered when a different method name
+     * is used in the PsiExpressionStatement operation in a for loop.
+     */
+    @Test
+    public void testSingleOperationInLoopCheckWithDifferentMethodName() {
+        assertVisitor();
+
+        PsiForStatement statement = mock(PsiForStatement.class);
+        String packageName = "com.azure.ai.textanalytics";
+        int numberOfInvocations = 0;
+        String methodName = "differentMethodName";
+        verifyRegisterProblemWithSinglePsiDeclarationStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -265,7 +248,7 @@ public class SingleOperationInLoopCheckTest {
      * This helper method is used to verify a problem is registered when a
      * PsiExpressionStatement operation is found in a loop.
      */
-    private void verifyRegisterProblemWithSinglePsiExpressionStatement(PsiStatement loopStatement, String packageName, int numberOfInvocations, int numOfOperations) {
+    private void verifyRegisterProblemWithSinglePsiExpressionStatement(PsiStatement loopStatement, String packageName, int numberOfInvocations, String methodName) {
 
         // Arrange
         PsiBlockStatement loopBody = mock(PsiBlockStatement.class);
@@ -273,24 +256,18 @@ public class SingleOperationInLoopCheckTest {
         PsiMethodCallExpression expression = mock(PsiMethodCallExpression.class);
         PsiTreeUtil treeUtil = mock(PsiTreeUtil.class);
         PsiClass containingClass = mock(PsiClass.class);
+        PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
+        PsiExpressionStatement mockStatement = mock(PsiExpressionStatement.class);
+        PsiStatement[] statements = new PsiStatement[]{mockStatement};
 
-        // Create a list to dynamically add PsiStatement objects
-        List<PsiStatement> statementList = new ArrayList<>();
-
-        // Mock PsiStatement and add to the list x times
-        for (int i = 0; i < numOfOperations; i++) {
-            PsiExpressionStatement mockStatement = mock(PsiExpressionStatement.class);
-            statementList.add(mockStatement);
-            when(mockStatement.getExpression()).thenReturn(expression);
-        }
-
-        // Convert the list to an array of PsiStatement objects
-        PsiStatement[] statements = statementList.toArray(new PsiStatement[0]);
-
+        when(mockStatement.getExpression()).thenReturn(expression);
         when(loopBody.getCodeBlock()).thenReturn(codeBlock);
         when(codeBlock.getStatements()).thenReturn(statements);
         when(treeUtil.getParentOfType(expression, PsiClass.class)).thenReturn(containingClass);
         when(containingClass.getQualifiedName()).thenReturn(packageName);
+        when(expression.getMethodExpression()).thenReturn(referenceExpression);
+        when(referenceExpression.getReferenceName()).thenReturn(methodName);
+
 
         // Visitor invocation based on the type of loopStatement
         if (loopStatement instanceof PsiForStatement) {
@@ -311,7 +288,7 @@ public class SingleOperationInLoopCheckTest {
 
         //  Verify problem is registered
         verify(mockHolder,
-                times(numberOfInvocations)).registerProblem(Mockito.eq(loopStatement),
+                times(numberOfInvocations)).registerProblem(Mockito.eq(expression),
                 Mockito.contains(
                         "Single operation found in loop. If the SDK provides a batch operation API, use it to perform multiple actions in a single request."));
     }
@@ -320,7 +297,7 @@ public class SingleOperationInLoopCheckTest {
      * This helper method is used to verify a problem is registered when a
      * PsiDeclarationStatement operation is found in a loop.
      */
-    private void verifyRegisterProblemWithSinglePsiDeclarationStatement(PsiStatement loopStatement, String packageName, int numberOfInvocations, int numOfOperations) {
+    private void verifyRegisterProblemWithSinglePsiDeclarationStatement(PsiStatement loopStatement, String packageName, int numberOfInvocations, String methodName) {
 
         // Arrange
         PsiBlockStatement loopBody = mock(PsiBlockStatement.class);
@@ -330,25 +307,18 @@ public class SingleOperationInLoopCheckTest {
         PsiMethodCallExpression initializer = mock(PsiMethodCallExpression.class);
         PsiTreeUtil treeUtil = mock(PsiTreeUtil.class);
         PsiClass containingClass = mock(PsiClass.class);
+        PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
+        PsiDeclarationStatement mockStatement = mock(PsiDeclarationStatement.class);
+        PsiStatement[] statements = new PsiStatement[]{mockStatement};
 
-        // Create a list to dynamically add PsiStatement objects
-        List<PsiStatement> statementList = new ArrayList<>();
-
-        // Mock PsiStatement and add to the list x times
-        for (int i = 0; i < numOfOperations; i++) {
-            PsiDeclarationStatement mockStatement = mock(PsiDeclarationStatement.class);
-            statementList.add(mockStatement);
-            when(mockStatement.getDeclaredElements()).thenReturn(elements);
-        }
-
-        // Convert the list to an array of PsiStatement objects
-        PsiStatement[] statements = statementList.toArray(new PsiStatement[0]);
-
+        when(mockStatement.getDeclaredElements()).thenReturn(elements);
         when(loopBody.getCodeBlock()).thenReturn(codeBlock);
         when(codeBlock.getStatements()).thenReturn(statements);
         when(element.getInitializer()).thenReturn(initializer);
         when(treeUtil.getParentOfType(initializer, PsiClass.class)).thenReturn(containingClass);
         when(containingClass.getQualifiedName()).thenReturn(packageName);
+        when(initializer.getMethodExpression()).thenReturn(referenceExpression);
+        when(referenceExpression.getReferenceName()).thenReturn(methodName);
 
         // Visitor invocation based on the type of loopStatement
         if (loopStatement instanceof PsiForStatement) {
@@ -367,7 +337,7 @@ public class SingleOperationInLoopCheckTest {
 
         //  Verify problem is registered
         verify(mockHolder,
-                times(numberOfInvocations)).registerProblem(Mockito.eq(loopStatement),
+                times(numberOfInvocations)).registerProblem(Mockito.eq(initializer),
                 Mockito.contains(
                         "Single operation found in loop. If the SDK provides a batch operation API, use it to perform multiple actions in a single request."));
     }

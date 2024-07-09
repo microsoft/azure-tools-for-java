@@ -21,40 +21,31 @@ import com.intellij.psi.PsiWhileStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Inspection to check if there is a single Azure client operation inside a loop.
- * A single Azure client operation is defined as a method call on a class that is part of the Azure SDK.
- * If a single Azure client operation is found inside a loop, a problem will be registered.
+ * Inspection to check if there is a Text Analytics client operation inside a loop.
+ * If a Text Analytics client operation is found inside a loop,
+ * and the API has a batch alternative, a problem will be registered.
  *
  * THis is an example of a situation where the inspection should register a problem:
  *
- * 1. With a single PsiDeclarationStatement inside a while loop
- * // While loop
- *         int i = 0;
- *         while (i < 10) {
- *
- *             BlobAsyncClient blobAsyncClient = new BlobClientBuilder()
- *                 .endpoint("https://<your-storage-account-name>.blob.core.windows.net")
- *                 .sasToken("<your-sas-token>")
- *                 .containerName("<your-container-name>")
- *                 .blobName("<your-blob-name>")
- *                 .buildAsyncClient();
- *
- *             i++;
- *         }
- *
- * 2. With a single PsiExpressionStatement inside a for loop
- * for (String documentPath : documentPaths) {
- *
- *             blobAsyncClient.uploadFromFile(documentPath)
- *                 .doOnSuccess(response -> System.out.println("Blob uploaded successfully in enhanced for loop."))
- *                 .subscribe();
- *         }
+ * // Loop through the list of texts and detect the language for each text
+*         1. for (String text : texts) {
+*             DetectedLanguage detectedLanguage = textAnalyticsClient.detectLanguage(text);
+*             System.out.println("Text: " + text + " | Detected Language: " + detectedLanguage.getName() + " | Confidence Score: " + detectedLanguage.getConfidenceScore());
+*         }
+*
+*         // Loop through the list of texts and detect the language for each text
+*        2.  DetectedLanguage detectedLanguage = null;
+*         for (String text : texts) {
+*             textAnalyticsClient.detectLanguage(text);
  */
 public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
@@ -73,13 +64,13 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
     /**
      * Visitor class to traverse the PSI tree and check for single Azure client operation inside a loop.
      * The visitor will check for loops of type for, foreach, while, and do-while.
-     * The visitor will check for single Azure client operation inside the loop body.
-     * If a single Azure client operation is found, a problem will be registered.
+     * The visitor will check for a Text Analytics client operation inside the loop.
+     * If a Text Analytics client operation is found inside the loop, and the API has a batch alternative, a problem will be registered.
      */
     public static class SingleOperationInLoopVisitor extends JavaElementVisitor {
 
         // Define the holder for the problems found and whether the inspection is running on the fly
-        private final ProblemsHolder holder;
+        private static ProblemsHolder holder = null;
         private final boolean isOnTheFly;
 
         // Define the logger for the visitor
@@ -88,9 +79,17 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
         // Define the suggestion message for the problem
         private static String SUGGESTION = "";
 
+        private static List<String> AVAILABLE_BATCH_METHODS;
+
+        // Load the config file
         static {
             try {
-                SUGGESTION = getRuleConfigs();
+                Map<String, Object> ruleConfigsMap = getRuleConfigs();
+
+                // extract the async return types to check
+                AVAILABLE_BATCH_METHODS = (List<String>) ruleConfigsMap.get("methods_to_check");
+                SUGGESTION = (String) ruleConfigsMap.get("antipattern_message");
+
             } catch (IOException e) {
                 LOGGER.severe("Failed to load rule configurations");
             }
@@ -112,7 +111,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitForStatement(@NotNull PsiForStatement statement) {
-            checkLoopForSingleClientOperation(statement);
+            checkLoopForTextAnalyticsClientOperation(statement);
         }
 
         /**
@@ -121,7 +120,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitForeachStatement(@NotNull PsiForeachStatement statement) {
-            checkLoopForSingleClientOperation(statement);
+            checkLoopForTextAnalyticsClientOperation(statement);
         }
 
         /**
@@ -130,7 +129,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitWhileStatement(@NotNull PsiWhileStatement statement) {
-            checkLoopForSingleClientOperation(statement);
+            checkLoopForTextAnalyticsClientOperation(statement);
         }
 
         /**
@@ -139,38 +138,21 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitDoWhileStatement(@NotNull PsiDoWhileStatement statement) {
-            checkLoopForSingleClientOperation(statement);
+            checkLoopForTextAnalyticsClientOperation(statement);
         }
 
-        /**
-         * Check if there is a single Azure client operation inside the loop.
-         * A single Azure client operation is defined as a method call on a class that is part of the Azure SDK.
-         * If a single Azure client operation is found, a problem will be registered.
-         * @param loopStatement The loop statement to check
-         */
-        private void checkLoopForSingleClientOperation(PsiStatement loopStatement) {
-
-            // Count the number of Azure client operations inside the loop
-            int numOfAzureClientOperations = countAzureClientOperations(loopStatement);
-            if (numOfAzureClientOperations == 1) {
-                holder.registerProblem(loopStatement, SUGGESTION);
-            }
-        }
 
         /**
-         * A single Azure client operation is defined as a method call on a class that is part of the Azure SDK.
-         * If an Azure client operation is found, the count will be incremented.
+         * Check the loop statement for a single Text Analytics Azure client operation inside the loop.
          * @param loopStatement The loop statement to check
          */
-        private int countAzureClientOperations(PsiStatement loopStatement) {
-
-            int numOfAzureClientOperations = 0;
+        private boolean checkLoopForTextAnalyticsClientOperation(PsiStatement loopStatement) {
 
             // extract body of the loop
             PsiStatement loopBody = getLoopBody(loopStatement);
 
             if (loopBody == null) {
-                return 0;
+                return false;
             }
 
             // Extract the code block from the block statement
@@ -180,23 +162,17 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
             // extract statements in the loop body
             for (PsiStatement statement : codeBlock.getStatements()) {
 
-                // Check if the statement is an expression statement and is an Azure client operation
-                if (statement instanceof PsiExpressionStatement &&
-                        isExpressionAzureClientOperation(statement)) {
-
-                    // Increment the count of Azure client operations if the expression statement is an Azure client operation
-                    numOfAzureClientOperations++;
+                    // Check if the statement is an expression statement and is an Azure client operation
+                if (statement instanceof PsiExpressionStatement) {
+                        isExpressionAzureClientOperation(statement);
                 }
 
                 // Check if the statement is a declaration statement and is an Azure client operation
-                if (statement instanceof PsiDeclarationStatement &&
-                        isDeclarationAzureClientOperation((PsiDeclarationStatement) statement)) {
-
-                    // Increment the count of Azure client operations if the declaration statement is an Azure client operation
-                    numOfAzureClientOperations++;
+                if (statement instanceof PsiDeclarationStatement) {
+                        isDeclarationAzureClientOperation((PsiDeclarationStatement) statement);
                 }
             }
-            return numOfAzureClientOperations;
+            return true;
         }
 
 
@@ -221,19 +197,17 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * @param statement The statement to check
          * @return True if the statement is an Azure client operation, false otherwise
          */
-        private boolean isExpressionAzureClientOperation(PsiStatement statement) {
+        private void isExpressionAzureClientOperation(PsiStatement statement) {
 
             // Get the expression from the statement
             PsiExpression expression = ((PsiExpressionStatement) statement).getExpression();
 
-            if (!(expression instanceof PsiMethodCallExpression)) {
-                return false;
+            if (expression instanceof PsiMethodCallExpression) {
+                // Check if the expression is an Azure client operation
+                if (isAzureTextAnalyticsClientOperation((PsiMethodCallExpression) expression)) {
+                    holder.registerProblem(expression, SUGGESTION);
+                }
             }
-            // Check if the expression is an Azure client operation
-            if (isAzureClientOperation((PsiMethodCallExpression) expression)) {
-                return true;
-            }
-            return false;
         }
 
         /**
@@ -241,7 +215,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * @param statement The declaration statement to check
          * @return True if the declaration statement is an Azure client operation, false otherwise
          */
-        private boolean isDeclarationAzureClientOperation(PsiDeclarationStatement statement) {
+        private void isDeclarationAzureClientOperation(PsiDeclarationStatement statement) {
 
             // getDeclaredElements() returns the variables declared in the statement
             for (PsiElement element :  statement.getDeclaredElements()) {
@@ -256,11 +230,10 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                     continue;
                 }
                 // Check if the initializer is an Azure client operation
-                if (isAzureClientOperation((PsiMethodCallExpression) initializer)) {
-                    return true;
+                if (isAzureTextAnalyticsClientOperation((PsiMethodCallExpression) initializer)) {
+                    holder.registerProblem(initializer, SUGGESTION);
                 }
             }
-            return false;
         }
 
         /**
@@ -270,7 +243,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * @param methodCall The method call expression to check
          * @return True if the method call is an Azure client operation, false otherwise
          */
-        private static boolean isAzureClientOperation(PsiMethodCallExpression methodCall) {
+        private static boolean isAzureTextAnalyticsClientOperation(PsiMethodCallExpression methodCall) {
 
             // Get the containing class of the method call
             PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
@@ -280,8 +253,11 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 String className = containingClass.getQualifiedName();
 
                 // Check if the class is part of the Azure SDK
-                if (className != null && className.startsWith("com.azure.")) {
-                    return true;
+                if (className != null && className.startsWith("com.azure.ai.textanalytics")) {
+
+                    if (AVAILABLE_BATCH_METHODS.contains((methodCall.getMethodExpression().getReferenceName()) + "Batch")) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -292,14 +268,21 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * @return The rule configurations
          * @throws IOException
          */
-        private static String getRuleConfigs() throws IOException {
+        private static Map<String, Object> getRuleConfigs() throws IOException {
 
             final String ruleName = "SingleOperationInLoopCheck";
             final String antiPatternMessageKey = "antipattern_message";
+            final String methodsToCheckKey = "methods_to_check";
 
             final JSONObject jsonObject =  LoadJsonConfigFile.getInstance().getJsonObject();
-            final String antiPatternMessage = jsonObject.getJSONObject(ruleName).getString(antiPatternMessageKey);
-            return antiPatternMessage;
+
+            //get the methods to check
+            JSONArray methodsToCheck = jsonObject.getJSONObject(ruleName).getJSONArray(methodsToCheckKey);
+
+            // extract string from json object
+            String antiPatternMessage = jsonObject.getJSONObject(ruleName).getString(antiPatternMessageKey);
+
+            return Map.of(methodsToCheckKey, methodsToCheck.toList(), antiPatternMessageKey, antiPatternMessage.toString());
         }
     }
 }
