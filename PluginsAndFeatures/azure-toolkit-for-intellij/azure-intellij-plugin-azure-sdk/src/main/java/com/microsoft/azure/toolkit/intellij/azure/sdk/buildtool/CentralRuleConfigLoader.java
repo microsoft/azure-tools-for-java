@@ -15,6 +15,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * This class is used to load the rule configurations from a JSON file.
+ * The rule configurations are loaded once and stored in a map.
+ * The map contains the key-value pairs where the key is the rule name and the value is the RuleConfig object.
+ * The RuleConfig object for a given key can be retrieved using the getRuleConfig method.
+ */
 public class CentralRuleConfigLoader {
 
     private static CentralRuleConfigLoader instance;
