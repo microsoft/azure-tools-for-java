@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,17 +44,6 @@ public class TelemetryClientProviderTest {
         MockitoAnnotations.initMocks(this);
         mockVisitor = createVisitor();
         TelemetryClientProviderVisitor.methodCounts = new HashMap<>();
-    }
-
-    /**
-     * This test method tests the buildVisitor method.
-     * It asserts that the visitor is not null and is an instance of JavaElementVisitor.
-     */
-    @Test
-    public void testBuildVisitor() {
-
-        // Assert the visitor is not null and is an instance of JavaElementVisitor
-        assertVisitor();
     }
 
     /**
@@ -156,12 +144,5 @@ public class TelemetryClientProviderTest {
         TelemetryClientProviderVisitor visitor = new TelemetryClientProviderVisitor(mockProblemsHolder, false);
 
         return visitor;
-    }
-
-    // Helper method to assert visitor is not null and is an instance of JavaElementVisitor
-    private void assertVisitor() {
-
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
     }
 }

@@ -35,8 +35,8 @@ public class TelemetryClientProvider extends LocalInspectionTool {
 
     /**
      * This method is called by the IntelliJ platform to build a visitor for the inspection.
-     * @param holder
-     * @param isOnTheFly
+     * @param holder The ProblemsHolder object that holds the problems found in the code.
+     * @param isOnTheFly A boolean that indicates if the inspection is running on the fly.
      * @return
      */
     @NotNull
@@ -126,7 +126,13 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             if (qualifier != null) {
                 PsiType type = qualifier.getType();
                 if (type != null && type.getCanonicalText().startsWith("com.azure")) {
-                    return type.getPresentableText();
+
+                    // This will be "SyncPoller<String, String>"
+                    String presentableText = type.getPresentableText();
+
+                    // Strip out the generic parameters
+                    String baseTypeName = presentableText.replaceAll("<.*>", "");
+                    return baseTypeName;
                 }
             }
             return null;
@@ -216,7 +222,6 @@ public class TelemetryClientProvider extends LocalInspectionTool {
                 LOGGER.log(Level.SEVERE, "Unexpected error while loading instrumentation key"
                         + ". Please investigate further.", e);
             }
-
             return telemetry;
         }
     }
