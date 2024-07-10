@@ -8,16 +8,9 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 /**
@@ -36,27 +29,11 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
     }
 
     private static List<String> METHODS_TO_CHECK_LIST;
-    private static final String RULE_NAME = "StorageUploadWithoutLengthCheck";
-    private static final String METHODS_TO_CHECK_KEY = "methods_to_check";
     private static final String LENGTH_TYPE = "long";
-    private static final Logger LOGGER = Logger.getLogger(StorageUploadWithoutLengthCheck.class.getName());
 
-
-
+    // call getMethodsToCheck() to load the methods to check from the configuration file
     static {
-        try {
-            METHODS_TO_CHECK_LIST = getMethodsToCheck();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error loading methods to check", e);
-        }
-    }
-
-    // Get the list of methods to check from the configuration file
-    private static List<String> getMethodsToCheck() throws IOException {
-
-        JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-        JSONArray methods = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK_KEY);
-        return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
+        getMethodsToCheck();
     }
 
     /**
@@ -154,5 +131,18 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
             }
         }
         return false;
+    }
+
+    /** Get the list of methods to check from the configuration class
+     * The methods to check are defined in a JSON configuration file.
+     */
+    private static void getMethodsToCheck() {
+
+        final String ruleName = "StorageUploadWithoutLengthCheck";
+        CentralRuleConfigLoader centralRuleConfigLoader = CentralRuleConfigLoader.getInstance();
+
+        // Get the RuleConfig object for the rule
+        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+        METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
     }
 }

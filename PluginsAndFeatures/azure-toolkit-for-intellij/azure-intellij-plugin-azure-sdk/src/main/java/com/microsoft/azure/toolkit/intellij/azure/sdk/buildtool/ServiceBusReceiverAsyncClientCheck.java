@@ -6,12 +6,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -22,23 +17,16 @@ import java.util.logging.Logger;
  */
 public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
-    private static List<String> CLIENT_DATA = null;
-
     // Define constants for string literals
-    private static final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
     private static final String RULE_NAME = "ServiceBusReceiverAsyncClientCheck";
-    private static final String SUGGESTION_KEY = "antipattern_message";
-    private static final String CLIENT_NAME_KEY = "client_name";
+    private static String CLIENT_NAME;
+    private static String SUGGESTION;
     private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
 
+    // Static initializer block to load the client data once
     static {
-        try {
-            CLIENT_DATA = getClientToCheck();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error loading client data", e);
-        }
+        getClientToCheck();
     }
-
 
     /**
      * This method builds a visitor to check for the discouraged client name in the code.
@@ -59,15 +47,9 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
                 // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
 
-                    if (CLIENT_DATA.isEmpty()) {
-                        return;
-                    }
-                    String clientName = CLIENT_DATA.get(0);
-                    String suggestion = CLIENT_DATA.get(1);
-
                     // Register a problem if the client used matches the discouraged client
-                    if (element.getType().getPresentableText().equals(clientName)) {
-                        holder.registerProblem(element, suggestion);
+                    if (element.getType().getPresentableText().equals(CLIENT_NAME)) {
+                        holder.registerProblem(element, SUGGESTION);
                     }
                 }
             }
@@ -76,16 +58,17 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
     }
 
     /**
-     * Loading the client data from the configuration file.
-     *
-     * @return List of client name and suggestion message
+     * Loading the client data from the configuration class.
      */
-    static List<String> getClientToCheck() throws IOException {
+    static void getClientToCheck() {
 
-        final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-        final String clientName = jsonObject.getJSONObject(RULE_NAME).getString(CLIENT_NAME_KEY);
-        final String suggestion= jsonObject.getJSONObject(RULE_NAME).getString(SUGGESTION_KEY);
-        return Arrays.asList(clientName, suggestion);
+        String ruleName = "ServiceBusReceiverAsyncClientCheck";
 
+        CentralRuleConfigLoader centralRuleConfigLoader = CentralRuleConfigLoader.getInstance();
+        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+        CLIENT_NAME = ruleConfig.getClientName();
+        SUGGESTION = ruleConfig.getAntipatternMessage();
     }
+
 }
