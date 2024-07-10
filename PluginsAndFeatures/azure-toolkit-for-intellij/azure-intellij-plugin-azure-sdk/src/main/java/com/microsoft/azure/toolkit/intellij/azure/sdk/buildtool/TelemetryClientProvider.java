@@ -4,13 +4,16 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import java.io.FileNotFoundException;
 
+import com.intellij.psi.util.PsiUtil;
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -99,11 +102,11 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             String methodName = methodExpression.getReferenceName();
             String clientName = getClientName(expression); // Method to get client name
 
-            if (methodName == null) {
-                return;
-            }
-
             if (clientName != null) {
+
+                if (methodName == null || !isServiceCall(expression)) {
+                    return;
+                }
                 synchronized (methodCounts) {
 
                     // Increment the count of the method call for the client
@@ -114,29 +117,107 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             }
         }
 
+
         /**
-         * This method extracts the client name from the method call expression.
-         * It checks if the method call expression is from an Azure SDK client.
-         * @param expression The method call expression.
+         * This method is used to get the client name from the method call expression.
+         * It resolves the method and extracts the return type to get the client name.
+         * @param expression The method call expression from which the client name is extracted.
          * @return The client name extracted from the method call expression.
          */
         private String getClientName(PsiMethodCallExpression expression) {
-            // Logic to extract client name from the method call expression
-            PsiExpression qualifier = expression.getMethodExpression().getQualifierExpression();
-            if (qualifier != null) {
-                PsiType type = qualifier.getType();
-                if (type != null && type.getCanonicalText().startsWith("com.azure")) {
+            PsiMethod method = expression.resolveMethod();
 
-                    // This will be "SyncPoller<String, String>"
-                    String presentableText = type.getPresentableText();
+            if (method != null) {
 
-                    // Strip out the generic parameters
-                    String baseTypeName = presentableText.replaceAll("<.*>", "");
-                    return baseTypeName;
+                // Get the return type of the method
+                PsiType returnType = method.getReturnType();
+
+                // Check if the return type is a class type
+                if (returnType != null) {
+                    if (returnType instanceof PsiClassType) {
+
+                        // Resolve the class type to get the class
+                        PsiClass psiClass = ((PsiClassType) returnType).resolve();
+
+                        // Check if the class is an Azure SDK client
+                        if (psiClass != null && isAzureSdkClient(psiClass)) {
+
+                            // Check if the class name ends with "Client"
+                            if (psiClass.getName().endsWith("Client")) {
+                                return psiClass.getName();
+                            }
+                        }
+                    } else {
+                        // Resolve the class type to get the class
+                        PsiClass psiClass = PsiUtil.resolveClassInClassTypeOnly(returnType);
+
+                        // Check if the class is an Azure SDK client
+                        if (psiClass != null && isAzureSdkClient(psiClass)) {
+
+                            // Check if the class name ends with "Client"
+                            if (psiClass.getName().endsWith("Client")) {
+                                return psiClass.getName();
+                            }
+                        }
+                    }
                 }
             }
             return null;
         }
+
+        /**
+         * This method is used to check if the class is an Azure
+         * SDK client by checking if the class name starts with "com.azure.".
+         * @param psiClass The class to be checked.
+         * @return A boolean indicating if the class is an Azure SDK client.
+         */
+        private boolean isAzureSdkClient(PsiClass psiClass) {
+            String className = psiClass.getQualifiedName();
+            return className != null && className.startsWith("com.azure.");
+        }
+
+        /**
+         * This method is used to check if the method call expression is a service call.
+         * It checks if the method is not a builder method or a utility method.
+         * @param expression The method call expression to be checked.
+         * @return A boolean indicating if the method call expression is a service call.
+         */
+        private static boolean isServiceCall(PsiMethodCallExpression expression) {
+            PsiReferenceExpression methodExpression = expression.getMethodExpression();
+            PsiMethod method = (PsiMethod) methodExpression.resolve();
+
+            if (method == null) {
+                return false;
+            }
+
+            return !isBuilderMethod(method) &&
+                    !isUtilityMethod(method);
+        }
+
+        /**
+         * This method is used to check if the method is a builder method.
+         * It checks if the method name contains "build", "create", or "new".
+         * @param method The method to be checked.
+         * @return A boolean indicating if the method is a builder method.
+         */
+        private static boolean isBuilderMethod(PsiMethod method) {
+            String methodName = method.getName().toLowerCase();
+            return methodName.contains("build") || methodName.contains("create") ||
+                    methodName.contains("new");
+        }
+
+        /**
+         * This method is used to check if the method is a utility method.
+         * It checks if the method name contains "initialize", "setup", "utility", or "helper".
+         * @param method The method to be checked.
+         * @return A boolean indicating if the method is a utility method.
+         */
+        private static boolean isUtilityMethod(PsiMethod method) {
+            String methodName = method.getName().toLowerCase();
+            return methodName.contains("initialize") || methodName.contains("setup") ||
+                    methodName.contains("utility") || methodName.contains("helper");
+        }
+
 
         /**
          * This method starts the telemetry service.
