@@ -94,8 +94,7 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
             final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
 
             // Load the rule configurations from the JSON file
-            try {
-                final InputStream inputStream = HardcodedAPIKeysAndTokensCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION);
+            try (InputStream inputStream = HardcodedAPIKeysAndTokensCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION)) {
                 if (inputStream == null) {
                     throw new FileNotFoundException("Configuration file not found");
                 }

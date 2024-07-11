@@ -13,7 +13,7 @@
   },
 
   "HardcodedAPIKeysAndTokensCheck": {
-    "clients_to_check": ["AzureKeyCredential", "AccessToken"],
+    "clients_to_check": ["AzureKeyCredential", "AccessToken", "KeyCredential", "AzureNamedKeyCredential", "AzureSasCredential", "AzureNamedKey", "ClientSecretCredentialBuilder", "UsernamePasswordCredentialBuilder", "BasicAuthenticationCredential"],
     "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
     "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   }
