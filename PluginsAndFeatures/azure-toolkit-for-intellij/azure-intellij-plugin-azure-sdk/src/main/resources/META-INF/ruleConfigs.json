@@ -10,5 +10,11 @@
   "ServiceBusReceiverAsyncClientCheck": {
     "client_name": "ServiceBusReceiverAsyncClient",
     "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+  },
+
+  "DisableAutoCompleteCheck": {
+    "methods_to_check": "disableAutoComplete",
+    "clients_to_check": ["ServiceBusReceiverClient", "ServiceBusReceiverAsyncClient", "ServiceBusProcessorClient"],
+    "antipattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
   }
 }
