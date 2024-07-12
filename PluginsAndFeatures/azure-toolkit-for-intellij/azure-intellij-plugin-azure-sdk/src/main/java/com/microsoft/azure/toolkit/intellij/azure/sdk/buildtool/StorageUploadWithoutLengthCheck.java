@@ -28,20 +28,24 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         return "Ensure Storage APIs use Length Parameter";
     }
 
-    private static List<String> METHODS_TO_CHECK_LIST;
+    private static final List<String> METHODS_TO_CHECK_LIST;
     private static final String LENGTH_TYPE = "long";
 
-    // call getMethodsToCheck() to load the methods to check from the configuration file
     static {
-        getMethodsToCheck();
+        final String ruleName = "StorageUploadWithoutLengthCheck";
+        RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+        // Get the RuleConfig object for the rule
+        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+        METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
     }
 
     /**
      * This method is used to build a PsiElementVisitor that will be used to visit the method calls in the code.
      *
-     * @param holder
-     * @param isOnTheFly
-     * @return
+     * @param holder ProblemsHolder object to register the problem
+     * @param isOnTheFly boolean to check if the inspection is on the fly -- Not in use
+     * @return PsiElementVisitor object to visit the elements in the code
      */
     @NotNull
     @Override
@@ -90,8 +94,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
      * The iteration starts from the end of the chain and goes up the chain.
      * The qualifier of the method call is checked for a constructor with 'long' type arguments.
      *
-     * @param expression
-     * @return boolean
+     * @param expression - The method call expression
+     * @return boolean - true if the constructor has 'long' type arguments
      */
     public boolean checkMethodCallChain(PsiMethodCallExpression expression) {
 
@@ -131,18 +135,5 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
             }
         }
         return false;
-    }
-
-    /** Get the list of methods to check from the configuration class
-     * The methods to check are defined in a JSON configuration file.
-     */
-    private static void getMethodsToCheck() {
-
-        final String ruleName = "StorageUploadWithoutLengthCheck";
-        CentralRuleConfigLoader centralRuleConfigLoader = CentralRuleConfigLoader.getInstance();
-
-        // Get the RuleConfig object for the rule
-        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-        METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
     }
 }

@@ -3,7 +3,6 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 import com.azure.json.JsonReader;
 import com.azure.json.JsonToken;
 import com.azure.json.JsonProviders;
-import com.google.gson.JsonParseException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,27 +20,30 @@ import java.util.logging.Logger;
  * The map contains the key-value pairs where the key is the rule name and the value is the RuleConfig object.
  * The RuleConfig object for a given key can be retrieved using the getRuleConfig method.
  */
-public class CentralRuleConfigLoader {
+public class RuleConfigLoader {
 
-    private static CentralRuleConfigLoader instance;
+    private static final RuleConfigLoader instance;
     private Map<String, RuleConfig> ruleConfigs;
 
-    private static final Logger LOGGER = Logger.getLogger(CentralRuleConfigLoader.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RuleConfigLoader.class.getName());
 
     private static final String CONFIG_FILE_PATH = "/META-INF/ruleConfigs.json";
 
     // Static initializer block to load the configurations once
     static {
+        RuleConfigLoader instanceTemp;
         try {
-            final String filePath = "/META-INF/ruleConfigs.json";
-            instance = new CentralRuleConfigLoader(CONFIG_FILE_PATH);
+            instanceTemp = new RuleConfigLoader(CONFIG_FILE_PATH);
         } catch (FileNotFoundException e) {
+            instanceTemp = null;
             LOGGER.log(Level.SEVERE, "Configuration file not found at path: " + CONFIG_FILE_PATH
                     + ". Please ensure the file exists and is accessible. Error: " + e.getMessage(), e);
         } catch (IOException e) {
+            instanceTemp = null;
             LOGGER.log(Level.SEVERE, "IO error while reading configuration file from path: " + CONFIG_FILE_PATH
                     + ". Please check file permissions and retry. Error: " + e.getMessage(), e);
         }
+        instance = instanceTemp;
     }
 
     /**
@@ -49,7 +51,7 @@ public class CentralRuleConfigLoader {
      * @param filePath - the path to the JSON file
      * @throws IOException - if there is an error reading the file
      */
-    private CentralRuleConfigLoader(String filePath) throws IOException {
+    private RuleConfigLoader(String filePath) throws IOException {
         this.ruleConfigs = loadRuleConfigurations(filePath);
     }
 
@@ -57,7 +59,7 @@ public class CentralRuleConfigLoader {
      * This method returns the instance of the CentralRuleConfigLoader
      * @return CentralRuleConfigLoader instance
      */
-    public static CentralRuleConfigLoader getInstance() {
+    public static RuleConfigLoader getInstance() {
         return instance;
     }
 
@@ -74,14 +76,13 @@ public class CentralRuleConfigLoader {
      * This method loads the rule configurations from the JSON file
      * @param filePath - the path to the JSON file
      * @return Map of RuleConfig objects
-     * @throws IOException - if there is an error reading the file
      */
-    private Map<String, RuleConfig> loadRuleConfigurations(String filePath) throws IOException {
+    private Map<String, RuleConfig> loadRuleConfigurations(String filePath) {
 
         Map<String, RuleConfig> ruleConfigs = new HashMap<>();
 
         // Open the input stream to the JSON file
-        try(InputStream is = CentralRuleConfigLoader.class.getResourceAsStream(filePath);
+        try(InputStream is = RuleConfigLoader.class.getResourceAsStream(filePath);
 
             // Create a JsonReader to read the JSON file
             JsonReader reader = JsonProviders.createReader(is)) {
@@ -102,9 +103,9 @@ public class CentralRuleConfigLoader {
                 ruleConfigs.put(key, ruleConfig);
             }
         }
-        catch (JsonParseException e) {
-            LOGGER.log(Level.SEVERE, "Configuration file is not a valid JSON at path: " + CONFIG_FILE_PATH
-                    + ". Please check the file format. Error: " + e.getMessage(), e);
+        catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "IO error while parsing Json from path: " + CONFIG_FILE_PATH
+                    + ". Please check file permissions and retry. Error: " + e.getMessage(), e);
         }
         return ruleConfigs;
     }
@@ -169,65 +170,5 @@ public class CentralRuleConfigLoader {
             list.add(reader.getString());
         }
         return list;
-    }
-}
-
-/**
- * This class represents the RuleConfig object
- * It contains the methods to check, the client name and the antipattern message
- */
-class RuleConfig {
-    private List<String> methodsToCheck;
-    private String clientName;
-    private String antipatternMessage;
-
-    // Getters
-    /**
-     * This method returns the list of methods to check
-     * @return List of methods to check
-     */
-    public List<String> getMethodsToCheck() {
-        return methodsToCheck;
-    }
-
-    /**
-     * This method returns the client name
-     * @return Client name
-     */
-    public String getClientName() {
-        return clientName;
-    }
-
-    /**
-     * This method returns the antipattern message
-     * @return Antipattern message
-     */
-    public String getAntipatternMessage() {
-        return antipatternMessage;
-    }
-
-    // Setters
-    /**
-     * This method sets the list of methods to check
-     * @param methodsToCheck - List of methods to check
-     */
-    public void setMethodsToCheck(List<String> methodsToCheck) {
-        this.methodsToCheck = methodsToCheck;
-    }
-
-    /**
-     * This method sets the client name
-     * @param clientName - Client name
-     */
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
-
-    /**
-     * This method sets the antipattern message
-     * @param antipatternMessage - Antipattern message
-     */
-    public void setAntipatternMessage(String antipatternMessage) {
-        this.antipatternMessage = antipatternMessage;
     }
 }

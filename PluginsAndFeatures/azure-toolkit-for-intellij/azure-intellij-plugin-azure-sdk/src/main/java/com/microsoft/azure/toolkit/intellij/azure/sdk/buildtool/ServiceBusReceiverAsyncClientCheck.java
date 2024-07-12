@@ -7,7 +7,6 @@ import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.logging.Logger;
 
 /**
  * This class extends the LocalInspectionTool to check for the use of ServiceBusReceiverAsyncClient
@@ -18,22 +17,26 @@ import java.util.logging.Logger;
 public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
     // Define constants for string literals
-    private static final String RULE_NAME = "ServiceBusReceiverAsyncClientCheck";
-    private static String CLIENT_NAME;
-    private static String SUGGESTION;
-    private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
+    private static final String CLIENT_NAME;
+    private static final String SUGGESTION;
 
     // Static initializer block to load the client data once
     static {
-        getClientToCheck();
+        final String ruleName = "ServiceBusReceiverAsyncClientCheck";
+
+        RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+        CLIENT_NAME = ruleConfig.getClientName();
+        SUGGESTION = ruleConfig.getAntipatternMessage();
     }
 
     /**
      * This method builds a visitor to check for the discouraged client name in the code.
      * If the client name matches the discouraged client, a problem is registered with the suggestion message.
-     * @param holder
-     * @param isOnTheFly
-     * @return PsiElementVisitor
+     * @param holder ProblemsHolder object to register the problem
+     * @param isOnTheFly boolean to check if the inspection is on the fly -- This is not in use
+     * @return PsiElementVisitor object to visit the elements in the code
      */
     @NotNull
     @Override
@@ -56,19 +59,4 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
 
         };
     }
-
-    /**
-     * Loading the client data from the configuration class.
-     */
-    static void getClientToCheck() {
-
-        String ruleName = "ServiceBusReceiverAsyncClientCheck";
-
-        CentralRuleConfigLoader centralRuleConfigLoader = CentralRuleConfigLoader.getInstance();
-        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-
-        CLIENT_NAME = ruleConfig.getClientName();
-        SUGGESTION = ruleConfig.getAntipatternMessage();
-    }
-
 }
