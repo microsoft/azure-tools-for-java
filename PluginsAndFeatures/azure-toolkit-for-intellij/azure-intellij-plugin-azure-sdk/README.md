@@ -56,7 +56,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 
 3. #### Disable Auto-complete when using ServiceBusReceiver or Processor clients
 
-- **Anti-pattern**:When using ServiceBusReceiver or Processor clients, auto-complete is enabled by default, but this
+- **Anti-pattern**: When using ServiceBusReceiver or Processor clients, auto-complete is enabled by default, but this
   behavior is not explicitly verified or disabled when necessary.
 - **Issue**: Auto-complete being enabled by default might lead to messages being marked as completed even if the message
   processing fails or encounters an error.
