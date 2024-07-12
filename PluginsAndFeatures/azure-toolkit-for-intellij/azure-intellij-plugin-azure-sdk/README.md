@@ -29,3 +29,11 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 - **Severity: WARNING**
 - **Recommendation**: Instead of using the low-level `ServiceBusReceiverAsyncClient`, it's recommended to use the `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies message consumption. It's designed for most common use cases and should be the primary choice for consuming messages. This makes it a more suitable option for most developers and scenarios. 
 Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient) for additional information.
+
+3. #### Disable Auto-complete when using ServiceBusReceiver or Processor clients
+- **Anti-pattern**:When using ServiceBusReceiver or Processor clients, auto-complete is enabled by default, but this behavior is not explicitly verified or disabled when necessary.
+- **Issue**: Auto-complete being enabled by default might lead to messages being marked as completed even if the message processing fails or encounters an error. 
+    Errors in message processing might not be noticed since the message is automatically completed regardless of success or failure, making it harder to identify and handle issues.
+- **Severity: WARNING**
+- Explicitly Disable Auto-Complete: When creating ServiceBusReceiver or Processor clients, explicitly use the disableAutoComplete() method call to prevent automatic message completion.
+Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.servicebus.servicebusclientbuilder.servicebusreceiverclientbuilder?view=azure-java-stable#com-azure-messaging-servicebus-servicebusclientbuilder-servicebusreceiverclientbuilder-disableautocomplete()) for additional information.
