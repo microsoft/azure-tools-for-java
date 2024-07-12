@@ -12,6 +12,7 @@ class RuleConfig {
     private String antipatternMessage;
 
     // Getters
+
     /**
      * This method returns the list of methods to check
      *
@@ -40,6 +41,7 @@ class RuleConfig {
     }
 
     // Setters
+
     /**
      * This method sets the list of methods to check
      *

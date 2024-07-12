@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public class RuleConfigLoader {
 
     private static final RuleConfigLoader instance;
-    private Map<String, RuleConfig> ruleConfigs;
+    private final Map<String, RuleConfig> ruleConfigs;
 
     private static final Logger LOGGER = Logger.getLogger(RuleConfigLoader.class.getName());
 
@@ -36,18 +36,17 @@ public class RuleConfigLoader {
             instanceTemp = new RuleConfigLoader(CONFIG_FILE_PATH);
         } catch (FileNotFoundException e) {
             instanceTemp = null;
-            LOGGER.log(Level.SEVERE, "Configuration file not found at path: " + CONFIG_FILE_PATH
-                    + ". Please ensure the file exists and is accessible. Error: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Configuration file not found at path: " + CONFIG_FILE_PATH + ". Please ensure the file exists and is accessible. Error: " + e);
         } catch (IOException e) {
             instanceTemp = null;
-            LOGGER.log(Level.SEVERE, "IO error while reading configuration file from path: " + CONFIG_FILE_PATH
-                    + ". Please check file permissions and retry. Error: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "IO error while reading configuration file from path: " + CONFIG_FILE_PATH + ". Please check file permissions and retry. Error: " + e);
         }
         instance = instanceTemp;
     }
 
     /**
      * Constructor to load the rule configurations from the JSON file
+     *
      * @param filePath - the path to the JSON file
      * @throws IOException - if there is an error reading the file
      */
@@ -57,6 +56,7 @@ public class RuleConfigLoader {
 
     /**
      * This method returns the instance of the CentralRuleConfigLoader
+     *
      * @return CentralRuleConfigLoader instance
      */
     public static RuleConfigLoader getInstance() {
@@ -65,15 +65,17 @@ public class RuleConfigLoader {
 
     /**
      * This method returns the RuleConfig object for the given key
+     *
      * @param key - the key to get the RuleConfig object
      * @return RuleConfig object
      */
-    public RuleConfig getRuleConfig(String key) {
+    RuleConfig getRuleConfig(String key) {
         return ruleConfigs.get(key);
     }
 
     /**
      * This method loads the rule configurations from the JSON file
+     *
      * @param filePath - the path to the JSON file
      * @return Map of RuleConfig objects
      */
@@ -82,10 +84,10 @@ public class RuleConfigLoader {
         Map<String, RuleConfig> ruleConfigs = new HashMap<>();
 
         // Open the input stream to the JSON file
-        try(InputStream is = RuleConfigLoader.class.getResourceAsStream(filePath);
+        try (InputStream is = RuleConfigLoader.class.getResourceAsStream(filePath);
 
-            // Create a JsonReader to read the JSON file
-            JsonReader reader = JsonProviders.createReader(is)) {
+             // Create a JsonReader to read the JSON file
+             JsonReader reader = JsonProviders.createReader(is)) {
 
             // Check if the JSON file starts with an object
             // If not, throw an exception
@@ -97,32 +99,31 @@ public class RuleConfigLoader {
             // Read the JSON file and parse the RuleConfig objects
             while (reader.nextToken() != JsonToken.END_OBJECT) {
                 String key = reader.getFieldName();
-                RuleConfig ruleConfig = parseRuleConfig(reader);
+                RuleConfig ruleConfig = getRuleConfig(reader);
 
                 // Add the RuleConfig object to the map
                 ruleConfigs.put(key, ruleConfig);
             }
-        }
-        catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "IO error while parsing Json from path: " + CONFIG_FILE_PATH
-                    + ". Please check file permissions and retry. Error: " + e.getMessage(), e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "IO error while parsing Json from path: " + CONFIG_FILE_PATH + ". Please check file permissions and retry. Error: " + e);
         }
         return ruleConfigs;
     }
 
     /**
      * This method parses the RuleConfig object from the JSON file
+     *
      * @param reader - the JsonReader object to read the JSON file
      * @return RuleConfig object parsed from the JSON file
      * @throws IOException - if there is an error reading the file
      */
-    private RuleConfig parseRuleConfig(JsonReader reader) throws IOException {
+    private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
 
         // Create a new RuleConfig object
         RuleConfig ruleConfig = new RuleConfig();
 
         // Check if the JSON file starts with an object
-        if(reader.nextToken() != JsonToken.START_OBJECT) {
+        if (reader.nextToken() != JsonToken.START_OBJECT) {
             throw new IOException("Expected start of object");
         }
 
@@ -146,13 +147,13 @@ public class RuleConfigLoader {
                     reader.skipChildren();
             }
         }
-        // Return the RuleConfig object
         return ruleConfig;
     }
 
 
     /**
      * This method parses the list of strings from the JSON array
+     *
      * @param reader - the JsonReader object to read the JSON file
      * @return List of strings parsed from the JSON array
      * @throws IOException - if there is an error reading the file
@@ -161,7 +162,7 @@ public class RuleConfigLoader {
         List<String> list = new ArrayList<>();
 
         // Check if the JSON file starts with an array
-        if(reader.nextToken() != JsonToken.START_ARRAY) {
+        if (reader.nextToken() != JsonToken.START_ARRAY) {
             throw new IOException("Expected start of array");
         }
 
