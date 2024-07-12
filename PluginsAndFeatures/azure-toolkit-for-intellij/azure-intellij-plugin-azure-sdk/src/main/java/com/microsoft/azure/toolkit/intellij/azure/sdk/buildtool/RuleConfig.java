@@ -3,10 +3,10 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 import java.util.List;
 
 /**
- * This class represents the RuleConfig object
+ * This class contains configuration options for code style rules.
  * It contains the methods to check, the client name and the antipattern message
  */
-class RuleConfig { // make this its own file
+class RuleConfig {
     private List<String> methodsToCheck;
     private String clientName;
     private String antipatternMessage;
