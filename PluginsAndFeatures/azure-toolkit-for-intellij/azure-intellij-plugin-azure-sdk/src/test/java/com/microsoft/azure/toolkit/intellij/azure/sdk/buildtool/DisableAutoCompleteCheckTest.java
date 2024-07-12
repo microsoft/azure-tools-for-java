@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 /**
  * This class is used to test the DisableAutoCompleteCheck class.
  * It tests the visitDeclarationStatement method of the DisableAutoCompleteVisitor class.
+ * Use of AC refers to the auto-complete feature.
  */
 public class DisableAutoCompleteCheckTest {
 
@@ -54,7 +55,7 @@ public class DisableAutoCompleteCheckTest {
      * If the auto-complete feature is not disabled, a problem is registered with the ProblemsHolder.
      */
     @Test
-    public void testProblemRegisteredWithoutDisableAutoComplete() {
+    public void testACNotDisabledForReceiver() {
 
         String packageName = "com.azure";
         String clientName = "ServiceBusReceiverClient";
@@ -63,7 +64,7 @@ public class DisableAutoCompleteCheckTest {
 
 
         // Assert
-        verifyProblemRegistered(packageName, clientName,numOfInvocations, methodFound);
+        verifyProblemRegistered(packageName, clientName, numOfInvocations, methodFound);
     }
 
     /**
@@ -72,7 +73,7 @@ public class DisableAutoCompleteCheckTest {
      * If the auto-complete feature is not disabled, a problem is registered with the ProblemsHolder.
      */
     @Test
-    public void testProblemRegisteredWithoutDisableAutoCompleteWithAnotherServiceBusClientToCheck() {
+    public void testACNotDisabledForProcessor() {
 
         String packageName = "com.azure";
         String clientName = "ServiceBusProcessorClient";
@@ -80,7 +81,7 @@ public class DisableAutoCompleteCheckTest {
         String methodFound = "notDisableAutoComplete";
 
         // Assert
-        verifyProblemRegistered(packageName, clientName,numOfInvocations, methodFound);
+        verifyProblemRegistered(packageName, clientName, numOfInvocations, methodFound);
     }
 
     /**
@@ -90,7 +91,7 @@ public class DisableAutoCompleteCheckTest {
      * because the ServiceBusRuleManagerClient is not the correct client to check.
      */
     @Test
-    public void testProblemNotRegisteredWithoutDisableAutoCompleteWithWrongServiceBusClient() {
+    public void testNoProblemRegisteredWithWrongClient() {
 
         String packageName = "com.azure";
         String clientName = "ServiceBusRuleManagerClient";
@@ -98,7 +99,7 @@ public class DisableAutoCompleteCheckTest {
         String methodFound = "notDisableAutoComplete";
 
         // Assert
-        verifyProblemRegistered(packageName, clientName,numOfInvocations, methodFound);
+        verifyProblemRegistered(packageName, clientName, numOfInvocations, methodFound);
     }
 
     /**
@@ -108,7 +109,7 @@ public class DisableAutoCompleteCheckTest {
      * because the auto-complete feature is disabled.
      */
     @Test
-    public void testProblemNotRegisteredWithDisableAutoComplete() {
+    public void testACDisabledForReceiver() {
 
         String packageName = "com.azure";
         String clientName = "ServiceBusReceiverClient";
@@ -117,7 +118,7 @@ public class DisableAutoCompleteCheckTest {
 
 
         // Assert
-        verifyProblemRegistered(packageName, clientName,numOfInvocations, methodFound);
+        verifyProblemRegistered(packageName, clientName, numOfInvocations, methodFound);
     }
 
     /**
@@ -127,7 +128,7 @@ public class DisableAutoCompleteCheckTest {
      * because the package name is different -- not an Azure SDK client.
      */
     @Test
-    public void testProblemNotRegisteredWitDifferentPackage() {
+    public void testNoproblemRegisteredDifferentPackage() {
 
         String packageName = "com.microsoft.azure";
         String clientName = "ServiceBusReceiverClient";
@@ -136,11 +137,12 @@ public class DisableAutoCompleteCheckTest {
 
 
         // Assert
-        verifyProblemRegistered(packageName, clientName,numOfInvocations, methodFound);
+        verifyProblemRegistered(packageName, clientName, numOfInvocations, methodFound);
     }
 
 
-    /** Create a visitor by calling the buildVisitor method of the DisableAutoCompleteCheck class.
+    /**
+     * Create a visitor by calling the buildVisitor method of the DisableAutoCompleteCheck class.
      *
      * @return The visitor created
      */
@@ -153,15 +155,15 @@ public class DisableAutoCompleteCheckTest {
     /**
      * Verify that a problem is registered with the ProblemsHolder.
      *
-     * @param packageName The package name of the client
-     * @param clientName The name of the client
+     * @param packageName      The package name of the client
+     * @param clientName       The name of the client
      * @param numOfInvocations The number of times the registerProblem method should be called
-     * @param methodFound The method found in the initializer
+     * @param methodFound      The method found in the initializer
      */
     private void verifyProblemRegistered(String packageName, String clientName, int numOfInvocations, String methodFound) {
 
         PsiVariable declaredElement = mock(PsiVariable.class);
-        PsiElement[] declaredElements = new PsiElement[] { declaredElement };
+        PsiElement[] declaredElements = new PsiElement[]{declaredElement};
 
         // processVariableDeclaration
         PsiType clientType = mock(PsiType.class);
@@ -192,12 +194,11 @@ public class DisableAutoCompleteCheckTest {
         // Final expression should return null to break the loop if the method is not disableAutoComplete
         when(finalExpression.getMethodExpression()).thenReturn(expression);
 
-        if (methodFound!= "disableAutoComplete") {
+        if (methodFound != "disableAutoComplete") {
             when(expression.getQualifierExpression()).thenReturn(null);
         }
 
         mockVisitor.visitDeclarationStatement(mockDeclarationStatement);
-        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(initializer),
-                contains("Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(initializer), contains("Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."));
     }
 }

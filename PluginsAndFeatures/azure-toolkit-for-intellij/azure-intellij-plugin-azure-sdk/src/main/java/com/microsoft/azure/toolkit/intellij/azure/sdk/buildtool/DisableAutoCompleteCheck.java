@@ -12,13 +12,8 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * This class extends the LocalInspectionTool and is used to inspect the usage of Azure SDK ServiceBusReceiver & ServiceBusProcessor clients in the code.
@@ -49,26 +44,32 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
     static class DisableAutoCompleteVisitor extends JavaElementVisitor {
 
         // Define constants for string literals
-        private static String SUGGESTION;
-        private static List<String> CLIENTS_TO_CHECK;
-        private static String METHOD_TO_CHECK;
-        private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiverAsyncClientCheck.class.getName());
+        private static final RuleConfig ruleConfig;
+        private static final String SUGGESTION;
+        private static final List<String> CLIENTS_TO_CHECK;
+        private static final String METHOD_TO_CHECK;
+        private static boolean SKIP_WHOLE_RULE;
 
         static {
-            try {
-                getRuleConfigData();
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Error loading client data", e);
-            }
+            final String ruleName = "DisableAutoCompleteCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+            METHOD_TO_CHECK = ruleConfig.getMethodsToCheck().get(0);
+            CLIENTS_TO_CHECK = ruleConfig.getClientsToCheck();
+            SUGGESTION = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || CLIENTS_TO_CHECK.isEmpty();
         }
 
         // Define the holder for the problems found
-        private static ProblemsHolder holder;
+        private final ProblemsHolder holder;
 
         /**
          * Constructor for the visitor
          *
-         * @param holder     The holder for the problems found
+         * @param holder The holder for the problems found
          */
         public DisableAutoCompleteVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
@@ -84,6 +85,10 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
          */
         @Override
         public void visitDeclarationStatement(PsiDeclarationStatement statement) {
+
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             super.visitDeclarationStatement(statement);
 
             // Get the declared elements
@@ -115,7 +120,7 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
             PsiExpression initializer = variable.getInitializer();
 
             // Check if the client type is an Azure SDK client
-            if (!clientType.getCanonicalText().startsWith("com.azure")) {
+            if (!clientType.getCanonicalText().startsWith(ruleConfig.AZ_PACKAGE_NAME)) {
                 return;
             }
 
@@ -125,10 +130,8 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
                 if (!(initializer instanceof PsiMethodCallExpression)) {
                     return;
                 }
-
                 // Process the new expression initialization
-                if (!isAutoCompleteDisabled((PsiMethodCallExpression) initializer)){
-
+                if (!isAutoCompleteDisabled((PsiMethodCallExpression) initializer)) {
                     // Register a problem if the auto-complete feature is not disabled
                     holder.registerProblem(initializer, SUGGESTION);
                 }
@@ -150,8 +153,6 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
             // Check if the method call chain has the method to check
             while (qualifier instanceof PsiMethodCallExpression) {
 
-                qualifier = ((PsiMethodCallExpression) qualifier).getMethodExpression().getQualifierExpression();
-
                 if (qualifier instanceof PsiMethodCallExpression) {
 
                     // Get the method expression
@@ -165,28 +166,11 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
                         return true;
                     }
                 }
+
+                qualifier = ((PsiMethodCallExpression) qualifier).getMethodExpression().getQualifierExpression();
             }
             // When the chain has been traversed and the method to check is not found
             return false;
-        }
-
-
-        /**
-         * This method is used to get the rule configuration data from the JSON configuration file.
-         *
-         * @throws IOException if an error occurs while loading the JSON configuration file
-         */
-        private static void getRuleConfigData() throws IOException {
-
-            final String ruleName = "DisableAutoCompleteCheck";
-            final String methodToCheckKey = "methods_to_check";
-            final String suggestionKey = "antipattern_message";
-            final String clientsToCheckKey = "clients_to_check";
-
-            final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-            METHOD_TO_CHECK = jsonObject.getJSONObject(ruleName).getString(methodToCheckKey);
-            SUGGESTION = jsonObject.getJSONObject(ruleName).getString(suggestionKey);
-            CLIENTS_TO_CHECK = jsonObject.getJSONObject(ruleName).getJSONArray(clientsToCheckKey).toList().stream().map(Object::toString).collect(Collectors.toList());
         }
     }
 }

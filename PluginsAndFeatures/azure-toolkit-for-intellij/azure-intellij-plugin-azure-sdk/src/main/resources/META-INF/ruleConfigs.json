@@ -4,17 +4,19 @@
       "upload",
       "uploadWithResponse"
     ],
-    "antipattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+    "anti_pattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
   },
-
   "ServiceBusReceiverAsyncClientCheck": {
-    "client_name": "ServiceBusReceiverAsyncClient",
-    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    "clients_to_check": "ServiceBusReceiverAsyncClient",
+    "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   },
-
   "DisableAutoCompleteCheck": {
     "methods_to_check": "disableAutoComplete",
-    "clients_to_check": ["ServiceBusReceiverClient", "ServiceBusReceiverAsyncClient", "ServiceBusProcessorClient"],
-    "antipattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
+    "clients_to_check": [
+      "ServiceBusReceiverClient",
+      "ServiceBusReceiverAsyncClient",
+      "ServiceBusProcessorClient"
+    ],
+    "anti_pattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
   }
 }
