@@ -67,10 +67,16 @@ public class RuleConfigLoader {
      * This method returns the RuleConfig object for the given key
      *
      * @param key - the key to get the RuleConfig object
-     * @return RuleConfig object
+     * @return RuleConfig object or empty rule if one does not exist, {@link RuleConfig#EMPTY_RULE}
      */
     RuleConfig getRuleConfig(String key) {
-        return ruleConfigs.get(key);
+
+        RuleConfig ruleConfig = ruleConfigs.get(key);
+        if (ruleConfig == null) {
+            return RuleConfig.EMPTY_RULE;
+        } else {
+            return ruleConfig;
+        }
     }
 
     /**
@@ -87,7 +93,7 @@ public class RuleConfigLoader {
         // Open the input stream to the JSON file
         try (InputStream is = RuleConfigLoader.class.getResourceAsStream(filePath);
 
-             // Create a JsonReader to read the JSON file
+             // Create a JsonReader to read the JSON file -- need another try to close the json reader
              JsonReader reader = JsonProviders.createReader(is)) {
 
             // Check if the JSON file starts with an object
@@ -121,7 +127,7 @@ public class RuleConfigLoader {
     private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
         List<String> methodsToCheck = new ArrayList<>();
         String clientName = null;
-        String antipatternMessage = null;
+        String antiPatternMessage = null;
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
@@ -141,14 +147,14 @@ public class RuleConfigLoader {
                 case "client_name":
                     clientName = reader.getString();
                     break;
-                case "antipattern_message":
-                    antipatternMessage = reader.getString();
+                case "anti_pattern_message":
+                    antiPatternMessage = reader.getString();
                     break;
                 default:
                     reader.skipChildren();
             }
         }
-        return new RuleConfig(methodsToCheck, clientName, antipatternMessage);
+        return new RuleConfig(methodsToCheck, clientName, antiPatternMessage);
     }
 
     /**

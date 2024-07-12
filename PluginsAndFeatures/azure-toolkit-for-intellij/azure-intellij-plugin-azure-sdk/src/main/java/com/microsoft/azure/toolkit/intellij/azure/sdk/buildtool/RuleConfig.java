@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -9,19 +10,21 @@ import java.util.List;
 class RuleConfig {
     private final List<String> methodsToCheck;
     private final String clientName;
-    private final String antipatternMessage;
+    private final String antiPatternMessage;
+
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), "", "");
 
     /**
      * Constructor for RuleConfig.
      *
      * @param methodsToCheck     List of methods to check.
      * @param clientName         Client name.
-     * @param antipatternMessage Antipattern message.
+     * @param antiPatternMessage Antipattern message.
      */
-    public RuleConfig(List<String> methodsToCheck, String clientName, String antipatternMessage) {
+    public RuleConfig(List<String> methodsToCheck, String clientName, String antiPatternMessage) {
         this.methodsToCheck = methodsToCheck;
         this.clientName = clientName;
-        this.antipatternMessage = antipatternMessage;
+        this.antiPatternMessage = antiPatternMessage;
     }
 
     // Getters
@@ -50,6 +53,6 @@ class RuleConfig {
      * @return Antipattern message
      */
     public String getAntiPatternMessage() {
-        return antipatternMessage;
+        return antiPatternMessage;
     }
 }

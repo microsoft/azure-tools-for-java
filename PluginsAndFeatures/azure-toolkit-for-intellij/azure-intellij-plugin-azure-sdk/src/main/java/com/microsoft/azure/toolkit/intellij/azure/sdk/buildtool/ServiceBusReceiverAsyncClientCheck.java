@@ -19,6 +19,7 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
     // Define constants for string literals
     private static final String CLIENT_NAME;
     private static final String SUGGESTION;
+    private static final boolean SKIP_WHOLE_RULE;
 
     // Static initializer block to load the client data once
     static {
@@ -27,6 +28,7 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
         RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
         final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
+        SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE;
         CLIENT_NAME = ruleConfig.getClientName();
         SUGGESTION = ruleConfig.getAntiPatternMessage();
     }
@@ -48,6 +50,10 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
             public void visitTypeElement(PsiTypeElement element) {
                 super.visitTypeElement(element);
 
+                if (SKIP_WHOLE_RULE) {
+                    return;
+                }
+
                 // Check if the element is an instance of PsiTypeElement
                 if (element instanceof PsiTypeElement && element.getType() != null) {
 
@@ -57,7 +63,6 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
                     }
                 }
             }
-
         };
     }
 }

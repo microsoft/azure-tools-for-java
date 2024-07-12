@@ -32,6 +32,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
     private static final List<String> METHODS_TO_CHECK_LIST;
     private static final String LENGTH_TYPE = "long";
     private static final String SUGGESTION;
+    private static final boolean SKIP_WHOLE_RULE;
+
 
     static {
         final String ruleName = "StorageUploadWithoutLengthCheck";
@@ -41,6 +43,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
         METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
         SUGGESTION = ruleConfig.getAntiPatternMessage();
+        SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK_LIST.isEmpty();
     }
 
     /**
@@ -61,6 +64,10 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                 String methodName = expression.getMethodExpression().getReferenceName();
 
                 if (!METHODS_TO_CHECK_LIST.contains(methodName)) {
+                    return;
+                }
+
+                if (SKIP_WHOLE_RULE) {
                     return;
                 }
 
