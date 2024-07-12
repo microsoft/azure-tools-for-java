@@ -2,7 +2,6 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiDeclarationStatement;
 import com.intellij.psi.PsiElement;
@@ -30,11 +29,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
         return new ServiceBusReceiveModeVisitor(holder, isOnTheFly);
     }
 
-
-
     static class ServiceBusReceiveModeVisitor extends JavaElementVisitor {
-
-        // Define constants for string literals
 
 
         // Define the holder for the problems found
@@ -64,7 +59,6 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
                 // Process the variable declaration
                 processVariableDeclaration(variable);
             }
-
         }
 
         private void processVariableDeclaration(PsiVariable variable) {
@@ -76,9 +70,10 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             // Check the assignment part (right side)
             PsiExpression initializer = variable.getInitializer();
             System.out.println("initializer: " + initializer);
+            System.out.println("clientType.getCanonicalText(): " + clientType.getCanonicalText());
 
             // Check if the client type is an Azure ServiceBus client
-            if (!clientType.getCanonicalText().contains("ServiceBus")){
+            if (!clientType.getCanonicalText().contains("servicebus")){
                 return;
             }
 
@@ -96,9 +91,6 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             OptionalInt prefetchCountValue = OptionalInt.empty();
             boolean isReceiveModePeekLock = false;
             PsiMethodCallExpression prefetchCountQualifier = null; // Declaration at the method level
-//            TextRange textRange = null;
-            PsiReferenceExpression methodExpression = null;
-
 
             // Iterating up the chain of method calls
             PsiExpression qualifier = methodCall.getMethodExpression().getQualifierExpression();
@@ -113,7 +105,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
                     System.out.println("qualifier2: " + qualifier);
 
                     // Get the method expression
-                    methodExpression = ((PsiMethodCallExpression) qualifier).getMethodExpression();
+                    PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) qualifier).getMethodExpression();
                     System.out.println("methodExpression: " + methodExpression);
 
                     // Get the method name
@@ -129,14 +121,14 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
                         System.out.println("isReceiveModePeekLock: " + isReceiveModePeekLock);
 
                         // access its parameters
-                    } else if ("prefetchCount".equals(methodName)) {
+                    }
+                    else if ("prefetchCount".equals(methodName)) {
                         System.out.println("prefetchCount method detected");
 
                         prefetchCountValue = getPrefetchCount((PsiMethodCallExpression) qualifier);
                         prefetchCountQualifier = (PsiMethodCallExpression) qualifier; // Assigning the current qualifier
                         System.out.println("prefetchCountValue.getAsInt(): " + prefetchCountValue.getAsInt());
                         System.out.println("prefetchCountQualifier: " + prefetchCountQualifier);
-
                     }
                 }
 
@@ -153,10 +145,12 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
         private boolean receiveModePeekLockCheck (PsiMethodCallExpression qualifier) {
 
+            System.out.println("qualifier at receiveModePeekLockCheck: " + qualifier);
             PsiExpression[] arguments = qualifier.getArgumentList().getExpressions();
             System.out.println("arguments: " + arguments);
 
             for (PsiExpression argument : arguments) {
+                System.out.println("argument: " + argument);
                 String argumentText = argument.getText();
                 System.out.println("argumentText: " + argumentText);
 
