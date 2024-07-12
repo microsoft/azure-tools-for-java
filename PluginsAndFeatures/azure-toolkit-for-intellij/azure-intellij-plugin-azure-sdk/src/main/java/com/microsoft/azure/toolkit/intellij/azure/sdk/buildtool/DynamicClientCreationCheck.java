@@ -50,7 +50,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
     /**
      * This class extends the JavaElementVisitor to check for the dynamic creation of clients in the code.
      */
-    public static class DynamicClientCreationVisitor extends JavaElementVisitor {
+    static class DynamicClientCreationVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
         private final boolean isOnTheFly;
@@ -118,6 +118,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
         /**
          * This method checks for the dynamic creation of clients in the code block of a for loop.
          * Each assignment statement and declaration statement is checked for the creation of clients.
+         *
          * @param blockChild
          */
 
@@ -138,13 +139,10 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
                 PsiExpression rhs = assignment.getRExpression();
 
                 // Check if the right-hand side is a method call expression
-                if (rhs != null) {
-                    if (isClientCreationMethod((PsiMethodCallExpression) rhs)) {
-                        holder.registerProblem(rhs, ANTI_PATTERN_MESSAGE);
-                    }
+                if (rhs != null && isClientCreationMethod((PsiMethodCallExpression) rhs)) {
+                    holder.registerProblem(rhs, ANTI_PATTERN_MESSAGE);
                 }
-            }
-            else if (blockChild instanceof PsiDeclarationStatement) {    // This is a check for the declaration statement
+            } else if (blockChild instanceof PsiDeclarationStatement) {    // This is a check for the declaration statement
 
                 PsiDeclarationStatement declarationStatement = (PsiDeclarationStatement) blockChild;
 
@@ -177,10 +175,11 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
          * It checks the method name and the type of the qualifier expression.
          * If the method name is buildClient or AsyncBuildClient and the qualifier expression is of type com.azure,
          * then it is considered a client creation method.
+         *
          * @param methodCallExpression
          * @return
          */
-        public boolean isClientCreationMethod (PsiMethodCallExpression methodCallExpression){
+        public boolean isClientCreationMethod(PsiMethodCallExpression methodCallExpression) {
 
             // Extract the method expression from the method call expression
             PsiReferenceExpression methodExpression = methodCallExpression.getMethodExpression();
@@ -204,6 +203,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
 
         /**
          * This method loads the JSON configuration file and extracts the methods to check for dynamic client creation.
+         *
          * @return Map<String, Object>
          * @throws IOException
          */
