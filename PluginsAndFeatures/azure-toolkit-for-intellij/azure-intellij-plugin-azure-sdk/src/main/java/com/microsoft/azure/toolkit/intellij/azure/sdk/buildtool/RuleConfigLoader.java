@@ -81,6 +81,7 @@ public class RuleConfigLoader {
      */
     private Map<String, RuleConfig> loadRuleConfigurations(String filePath) {
 
+        // temporary map to store the RuleConfig objects that will then be returned to the final map
         Map<String, RuleConfig> ruleConfigs = new HashMap<>();
 
         // Open the input stream to the JSON file
@@ -118,9 +119,9 @@ public class RuleConfigLoader {
      * @throws IOException - if there is an error reading the file
      */
     private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
-
-        // Create a new RuleConfig object
-        RuleConfig ruleConfig = new RuleConfig();
+        List<String> methodsToCheck = new ArrayList<>();
+        String clientName = null;
+        String antipatternMessage = null;
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
@@ -135,21 +136,20 @@ public class RuleConfigLoader {
             // Check the field name and set the corresponding field in the RuleConfig object
             switch (fieldName) {
                 case "methods_to_check":
-                    ruleConfig.setMethodsToCheck(getListFromJsonArray(reader));
+                    methodsToCheck = getListFromJsonArray(reader);
                     break;
                 case "client_name":
-                    ruleConfig.setClientName(reader.getString());
+                    clientName = reader.getString();
                     break;
                 case "antipattern_message":
-                    ruleConfig.setAntipatternMessage(reader.getString());
+                    antipatternMessage = reader.getString();
                     break;
                 default:
                     reader.skipChildren();
             }
         }
-        return ruleConfig;
+        return new RuleConfig(methodsToCheck, clientName, antipatternMessage);
     }
-
 
     /**
      * This method parses the list of strings from the JSON array

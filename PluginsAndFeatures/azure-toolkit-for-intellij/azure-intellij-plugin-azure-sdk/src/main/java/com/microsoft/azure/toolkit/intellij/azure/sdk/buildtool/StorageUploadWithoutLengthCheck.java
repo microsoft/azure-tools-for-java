@@ -10,6 +10,7 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 
@@ -30,6 +31,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
 
     private static final List<String> METHODS_TO_CHECK_LIST;
     private static final String LENGTH_TYPE = "long";
+    private static final String SUGGESTION;
 
     static {
         final String ruleName = "StorageUploadWithoutLengthCheck";
@@ -38,12 +40,13 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         // Get the RuleConfig object for the rule
         final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
         METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
+        SUGGESTION = ruleConfig.getAntiPatternMessage();
     }
 
     /**
      * This method is used to build a PsiElementVisitor that will be used to visit the method calls in the code.
      *
-     * @param holder ProblemsHolder object to register the problem
+     * @param holder     ProblemsHolder object to register the problem
      * @param isOnTheFly boolean to check if the inspection is on the fly -- Not in use
      * @return PsiElementVisitor object to visit the elements in the code
      */
@@ -81,9 +84,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                     }
                 }
                 if (!hasLengthArg) {
-                    holder.registerProblem(expression, "Azure Storage upload API without length parameter detected");
+                    holder.registerProblem(expression, SUGGESTION);
                 }
-
             }
         };
     }
@@ -109,7 +111,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
 
             // Checking for constructor with 'long' type arguments
             if (qualifier instanceof PsiNewExpression) {
-                return isLengthArgumentInCall (qualifier);
+                return isLengthArgumentInCall(qualifier);
             }
         }
         return false;
@@ -121,7 +123,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
      * @param qualifier - The qualifier of the method call
      * @return boolean
      */
-    private boolean isLengthArgumentInCall (PsiExpression qualifier) {
+    private boolean isLengthArgumentInCall(PsiExpression qualifier) {
         PsiNewExpression newExpression = (PsiNewExpression) qualifier;
 
         // Getting the arguments of the constructor

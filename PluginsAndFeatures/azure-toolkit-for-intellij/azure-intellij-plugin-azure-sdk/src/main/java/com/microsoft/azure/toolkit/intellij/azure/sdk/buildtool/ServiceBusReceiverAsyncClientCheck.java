@@ -28,13 +28,14 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
         final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
         CLIENT_NAME = ruleConfig.getClientName();
-        SUGGESTION = ruleConfig.getAntipatternMessage();
+        SUGGESTION = ruleConfig.getAntiPatternMessage();
     }
 
     /**
      * This method builds a visitor to check for the discouraged client name in the code.
      * If the client name matches the discouraged client, a problem is registered with the suggestion message.
-     * @param holder ProblemsHolder object to register the problem
+     *
+     * @param holder     ProblemsHolder object to register the problem
      * @param isOnTheFly boolean to check if the inspection is on the fly -- This is not in use
      * @return PsiElementVisitor object to visit the elements in the code
      */
