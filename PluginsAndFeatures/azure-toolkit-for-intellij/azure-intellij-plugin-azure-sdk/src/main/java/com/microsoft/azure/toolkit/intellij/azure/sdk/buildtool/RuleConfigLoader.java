@@ -126,7 +126,7 @@ public class RuleConfigLoader {
      */
     private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
         List<String> methodsToCheck = new ArrayList<>();
-        String clientName = null;
+        List<String> clientsToCheck = new ArrayList<>();
         String antiPatternMessage = null;
 
         // Check if the JSON file starts with an object
@@ -144,17 +144,17 @@ public class RuleConfigLoader {
                 case "methods_to_check":
                     methodsToCheck = getListFromJsonArray(reader);
                     break;
-                case "client_name":
-                    clientName = reader.getString();
-                    break;
                 case "anti_pattern_message":
                     antiPatternMessage = reader.getString();
+                    break;
+                case "clients_to_check":
+                    clientsToCheck = getListFromJsonArray(reader);
                     break;
                 default:
                     reader.skipChildren();
             }
         }
-        return new RuleConfig(methodsToCheck, clientName, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, antiPatternMessage);
     }
 
     /**
@@ -169,7 +169,14 @@ public class RuleConfigLoader {
 
         // Check if the JSON file starts with an array
         if (reader.nextToken() != JsonToken.START_ARRAY) {
-            throw new IOException("Expected start of array");
+
+            // check if a string has been passed
+            if (reader.currentToken() == JsonToken.STRING) {
+                list.add(reader.getString());
+                return list;
+            } else {
+                throw new IOException("Expected start of array");
+            }
         }
 
         // Read the JSON file and parse the list of strings

@@ -29,7 +29,7 @@ public class ServiceBusReceiverAsyncClientCheck extends LocalInspectionTool {
         final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
         SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE;
-        CLIENT_NAME = ruleConfig.getClientName();
+        CLIENT_NAME = ruleConfig.getClientsToCheck().get(0);
         SUGGESTION = ruleConfig.getAntiPatternMessage();
     }
 

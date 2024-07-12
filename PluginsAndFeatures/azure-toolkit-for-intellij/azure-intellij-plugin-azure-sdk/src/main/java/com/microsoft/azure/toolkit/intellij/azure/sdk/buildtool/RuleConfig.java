@@ -9,21 +9,22 @@ import java.util.List;
  */
 class RuleConfig {
     private final List<String> methodsToCheck;
-    private final String clientName;
+    private final List<String> clientsToCheck;
     private final String antiPatternMessage;
+    static final String AZ_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), "", "");
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), "");
 
     /**
      * Constructor for RuleConfig.
      *
      * @param methodsToCheck     List of methods to check.
-     * @param clientName         Client name.
-     * @param antiPatternMessage Antipattern message.
+     * @param clientsToCheck     List of clients to check.
+     * @param antiPatternMessage AntiPattern message.
      */
-    public RuleConfig(List<String> methodsToCheck, String clientName, String antiPatternMessage) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, String antiPatternMessage) {
         this.methodsToCheck = methodsToCheck;
-        this.clientName = clientName;
+        this.clientsToCheck = clientsToCheck;
         this.antiPatternMessage = antiPatternMessage;
     }
 
@@ -39,12 +40,12 @@ class RuleConfig {
     }
 
     /**
-     * This method returns the client name
+     * This method returns the list of clients to check
      *
-     * @return Client name
+     * @return List of clients to check
      */
-    public String getClientName() {
-        return clientName;
+    public List<String> getClientsToCheck() {
+        return clientsToCheck;
     }
 
     /**
