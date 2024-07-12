@@ -4,11 +4,10 @@
       "upload",
       "uploadWithResponse"
     ],
-    "antipattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+    "anti_pattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
   },
-
   "ServiceBusReceiverAsyncClientCheck": {
     "client_name": "ServiceBusReceiverAsyncClient",
-    "antipattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   }
 }
