@@ -13,8 +13,16 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.OptionalInt;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * This class extends the LocalInspectionTool and is used to inspect the usage of Azure SDK ServiceBus & ServiceBusProcessor clients in the code.
+ * It checks if the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1.
+ * If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1, a problem is registered with the ProblemsHolder.
+ */
 public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
     /**
@@ -29,11 +37,39 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
         return new ServiceBusReceiveModeVisitor(holder, isOnTheFly);
     }
 
+    /**
+     * This class extends the JavaElementVisitor and is used to visit the Java elements in the code.
+     * It checks for the usage of Azure SDK ServiceBusReceiver & ServiceBusProcessor clients and
+     * whether the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1.
+     * If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1,
+     * a problem is registered with the ProblemsHolder.
+     */
     static class ServiceBusReceiveModeVisitor extends JavaElementVisitor {
-
 
         // Define the holder for the problems found
         private static ProblemsHolder holder;
+
+        // Define constants for string literals
+        private static final RuleConfig ruleConfig;
+        private static final String SUGGESTION;
+        private static final List<String> METHODS_TO_CHECK;
+        private static final List<String> CLIENTS_TO_CHECK;
+        private static boolean SKIP_WHOLE_RULE;
+
+        private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiveModeCheck.class.getName());
+
+        static {
+            final String ruleName = "ServiceBusReceiveModeCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+            METHODS_TO_CHECK = ruleConfig.getMethodsToCheck();
+            CLIENTS_TO_CHECK = ruleConfig.getClientsToCheck();
+            SUGGESTION = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
+        }
 
         /**
          * Constructor for the visitor
@@ -44,10 +80,22 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             this.holder = holder;
         }
 
-
+        /**
+         * This method is used to visit the declaration statement in the code.
+         * It checks for the declaration of the Azure SDK ServiceBusReceiver & ServiceBusProcessor clients
+         * and whether the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1.
+         * If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1,
+         * a problem is registered with the ProblemsHolder.
+         *
+         * @param statement The declaration statement to visit
+         */
         @Override
         public void visitDeclarationStatement(PsiDeclarationStatement statement) {
             super.visitDeclarationStatement(statement);
+
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
 
             // Get the declared elements
             PsiElement[] elements = statement.getDeclaredElements();
@@ -61,21 +109,25 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             }
         }
 
+        /**
+         * This method is used to process the variable declaration.
+         * It checks if the client type is an Azure ServiceBus client and
+         * retrieves the client name (left side of the declaration).
+         *
+         * @param variable The variable to process
+         */
         private void processVariableDeclaration(PsiVariable variable) {
 
             // Retrieve the client name (left side of the declaration)
             PsiType clientType = variable.getType();
-            System.out.println("clientType: " + clientType);
+
+            // Check if the client type is an Azure ServiceBus client
+            if (!clientType.getCanonicalText().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && !CLIENTS_TO_CHECK.contains(clientType.getCanonicalText())) {
+                return;
+            }
 
             // Check the assignment part (right side)
             PsiExpression initializer = variable.getInitializer();
-            System.out.println("initializer: " + initializer);
-            System.out.println("clientType.getCanonicalText(): " + clientType.getCanonicalText());
-
-            // Check if the client type is an Azure ServiceBus client
-            if (!clientType.getCanonicalText().contains("servicebus")){
-                return;
-            }
 
             if (!(initializer instanceof PsiMethodCallExpression)) {
                 return;
@@ -86,104 +138,103 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
         }
 
+        /**
+         * This method is used to determine the receive mode of the Azure ServiceBus client.
+         * It checks if the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1.
+         * If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1,
+         * a problem is registered with the ProblemsHolder.
+         *
+         * @param methodCall The method call expression to check
+         */
         private void determineReceiveMode(PsiMethodCallExpression methodCall) {
 
             OptionalInt prefetchCountValue = OptionalInt.empty();
             boolean isReceiveModePeekLock = false;
-            PsiMethodCallExpression prefetchCountQualifier = null; // Declaration at the method level
+            PsiElement prefetchCountMethod = null;
 
             // Iterating up the chain of method calls
             PsiExpression qualifier = methodCall.getMethodExpression().getQualifierExpression();
-            System.out.println("qualifier1: " + qualifier);
 
             // Check if the method call chain has the method to check
             while (qualifier instanceof PsiMethodCallExpression) {
 
-                if (qualifier instanceof PsiMethodCallExpression) {
+                // Get the method expression
+                PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) qualifier).getMethodExpression();
 
-                    System.out.println("Next qualifier pass");
-                    System.out.println("qualifier2: " + qualifier);
+                // Get the method name
+                String methodName = methodExpression.getReferenceName();
 
-                    // Get the method expression
-                    PsiReferenceExpression methodExpression = ((PsiMethodCallExpression) qualifier).getMethodExpression();
-                    System.out.println("methodExpression: " + methodExpression);
+                // Check if the method name is the method to check
+                // "receiveMode is the first method to check"
 
-                    // Get the method name
-                    String methodName = methodExpression.getReferenceName();
-
-                    System.out.println("methodName: " + methodName);
-
-                    // Check if the method name is the method to check
-                    if ("receiveMode".equals(methodName)) {
-                        // get its parameters
-
-                        isReceiveModePeekLock = receiveModePeekLockCheck((PsiMethodCallExpression) qualifier);
-                        System.out.println("isReceiveModePeekLock: " + isReceiveModePeekLock);
-
-                        // access its parameters
-                    }
-                    else if ("prefetchCount".equals(methodName)) {
-                        System.out.println("prefetchCount method detected");
-
-                        prefetchCountValue = getPrefetchCount((PsiMethodCallExpression) qualifier);
-                        prefetchCountQualifier = (PsiMethodCallExpression) qualifier; // Assigning the current qualifier
-                        System.out.println("prefetchCountValue.getAsInt(): " + prefetchCountValue.getAsInt());
-                        System.out.println("prefetchCountQualifier: " + prefetchCountQualifier);
-                    }
+                if (METHODS_TO_CHECK.get(0).equals(methodName)) {
+                    isReceiveModePeekLock = receiveModePeekLockCheck((PsiMethodCallExpression) qualifier);
+                }
+                // "prefetchCount is the second method to check"
+                else if (METHODS_TO_CHECK.get(1).equals(methodName)) {
+                    prefetchCountValue = getPrefetchCount((PsiMethodCallExpression) qualifier);
+                    prefetchCountMethod = ((PsiMethodCallExpression) qualifier).getMethodExpression().getReferenceNameElement();
                 }
 
+                // Get the qualifier of the method call expression -- the next method call in the chain
                 qualifier = ((PsiMethodCallExpression) qualifier).getMethodExpression().getQualifierExpression();
 
-                if (prefetchCountValue.isPresent() && prefetchCountValue.getAsInt() > 1 && isReceiveModePeekLock) {
-                    System.out.println("prefetchCountValue.getAsInt()whol: " + prefetchCountValue.getAsInt());
-                    System.out.println("prefetchCountQualifierwhol: " + prefetchCountQualifier);
-                    System.out.println("Problem detected");
-                    holder.registerProblem(prefetchCountQualifier, "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval.");
+                // If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1, register a problem
+                if (prefetchCountValue.isPresent() && prefetchCountValue.getAsInt() > 1 && isReceiveModePeekLock && prefetchCountMethod != null) {
+                    holder.registerProblem(prefetchCountMethod, SUGGESTION);
+                    return;
                 }
             }
         }
 
-        private boolean receiveModePeekLockCheck (PsiMethodCallExpression qualifier) {
+        /**
+         * This method is used to check if the receive mode is set to PEEK_LOCK.
+         *
+         * @param qualifier The method call expression to check
+         * @return true if the receive mode is set to PEEK_LOCK, false otherwise
+         */
+        private boolean receiveModePeekLockCheck(PsiMethodCallExpression qualifier) {
 
-            System.out.println("qualifier at receiveModePeekLockCheck: " + qualifier);
+            String peekLockArgument = "PEEK_LOCK";
+
+            // Get the arguments of the method call expression
             PsiExpression[] arguments = qualifier.getArgumentList().getExpressions();
-            System.out.println("arguments: " + arguments);
 
             for (PsiExpression argument : arguments) {
-                System.out.println("argument: " + argument);
                 String argumentText = argument.getText();
-                System.out.println("argumentText: " + argumentText);
 
-                if (argumentText.contains("PEEK_LOCK")) {
-                    System.out.println("Found .PEEK_LOCK in parameters");
+                // Check if the argument is set to PEEK_LOCK
+                if (argumentText.contains(peekLockArgument)) {
                     return true;
                 }
             }
             return false;
         }
 
+        /**
+         * This method is used to get the prefetch count value.
+         *
+         * @param qualifier The method call expression to check
+         * @return The prefetch count value
+         */
         private OptionalInt getPrefetchCount(PsiMethodCallExpression qualifier) {
 
-            System.out.println("qualifiergetPrefetchCount: " + qualifier);
-
+            // Get the arguments of the method call expression
             PsiExpression[] arguments = qualifier.getArgumentList().getExpressions();
-            System.out.println("arguments: " + arguments);
-            System.out.println("arguments.length: " + arguments.length);
             if (arguments.length > 0) {
+
+                // Get the argument text
                 String argumentText = arguments[0].getText();
-                System.out.println("argumentText: " + argumentText);
-                System.out.println("argument: " + arguments[0]);
                 try {
-                    System.out.println("prefetchCountValue: " + Integer.parseInt(argumentText));
+                    // Parse the argument text to an integer to get the prefetch count value
                     return OptionalInt.of(Integer.parseInt(argumentText));
                 } catch (NumberFormatException e) {
-                    // Handle the case where the argument text is not a valid integer
+                    LOGGER.log(Level.SEVERE, "Failed to parse prefetch count: " + argumentText, e);
                 }
             }
-
-            // optionalInt is a wrapper for an integer value that may or may not be present
-            // This is because can't return null from a method that returns an int
-            // and returning 0 is not a good idea because 0 is a valid value for prefetchCount
+            // OptionalInt is used here as a container that can either hold an integer value or indicate that no value is present.
+            // This approach is necessary because the method signature specifies an int return type, which cannot be null
+            // Using OptionalInt avoids the ambiguity of returning a special value (like 0) to indicate absence, especially since 0 is a legitimate value for prefetchCount.
             return OptionalInt.empty();
         }
     }

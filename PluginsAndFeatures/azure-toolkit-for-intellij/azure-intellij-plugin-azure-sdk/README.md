@@ -108,3 +108,23 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   authentication. Please refer to
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
+
+7. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
+
+- **Anti-pattern**: Setting the receive mode as PEEK_LOCK with a high prefetch value (e.g., 50 or 100) in Azure Service
+  Bus.
+- **Severity: WARNING**
+- **Issue**:
+    1. **Suboptimal Performance:** A high prefetch value in PEEK_LOCK mode can result in suboptimal performance, as one
+       client
+       locks all prefetched messages, potentially leading to processing bottlenecks.
+    2. **Message Lock Expiry:** Messages in the prefetch queue do not have their locks renewed automatically. Consequently,
+       the
+       message lock may expire by the time they are processed.
+    3. **Dead-Letter Queue:** Expired message locks can result in messages being inadvertently sent to the dead-letter
+       queue,
+       causing potential data loss or requiring additional handling to recover these messages.
+- **Recommendation**: Optimize Prefetch Value - Set a prefetch value that balances between efficient message
+  retrieval and the ability for multiple clients to process messages concurrently. Please refer to
+  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-prefetch?tabs=dotnet#why-is-prefetch-not-the-default-option)
+  for additional information.

@@ -12,6 +12,8 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck.ServiceBusReceiveModeVisitor;
@@ -23,6 +25,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * This class contains the tests for the ServiceBusReceiveModeCheck class.
+ * It tests the visitDeclarationStatement method of the ServiceBusReceiveModeVisitor class.
+ * It tests the method with different combinations of the receiveMode and prefetchCount methods.
+ */
 public class ServiceBusReceiveModeCheckTest {
 
     // Create a mock ProblemsHolder to be used in the test
@@ -47,55 +54,101 @@ public class ServiceBusReceiveModeCheckTest {
     }
 
 
-    @Test
-    public void testProblemRegisteredWithReceiveModeAndHighPeekLock() {
+    /**
+     * This tests the visitor with receiveMode as PEEK_LOCK and prefetchCount as 100.
+     * The test verifies that a problem is registered with the ProblemsHolder.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ServiceBusReceiverClient", "ServiceBusReceiverAsyncClient", "ServiceBusProcessorClient"})
+    public void testWithPeekLockAndHighPrefetchCount(String clientName) {
 
-        String packageName = "servicebus";
         String methodFoundOne = "receiveMode";
         String methodFoundTwo = "prefetchCount";
         int numOfInvocations = 1;
         String prefetchCountValue = "100";
 
-        verifyProblemRegistered(packageName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
     }
 
+    /**
+     * This tests the visitor with receiveMode as PEEK_LOCK and prefetchCount as 1.
+     * The test verifies that a problem is not registered with the ProblemsHolder.
+     */
     @Test
-    public void testProblemRegisteredWithoutReceiveModeAndHighPeekLock() {
+    public void testWithPeekLockAndLowPrefetchCount() {
 
-        String packageName = "servicebus";
+        String clientName = "ServiceBusReceiverClient";
+        String methodFoundOne = "receiveMode";
+        String methodFoundTwo = "prefetchCount";
+        int numOfInvocations = 0;
+        String prefetchCountValue = "1";
+
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+    }
+
+    /**
+     * This tests the visitor without a receiveMode.
+     * The test verifies that a problem is not registered with the ProblemsHolder.
+     */
+    @Test
+    public void testWithoutPeekLockAndHighPrefetchCount() {
+
+        String clientName = "ServiceBusReceiverClient";
         String methodFoundOne = "notreceiveMode";
         String methodFoundTwo = "prefetchCount";
         int numOfInvocations = 0;
         String prefetchCountValue = "100";
 
-        verifyProblemRegistered(packageName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
     }
 
+    /**
+     * This tests the visitor without a receiveMode and with a prefetchCount of 100.
+     * The test verifies that a problem is not registered with the ProblemsHolder.
+     */
     @Test
-    public void testProblemRegisteredWithReceiveModeAndNoPrefetchCount() {
+    public void testWithPeekLockAndNoPrefetchCount() {
 
-        String packageName = "servicebus";
+        String clientName = "ServiceBusReceiverClient";
         String methodFoundOne = "receiveMode";
         String methodFoundTwo = "noprefetchCount";
         int numOfInvocations = 0;
         String prefetchCountValue = "100";
 
-        verifyProblemRegistered(packageName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
     }
 
+    /**
+     * This tests the visitor without a receiveMode and without a prefetchCount.
+     * The test verifies that a problem is not registered with the ProblemsHolder.
+     */
     @Test
-    public void testProblemRegisteredWithoutReceiveModeAndNoPrefetchCount() {
+    public void testWithoutPeekLockAndNoPrefetchCount() {
 
-        String packageName = "servicebus";
+        String clientName = "servicebus";
         String methodFoundOne = "notreceiveMode";
         String methodFoundTwo = "noprefetchCount";
         int numOfInvocations = 0;
         String prefetchCountValue = "100";
 
-        verifyProblemRegistered(packageName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
     }
 
+    /**
+     * This tests the visitor with a different Azure service.
+     * The test verifies that a problem is not registered with the ProblemsHolder.
+     */
+    @Test
+    public void testDifferentAzureService() {
 
+        String clientName = "notservicebus";
+        String methodFoundOne = "notreceiveMode";
+        String methodFoundTwo = "noprefetchCount";
+        int numOfInvocations = 0;
+        String prefetchCountValue = "100";
+
+        verifyProblemRegistered(clientName, methodFoundOne, methodFoundTwo, numOfInvocations, prefetchCountValue);
+    }
 
 
     /**
@@ -109,8 +162,18 @@ public class ServiceBusReceiveModeCheckTest {
     }
 
 
+    /**
+     * This method verifies that a problem is registered with the ProblemsHolder.
+     *
+     * @param clientName         The name of the client eg. ServiceBusReceiverClient
+     * @param methodFoundOne     The first method found, receiveMode
+     * @param methodFoundTwo     The second method found, prefetchCount
+     * @param numOfInvocations   The number of times the registerProblem method is called
+     * @param prefetchCountValue The value of the prefetchCount
+     */
+    private void verifyProblemRegistered(String clientName, String methodFoundOne, String methodFoundTwo, int numOfInvocations, String prefetchCountValue) {
 
-    private void verifyProblemRegistered(String packageName, String methodFoundOne, String methodFoundTwo, int numOfInvocations, String prefetchCountValue) {
+        String azurePackageName = "com.azure";
 
         PsiVariable declaredElement = mock(PsiVariable.class);
         PsiElement[] declaredElements = new PsiElement[]{declaredElement};
@@ -131,12 +194,11 @@ public class ServiceBusReceiveModeCheckTest {
         PsiExpressionList methodArgumentList = mock(PsiExpressionList.class);
         PsiExpression[] methodArguments = new PsiExpression[]{prefetchCountParameter, receiveModePeekLockParameter};
 
-        PsiMethodCallExpression transitionMethodCall = mock(PsiMethodCallExpression.class);
-
         // Second level qualifier method call
-        PsiReferenceExpression expressionTwo = mock(PsiReferenceExpression.class);
         PsiMethodCallExpression qualifierTwo = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression methodExpressionTwo = mock(PsiReferenceExpression.class);
+
+        PsiElement prefetchCountMethod = mock(PsiElement.class);
 
 
         when(mockDeclarationStatement.getDeclaredElements()).thenReturn(declaredElements);
@@ -144,7 +206,8 @@ public class ServiceBusReceiveModeCheckTest {
         // processVariableDeclaration method
         when(declaredElement.getType()).thenReturn(clientType);
         when(declaredElement.getInitializer()).thenReturn(initializer);
-        when(clientType.getCanonicalText()).thenReturn(packageName);
+        when(clientType.getCanonicalText()).thenReturn(azurePackageName);
+        when(clientType.getPresentableText()).thenReturn(clientName);
 
         // determineReceiveMode method
         // First level qualifier method call
@@ -168,12 +231,13 @@ public class ServiceBusReceiveModeCheckTest {
         when(methodArgumentList.getExpressions()).thenReturn(methodArguments);
         when(prefetchCountParameter.getText()).thenReturn(prefetchCountValue);
 
+        when(methodExpressionTwo.getReferenceNameElement()).thenReturn(prefetchCountMethod);
+
         if (methodFoundOne != "receiveMode" || methodFoundTwo != "prefetchCount") {
             when(methodExpressionTwo.getQualifierExpression()).thenReturn(null);
         }
 
         mockVisitor.visitDeclarationStatement(mockDeclarationStatement);
-        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(qualifierTwo),
-                contains("A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(prefetchCountMethod), contains("A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."));
     }
 }

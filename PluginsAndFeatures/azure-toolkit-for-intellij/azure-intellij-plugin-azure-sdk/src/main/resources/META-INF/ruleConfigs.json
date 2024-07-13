@@ -45,5 +45,14 @@
     "methods_to_check": "connectionString",
     "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
     "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
+  },
+  "ServiceBusReceiveModeCheck": {
+    "clients_to_check": [
+      "ServiceBusReceiverClient",
+      "ServiceBusReceiverAsyncClient",
+      "ServiceBusProcessorClient"
+    ],
+    "methods_to_check": ["receiveMode","prefetchCount"],
+    "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
   }
 }
