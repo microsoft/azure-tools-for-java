@@ -1,7 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
-import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck.APIKeysAndTokensVisitor;
 
-import com.intellij.psi.JavaElementVisitor;
+import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck.APIKeysAndTokensVisitor;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiNewExpression;
 
@@ -9,11 +8,11 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.PsiElementVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -23,15 +22,15 @@ import static org.mockito.Mockito.when;
 /**
  * Test the HardcodedAPIKeysAndTokensCheck class for hardcoded API keys and tokens.
  * When a client is authenticated with AzurekeyCredentials and AccessToken, a problem is registered.
- These are some instances that a flag would be raised.
+ * These are some instances that a flag would be raised.
  * 1. TextAnalyticsClient client = new TextAnalyticsClientBuilder()
- *         .endpoint(endpoint)
- *         .credential(new AzureKeyCredential(apiKey))
- *         .buildClient();
- *
+ * .endpoint(endpoint)
+ * .credential(new AzureKeyCredential(apiKey))
+ * .buildClient();
+ * <p>
  * 2. TokenCredential credential = request -> {
- *         AccessToken token = new AccessToken("<your-hardcoded-token>", OffsetDateTime.now().plusHours(1));
- *     }
+ * AccessToken token = new AccessToken("<your-hardcoded-token>", OffsetDateTime.now().plusHours(1));
+ * }
  */
 public class HardcodedAPIKeysAndTokensCheckTest {
 
@@ -53,19 +52,12 @@ public class HardcodedAPIKeysAndTokensCheckTest {
      * Test the HardcodedAPIKeysAndTokensCheck class for hardcoded API keys and tokens.
      * When a client is authenticated with AzurekeyCredentials and AccessToken, a problem is registered.
      */
-    @Test
-    public void testHardcodedAPIKeysAndTokensCheck() {
+    @ParameterizedTest
+    @ValueSource(strings = {"AzureKeyCredential", "AccessToken", "KeyCredential", "AzureNamedKeyCredential", "AzureSasCredential", "AzureNamedKey", "ClientSecretCredentialBuilder", "UsernamePasswordCredentialBuilder", "BasicAuthenticationCredential"})
+    public void testHardcodedAPIKeysAndTokensCheck(String clientType) {
 
-        // assert visitor
-        assertVisitor(mockVisitor);
-
-        int NUMBER_OF_INVOCATIONS = 1; // number of times registerProblem is called
-
-        String CLIENT_TO_CHECK_ONE = "AccessToken";
-        verifyRegisterProblem(CLIENT_TO_CHECK_ONE, NUMBER_OF_INVOCATIONS);
-
-        String CLIENT_TO_CHECK_TWO = "AzureKeyCredential";
-        verifyRegisterProblem(CLIENT_TO_CHECK_TWO, NUMBER_OF_INVOCATIONS);
+        int numOfInvocations = 1; // number of times registerProblem is called
+        verifyRegisterProblem(clientType, numOfInvocations);
     }
 
     /**
@@ -75,12 +67,9 @@ public class HardcodedAPIKeysAndTokensCheckTest {
     @Test
     public void testNonAuthAzureClientUse() {
 
-        // assert visitor
-        assertVisitor(mockVisitor);
-
-        String CLIENT_TO_CHECK = "SomeOtherClient";
-        int NUMBER_OF_INVOCATIONS = 0;
-        verifyRegisterProblem(CLIENT_TO_CHECK, NUMBER_OF_INVOCATIONS);
+        String authServiceToCheck = "SomeOtherClient";
+        int numOfInvocations = 0;
+        verifyRegisterProblem(authServiceToCheck, numOfInvocations);
     }
 
     /**
@@ -89,14 +78,10 @@ public class HardcodedAPIKeysAndTokensCheckTest {
     @Test
     public void testNullClassReference() {
 
-        // assert visitor
-        assertVisitor(mockVisitor);
-
-        String CLIENT_TO_CHECK = ""; // null class reference
-        int NUMBER_OF_INVOCATIONS = 0;
-        verifyRegisterProblem(CLIENT_TO_CHECK, NUMBER_OF_INVOCATIONS);
+        String authServiceToCheck = ""; // null class reference
+        int numOfInvocations = 0;
+        verifyRegisterProblem(authServiceToCheck, numOfInvocations);
     }
-
 
     // Helper method to create visitor.
     PsiElementVisitor createVisitor() {
@@ -105,30 +90,20 @@ public class HardcodedAPIKeysAndTokensCheckTest {
         return visitor;
     }
 
-
-    // Helper method to assert visitor is not null and is an instance of JavaElementVisitor
-    void assertVisitor(PsiElementVisitor mockVisitor) {
-
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
-    }
-
     // Helper method to verify registerProblem is called
-    void verifyRegisterProblem(String CLIENT_TO_CHECK, int NUMBER_OF_INVOCATIONS) {
+    private void verifyRegisterProblem(String authServiceToCheck, int numOfInvocations) {
 
         PsiNewExpression newExpression = mock(PsiNewExpression.class);
         PsiJavaCodeReferenceElement javaCodeReferenceElement = mock(PsiJavaCodeReferenceElement.class);
 
         when(newExpression.getClassReference()).thenReturn(javaCodeReferenceElement);
-        when(javaCodeReferenceElement.getReferenceName()).thenReturn(CLIENT_TO_CHECK);
+        when(javaCodeReferenceElement.getReferenceName()).thenReturn(authServiceToCheck);
 
         when(javaCodeReferenceElement.getQualifiedName()).thenReturn("com.azure");
 
         mockVisitor.visitElement(newExpression);
 
         // Verify registerProblem is called
-        verify(mockHolder, times(NUMBER_OF_INVOCATIONS)).registerProblem(eq(newExpression),
-                Mockito.contains("DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). " +
-                        "If not, then use Azure Key Credential for API key based authentication."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(newExpression), Mockito.contains("DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). " + "If not, then use Azure Key Credential for API key based authentication."));
     }
 }
