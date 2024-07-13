@@ -33,25 +33,26 @@ import java.util.logging.Logger;
  * Inspection to check if there is a Text Analytics client operation inside a loop.
  * If a Text Analytics client operation is found inside a loop,
  * and the API has a batch alternative, a problem will be registered.
- *
- * THis is an example of a situation where the inspection should register a problem:
- *
+ * <p>
+ * This is an example of a situation where the inspection should register a problem:
+ * <p>
  * // Loop through the list of texts and detect the language for each text
-*         1. for (String text : texts) {
-*             DetectedLanguage detectedLanguage = textAnalyticsClient.detectLanguage(text);
-*             System.out.println("Text: " + text + " | Detected Language: " + detectedLanguage.getName() + " | Confidence Score: " + detectedLanguage.getConfidenceScore());
-*         }
-*
-*         // Loop through the list of texts and detect the language for each text
-*        2.  DetectedLanguage detectedLanguage = null;
-*         for (String text : texts) {
-*             textAnalyticsClient.detectLanguage(text);
+ * 1. for (String text : texts) {
+ * DetectedLanguage detectedLanguage = textAnalyticsClient.detectLanguage(text);
+ * System.out.println("Text: " + text + " | Detected Language: " + detectedLanguage.getName() + " | Confidence Score: " + detectedLanguage.getConfidenceScore());
+ * }
+ * <p>
+ * // Loop through the list of texts and detect the language for each text
+ * 2. DetectedLanguage detectedLanguage = null;
+ * for (String text : texts) {
+ * textAnalyticsClient.detectLanguage(text));
  */
 public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
     /**
      * Build the visitor for the inspection. This visitor will be used to traverse the PSI tree.
-     * @param holder The holder for the problems found
+     *
+     * @param holder     The holder for the problems found
      * @param isOnTheFly Whether the inspection is running on the fly. If true, the inspection is running as you type.
      * @return The visitor for the inspection
      */
@@ -70,14 +71,14 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
     public static class SingleOperationInLoopVisitor extends JavaElementVisitor {
 
         // Define the holder for the problems found and whether the inspection is running on the fly
-        private static ProblemsHolder holder = null;
+        private final ProblemsHolder holder;
         private final boolean isOnTheFly;
 
         // Define the logger for the visitor
         private static final Logger LOGGER = Logger.getLogger(SingleOperationInLoopCheck.class.getName());
 
         // Define the suggestion message for the problem
-        private static String SUGGESTION = "";
+        private static String SUGGESTION;
 
         private static List<String> AVAILABLE_BATCH_METHODS;
 
@@ -97,6 +98,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Constructor for the visitor
+         *
          * @param holder     The holder for the problems found
          * @param isOnTheFly Whether the inspection is running on the fly. If true, the inspection is running as you type.
          */
@@ -107,6 +109,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Visit the for statement and check for single Azure client operation inside the loop.
+         *
          * @param statement The for statement to check
          */
         @Override
@@ -116,6 +119,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Visit the foreach statement and check for single Azure client operation inside the loop.
+         *
          * @param statement The foreach statement to check
          */
         @Override
@@ -125,6 +129,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Visit the while statement and check for single Azure client operation inside the loop.
+         *
          * @param statement The while statement to check
          */
         @Override
@@ -134,6 +139,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Visit the do-while statement and check for single Azure client operation inside the loop.
+         *
          * @param statement The do-while statement to check
          */
         @Override
@@ -144,6 +150,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Check the loop statement for a single Text Analytics Azure client operation inside the loop.
+         *
          * @param loopStatement The loop statement to check
          */
         private boolean checkLoopForTextAnalyticsClientOperation(PsiStatement loopStatement) {
@@ -155,6 +162,10 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 return false;
             }
 
+            if (!(loopBody instanceof PsiBlockStatement)) {
+                return false;
+            }
+
             // Extract the code block from the block statement
             PsiBlockStatement blockStatement = (PsiBlockStatement) loopBody;
             PsiCodeBlock codeBlock = blockStatement.getCodeBlock();
@@ -162,14 +173,14 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
             // extract statements in the loop body
             for (PsiStatement statement : codeBlock.getStatements()) {
 
-                    // Check if the statement is an expression statement and is an Azure client operation
+                // Check if the statement is an expression statement and is an Azure client operation
                 if (statement instanceof PsiExpressionStatement) {
-                        isExpressionAzureClientOperation(statement);
+                    isExpressionAzureClientOperation(statement);
                 }
 
                 // Check if the statement is a declaration statement and is an Azure client operation
                 if (statement instanceof PsiDeclarationStatement) {
-                        isDeclarationAzureClientOperation((PsiDeclarationStatement) statement);
+                    isDeclarationAzureClientOperation((PsiDeclarationStatement) statement);
                 }
             }
             return true;
@@ -179,6 +190,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
         /**
          * Get the body of the loop statement.
          * The body of the loop statement is the statement that is executed in the loop.
+         *
          * @param loopStatement The loop statement to get the body from
          * @return The body of the loop statement
          */
@@ -194,6 +206,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * If the statement is an expression statement, check if the expression is an Azure client operation.
+         *
          * @param statement The statement to check
          * @return True if the statement is an Azure client operation, false otherwise
          */
@@ -212,13 +225,14 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * If the statement is a declaration statement, check if the initializer is an Azure client operation.
+         *
          * @param statement The declaration statement to check
          * @return True if the declaration statement is an Azure client operation, false otherwise
          */
         private void isDeclarationAzureClientOperation(PsiDeclarationStatement statement) {
 
             // getDeclaredElements() returns the variables declared in the statement
-            for (PsiElement element :  statement.getDeclaredElements()) {
+            for (PsiElement element : statement.getDeclaredElements()) {
 
                 if (!(element instanceof PsiVariable)) {
                     continue;
@@ -240,6 +254,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * Check if the method call is an Azure client operation.
          * Check the containing class of the method call and see if it is part of the Azure SDK.
          * If the class is part of the Azure SDK, increment the count of Azure client operations.
+         *
          * @param methodCall The method call expression to check
          * @return True if the method call is an Azure client operation, false otherwise
          */
@@ -265,16 +280,17 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         /**
          * Get the rule configurations from the JSON file.
+         *
          * @return The rule configurations
          * @throws IOException
          */
         private static Map<String, Object> getRuleConfigs() throws IOException {
 
             final String ruleName = "SingleOperationInLoopCheck";
-            final String antiPatternMessageKey = "antipattern_message";
+            final String antiPatternMessageKey = "anti_pattern_message";
             final String methodsToCheckKey = "methods_to_check";
 
-            final JSONObject jsonObject =  LoadJsonConfigFile.getInstance().getJsonObject();
+            final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
 
             //get the methods to check
             JSONArray methodsToCheck = jsonObject.getJSONObject(ruleName).getJSONArray(methodsToCheckKey);

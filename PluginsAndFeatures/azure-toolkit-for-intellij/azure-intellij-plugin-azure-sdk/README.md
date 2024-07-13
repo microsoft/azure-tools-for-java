@@ -31,8 +31,9 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient) for additional information.
 
 3. #### Using Batch Operations Instead of Single Operations in a Loop
-- **Anti-pattern**: Calling a single operation in a for-loop when a batch operation API exists in the SDK that can handle multiple actions in one request.
-- **Issue**: Repeatedly calling a single operation in a loop leads to multiple network requests, which can be inefficient and slow.
+- **Anti-pattern**: Calling a single operation in a loop when a batch operation API exists in the SDK that can handle multiple actions in one request.
+- **Issue**: 
+  - Repeatedly calling a single operation in a loop leads to multiple network requests, which can be inefficient and slow.
   - Multiple requests also consume more resources (e.g., network bandwidth, server processing) compared to a single batch request.
 - **Severity: WARNING**
 - **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple actions in a single request.

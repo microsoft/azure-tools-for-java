@@ -36,31 +36,31 @@ import static org.mockito.Mockito.when;
  * The SingleOperationInLoopCheck is an inspection to check if there is a single Azure client operation inside a loop.
  * A single Azure client operation is defined as a method call on a class that is part of the Azure SDK.
  * If a single Azure client operation is found inside a loop, a problem will be registered.
- *
+ * <p>
  * THis is an example of a situation where the inspection should register a problem:
- *
+ * <p>
  * 1. With a single PsiDeclarationStatement inside a while loop
  * // While loop
- *         int i = 0;
- *         while (i < 10) {
- *
- *             BlobAsyncClient blobAsyncClient = new BlobClientBuilder()
- *                 .endpoint("https://<your-storage-account-name>.blob.core.windows.net")
- *                 .sasToken("<your-sas-token>")
- *                 .containerName("<your-container-name>")
- *                 .blobName("<your-blob-name>")
- *                 .buildAsyncClient();
- *
- *             i++;
- *         }
- *
+ * int i = 0;
+ * while (i < 10) {
+ * <p>
+ * BlobAsyncClient blobAsyncClient = new BlobClientBuilder()
+ * .endpoint("https://<your-storage-account-name>.blob.core.windows.net")
+ * .sasToken("<your-sas-token>")
+ * .containerName("<your-container-name>")
+ * .blobName("<your-blob-name>")
+ * .buildAsyncClient();
+ * <p>
+ * i++;
+ * }
+ * <p>
  * 2. With a single PsiExpressionStatement inside a for loop
  * for (String documentPath : documentPaths) {
- *
- *             blobAsyncClient.uploadFromFile(documentPath)
- *                 .doOnSuccess(response -> System.out.println("Blob uploaded successfully in enhanced for loop."))
- *                 .subscribe();
- *         }
+ * <p>
+ * blobAsyncClient.uploadFromFile(documentPath)
+ * .doOnSuccess(response -> System.out.println("Blob uploaded successfully in enhanced for loop."))
+ * .subscribe();
+ * }
  */
 public class SingleOperationInLoopCheckTest {
 
@@ -87,8 +87,7 @@ public class SingleOperationInLoopCheckTest {
         String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
         String methodName = "detectLanguage";
-        verifyRegisterProblemWithSinglePsiExpressionStatement(statement,
-                packageName, numberOfInvocations, methodName);
+        verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
     /**
@@ -287,12 +286,9 @@ public class SingleOperationInLoopCheckTest {
         }
 
         //  Verify problem is registered
-        verify(mockHolder,
-                times(numberOfInvocations)).registerProblem(Mockito.eq(expression),
-                Mockito.contains(
-                        "Single operation found in loop. If the SDK provides a batch operation API, use it to perform multiple actions in a single request."));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(expression),
+                Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
     }
-
     /**
      * This helper method is used to verify a problem is registered when a
      * PsiDeclarationStatement operation is found in a loop.
@@ -303,7 +299,7 @@ public class SingleOperationInLoopCheckTest {
         PsiBlockStatement loopBody = mock(PsiBlockStatement.class);
         PsiCodeBlock codeBlock = mock(PsiCodeBlock.class);
         PsiVariable element = mock(PsiVariable.class);
-        PsiElement[] elements = new PsiElement[] {element};
+        PsiElement[] elements = new PsiElement[]{element};
         PsiMethodCallExpression initializer = mock(PsiMethodCallExpression.class);
         PsiTreeUtil treeUtil = mock(PsiTreeUtil.class);
         PsiClass containingClass = mock(PsiClass.class);
@@ -336,9 +332,7 @@ public class SingleOperationInLoopCheckTest {
         }
 
         //  Verify problem is registered
-        verify(mockHolder,
-                times(numberOfInvocations)).registerProblem(Mockito.eq(initializer),
-                Mockito.contains(
-                        "Single operation found in loop. If the SDK provides a batch operation API, use it to perform multiple actions in a single request."));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(initializer),
+                Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
     }
 }
