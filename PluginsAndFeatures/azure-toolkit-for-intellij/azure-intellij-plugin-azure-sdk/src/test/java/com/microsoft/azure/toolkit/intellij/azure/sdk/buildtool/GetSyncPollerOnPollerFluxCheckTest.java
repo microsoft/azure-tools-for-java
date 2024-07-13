@@ -25,14 +25,14 @@ import static org.mockito.Mockito.when;
  * Test class for the GetSyncPollerOnPollerFluxCheck inspection tool.
  * The test class will test the visitor's ability to detect the use of getSyncPoller() on a PollerFlux
  * and register a problem with the suggestion message.
- *
+ * <p>
  * This is an example of an anti-pattern that would be detected by the inspection tool.
  * public void exampleUsage() {
- *         PollerFlux<String> pollerFlux = createPollerFlux();
- *
- *         // Anti-pattern: Using getSyncPoller() on PollerFlux
- *         SyncPoller<String, Void> syncPoller = pollerFlux.getSyncPoller();
- *     }
+ * PollerFlux<String> pollerFlux = createPollerFlux();
+ * <p>
+ * // Anti-pattern: Using getSyncPoller() on PollerFlux
+ * SyncPoller<String, Void> syncPoller = pollerFlux.getSyncPoller();
+ * }
  */
 public class GetSyncPollerOnPollerFluxCheckTest {
 
@@ -62,9 +62,9 @@ public class GetSyncPollerOnPollerFluxCheckTest {
         assertVisitor();
 
         String methodName = "getSyncPoller";
-        String packageName = "com.azure.core.util.polling.PollerFlux";
+        String className = "com.azure.core.util.polling.PollerFlux";
         int numberOfInvocations = 1;
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, className, numberOfInvocations);
     }
 
     /**
@@ -75,9 +75,9 @@ public class GetSyncPollerOnPollerFluxCheckTest {
     public void testGetSyncPollerOnPollerFluxCheckWithDifferentMethodName() {
 
         String methodName = "getAnotherMethod";
-        String packageName = "com.azure.core.util.polling.PollerFlux";
+        String className = "com.azure.core.util.polling.PollerFlux";
         int numberOfInvocations = 0;
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, className, numberOfInvocations);
     }
 
     /**
@@ -85,12 +85,12 @@ public class GetSyncPollerOnPollerFluxCheckTest {
      * The visitor should not register a problem in this case.
      */
     @Test
-    public void testGetSyncPollerOnPollerFluxCheckWithDifferentPackageName() {
+    public void testGetSyncPollerOnPollerFluxCheckWithDifferentClassName() {
 
         String methodName = "getSyncPoller";
-        String packageName = "com.azure.core.util.polling.DifferentPackageName";
+        String className = "com.azure.core.util.polling.DifferentClassName";
         int numberOfInvocations = 0;
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, className, numberOfInvocations);
     }
 
     /**
@@ -98,16 +98,17 @@ public class GetSyncPollerOnPollerFluxCheckTest {
      * The visitor should not register a problem in this case.
      */
     @Test
-    public void testGetSyncPollerOnPollerFluxCheckWithNullPackageName() {
+    public void testGetSyncPollerOnPollerFluxCheckWithNullClassName() {
 
         String methodName = "getSyncPoller";
-        String packageName = null;
+        String className = null;
         int numberOfInvocations = 0;
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, className, numberOfInvocations);
     }
 
     /**
      * A helper method to create the visitor for the test.
+     *
      * @return JavaElementVisitor
      */
     private JavaElementVisitor createVisitor() {
@@ -127,11 +128,12 @@ public class GetSyncPollerOnPollerFluxCheckTest {
     /**
      * A helper method to verify if the visitor is able to detect the use of getSyncPoller() on a PollerFlux
      * and register a problem with the suggestion message.
-     * @param methodName The method name to be used in the test
-     * @param packageName The package name to be used in the test
+     *
+     * @param methodName          The method name to be used in the test
+     * @param className           The package name to be used in the test
      * @param numberOfInvocations The number of times registerProblem should be called
      */
-    private void verifyRegisterProblem(String methodName, String packageName, int numberOfInvocations) {
+    private void verifyRegisterProblem(String methodName, String className, int numberOfInvocations) {
 
         PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
         PsiExpression expression = mock(PsiExpression.class);
@@ -143,15 +145,13 @@ public class GetSyncPollerOnPollerFluxCheckTest {
         when(referenceExpression.getReferenceName()).thenReturn(methodName);
         when(referenceExpression.getQualifierExpression()).thenReturn(expression);
         when(expression.getType()).thenReturn(type);
-        when(type.getCanonicalText()).thenReturn(packageName);
+        when(type.getCanonicalText()).thenReturn(className);
         when(mockTreeUtil.getParentOfType(mockElement, PsiClass.class)).thenReturn(containingClass);
-        when(containingClass.getQualifiedName()).thenReturn(packageName);
+        when(containingClass.getQualifiedName()).thenReturn(className);
 
         // Act
         mockVisitor.visitMethodCallExpression(mockElement);
 
-        // Verify registerProblem is not called
-        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(mockElement),
-                Mockito.contains("Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(mockElement), Mockito.contains("Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"));
     }
 }

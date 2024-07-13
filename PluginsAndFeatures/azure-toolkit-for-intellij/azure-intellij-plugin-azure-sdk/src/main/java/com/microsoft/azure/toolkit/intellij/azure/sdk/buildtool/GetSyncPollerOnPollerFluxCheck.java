@@ -20,21 +20,21 @@ import java.util.logging.Logger;
  * Inspection tool to detect the use of getSyncPoller() on a PollerFlux.
  * The inspection will check if the method call is on a PollerFlux and if the method call is on an Azure SDK client.
  * If both conditions are met, the inspection will register a problem with the suggestion to use SyncPoller instead.
- *
+ * <p>
  * This is an example of an anti-pattern that would be detected by the inspection tool.
  * public void exampleUsage() {
- *         PollerFlux<String> pollerFlux = createPollerFlux();
- *
- *         // Anti-pattern: Using getSyncPoller() on PollerFlux
- *         SyncPoller<String, Void> syncPoller = pollerFlux.getSyncPoller();
- *     }
+ * PollerFlux<String> pollerFlux = createPollerFlux();
+ * <p>
+ * // Anti-pattern: Using getSyncPoller() on PollerFlux
+ * SyncPoller<String, Void> syncPoller = pollerFlux.getSyncPoller();
+ * }
  */
 public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
 
     /**
      * Method to build the visitor for the inspection tool.
+     *
      * @param holder Holder for the problems found by the inspection
-     * @param isOnTheFly Flag to indicate if the inspection is running on the fly
      * @return JavaElementVisitor a visitor to visit the method call expressions
      */
     @NotNull
@@ -47,11 +47,10 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
      * Visitor class to visit the method call expressions and check for the use of getSyncPoller() on a PollerFlux.
      * The visitor will check if the method call is on a PollerFlux and if the method call is on an Azure SDK client.
      */
-    public static class GetSyncPollerOnPollerFluxVisitor extends JavaElementVisitor {
+    static class GetSyncPollerOnPollerFluxVisitor extends JavaElementVisitor {
 
         // Instance variables
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly;
 
         private static String METHOD_TO_CHECK = "";
         private static String ANTI_PATTERN_MESSAGE = "";
@@ -75,16 +74,17 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
 
         /**
          * Constructor to initialize the visitor with the holder and isOnTheFly flag.
-         * @param holder Holder for the problems found by the inspection
-         * @param isOnTheFly Flag to indicate if the inspection is running on the fly
+         *
+         * @param holder     Holder for the problems found by the inspection
+         * @param isOnTheFly Flag to indicate if the inspection is running on the fly -- not used in this inspection
          */
         public GetSyncPollerOnPollerFluxVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
 
         /**
          * Method to visit the method call expressions and check for the use of getSyncPoller() on a PollerFlux.
+         *
          * @param expression Method call expression to visit
          */
         @Override
@@ -140,10 +140,11 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
         /**
          * Helper method to check if the method call is on an Azure SDK client.
          * This method will check if the method call is on a class that is part of the Azure SDK.
+         *
          * @param methodCall Method call expression to check
          * @return true if the method call is on an Azure SDK client, false otherwise
          */
-        private boolean isAzureClient (@NotNull PsiMethodCallExpression methodCall){
+        private boolean isAzureClient(@NotNull PsiMethodCallExpression methodCall) {
 
             PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
 
@@ -157,11 +158,12 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
             if (className != null && className.startsWith("com.azure.")) {
                 return true;
             }
-        return false;
+            return false;
         }
 
         /**
          * Helper method to load the rule configurations from the config file.
+         *
          * @return List of strings containing the method to check and the anti-pattern message
          * @throws IOException if there is an error loading the config file
          */
