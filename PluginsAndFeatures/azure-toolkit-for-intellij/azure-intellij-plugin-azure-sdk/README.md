@@ -55,6 +55,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   for additional information.
 
 3. #### Disable Auto-complete when using ServiceBusReceiver or Processor clients
+
 - **Anti-pattern**: When using ServiceBusReceiver or Processor clients, auto-complete is enabled by default, but this
   behavior is not explicitly verified or disabled when necessary.
 - **Issue**: Auto-complete being enabled by default might lead to messages being marked as completed even if the message
@@ -67,14 +68,25 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   Please refer to
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.servicebus.servicebusclientbuilder.servicebusreceiverclientbuilder?view=azure-java-stable#com-azure-messaging-servicebus-servicebusclientbuilder-servicebusreceiverclientbuilder-disableautocomplete())
   for additional information.
-- **Recommendation**: Instead of using the low-level `ServiceBusReceiverAsyncClient`, it's recommended to use the `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies message consumption. It's designed for most common use cases and should be the primary choice for consuming messages. This makes it a more suitable option for most developers and scenarios. 
-Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient) for additional information.
+- **Recommendation**: Instead of using the low-level `ServiceBusReceiverAsyncClient`, it's recommended to use
+  the `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies message
+  consumption. It's designed for most common use cases and should be the primary choice for consuming messages. This
+  makes it a more suitable option for most developers and scenarios.
+  Please refer to
+  the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
+  for additional information.
 
 4. #### Dynamic Client Creation is wasteful
-- **Anti-pattern**: Dynamic client creation refers to creating a new client instance for each operation, without reusing existing instances.
-- **Issue**: This process can be resource-intensive and slow, especially if repeated frequently. It can lead to performance issues, increased memory usage, and unnecessary overhead.
+
+- **Anti-pattern**: Dynamic client creation refers to creating a new client instance for each operation, without reusing
+  existing instances.
+- **Issue**: This process can be resource-intensive and slow, especially if repeated frequently. It can lead to
+  performance issues, increased memory usage, and unnecessary overhead.
 - **Severity: WARNING**
-- **Recommendation**: Instead of creating a new client instance for each operation, consider reusing existing client instances. 
-It's recommended to create client instances once and reuse them throughout the application's lifecycle. 
-This approach can lead to better performance and efficiency.
-Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/developer/java/sdk/overview#connect-to-and-use-azure-resources-with-client-libraries) for additional information.
+- **Recommendation**: Instead of creating a new client instance for each operation, consider reusing existing client
+  instances.
+  It's recommended to create client instances once and reuse them throughout the application's lifecycle.
+  This approach can lead to better performance and efficiency.
+  Please refer to
+  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/developer/java/sdk/overview#connect-to-and-use-azure-resources-with-client-libraries)
+  for additional information.
