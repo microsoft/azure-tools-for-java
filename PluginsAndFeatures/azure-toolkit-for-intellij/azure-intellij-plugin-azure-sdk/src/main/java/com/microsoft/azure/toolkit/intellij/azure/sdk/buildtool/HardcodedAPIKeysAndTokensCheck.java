@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
  * It extends the LocalInspectionTool class and overrides the buildVisitor method to create a visitor for the inspection.
  * The visitor checks for the use of specific methods that are known to be used for API keys and tokens.
  * These are AzureKeyCredential and AccessToken.
- *
+ * <p>
  * These are some instances that a flag would be raised.
  * 1. TextAnalyticsClient client = new TextAnalyticsClientBuilder()
- *         .endpoint(endpoint)
- *         .credential(new AzureKeyCredential(apiKey))
- *         .buildClient();
- *
+ * .endpoint(endpoint)
+ * .credential(new AzureKeyCredential(apiKey))
+ * .buildClient();
+ * <p>
  * 2. TokenCredential credential = request -> {
- *         AccessToken token = new AccessToken("<your-hardcoded-token>", OffsetDateTime.now().plusHours(1));
- *     }
+ * AccessToken token = new AccessToken("<your-hardcoded-token>", OffsetDateTime.now().plusHours(1));
+ * }
  */
 public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
 
@@ -44,20 +44,32 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
     }
 
     // This class is a visitor that checks for the use of specific methods that authenticate API keys and tokens.
-    public static class APIKeysAndTokensVisitor extends JavaElementVisitor {
+    static class APIKeysAndTokensVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly;
 
-        // Load rule configurations from a JSON file
-        static Map<String, Object> RULE_CONFIGURATIONS = loadRuleConfigurations();
-        static String ANTI_PATTERN_MESSAGE = (String) RULE_CONFIGURATIONS.get("anti_pattern_message");
-        static List<String> CLIENTS_TO_CHECK = (List<String>) RULE_CONFIGURATIONS.get("clients_to_check");
+        // // Define constants for string literals
+        private static final RuleConfig ruleConfig;
+        private static final String ANTI_PATTERN_MESSAGE;
+        private static final List<String> SERVICES_TO_CHECK;
+        private static boolean SKIP_WHOLE_RULE;
+
+        static {
+            final String ruleName = "HardcodedAPIKeysAndTokensCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+            SERVICES_TO_CHECK = ruleConfig.getServicesToCheck();
+            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || SERVICES_TO_CHECK.isEmpty();
+        }
+
 
         // This constructor is used to create a visitor for the inspection
         public APIKeysAndTokensVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
 
         @Override
@@ -75,40 +87,9 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
 
                 // Check if the class reference is not null, the qualifier name starts with "com.azure" and
                 // the class reference is in the list of clients to check
-                if (newExpression.getClassReference() != null
-                        && newExpression.getClassReference().getQualifiedName().startsWith("com.azure")
-                        && CLIENTS_TO_CHECK.contains(classReference)) {
+                if (newExpression.getClassReference() != null && newExpression.getClassReference().getQualifiedName().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && SERVICES_TO_CHECK.contains(classReference)) {
                     this.holder.registerProblem(newExpression, ANTI_PATTERN_MESSAGE);
                 }
-            }
-        }
-
-
-        // Helper method to load rule configurations from a JSON file
-        private static Map<String, Object> loadRuleConfigurations() {
-
-            // Define constants for string literals
-            final String RULE_KEY = "HardcodedAPIKeysAndTokensCheck";
-            final String ANTI_PATTERN_MESSAGE_KEY = "anti_pattern_message";
-            final String CLIENTS_TO_CHECK_KEY = "clients_to_check";
-            final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
-
-            // Load the rule configurations from the JSON file
-            try (InputStream inputStream = HardcodedAPIKeysAndTokensCheck.class.getClassLoader().getResourceAsStream(RULE_CONFIGURATION)) {
-                if (inputStream == null) {
-                    throw new FileNotFoundException("Configuration file not found");
-                }
-                // Read the JSON object from the input stream
-                try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                    final JSONObject jsonObject = new JSONObject(bufferedReader.lines().collect(Collectors.joining()));
-                    final JSONObject apiKeysAndTokensObject = jsonObject.getJSONObject(RULE_KEY);
-                    final String antiPatternMessage = apiKeysAndTokensObject.getString(ANTI_PATTERN_MESSAGE_KEY);
-                    final List<String> clientsToCheck = apiKeysAndTokensObject.getJSONArray(CLIENTS_TO_CHECK_KEY).toList().stream().map(Object::toString).collect(Collectors.toList());
-                    return Map.of(ANTI_PATTERN_MESSAGE_KEY, antiPatternMessage, CLIENTS_TO_CHECK_KEY, clientsToCheck);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return Collections.emptyMap();
             }
         }
     }
