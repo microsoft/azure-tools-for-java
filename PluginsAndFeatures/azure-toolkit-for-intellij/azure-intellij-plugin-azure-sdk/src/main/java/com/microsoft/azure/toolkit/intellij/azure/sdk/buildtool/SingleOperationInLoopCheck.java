@@ -21,13 +21,7 @@ import com.intellij.psi.PsiWhileStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Inspection to check if there is a Text Analytics client operation inside a loop.
@@ -42,18 +36,19 @@ import java.util.logging.Logger;
  * System.out.println("Text: " + text + " | Detected Language: " + detectedLanguage.getName() + " | Confidence Score: " + detectedLanguage.getConfidenceScore());
  * }
  * <p>
- * // Loop through the list of texts and detect the language for each text
- * 2. DetectedLanguage detectedLanguage = null;
- * for (String text : texts) {
- * textAnalyticsClient.detectLanguage(text));
+ *     // Traditional for-loop to recognize entities for each text
+ * for (int i = 0; i < texts.size(); i++) {
+ *     String text = texts.get(i);
+ *     textAnalyticsClient.recognizeEntities(text);
+ *     // Process recognized entities if needed
+ * }
  */
 public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
     /**
      * Build the visitor for the inspection. This visitor will be used to traverse the PSI tree.
      *
-     * @param holder     The holder for the problems found
-     * @param isOnTheFly Whether the inspection is running on the fly. If true, the inspection is running as you type.
+     * @param holder The holder for the problems found
      * @return The visitor for the inspection
      */
     @NotNull
@@ -68,32 +63,27 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
      * The visitor will check for a Text Analytics client operation inside the loop.
      * If a Text Analytics client operation is found inside the loop, and the API has a batch alternative, a problem will be registered.
      */
-    public static class SingleOperationInLoopVisitor extends JavaElementVisitor {
+    static class SingleOperationInLoopVisitor extends JavaElementVisitor {
 
         // Define the holder for the problems found and whether the inspection is running on the fly
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly;
 
-        // Define the logger for the visitor
-        private static final Logger LOGGER = Logger.getLogger(SingleOperationInLoopCheck.class.getName());
+        // // Define constants for string literals
+        private static final RuleConfig ruleConfig;
+        private static final String SUGGESTION;
+        private static final List<String> AVAILABLE_BATCH_METHODS;
+        private static boolean SKIP_WHOLE_RULE;
 
-        // Define the suggestion message for the problem
-        private static String SUGGESTION;
-
-        private static List<String> AVAILABLE_BATCH_METHODS;
-
-        // Load the config file
         static {
-            try {
-                Map<String, Object> ruleConfigsMap = getRuleConfigs();
+            final String ruleName = "SingleOperationInLoopCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
-                // extract the async return types to check
-                AVAILABLE_BATCH_METHODS = (List<String>) ruleConfigsMap.get("methods_to_check");
-                SUGGESTION = (String) ruleConfigsMap.get("antipattern_message");
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            } catch (IOException e) {
-                LOGGER.severe("Failed to load rule configurations");
-            }
+            AVAILABLE_BATCH_METHODS = ruleConfig.getMethodsToCheck();
+            SUGGESTION = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || AVAILABLE_BATCH_METHODS.isEmpty();
         }
 
         /**
@@ -104,7 +94,6 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         public SingleOperationInLoopVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
 
         /**
@@ -114,6 +103,9 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitForStatement(@NotNull PsiForStatement statement) {
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             checkLoopForTextAnalyticsClientOperation(statement);
         }
 
@@ -124,6 +116,9 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitForeachStatement(@NotNull PsiForeachStatement statement) {
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             checkLoopForTextAnalyticsClientOperation(statement);
         }
 
@@ -134,6 +129,9 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitWhileStatement(@NotNull PsiWhileStatement statement) {
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             checkLoopForTextAnalyticsClientOperation(statement);
         }
 
@@ -144,6 +142,9 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         @Override
         public void visitDoWhileStatement(@NotNull PsiDoWhileStatement statement) {
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             checkLoopForTextAnalyticsClientOperation(statement);
         }
 
@@ -218,7 +219,10 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
             if (expression instanceof PsiMethodCallExpression) {
                 // Check if the expression is an Azure client operation
                 if (isAzureTextAnalyticsClientOperation((PsiMethodCallExpression) expression)) {
-                    holder.registerProblem(expression, SUGGESTION);
+
+                    // get the method name
+                    String methodName = ((PsiMethodCallExpression) expression).getMethodExpression().getReferenceName();
+                    holder.registerProblem(expression, (SUGGESTION + methodName + "Batch"));
                 }
             }
         }
@@ -245,7 +249,9 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 }
                 // Check if the initializer is an Azure client operation
                 if (isAzureTextAnalyticsClientOperation((PsiMethodCallExpression) initializer)) {
-                    holder.registerProblem(initializer, SUGGESTION);
+                    // get the method name
+                    String methodName = ((PsiMethodCallExpression) initializer).getMethodExpression().getReferenceName();
+                    holder.registerProblem(initializer, (SUGGESTION + methodName + "Batch"));
                 }
             }
         }
@@ -260,6 +266,8 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          */
         private static boolean isAzureTextAnalyticsClientOperation(PsiMethodCallExpression methodCall) {
 
+            String packageName = "com.azure.ai.textanalytics";
+
             // Get the containing class of the method call
             PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
 
@@ -268,7 +276,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 String className = containingClass.getQualifiedName();
 
                 // Check if the class is part of the Azure SDK
-                if (className != null && className.startsWith("com.azure.ai.textanalytics")) {
+                if (className != null && className.startsWith(packageName)) {
 
                     if (AVAILABLE_BATCH_METHODS.contains((methodCall.getMethodExpression().getReferenceName()) + "Batch")) {
                         return true;
@@ -276,29 +284,6 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 }
             }
             return false;
-        }
-
-        /**
-         * Get the rule configurations from the JSON file.
-         *
-         * @return The rule configurations
-         * @throws IOException
-         */
-        private static Map<String, Object> getRuleConfigs() throws IOException {
-
-            final String ruleName = "SingleOperationInLoopCheck";
-            final String antiPatternMessageKey = "anti_pattern_message";
-            final String methodsToCheckKey = "methods_to_check";
-
-            final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-
-            //get the methods to check
-            JSONArray methodsToCheck = jsonObject.getJSONObject(ruleName).getJSONArray(methodsToCheckKey);
-
-            // extract string from json object
-            String antiPatternMessage = jsonObject.getJSONObject(ruleName).getString(antiPatternMessageKey);
-
-            return Map.of(methodsToCheckKey, methodsToCheck.toList(), antiPatternMessageKey, antiPatternMessage.toString());
         }
     }
 }

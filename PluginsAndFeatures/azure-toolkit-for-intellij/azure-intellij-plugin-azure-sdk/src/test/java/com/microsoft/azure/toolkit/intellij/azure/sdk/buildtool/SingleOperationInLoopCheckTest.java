@@ -21,11 +21,11 @@ import com.intellij.psi.PsiElement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -79,14 +79,13 @@ public class SingleOperationInLoopCheckTest {
      * This test is used to verify a problem is registered when a
      * single PsiExpressionStatement operation is found in a for loop.
      */
-    @Test
-    public void testSingleOperationInLoopCheckPsiExpressionStatementInForStatement() {
-        assertVisitor();
+    @ParameterizedTest
+    @ValueSource(strings = {"detectLanguage", "recognizeEntities", "recognizePiiEntities", "recognizeLinkedEntities", "extractKeyPhrases", "analyzeSentiment"})
+    public void testPsiExpressionStatementInForStatement(String methodName) {
 
         PsiForStatement statement = mock(PsiForStatement.class);
         String packageName = "com.azure.ai.textanalytics";
         int numberOfInvocations = 1;
-        String methodName = "detectLanguage";
         verifyRegisterProblemWithSinglePsiExpressionStatement(statement, packageName, numberOfInvocations, methodName);
     }
 
@@ -95,8 +94,7 @@ public class SingleOperationInLoopCheckTest {
      * single PsiExpressionStatement operation is found in a for each loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiExpressionStatementInForEachStatement() {
-        assertVisitor();
+    public void testPsiExpressionStatementInForEachStatement() {
 
         PsiForeachStatement statement = mock(PsiForeachStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -110,8 +108,7 @@ public class SingleOperationInLoopCheckTest {
      * single PsiExpressionStatement operation is found in a while loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiExpressionStatementInWhileStatement() {
-        assertVisitor();
+    public void testPsiExpressionStatementInWhileStatement() {
 
         PsiWhileStatement statement = mock(PsiWhileStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -125,8 +122,7 @@ public class SingleOperationInLoopCheckTest {
      * single PsiExpressionStatement operation is found in a do while loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiExpressionStatementInDoWhileStatement() {
-        assertVisitor();
+    public void testPsiExpressionStatementInDoWhileStatement() {
 
         PsiDoWhileStatement statement = mock(PsiDoWhileStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -140,8 +136,7 @@ public class SingleOperationInLoopCheckTest {
      * PsiExpressionStatement operation is found in a for each loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiDeclarationStatementInForStatement() {
-        assertVisitor();
+    public void testPsiDeclarationStatementInForStatement() {
 
         PsiForStatement statement = mock(PsiForStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -155,8 +150,7 @@ public class SingleOperationInLoopCheckTest {
      * PsiDeclarationStatement operation is found in a do while loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiDeclarationStatementInForEachStatement() {
-        assertVisitor();
+    public void testPsiDeclarationStatementInForEachStatement() {
 
         PsiForeachStatement statement = mock(PsiForeachStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -170,8 +164,7 @@ public class SingleOperationInLoopCheckTest {
      * PsiDeclarationStatement operation is found in a while loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiDeclarationStatementInWhileStatement() {
-        assertVisitor();
+    public void testPsiDeclarationStatementInWhileStatement() {
 
         PsiWhileStatement statement = mock(PsiWhileStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -185,8 +178,7 @@ public class SingleOperationInLoopCheckTest {
      * PsiDeclarationStatement operation is found in a do while loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckPsiDeclarationStatementInDoWhileStatement() {
-        assertVisitor();
+    public void testPsiDeclarationStatementInDoWhileStatement() {
 
         PsiDoWhileStatement statement = mock(PsiDoWhileStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -200,8 +192,7 @@ public class SingleOperationInLoopCheckTest {
      * is used in the PsiExpressionStatement operation in a for loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckWithDifferentPackageName() {
-        assertVisitor();
+    public void testWithDifferentPackageName() {
 
         PsiForStatement statement = mock(PsiForStatement.class);
         String packageName = "com.microsoft.azure.storage.blob";
@@ -215,8 +206,7 @@ public class SingleOperationInLoopCheckTest {
      * is used in the PsiExpressionStatement operation in a for loop.
      */
     @Test
-    public void testSingleOperationInLoopCheckWithDifferentMethodName() {
-        assertVisitor();
+    public void testWithDifferentMethodName() {
 
         PsiForStatement statement = mock(PsiForStatement.class);
         String packageName = "com.azure.ai.textanalytics";
@@ -232,15 +222,6 @@ public class SingleOperationInLoopCheckTest {
         boolean isOnTheFly = true;
         SingleOperationInLoopVisitor visitor = new SingleOperationInLoopVisitor(mockHolder, isOnTheFly);
         return visitor;
-    }
-
-    /**
-     * Assert that the visitor is not null and is an instance of JavaElementVisitor
-     * to ensure the visitor is created correctly.
-     */
-    private void assertVisitor() {
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
     }
 
     /**
@@ -286,9 +267,9 @@ public class SingleOperationInLoopCheckTest {
         }
 
         //  Verify problem is registered
-        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(expression),
-                Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(expression), Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
     }
+
     /**
      * This helper method is used to verify a problem is registered when a
      * PsiDeclarationStatement operation is found in a loop.
@@ -332,7 +313,6 @@ public class SingleOperationInLoopCheckTest {
         }
 
         //  Verify problem is registered
-        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(initializer),
-                Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
+        verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(initializer), Mockito.contains("Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: " + methodName + "Batch"));
     }
 }
