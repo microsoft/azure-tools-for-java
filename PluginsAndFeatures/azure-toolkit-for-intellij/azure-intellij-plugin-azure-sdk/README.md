@@ -96,3 +96,15 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   refer to
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
+
+6. #### Using Connection Strings to build Azure Service Clients
+
+- **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
+- **Issue**: Connection strings authentication is not recommended in Azure SDKs for Java due to potential security
+  vulnerabilities.
+- **Severity: WARNING**
+- **Recommendation**: Azure service client authentication is recommended if the service client supports Token
+  Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based
+  authentication. Please refer to
+  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
+  for additional information.

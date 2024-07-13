@@ -7,16 +7,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiNewExpression;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -75,6 +67,10 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
         @Override
         public void visitElement(@NotNull PsiElement element) {
             super.visitElement(element);
+
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
 
             // Check if the element is a new expression -- i.e., a constructor call
             if (element instanceof PsiNewExpression) {

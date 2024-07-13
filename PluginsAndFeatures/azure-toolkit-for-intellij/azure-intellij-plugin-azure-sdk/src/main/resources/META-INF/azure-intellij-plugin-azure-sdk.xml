@@ -93,5 +93,19 @@
             com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck
             </class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ConnectionStringCheck"
+                displayName="Connection String Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
