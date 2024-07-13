@@ -127,6 +127,7 @@ public class RuleConfigLoader {
     private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
+        List<String> servicesToCheck = new ArrayList<>();
         String antiPatternMessage = null;
 
         // Check if the JSON file starts with an object
@@ -150,11 +151,14 @@ public class RuleConfigLoader {
                 case "clients_to_check":
                     clientsToCheck = getListFromJsonArray(reader);
                     break;
+                case "services_to_check":
+                    servicesToCheck = getListFromJsonArray(reader);
+                    break;
                 default:
                     reader.skipChildren();
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessage);
     }
 
     /**

@@ -79,5 +79,19 @@
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck
             </class>
         </localInspection>
+
+        <localInspection
+            language="JAVA"
+            shortName="HardcodedAPIKeysAndTokensCheck"
+            displayName="Hardcoded API Keys And Tokens Check"
+            groupName="Azure SDK Rules"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck">
+
+            <class>
+            com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>

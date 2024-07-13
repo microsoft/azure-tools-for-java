@@ -10,21 +10,24 @@ import java.util.List;
 class RuleConfig {
     private final List<String> methodsToCheck;
     private final List<String> clientsToCheck;
+    private final List<String> servicesToCheck;
     private final String antiPatternMessage;
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), "");
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "");
 
     /**
      * Constructor for RuleConfig.
      *
      * @param methodsToCheck     List of methods to check.
      * @param clientsToCheck     List of clients to check.
+     * @param servicesToCheck    List of services to check.
      * @param antiPatternMessage AntiPattern message.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, String antiPatternMessage) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
+        this.servicesToCheck = servicesToCheck;
         this.antiPatternMessage = antiPatternMessage;
     }
 
@@ -46,6 +49,15 @@ class RuleConfig {
      */
     public List<String> getClientsToCheck() {
         return clientsToCheck;
+    }
+
+    /**
+     * This method returns the list of services to check
+     *
+     * @return List of services to check
+     */
+    public List<String> getServicesToCheck() {
+        return servicesToCheck;
     }
 
     /**
