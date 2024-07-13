@@ -9,12 +9,6 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Inspection tool to detect the use of getSyncPoller() on a PollerFlux.
@@ -52,24 +46,22 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
         // Instance variables
         private final ProblemsHolder holder;
 
-        private static String METHOD_TO_CHECK = "";
-        private static String ANTI_PATTERN_MESSAGE = "";
+        // Define constants for string literals
+        private static final RuleConfig ruleConfig;
+        private static final String ANTI_PATTERN_MESSAGE;
+        private static final String METHOD_TO_CHECK;
+        private static boolean SKIP_WHOLE_RULE;
 
-        private static final Logger LOGGER = Logger.getLogger(GetSyncPollerOnPollerFluxCheck.class.getName());
-
-
-        // Load the config file
         static {
-            try {
-                List<String> ruleConfigList = getRuleConfigs();
+            final String ruleName = "GetSyncPollerOnPollerFluxCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
-                // extract the method to check and the anti-pattern message from the config file
-                METHOD_TO_CHECK = ruleConfigList.get(0);
-                ANTI_PATTERN_MESSAGE = ruleConfigList.get(1);
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Error loading rule data", e);
-            }
+            METHOD_TO_CHECK = ruleConfig.getMethodsToCheck().get(0);
+            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE;
         }
 
         /**
@@ -90,6 +82,11 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
         @Override
         public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
             super.visitMethodCallExpression(expression);
+
+            // Check if the whole rule should be skipped
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
 
             // Check if the element is a method call expression
             if (!(expression instanceof PsiMethodCallExpression)) {
@@ -116,6 +113,9 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
          * @return true if the method call is on a reactive type, false otherwise
          */
         private boolean checkIfAsyncContext(@NotNull PsiMethodCallExpression methodCall) {
+
+            String pollerFluxType = "PollerFlux";
+
             PsiExpression expression = methodCall.getMethodExpression().getQualifierExpression();
 
             // Check if the method call is on a reactive type
@@ -131,7 +131,7 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
             String typeName = type.getCanonicalText();
 
             // Check for PollerFlux type
-            if (typeName != null && typeName.contains("PollerFlux")) {
+            if (typeName != null && typeName.contains(pollerFluxType)) {
                 return true;
             }
             return false;
@@ -155,33 +155,10 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
             String className = containingClass.getQualifiedName();
 
             // Check if the class is part of the Azure SDK
-            if (className != null && className.startsWith("com.azure.")) {
+            if (className != null && className.startsWith(ruleConfig.AZURE_PACKAGE_NAME)) {
                 return true;
             }
             return false;
-        }
-
-        /**
-         * Helper method to load the rule configurations from the config file.
-         *
-         * @return List of strings containing the method to check and the anti-pattern message
-         * @throws IOException if there is an error loading the config file
-         */
-        private static List<String> getRuleConfigs() throws IOException {
-
-            String ruleName = "GetSyncPollerOnPollerFluxCheck";
-            String antiPatternMessageKey = "antipattern_message";
-            String methodToCheckKey = "method_to_check";
-
-            //load json object
-            JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-
-            // extract string from json object
-            String antiPatternMessage = jsonObject.getJSONObject(ruleName).getString(antiPatternMessageKey);
-            String methodToCheck = jsonObject.getJSONObject(ruleName).getString(methodToCheckKey);
-
-            // return list of strings
-            return List.of(methodToCheck, antiPatternMessage);
         }
     }
 }
