@@ -4,12 +4,12 @@
     <depends>com.intellij.modules.java</depends>
 
     <actions>
-            <action
-                    class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
-                    id="AzSdkHelpAction"
-                    text="Ask Azure SDK Help">
-                <add-to-group group-id="ToolsMenu" anchor="last" />
-            </action>
+        <action
+                class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
+                id="AzSdkHelpAction"
+                text="Ask Azure SDK Help">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -42,7 +42,7 @@
                 language="JAVA"
                 shortName="ServiceBusReceiverAsyncClientCheck"
                 displayName="Low level ServiceBusReceiverAsyncClient check"
-                groupName="Azure SDK"
+                groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
@@ -54,9 +54,51 @@
 
         <localInspection
                 language="JAVA"
+                shortName="DisableAutoCompleteCheck"
+                displayName="Disable Auto-Complete Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DisableAutoCompleteCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DisableAutoCompleteCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DynamicClientCreationCheck"
+                displayName="Dynamic Client Creation Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+            language="JAVA"
+            shortName="HardcodedAPIKeysAndTokensCheck"
+            displayName="Hardcoded API Keys And Tokens Check"
+            groupName="Azure SDK Rules"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck">
+
+            <class>
+            com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
                 shortName="ConnectionStringCheck"
                 displayName="Connection String Check"
-                groupName="Maven"
+                groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
