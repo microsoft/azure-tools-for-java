@@ -120,7 +120,7 @@ public class DisableAutoCompleteCheck extends LocalInspectionTool {
             PsiExpression initializer = variable.getInitializer();
 
             // Check if the client type is an Azure SDK client
-            if (!clientType.getCanonicalText().startsWith(ruleConfig.AZ_PACKAGE_NAME)) {
+            if (!clientType.getCanonicalText().startsWith(ruleConfig.AZURE_PACKAGE_NAME)) {
                 return;
             }
 

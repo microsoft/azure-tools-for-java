@@ -18,5 +18,12 @@
       "ServiceBusProcessorClient"
     ],
     "anti_pattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
+  },
+  "DynamicClientCreationCheck": {
+    "methods_to_check": [
+      "buildClient",
+      "buildAsyncClient"
+    ],
+    "anti_pattern_message": "Dynamic client creation detected. Create a single client instance and reuse it instead."
   }
 }

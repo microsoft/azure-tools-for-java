@@ -11,7 +11,7 @@ class RuleConfig {
     private final List<String> methodsToCheck;
     private final List<String> clientsToCheck;
     private final String antiPatternMessage;
-    static final String AZ_PACKAGE_NAME = "com.azure";
+    static final String AZURE_PACKAGE_NAME = "com.azure";
 
     static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), "");
 

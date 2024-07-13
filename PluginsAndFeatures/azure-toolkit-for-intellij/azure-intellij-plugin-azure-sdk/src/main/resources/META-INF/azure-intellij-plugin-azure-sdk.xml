@@ -4,12 +4,12 @@
     <depends>com.intellij.modules.java</depends>
 
     <actions>
-            <action
-                    class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
-                    id="AzSdkHelpAction"
-                    text="Ask Azure SDK Help">
-                <add-to-group group-id="ToolsMenu" anchor="last" />
-            </action>
+        <action
+                class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
+                id="AzSdkHelpAction"
+                text="Ask Azure SDK Help">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -63,6 +63,20 @@
 
             <class>
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DisableAutoCompleteCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DynamicClientCreationCheck"
+                displayName="Dynamic Client Creation Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck
             </class>
         </localInspection>
     </extensions>
