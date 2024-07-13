@@ -16,12 +16,8 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiStatement;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class is used to check for the dynamic creation of clients in the code.
@@ -33,11 +29,9 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
 
 
     /**
-     * ]
      * This method builds the visitor that checks for the dynamic creation of clients in the code.
      *
-     * @param holder
-     * @param isOnTheFly
+     * @param holder The holder for the problems found
      * @return PsiElementVisitor
      */
     @NotNull
@@ -53,50 +47,50 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
     static class DynamicClientCreationVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly;
 
-        // Constants
-        private static final Map<String, Object> RULE_CONFIGS_MAP;
-        private static final String RULE_NAME = "DynamicClientCreationCheck";
-        private static final String METHODS_TO_CHECK_KEY = "methods_to_check";
-        private static final String ANTI_PATTERN_MESSAGE_KEY = "antipattern_message";
-        private static final List<String> METHODS_TO_CHECK;
+        // Define constants for string literals
+        private static final RuleConfig ruleConfig;
         private static final String ANTI_PATTERN_MESSAGE;
+        private static final List<String> METHODS_TO_CHECK;
+        private static boolean SKIP_WHOLE_RULE;
 
-
-        // Load the config file
         static {
-            try {
-                RULE_CONFIGS_MAP = getClientCreationMethodsToCheck();
+            final String ruleName = "DynamicClientCreationCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
-                // extract the methods to check and the anti-pattern message from the config file
-                METHODS_TO_CHECK = (List<String>) RULE_CONFIGS_MAP.get(METHODS_TO_CHECK_KEY);
-                ANTI_PATTERN_MESSAGE = (String) RULE_CONFIGS_MAP.get(ANTI_PATTERN_MESSAGE_KEY);
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            } catch (IOException e) {
-                throw new RuntimeException("Error loading config file", e);
-            }
+            METHODS_TO_CHECK = ruleConfig.getMethodsToCheck();
+            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
         }
 
         /**
-         * This constructor initializes the ProblemsHolder and isOnTheFly variables.
+         * This constructor initializes the ProblemsHolder object.
+         * It is used to register problems found in the code.
+         * <p>
+         * isOnTheFly is a boolean that indicates if the inspection is run on the fly.
+         * It is not in use in this implementation, but present by default in the method signature.
          *
          * @param holder
-         * @param isOnTheFly
          */
         public DynamicClientCreationVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
 
         /**
          * This method checks for the dynamic creation of clients in the code.
          *
-         * @param statement
+         * @param statement The for loop statement to visit
          */
         @Override
         public void visitForStatement(@NotNull PsiForStatement statement) {
             super.visitForStatement(statement);
+
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
 
             // Extract the body of the for loop
             PsiStatement body = statement.getBody();
@@ -119,7 +113,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
          * This method checks for the dynamic creation of clients in the code block of a for loop.
          * Each assignment statement and declaration statement is checked for the creation of clients.
          *
-         * @param blockChild
+         * @param blockChild The statement to check for client creation
          */
 
         private void checkClientCreation(PsiStatement blockChild) {
@@ -161,6 +155,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
                     if (!(initializer instanceof PsiMethodCallExpression)) {
                         continue;
                     }
+
                     // Check if the initializer is a method call expression
                     PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) initializer;
                     if (isClientCreationMethod(methodCallExpression)) {
@@ -176,8 +171,8 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
          * If the method name is buildClient or AsyncBuildClient and the qualifier expression is of type com.azure,
          * then it is considered a client creation method.
          *
-         * @param methodCallExpression
-         * @return
+         * @param methodCallExpression The method call expression to check
+         * @return boolean - true if the method call expression is a client creation method
          */
         public boolean isClientCreationMethod(PsiMethodCallExpression methodCallExpression) {
 
@@ -193,32 +188,14 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
                 // Extract the qualifier expression
                 PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
 
-                // Check if the qualifier expression is of type com.azure
-                if (qualifierExpression.getType().getCanonicalText().startsWith("com.azure")) {
-                    return true;
+                if (qualifierExpression == null || qualifierExpression.getType() == null) {
+                    return false;
                 }
+
+                // Check if the qualifier expression is of type com.azure
+                return qualifierExpression.getType().getCanonicalText().startsWith(RuleConfig.AZURE_PACKAGE_NAME);
             }
             return false;
-        }
-
-        /**
-         * This method loads the JSON configuration file and extracts the methods to check for dynamic client creation.
-         *
-         * @return Map<String, Object>
-         * @throws IOException
-         */
-        private static Map<String, Object> getClientCreationMethodsToCheck() throws IOException {
-
-            //load json object
-            JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-
-            //get the async return types to check
-            JSONArray asyncReturnTypes = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK_KEY);
-
-            // extract string from json object
-            String antiPatternMessage = jsonObject.getJSONObject(RULE_NAME).getString(ANTI_PATTERN_MESSAGE_KEY);
-
-            return Map.of(METHODS_TO_CHECK_KEY, asyncReturnTypes.toList(), ANTI_PATTERN_MESSAGE_KEY, antiPatternMessage.toString());
         }
     }
 }

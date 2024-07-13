@@ -14,6 +14,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation group: 'org.mockito', name: 'mockito-core'
+    implementation group: 'com.azure', name: 'azure-json', version: '1.1.0'
 }
 
 tasks.named('test', Test) {

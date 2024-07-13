@@ -55,18 +55,15 @@ public class DynamicClientCreationCheckTest {
     @Test
     void testDynamicClientCreationWithExpressionStatement() {
 
-        // assert visitor
-        assertVisitor();
-
-        int NUMBER_OF_INVOCATIONS = 1;
-        String METHOD_NAME = "buildClient";
-        String AZURE_PACKAGE = "com.azure.";
+        int numOfInvocations = 1;
+        String methodName = "buildClient";
+        String packageName = "com.azure.";
 
         // verify register problem with assignment expression
-        verifyRegisterProblemWithAssignmentExpression(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithAssignmentExpression(methodName, packageName, numOfInvocations);
 
         // verify register problem with declaration statement
-        verifyRegisterProblemWithDeclarationStatement(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithDeclarationStatement(methodName, packageName, numOfInvocations);
     }
 
     /**
@@ -76,18 +73,16 @@ public class DynamicClientCreationCheckTest {
      */
     @Test // unhappy path
      void testDynamicClientCreationWithNonAzurePackage() {
-        // assert visitor
-        assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 0;
-        String METHOD_NAME = "buildClient";
-        String AZURE_PACKAGE = "com.Notazure.";
+        int numOfInvocations = 0;
+        String methodName = "buildClient";
+        String packageName = "com.Notazure.";
 
         // verify register problem with assignment expression
-        verifyRegisterProblemWithAssignmentExpression(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithAssignmentExpression(methodName, packageName, numOfInvocations);
 
         // verify register problem with declaration statement
-        verifyRegisterProblemWithDeclarationStatement(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithDeclarationStatement(methodName, packageName, numOfInvocations);
     }
 
     /**
@@ -95,49 +90,38 @@ public class DynamicClientCreationCheckTest {
      * it encounters a code block that does not match the criteria for dynamic client creation.
      * This involves a method call that is not part of the METHODS_TO_CHECK list.
      */
-    @Test // unhappy path
+    @Test
     void testDynamicClientCreationWithNonBuildMethod() {
-        // assert visitor
-        assertVisitor();
 
-        int NUMBER_OF_INVOCATIONS = 0;
-        String METHOD_NAME = "NotbuildClient";
-        String AZURE_PACKAGE = "com.azure.";
+        int numOfInvocations = 0;
+        String methodName = "NotbuildClient";
+        String packageName = "com.azure.";
 
         // verify register problem with assignment expression
-        verifyRegisterProblemWithAssignmentExpression(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithAssignmentExpression(methodName, packageName, numOfInvocations);
 
         // verify register problem with declaration statement
-        verifyRegisterProblemWithDeclarationStatement(METHOD_NAME, AZURE_PACKAGE, NUMBER_OF_INVOCATIONS);
+        verifyRegisterProblemWithDeclarationStatement(methodName, packageName, numOfInvocations);
     }
 
     /**
      * This helper method creates a new instance of the DynamicClientCreationVisitor class.
      */
-    JavaElementVisitor createVisitor() {
+    private JavaElementVisitor createVisitor() {
         boolean isOnTheFly = true;
         DynamicClientCreationVisitor mockVisitor = new DynamicClientCreationVisitor(mockHolder, isOnTheFly);
         return mockVisitor;
     }
 
     /**
-     * This helper method asserts that the mockVisitor is not null and is an instance of the JavaElementVisitor class.
-     */
-    void assertVisitor() {
-        // assert visitor
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
-    }
-
-    /**
      * This method verifies that a problem is registered when a client creation method is found
      * building a client from the com.azure package in an assignment expression.
      *
-     * @param METHOD_NAME
-     * @param AZURE_PACKAGE
-     * @param NUMBER_OF_INVOCATIONS
+     * @param methodName this is the method name that is being checked for
+     * @param packageName this is the package name that is being checked for
+     * @param numOfInvocations this is the number of times the registerProblem method should be called
      */
-    void verifyRegisterProblemWithAssignmentExpression(String METHOD_NAME, String AZURE_PACKAGE, int NUMBER_OF_INVOCATIONS) {
+    private void verifyRegisterProblemWithAssignmentExpression(String methodName, String packageName, int numOfInvocations) {
 
         // main method
         PsiStatement statement = mock(PsiStatement.class);
@@ -166,27 +150,27 @@ public class DynamicClientCreationCheckTest {
 
         // isClientCreationMethod
         when(rhs.getMethodExpression()).thenReturn(methodExpression);
-        when(methodExpression.getReferenceName()).thenReturn(METHOD_NAME);
+        when(methodExpression.getReferenceName()).thenReturn(methodName);
         when(methodExpression.getQualifierExpression()).thenReturn(qualifierExpression);
         when(qualifierExpression.getType()).thenReturn(type);
-        when(qualifierExpression.getType().getCanonicalText()).thenReturn(AZURE_PACKAGE);
+        when(qualifierExpression.getType().getCanonicalText()).thenReturn(packageName);
 
         mockVisitor.visitForStatement(mockElement);
 
         //  Verify problem is registered
         verify(mockHolder,
-                times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(rhs),
+                times(numOfInvocations)).registerProblem(Mockito.eq(rhs),
                 Mockito.contains("Dynamic client creation detected. Create a single client instance and reuse it instead."));
     }
 
     /**
      * This method verifies that a problem is registered when a client creation method is found
      * building a client from the com.azure package in a declaration statement.
-     * @param METHOD_NAME
-     * @param AZURE_PACKAGE
-     * @param NUMBER_OF_INVOCATIONS
+     * @param methodName this is the method name that is being checked for
+     * @param packageName this is the package name that is being checked for
+     * @param numOfInvocations this is the number of times the registerProblem method should be called
      */
-    void verifyRegisterProblemWithDeclarationStatement(String METHOD_NAME, String AZURE_PACKAGE, int NUMBER_OF_INVOCATIONS) {
+    private void verifyRegisterProblemWithDeclarationStatement(String methodName, String packageName, int numOfInvocations) {
 
         // main method
         PsiStatement statement = mock(PsiStatement.class);
@@ -216,16 +200,16 @@ public class DynamicClientCreationCheckTest {
 
         // isClientCreationMethod
         when(initializer.getMethodExpression()).thenReturn(methodExpression);
-        when(methodExpression.getReferenceName()).thenReturn(METHOD_NAME);
+        when(methodExpression.getReferenceName()).thenReturn(methodName);
         when(methodExpression.getQualifierExpression()).thenReturn(qualifierExpression);
         when(qualifierExpression.getType()).thenReturn(type);
-        when(qualifierExpression.getType().getCanonicalText()).thenReturn(AZURE_PACKAGE);
+        when(qualifierExpression.getType().getCanonicalText()).thenReturn(packageName);
 
         mockVisitor.visitForStatement(mockElement);
 
         //  Verify problem is registered
         verify(mockHolder,
-                times(NUMBER_OF_INVOCATIONS)).registerProblem(Mockito.eq(initializer),
+                times(numOfInvocations)).registerProblem(Mockito.eq(initializer),
                 Mockito.contains("Dynamic client creation detected. Create a single client instance and reuse it instead."));
     }
 }
