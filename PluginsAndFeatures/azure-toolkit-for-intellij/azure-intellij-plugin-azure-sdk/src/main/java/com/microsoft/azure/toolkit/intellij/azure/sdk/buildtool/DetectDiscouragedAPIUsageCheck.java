@@ -12,12 +12,12 @@ import com.intellij.psi.PsiReferenceExpression;
 
 import org.jetbrains.annotations.NotNull;
 
-
+import java.util.Map;
 /**
- * This class extends the LocalInspectionTool to check for the use of connection strings in the code.
+ * This class extends the LocalInspectionTool to check for the use of discouraged APIs in the code.
  * If the method is called from an Azure client class, a problem is registered with the suggestion message.
  */
-public class ConnectionStringCheck extends LocalInspectionTool {
+public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
 
 
     /**
@@ -30,49 +30,47 @@ public class ConnectionStringCheck extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        return new ConnectionStringVisitor(holder, isOnTheFly);
+        return new DetectDiscouragedAPIUsageVisitor(holder, isOnTheFly);
     }
 
     /**
      * This class extends the JavaElementVisitor to visit the elements in the code.
-     * It checks if the method call is a connection string call and if the class is an Azure client.
+     * It checks if the method call is a discouraged API call and if the class is an Azure client.
      * If both conditions are met, a problem is registered with the suggestion message.
      */
-    static class ConnectionStringVisitor extends JavaElementVisitor {
+    static class DetectDiscouragedAPIUsageVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
 
         // // Define constants for string literals
         private static final RuleConfig ruleConfig;
-        private static final String SUGGESTION;
-        private static final String METHOD_TO_CHECK;
+        private static final Map<String, String> METHODS_TO_CHECK;
         private static boolean SKIP_WHOLE_RULE;
 
         static {
-            final String ruleName = "ConnectionStringCheck";
+            final String ruleName = "DetectDiscouragedAPIUsageCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
             ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+            METHODS_TO_CHECK = ruleConfig.getDiscouragedIdentifiersMap();
 
-            METHOD_TO_CHECK = ruleConfig.getMethodsToCheck().get(0);
-            SUGGESTION = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE;
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
         }
 
         /**
          * Constructor to initialize the visitor with the holder and isOnTheFly flag.
          *
          * @param holder     ProblemsHolder to register problems
-         * @param isOnTheFly boolean to check if the inspection is on the fly
+         * @param isOnTheFly boolean to check if the inspection is on the fly - This is not in use
          */
-        public ConnectionStringVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        public DetectDiscouragedAPIUsageVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
         }
 
         /**
          * This method visits the element in the code.
-         * It checks if the method call is a connection string call and if the class is an Azure client.
+         * It checks if the method call is a discouraged API call and if the class is an Azure client.
          * If both conditions are met, a problem is registered with the suggestion message.
          *
          * @param element PsiElement to visit
@@ -95,16 +93,28 @@ public class ConnectionStringCheck extends LocalInspectionTool {
                 // resolvedMethod is the method that is being called
                 PsiElement resolvedMethod = methodExpression.resolve();
 
-                // check if the method is a connectionString call
-                if (resolvedMethod != null && resolvedMethod instanceof PsiMethod && ((PsiMethod) resolvedMethod).getName().equals(METHOD_TO_CHECK)) {
+                // check if the method is a discouraged API call by accessing the keys of the map stored in the configuration file
+                if (resolvedMethod != null && resolvedMethod instanceof PsiMethod
+                        && METHODS_TO_CHECK.containsKey(((PsiMethod) resolvedMethod).getName())) {
+
                     PsiMethod method = (PsiMethod) resolvedMethod;
+
+                    // containingClass is the client class that is being called. check if the class is an azure
 
                     // containingClass is the client class that is being called. check if the class is an azure client
                     PsiClass containingClass = method.getContainingClass();
 
                     // compare the package name of the containing class to the azure package name from the configuration file
-                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith(RuleConfig.AZURE_PACKAGE_NAME)) {
-                        holder.registerProblem(element, SUGGESTION);
+                    if (containingClass != null && containingClass.getQualifiedName() != null
+                            && containingClass.getQualifiedName().startsWith(RuleConfig.AZURE_PACKAGE_NAME)) {
+
+                        PsiElement problemElement = methodExpression.getReferenceNameElement();
+
+                        if (problemElement == null) {
+                            return;
+                        }
+                        // give the suggestion of the discouraged method
+                        holder.registerProblem(problemElement, METHODS_TO_CHECK.get(method.getName()));
                     }
                 }
             }

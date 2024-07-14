@@ -97,14 +97,32 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
 
-6. #### Using Connection Strings to build Azure Service Clients
 
-- **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
-- **Issue**: Connection strings authentication is not recommended in Azure SDKs for Java due to potential security
-  vulnerabilities.
-- **Severity: WARNING**
-- **Recommendation**: Azure service client authentication is recommended if the service client supports Token
-  Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based
-  authentication. Please refer to
-  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
-  for additional information.
+6. #### Use These Encouraged Alternatives Instead of Their Corresponding Discouraged APIs
+
+   #### a. Azure service client authentication instead of Connection Strings to build Azure Service Clients
+
+    - **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
+    - **Issue**: Connection strings authentication is not recommended in Azure SDKs for Java due to potential
+      security
+      vulnerabilities.
+    - **Severity: WARNING**
+    - **Recommendation**: Azure service client authentication is recommended if the service client supports Token
+      Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based
+      authentication. Please refer to
+      the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
+      for additional information.
+
+   #### b. Use `getChatCompletions` for Chat Applications instead of `getCompletions` API
+
+    - **Anti-pattern**: Using the getCompletions API
+    - **Issue**: Issue: Functionality Mismatch - The `getCompletions` API is designed for general-purpose completion
+      tasks.
+      whereas `getChatCompletions` is specifically optimized for conversational contexts.
+    - **Severity: WARNING**
+    - **Recommendation**: Use `getChatCompletions` for Chat Applications: Specifically use `getChatCompletions` API
+      when
+      generating responses for chatbot or conversational AI applications.
+    - Please refer to
+      the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/overview/azure/ai-openai-readme?view=azure-java-preview)
+      for additional information.
