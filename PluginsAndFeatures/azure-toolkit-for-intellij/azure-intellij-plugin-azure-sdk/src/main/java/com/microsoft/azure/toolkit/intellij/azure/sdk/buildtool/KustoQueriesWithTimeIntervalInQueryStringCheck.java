@@ -2,32 +2,22 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +33,7 @@ import java.util.regex.Pattern;
  * 3. Queries that use the "now" function to get the current timestamp.
  * 4. Queries that use the "startofday", "startofmonth", or "startofyear" functions.
  * 5. Queries that use the "between" function with datetime values.
- *
+ * <p>
  * When the anti-patterns are detected as parameters of Azure client method calls, a problem is registered.
  */
 public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspectionTool {
@@ -52,7 +42,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
      * This method builds the visitor for the inspection tool
      *
      * @param holder     ProblemsHolder is used to register problems found in the code
-     * @param isOnTheFly boolean to indicate if the inspection is done on the fly
+     * @param isOnTheFly boolean to indicate if the inspection is done on the fly -
      * @return PsiElementVisitor
      */
     @NotNull
@@ -72,23 +62,29 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
     static class KustoQueriesVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
-        private final boolean isOnTheFly; // boolean to indicate if the inspection is done on the fly
 
-        // Define constants for string literals
-        private static final String RULE_CONFIGURATION = "META-INF/ruleConfigs.json";
-        private static final String ANTI_PATTERN_KEY = "antipattern_message";
-        private static final String REGEX_PATTERNS_KEY = "regex_patterns";
-        private static final String RULE_NAME = "KustoQueriesWithTimeIntervalInQueryStringCheck";
-        private static final Map<String, Pattern> regexPatterns = new HashMap<>();
-        private static String ANTI_PATTERN_MESSAGE = null;
+        // // Define constants for string literals
+        private static final RuleConfig ruleConfig;
+        private static final String ANTI_PATTERN_MESSAGE;
+        private static final Map<String, Pattern> REGEX_PATTERNS = new HashMap<>();
+        private static boolean SKIP_WHOLE_RULE;
 
-        // Load the regex patterns from the configuration file
         static {
-            try {
-                loadAndCompileRegexPatterns();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load and compile regex patterns", e);
+            final String ruleName = "KustoQueriesWithTimeIntervalInQueryStringCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+            // Get the RuleConfig object for the rule
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+
+            Map<String, String> regexPatterns = ruleConfig.getMappedItemsToCheck();
+            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
+
+            for (String key : regexPatterns.keySet()) {
+                String patternStr = regexPatterns.get(key);
+                REGEX_PATTERNS.put(key, Pattern.compile(patternStr));
             }
+
+            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
         }
 
         // empty list to store time interval parameter names
@@ -98,12 +94,11 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * Constructor for the KustoQueriesVisitor class
          * The constructor initializes the ProblemsHolder and isOnTheFly variables
          *
-         * @param holder
-         * @param isOnTheFly
+         * @param holder     - ProblemsHolder is used to register problems found in the code
+         * @param isOnTheFly - boolean to indicate if the inspection is done on the fly - This is not used in this implementation
          */
         public KustoQueriesVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
 
         /**
@@ -114,15 +109,18 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * The method then checks the expression for the anti-patterns by matching regex patterns with the expression text
          * and registers a problem if an anti-pattern is detected
          *
-         * @param element
+         * @param element - the element to visit
          */
         @Override
         public void visitElement(@NotNull PsiElement element) {
             super.visitElement(element);
 
-            if (!(element instanceof PsiPolyadicExpression
-                    || element instanceof PsiLocalVariable
-                    || element instanceof PsiMethodCallExpressionImpl)) {
+            // Skip the whole rule if the rule configuration is empty
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
+
+            if (!(element instanceof PsiPolyadicExpression || element instanceof PsiLocalVariable || element instanceof PsiMethodCallExpressionImpl)) {
                 return;
             }
 
@@ -147,11 +145,11 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * This method handles the local variable by checking the initializer of the variable
          * If the initializer is a PsiLiteralExpression, the method checks the expression for the anti-patterns
          * by matching regex patterns with the expression text
-         * @param variable
+         *
+         * @param variable - the local variable to check
          */
         private void handleLocalVariable(PsiLocalVariable variable) {
             PsiExpression initializer = variable.getInitializer();
-            String variableName = variable.getName();
             if (initializer != null && initializer instanceof PsiLiteralExpression) {
                 checkExpression(initializer, variable);
             }
@@ -160,7 +158,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
         /**
          * This method handles the polyadic expression by processing the expression to replace the variables with their values
          * The method then checks the expression for the anti-patterns by matching regex patterns with the expression text
-         * @param polyadicExpression
+         *
+         * @param polyadicExpression - the polyadic expression to check
          */
         private void handlePolyadicExpression(PsiPolyadicExpression polyadicExpression) {
             // Process the polyadic expression to replace the variables with their values
@@ -173,7 +172,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * If the parameter is a reference to a variable, the method checks the variable name
          * If the variable name is in the list of time interval parameters, the method checks if the method call is an Azure client method call
          * If the method call is an Azure client method call, the method registers a problem
-         * @param methodCall
+         *
+         * @param methodCall - the method call to check
          */
         private void handleMethodCall(PsiMethodCallExpressionImpl methodCall) {
             // check the parameters of the method call
@@ -193,20 +193,14 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 }
                 PsiVariable variable = (PsiVariable) resolvedElement;
                 String variableName = variable.getName();
-                     // check if the variable name is in the list of time interval parameters
+                // check if the variable name is in the list of time interval parameters
                 // if the variable name is in the list, check if the method call is an Azure client method call
                 if (!(timeIntervalParameters.contains(variableName))) {
                     continue;
                 }
 
-                // case methodcall to PsiMethodCallExpression
-                PsiMethodCallExpression methodCallExpression = methodCall;
-
-                System.out.println("methodCallExpression: " + methodCallExpression);
-//                System.out.println("methodCall: " + methodCall.getMethodExpression().getText());
-                if (isAzureClient(methodCallExpression)) {
-                    System.out.println("Registering problem for method call: " + methodCall);
-                    holder.registerProblem(methodCall, "KQL queries with time intervals in the query string detected.");
+                if (isAzureClient(methodCall)) {
+                    holder.registerProblem(methodCall, ANTI_PATTERN_MESSAGE);
                 }
             }
         }
@@ -215,8 +209,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * This method checks the expression for the anti-patterns by matching regex patterns with the expression text
          * and registers a problem if an anti-pattern is detected
          *
-         * @param expression
-         * @param element
+         * @param expression - the expression to check
+         * @param element    - the element to check
          */
         void checkExpression(PsiExpression expression, PsiElement element) {
             if (expression == null) {
@@ -225,26 +219,17 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             String text = expression.getText();
 
             // Check if the expression text contains any of the regex patterns
-            boolean foundAntiPattern = regexPatterns.values().stream()
-                    .anyMatch(pattern -> pattern.matcher(text).find());
+            boolean foundAntiPattern = REGEX_PATTERNS.values().stream().anyMatch(pattern -> pattern.matcher(text).find());
 
 
             // If an anti-pattern is detected, register a problem
             if (foundAntiPattern) {
-
-                System.out.println("Found anti-pattern in expression: " + text);
-                System.out.println("Element: " + element);
-                System.out.println("ElementText: " + element.getText());
-
                 PsiElement parentElement = element.getParent();
-
-                System.out.println("Parent element: " + parentElement);
 
                 if (parentElement instanceof PsiLocalVariable) {
                     PsiLocalVariable variable = (PsiLocalVariable) parentElement;
                     String variableName = variable.getName();
                     timeIntervalParameters.add(variableName);
-                    System.out.println("Time interval parameters2: " + timeIntervalParameters);
                 }
             }
         }
@@ -252,52 +237,22 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
 
         /**
          * This method checks if the method call is an Azure client method call
-         * by checking the type of the variable that the method is called on
+         * by checking the containing class of the method call
          *
-         * @param methodCall
-         * @return boolean
+         * @param methodCall - the method call to check
+         * @return boolean - true if the method call is an Azure client method call, false otherwise
          */
         private boolean isAzureClient(PsiMethodCallExpression methodCall) {
 
-            PsiReferenceExpression methodExpression = methodCall.getMethodExpression();
-            System.out.println("Method expression: " + methodExpression);
-
-            PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
-            System.out.println("Qualifier expression: " + qualifierExpression);
-
+            // Get the containing class of the method call
             PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
-            System.out.println("Containing class: " + containingClass);
 
             if (containingClass != null) {
                 String className = containingClass.getQualifiedName();
-                System.out.println("Class name: " + className);
                 // Check if the class name belongs to the com.azure namespace or any specific Azure SDK namespace
-                return className != null && className.startsWith("com.azure");
+                return className != null && className.startsWith(RuleConfig.AZURE_PACKAGE_NAME);
             }
-
             return false;
-        }
-
-
-
-        /**
-         * This method loads the regex patterns from the configuration file and compiles them
-         * The method reads the JSON configuration file and extracts the regex patterns
-         * The method then compiles the regex patterns and stores them in a map
-         * The method also extracts the anti-pattern message from the configuration file
-         * and stores it in a constant
-         * @throws IOException
-         */
-        private static void loadAndCompileRegexPatterns() throws IOException {
-            final JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-            final JSONObject kustoCheckObject = jsonObject.getJSONObject(RULE_NAME);
-            final JSONObject regexPatternsJson = kustoCheckObject.getJSONObject(REGEX_PATTERNS_KEY);
-
-            for (String key : regexPatternsJson.keySet()) {
-                String patternStr = regexPatternsJson.getString(key);
-                regexPatterns.put(key, Pattern.compile(patternStr));
-            }
-            ANTI_PATTERN_MESSAGE = kustoCheckObject.getString(ANTI_PATTERN_KEY);
         }
     }
 }

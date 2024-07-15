@@ -1,24 +1,19 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
+
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck.KustoQueriesVisitor;
 
-// Import necessary libraries
-import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiVariable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,12 +21,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -39,7 +30,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * This class tests the KustoQueriesWithTimeIntervalInQueryStringCheck class.
- *
+ * <p>
  * These are some example queries that should be flagged:
  * 1. "String query1 = \"| where timestamp > ago(1d)\";": This query uses the ago function to create a time interval of 1 day. This should be FLAGGED.
  * 2. "String query2 = \"| where timestamp > datetime(2021-01-01)\";": This query compares the timestamp to a specific datetime. This should be FLAGGED.
@@ -49,14 +40,14 @@ import static org.mockito.Mockito.verify;
  * 6. "String query11 = \"| where timestamp > ago(\" + days + \")\";": This query uses a variable to define the time interval. This should be FLAGGED.
  * 7. "String query12 = \"| where timestamp > datetime(\" + date + \")\";": This query uses a variable to define the datetime. This should not be FLAGGED.
  * If these queries are used in a method call to an Azure client, they should be flagged.
- *
+ * <p>
  * eg BlobClient blobAsyncClient = new BlobClientBuilder().buildClient();
- *
- *     String kqlQueryOne = "ExampleTable\n" +
- *         "| where TimeGenerated > ago(1h)" +
- *         "| summarize count() by bin(TimeGenerated, 1h);";
- *
- *     String result = blobAsyncClient.query(kqlQueryOne);
+ * <p>
+ * String kqlQueryOne = "ExampleTable\n" +
+ * "| where TimeGenerated > ago(1h)" +
+ * "| summarize count() by bin(TimeGenerated, 1h);";
+ * <p>
+ * String result = blobAsyncClient.query(kqlQueryOne);
  */
 public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
 
@@ -86,11 +77,28 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
 
         String packageName = "com.azure";
 
+        int numOfInvocations = 1;
+
         // verify register problem with local variable as the query string
-        verifyRegisterProblemWithLocalVariable(queryString, packageName);
+        verifyRegisterProblemWithLocalVariable(queryString, packageName, numOfInvocations);
 
         // verify register problem with polyadic expression as the query string
-        verifyRegisterProblemWithPolyadicExpression(queryString, packageName);
+        verifyRegisterProblemWithPolyadicExpression(queryString, packageName, numOfInvocations);
+    }
+
+    @Test
+    public void testWithWrongPackageName() {
+
+        String packageName = "com.microsoft.azure";
+        String queryString = "datetime(startDate)";
+
+        int numOfInvocations = 0;
+
+        // verify register problem with local variable as the query string
+        verifyRegisterProblemWithLocalVariable(queryString, packageName, numOfInvocations);
+
+        // verify register problem with polyadic expression as the query string
+        verifyRegisterProblemWithPolyadicExpression(queryString, packageName, numOfInvocations);
     }
 
     /**
@@ -108,6 +116,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
 
     /**
      * Create a visitor by calling the buildVisitor method of KustoQueriesWithTimeIntervalInQueryStringCheck
+     *
      * @return PsiElementVisitor
      */
     PsiElementVisitor createVisitor() {
@@ -120,7 +129,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
     /**
      * This method tests the registerProblem method with a local variable as the query string
      */
-    void verifyRegisterProblemWithLocalVariable(String queryString, String packageName) {
+    void verifyRegisterProblemWithLocalVariable(String queryString, String packageName, int numOfInvocations) {
 
         PsiLocalVariable variable = mock(PsiLocalVariable.class);
         PsiLiteralExpression initializer = mock(PsiLiteralExpression.class);
@@ -133,10 +142,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         PsiExpression[] arguments = new PsiExpression[]{argument};
         PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
         PsiVariable resolvedElement = mock(PsiVariable.class);
-        PsiElement resolvedElementTwo = mock(PsiElement.class);
         PsiReferenceExpression qualifierExpression = mock(PsiReferenceExpression.class);
-        PsiVariable resolvedVariable = mock(PsiVariable.class);
-        PsiType type = mock(PsiType.class);
 
         // stubs for handle local variable method
         when(variable.getInitializer()).thenReturn(initializer);
@@ -166,25 +172,17 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         mockVisitor.visitElement(methodCall);
 
         // Verify that the problem was registered correctly for the method call
-        verify(mockHolder, times(1)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
     }
 
-    void verifyRegisterProblemWithPolyadicExpression(String queryString, String packageName) {
+    void verifyRegisterProblemWithPolyadicExpression(String queryString, String packageName, int numOfInvocations) {
 
         PsiPolyadicExpression polyadicExpression = mock(PsiPolyadicExpression.class);
-        PsiReferenceExpression operand = mock(PsiReferenceExpression.class);
-//        PsiExpression[] operands = new PsiExpression[]{operand};
-        PsiVariable resolvedVariable = mock(PsiVariable.class);
         PsiExpression initializer = mock(PsiExpression.class);
-        PsiElementFactory elementFactory = mock(PsiElementFactory.class);
-        Project project = mock(Project.class);
-        JavaPsiFacade javaPsiFacade = mock(JavaPsiFacade.class);
-        PsiExpression newExpression = mock(PsiExpression.class);
         PsiLocalVariable parentElement = mock(PsiLocalVariable.class);
         PsiClass containingClass = mock(PsiClass.class);
 
         // stubs for handlePolyadicExpression method
-//        when(polyadicExpression.copy()).thenReturn(polyadicExpression);
         when(polyadicExpression.getText()).thenReturn(queryString);
 
         // stubs for checkExpression method
@@ -199,7 +197,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
         PsiVariable resolvedElement = mock(PsiVariable.class);
         PsiReferenceExpression qualifierExpression = mock(PsiReferenceExpression.class);
-        PsiType type = mock(PsiType.class);
 
         // stubs for handleMethodCall method
         when(methodCall.getArgumentList()).thenReturn(argumentList);
@@ -220,6 +217,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         mockVisitor.visitElement(methodCall);
 
         // Verify that the problem was registered correctly for the method call
-        verify(mockHolder, times(1)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
+        verify(mockHolder, times(numOfInvocations)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
     }
 }
