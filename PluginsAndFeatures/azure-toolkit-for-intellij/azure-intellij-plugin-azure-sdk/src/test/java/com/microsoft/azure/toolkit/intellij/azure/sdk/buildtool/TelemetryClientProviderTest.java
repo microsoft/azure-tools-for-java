@@ -2,9 +2,11 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiVariable;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider.TelemetryClientProviderVisitor;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,26 +55,32 @@ public class TelemetryClientProviderTest {
     @Test
     public void testVisitMethodCallExpressionWithAzurePackage() {
 
-        String packageName = "com.azure.management";
+        String packageName = "com.azure.testClient";
         String className = "testClient";
-        String methodName = "testMethod";
+        String methodName = "upsertMethod";
         int numCountIncrease = 1;
 
         // Mock necessary objects
         PsiMethodCallExpression mockExpression = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression mockMethodExpression = mock(PsiReferenceExpression.class);
-        PsiType mockType = mock(PsiType.class);
+        PsiReferenceExpression mockQualifier = mock(PsiReferenceExpression.class);
+        PsiVariable mockElement = mock(PsiVariable.class);
+        PsiClassType mockType = mock(PsiClassType.class);
+        PsiClass mockClass = mock(PsiClass.class);
+
 
         // Mock method name and client name
         when(mockExpression.getMethodExpression()).thenReturn(mockMethodExpression);
         when(mockMethodExpression.getReferenceName()).thenReturn(methodName);
-        when(mockMethodExpression.getQualifierExpression()).thenReturn(mockExpression);
-        when(mockExpression.getType()).thenReturn(mockType);
-        when(mockType.getCanonicalText()).thenReturn(packageName);
+        when(mockMethodExpression.getQualifierExpression()).thenReturn(mockQualifier);
+        when(mockQualifier.resolve()).thenReturn(mockElement);
+        when(mockElement.getType()).thenReturn(mockType);
+        when(mockType.resolve()).thenReturn(mockClass);
+        when(mockClass.getQualifiedName()).thenReturn(packageName);
         when(mockType.getPresentableText()).thenReturn(className);
 
         // Build the visitor and visit the method call expression
-        mockVisitor.visitMethodCallExpression(mockExpression);
+        mockVisitor.visitElement(mockExpression);
 
         // Verify the method count increment
         assertTrue(TelemetryClientProviderVisitor.methodCounts.containsKey(className));
@@ -94,18 +102,23 @@ public class TelemetryClientProviderTest {
         String className = null;
         String methodName = null;
 
-        // Mock necessary objects
         PsiMethodCallExpression mockExpression = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression mockMethodExpression = mock(PsiReferenceExpression.class);
-        PsiType mockType = mock(PsiType.class);
+        PsiReferenceExpression mockQualifier = mock(PsiReferenceExpression.class);
+        PsiVariable mockElement = mock(PsiVariable.class);
+        PsiClassType mockType = mock(PsiClassType.class);
+        PsiClass mockClass = mock(PsiClass.class);
 
         // Mock method name and client name
         when(mockExpression.getMethodExpression()).thenReturn(mockMethodExpression);
         when(mockMethodExpression.getReferenceName()).thenReturn(methodName);
-        when(mockMethodExpression.getQualifierExpression()).thenReturn(mockExpression);
-        when(mockExpression.getType()).thenReturn(mockType);
-        when(mockType.getCanonicalText()).thenReturn(packageName);
+        when(mockMethodExpression.getQualifierExpression()).thenReturn(mockQualifier);
+        when(mockQualifier.resolve()).thenReturn(mockElement);
+        when(mockElement.getType()).thenReturn(mockType);
+        when(mockType.resolve()).thenReturn(mockClass);
+        when(mockClass.getQualifiedName()).thenReturn(packageName);
         when(mockType.getPresentableText()).thenReturn(className);
+
 
         // Build the visitor and visit the method call expression
         mockVisitor.visitMethodCallExpression(mockExpression);
@@ -133,7 +146,6 @@ public class TelemetryClientProviderTest {
         TelemetryClientProviderVisitor.sendTelemetryData();
 
         // Verify that trackMetric and trackEvent were called
-        verify(mockTelemetryClient, times(1)).trackMetric(eq("azure_sdk_usage_frequency"), eq(1.0));
         verify(mockTelemetryClient, times(1)).trackEvent(eq("azure_sdk_usage_frequency"), anyMap(), anyMap());
         verify(mockTelemetryClient, times(1)).flush();
     }

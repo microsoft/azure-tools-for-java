@@ -4,12 +4,21 @@
     <depends>com.intellij.modules.java</depends>
 
     <actions>
-            <action
-                    class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
-                    id="AzSdkHelpAction"
-                    text="Ask Azure SDK Help">
-                <add-to-group group-id="ToolsMenu" anchor="last" />
-            </action>
+        <action
+                class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
+                id="AzSdkHelpAction"
+                text="Ask Azure SDK Help">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+
+        <action class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryToggleAction"
+                id="TelemetryToggleAction"
+                text="Enable Telemetry"
+                description="Toggle Telemetry">
+            <add-to-group group-id="ProblemsView.ToolWindow.Toolbar" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift T"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
