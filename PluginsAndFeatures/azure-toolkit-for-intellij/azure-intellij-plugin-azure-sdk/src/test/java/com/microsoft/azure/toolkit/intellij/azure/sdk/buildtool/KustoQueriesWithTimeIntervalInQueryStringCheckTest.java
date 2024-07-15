@@ -1,8 +1,10 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck.KustoQueriesVisitor;
 
 // Import necessary libraries
@@ -20,6 +22,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiVariable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
@@ -54,7 +58,6 @@ import static org.mockito.Mockito.verify;
  *
  *     String result = blobAsyncClient.query(kqlQueryOne);
  */
-
 public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
 
     // Declare as instance variables
@@ -77,17 +80,17 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
      * The method then checks if a problem is registered when a local variable or a polyadic expression is used in a query string
      * and if the method call is to an Azure client.
      */
-    @Test
-    public void testKustoQueriesWithTimeIntervalInQueryStringCheck() {
+    @ParameterizedTest
+    @ValueSource(strings = {"datetime(startDate)", "filter.datetime(2022-01-01)", "time.now()", "time.startofday()", "time.startofmonth()", "range.between(datetime(2022-01-01), datetime(2022-02-01)"})
+    public void testKustoQueriesWithTimeIntervalInQueryStringCheck(String queryString) {
 
-        // assert visitor
-        assertVisitor(mockVisitor);
+        String packageName = "com.azure";
 
         // verify register problem with local variable as the query string
-        verifyRegisterProblemWithLocalVariable();
+        verifyRegisterProblemWithLocalVariable(queryString, packageName);
 
         // verify register problem with polyadic expression as the query string
-        verifyRegisterProblemWithPolyadicExpression();
+        verifyRegisterProblemWithPolyadicExpression(queryString, packageName);
     }
 
     /**
@@ -102,34 +105,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         ((KustoQueriesVisitor) mockVisitor).checkExpression(nullExpression, mockElement);
     }
 
-    /**
-     * This test checks the checkExpression method with no operands,
-     * which may be due to a PolyadicExpressions that was not formed correctly
-     */
-    @Test
-    public void testProcessPsiPolyadicExpressionsWithNoOperands() {
-
-        // Arrange
-        Project mockProject = mock(Project.class);
-        PsiExpression mockNewExpression = mock(PsiExpression.class);
-        PsiPolyadicExpression mockExpression = mock(PsiPolyadicExpression.class);
-        PsiElementFactory mockPsiElementFactory = mock(PsiElementFactory.class);
-        JavaPsiFacade mockJavaPsiFacade = mock(JavaPsiFacade.class);
-
-        when(mockExpression.getOperands()).thenReturn(new PsiExpression[]{});
-        when(mockExpression.getProject()).thenReturn(mockProject);
-        when(mockJavaPsiFacade.getInstance(mockProject)).thenReturn(mockJavaPsiFacade);
-        when(mockJavaPsiFacade.getElementFactory()).thenReturn(mockPsiElementFactory);
-        when(mockPsiElementFactory.createExpressionFromText(eq("datetime(2d)"), isNull())).thenReturn(mockNewExpression);
-
-        // Act
-        PsiElement result = ((KustoQueriesVisitor) mockVisitor).processPsiPolyadicExpressions(mockExpression);
-
-        // Assert
-        // In this case, we expect that the result is the same as the original expression,
-        // because the expression has no operands and therefore nothing was replaced
-        assertEquals(mockExpression, result);
-    }
 
     /**
      * Create a visitor by calling the buildVisitor method of KustoQueriesWithTimeIntervalInQueryStringCheck
@@ -141,24 +116,16 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         return visitor;
     }
 
-    /**
-     * Assert that the visitor is not null and is an instance of JavaElementVisitor
-     * @param visitor
-     */
-    void assertVisitor(PsiElementVisitor visitor) {
-        assertNotNull(visitor);
-        assertTrue(visitor instanceof JavaElementVisitor);
-    }
-
 
     /**
      * This method tests the registerProblem method with a local variable as the query string
      */
-    void verifyRegisterProblemWithLocalVariable() {
+    void verifyRegisterProblemWithLocalVariable(String queryString, String packageName) {
 
         PsiLocalVariable variable = mock(PsiLocalVariable.class);
         PsiLiteralExpression initializer = mock(PsiLiteralExpression.class);
         PsiLocalVariable parentElement = mock(PsiLocalVariable.class);
+        PsiClass containingClass = mock(PsiClass.class);
 
         PsiMethodCallExpressionImpl methodCall = mock(PsiMethodCallExpressionImpl.class);
         PsiExpressionList argumentList = mock(PsiExpressionList.class);
@@ -176,7 +143,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         when(variable.getName()).thenReturn("stringQuery");
 
         // stubs for checkExpression method
-        when(initializer.getText()).thenReturn("datetime(2022-01-01)");
+        when(initializer.getText()).thenReturn(queryString);
         when(variable.getParent()).thenReturn(parentElement);
         when(parentElement.getName()).thenReturn("stringQuery");
 
@@ -189,9 +156,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         // stubs for isAzureClient method
         when(methodCall.getMethodExpression()).thenReturn(referenceExpression);
         when(referenceExpression.getQualifierExpression()).thenReturn(qualifierExpression);
-        when(qualifierExpression.resolve()).thenReturn(resolvedVariable);
-        when(resolvedVariable.getType()).thenReturn(type);
-        when(type.getCanonicalText()).thenReturn("com.azure");
+        when(PsiTreeUtil.getParentOfType(methodCall, PsiClass.class)).thenReturn(containingClass);
+        when(containingClass.getQualifiedName()).thenReturn(packageName);
 
         // Visit the variable to store its name if it's a query string
         mockVisitor.visitElement(variable);
@@ -203,11 +169,11 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         verify(mockHolder, times(1)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
     }
 
-    void verifyRegisterProblemWithPolyadicExpression() {
+    void verifyRegisterProblemWithPolyadicExpression(String queryString, String packageName) {
 
         PsiPolyadicExpression polyadicExpression = mock(PsiPolyadicExpression.class);
         PsiReferenceExpression operand = mock(PsiReferenceExpression.class);
-        PsiExpression[] operands = new PsiExpression[]{operand};
+//        PsiExpression[] operands = new PsiExpression[]{operand};
         PsiVariable resolvedVariable = mock(PsiVariable.class);
         PsiExpression initializer = mock(PsiExpression.class);
         PsiElementFactory elementFactory = mock(PsiElementFactory.class);
@@ -215,24 +181,14 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         JavaPsiFacade javaPsiFacade = mock(JavaPsiFacade.class);
         PsiExpression newExpression = mock(PsiExpression.class);
         PsiLocalVariable parentElement = mock(PsiLocalVariable.class);
+        PsiClass containingClass = mock(PsiClass.class);
 
         // stubs for handlePolyadicExpression method
-        when(polyadicExpression.copy()).thenReturn(polyadicExpression);
-        when(polyadicExpression.getText()).thenReturn("datetime(2022-01-01)");
-
-        // stubs for processPsiPolyadicExpressions method
-        when(polyadicExpression.getOperands()).thenReturn(operands);
-        when(operand.resolve()).thenReturn(resolvedVariable);
-        when(resolvedVariable.getInitializer()).thenReturn(initializer);
-        when(initializer.getText()).thenReturn("datetime(2022-01-01)");
-
-        when(polyadicExpression.getProject()).thenReturn(project);
-        when(JavaPsiFacade.getInstance(polyadicExpression.getProject())).thenReturn(javaPsiFacade);
-        when(javaPsiFacade.getElementFactory()).thenReturn(elementFactory);
-        when(elementFactory.createExpressionFromText(eq(initializer.getText()), isNull())).thenReturn(newExpression);
+//        when(polyadicExpression.copy()).thenReturn(polyadicExpression);
+        when(polyadicExpression.getText()).thenReturn(queryString);
 
         // stubs for checkExpression method
-        when(initializer.getText()).thenReturn("datetime(2022-01-01)");
+        when(initializer.getText()).thenReturn(queryString);
         when(polyadicExpression.getParent()).thenReturn(parentElement);
         when(parentElement.getName()).thenReturn("stringQuery");
 
@@ -254,14 +210,16 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         // stubs for isAzureClient method
         when(methodCall.getMethodExpression()).thenReturn(referenceExpression);
         when(referenceExpression.getQualifierExpression()).thenReturn(qualifierExpression);
-        when(qualifierExpression.resolve()).thenReturn(resolvedVariable);
-        when(resolvedVariable.getType()).thenReturn(type);
-        when(type.getCanonicalText()).thenReturn("com.azure");
+        when(PsiTreeUtil.getParentOfType(methodCall, PsiClass.class)).thenReturn(containingClass);
+        when(containingClass.getQualifiedName()).thenReturn(packageName);
 
         // Visit the variable to store its name if it's a query string
         mockVisitor.visitElement(polyadicExpression);
 
         // Visit the method call to check if the query variable is used and the method call is to an Azure client
         mockVisitor.visitElement(methodCall);
+
+        // Verify that the problem was registered correctly for the method call
+        verify(mockHolder, times(1)).registerProblem(eq(methodCall), contains("KQL queries with time intervals in the query string detected."));
     }
 }

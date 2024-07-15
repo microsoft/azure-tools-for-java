@@ -5,18 +5,25 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -62,7 +69,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
      * Processing of polyadic expressions is also done to replace the variables with their values in the query string
      * before checking for the anti-patterns.
      */
-    class KustoQueriesVisitor extends JavaElementVisitor {
+    static class KustoQueriesVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
         private final boolean isOnTheFly; // boolean to indicate if the inspection is done on the fly
@@ -156,10 +163,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * @param polyadicExpression
          */
         private void handlePolyadicExpression(PsiPolyadicExpression polyadicExpression) {
-
             // Process the polyadic expression to replace the variables with their values
-            PsiElement processedElement = processPsiPolyadicExpressions(polyadicExpression.copy());
-            PsiExpression initializer = processedElement instanceof PsiPolyadicExpression ? (PsiPolyadicExpression) processedElement : null;
+            PsiExpression initializer = polyadicExpression instanceof PsiPolyadicExpression ? polyadicExpression : null;
             checkExpression(initializer, polyadicExpression);
         }
 
@@ -188,13 +193,19 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 }
                 PsiVariable variable = (PsiVariable) resolvedElement;
                 String variableName = variable.getName();
-
-                // check if the variable name is in the list of time interval parameters
+                     // check if the variable name is in the list of time interval parameters
                 // if the variable name is in the list, check if the method call is an Azure client method call
                 if (!(timeIntervalParameters.contains(variableName))) {
                     continue;
                 }
-                if (isAzureClient(methodCall)) {
+
+                // case methodcall to PsiMethodCallExpression
+                PsiMethodCallExpression methodCallExpression = methodCall;
+
+                System.out.println("methodCallExpression: " + methodCallExpression);
+//                System.out.println("methodCall: " + methodCall.getMethodExpression().getText());
+                if (isAzureClient(methodCallExpression)) {
+                    System.out.println("Registering problem for method call: " + methodCall);
                     holder.registerProblem(methodCall, "KQL queries with time intervals in the query string detected.");
                 }
             }
@@ -217,71 +228,25 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             boolean foundAntiPattern = regexPatterns.values().stream()
                     .anyMatch(pattern -> pattern.matcher(text).find());
 
+
             // If an anti-pattern is detected, register a problem
             if (foundAntiPattern) {
 
+                System.out.println("Found anti-pattern in expression: " + text);
+                System.out.println("Element: " + element);
+                System.out.println("ElementText: " + element.getText());
+
                 PsiElement parentElement = element.getParent();
-                PsiLocalVariable variable = (PsiLocalVariable) parentElement;
-                String variableName = variable.getName();
 
-                timeIntervalParameters.add(variableName);
-            }
-        }
+                System.out.println("Parent element: " + parentElement);
 
-        /**
-         * This method processes the polyadic expressions to replace the variables with their values
-         *
-         * @param element
-         * @return PsiElement
-         */
-        public PsiElement processPsiPolyadicExpressions(PsiElement element) {
-
-            // Extract the operands from the polyadic expression
-            PsiPolyadicExpression expression = (PsiPolyadicExpression) element;
-
-            PsiExpression[] operands = expression.getOperands();
-
-            // Iterate through the operands
-            for (int i = 0; i < operands.length; i++) {
-                PsiExpression operand = operands[i];
-
-                // PsiReferenceExpressions are used to represent references to variables
-                if (!(operand instanceof PsiReferenceExpression)) {
-                    continue;
-                }
-                PsiReferenceExpression reference = (PsiReferenceExpression) operand;
-
-                PsiElement resolved = reference.resolve();
-
-                if (!(resolved instanceof PsiVariable)) {
-                    continue;
-                }
-                // Extract the value of the variable
-                // Resolve means to find the declaration of the variable
-                // Initializer is the value assigned to the variable
-                PsiVariable variable = (PsiVariable) resolved;
-
-                PsiExpression initializer = variable.getInitializer();
-
-                if (initializer == null) {
-                    continue;
-                }
-                // Initializer.getText() returns the value of the variable in string format
-                // Create a new expression from the variable value and replace the variable with the value
-                String variableValue = initializer.getText();
-
-                PsiElementFactory factory = JavaPsiFacade.getInstance(element.getProject()).getElementFactory();
-                PsiExpression newExpression = factory.createExpressionFromText(variableValue, null);
-                if (newExpression != null) {
-                    operands[i] = newExpression;
+                if (parentElement instanceof PsiLocalVariable) {
+                    PsiLocalVariable variable = (PsiLocalVariable) parentElement;
+                    String variableName = variable.getName();
+                    timeIntervalParameters.add(variableName);
+                    System.out.println("Time interval parameters2: " + timeIntervalParameters);
                 }
             }
-            // Create a new expression from the operands after replacing the variables with their values
-            // Return the new expression if it is not null, else return the original element
-            PsiElementFactory factory = JavaPsiFacade.getInstance(element.getProject()).getElementFactory();
-            String newExpressionText = StringUtil.join(operands, PsiElement::getText, "+");
-            PsiExpression newExpression = factory.createExpressionFromText(newExpressionText, null);
-            return newExpression != null ? newExpression : element;
         }
 
 
@@ -292,26 +257,28 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * @param methodCall
          * @return boolean
          */
-        private boolean isAzureClient(PsiMethodCallExpressionImpl methodCall) {
+        private boolean isAzureClient(PsiMethodCallExpression methodCall) {
 
-            // Get the qualifier expression of the method call
-            PsiExpression qualifierExpression = methodCall.getMethodExpression().getQualifierExpression();
+            PsiReferenceExpression methodExpression = methodCall.getMethodExpression();
+            System.out.println("Method expression: " + methodExpression);
 
-            // If the qualifier expression is a reference expression, resolve the reference
-            if (qualifierExpression instanceof PsiReferenceExpression) {
-                PsiReferenceExpression referenceExpression = (PsiReferenceExpression) qualifierExpression;
-                PsiElement resolvedElement = referenceExpression.resolve();
+            PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
+            System.out.println("Qualifier expression: " + qualifierExpression);
 
-                // If the resolved element is a variable, check if the type of the variable is an Azure client type
-                if (resolvedElement instanceof PsiVariable) {
-                    PsiVariable variable = (PsiVariable) resolvedElement;
-                    PsiType variableType = variable.getType();
+            PsiClass containingClass = PsiTreeUtil.getParentOfType(methodCall, PsiClass.class);
+            System.out.println("Containing class: " + containingClass);
 
-                    return variableType.getCanonicalText().startsWith("com.azure");
-                }
+            if (containingClass != null) {
+                String className = containingClass.getQualifiedName();
+                System.out.println("Class name: " + className);
+                // Check if the class name belongs to the com.azure namespace or any specific Azure SDK namespace
+                return className != null && className.startsWith("com.azure");
             }
+
             return false;
         }
+
+
 
         /**
          * This method loads the regex patterns from the configuration file and compiles them
