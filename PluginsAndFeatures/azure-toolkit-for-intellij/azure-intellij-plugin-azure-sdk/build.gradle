@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation group: 'org.mockito', name: 'mockito-core'
-    implementation group: 'org.json', name: 'json', version: '20240303'
+    implementation group: 'com.azure', name: 'azure-json', version: '1.1.0'
     implementation 'com.microsoft.azure:applicationinsights-core:2.6.2'
     implementation 'com.microsoft.azure:applicationinsights-web:2.6.2'
 }

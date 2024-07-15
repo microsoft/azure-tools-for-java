@@ -65,7 +65,7 @@ public class TelemetryClientProvider extends LocalInspectionTool {
     /**
      * This class is a visitor that visits the method calls in the code and tracks the method calls.
      */
-    public static class TelemetryClientProviderVisitor extends JavaElementVisitor {
+    static class TelemetryClientProviderVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
         private static boolean running = false; // Flag to indicate if the telemetry service is running
@@ -86,6 +86,18 @@ public class TelemetryClientProvider extends LocalInspectionTool {
         // Create a logger object
         private static final Logger LOGGER = Logger.getLogger(TelemetryClientProvider.class.getName());
 
+        // Create a RuleConfig object
+        private static final RuleConfig ruleConfig;
+
+
+        static {
+            final String ruleName = "TelemetryClientProvider";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
+
+            // Get the RuleConfig object for the rule
+            // There is no rule associated with this inspection, so the ruleConfig is set to an empty RuleConfig object
+            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+        }
 
         /**
          * This constructor is used to create a visitor for the inspection
@@ -177,9 +189,6 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             }
             String className = psiClass.getQualifiedName();
 
-            // return the last part of the qualified name as the client name
-            // eg. com.azure.storage.blob.BlobServiceClient -> BlobServiceClient
-            // without string manipulation
             if (isAzureSdkClient(className)) {
                 return classType.getPresentableText();
             }
@@ -195,7 +204,7 @@ public class TelemetryClientProvider extends LocalInspectionTool {
          * @return A boolean indicating if the class name is an Azure SDK client.
          */
         private boolean isAzureSdkClient(String className) {
-            return className != null && className.startsWith("com.azure.") && className.endsWith("Client");
+            return className != null && className.startsWith(RuleConfig.AZURE_PACKAGE_NAME) && className.endsWith("Client");
         }
 
         /**
