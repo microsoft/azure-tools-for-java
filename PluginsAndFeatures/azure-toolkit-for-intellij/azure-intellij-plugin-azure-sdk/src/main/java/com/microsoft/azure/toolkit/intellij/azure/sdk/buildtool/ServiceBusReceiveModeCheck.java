@@ -29,6 +29,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
      * Build the visitor for the inspection. This visitor will be used to traverse the PSI tree.
      *
      * @param holder The holder for the problems found
+     * @param isOnTheFly Whether the inspection is on the fly -- not in use
      * @return The visitor for the inspection. This is not used anywhere else in the code.
      */
     @NotNull
@@ -47,14 +48,14 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
     static class ServiceBusReceiveModeVisitor extends JavaElementVisitor {
 
         // Define the holder for the problems found
-        private static ProblemsHolder holder;
+        private final ProblemsHolder holder;
 
         // Define constants for string literals
-        private static final RuleConfig ruleConfig;
+        private static final RuleConfig RULE_CONFIG;
         private static final String SUGGESTION;
         private static final List<String> METHODS_TO_CHECK;
         private static final List<String> CLIENTS_TO_CHECK;
-        private static boolean SKIP_WHOLE_RULE;
+        private static final boolean SKIP_WHOLE_RULE;
 
         private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiveModeCheck.class.getName());
 
@@ -63,18 +64,20 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            METHODS_TO_CHECK = RULE_CONFIG.getMethodsToCheck();
+            CLIENTS_TO_CHECK = RULE_CONFIG.getClientsToCheck();
+            SUGGESTION = RULE_CONFIG.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
 
-            METHODS_TO_CHECK = ruleConfig.getMethodsToCheck();
-            CLIENTS_TO_CHECK = ruleConfig.getClientsToCheck();
-            SUGGESTION = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
+
         }
 
         /**
          * Constructor for the visitor
          *
          * @param holder The holder for the problems found
+         * @param isOnTheFly Whether the inspection is on the fly -- not in use
          */
         public ServiceBusReceiveModeVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
@@ -165,13 +168,13 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
                 String methodName = methodExpression.getReferenceName();
 
                 // Check if the method name is the method to check
-                // "receiveMode is the first method to check"
-
-                if (METHODS_TO_CHECK.get(0).equals(methodName)) {
+                if (!(METHODS_TO_CHECK.contains(methodName))) {
+                    return;
+                }
+                if ("receiveMode".equals(methodName)) {
                     isReceiveModePeekLock = receiveModePeekLockCheck((PsiMethodCallExpression) qualifier);
                 }
-                // "prefetchCount is the second method to check"
-                else if (METHODS_TO_CHECK.get(1).equals(methodName)) {
+                else if ("prefetchCount".equals(methodName)) {
                     prefetchCountValue = getPrefetchCount((PsiMethodCallExpression) qualifier);
                     prefetchCountMethod = ((PsiMethodCallExpression) qualifier).getMethodExpression().getReferenceNameElement();
                 }
