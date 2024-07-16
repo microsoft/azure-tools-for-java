@@ -13,7 +13,6 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +27,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
     /**
      * Build the visitor for the inspection. This visitor will be used to traverse the PSI tree.
      *
-     * @param holder The holder for the problems found
+     * @param holder     The holder for the problems found
      * @param isOnTheFly Whether the inspection is on the fly -- not in use
      * @return The visitor for the inspection. This is not used anywhere else in the code.
      */
@@ -52,9 +51,6 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
         // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final String SUGGESTION;
-        private static final List<String> METHODS_TO_CHECK;
-        private static final List<String> CLIENTS_TO_CHECK;
         private static final boolean SKIP_WHOLE_RULE;
 
         private static final Logger LOGGER = Logger.getLogger(ServiceBusReceiveModeCheck.class.getName());
@@ -65,21 +61,16 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
             // Get the RuleConfig object for the rule
             RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
-            METHODS_TO_CHECK = RULE_CONFIG.getMethodsToCheck();
-            CLIENTS_TO_CHECK = RULE_CONFIG.getClientsToCheck();
-            SUGGESTION = RULE_CONFIG.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
-
-
+            SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || RULE_CONFIG.getMethodsToCheck().isEmpty();
         }
 
         /**
          * Constructor for the visitor
          *
-         * @param holder The holder for the problems found
+         * @param holder     The holder for the problems found
          * @param isOnTheFly Whether the inspection is on the fly -- not in use
          */
-        public ServiceBusReceiveModeVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        ServiceBusReceiveModeVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
         }
 
@@ -125,7 +116,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
             PsiType clientType = variable.getType();
 
             // Check if the client type is an Azure ServiceBus client
-            if (!clientType.getCanonicalText().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && !CLIENTS_TO_CHECK.contains(clientType.getCanonicalText())) {
+            if (!clientType.getCanonicalText().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && !RULE_CONFIG.getClientsToCheck().contains(clientType.getCanonicalText())) {
                 return;
             }
 
@@ -168,13 +159,12 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
                 String methodName = methodExpression.getReferenceName();
 
                 // Check if the method name is the method to check
-                if (!(METHODS_TO_CHECK.contains(methodName))) {
+                if (!(RULE_CONFIG.getMethodsToCheck().contains(methodName))) {
                     return;
                 }
                 if ("receiveMode".equals(methodName)) {
                     isReceiveModePeekLock = receiveModePeekLockCheck((PsiMethodCallExpression) qualifier);
-                }
-                else if ("prefetchCount".equals(methodName)) {
+                } else if ("prefetchCount".equals(methodName)) {
                     prefetchCountValue = getPrefetchCount((PsiMethodCallExpression) qualifier);
                     prefetchCountMethod = ((PsiMethodCallExpression) qualifier).getMethodExpression().getReferenceNameElement();
                 }
@@ -184,7 +174,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
                 // If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1, register a problem
                 if (prefetchCountValue.isPresent() && prefetchCountValue.getAsInt() > 1 && isReceiveModePeekLock && prefetchCountMethod != null) {
-                    holder.registerProblem(prefetchCountMethod, SUGGESTION);
+                    holder.registerProblem(prefetchCountMethod, RULE_CONFIG.getAntiPatternMessage());
                     return;
                 }
             }

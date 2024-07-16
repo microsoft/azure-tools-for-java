@@ -24,21 +24,29 @@ class RuleConfig {
      * @param servicesToCheck    List of services to check.
      * @param antiPatternMessage AntiPattern message.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage) {
+    RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
         this.antiPatternMessage = antiPatternMessage;
     }
 
-    // Getters
+    /**
+     * This method checks if the rule should be skipped.
+     *
+     * @return True if the rule should be skipped, false otherwise.
+     */
+    boolean skipRuleCheck() {
+        return this == RuleConfig.EMPTY_RULE;
+    }
 
+    // Getters
     /**
      * This method returns the list of methods to check
      *
      * @return List of methods to check
      */
-    public List<String> getMethodsToCheck() {
+    List<String> getMethodsToCheck() {
         return methodsToCheck;
     }
 
@@ -47,7 +55,7 @@ class RuleConfig {
      *
      * @return List of clients to check
      */
-    public List<String> getClientsToCheck() {
+    List<String> getClientsToCheck() {
         return clientsToCheck;
     }
 
@@ -56,7 +64,7 @@ class RuleConfig {
      *
      * @return List of services to check
      */
-    public List<String> getServicesToCheck() {
+    List<String> getServicesToCheck() {
         return servicesToCheck;
     }
 
@@ -65,7 +73,7 @@ class RuleConfig {
      *
      * @return Antipattern message
      */
-    public String getAntiPatternMessage() {
+    String getAntiPatternMessage() {
         return antiPatternMessage;
     }
 }
