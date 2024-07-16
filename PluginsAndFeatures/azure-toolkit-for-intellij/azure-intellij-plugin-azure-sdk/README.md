@@ -109,7 +109,15 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
 
-7. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
+7. #### Use SyncPoller instead of PollerFlux#getSyncPoller()
+
+- **Anti-pattern**: Using `getSyncPoller()` on a `PollerFlux` instance is an anti-pattern.
+- **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an asynchronous polling mechanism to a synchronous one, which should be avoided.
+- **Severity: WARNING**
+- **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred method for synchronous operations.
+  Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
+
+8. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
 
 - **Anti-pattern**: Setting the receive mode as PEEK_LOCK with a high prefetch value (e.g., 50 or 100) in Azure Service
   Bus.
