@@ -45,5 +45,9 @@
     "methods_to_check": "connectionString",
     "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
     "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
+  },
+  "GetSyncPollerOnPollerFluxCheck": {
+    "methods_to_check": "getSyncPoller",
+    "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
   }
 }
