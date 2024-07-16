@@ -118,7 +118,6 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
 
             PsiExpression expression = methodCall.getMethodExpression().getQualifierExpression();
 
-            // Check if the method call is on a reactive type
             if (expression == null) {
                 return false;
             }
