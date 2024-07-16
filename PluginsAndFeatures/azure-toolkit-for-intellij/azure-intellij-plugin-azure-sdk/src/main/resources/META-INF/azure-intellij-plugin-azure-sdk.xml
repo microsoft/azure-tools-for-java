@@ -119,6 +119,20 @@
 
         <localInspection
                 language="JAVA"
+                shortName="GetSyncPollerOnPollerFluxCheck"
+                displayName="GetSyncPoller On Poller Flux Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
                 shortName="ReportTelemetry"
                 displayName="Report Telemetry"
                 groupName="Azure SDK Rules"
