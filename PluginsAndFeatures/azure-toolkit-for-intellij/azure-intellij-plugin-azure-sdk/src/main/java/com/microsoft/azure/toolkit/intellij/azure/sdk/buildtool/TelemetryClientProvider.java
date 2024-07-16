@@ -81,6 +81,8 @@ public class TelemetryClientProvider extends LocalInspectionTool {
         // Create a Project object
         private static Project project;
 
+        // Create a list of prefixes for Azure service method calls
+        // source: https://azure.github.io/azure-sdk/java_introduction.html#service-methods
         private static final List<String> AZURE_METHOD_PREFIXES = Arrays.asList("upsert", "set", "create", "update", "replace", "delete", "add", "get", "list", "upload");
 
         // Create a logger object
@@ -96,6 +98,7 @@ public class TelemetryClientProvider extends LocalInspectionTool {
 
             // Get the RuleConfig object for the rule
             // There is no rule associated with this inspection, so the ruleConfig is set to an empty RuleConfig object
+            // to access RuleConfig.AZURE_PACKAGE_NAME
             ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
         }
 
@@ -106,7 +109,7 @@ public class TelemetryClientProvider extends LocalInspectionTool {
          * @param holder     The ProblemsHolder object that holds the problems found in the code.
          * @param isOnTheFly A boolean that indicates if the inspection is running on the fly. - This is not used in this implementation.
          */
-        public TelemetryClientProviderVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        TelemetryClientProviderVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
 
             // Initialize start telemetry service when project is null

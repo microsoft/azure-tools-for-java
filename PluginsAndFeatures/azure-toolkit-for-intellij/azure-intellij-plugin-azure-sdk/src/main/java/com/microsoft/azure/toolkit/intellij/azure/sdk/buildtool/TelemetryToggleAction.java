@@ -44,6 +44,8 @@ public class TelemetryToggleAction extends AnAction implements DumbAware {
 
     /**
      * This method updates the presentation of the action.
+     * "Presentation of the action" means the UI representation of the action
+     *  It ensures the UI is updated to reflect the current state of the telemetry service.
      * It sets the text of the action to "Toggle Telemetry ON" if the telemetry service is not running.
      * Otherwise, it sets the text of the action to "Toggle Telemetry OFF".
      */
