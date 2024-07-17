@@ -10,6 +10,15 @@
                 text="Ask Azure SDK Help">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+
+        <action class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryToggleAction"
+                id="TelemetryToggleAction"
+                text="Enable Telemetry"
+                description="Toggle Telemetry">
+            <add-to-group group-id="ProblemsView.ToolWindow.Toolbar" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift T"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -134,6 +143,16 @@
             <class>
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck
             </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ReportTelemetry"
+                displayName="Report Telemetry"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider</class>
         </localInspection>
     </extensions>
 </idea-plugin>

@@ -11,7 +11,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Rule Set Integration**: This feature enables users to import and customize rule sets, tailoring the plugin to their
   specific needs.
 - **Telemetry Integration**: This feature connects the plugin to the backend with Application Insights, allowing for
-  efficient data transmission.
+  efficient data transmission. Refer to [configure-telmetry.md](configure-telemetry.md) on details to setup this feature
 - **Azure Toolkit for IntelliJ Integration**: This feature allows the plugin to integrate with the Azure Toolkit for
   IntelliJ, providing extended functionality
 - **Editor Integration**: This feature offers continuous analysis and real-time code suggestions, enhancing the coding
