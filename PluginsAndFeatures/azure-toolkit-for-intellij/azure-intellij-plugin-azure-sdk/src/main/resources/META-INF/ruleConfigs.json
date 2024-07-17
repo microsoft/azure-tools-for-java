@@ -49,5 +49,9 @@
   "GetSyncPollerOnPollerFluxCheck": {
     "methods_to_check": "getSyncPoller",
     "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+  },
+  "UpdateCheckpointAsyncCheck" : {
+    "methods_to_check": ["updateCheckpointAsync", "block", "block(timeout)", "subscribe"]
+
   }
 }
