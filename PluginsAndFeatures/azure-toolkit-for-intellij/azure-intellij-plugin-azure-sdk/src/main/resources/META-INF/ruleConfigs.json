@@ -41,14 +41,29 @@
     "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
     "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   },
-  "ConnectionStringCheck": {
-    "methods_to_check": "connectionString",
-    "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
-    "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
-  },
   "GetSyncPollerOnPollerFluxCheck": {
     "methods_to_check": "getSyncPoller",
     "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+  },
+  "ServiceBusReceiveModeCheck": {
+    "clients_to_check": [
+      "ServiceBusReceiverClient",
+      "ServiceBusReceiverAsyncClient",
+      "ServiceBusProcessorClient"
+    ],
+    "methods_to_check": ["receiveMode","prefetchCount"],
+    "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
+  },
+  "DetectDiscouragedAPIUsageCheck" : {
+    "ConnectionStringCheck": {
+      "methods_to_check": "connectionString",
+      "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
+      "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
+    },
+    "GetCompletionsInChatApplicationsCheck": {
+      "methods_to_check": "getCompletions",
+      "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
+    }
   },
   "UpdateCheckpointAsyncCheck" : {
     "methods_to_check": ["updateCheckpointAsync", "block", "block(timeout)", "subscribe"]
