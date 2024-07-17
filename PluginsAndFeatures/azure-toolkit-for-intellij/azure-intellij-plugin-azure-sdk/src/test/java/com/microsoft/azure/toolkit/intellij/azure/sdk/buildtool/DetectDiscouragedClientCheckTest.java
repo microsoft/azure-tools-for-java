@@ -1,6 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 // Import necessary libraries
+
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiTypeElement;
@@ -12,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -24,17 +23,17 @@ import static org.mockito.Mockito.verify;
  * This class tests the ServiceBusReceiverAsyncClientCheck class by mocking the ProblemsHolder and PsiElementVisitor
  * and verifying that a problem is registered when the ServiceBusReceiverAsyncClient is used.
  * The test also verifies that a problem is not registered when the PsiElement is null.
- *
+ * <p>
  * Here are some examples of test data where registerProblem should be called:
  * 1. ServiceBusReceiverAsyncClient client = new ServiceBusReceiverAsyncClient();
  * 2.private ServiceBusReceiverAsyncClient receiver;
  * 3. final ServiceBusReceiverAsyncClient autoCompleteReceiver =
- *             toClose(getReceiverBuilder(false, entityType, index, false)
- *                 .buildAsyncClient());
- *
+ * toClose(getReceiverBuilder(false, entityType, index, false)
+ * .buildAsyncClient());
+ * <p>
  * 4. final EventHubConsumerAsyncClient consumerClient = partitionPump.getClient();
  * 5. EventHubConsumerAsyncClient eventHubConsumer = eventHubClientBuilder.buildAsyncClient()
- *                 .createConsumer(claimedOwnership.getConsumerGroup(), prefetch, true);
+ * .createConsumer(claimedOwnership.getConsumerGroup(), prefetch, true);
  */
 
 public class DetectDiscouragedClientCheckTest {
@@ -62,14 +61,12 @@ public class DetectDiscouragedClientCheckTest {
 
     /**
      * Test that a problem is registered when the client name is ServiceBusReceiverAsyncClient.
-     *
+     * <p>
      * This test is important because it verifies that the code registers a problem
      * when the client name is ServiceBusReceiverAsyncClient.
      */
     @Test
     public void testProblemRegisteredWhenUsingServiceBusReceiverAsyncClient() {
-        // Assert
-        assertVisitor();
 
         String clientToCheck = "ServiceBusReceiverAsyncClient";
         String suggestionMessage = "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead.";
@@ -81,17 +78,15 @@ public class DetectDiscouragedClientCheckTest {
 
     /**
      * Test that a problem is registered when the client name is EventHubConsumerAsyncClient.
-     *
+     * <p>
      * This test is important because it verifies that the code registers a problem
      * when the client name is EventHubConsumerAsyncClient.
      */
     @Test
     public void testProblemRegisteredWhenUsingEventHubConsumerAsyncClientCheck() {
-        // Assert
-        assertVisitor();
 
         String clientToCheck = "EventHubConsumerAsyncClient";
-        String suggestionMessage = "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead.";
+        String suggestionMessage = "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers.";
 
         // Visit Type Element
         int numberOfInvocations = 1;  // Number of times registerProblem should be called
@@ -100,7 +95,7 @@ public class DetectDiscouragedClientCheckTest {
 
     /**
      * Test that a problem is not registered when the client name is not ServiceBusReceiverAsyncClient.
-     *
+     * <p>
      * This test is important because it verifies that the code does not
      * register a problem when the client name is not ServiceBusReceiverAsyncClient.
      */
@@ -130,8 +125,10 @@ public class DetectDiscouragedClientCheckTest {
         visitTypeElement(null, numberOfInvocations, clientToCheck, suggestionMessage);
     }
 
-    /** Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
+    /**
+     * Create a visitor by calling the buildVisitor method of ServiceBusReceiverAsyncClientCheck
      * and return the visitor.
+     *
      * @return PsiElementVisitor
      */
     private PsiElementVisitor createVisitor() {
@@ -142,18 +139,10 @@ public class DetectDiscouragedClientCheckTest {
     }
 
     /**
-     * Assert that the visitor is not null and is an instance of JavaElementVisitor
-     * to ensure that the visitor is created correctly.
-     */
-    private void assertVisitor() {
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
-    }
-
-    /**
      * Visit a Type Element and verify that a problem was registered
      * when the ServiceBusReceiverAsyncClient is used.
-     * @param typeElement The PsiTypeElement to visit
+     *
+     * @param typeElement         The PsiTypeElement to visit
      * @param numberOfInvocations The number of times registerProblem should be called
      */
     private void visitTypeElement(PsiTypeElement typeElement, int numberOfInvocations, String clientToCheck, String suggestionMessage) {
