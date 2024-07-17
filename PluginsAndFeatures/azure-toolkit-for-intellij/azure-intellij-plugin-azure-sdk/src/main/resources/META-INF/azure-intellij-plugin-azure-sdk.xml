@@ -41,7 +41,7 @@
         <localInspection
                 language="JAVA"
                 shortName="DetectDiscouragedClientCheck"
-                displayName="Detect Discouraged Client Check check"
+                displayName="Detect discouraged client check"
                 groupName="Azure SDK"
                 enabledByDefault="true"
                 level="WARNING"

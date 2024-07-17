@@ -28,7 +28,7 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
         return new DetectDiscouragedClientVisitor(holder,isOnTheFly);
     }
 
-    public static class DetectDiscouragedClientVisitor extends JavaElementVisitor {
+    static class DetectDiscouragedClientVisitor extends JavaElementVisitor {
 
         // Define the fields for the visitor
         private final boolean isOnTheFly;

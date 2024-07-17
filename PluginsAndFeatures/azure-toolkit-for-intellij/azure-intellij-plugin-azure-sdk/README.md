@@ -23,7 +23,7 @@ The Java Code Quality Analyzer, is a plugin designed to improve the quality of J
 - **Recommendation**: Use APIs that take a length parameter. Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-upload-java) for additional information.
 
 
-### 2. Use These Encouraged Clients Instead of Their Corresponding Discouraged Clients
+### 2. Use these encouraged clients instead of their corresponding discouraged clients
 
 #### a. Use **`ServiceBusProcessorClient`** instead of **`ServiceBusReceiverAsyncClient`**
 #### b. Use **`EventProcessorClient`** instead of **`EventHubConsumerAsyncClient`**
