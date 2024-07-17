@@ -64,7 +64,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
         private final ProblemsHolder holder;
 
         // // Define constants for string literals
-        private static final RuleConfig ruleConfig;
+        private static final RuleConfig RULE_CONFIG;
         private static final String ANTI_PATTERN_MESSAGE;
         private static final Map<String, Pattern> REGEX_PATTERNS = new HashMap<>();
         private static boolean SKIP_WHOLE_RULE;
@@ -74,17 +74,17 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            Map<String, String> regexPatterns = ruleConfig.getMappedItemsToCheck();
-            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
+            Map<String, String> regexPatterns = RULE_CONFIG.getMappedItemsToCheck();
+            ANTI_PATTERN_MESSAGE = RULE_CONFIG.getAntiPatternMessage();
 
             for (String key : regexPatterns.keySet()) {
                 String patternStr = regexPatterns.get(key);
                 REGEX_PATTERNS.put(key, Pattern.compile(patternStr));
             }
 
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
         }
 
         // empty list to store time interval parameter names
