@@ -97,8 +97,35 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
 
+6. #### Use SyncPoller instead of PollerFlux#getSyncPoller()
 
-6. #### Use These Encouraged Alternatives Instead of Their Corresponding Discouraged APIs
+- **Anti-pattern**: Using `getSyncPoller()` on a `PollerFlux` instance is an anti-pattern.
+- **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an asynchronous polling mechanism to a synchronous one, which should be avoided.
+- **Severity: WARNING**
+- **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred method for synchronous operations.
+  Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
+
+7. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
+
+- **Anti-pattern**: Setting the receive mode as PEEK_LOCK with a high prefetch value (e.g., 50 or 100) in Azure Service
+  Bus.
+- **Severity: WARNING**
+- **Issue**:
+    1. **Suboptimal Performance:** A high prefetch value in PEEK_LOCK mode can result in suboptimal performance, as one
+       client
+       locks all prefetched messages, potentially leading to processing bottlenecks.
+    2. **Message Lock Expiry:** Messages in the prefetch queue do not have their locks renewed automatically. Consequently,
+       the
+       message lock may expire by the time they are processed.
+    3. **Dead-Letter Queue:** Expired message locks can result in messages being inadvertently sent to the dead-letter
+       queue,
+       causing potential data loss or requiring additional handling to recover these messages.
+- **Recommendation**: Optimize Prefetch Value - Set a prefetch value that balances between efficient message
+  retrieval and the ability for multiple clients to process messages concurrently. Please refer to
+  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-prefetch?tabs=dotnet#why-is-prefetch-not-the-default-option)
+  for additional information.
+
+8. #### Use These Encouraged Alternatives Instead of Their Corresponding Discouraged APIs
 
    #### a. Azure service client authentication instead of Connection Strings to build Azure Service Clients
 
