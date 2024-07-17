@@ -11,7 +11,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Rule Set Integration**: This feature enables users to import and customize rule sets, tailoring the plugin to their
   specific needs.
 - **Telemetry Integration**: This feature connects the plugin to the backend with Application Insights, allowing for
-  efficient data transmission.
+  efficient data transmission. Refer to [configure-telmetry.md](configure-telemetry.md) on details to setup this feature
 - **Azure Toolkit for IntelliJ Integration**: This feature allows the plugin to integrate with the Azure Toolkit for
   IntelliJ, providing extended functionality
 - **Editor Integration**: This feature offers continuous analysis and real-time code suggestions, enhancing the coding
@@ -22,6 +22,8 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 ## User Interface
 
 - **Telemetry Configuration Panel** : This space allows users to enable or disable telemetry if desired.
+
+
 
 ## Rules
 
@@ -116,4 +118,4 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an asynchronous polling mechanism to a synchronous one, which should be avoided.
 - **Severity: WARNING**
 - **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred method for synchronous operations.
-Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
+ Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
