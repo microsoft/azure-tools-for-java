@@ -116,4 +116,4 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an asynchronous polling mechanism to a synchronous one, which should be avoided.
 - **Severity: WARNING**
 - **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred method for synchronous operations.
-  Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
+Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
