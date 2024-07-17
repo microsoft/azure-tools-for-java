@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class contains configuration options for code style rules.
@@ -12,22 +13,26 @@ class RuleConfig {
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
     private final String antiPatternMessage;
+    private final Map<String, String> discouragedIdentifiersMap;
+
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "");
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), "");
 
     /**
      * Constructor for RuleConfig.
      *
-     * @param methodsToCheck     List of methods to check.
-     * @param clientsToCheck     List of clients to check.
-     * @param servicesToCheck    List of services to check.
-     * @param antiPatternMessage AntiPattern message.
+     * @param methodsToCheck            List of methods to check.
+     * @param clientsToCheck            List of clients to check.
+     * @param servicesToCheck           List of services to check.
+     * @param discouragedIdentifiersMap Map of discouraged identifiers and their suggestions.
+     * @param antiPatternMessage        AntiPattern message.
      */
-    RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> discouragedIdentifiersMap, String antiPatternMessage) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
+        this.discouragedIdentifiersMap = discouragedIdentifiersMap;
         this.antiPatternMessage = antiPatternMessage;
     }
 
@@ -75,5 +80,14 @@ class RuleConfig {
      */
     String getAntiPatternMessage() {
         return antiPatternMessage;
+    }
+
+    /**
+     * This method returns the map of discouraged identifiers
+     *
+     * @return Map of discouraged identifiers
+     */
+    public Map<String, String> getDiscouragedIdentifiersMap() {
+        return discouragedIdentifiersMap;
     }
 }

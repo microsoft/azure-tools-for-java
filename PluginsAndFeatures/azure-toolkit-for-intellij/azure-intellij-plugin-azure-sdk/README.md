@@ -97,27 +97,20 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
   for additional information.
 
-6. #### Using Connection Strings to build Azure Service Clients
-
-- **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
-- **Issue**: Connection strings authentication is not recommended in Azure SDKs for Java due to potential security
-  vulnerabilities.
-- **Severity: WARNING**
-- **Recommendation**: Azure service client authentication is recommended if the service client supports Token
-  Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based
-  authentication. Please refer to
-  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
-  for additional information.
-
-7. #### Use SyncPoller instead of PollerFlux#getSyncPoller()
+6. #### Use SyncPoller instead of PollerFlux#getSyncPoller()
 
 - **Anti-pattern**: Using `getSyncPoller()` on a `PollerFlux` instance is an anti-pattern.
-- **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an asynchronous polling mechanism to a synchronous one, which should be avoided.
+- **Issue**: The main issue with using `getSyncPoller()` is that it introduces additional complexity by converting an
+  asynchronous polling mechanism to a synchronous one, which should be avoided.
 - **Severity: WARNING**
-- **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred method for synchronous operations.
-  Please refer to the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable) for additional information.
+- **Recommendation**: Instead of using `getSyncPoller()`, it's recommended to use the `SyncPoller` directly to handle
+  synchronous polling tasks. `SyncPoller` provides a synchronous way to interact with the poller and is the preferred
+  method for synchronous operations.
+  Please refer to
+  the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.core.util.polling.syncpoller?view=azure-java-stable)
+  for additional information.
 
-8. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
+7. #### Managing Receive Mode and Prefetch Value in Azure Service Bus
 
 - **Anti-pattern**: Setting the receive mode as PEEK_LOCK with a high prefetch value (e.g., 50 or 100) in Azure Service
   Bus.
@@ -126,7 +119,8 @@ integration, telemetry connectivity, and Azure Toolkit integration.
     1. **Suboptimal Performance:** A high prefetch value in PEEK_LOCK mode can result in suboptimal performance, as one
        client
        locks all prefetched messages, potentially leading to processing bottlenecks.
-    2. **Message Lock Expiry:** Messages in the prefetch queue do not have their locks renewed automatically. Consequently,
+    2. **Message Lock Expiry:** Messages in the prefetch queue do not have their locks renewed automatically.
+       Consequently,
        the
        message lock may expire by the time they are processed.
     3. **Dead-Letter Queue:** Expired message locks can result in messages being inadvertently sent to the dead-letter
@@ -136,3 +130,32 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   retrieval and the ability for multiple clients to process messages concurrently. Please refer to
   the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-prefetch?tabs=dotnet#why-is-prefetch-not-the-default-option)
   for additional information.
+
+8. #### Use These Encouraged Alternatives Instead of Their Corresponding Discouraged APIs
+
+   #### a. Azure service client authentication instead of Connection Strings to build Azure Service Clients
+
+    - **Anti-pattern**: Using Connection Strings for Authenticating Azure SDK Clients.
+    - **Issue**: Connection strings authentication is not recommended in Azure SDKs for Java due to potential
+      security
+      vulnerabilities.
+    - **Severity: WARNING**
+    - **Recommendation**: Azure service client authentication is recommended if the service client supports Token
+      Credential (Entra ID Authentication). If not, then use Azure Key Credential or Connection Strings based
+      authentication. Please refer to
+      the [Azure SDK for Java documentation](https://learn.microsoft.com/java/api/com.azure.identity.defaultazurecredential?view=azure-java-stable)
+      for additional information.
+
+   #### b. Use Azure OpenAI's `getChatCompletions` for Chat Applications instead of `getCompletions` API
+
+    - **Anti-pattern**: Using the getCompletions API
+    - **Issue**: Issue: Functionality Mismatch - The `getCompletions` API is designed for general-purpose completion
+      tasks.
+      whereas `getChatCompletions` is specifically optimized for conversational contexts.
+    - **Severity: WARNING**
+    - **Recommendation**: Use `getChatCompletions` for Chat Applications: Specifically use `getChatCompletions` API
+      when
+      generating responses for chatbot or conversational AI applications.
+    - Please refer to
+      the [Azure OpenAI client library for Java](https://learn.microsoft.com/java/api/overview/azure/ai-openai-readme?view=azure-java-preview)
+      for additional information.
