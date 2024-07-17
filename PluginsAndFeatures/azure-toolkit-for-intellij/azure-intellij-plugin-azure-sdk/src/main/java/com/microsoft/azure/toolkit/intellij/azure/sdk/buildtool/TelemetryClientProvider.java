@@ -81,26 +81,14 @@ public class TelemetryClientProvider extends LocalInspectionTool {
         // Create a Project object
         private static Project project;
 
-        // Create a list of prefixes for Azure service method calls
-        // source: https://azure.github.io/azure-sdk/java_introduction.html#service-methods
-        private static final List<String> AZURE_METHOD_PREFIXES = Arrays.asList("upsert", "set", "create", "update", "replace", "delete", "add", "get", "list", "upload");
+        // Create a list of prefixes for Azure service method calls -- Source in the link below
+        /**
+         * <a href="https://azure.github.io/azure-sdk/java_introduction.html#service-methods">Azure SDK Java Service Methods</a>
+         */
+        static final List<String> AZURE_METHOD_PREFIXES = Arrays.asList("upsert", "set", "create", "update", "replace", "delete", "add", "get", "list", "upload");
 
         // Create a logger object
         private static final Logger LOGGER = Logger.getLogger(TelemetryClientProvider.class.getName());
-
-        // Create a RuleConfig object
-        private static final RuleConfig ruleConfig;
-
-
-        static {
-            final String ruleName = "TelemetryClientProvider";
-            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
-
-            // Get the RuleConfig object for the rule
-            // There is no rule associated with this inspection, so the ruleConfig is set to an empty RuleConfig object
-            // to access RuleConfig.AZURE_PACKAGE_NAME
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-        }
 
         /**
          * This constructor is used to create a visitor for the inspection
@@ -254,6 +242,11 @@ public class TelemetryClientProvider extends LocalInspectionTool {
             }
         }
 
+        /**
+         * This method checks if the telemetry service is running.
+         *
+         * @return A boolean indicating if the telemetry service is running.
+         */
         public static boolean isRunning() {
             return running;
         }

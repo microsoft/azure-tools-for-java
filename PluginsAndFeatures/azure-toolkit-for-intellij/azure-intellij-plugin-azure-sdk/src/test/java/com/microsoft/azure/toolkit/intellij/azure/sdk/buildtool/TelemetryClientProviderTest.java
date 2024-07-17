@@ -9,6 +9,7 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiVariable;
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider.TelemetryClientProviderVisitor;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -82,10 +83,23 @@ public class TelemetryClientProviderTest {
         // Build the visitor and visit the method call expression
         mockVisitor.visitElement(mockExpression);
 
-        // Verify the method count increment
+        // Assert method name starts with one of the prefixes
+        boolean startsWithPrefix = false;
+        for (String prefix : TelemetryClientProviderVisitor.AZURE_METHOD_PREFIXES) {
+            if (methodName.startsWith(prefix)) {
+                startsWithPrefix = true;
+                break;
+            }
+        }
+        assertTrue(startsWithPrefix);
+
+        // Assert class name ends with "Client"
+        assertTrue(className.endsWith("Client"));
+
+
         assertTrue(TelemetryClientProviderVisitor.methodCounts.containsKey(className));
 
-        // have this assertion if the client is an azure client
+        // Verify the method count increment
         if (numCountIncrease > 0) {
             assertEquals(numCountIncrease, TelemetryClientProviderVisitor.methodCounts.get(className).get(methodName).intValue());
         }
@@ -136,7 +150,7 @@ public class TelemetryClientProviderTest {
     public void testSendTelemetryData() {
         // Populate methodCounts with test data
         Map<String, Integer> methodMap = new HashMap<>();
-        methodMap.put("testMethod", 1);
+        methodMap.put("upsertMethod", 1);
         TelemetryClientProviderVisitor.methodCounts.put("testClient", methodMap);
 
         // Inject the mock telemetry client
