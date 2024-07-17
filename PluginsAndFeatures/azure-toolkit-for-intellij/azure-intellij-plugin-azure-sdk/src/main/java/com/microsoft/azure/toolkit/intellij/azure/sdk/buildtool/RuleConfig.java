@@ -14,10 +14,11 @@ class RuleConfig {
     private final List<String> servicesToCheck;
     private final String antiPatternMessage;
     private final Map<String, String> discouragedIdentifiersMap;
+    private final Map<String, String> antiPatternMessageMap;
 
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), "");
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), "", Collections.emptyMap());
 
     /**
      * Constructor for RuleConfig.
@@ -27,13 +28,15 @@ class RuleConfig {
      * @param servicesToCheck           List of services to check.
      * @param discouragedIdentifiersMap Map of discouraged identifiers and their suggestions.
      * @param antiPatternMessage        AntiPattern message.
+     * @param antiPatternMessageMap     Map of antiPattern messages.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> discouragedIdentifiersMap, String antiPatternMessage) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> discouragedIdentifiersMap, String antiPatternMessage, Map<String, String> antiPatternMessageMap) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
         this.discouragedIdentifiersMap = discouragedIdentifiersMap;
         this.antiPatternMessage = antiPatternMessage;
+        this.antiPatternMessageMap = antiPatternMessageMap;
     }
 
     /**
@@ -89,5 +92,14 @@ class RuleConfig {
      */
     public Map<String, String> getDiscouragedIdentifiersMap() {
         return discouragedIdentifiersMap;
+    }
+
+    /**
+     * This method returns the map of antipattern messages
+     *
+     * @return Map of antipattern messages
+     */
+    public Map<String, String> getAntiPatternMessageMap() {
+        return antiPatternMessageMap;
     }
 }

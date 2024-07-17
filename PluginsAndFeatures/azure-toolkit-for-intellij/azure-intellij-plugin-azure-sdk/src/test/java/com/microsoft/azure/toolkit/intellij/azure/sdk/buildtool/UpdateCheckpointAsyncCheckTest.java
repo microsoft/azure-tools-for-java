@@ -20,6 +20,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * This class is used to test the UpdateCheckpointAsyncCheck class.
+ * The test methods test the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+ */
 public class UpdateCheckpointAsyncCheckTest {
 
     // Create a mock ProblemsHolder to be used in the test
@@ -43,6 +47,10 @@ public class UpdateCheckpointAsyncCheckTest {
         mockMethodCallExpression = mock(PsiMethodCallExpression.class);
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * The test checks if the problem is registered when the following method is subscribe.
+     */
     @Test
     public void testWithSubscribe() {
         String packageName = "com.azure";
@@ -54,6 +62,11 @@ public class UpdateCheckpointAsyncCheckTest {
         verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * The test checks if the problem is registered when the following method is block.
+     * A problem should NOT be registered in this case.
+     */
     @Test
     public void testWithBlock() {
         String packageName = "com.azure";
@@ -65,6 +78,27 @@ public class UpdateCheckpointAsyncCheckTest {
         verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * The test checks if the problem is registered when the following method is block.
+     * A problem should NOT be registered in this case.
+     */
+    @Test
+    public void testWithBlockTimeout() {
+        String packageName = "com.azure";
+        String followingMethod = "block(timeout)";
+        int numOfInvocations = 0;
+        String mainMethodFound = "updateCheckpointAsync";
+        String objectType = "EventBatchContext";
+
+        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+    }
+
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * The test checks if the problem is registered when the following method is null.
+     * A problem should be registered in this case -- there is no 'block' or 'block(timeout)' method following the 'updateCheckpointAsync' method.
+     */
     @Test
     public void testWithNullFollowingMethod() {
         String packageName = "com.azure";
@@ -76,13 +110,33 @@ public class UpdateCheckpointAsyncCheckTest {
         verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * The test checks if the problem is registered when the package name is wrong.
+     * A problem should NOT be registered in this case.
+     */
+    @Test
+    public void testWithWrongPackage() {
+        String packageName = "com.microsoft.azure";
+        String followingMethod = "block";
+        int numOfInvocations = 0;
+        String mainMethodFound = "updateCheckpointAsync";
+        String objectType = "EventBatchContext";
 
+        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+    }
+
+    /**
+     * This creates a new UpdateCheckpointAsyncVisitor object.
+     */
     private JavaElementVisitor createVisitor() {
         UpdateCheckpointAsyncVisitor mockVisitor = new UpdateCheckpointAsyncVisitor(mockHolder, true);
         return mockVisitor;
     }
 
-
+    /**
+     * This method verifies if the problem is registered with the ProblemsHolder.
+     */
     private void verifyProblemRegistered(String packageName, String mainMethodFound, int numOfInvocations, String followingMethod, String objectType) {
 
         PsiReferenceExpression mockReferenceExpression = mock(PsiReferenceExpression.class);
@@ -118,8 +172,7 @@ public class UpdateCheckpointAsyncCheckTest {
 
         if (followingMethod != null && followingMethod.equals("subscribe")) {
             verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("Instead of subscribe(), use block() or block() with timeout or use the synchronous version updateCheckpoint()."));
-        }
-        else {
+        } else {
             verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("The updateCheckpointAsync() without block() will not do anything, use block() operator with a timeout or consider using the synchronous version updateCheckpoint()"));
         }
     }

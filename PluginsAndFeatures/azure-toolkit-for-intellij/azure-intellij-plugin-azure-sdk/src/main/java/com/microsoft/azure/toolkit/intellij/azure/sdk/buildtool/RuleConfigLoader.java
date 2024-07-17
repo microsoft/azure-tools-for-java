@@ -130,6 +130,7 @@ public class RuleConfigLoader {
         List<String> servicesToCheck = new ArrayList<>();
         Map<String, String > discouragedIdentifiersToCheck = new HashMap<>();
         String antiPatternMessage = null;
+        Map<String, String> antiPatternMessageMap = new HashMap<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
@@ -155,6 +156,8 @@ public class RuleConfigLoader {
                 case "services_to_check":
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
+                case "anti_pattern_message_map":
+                    antiPatternMessageMap = getAntiPatternMessageMap(reader, antiPatternMessageMap);
                 default:
                     if (fieldName.endsWith("Check")) {
                         discouragedIdentifiersToCheck = getMapOfDiscouragedIdentifiers(reader, discouragedIdentifiersToCheck);
@@ -164,7 +167,7 @@ public class RuleConfigLoader {
                     break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, discouragedIdentifiersToCheck, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, discouragedIdentifiersToCheck, antiPatternMessage, antiPatternMessageMap);
     }
 
     /**
@@ -220,5 +223,27 @@ public class RuleConfigLoader {
             }
         }
         return discouragedIdentifiersToCheckMap;
+    }
+
+    private Map<String, String> getAntiPatternMessageMap(JsonReader reader, Map<String, String> antiPatternMessageMap) throws IOException {
+        String antiPatternMessage = null;
+
+        // Read the JSON file and parse the RuleConfig object
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Get the field name
+            String fieldName = reader.getFieldName();
+
+            switch (fieldName) {
+                case "no_block":
+                case "with_subscribe":
+                    antiPatternMessage = reader.getString();
+                    break;
+            }
+            if (antiPatternMessage != null) {
+                antiPatternMessageMap.put(fieldName, antiPatternMessage);
+            }
+        }
+        return antiPatternMessageMap;
     }
 }

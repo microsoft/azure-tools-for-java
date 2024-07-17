@@ -159,3 +159,25 @@ integration, telemetry connectivity, and Azure Toolkit integration.
     - Please refer to
       the [Azure OpenAI client library for Java](https://learn.microsoft.com/java/api/overview/azure/ai-openai-readme?view=azure-java-preview)
       for additional information.
+
+9. #### EventProcessorClient: Using `updateCheckpointAsync() API` of EventBatchContext object:
+   #### Anti-pattern a. Without `block()` or `block(timeout)`
+
+    - **Issue**: The `updateCheckpointAsync()` without `block()` will not do anything.
+    - **Severity: WARNING**
+    - **Recommendation**: Use `block()` operator with a timeout or consider using the synchronous
+      version `updateCheckpoint()`.
+
+   #### Anti-pattern b. With `subscribe()`
+
+    - **Issue**: If you use subscribe() with `updateCheckpointAsync()`, you might get the next batch of events before
+      you
+      finish checkpointing the previous batch, or you might have checkpointing of several batches happening out of order
+    - **Severity: WARNING**
+    - **Recommendation**: . Instead of `subscribe()`, use `block()` or `block()` with timeout or use the synchronous
+      version
+      `updateCheckpoint()`.
+
+   Please refer to
+   the [updateCheckpointAsync documentation](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.models.eventbatchcontext?view=azure-java-stable#com-azure-messaging-eventhubs-models-eventbatchcontext-updatecheckpointasync())
+   for additional information.

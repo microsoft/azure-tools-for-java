@@ -51,10 +51,13 @@
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "methods_to_check": ["receiveMode","prefetchCount"],
+    "methods_to_check": [
+      "receiveMode",
+      "prefetchCount"
+    ],
     "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
   },
-  "DetectDiscouragedAPIUsageCheck" : {
+  "DetectDiscouragedAPIUsageCheck": {
     "ConnectionStringCheck": {
       "methods_to_check": "connectionString",
       "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
@@ -65,8 +68,16 @@
       "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
     }
   },
-  "UpdateCheckpointAsyncCheck" : {
-    "methods_to_check": ["updateCheckpointAsync", "block", "block(timeout)", "subscribe"]
-
+  "UpdateCheckpointAsyncCheck": {
+    "methods_to_check": [
+      "updateCheckpointAsync",
+      "block",
+      "block(timeout)",
+      "subscribe"
+    ],
+    "anti_pattern_message_map": {
+      "no_block": "The updateCheckpointAsync() without block() will not do anything, use block() operator with a timeout or consider using the synchronous version updateCheckpoint().",
+      "with_subscribe": "If you use subscribe() with updateCheckpointAsync(), you might get the next batch of events before you finish checkpointing the previous batch, or you might have checkpointing of several batches happening out of order. Instead of subscribe(), use block() or block() with timeout or use the synchronous version updateCheckpoint()."
+    }
   }
 }
