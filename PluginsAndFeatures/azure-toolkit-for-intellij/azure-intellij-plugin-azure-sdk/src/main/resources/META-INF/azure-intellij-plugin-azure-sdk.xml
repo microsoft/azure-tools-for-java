@@ -96,15 +96,43 @@
 
         <localInspection
                 language="JAVA"
-                shortName="ConnectionStringCheck"
-                displayName="Connection String Check"
+                shortName="DetectDiscouragedAPIUsageCheck"
+                displayName="Detect Discouraged API UsageCheck"
                 groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck">
 
             <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="GetSyncPollerOnPollerFluxCheck"
+                displayName="GetSyncPoller On Poller Flux Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiveModeCheck"
+                displayName="ServiceBus ReceiveMode Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck
             </class>
         </localInspection>
 

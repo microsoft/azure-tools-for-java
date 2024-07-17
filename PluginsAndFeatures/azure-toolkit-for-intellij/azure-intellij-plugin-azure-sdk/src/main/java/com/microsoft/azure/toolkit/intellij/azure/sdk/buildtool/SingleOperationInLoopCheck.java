@@ -69,21 +69,21 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
 
         // // Define constants for string literals
-        private static final RuleConfig ruleConfig;
+        private static final RuleConfig RULE_CONFIG;
         private static final String SUGGESTION;
         private static final List<String> AVAILABLE_BATCH_METHODS;
-        private static boolean SKIP_WHOLE_RULE;
+        private static final boolean SKIP_WHOLE_RULE;
 
         static {
             final String ruleName = "SingleOperationInLoopCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            AVAILABLE_BATCH_METHODS = ruleConfig.getMethodsToCheck();
-            SUGGESTION = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || AVAILABLE_BATCH_METHODS.isEmpty();
+            AVAILABLE_BATCH_METHODS = RULE_CONFIG.getMethodsToCheck();
+            SUGGESTION = RULE_CONFIG.getAntiPatternMessage();
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || AVAILABLE_BATCH_METHODS.isEmpty();
         }
 
         /**
@@ -209,7 +209,6 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * If the statement is an expression statement, check if the expression is an Azure client operation.
          *
          * @param statement The statement to check
-         * @return True if the statement is an Azure client operation, false otherwise
          */
         private void isExpressionAzureClientOperation(PsiStatement statement) {
 
@@ -231,7 +230,6 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * If the statement is a declaration statement, check if the initializer is an Azure client operation.
          *
          * @param statement The declaration statement to check
-         * @return True if the declaration statement is an Azure client operation, false otherwise
          */
         private void isDeclarationAzureClientOperation(PsiDeclarationStatement statement) {
 
