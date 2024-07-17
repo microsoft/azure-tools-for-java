@@ -4,9 +4,12 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -80,22 +83,6 @@ public class UpdateCheckpointAsyncCheckTest {
 
     /**
      * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
-     * The test checks if the problem is registered when the following method is block.
-     * A problem should NOT be registered in this case.
-     */
-    @Test
-    public void testWithBlockTimeout() {
-        String packageName = "com.azure";
-        String followingMethod = "block(timeout)";
-        int numOfInvocations = 0;
-        String mainMethodFound = "updateCheckpointAsync";
-        String objectType = "EventBatchContext";
-
-        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
-    }
-
-    /**
-     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
      * The test checks if the problem is registered when the following method is null.
      * A problem should be registered in this case -- there is no 'block' or 'block(timeout)' method following the 'updateCheckpointAsync' method.
      */
@@ -150,6 +137,10 @@ public class UpdateCheckpointAsyncCheckTest {
         PsiParameter mockParameter = mock(PsiParameter.class);
         PsiClassType parameterType = mock(PsiClassType.class);
         PsiClass psiClass = mock(PsiClass.class);
+        PsiExpression duration = mock(PsiExpression.class);
+        PsiExpressionList arguments = mock(PsiExpressionList.class);
+        PsiExpression[] expressions = new PsiExpression[]{duration};
+        PsiType durationType = mock(PsiType.class);
 
         when(mockMethodCallExpression.getMethodExpression()).thenReturn(mockReferenceExpression);
         when(mockReferenceExpression.getReferenceName()).thenReturn(mainMethodFound);
@@ -159,6 +150,10 @@ public class UpdateCheckpointAsyncCheckTest {
         when(mockReferenceExpression.getParent()).thenReturn(grandParentMethodCalLExpression);
         when(grandParentMethodCalLExpression.getMethodExpression()).thenReturn(parentReferenceExpression);
         when(parentReferenceExpression.getReferenceName()).thenReturn(followingMethod);
+        when(grandParentMethodCalLExpression.getArgumentList()).thenReturn(arguments);
+        when(arguments.getExpressions()).thenReturn(expressions);
+        when(expressions[0].getType()).thenReturn(durationType);
+        when(durationType.getPresentableText()).thenReturn("java.time.Duration");
 
         // isCalledOnEventBatchContext
         when(mockReferenceExpression.getQualifierExpression()).thenReturn(mockQualifier);
@@ -171,9 +166,9 @@ public class UpdateCheckpointAsyncCheckTest {
         mockVisitor.visitMethodCallExpression(mockMethodCallExpression);
 
         if (followingMethod != null && followingMethod.equals("subscribe")) {
-            verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("Instead of subscribe(), use block() or block() with timeout or use the synchronous version updateCheckpoint()."));
+            verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"));
         } else {
-            verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("The updateCheckpointAsync() without block() will not do anything, use block() operator with a timeout or consider using the synchronous version updateCheckpoint()"));
+            verify(mockHolder, times(numOfInvocations)).registerProblem(eq(mockMethodCallExpression), contains("Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."));
         }
     }
 }

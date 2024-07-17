@@ -49,6 +49,7 @@ class RuleConfig {
     }
 
     // Getters
+
     /**
      * This method returns the list of methods to check
      *
@@ -87,6 +88,8 @@ class RuleConfig {
 
     /**
      * This method returns the map of discouraged identifiers
+     * This is used for base classes that have a set of discouraged identifiers
+     * and a corresponding set of antipattern messages.
      *
      * @return Map of discouraged identifiers
      */
@@ -95,7 +98,8 @@ class RuleConfig {
     }
 
     /**
-     * This method returns the map of antipattern messages
+     * This method returns the map of antipattern messages.
+     * This is used in rulechecks with 2 different antipattern messages depending on a certain condition.
      *
      * @return Map of antipattern messages
      */

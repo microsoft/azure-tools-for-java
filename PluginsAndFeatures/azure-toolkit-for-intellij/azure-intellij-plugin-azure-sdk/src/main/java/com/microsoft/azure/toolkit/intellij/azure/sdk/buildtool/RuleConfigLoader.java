@@ -59,7 +59,7 @@ public class RuleConfigLoader {
      *
      * @return CentralRuleConfigLoader instance
      */
-    public static RuleConfigLoader getInstance() {
+    static RuleConfigLoader getInstance() {
         return instance;
     }
 
@@ -128,7 +128,7 @@ public class RuleConfigLoader {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
-        Map<String, String > discouragedIdentifiersToCheck = new HashMap<>();
+        Map<String, String> discouragedIdentifiersToCheck = new HashMap<>();
         String antiPatternMessage = null;
         Map<String, String> antiPatternMessageMap = new HashMap<>();
 
@@ -199,10 +199,22 @@ public class RuleConfigLoader {
         return list;
     }
 
+    /**
+     * This method parses the map of discouraged identifiers from the JSON file
+     * This is used for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages.
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return Map of discouraged identifiers parsed from the JSON file
+     * @throws IOException - if there is an error reading the file
+     */
     private Map<String, String> getMapOfDiscouragedIdentifiers(JsonReader reader, Map<String, String> discouragedIdentifiersToCheckMap) throws IOException {
 
         String identifiersToCheck = null;
         String antiPatternMessage = null;
+
+        if (reader.nextToken() != JsonToken.START_OBJECT) {
+            throw new IOException("Expected start of object");
+        }
 
         // Read the JSON file and parse the RuleConfig object
         while (reader.nextToken() != JsonToken.END_OBJECT) {
@@ -217,6 +229,8 @@ public class RuleConfigLoader {
                 case "anti_pattern_message":
                     antiPatternMessage = reader.getString();
                     break;
+                default:
+                    reader.skipChildren();
             }
             if (identifiersToCheck != null && antiPatternMessage != null) {
                 discouragedIdentifiersToCheckMap.put(identifiersToCheck, antiPatternMessage);
@@ -225,8 +239,19 @@ public class RuleConfigLoader {
         return discouragedIdentifiersToCheckMap;
     }
 
+    /**
+     * This method parses the map of anti-pattern messages from the JSON file
+     * This is used in rulechecks with 2 different antipattern messages depending on a certain condition.
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return Map of anti-pattern messages parsed from the JSON file
+     * @throws IOException - if there is an error reading the file
+     */
     private Map<String, String> getAntiPatternMessageMap(JsonReader reader, Map<String, String> antiPatternMessageMap) throws IOException {
-        String antiPatternMessage = null;
+
+        if (reader.nextToken() != JsonToken.START_OBJECT) {
+            throw new IOException("Expected start of object");
+        }
 
         // Read the JSON file and parse the RuleConfig object
         while (reader.nextToken() != JsonToken.END_OBJECT) {
@@ -235,13 +260,13 @@ public class RuleConfigLoader {
             String fieldName = reader.getFieldName();
 
             switch (fieldName) {
-                case "no_block":
-                case "with_subscribe":
-                    antiPatternMessage = reader.getString();
-                    break;
-            }
-            if (antiPatternMessage != null) {
-                antiPatternMessageMap.put(fieldName, antiPatternMessage);
+                case "no_block", "with_subscribe" -> {
+                    String antiPatternMessage = reader.getString();
+                    if (antiPatternMessage != null) {
+                        antiPatternMessageMap.put(fieldName, antiPatternMessage);
+                    }
+                }
+                default -> reader.skipChildren();
             }
         }
         return antiPatternMessageMap;

@@ -8,19 +8,26 @@ import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
 
-
+/**
+ * This class is a custom inspection tool that checks for the usage of the updateCheckpointAsync() method call in the code.
+ * It extends the LocalInspectionTool class and overrides the buildVisitor method to create a visitor for the inspection.
+ * The visitor checks for the usage of the updateCheckpointAsync() method call in the code.
+ * The method call should not be followed by a subscribe method call and instead should be followed by a block() method call.
+ */
 public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
     /**
      * Build the visitor for the inspection. This visitor will be used to traverse the PSI tree.
      *
-     * @param holder The holder for the problems found
+     * @param holder     The holder for the problems found
+     * @param isOnTheFly boolean to check if the inspection is on the fly -- This is not in use but is required by the method signature
      * @return The visitor for the inspection. This is not used anywhere else in the code.
      */
     @NotNull
@@ -57,7 +64,7 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
         }
 
         /**
-         * Constructor for the visitor
+         * Constructs a new instance of the UpdateCheckpointAsyncVisitor
          *
          * @param holder     The holder for the problems found
          * @param isOnTheFly boolean to check if the inspection is on the fly -- This is not in use
@@ -83,20 +90,24 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
                 return;
             }
 
+            if (expression.getMethodExpression() == null || expression.getMethodExpression().getReferenceName() == null) {
+                return;
+            }
+
             // Check if the method call is updateCheckpointAsync()
             if ("updateCheckpointAsync".equals(expression.getMethodExpression().getReferenceName())) {
 
                 // Get the method name following the updateCheckpointAsync() method call
                 String followingMethod = getFollowingMethodName(expression);
 
-                // Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
-                if (followingMethod == null && isCalledOnEventBatchContext(expression)) {
-                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("no_block"));
-
-                    // Check if the following method is `subscribe` and
-                    //  Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
-                } else if ("subscribe".equals(followingMethod) && isCalledOnEventBatchContext(expression)) {
+                // Check if the following method is `subscribe` and
+                //  Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
+                if ("subscribe".equals(followingMethod) && isCalledOnEventBatchContext(expression)) {
                     holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("with_subscribe"));
+                }
+                //  Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
+                else if (followingMethod == null || (!followingMethod.equals("block") && !followingMethod.equals("block_with_timeout")) && isCalledOnEventBatchContext(expression)) {
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("no_block"));
                 }
             }
         }
@@ -116,14 +127,10 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
             if (!(parent instanceof PsiReferenceExpression)) {
                 return null;
             }
-
-            // Get the grandparent of the method call expression
             PsiElement grandParent = parent.getParent();
 
-            // Check if the grandparent is a method call expression
             if (grandParent instanceof PsiMethodCallExpression) {
 
-                // Cast the grandparent to a method call expression
                 PsiMethodCallExpression parentCall = (PsiMethodCallExpression) grandParent;
 
                 // Get the method name from the parent call
@@ -131,8 +138,14 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
                 // Check if the method name is in the list of methods to check
                 if (RULE_CONFIG.getMethodsToCheck().contains(methodName)) {
-                    return methodName;
+                    if ("block".equals(methodName)) {
+                        PsiExpressionList arguments = parentCall.getArgumentList();
+                        if (arguments.getExpressions().length == 1 && arguments.getExpressions()[0].getType() != null && arguments.getExpressions()[0].getType().equalsToText("java.time.Duration")) {
+                            return "block_with_timeout";
+                        }
+                    }
                 }
+                return methodName;
             }
             return null;
         }
@@ -148,7 +161,6 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
             // Get the qualifier expression from the method call expression
             PsiExpression qualifier = expression.getMethodExpression().getQualifierExpression();
 
-            // Check if the qualifier is a reference expression
             if (!(qualifier instanceof PsiReferenceExpression)) {
                 return false;
             }
@@ -163,8 +175,6 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
             // Check if the resolved element is a class type
             PsiParameter parameter = (PsiParameter) resolvedElement;
-
-            // Get the type of the parameter
             PsiType parameterType = parameter.getType();
 
             // Check if the parameter type is a EventBatchContext object from the Azure SDK
@@ -176,12 +186,10 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
                 return false;
             }
 
-            // Resolve the parameter type to a class type and get the class
             PsiClassType classType = (PsiClassType) parameterType;
             PsiClass psiClass = classType.resolve();
 
             if (psiClass != null) {
-                // Get the qualified name of the class
                 String qualifiedName = psiClass.getQualifiedName();
 
                 // Check if the qualified name starts with the Azure package name

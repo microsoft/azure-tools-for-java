@@ -72,12 +72,11 @@
     "methods_to_check": [
       "updateCheckpointAsync",
       "block",
-      "block(timeout)",
       "subscribe"
     ],
     "anti_pattern_message_map": {
-      "no_block": "The updateCheckpointAsync() without block() will not do anything, use block() operator with a timeout or consider using the synchronous version updateCheckpoint().",
-      "with_subscribe": "If you use subscribe() with updateCheckpointAsync(), you might get the next batch of events before you finish checkpointing the previous batch, or you might have checkpointing of several batches happening out of order. Instead of subscribe(), use block() or block() with timeout or use the synchronous version updateCheckpoint()."
+      "no_block": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint().",
+      "with_subscribe": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
     }
   }
 }
