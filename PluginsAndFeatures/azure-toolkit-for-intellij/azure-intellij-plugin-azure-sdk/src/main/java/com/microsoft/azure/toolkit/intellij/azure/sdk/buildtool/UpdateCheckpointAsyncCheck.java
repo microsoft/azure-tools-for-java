@@ -32,9 +32,9 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
     /**
      * This class extends the JavaElementVisitor and is used to visit the Java elements in the code.
-     * It checks for the usage of Azure SDK ServiceBusReceiver & ServiceBusProcessor clients and
-     * whether the auto-complete feature is disabled.
-     * If the auto-complete feature is not disabled, a problem is registered with the ProblemsHolder.
+     * It checks for the usage of the updateCheckpointAsync() method call in the code.
+     * The method call should not be followed by a subscribe method call
+     * and instead should be followed by a block() method call.
      */
     static class UpdateCheckpointAsyncVisitor extends JavaElementVisitor {
 
@@ -66,6 +66,14 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
             this.holder = holder;
         }
 
+        /**
+         * This method is used to visit the method call expressions in the code.
+         * It checks for the usage of the updateCheckpointAsync() method call in the code.
+         * The method call should not be followed by a subscribe method call
+         * and instead should be followed by a block() method call.
+         *
+         * @param expression The method call expression
+         */
         @Override
         public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
             super.visitMethodCallExpression(expression);
