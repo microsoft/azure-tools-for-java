@@ -51,6 +51,9 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
         // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
         private static final boolean SKIP_WHOLE_RULE;
+        private static final String BLOCK_METHOD = "block";
+        private static final String SUBSCRIBE_METHOD = "subscribe";
+        private static final String BLOCK_WITH_TIMEOUT_METHOD = "block_with_timeout";
 
         static {
             final String ruleName = "UpdateCheckpointAsyncCheck";
@@ -102,11 +105,11 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
                 // Check if the following method is `subscribe` and
                 //  Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
-                if ("subscribe".equals(followingMethod) && isCalledOnEventBatchContext(expression)) {
+                if (SUBSCRIBE_METHOD.equals(followingMethod) && isCalledOnEventBatchContext(expression)) {
                     holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("with_subscribe"));
                 }
                 //  Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
-                else if (followingMethod == null || (!followingMethod.equals("block") && !followingMethod.equals("block_with_timeout")) && isCalledOnEventBatchContext(expression)) {
+                else if (followingMethod == null || (!followingMethod.equals(BLOCK_METHOD) && !followingMethod.equals(BLOCK_WITH_TIMEOUT_METHOD)) && isCalledOnEventBatchContext(expression)) {
                     holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("no_block"));
                 }
             }
@@ -138,10 +141,10 @@ public class UpdateCheckpointAsyncCheck extends LocalInspectionTool {
 
                 // Check if the method name is in the list of methods to check
                 if (RULE_CONFIG.getMethodsToCheck().contains(methodName)) {
-                    if ("block".equals(methodName)) {
+                    if (BLOCK_METHOD.equals(methodName)) {
                         PsiExpressionList arguments = parentCall.getArgumentList();
                         if (arguments.getExpressions().length == 1 && arguments.getExpressions()[0].getType() != null && arguments.getExpressions()[0].getType().equalsToText("java.time.Duration")) {
-                            return "block_with_timeout";
+                            return BLOCK_WITH_TIMEOUT_METHOD;
                         }
                     }
                 }

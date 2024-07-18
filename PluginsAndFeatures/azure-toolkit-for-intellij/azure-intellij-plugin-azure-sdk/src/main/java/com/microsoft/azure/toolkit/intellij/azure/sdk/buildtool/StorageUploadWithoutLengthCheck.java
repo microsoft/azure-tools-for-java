@@ -11,9 +11,6 @@ import com.intellij.psi.PsiNewExpression;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-
 /**
  * This class extends the LocalInspectionTool and is used to inspect the usage of Azure Storage upload APIs in the code.
  * It checks if the upload methods are being called without a 'length' parameter of type 'long'.
@@ -29,9 +26,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         return "Ensure Storage APIs use Length Parameter";
     }
 
-    private static final List<String> METHODS_TO_CHECK_LIST;
+    private static final RuleConfig RULE_CONFIG;
     private static final String LENGTH_TYPE = "long";
-    private static final String SUGGESTION;
     private static final boolean SKIP_WHOLE_RULE;
 
 
@@ -40,10 +36,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
         // Get the RuleConfig object for the rule
-        final RuleConfig ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-        METHODS_TO_CHECK_LIST = ruleConfig.getMethodsToCheck();
-        SUGGESTION = ruleConfig.getAntiPatternMessage();
-        SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK_LIST.isEmpty();
+        RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+        SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || RULE_CONFIG.getMethodsToCheck().isEmpty();
     }
 
     /**
@@ -63,7 +57,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                 super.visitMethodCallExpression(expression);
                 String methodName = expression.getMethodExpression().getReferenceName();
 
-                if (!METHODS_TO_CHECK_LIST.contains(methodName)) {
+                if (!RULE_CONFIG.getMethodsToCheck().contains(methodName)) {
                     return;
                 }
 
@@ -91,7 +85,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                     }
                 }
                 if (!hasLengthArg) {
-                    holder.registerProblem(expression, SUGGESTION);
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("anti_pattern_message"));
                 }
             }
         };
