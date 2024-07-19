@@ -13,10 +13,10 @@ class RuleConfig {
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
     private final String antiPatternMessage;
-    private final Map<String, String> mappedItemsToCheck;
+    private final List <String> listedItemsToCheck;
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyMap());
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList());
 
     /**
      * Constructor for RuleConfig.
@@ -26,12 +26,12 @@ class RuleConfig {
      * @param servicesToCheck    List of services to check.
      * @param antiPatternMessage AntiPattern message.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage, Map<String, String> mappedItemsToCheck) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage, List<String> listedItemsToCheck) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
         this.antiPatternMessage = antiPatternMessage;
-        this.mappedItemsToCheck = mappedItemsToCheck;
+        this.listedItemsToCheck = listedItemsToCheck;
     }
 
     // Getters
@@ -73,11 +73,11 @@ class RuleConfig {
     }
 
     /**
-     * This method returns the mapped items to check
+     * This method returns the list of items to check
      *
-     * @return Mapped items to check
+     * @return List of items to check
      */
-    public Map<String, String> getMappedItemsToCheck() {
-        return mappedItemsToCheck;
+    public List<String> getListedItemsToCheck() {
+        return listedItemsToCheck;
     }
 }

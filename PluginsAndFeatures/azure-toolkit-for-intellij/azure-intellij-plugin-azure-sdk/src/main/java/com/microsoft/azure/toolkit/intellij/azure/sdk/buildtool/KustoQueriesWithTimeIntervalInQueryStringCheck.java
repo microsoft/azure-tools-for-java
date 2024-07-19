@@ -19,9 +19,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -64,9 +62,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
         private final ProblemsHolder holder;
 
         // // Define constants for string literals
-        private static final RuleConfig ruleConfig;
-        private static final String ANTI_PATTERN_MESSAGE;
-        private static final Map<String, Pattern> REGEX_PATTERNS = new HashMap<>();
+        private static final RuleConfig RULE_CONFIG;
+        private static final List <Pattern> REGEX_PATTERNS = new ArrayList<>();
         private static boolean SKIP_WHOLE_RULE;
 
         static {
@@ -74,17 +71,15 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
 
-            Map<String, String> regexPatterns = ruleConfig.getMappedItemsToCheck();
-            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
-
-            for (String key : regexPatterns.keySet()) {
-                String patternStr = regexPatterns.get(key);
-                REGEX_PATTERNS.put(key, Pattern.compile(patternStr));
+            List<String> regexPatterns = RULE_CONFIG.getListedItemsToCheck();
+            // Compile the regex patterns
+            for (String pattern : regexPatterns) {
+                REGEX_PATTERNS.add(Pattern.compile(pattern));
             }
 
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
         }
 
         // empty list to store time interval parameter names
@@ -97,7 +92,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          * @param holder     - ProblemsHolder is used to register problems found in the code
          * @param isOnTheFly - boolean to indicate if the inspection is done on the fly - This is not used in this implementation
          */
-        public KustoQueriesVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        KustoQueriesVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
         }
 
@@ -200,7 +195,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 }
 
                 if (isAzureClient(methodCall)) {
-                    holder.registerProblem(methodCall, ANTI_PATTERN_MESSAGE);
+                    holder.registerProblem(methodCall, RULE_CONFIG.getAntiPatternMessage());
                 }
             }
         }
@@ -219,7 +214,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             String text = expression.getText();
 
             // Check if the expression text contains any of the regex patterns
-            boolean foundAntiPattern = REGEX_PATTERNS.values().stream().anyMatch(pattern -> pattern.matcher(text).find());
+            boolean foundAntiPattern = REGEX_PATTERNS.stream().anyMatch(pattern -> pattern.matcher(text).find());
 
 
             // If an anti-pattern is detected, register a problem

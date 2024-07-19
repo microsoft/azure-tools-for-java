@@ -121,7 +121,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
      */
     PsiElementVisitor createVisitor() {
         boolean isOnTheFly = true;
-        KustoQueriesVisitor visitor = new KustoQueriesWithTimeIntervalInQueryStringCheck.KustoQueriesVisitor(mockHolder, isOnTheFly);
+        KustoQueriesVisitor visitor = new KustoQueriesVisitor(mockHolder, isOnTheFly);
         return visitor;
     }
 

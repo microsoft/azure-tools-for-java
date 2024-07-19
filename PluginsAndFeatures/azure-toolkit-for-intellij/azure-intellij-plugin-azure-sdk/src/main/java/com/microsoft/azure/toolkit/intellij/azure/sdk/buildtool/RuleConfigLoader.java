@@ -129,7 +129,7 @@ public class RuleConfigLoader {
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
         String antiPatternMessage = null;
-        Map <String, String> mappedItemsToCheck = new HashMap<>();
+        List<String> listedItemsToCheck = new ArrayList<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
@@ -156,13 +156,13 @@ public class RuleConfigLoader {
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
                 case "regex_patterns":
-                    mappedItemsToCheck = getMappedItemsFromJsonReader(reader, mappedItemsToCheck);
+                    listedItemsToCheck = getValuesFromJsonReader(reader);
                     break;
                 default:
                     reader.skipChildren();
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessage, mappedItemsToCheck);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessage, listedItemsToCheck);
     }
 
     /**
@@ -194,20 +194,31 @@ public class RuleConfigLoader {
         return list;
     }
 
-    private Map<String, String> getMappedItemsFromJsonReader(JsonReader reader, Map <String, String> mappedItemsToCheck) throws IOException {
+    /**
+     * This method parses the values from the JSON object
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return List of strings parsed from the JSON object
+     * @throws IOException - if there is an error reading the file
+     */
+    private List<String> getValuesFromJsonReader(JsonReader reader) throws IOException {
+
+        List<String> values = new ArrayList<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
             throw new IOException("Expected start of object");
         }
 
-        // Read the JSON file and parse the RuleConfig object
+        // Read the JSON file and parse the values
         while (reader.nextToken() != JsonToken.END_OBJECT) {
-            String key = reader.getFieldName();
-            String value = reader.getString();
-            mappedItemsToCheck.put(key, value);
-        }
 
-        return mappedItemsToCheck;
+            // Skip the field name and read only the value
+            reader.getFieldName(); // Move to the field name
+            reader.nextToken(); // Move to the value
+            String value = reader.getString(); // Read the value
+            values.add(value);
+        }
+        return values;
     }
 }
