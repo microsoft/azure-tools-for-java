@@ -83,6 +83,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-synapse.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-hdinsight-base.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-integration-services.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-cloud-shell.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -156,6 +157,8 @@
       <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
       <reference ref="user/sdk.OpenSdkReferenceBook"/>
+      <separator/>
+      <reference ref="AzureToolkit.CloudShell.Group"/>
       <separator/>
       <reference ref="AzureToolkit.ViewDevBlogs"/>
       <reference ref="AzureToolkit.ViewToolingDocument"/>

@@ -11,6 +11,7 @@ ktlint = "12.1.1"
 #qodana = "2024.1.5"
 aspectj = "8.6"
 springDependencyManagement = "1.0.11.RELEASE"
+serialization = "1.9.24"
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
@@ -21,3 +22,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 aspectj = { id = "io.freefair.aspectj.post-compile-weaving", version.ref = "aspectj" }
 springDependencyManagement = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization" }
