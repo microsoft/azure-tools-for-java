@@ -8,7 +8,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck.KustoQueriesVisitor;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiPolyadicExpression;
@@ -49,12 +48,12 @@ import static org.mockito.Mockito.verify;
  * <p>
  * String result = blobAsyncClient.query(kqlQueryOne);
  */
-public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
+class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
 
     // Declare as instance variables
     @Mock
     private ProblemsHolder mockHolder;
-    private PsiElementVisitor mockVisitor;
+    private KustoQueriesVisitor mockVisitor;
     private PsiElement mockElement;
 
     @BeforeEach
@@ -110,7 +109,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
         PsiExpression nullExpression = null;
 
         // Act
-        ((KustoQueriesVisitor) mockVisitor).checkExpression(nullExpression, mockElement);
+        mockVisitor.checkExpression(nullExpression, mockElement);
     }
 
 
@@ -119,7 +118,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
      *
      * @return PsiElementVisitor
      */
-    PsiElementVisitor createVisitor() {
+    private KustoQueriesVisitor createVisitor() {
         boolean isOnTheFly = true;
         KustoQueriesVisitor visitor = new KustoQueriesVisitor(mockHolder, isOnTheFly);
         return visitor;
@@ -129,7 +128,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
     /**
      * This method tests the registerProblem method with a local variable as the query string
      */
-    void verifyRegisterProblemWithLocalVariable(String queryString, String packageName, int numOfInvocations) {
+    private void verifyRegisterProblemWithLocalVariable(String queryString, String packageName, int numOfInvocations) {
 
         PsiLocalVariable variable = mock(PsiLocalVariable.class);
         PsiLiteralExpression initializer = mock(PsiLiteralExpression.class);

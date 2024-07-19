@@ -63,8 +63,8 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
 
         // // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final List <Pattern> REGEX_PATTERNS = new ArrayList<>();
-        private static boolean SKIP_WHOLE_RULE;
+        private static final List<Pattern> REGEX_PATTERNS = new ArrayList<>();
+        private static final boolean SKIP_WHOLE_RULE;
 
         static {
             final String ruleName = "KustoQueriesWithTimeIntervalInQueryStringCheck";

@@ -113,10 +113,10 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 
 - **Anti-pattern**: Writing KQL queries with hard-coded time intervals directly in the query string.
 - **Issue**: This approach makes queries less flexible and harder to troubleshoot.
-  -**Recommendation**: Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the
+- **Recommendation**: Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the
   time interval for the query.
   By passing the time range as an argument in the method call, you make it easier to troubleshoot and understand the
   context of an API call.
   Please refer to
-  the [Azure SDK for Java documentation](https://learn.microsoft.com/en-us/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable)
+  the [QueryTimeInterval Class documentation](https://learn.microsoft.com/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable)
   for additional information.

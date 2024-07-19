@@ -13,7 +13,7 @@ class RuleConfig {
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
     private final String antiPatternMessage;
-    private final List <String> listedItemsToCheck;
+    private final List<String> listedItemsToCheck;
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
     static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList());
@@ -25,6 +25,7 @@ class RuleConfig {
      * @param clientsToCheck     List of clients to check.
      * @param servicesToCheck    List of services to check.
      * @param antiPatternMessage AntiPattern message.
+     * @param listedItemsToCheck List of items to check for.
      */
     public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage, List<String> listedItemsToCheck) {
         this.methodsToCheck = methodsToCheck;
@@ -74,6 +75,8 @@ class RuleConfig {
 
     /**
      * This method returns the list of items to check
+     * The items to check are any types that are not an Azure service, client or method
+     * This includes regex patterns, object types etc
      *
      * @return List of items to check
      */
