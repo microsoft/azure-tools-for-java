@@ -17,25 +17,34 @@ import java.util.Map;
 
 public class DetectDiscouragedClientCheck extends LocalInspectionTool {
 
+    /**
+     * This method builds a visitor to check for the discouraged client name in the code.
+     * If the client name matches the discouraged client, a problem is registered with the suggestion message.
+     */
     @NotNull
     @Override
     public JavaElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
         return new DetectDiscouragedClientVisitor(holder, isOnTheFly);
     }
 
+    /**
+     * This class is a visitor that checks for the use of discouraged clients in the code.
+     * If the client name matches the discouraged client, a problem is registered with the suggestion message.
+     */
     static class DetectDiscouragedClientVisitor extends JavaElementVisitor {
 
         // Define the fields for the visitor
-        private final boolean isOnTheFly;
         private final ProblemsHolder holder;
 
-        // Constructor for the visitor
-        public DetectDiscouragedClientVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        /**
+         * Constructor for the visitor
+         *
+         * @param holder     - the ProblemsHolder object to register the problem
+         * @param isOnTheFly - whether the inspection is on the fly - not used in this implementation but required by the parent class
+         */
+        DetectDiscouragedClientVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
-            this.isOnTheFly = isOnTheFly;
         }
-
-        private static Map<String, String> CLIENT_DATA;
 
         // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
@@ -60,6 +69,10 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
         public void visitTypeElement(PsiTypeElement element) {
             super.visitTypeElement(element);
 
+            // Skip the whole rule if the configuration is empty
+            if (SKIP_WHOLE_RULE) {
+                return;
+            }
             // Check if the element is an instance of PsiTypeElement
             if (element instanceof PsiTypeElement && element.getType() != null) {
 

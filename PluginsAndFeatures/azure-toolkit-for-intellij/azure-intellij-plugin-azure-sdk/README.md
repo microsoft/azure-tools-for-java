@@ -185,7 +185,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
      use `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies
      message consumption, making it a more suitable option for most developers and scenarios.
    - Please refer to
-     the [Azure Service Bus client library for Java](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
+     the [Azure Service Bus client for Java](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
      for more information.
 
     ##### b. **EventHubConsumerAsyncClient**
