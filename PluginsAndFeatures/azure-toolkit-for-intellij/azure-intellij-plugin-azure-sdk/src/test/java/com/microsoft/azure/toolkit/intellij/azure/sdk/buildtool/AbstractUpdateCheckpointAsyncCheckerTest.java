@@ -10,11 +10,11 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncBlockChecker.BlockVisitor;
+import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncSubscribeChecker.SubscribeVisitor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-
-import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncCheck.UpdateCheckpointAsyncVisitor;
 
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,18 +24,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * This class is used to test the UpdateCheckpointAsyncCheck class.
- * The test methods test the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+ * This class is used to test the AbstractUpdateCheckpointChecker class.
+ * The test methods test the visitMethodCallExpression method of the classes that extend the AbstractUpdateCheckpointChecker class.
+ * These are the UpdateCheckpointBlockChecker and UpdateCheckpointSubscribeChecker classes.
  */
-public class UpdateCheckpointAsyncCheckTest {
+public class AbstractUpdateCheckpointAsyncCheckerTest {
 
     // Create a mock ProblemsHolder to be used in the test
     @Mock
     private ProblemsHolder mockHolder;
-
-    // Create a mock JavaElementVisitor for visiting the PsiMethodCallExpression
-    @Mock
-    private JavaElementVisitor mockVisitor;
 
     // Create a mock PsiMethodCallExpression.
     @Mock
@@ -46,85 +43,107 @@ public class UpdateCheckpointAsyncCheckTest {
     public void setUp() {
         // Set up the test
         mockHolder = mock(ProblemsHolder.class);
-        mockVisitor = createVisitor();
         mockMethodCallExpression = mock(PsiMethodCallExpression.class);
     }
 
     /**
-     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncSubscribeVisitor class.
      * The test checks if the problem is registered when the following method is subscribe.
      */
     @Test
     public void testWithSubscribe() {
+
+        SubscribeVisitor mockSubscribeVisitor = new SubscribeVisitor(mockHolder, true);
+
         String packageName = "com.azure";
         String followingMethod = "subscribe";
         int numOfInvocations = 1;
         String mainMethodFound = "updateCheckpointAsync";
         String objectType = "EventBatchContext";
 
-        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+        verifyProblemRegistered(mockSubscribeVisitor, packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
     /**
-     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncBlockVisitor class.
      * The test checks if the problem is registered when the following method is block.
      * A problem should NOT be registered in this case.
      */
     @Test
     public void testWithBlock() {
+
+        BlockVisitor mockBlockVisitor = new BlockVisitor(mockHolder, true);
+
         String packageName = "com.azure";
         String followingMethod = "block";
         int numOfInvocations = 0;
         String mainMethodFound = "updateCheckpointAsync";
         String objectType = "EventBatchContext";
 
-        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+        verifyProblemRegistered(mockBlockVisitor, packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
     /**
-     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncBlockVisitor class.
      * The test checks if the problem is registered when the following method is null.
      * A problem should be registered in this case -- there is no 'block' or 'block(timeout)' method following the 'updateCheckpointAsync' method.
      */
     @Test
     public void testWithNullFollowingMethod() {
+
+        BlockVisitor mockBlockVisitor = new BlockVisitor(mockHolder, true);
+
         String packageName = "com.azure";
         String followingMethod = null;
         int numOfInvocations = 1;
         String mainMethodFound = "updateCheckpointAsync";
         String objectType = "EventBatchContext";
 
-        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+        verifyProblemRegistered(mockBlockVisitor, packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
     /**
-     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncVisitor class.
-     * The test checks if the problem is registered when the package name is wrong.
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncSubscribeVisitor class.
+     * The test checks if the problem is registered when the following method is null.
+     * A problem should NOT be registered in this case because the 'subscribe' method is not called
+     */
+    @Test
+    public void testSubscribeCheckerWithNullFollowingMethod() {
+
+        SubscribeVisitor mockSubscribeVisitor = new SubscribeVisitor(mockHolder, true);
+
+        String packageName = "com.azure";
+        String followingMethod = null;
+        int numOfInvocations = 0;
+        String mainMethodFound = "updateCheckpointAsync";
+        String objectType = "EventBatchContext";
+
+        verifyProblemRegistered(mockSubscribeVisitor, packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
+    }
+
+    /**
+     * This test method tests the visitMethodCallExpression method of the UpdateCheckpointAsyncBlockVisitor class.
+     * The test checks if the problem is registered when the package name is not com.azure....
      * A problem should NOT be registered in this case.
      */
     @Test
     public void testWithWrongPackage() {
+
+        BlockVisitor mockBlockVisitor = new BlockVisitor(mockHolder, true);
+
         String packageName = "com.microsoft.azure";
         String followingMethod = "block";
         int numOfInvocations = 0;
         String mainMethodFound = "updateCheckpointAsync";
         String objectType = "EventBatchContext";
 
-        verifyProblemRegistered(packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
-    }
-
-    /**
-     * This creates a new UpdateCheckpointAsyncVisitor object.
-     */
-    private JavaElementVisitor createVisitor() {
-        UpdateCheckpointAsyncVisitor mockVisitor = new UpdateCheckpointAsyncVisitor(mockHolder, true);
-        return mockVisitor;
+        verifyProblemRegistered(mockBlockVisitor, packageName, mainMethodFound, numOfInvocations, followingMethod, objectType);
     }
 
     /**
      * This method verifies if the problem is registered with the ProblemsHolder.
      */
-    private void verifyProblemRegistered(String packageName, String mainMethodFound, int numOfInvocations, String followingMethod, String objectType) {
+    private void verifyProblemRegistered(JavaElementVisitor mockVisitor, String packageName, String mainMethodFound, int numOfInvocations, String followingMethod, String objectType) {
 
         PsiReferenceExpression mockReferenceExpression = mock(PsiReferenceExpression.class);
 

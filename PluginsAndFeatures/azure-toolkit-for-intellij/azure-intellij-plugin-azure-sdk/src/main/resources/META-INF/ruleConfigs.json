@@ -68,15 +68,18 @@
       "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
     }
   },
-  "UpdateCheckpointAsyncCheck": {
+  "AbstractUpdateCheckpointAsyncChecker": {
+    "methods_to_check": "updateCheckpointAsync"
+  },
+  "UpdateCheckpointAsyncSubscribeChecker": {
+    "methods_to_check": "subscribe",
+    "anti_pattern_message": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
+  },
+  "UpdateCheckpointAsyncBlockChecker": {
     "methods_to_check": [
-      "updateCheckpointAsync",
       "block",
-      "subscribe"
+      "block_with_timeout"
     ],
-    "anti_pattern_message_map": {
-      "no_block": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint().",
-      "with_subscribe": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
-    }
+    "anti_pattern_message": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
   }
 }
