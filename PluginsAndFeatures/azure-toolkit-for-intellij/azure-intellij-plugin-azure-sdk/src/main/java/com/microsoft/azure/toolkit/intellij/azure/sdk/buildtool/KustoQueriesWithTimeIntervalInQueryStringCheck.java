@@ -79,7 +79,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
                 REGEX_PATTERNS.add(Pattern.compile(pattern));
             }
 
-            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || REGEX_PATTERNS.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || REGEX_PATTERNS.isEmpty();
         }
 
         // empty list to store time interval parameter names

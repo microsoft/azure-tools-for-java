@@ -10,6 +10,15 @@
                 text="Ask Azure SDK Help">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+
+        <action class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryToggleAction"
+                id="TelemetryToggleAction"
+                text="Enable Telemetry"
+                description="Toggle Telemetry">
+            <add-to-group group-id="ProblemsView.ToolWindow.Toolbar" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift T"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -96,16 +105,54 @@
 
         <localInspection
                 language="JAVA"
-                shortName="ConnectionStringCheck"
-                displayName="Connection String Check"
+                shortName="DetectDiscouragedAPIUsageCheck"
+                displayName="Detect Discouraged API UsageCheck"
                 groupName="Azure SDK Rules"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck">
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck">
 
             <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ConnectionStringCheck
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck
             </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="GetSyncPollerOnPollerFluxCheck"
+                displayName="GetSyncPoller On Poller Flux Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiveModeCheck"
+                displayName="ServiceBus ReceiveMode Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ReportTelemetry"
+                displayName="Report Telemetry"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider</class>
         </localInspection>
 
         <localInspection

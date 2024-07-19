@@ -13,10 +13,11 @@ class RuleConfig {
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
     private final String antiPatternMessage;
+    private final Map<String, String> discouragedIdentifiersMap;
     private final List<String> listedItemsToCheck;
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList());
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), "", Collections.emptyList());
 
     /**
      * Constructor for RuleConfig.
@@ -24,15 +25,26 @@ class RuleConfig {
      * @param methodsToCheck     List of methods to check.
      * @param clientsToCheck     List of clients to check.
      * @param servicesToCheck    List of services to check.
+     * @param discouragedIdentifiersMap Map of discouraged identifiers and their suggestions.
      * @param antiPatternMessage AntiPattern message.
      * @param listedItemsToCheck List of items to check for.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, String antiPatternMessage, List<String> listedItemsToCheck) {
+    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> discouragedIdentifiersMap, String antiPatternMessage, List<String> listedItemsToCheck) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
+        this.discouragedIdentifiersMap = discouragedIdentifiersMap;
         this.antiPatternMessage = antiPatternMessage;
         this.listedItemsToCheck = listedItemsToCheck;
+    }
+
+    /**
+     * This method checks if the rule should be skipped.
+     *
+     * @return True if the rule should be skipped, false otherwise.
+     */
+    boolean skipRuleCheck() {
+        return this == RuleConfig.EMPTY_RULE;
     }
 
     // Getters
@@ -42,7 +54,7 @@ class RuleConfig {
      *
      * @return List of methods to check
      */
-    public List<String> getMethodsToCheck() {
+    List<String> getMethodsToCheck() {
         return methodsToCheck;
     }
 
@@ -51,7 +63,7 @@ class RuleConfig {
      *
      * @return List of clients to check
      */
-    public List<String> getClientsToCheck() {
+    List<String> getClientsToCheck() {
         return clientsToCheck;
     }
 
@@ -60,7 +72,7 @@ class RuleConfig {
      *
      * @return List of services to check
      */
-    public List<String> getServicesToCheck() {
+    List<String> getServicesToCheck() {
         return servicesToCheck;
     }
 
@@ -69,7 +81,7 @@ class RuleConfig {
      *
      * @return Antipattern message
      */
-    public String getAntiPatternMessage() {
+    String getAntiPatternMessage() {
         return antiPatternMessage;
     }
 
@@ -80,7 +92,16 @@ class RuleConfig {
      *
      * @return List of items to check
      */
-    public List<String> getListedItemsToCheck() {
+    List<String> getListedItemsToCheck() {
         return listedItemsToCheck;
+    }
+
+    /**
+     * This method returns the map of discouraged identifiers
+     *
+     * @return Map of discouraged identifiers
+     */
+    Map<String, String> getDiscouragedIdentifiersMap() {
+        return discouragedIdentifiersMap;
     }
 }

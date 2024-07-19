@@ -128,6 +128,7 @@ public class RuleConfigLoader {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
+        Map<String, String > discouragedIdentifiersToCheck = new HashMap<>();
         String antiPatternMessage = null;
         List<String> listedItemsToCheck = new ArrayList<>();
 
@@ -159,10 +160,15 @@ public class RuleConfigLoader {
                     listedItemsToCheck = getValuesFromJsonReader(reader);
                     break;
                 default:
-                    reader.skipChildren();
+                    if (fieldName.endsWith("Check")) {
+                        discouragedIdentifiersToCheck = getMapOfDiscouragedIdentifiers(reader, discouragedIdentifiersToCheck);
+                    } else {
+                        reader.skipChildren();
+                    }
+                    break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessage, listedItemsToCheck);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, discouragedIdentifiersToCheck, antiPatternMessage, listedItemsToCheck);
     }
 
     /**
@@ -192,6 +198,32 @@ public class RuleConfigLoader {
             list.add(reader.getString());
         }
         return list;
+    }
+
+    private Map<String, String> getMapOfDiscouragedIdentifiers(JsonReader reader, Map<String, String> discouragedIdentifiersToCheckMap) throws IOException {
+
+        String identifiersToCheck = null;
+        String antiPatternMessage = null;
+
+        // Read the JSON file and parse the RuleConfig object
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Get the field name
+            String fieldName = reader.getFieldName();
+
+            switch (fieldName) {
+                case "methods_to_check":
+                    identifiersToCheck = getListFromJsonArray(reader).get(0);
+                    break;
+                case "anti_pattern_message":
+                    antiPatternMessage = reader.getString();
+                    break;
+            }
+            if (identifiersToCheck != null && antiPatternMessage != null) {
+                discouragedIdentifiersToCheckMap.put(identifiersToCheck, antiPatternMessage);
+            }
+        }
+        return discouragedIdentifiersToCheckMap;
     }
 
     /**
