@@ -83,7 +83,7 @@ public class UpdateCheckpointAsyncSubscribeChecker extends AbstractUpdateCheckpo
                 // Check if the following method is `subscribe` and
                 // Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
                 if (RULE_CONFIG.getMethodsToCheck().get(0).equals(followingMethod) && isCalledOnEventBatchContext(expression)) {
-                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("anti_pattern_message"));
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
             }
         }

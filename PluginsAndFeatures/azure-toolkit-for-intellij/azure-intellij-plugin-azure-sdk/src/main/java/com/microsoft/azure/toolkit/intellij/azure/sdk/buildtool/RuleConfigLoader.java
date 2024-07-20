@@ -144,22 +144,17 @@ class RuleConfigLoader {
             String fieldName = reader.getFieldName();
             // Check the field name and set the corresponding field in the RuleConfig object
             switch (fieldName) {
-                case "methods_to_check":
+                case "methodsToCheck":
                     methodsToCheck = getListFromJsonArray(reader);
                     break;
-                case "anti_pattern_message":
+                case "antiPatternMessage":
                     antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
                     break;
-                case "clients_to_check":
+                case "clientsToCheck":
                     clientsToCheck = getListFromJsonArray(reader);
                     break;
-                case "services_to_check":
+                case "servicesToCheck":
                     servicesToCheck = getListFromJsonArray(reader);
-                    break;
-                case "anti_pattern_message_map":
-                    // Move to the next token to process the nested object
-                    reader.nextToken();
-                    antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
                     break;
                 default:
                     if (fieldName.endsWith("Check")) {
@@ -209,7 +204,7 @@ class RuleConfigLoader {
      * The anti-pattern messages can be for a set of methods, clients, or services
      * The anti-pattern messages can also be for specific rules like "no_block" and "with_subscribe"
      *
-     * @param reader - the JsonReader object to read the JSON file
+     * @param reader                - the JsonReader object to read the JSON file
      * @param antiPatternMessageMap - the map to store the anti-pattern messages
      * @return Map of strings parsed from the JSON object
      * @throws IOException - if there is an error reading the file
@@ -225,19 +220,12 @@ class RuleConfigLoader {
             // Get the field name
             String fieldName = reader.getFieldName();
             switch (fieldName) {
-                case "methods_to_check":
+                case "methodsToCheck":
                     identifiersToCheck = getListFromJsonArray(reader).get(0);
                     break;
-                case "anti_pattern_message":
+                case "antiPatternMessage":
                     antiPatternMessage = reader.getString();
                     break;
-                case "no_block":
-                case "with_subscribe":
-                    reader.nextToken();
-                    antiPatternMessage = reader.getString();
-                    if (antiPatternMessage != null) {
-                        antiPatternMessageMap.put(fieldName, antiPatternMessage);
-                    }
                 default:
                     reader.skipChildren();
                     break;
@@ -248,15 +236,15 @@ class RuleConfigLoader {
                 // This map is for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages
                 if (identifiersToCheck != null) {
                     antiPatternMessageMap.put(identifiersToCheck, antiPatternMessage);
-                } else if (fieldName != "no_block" && fieldName != "with_subscribe") {
-
+                    System.out.println(antiPatternMessageMap);
+                } else {
                     // This map is for single anti-pattern messages of a particular rule
                     antiPatternMessageMap.put(fieldName, antiPatternMessage);
                     return antiPatternMessageMap;
                 }
             }
         }
-        // This map is to return "no_block" and "with_subscribe" anti-pattern messages
+        // This map is to return mapped anti-pattern messages that have a set of discouraged identifiers and a corresponding set of antipattern messages
         return antiPatternMessageMap;
     }
 }

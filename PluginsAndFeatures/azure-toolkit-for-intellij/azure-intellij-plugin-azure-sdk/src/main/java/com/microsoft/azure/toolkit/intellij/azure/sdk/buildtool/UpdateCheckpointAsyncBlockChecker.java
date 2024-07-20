@@ -83,7 +83,7 @@ public class UpdateCheckpointAsyncBlockChecker extends AbstractUpdateCheckpointA
                 // Check if the following method is not `block` or `block_with_timeout` and
                 // Check if the updateCheckpointAsync() method call is called on an EventBatchContext object
                 if ((followingMethod == null || !RULE_CONFIG.getMethodsToCheck().contains(followingMethod)) && isCalledOnEventBatchContext(expression)) {
-                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("anti_pattern_message"));
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
             }
         }

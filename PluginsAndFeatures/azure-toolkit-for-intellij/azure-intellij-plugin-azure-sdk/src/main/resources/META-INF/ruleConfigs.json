@@ -1,33 +1,33 @@
 {
   "StorageUploadWithoutLengthCheck": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "upload",
       "uploadWithResponse"
     ],
-    "anti_pattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+    "antiPatternMessage": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
   },
   "ServiceBusReceiverAsyncClientCheck": {
-    "clients_to_check": "ServiceBusReceiverAsyncClient",
-    "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    "clientsToCheck": "ServiceBusReceiverAsyncClient",
+    "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   },
   "DisableAutoCompleteCheck": {
-    "methods_to_check": "disableAutoComplete",
-    "clients_to_check": [
+    "methodsToCheck": "disableAutoComplete",
+    "clientsToCheck": [
       "ServiceBusReceiverClient",
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "anti_pattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
+    "antiPatternMessage": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
   },
   "DynamicClientCreationCheck": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "buildClient",
       "buildAsyncClient"
     ],
-    "anti_pattern_message": "Dynamic client creation detected. Create a single client instance and reuse it instead."
+    "antiPatternMessage": "Dynamic client creation detected. Create a single client instance and reuse it instead."
   },
   "HardcodedAPIKeysAndTokensCheck": {
-    "services_to_check": [
+    "servicesToCheck": [
       "AzureKeyCredential",
       "AccessToken",
       "KeyCredential",
@@ -38,48 +38,48 @@
       "UsernamePasswordCredentialBuilder",
       "BasicAuthenticationCredential"
     ],
-    "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
+    "antiPatternMessage": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
     "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   },
   "GetSyncPollerOnPollerFluxCheck": {
-    "methods_to_check": "getSyncPoller",
-    "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+    "methodsToCheck": "getSyncPoller",
+    "antiPatternMessage": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
   },
   "ServiceBusReceiveModeCheck": {
-    "clients_to_check": [
+    "clientsToCheck": [
       "ServiceBusReceiverClient",
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "methods_to_check": [
+    "methodsToCheck": [
       "receiveMode",
       "prefetchCount"
     ],
-    "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
+    "antiPatternMessage": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
   },
   "DetectDiscouragedAPIUsageCheck": {
     "ConnectionStringCheck": {
-      "methods_to_check": "connectionString",
-      "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
+      "methodsToCheck": "connectionString",
+      "antiPatternMessage": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
       "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
     },
     "GetCompletionsInChatApplicationsCheck": {
-      "methods_to_check": "getCompletions",
-      "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
+      "methodsToCheck": "getCompletions",
+      "antiPatternMessage": "getCompletions API detected. Use the getChatCompletions API instead."
     }
   },
   "AbstractUpdateCheckpointAsyncChecker": {
-    "methods_to_check": "updateCheckpointAsync"
+    "methodsToCheck": "updateCheckpointAsync"
   },
   "UpdateCheckpointAsyncSubscribeChecker": {
-    "methods_to_check": "subscribe",
-    "anti_pattern_message": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
+    "methodsToCheck": "subscribe",
+    "antiPatternMessage": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
   },
   "UpdateCheckpointAsyncBlockChecker": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "block",
       "block_with_timeout"
     ],
-    "anti_pattern_message": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
+    "antiPatternMessage": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
   }
 }
