@@ -49,5 +49,11 @@
   "GetSyncPollerOnPollerFluxCheck": {
     "methods_to_check": "getSyncPoller",
     "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+  },
+  "UpgradeLibraryVersionCheck": {
+    "anti_pattern_message": "A newer stable minor version of {{fullName}} is available. We recommend you update to version {{recommendedVersion}}."
+  },
+  "IncompatibleDependencyCheck": {
+    "anti_pattern_message": "The version of {{fullName}} is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group {{recommendedVersion}} to ensure proper functionality."
   }
 }
