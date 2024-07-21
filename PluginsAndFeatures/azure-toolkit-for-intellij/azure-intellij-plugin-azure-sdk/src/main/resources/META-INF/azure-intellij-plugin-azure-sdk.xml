@@ -49,20 +49,6 @@
 
         <localInspection
                 language="JAVA"
-                shortName="ServiceBusReceiverAsyncClientCheck"
-                displayName="Low level ServiceBusReceiverAsyncClient check"
-                groupName="Azure SDK Rules"
-                enabledByDefault="true"
-                level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
-
-            <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
-            </class>
-        </localInspection>
-
-        <localInspection
-                language="JAVA"
                 shortName="DisableAutoCompleteCheck"
                 displayName="Disable Auto-Complete Check"
                 groupName="Azure SDK Rules"
@@ -153,6 +139,20 @@
                 enabledByDefault="true"
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider</class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DetectDiscouragedClientCheck"
+                displayName="Detect discouraged client check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
+            </class>
         </localInspection>
     </extensions>
 </idea-plugin>
