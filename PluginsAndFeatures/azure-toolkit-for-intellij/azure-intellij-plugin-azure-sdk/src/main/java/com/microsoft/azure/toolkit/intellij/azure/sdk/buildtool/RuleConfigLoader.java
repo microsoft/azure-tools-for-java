@@ -128,6 +128,7 @@ public class RuleConfigLoader {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
+        Map<String, String> discouragedIdentifiersToCheck = new HashMap<>();
         String antiPatternMessage = null;
 
         // Check if the JSON file starts with an object
@@ -155,10 +156,15 @@ public class RuleConfigLoader {
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
                 default:
-                    reader.skipChildren();
+                    if (fieldName.endsWith("Check")) {
+                        discouragedIdentifiersToCheck = getMapOfDiscouragedIdentifiers(reader, discouragedIdentifiersToCheck);
+                    } else {
+                        reader.skipChildren();
+                    }
+                    break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, discouragedIdentifiersToCheck, antiPatternMessage);
     }
 
     /**
@@ -188,5 +194,40 @@ public class RuleConfigLoader {
             list.add(reader.getString());
         }
         return list;
+    }
+
+    /**
+     * This method parses the map of discouraged identifiers from the JSON file
+     * This is used for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages.
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return Map of discouraged identifiers parsed from the JSON file
+     * @throws IOException - if there is an error reading the file
+     */
+    private Map<String, String> getMapOfDiscouragedIdentifiers(JsonReader reader, Map<String, String> discouragedIdentifiersToCheckMap) throws IOException {
+
+        String identifiersToCheck = null;
+        String antiPatternMessage = null;
+
+        // Read the JSON file and parse the RuleConfig object
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Get the field name
+            String fieldName = reader.getFieldName();
+
+            switch (fieldName) {
+                case "methods_to_check":
+                case "clients_to_check":
+                    identifiersToCheck = getListFromJsonArray(reader).get(0);
+                    break;
+                case "anti_pattern_message":
+                    antiPatternMessage = reader.getString();
+                    break;
+            }
+            if (identifiersToCheck != null && antiPatternMessage != null) {
+                discouragedIdentifiersToCheckMap.put(identifiersToCheck, antiPatternMessage);
+            }
+        }
+        return discouragedIdentifiersToCheckMap;
     }
 }
