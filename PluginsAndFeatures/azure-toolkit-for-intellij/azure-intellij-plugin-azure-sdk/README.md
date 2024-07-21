@@ -199,3 +199,16 @@ integration, telemetry connectivity, and Azure Toolkit integration.
     - Please refer to
     the [EventProcessorClient Class](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.eventprocessorclient?view=azure-java-stable)
     for more information.
+
+10. #### Using Batch Operations Instead of Single Operations in a Loop
+
+- **Anti-pattern**: Calling a single operation in a loop when a batch operation API exists in the SDK that can handle
+  multiple actions in one request.
+- **Issue**:
+    - Repeatedly calling a single operation in a loop leads to multiple network requests, which can be inefficient and
+      slow.
+    - Multiple requests also consume more resources (e.g., network bandwidth, server processing) compared to a single
+      batch request.
+- **Severity: WARNING**
+- **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple
+  actions in a single request.

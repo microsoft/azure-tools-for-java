@@ -77,5 +77,9 @@
       "clients_to_check": "EventHubConsumerAsyncClient",
       "anti_pattern_message": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
     }
+  },
+  "SingleOperationInLoopCheck": {
+    "methods_to_check": ["detectLanguageBatch", "recognizeEntitiesBatch", "recognizePiiEntitiesBatch", "recognizeLinkedEntitiesBatch", "extractKeyPhrasesBatch", "analyzeSentimentBatch"],
+    "anti_pattern_message": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
   }
 }
