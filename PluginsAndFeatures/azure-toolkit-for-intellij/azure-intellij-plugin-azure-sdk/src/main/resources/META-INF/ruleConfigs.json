@@ -51,10 +51,13 @@
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "methods_to_check": ["receiveMode","prefetchCount"],
+    "methods_to_check": [
+      "receiveMode",
+      "prefetchCount"
+    ],
     "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
   },
-  "DetectDiscouragedAPIUsageCheck" : {
+  "DetectDiscouragedAPIUsageCheck": {
     "ConnectionStringCheck": {
       "methods_to_check": "connectionString",
       "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
@@ -63,6 +66,16 @@
     "GetCompletionsInChatApplicationsCheck": {
       "methods_to_check": "getCompletions",
       "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
+    }
+  },
+  "DetectDiscouragedClientCheck": {
+    "ServiceBusReceiverAsyncClientCheck": {
+      "clients_to_check": "ServiceBusReceiverAsyncClient",
+      "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    },
+    "EventHubConsumerAsyncClientCheck": {
+      "clients_to_check": "EventHubConsumerAsyncClient",
+      "anti_pattern_message": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
     }
   },
   "SingleOperationInLoopCheck": {

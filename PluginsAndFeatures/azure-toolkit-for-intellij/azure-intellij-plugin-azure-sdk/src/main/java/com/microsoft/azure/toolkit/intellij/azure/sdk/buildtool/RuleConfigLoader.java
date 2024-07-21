@@ -128,7 +128,7 @@ public class RuleConfigLoader {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
-        Map<String, String > discouragedIdentifiersToCheck = new HashMap<>();
+        Map<String, String> discouragedIdentifiersToCheck = new HashMap<>();
         String antiPatternMessage = null;
 
         // Check if the JSON file starts with an object
@@ -196,6 +196,14 @@ public class RuleConfigLoader {
         return list;
     }
 
+    /**
+     * This method parses the map of discouraged identifiers from the JSON file
+     * This is used for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages.
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return Map of discouraged identifiers parsed from the JSON file
+     * @throws IOException - if there is an error reading the file
+     */
     private Map<String, String> getMapOfDiscouragedIdentifiers(JsonReader reader, Map<String, String> discouragedIdentifiersToCheckMap) throws IOException {
 
         String identifiersToCheck = null;
@@ -209,6 +217,7 @@ public class RuleConfigLoader {
 
             switch (fieldName) {
                 case "methods_to_check":
+                case "clients_to_check":
                     identifiersToCheck = getListFromJsonArray(reader).get(0);
                     break;
                 case "anti_pattern_message":

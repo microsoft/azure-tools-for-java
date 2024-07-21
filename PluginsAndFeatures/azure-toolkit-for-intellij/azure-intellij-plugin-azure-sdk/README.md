@@ -11,7 +11,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Rule Set Integration**: This feature enables users to import and customize rule sets, tailoring the plugin to their
   specific needs.
 - **Telemetry Integration**: This feature connects the plugin to the backend with Application Insights, allowing for
-  efficient data transmission.
+  efficient data transmission. Refer to [configure-telmetry.md](configure-telemetry.md) on details to setup this feature
 - **Azure Toolkit for IntelliJ Integration**: This feature allows the plugin to integrate with the Azure Toolkit for
   IntelliJ, providing extended functionality
 - **Editor Integration**: This feature offers continuous analysis and real-time code suggestions, enhancing the coding
@@ -160,7 +160,47 @@ integration, telemetry connectivity, and Azure Toolkit integration.
       the [Azure OpenAI client library for Java](https://learn.microsoft.com/java/api/overview/azure/ai-openai-readme?view=azure-java-preview)
       for additional information.
 
-9. #### Using Batch Operations Instead of Single Operations in a Loop
+9. #### Use these encouraged clients instead of their corresponding discouraged clients
+
+    ##### a. Use **`ServiceBusProcessorClient`** instead of **`ServiceBusReceiverAsyncClient`**
+
+    ##### b. Use **`EventProcessorClient`** instead of **`EventHubConsumerAsyncClient`**
+    
+    ##### Anti-pattern:
+    
+    - Both `ServiceBusReceiverAsyncClient` and `EventHubConsumerAsyncClient` are low-level APIs. They provide fine-grained
+      control over message/event handling but require a high level of proficiency in Reactive programming.
+    - Due to their complexity and the need for a deep understanding of Reactive programming, there is a higher risk of these
+      clients being used incorrectly or inefficiently, especially by developers who are not familiar with Reactive
+      paradigms.
+
+    ##### Issue:
+
+    ##### a. **ServiceBusReceiverAsyncClient**
+
+   - **Anti-pattern**: The `ServiceBusReceiverAsyncClient` is considered an anti-pattern because it demands detailed
+   handling of messages, which can be overly complex and unnecessary for most common use cases.
+   - **Severity: WARNING**
+   - **Recommendation**: Instead of using `ServiceBusReceiverAsyncClient`, it is recommended to
+     use `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies
+     message consumption, making it a more suitable option for most developers and scenarios.
+   - Please refer to
+     the [Azure Service Bus client for Java](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
+     for more information.
+
+    ##### b. **EventHubConsumerAsyncClient**
+    
+    - **Anti-pattern**: The `EventHubConsumerAsyncClient` is considered an anti-pattern due to its low-level nature and the
+    complexity involved in event handling.
+    - **Severity: WARNING**
+    - **Recommendation**: Instead of using `EventHubConsumerAsyncClient`, it is advised to use `EventProcessorClient`.
+    The `EventProcessorClient` provides a higher-level abstraction that simplifies event processing, making it the
+    preferred choice for most developers.
+    - Please refer to
+    the [EventProcessorClient Class](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.eventprocessorclient?view=azure-java-stable)
+    for more information.
+
+10. #### Using Batch Operations Instead of Single Operations in a Loop
 
 - **Anti-pattern**: Calling a single operation in a loop when a batch operation API exists in the SDK that can handle
   multiple actions in one request.
