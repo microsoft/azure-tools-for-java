@@ -83,9 +83,9 @@
     "anti_pattern_message": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
   },
   "UpgradeLibraryVersionCheck": {
-    "anti_pattern_message": "A newer stable minor version of {{fullName}} is available. We recommend you update to version {{recommendedVersion}}."
+    "anti_pattern_message": "A newer stable minor version of {{fullName}} is available. We recommend you update to version {{recommendedVersion}}.x"
   },
   "IncompatibleDependencyCheck": {
-    "anti_pattern_message": "The version of {{fullName}} is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group {{recommendedVersion}} to ensure proper functionality."
+    "anti_pattern_message": "The version of {{fullName}} is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group {{recommendedVersion}}.x to ensure proper functionality."
   }
 }
