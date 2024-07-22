@@ -26,11 +26,13 @@ import java.util.regex.Pattern;
  * This class is an inspection tool that checks for Kusto queries with time intervals in the query string.
  * This approach makes queries less flexible and harder to troubleshoot.
  * This inspection tool checks for the following anti-patterns:
- * 1. Queries that use the "ago" function with a time interval.
- * 2. Queries that use the "datetime" function with a specific datetime.
- * 3. Queries that use the "now" function to get the current timestamp.
- * 4. Queries that use the "startofday", "startofmonth", or "startofyear" functions.
- * 5. Queries that use the "between" function with datetime values.
+ * <ul>
+ * <li> Queries that use the "ago" function with a time interval.</li>
+ * <li> Queries that use the "datetime" function with a specific datetime.</li>
+ * <li> Queries that use the "now" function to get the current timestamp.</li>
+ * <li> Queries that use the "startofday", "startofmonth", or "startofyear" functions.</li>
+ * <li> Queries that use the "between" function with datetime values.</li>
+ * </ul>
  * <p>
  * When the anti-patterns are detected as parameters of Azure client method calls, a problem is registered.
  */
@@ -83,7 +85,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
         }
 
         // empty list to store time interval parameter names
-        private List<String> timeIntervalParameters = new ArrayList<>();
+        private final List<String> timeIntervalParameters = new ArrayList<>();
 
         /**
          * Constructor for the KustoQueriesVisitor class
@@ -120,7 +122,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             }
 
             if (element instanceof PsiMethodCallExpressionImpl) {
-                handleMethodCall((PsiMethodCallExpressionImpl) element);
+                checkParameterNames((PsiMethodCallExpressionImpl) element);
             }
 
             if (element instanceof PsiLocalVariable) {
@@ -133,6 +135,35 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             // eg ("datetime" + startDate), where startDate is a variable
             if (element instanceof PsiPolyadicExpression) {
                 handlePolyadicExpression((PsiPolyadicExpression) element);
+            }
+        }
+
+        /**
+         * This method checks the expression for the anti-patterns by matching regex patterns with the expression text
+         * and registers a problem if an anti-pattern is detected
+         *
+         * @param expression - the expression to check
+         * @param element    - the element to check
+         */
+        void checkExpression(PsiExpression expression, PsiElement element) {
+            if (expression == null) {
+                return;
+            }
+            String text = expression.getText();
+
+            // Check if the expression text contains any of the regex patterns
+            boolean foundAntiPattern = REGEX_PATTERNS.stream().anyMatch(pattern -> pattern.matcher(text).find());
+
+
+            // If an anti-pattern is detected, register a problem
+            if (foundAntiPattern) {
+                PsiElement parentElement = element.getParent();
+
+                if (parentElement instanceof PsiLocalVariable) {
+                    PsiLocalVariable variable = (PsiLocalVariable) parentElement;
+                    String variableName = variable.getName();
+                    timeIntervalParameters.add(variableName);
+                }
             }
         }
 
@@ -170,7 +201,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
          *
          * @param methodCall - the method call to check
          */
-        private void handleMethodCall(PsiMethodCallExpressionImpl methodCall) {
+        private void checkParameterNames(PsiMethodCallExpressionImpl methodCall) {
             // check the parameters of the method call
             PsiExpressionList argumentList = methodCall.getArgumentList();
             PsiExpression[] arguments = argumentList.getExpressions();
@@ -196,35 +227,6 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
 
                 if (isAzureClient(methodCall)) {
                     holder.registerProblem(methodCall, RULE_CONFIG.getAntiPatternMessage());
-                }
-            }
-        }
-
-        /**
-         * This method checks the expression for the anti-patterns by matching regex patterns with the expression text
-         * and registers a problem if an anti-pattern is detected
-         *
-         * @param expression - the expression to check
-         * @param element    - the element to check
-         */
-        void checkExpression(PsiExpression expression, PsiElement element) {
-            if (expression == null) {
-                return;
-            }
-            String text = expression.getText();
-
-            // Check if the expression text contains any of the regex patterns
-            boolean foundAntiPattern = REGEX_PATTERNS.stream().anyMatch(pattern -> pattern.matcher(text).find());
-
-
-            // If an anti-pattern is detected, register a problem
-            if (foundAntiPattern) {
-                PsiElement parentElement = element.getParent();
-
-                if (parentElement instanceof PsiLocalVariable) {
-                    PsiLocalVariable variable = (PsiLocalVariable) parentElement;
-                    String variableName = variable.getName();
-                    timeIntervalParameters.add(variableName);
                 }
             }
         }

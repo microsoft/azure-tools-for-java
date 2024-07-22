@@ -31,13 +31,15 @@ import static org.mockito.Mockito.verify;
  * This class tests the KustoQueriesWithTimeIntervalInQueryStringCheck class.
  * <p>
  * These are some example queries that should be flagged:
- * 1. "String query1 = \"| where timestamp > ago(1d)\";": This query uses the ago function to create a time interval of 1 day. This should be FLAGGED.
- * 2. "String query2 = \"| where timestamp > datetime(2021-01-01)\";": This query compares the timestamp to a specific datetime. This should be FLAGGED.
- * 3. "String query3 = \"| where timestamp > now()\";": This query uses the now function to get the current timestamp. This should be FLAGGED.
- * 4. "String query4 = \"| where timestamp > startofday()\";": This query uses the startofday function to get the start of the current day. This should be FLAGGED.
- * 5. "String query5 = \"| where timestamp > startofmonth()\";": This query uses the startofmonth function to get the start of the current month. This should be FLAGGED.
- * 6. "String query11 = \"| where timestamp > ago(\" + days + \")\";": This query uses a variable to define the time interval. This should be FLAGGED.
- * 7. "String query12 = \"| where timestamp > datetime(\" + date + \")\";": This query uses a variable to define the datetime. This should not be FLAGGED.
+ * <ul>
+ * <li> "String query1 = \"| where timestamp > ago(1d)\";": This query uses the ago function to create a time interval of 1 day. This should be FLAGGED </li>
+ * <li> "String query2 = \"| where timestamp > datetime(2021-01-01)\";": This query compares the timestamp to a specific datetime. This should be FLAGGED </li>
+ * <li> "String query3 = \"| where timestamp > now()\";": This query uses the now function to get the current timestamp. This should be FLAGGED </li>
+ * <li> "String query4 = \"| where timestamp > startofday()\";": This query uses the startofday function to get the start of the current day. This should be FLAGGED </li>
+ * <li> "String query5 = \"| where timestamp > startofmonth()\";": This query uses the startofmonth function to get the start of the current month. This should be FLAGGED </li>
+ * <li> "String query11 = \"| where timestamp > ago(\" + days + \")\";": This query uses a variable to define the time interval. This should be FLAGGED </li>
+ * <li> "String query12 = \"| where timestamp > datetime(\" + date + \")\";": This query uses a variable to define the datetime. This should not be FLAGGED </li>
+ * </ul>
  * If these queries are used in a method call to an Azure client, they should be flagged.
  * <p>
  * eg BlobClient blobAsyncClient = new BlobClientBuilder().buildClient();
