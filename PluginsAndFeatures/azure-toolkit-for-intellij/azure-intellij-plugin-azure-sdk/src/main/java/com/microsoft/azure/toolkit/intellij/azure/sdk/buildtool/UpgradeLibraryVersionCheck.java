@@ -32,13 +32,49 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
     }
 
     /**
+     * Method to check the version of the library against the recommended version.
+     *
+     * @param fullName       The full name of the library
+     * @param currentVersion The current version of the library
+     * @param holder         The holder for the problems found
+     * @param versionTag     The version tag in the pom.xml file for the library version
+     */
+    @Override
+    protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionTag) throws IOException {
+
+        // Check if the recommended version is available for the library
+        if (!(UpgradeLibraryVersionVisitor.getLibraryRecommendedVersionMap().containsKey(fullName))) {
+            return;
+        }
+        String recommendedVersion = UpgradeLibraryVersionVisitor.getLibraryRecommendedVersionMap().get(fullName);
+
+        // Compare minor versions only
+        String[] currentVersionParts = currentVersion.split("\\.");
+
+        // Check if the version is in the correct format
+        if (!(currentVersionParts.length > 1)) {
+            return;
+        }
+
+        // Parse to get the minor version
+        String currentMinor = currentVersionParts[0] + "." + currentVersionParts[1];
+
+        // Flag the version if the minor version is different from the recommended version
+        if (!currentMinor.equals(recommendedVersion)) {
+            holder.registerProblem(versionTag, getFormattedMessage(fullName, recommendedVersion, UpgradeLibraryVersionVisitor.RULE_CONFIG));
+        }
+    }
+
+    /**
      * Visitor class for the inspection.
      * Checks the version of the libraries in the pom.xml file against the recommended version.
      * The recommended version is fetched from a file hosted on GitHub.
      * The recommended version is compared against the minor version of the library. Minor version is the first two parts of the version number.
      * If the minor version is different from the recommended version, a warning is flagged and the recommended version is suggested.
      */
-    static class UpgradeLibraryVersionVisitor extends LibraryVersionVisitorBase {
+    class UpgradeLibraryVersionVisitor extends PsiElementVisitor {
+
+        private final ProblemsHolder holder;
 
         /**
          * Constructs a new instance of the visitor.
@@ -47,7 +83,7 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
          * @param isOnTheFly boolean to check if the inspection is on the fly
          */
         UpgradeLibraryVersionVisitor(ProblemsHolder holder, boolean isOnTheFly) {
-            super(holder, isOnTheFly);
+            this.holder = holder;
         }
 
         // Map to store the recommended version for each library
@@ -84,44 +120,10 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
 
             if (file instanceof XmlFile && file.getName().equals("pom.xml")) {
                 try {
-                    checkPomXml((XmlFile) file, holder);
+                    UpgradeLibraryVersionCheck.this.checkPomXml((XmlFile) file, holder);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            }
-        }
-
-        /**
-         * Method to check the version of the library against the recommended version.
-         *
-         * @param fullName       The full name of the library
-         * @param currentVersion The current version of the library
-         * @param holder         The holder for the problems found
-         * @param versionTag     The version tag in the pom.xml file for the library version
-         */
-        @Override
-        protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionTag) throws IOException {
-
-            // Check if the recommended version is available for the library
-            if (!(getLibraryRecommendedVersionMap().containsKey(fullName))) {
-                return;
-            }
-            String recommendedVersion = getLibraryRecommendedVersionMap().get(fullName);
-
-            // Compare minor versions only
-            String[] currentVersionParts = currentVersion.split("\\.");
-
-            // Check if the version is in the correct format
-            if (!(currentVersionParts.length > 1)) {
-                return;
-            }
-
-            // Parse to get the minor version
-            String currentMinor = currentVersionParts[0] + "." + currentVersionParts[1];
-
-            // Flag the version if the minor version is different from the recommended version
-            if (!currentMinor.equals(recommendedVersion)) {
-                holder.registerProblem(versionTag, getFormattedMessage(fullName, recommendedVersion, RULE_CONFIG));
             }
         }
 

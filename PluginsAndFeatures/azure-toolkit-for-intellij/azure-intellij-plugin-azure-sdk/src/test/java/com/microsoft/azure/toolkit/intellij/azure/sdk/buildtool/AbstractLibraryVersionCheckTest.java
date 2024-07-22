@@ -37,7 +37,10 @@ class AbstractLibraryVersionCheckTest {
     private ProblemsHolder mockHolder;
 
     @Mock
-    private PsiElementVisitor mockVisitor;
+    private UpgradeLibraryVersionVisitor mockUpgradeLibraryVersionVisitor;
+
+    @Mock
+    private IncompatibleDependencyVisitor mockIncompatibleDependencyVisitor;
 
     @Mock
     private XmlFile mockFile;
@@ -48,7 +51,13 @@ class AbstractLibraryVersionCheckTest {
         mockFile = mock(XmlFile.class);
 
         // Set the version groups that are "discovered" by the visitor to test the IncompatibleDependencyVisitor
-        IncompatibleDependencyVisitor.encounteredVersionGroups = new HashSet<>(Arrays.asList("jackson_2.10", "gson_2.10"));
+        IncompatibleDependencyCheck.encounteredVersionGroups = new HashSet<>(Arrays.asList("jackson_2.10", "gson_2.10"));
+
+        UpgradeLibraryVersionCheck mockCheck = new UpgradeLibraryVersionCheck();
+        mockUpgradeLibraryVersionVisitor = mockCheck.new UpgradeLibraryVersionVisitor(mockHolder, true);
+
+        IncompatibleDependencyCheck mockIncompatibleDependencyCheck = new IncompatibleDependencyCheck();
+        mockIncompatibleDependencyVisitor = mockIncompatibleDependencyCheck.new IncompatibleDependencyVisitor(mockHolder, true);
     }
 
     /**
@@ -57,15 +66,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testUpgradeCheckOutOfDate() {
-
-        UpgradeLibraryVersionVisitor mockVisitor = new UpgradeLibraryVersionVisitor(mockHolder, true);
         String groupIDValue = "com.azure";
         String artifactIDValue = "azure-messaging-servicebus";
         String versionValue = "7.0.0";
         int numOfInvocations = 1;
         String recommendedVersion = "7.17";
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockUpgradeLibraryVersionVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -74,15 +81,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testUpgradeCheckUpToDate() {
-
-        UpgradeLibraryVersionVisitor mockVisitor = new UpgradeLibraryVersionVisitor(mockHolder, true);
         String groupIDValue = "com.azure";
         String artifactIDValue = "azure-messaging-servicebus";
         String versionValue = "7.17.1";
         int numOfInvocations = 0;
         String recommendedVersion = "7.17";
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockUpgradeLibraryVersionVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -92,14 +97,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testUpgradeCheckMissingVersion() {
-        UpgradeLibraryVersionVisitor mockVisitor = new UpgradeLibraryVersionVisitor(mockHolder, true);
         String groupIDValue = "com.example";
         String artifactIDValue = "example-lib";
         String versionValue = "";  // Empty version
         int numOfInvocations = 0;  // No problems will be registered by this checker because its out of scope
         String recommendedVersion = null;
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockUpgradeLibraryVersionVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -108,15 +112,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testIncompatibleDifferentMinorGroup() {
-
-        IncompatibleDependencyVisitor mockVisitor = new IncompatibleDependencyVisitor(mockHolder, true);
         String groupIDValue = "com.google.code.gson";
         String artifactIDValue = "gson";
         String versionValue = "2.9.0";
         int numOfInvocations = 1;
         String recommendedVersion = "2.10";
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockIncompatibleDependencyVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -125,15 +127,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testIncompatibleCheckSameMinorGroup() {
-
-        IncompatibleDependencyVisitor mockVisitor = new IncompatibleDependencyVisitor(mockHolder, true);
         String groupIDValue = "com.fasterxml.jackson.core";
         String artifactIDValue = "jackson-databind";
         String versionValue = "2.10.0";
         int numOfInvocations = 0;
         String recommendedVersion = "2.10";
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockIncompatibleDependencyVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -143,14 +143,13 @@ class AbstractLibraryVersionCheckTest {
      */
     @Test
     public void testIncompatibleCheckDifferentMajorVersion() {
-        IncompatibleDependencyVisitor mockVisitor = new IncompatibleDependencyVisitor(mockHolder, true);
         String groupIDValue = "com.fasterxml.jackson.core";
         String artifactIDValue = "jackson-databind";
         String versionValue = "3.0.0";  // Different major version
         int numOfInvocations = 0;
         String recommendedVersion = null;
 
-        verifyRegisterProblem(mockVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
+        verifyRegisterProblem(mockIncompatibleDependencyVisitor, groupIDValue, artifactIDValue, versionValue, numOfInvocations, recommendedVersion);
     }
 
     /**
@@ -211,9 +210,9 @@ class AbstractLibraryVersionCheckTest {
         visitor.visitFile(mockFile);
 
         if (visitor instanceof UpgradeLibraryVersionVisitor) {
-            verify(mockHolder, times(numOfInvocations)).registerProblem(versionTag, "A newer stable minor version of " + groupIDValue + ":" + artifactIDValue + " is available. We recommend you update to version " + recommendedVersion + ".");
+            verify(mockHolder, times(numOfInvocations)).registerProblem(versionTag, "A newer stable minor version of " + groupIDValue + ":" + artifactIDValue + " is available. We recommend you update to version " + recommendedVersion + ".x");
         } else if (visitor instanceof IncompatibleDependencyVisitor) {
-            verify(mockHolder, times(numOfInvocations)).registerProblem(versionTag, "The version of " + groupIDValue + ":" + artifactIDValue + " is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group " + recommendedVersion + " to ensure proper functionality.");
+            verify(mockHolder, times(numOfInvocations)).registerProblem(versionTag, "The version of " + groupIDValue + ":" + artifactIDValue + " is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group " + recommendedVersion + ".x to ensure proper functionality.");
         }
     }
 }

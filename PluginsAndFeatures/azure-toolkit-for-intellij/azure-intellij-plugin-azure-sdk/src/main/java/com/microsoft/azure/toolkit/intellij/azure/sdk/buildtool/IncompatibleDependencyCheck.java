@@ -22,6 +22,9 @@ import java.util.logging.Logger;
  */
 public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
 
+    // Set to store the encountered version groups
+    static Set<String> encounteredVersionGroups = new HashSet<>();
+
     /**
      * Abstract method to build the specific visitor for the inspection.
      *
@@ -35,16 +38,62 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
     }
 
     /**
+     * Method to check the version of the dependency found in the project code against the compatible versions.
+     * If the version is not compatible, a warning is flagged and the compatible version is suggested.
+     *
+     * @param fullName       The full name of the library eg "com.azure:azure-core"
+     * @param currentVersion The current version of the library
+     * @param holder         The holder for the problems found
+     * @param versionElement The version element in the pom.xml file to check
+     */
+    @Override
+    protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionElement) {
+
+        // get version group of the dependency found in the project code
+        String versionGroup = IncompatibleDependencyVisitor.getGroupVersion(fullName, currentVersion);
+
+        if (versionGroup == null) {
+            return;
+        }
+
+        // add an encountered version group to the encountered version groups
+        if (encounteredVersionGroups.isEmpty()) {
+            encounteredVersionGroups.add(versionGroup);
+        }
+
+        // check if the encountered version group is not already in the encountered version groups
+        for (String encounteredVersionGroup : encounteredVersionGroups) {
+
+            // check if the encountered version group is not the same as the current version group
+            // and the encountered version group starts with the version group's substring
+            // eg if versionGroup = "jackson_2.10" and encounteredVersionGroup = "jackson_2.10, no problem is flagged
+            // if versionGroup = "jackson_2.10" and encounteredVersionGroup = "jackson_2.11", a problem is flagged
+
+            // The substring check is used to determine if versionGroup and encounteredVersionGroup are in the same library
+            if (!encounteredVersionGroup.equals(versionGroup) && encounteredVersionGroup.startsWith(versionGroup.substring(0, versionGroup.lastIndexOf("_")))) {
+                String recommendedVersion = encounteredVersionGroup.substring(encounteredVersionGroup.lastIndexOf("_") + 1);
+
+                // Flag the version if the minor version is different from the recommended version
+                String message = getFormattedMessage(fullName, recommendedVersion, IncompatibleDependencyVisitor.RULE_CONFIG);
+                holder.registerProblem(versionElement, message);
+            }
+        }
+    }
+
+    /**
      * Visitor class for the inspection.
      * Checks the version of the libraries in the pom.xml file against compatible versions.
      * The compatible versions are fetched from a file hosted on GitHub.
      * The compatible versions are compared against the minor version of the library. Minor version is the first two parts of the version number.
      * If the minor version is different from the compatible version, a warning is flagged and the compatible version is suggested.
      */
-    static class IncompatibleDependencyVisitor extends LibraryVersionVisitorBase {
+    class IncompatibleDependencyVisitor extends PsiElementVisitor {
 
-        // Set to store the encountered version groups
-        static Set<String> encounteredVersionGroups = new HashSet<>();
+        // Holder for the problems found
+        private final ProblemsHolder holder;
+
+        // Map to store the compatible versions for each library
+        private static WeakReference<Map<String, Set<String>>> FILE_CONTENT_REF;
         private static final Logger LOGGER = Logger.getLogger(IncompatibleDependencyCheck.class.getName());
 
         /**
@@ -54,11 +103,9 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
          * @param isOnTheFly boolean to check if the inspection is on the fly
          */
         IncompatibleDependencyVisitor(ProblemsHolder holder, boolean isOnTheFly) {
-            super(holder, isOnTheFly);
+            this.holder = holder;
         }
 
-        // Map to store the compatible versions for each library
-        private static WeakReference<Map<String, Set<String>>> FILE_CONTENT_REF;
         private static final RuleConfig RULE_CONFIG;
         private static final boolean SKIP_WHOLE_RULE;
 
@@ -91,53 +138,9 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
 
                 // Check the pom.xml file for the library version
                 try {
-                    checkPomXml((XmlFile) file, holder);
+                    IncompatibleDependencyCheck.this.checkPomXml((XmlFile) file, holder);
                 } catch (IOException e) {
                     LOGGER.severe("Error checking pom.xml file: " + e);
-                }
-            }
-        }
-
-
-        /**
-         * Method to check the version of the dependency found in the project code against the compatible versions.
-         * If the version is not compatible, a warning is flagged and the compatible version is suggested.
-         *
-         * @param fullName       The full name of the library eg "com.azure:azure-core"
-         * @param currentVersion The current version of the library
-         * @param holder         The holder for the problems found
-         * @param versionElement The version element in the pom.xml file to check
-         */
-        @Override
-        protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionElement) {
-
-            // get version group of the dependency found in the project code
-            String versionGroup = getGroupVersion(fullName, currentVersion);
-
-            if (versionGroup == null) {
-                return;
-            }
-
-            // add an encountered version group to the encountered version groups
-            if (encounteredVersionGroups.isEmpty()) {
-                encounteredVersionGroups.add(versionGroup);
-            }
-
-            // check if the encountered version group is not already in the encountered version groups
-            for (String encounteredVersionGroup : encounteredVersionGroups) {
-
-                // check if the encountered version group is not the same as the current version group
-                // and the encountered version group starts with the version group's substring
-                // eg if versionGroup = "jackson_2.10" and encounteredVersionGroup = "jackson_2.10, no problem is flagged
-                // if versionGroup = "jackson_2.10" and encounteredVersionGroup = "jackson_2.11", a problem is flagged
-
-                // The substring check is used to determine if versionGroup and encounteredVersionGroup are in the same library
-                if (!encounteredVersionGroup.equals(versionGroup) && encounteredVersionGroup.startsWith(versionGroup.substring(0, versionGroup.lastIndexOf("_")))) {
-                    String recommendedVersion = encounteredVersionGroup.substring(encounteredVersionGroup.lastIndexOf("_") + 1);
-
-                    // Flag the version if the minor version is different from the recommended version
-                    String message = getFormattedMessage(fullName, recommendedVersion, RULE_CONFIG);
-                    holder.registerProblem(versionElement, message);
                 }
             }
         }
