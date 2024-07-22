@@ -212,3 +212,30 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Severity: WARNING**
 - **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple
   actions in a single request.
+
+11. #### Upgrading library versions if versions in use known to have performance or reliability issues
+
+- **Anti-pattern**: Using library versions known to have performance or reliability issues.
+- **Issue**: Using outdated library versions can lead to performance bottlenecks, security vulnerabilities, and
+  compatibility
+  issues.
+- **Severity: WARNING**
+- **Recommendation**: Upgrade to the Latest Minor Version. It's recommended to upgrade to the latest minor version of
+  the
+  library to benefit from performance improvements, bug fixes, and security patches. Importantly, if you encounter any
+  issues while using Service Bus Clients, you should first attempt to solve them by upgrading to the latest version of
+  the Service Bus SDK. Please refer to
+  the [ServiceBus Azure SDK Java documentation](https://learn.microsoft.com/azure/developer/java/sdk/troubleshooting-messaging-service-bus-overview#upgrade-to-715x-or-latest)
+  for more information on the latest version of the Service Bus SDK.
+
+12. #### Using Incompatible Versions of Dependencies
+
+- **Anti-pattern**: Using incompatible versions of dependencies in the project.
+- **Issue**: Incompatible versions of dependencies can lead to runtime errors, classpath conflicts, and unexpected
+  behavior.
+- **Severity: WARNING**
+- **Recommendation**: Use a consistent version of dependencies across the project. It's recommended to use a consistent
+  version of dependencies across the project to avoid compatibility issues and ensure smooth integration. Please refer
+  to
+  the [Troubleshoot dependency version conflicts documentation](https://learn.microsoft.com/en-us/azure/developer/java/sdk/troubleshooting-dependency-version-conflict)
+  for additional information on resolving dependency version conflicts.
