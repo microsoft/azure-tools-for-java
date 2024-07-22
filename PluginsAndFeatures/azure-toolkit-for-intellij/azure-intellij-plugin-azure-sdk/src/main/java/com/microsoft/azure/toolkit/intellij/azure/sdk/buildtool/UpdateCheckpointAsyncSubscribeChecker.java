@@ -1,7 +1,7 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiMethodCallExpression;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,16 +20,19 @@ public class UpdateCheckpointAsyncSubscribeChecker extends AbstractUpdateCheckpo
      * @return PsiElementVisitor visitor to inspect elements in the code
      */
     @Override
-    protected PsiElementVisitor createVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+    protected JavaElementVisitor createVisitor(ProblemsHolder holder, boolean isOnTheFly) {
         return new SubscribeVisitor(holder, isOnTheFly);
     }
 
     /**
-     * This class extends the UpdateCheckpointAsyncVisitorBase to visit the elements in the code.
+     * This class extends the JavaElementVisitor to visit the elements in the code.
      * It checks if the method call is updateCheckpointAsync() and if the following method is `subscribe`.
      * If both conditions are met, a problem is registered with the suggestion message.
      */
-    static class SubscribeVisitor extends UpdateCheckpointAsyncVisitorBase {
+    static class SubscribeVisitor extends JavaElementVisitor {
+
+        // Define the holder to register problems
+        private final ProblemsHolder holder;
 
         /**
          * Constructor to initialize the visitor with the holder and isOnTheFly flag.
@@ -38,7 +41,7 @@ public class UpdateCheckpointAsyncSubscribeChecker extends AbstractUpdateCheckpo
          * @param isOnTheFly boolean to check if the inspection is on the fly. If true, the inspection is performed as you type.
          */
         SubscribeVisitor(ProblemsHolder holder, boolean isOnTheFly) {
-            super(holder, isOnTheFly);
+            this.holder = holder;
         }
 
         // Define constants for string literals
