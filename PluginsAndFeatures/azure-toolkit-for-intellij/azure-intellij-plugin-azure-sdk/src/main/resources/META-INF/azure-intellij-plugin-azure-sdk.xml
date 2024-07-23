@@ -168,5 +168,19 @@
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
             </class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="EndpointOnNonAzureOpenAIAuthCheck"
+                displayName="Endpoint On Non-Azure OpenAI Auth Check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.EndpointOnNonAzureOpenAIAuthCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.EndpointOnNonAzureOpenAIAuthCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
