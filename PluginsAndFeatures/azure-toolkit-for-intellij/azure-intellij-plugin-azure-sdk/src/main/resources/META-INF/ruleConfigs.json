@@ -79,7 +79,22 @@
     }
   },
   "SingleOperationInLoopCheck": {
-    "methods_to_check": ["detectLanguageBatch", "recognizeEntitiesBatch", "recognizePiiEntitiesBatch", "recognizeLinkedEntitiesBatch", "extractKeyPhrasesBatch", "analyzeSentimentBatch"],
+    "methods_to_check": [
+      "detectLanguageBatch",
+      "recognizeEntitiesBatch",
+      "recognizePiiEntitiesBatch",
+      "recognizeLinkedEntitiesBatch",
+      "extractKeyPhrasesBatch",
+      "analyzeSentimentBatch"
+    ],
     "anti_pattern_message": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
+  },
+  "EndpointOnNonAzureOpenAIAuthCheck": {
+    "methods_to_check": [
+      "endpoint",
+      "credential"
+    ],
+    "services_to_check": "KeyCredential",
+    "anti_pattern_message": "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients"
   }
 }

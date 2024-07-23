@@ -2,11 +2,11 @@ package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
 
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiForStatement;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiNewExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
@@ -21,6 +21,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * This class is used to test the EndpointOnNonAzureOpenAIAuthCheck class.
+ * The EndpointOnNonAzureOpenAIAuthCheck class is a LocalInspectionTool that checks if the endpoint method is used with KeyCredential for non-Azure OpenAI clients.
+ * If the endpoint method is used with KeyCredential for non-Azure OpenAI clients, a warning is registered.
+ * An example that should be flagged is:
+ * OpenAI Client client = new OpenAIClientBuilder()
+ * .credential(new KeyCredential("key"))
+ * .endpoint("endpoint")
+ * .buildClient();
+ */
 public class EndpointOnNonAzureOpenAIAuthCheckTest {
 
     // Declare as instance variables
@@ -40,44 +50,60 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         mockMethodCall = mock(PsiMethodCallExpression.class);
     }
 
+    /**
+     * This test checks if the endpoint method is used with KeyCredential for non-Azure OpenAI clients.
+     * If the endpoint method is used with KeyCredential for non-Azure OpenAI clients, a warning is registered.
+     */
     @Test
     public void testEndpointOnNonAzureOpenAIAuthCheck() {
 
         int numOfInvocation = 1;
         String endpoint = "endpoint";
         String credential = "credential";
-        String KeyCredentialPackageName = "com.azure.core.credential.KeyCredential";
+        String KeyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
         verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
     }
 
+    /**
+     * This test checks if the endpoint method is not used with KeyCredential for non-Azure OpenAI clients.
+     * If the endpoint method is not used with KeyCredential for non-Azure OpenAI clients, no warning is registered.
+     */
     @Test
-    public void testNoEndpoint(){
+    public void testNoEndpoint() {
 
         int numOfInvocation = 0;
         String endpoint = "notEndpoint";
         String credential = "credential";
-        String KeyCredentialPackageName = "com.azure.core.credential.KeyCredential";
+        String KeyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
         verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
     }
 
+    /**
+     * This test checks if the endpoint method is used but credential is not used.
+     * If the endpoint method is used but credential is not used, no warning is registered.
+     */
     @Test
-    public void testNoCredential(){
+    public void testNoCredential() {
 
         int numOfInvocation = 0;
         String endpoint = "endpoint";
         String credential = "notCredential";
-        String KeyCredentialPackageName = "com.azure.core.credential.KeyCredential";
+        String KeyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
         verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
     }
 
+    /**
+     * This test checks if the endpoint method is used with KeyCredential but for Azure OpenAI clients.
+     * If the endpoint method is used with KeyCredential but for Azure OpenAI clients, no warning is registered.
+     */
     @Test
-    public void testWithAzureKeyCredential(){
+    public void testWithAzureKeyCredential() {
 
         int numOfInvocation = 0;
         String endpoint = "endpoint";
@@ -88,31 +114,31 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
     }
 
-
-
+    /**
+     * creates a JavaElementVisitor object for visiting method call expressions
+     */
     private JavaElementVisitor createVisitor() {
-        boolean isOnTheFly = true;
-        EndpointOnNonAzureOpenAIAuthVisitor mockVisitor = new EndpointOnNonAzureOpenAIAuthVisitor(mockHolder, isOnTheFly);
-        return mockVisitor;
+        return new EndpointOnNonAzureOpenAIAuthVisitor(mockHolder);
     }
 
-
+    /**
+     * This method verifies if the registerProblem method is called with the correct parameters
+     */
     private void verifyRegisterProblem(int numOfInvocation, String endpoint, String credential, String KeyCredentialPackageName, String azurePackageName) {
-
 
         PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
 
         PsiMethodCallExpression qualifierOne = mock(PsiMethodCallExpression.class);
         PsiReferenceExpression methodExpressionOne = mock(PsiReferenceExpression.class);
 
-        PsiExpression expression = mock(PsiExpression.class);
+        PsiNewExpression newExpression = mock(PsiNewExpression.class);
         PsiExpressionList argumentList = mock(PsiExpressionList.class);
-        PsiExpression[] arguments = new PsiExpression[]{expression};
+        PsiExpression[] arguments = new PsiExpression[]{newExpression};
 
-        PsiType type = mock(PsiType.class);
+        PsiJavaCodeReferenceElement classReference = mock(PsiJavaCodeReferenceElement.class);
+
         PsiVariable parent = mock(PsiVariable.class);
         PsiType qualifierTYpe = mock(PsiType.class);
-
 
         when(mockMethodCall.getMethodExpression()).thenReturn(methodExpression);
         when(methodExpression.getReferenceName()).thenReturn(endpoint);
@@ -127,8 +153,9 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         when(argumentList.getExpressions()).thenReturn(arguments);
 
         // isKeyCredential
-        when(expression.getType()).thenReturn(type);
-        when(type.getCanonicalText()).thenReturn(KeyCredentialPackageName);
+
+        when(newExpression.getClassReference()).thenReturn(classReference);
+        when(classReference.getReferenceName()).thenReturn(KeyCredentialPackageName);
 
         // isNonAzureOpenAIClient
         when(qualifierOne.getParent()).thenReturn(parent);
@@ -138,7 +165,5 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         mockVisitor.visitMethodCallExpression(mockMethodCall);
 
         verify(mockHolder, times(numOfInvocation)).registerProblem(mockMethodCall, "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients");
-
-
     }
 }

@@ -162,43 +162,46 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 
 9. #### Use these encouraged clients instead of their corresponding discouraged clients
 
-    ##### a. Use **`ServiceBusProcessorClient`** instead of **`ServiceBusReceiverAsyncClient`**
+   ##### a. Use **`ServiceBusProcessorClient`** instead of **`ServiceBusReceiverAsyncClient`**
 
-    ##### b. Use **`EventProcessorClient`** instead of **`EventHubConsumerAsyncClient`**
-    
-    ##### Anti-pattern:
-    
-    - Both `ServiceBusReceiverAsyncClient` and `EventHubConsumerAsyncClient` are low-level APIs. They provide fine-grained
+   ##### b. Use **`EventProcessorClient`** instead of **`EventHubConsumerAsyncClient`**
+
+   ##### Anti-pattern:
+
+    - Both `ServiceBusReceiverAsyncClient` and `EventHubConsumerAsyncClient` are low-level APIs. They provide
+      fine-grained
       control over message/event handling but require a high level of proficiency in Reactive programming.
-    - Due to their complexity and the need for a deep understanding of Reactive programming, there is a higher risk of these
+    - Due to their complexity and the need for a deep understanding of Reactive programming, there is a higher risk of
+      these
       clients being used incorrectly or inefficiently, especially by developers who are not familiar with Reactive
       paradigms.
 
-    ##### Issue:
+   ##### Issue:
 
-    ##### a. **ServiceBusReceiverAsyncClient**
+   ##### a. **ServiceBusReceiverAsyncClient**
 
-   - **Anti-pattern**: The `ServiceBusReceiverAsyncClient` is considered an anti-pattern because it demands detailed
-   handling of messages, which can be overly complex and unnecessary for most common use cases.
-   - **Severity: WARNING**
-   - **Recommendation**: Instead of using `ServiceBusReceiverAsyncClient`, it is recommended to
-     use `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies
-     message consumption, making it a more suitable option for most developers and scenarios.
-   - Please refer to
-     the [Azure Service Bus client for Java](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
-     for more information.
+    - **Anti-pattern**: The `ServiceBusReceiverAsyncClient` is considered an anti-pattern because it demands detailed
+      handling of messages, which can be overly complex and unnecessary for most common use cases.
+    - **Severity: WARNING**
+    - **Recommendation**: Instead of using `ServiceBusReceiverAsyncClient`, it is recommended to
+      use `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies
+      message consumption, making it a more suitable option for most developers and scenarios.
+    - Please refer to
+      the [Azure Service Bus client for Java](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient)
+      for more information.
 
-    ##### b. **EventHubConsumerAsyncClient**
-    
-    - **Anti-pattern**: The `EventHubConsumerAsyncClient` is considered an anti-pattern due to its low-level nature and the
-    complexity involved in event handling.
+   ##### b. **EventHubConsumerAsyncClient**
+
+    - **Anti-pattern**: The `EventHubConsumerAsyncClient` is considered an anti-pattern due to its low-level nature and
+      the
+      complexity involved in event handling.
     - **Severity: WARNING**
     - **Recommendation**: Instead of using `EventHubConsumerAsyncClient`, it is advised to use `EventProcessorClient`.
-    The `EventProcessorClient` provides a higher-level abstraction that simplifies event processing, making it the
-    preferred choice for most developers.
+      The `EventProcessorClient` provides a higher-level abstraction that simplifies event processing, making it the
+      preferred choice for most developers.
     - Please refer to
-    the [EventProcessorClient Class](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.eventprocessorclient?view=azure-java-stable)
-    for more information.
+      the [EventProcessorClient Class](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.eventprocessorclient?view=azure-java-stable)
+      for more information.
 
 10. #### Using Batch Operations Instead of Single Operations in a Loop
 
@@ -212,3 +215,16 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Severity: WARNING**
 - **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple
   actions in a single request.
+
+11. #### Authenticating a Non-Azure OpenAI Client with KeyCredential
+
+- **Anti-pattern**: Assigning the endpoint value when creating a Non-Azure OpenAI client using the KeyCredential in
+  .credential(KeyCredential).
+- **Issue**: KeyCredential is the only required parameter in `.credential(KeyCredential)` for authenticating requests to
+  non-Azure OpenAI APIs.
+- **Severity: WARNING**
+- **Recommendation**: Omit Endpoint: Do not specify the endpoint parameter unless you are working with Azure-specific
+  OpenAI services that require it.
+  Please refer to
+  the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
+  for more information.
