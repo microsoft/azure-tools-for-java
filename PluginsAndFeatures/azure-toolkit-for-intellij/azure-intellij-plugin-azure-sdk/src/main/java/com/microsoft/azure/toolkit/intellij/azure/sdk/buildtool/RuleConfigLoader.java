@@ -100,7 +100,7 @@ public class RuleConfigLoader {
             // If not, throw an exception
             // This is to ensure that the JSON file is in the correct format
             if (reader.nextToken() != JsonToken.START_OBJECT) {
-                throw new IOException("Expected start of object");
+                throw new IllegalArgumentException("Expected start of object");
             }
 
             // Read the JSON file and parse the RuleConfig objects
@@ -134,7 +134,7 @@ public class RuleConfigLoader {
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
-            throw new IOException("Expected start of object");
+            throw new IllegalArgumentException("Expected start of object");
         }
 
         // Read the JSON file and parse the RuleConfig object
@@ -189,7 +189,7 @@ public class RuleConfigLoader {
                 list.add(reader.getString());
                 return list;
             } else {
-                throw new IOException("Expected start of array");
+                throw new IllegalArgumentException("Expected start of array");
             }
         }
 
