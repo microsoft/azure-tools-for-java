@@ -19,6 +19,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -42,13 +43,17 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
      * This method builds the visitor for the inspection tool
      *
      * @param holder     ProblemsHolder is used to register problems found in the code
-     * @param isOnTheFly boolean to indicate if the inspection is done on the fly -
+     * @param isOnTheFly boolean to indicate if the inspection is done on the fly - THis is not used in this implementation but is required by the method signature
      * @return PsiElementVisitor
      */
     @NotNull
     @Override
     public JavaElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        return new KustoQueriesVisitor(holder, isOnTheFly);
+
+        // clear the timeIntervalParameters list in every visit
+        KustoQueriesVisitor.timeIntervalParameters.clear();
+
+        return new KustoQueriesVisitor(holder);
     }
 
     /**
@@ -65,7 +70,7 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
 
         // // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final List<Pattern> REGEX_PATTERNS = new ArrayList<>();
+        private static final List<Pattern> REGEX_PATTERNS;
         private static final boolean SKIP_WHOLE_RULE;
 
         static {
@@ -76,25 +81,25 @@ public class KustoQueriesWithTimeIntervalInQueryStringCheck extends LocalInspect
             RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
 
             List<String> regexPatterns = RULE_CONFIG.getListedItemsToCheck();
+            List<Pattern> tempPatterns = new ArrayList<>();
             // Compile the regex patterns
             for (String pattern : regexPatterns) {
-                REGEX_PATTERNS.add(Pattern.compile(pattern));
+                tempPatterns.add(Pattern.compile(pattern));
             }
-
+            REGEX_PATTERNS = Collections.unmodifiableList(tempPatterns);
             SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || REGEX_PATTERNS.isEmpty();
         }
 
         // empty list to store time interval parameter names
-        private final List<String> timeIntervalParameters = new ArrayList<>();
+        private static final List<String> timeIntervalParameters = new ArrayList<>();
 
         /**
          * Constructor for the KustoQueriesVisitor class
          * The constructor initializes the ProblemsHolder and isOnTheFly variables
          *
-         * @param holder     - ProblemsHolder is used to register problems found in the code
-         * @param isOnTheFly - boolean to indicate if the inspection is done on the fly - This is not used in this implementation
+         * @param holder - ProblemsHolder is used to register problems found in the code
          */
-        KustoQueriesVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        KustoQueriesVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 

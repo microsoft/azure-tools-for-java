@@ -121,8 +121,7 @@ class KustoQueriesWithTimeIntervalInQueryStringCheckTest {
      * @return PsiElementVisitor
      */
     private KustoQueriesVisitor createVisitor() {
-        boolean isOnTheFly = true;
-        KustoQueriesVisitor visitor = new KustoQueriesVisitor(mockHolder, isOnTheFly);
+        KustoQueriesVisitor visitor = new KustoQueriesVisitor(mockHolder);
         return visitor;
     }
 
