@@ -6,8 +6,6 @@ import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiTypeElement;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 /**
  * This class extends the LocalInspectionTool to check for the use of discouraged clients
  * in the code and suggests using other clients instead.
@@ -48,7 +46,6 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
 
         // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final Map<String, String> CLIENTS_TO_CHECK;
         private static final boolean SKIP_WHOLE_RULE;
 
         static {
@@ -57,8 +54,7 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
 
             // Get the RuleConfig object for the rule
             RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
-            CLIENTS_TO_CHECK = RULE_CONFIG.getDiscouragedIdentifiersMap();
-            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || CLIENTS_TO_CHECK.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || RULE_CONFIG.getAntiPatternMessageMap().isEmpty();
         }
 
         /**
@@ -79,7 +75,7 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
                 String elementType = element.getType().getPresentableText();
 
                 // Register a problem if the client used matches a discouraged client
-                holder.registerProblem(element, CLIENTS_TO_CHECK.get(elementType));
+                holder.registerProblem(element, RULE_CONFIG.getAntiPatternMessageMap().get(elementType));
             }
         }
     }

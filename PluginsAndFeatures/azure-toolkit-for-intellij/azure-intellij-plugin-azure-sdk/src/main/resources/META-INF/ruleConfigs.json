@@ -1,33 +1,33 @@
 {
   "StorageUploadWithoutLengthCheck": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "upload",
       "uploadWithResponse"
     ],
-    "anti_pattern_message": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+    "antiPatternMessage": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
   },
   "ServiceBusReceiverAsyncClientCheck": {
-    "clients_to_check": "ServiceBusReceiverAsyncClient",
-    "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    "clientsToCheck": "ServiceBusReceiverAsyncClient",
+    "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
   },
   "DisableAutoCompleteCheck": {
-    "methods_to_check": "disableAutoComplete",
-    "clients_to_check": [
+    "methodsToCheck": "disableAutoComplete",
+    "clientsToCheck": [
       "ServiceBusReceiverClient",
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "anti_pattern_message": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
+    "antiPatternMessage": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
   },
   "DynamicClientCreationCheck": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "buildClient",
       "buildAsyncClient"
     ],
-    "anti_pattern_message": "Dynamic client creation detected. Create a single client instance and reuse it instead."
+    "antiPatternMessage": "Dynamic client creation detected. Create a single client instance and reuse it instead."
   },
   "HardcodedAPIKeysAndTokensCheck": {
-    "services_to_check": [
+    "servicesToCheck": [
       "AzureKeyCredential",
       "AccessToken",
       "KeyCredential",
@@ -38,59 +38,80 @@
       "UsernamePasswordCredentialBuilder",
       "BasicAuthenticationCredential"
     ],
-    "anti_pattern_message": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
+    "antiPatternMessage": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
     "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
   },
   "GetSyncPollerOnPollerFluxCheck": {
-    "methods_to_check": "getSyncPoller",
-    "anti_pattern_message": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+    "methodsToCheck": "getSyncPoller",
+    "antiPatternMessage": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
   },
   "ServiceBusReceiveModeCheck": {
-    "clients_to_check": [
+    "clientsToCheck": [
       "ServiceBusReceiverClient",
       "ServiceBusReceiverAsyncClient",
       "ServiceBusProcessorClient"
     ],
-    "methods_to_check": [
+    "methodsToCheck": [
       "receiveMode",
       "prefetchCount"
     ],
-    "anti_pattern_message": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
+    "antiPatternMessage": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
   },
   "DetectDiscouragedAPIUsageCheck": {
     "ConnectionStringCheck": {
-      "methods_to_check": "connectionString",
-      "anti_pattern_message": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
+      "methodsToCheck": "connectionString",
+      "antiPatternMessage": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
       "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
     },
     "GetCompletionsInChatApplicationsCheck": {
-      "methods_to_check": "getCompletions",
-      "anti_pattern_message": "getCompletions API detected. Use the getChatCompletions API instead."
+      "methodsToCheck": "getCompletions",
+      "antiPatternMessage": "getCompletions API detected. Use the getChatCompletions API instead."
     }
   },
   "DetectDiscouragedClientCheck": {
     "ServiceBusReceiverAsyncClientCheck": {
-      "clients_to_check": "ServiceBusReceiverAsyncClient",
-      "anti_pattern_message": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+      "clientsToCheck": "ServiceBusReceiverAsyncClient",
+      "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
     },
     "EventHubConsumerAsyncClientCheck": {
-      "clients_to_check": "EventHubConsumerAsyncClient",
-      "anti_pattern_message": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
+      "clientsToCheck": "EventHubConsumerAsyncClient",
+      "antiPatternMessage": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
     }
   },
   "SingleOperationInLoopCheck": {
-    "methods_to_check": ["detectLanguageBatch", "recognizeEntitiesBatch", "recognizePiiEntitiesBatch", "recognizeLinkedEntitiesBatch", "extractKeyPhrasesBatch", "analyzeSentimentBatch"],
-    "anti_pattern_message": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
+    "methodsToCheck": [
+      "detectLanguageBatch",
+      "recognizeEntitiesBatch",
+      "recognizePiiEntitiesBatch",
+      "recognizeLinkedEntitiesBatch",
+      "extractKeyPhrasesBatch",
+      "analyzeSentimentBatch"
+    ],
+    "antiPatternMessage": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
+  },
+  "AbstractUpdateCheckpointAsyncChecker": {
+    "methodsToCheck": "updateCheckpointAsync"
+  },
+  "UpdateCheckpointAsyncSubscribeChecker": {
+    "methodsToCheck": "subscribe",
+    "antiPatternMessage": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
+  },
+  "UpdateCheckpointAsyncBlockChecker": {
+    "methodsToCheck": [
+      "block",
+      "block_with_timeout"
+    ],
+    "antiPatternMessage": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
   },
   "KustoQueriesWithTimeIntervalInQueryStringCheck": {
-    "regex_patterns": {
+    "regexPatterns": {
       "KQL_ANTI_PATTERN_AGO": ".*ago\\(",
       "KQL_ANTI_PATTERN_DATETIME": ".*datetime\\s*\\(",
       "KQL_ANTI_PATTERN_NOW": ".*now\\(",
       "KQL_ANTI_PATTERN_START_OF_PERIOD": ".*startofday\\(\\)|.*startofmonth\\(\\)|.*startofyear\\(\\)",
       "KQL_ANTI_PATTERN_BETWEEN": ".*between\\(datetime\\("
     },
-    "anti_pattern_message": "KQL queries with time intervals in the query string detected.",
+    "antiPatternMessage": "KQL queries with time intervals in the query string detected.",
     "solution": "Use the QueryTimeInterval parameter in the client method parameters to specify the time interval for the query"
   }
 }

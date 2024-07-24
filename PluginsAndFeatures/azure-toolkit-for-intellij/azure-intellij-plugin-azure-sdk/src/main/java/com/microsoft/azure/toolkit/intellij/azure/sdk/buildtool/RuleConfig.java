@@ -12,29 +12,27 @@ class RuleConfig {
     private final List<String> methodsToCheck;
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
-    private final String antiPatternMessage;
-    private final Map<String, String> discouragedIdentifiersMap;
+    private final Map<String, String> antiPatternMessageMap;
     private final List<String> listedItemsToCheck;
+
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), "", Collections.emptyList());
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
 
     /**
      * Constructor for RuleConfig.
      *
-     * @param methodsToCheck     List of methods to check.
-     * @param clientsToCheck     List of clients to check.
-     * @param servicesToCheck    List of services to check.
-     * @param discouragedIdentifiersMap Map of discouraged identifiers and their suggestions.
-     * @param antiPatternMessage AntiPattern message.
+     * @param methodsToCheck            List of methods to check.
+     * @param clientsToCheck            List of clients to check.
+     * @param servicesToCheck           List of services to check.
+     * @param antiPatternMessageMap     Map of antipattern messages to display.
      * @param listedItemsToCheck List of items to check for.
      */
-    public RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> discouragedIdentifiersMap, String antiPatternMessage, List<String> listedItemsToCheck) {
+    RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> antiPatternMessageMap, List<String> listedItemsToCheck) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
-        this.discouragedIdentifiersMap = discouragedIdentifiersMap;
-        this.antiPatternMessage = antiPatternMessage;
+        this.antiPatternMessageMap = antiPatternMessageMap;
         this.listedItemsToCheck = listedItemsToCheck;
     }
 
@@ -48,7 +46,6 @@ class RuleConfig {
     }
 
     // Getters
-
     /**
      * This method returns the list of methods to check
      *
@@ -77,12 +74,15 @@ class RuleConfig {
     }
 
     /**
-     * This method returns the antipattern message
-     *
-     * @return Antipattern message
+     * This method returns a map of antipattern messages.
+     * The key is the antipattern message key and the value is the antipattern message.
+     * Generally, most rules have an antipattern message key of "anti_pattern_message".
+     * Discouraged identifiers have an antipattern message key of the discouraged client or API being used.
+     * "UpdateCheckpointAsync" rule has antipattern message keys of "with_subscribe" and "no_block".
+     * @return Map of antipattern messages
      */
-    String getAntiPatternMessage() {
-        return antiPatternMessage;
+    Map<String, String> getAntiPatternMessageMap() {
+        return antiPatternMessageMap;
     }
 
     /**
@@ -94,14 +94,5 @@ class RuleConfig {
      */
     List<String> getListedItemsToCheck() {
         return listedItemsToCheck;
-    }
-
-    /**
-     * This method returns the map of discouraged identifiers
-     *
-     * @return Map of discouraged identifiers
-     */
-    Map<String, String> getDiscouragedIdentifiersMap() {
-        return discouragedIdentifiersMap;
     }
 }
