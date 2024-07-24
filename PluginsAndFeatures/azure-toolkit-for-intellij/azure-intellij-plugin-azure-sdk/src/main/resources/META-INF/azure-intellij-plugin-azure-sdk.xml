@@ -10,6 +10,15 @@
                 text="Ask Azure SDK Help">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+
+        <action class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryToggleAction"
+                id="TelemetryToggleAction"
+                text="Enable Telemetry"
+                description="Toggle Telemetry">
+            <add-to-group group-id="ProblemsView.ToolWindow.Toolbar" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift T"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -35,20 +44,6 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck">
             <class>
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.StorageUploadWithoutLengthCheck
-            </class>
-        </localInspection>
-
-        <localInspection
-                language="JAVA"
-                shortName="ServiceBusReceiverAsyncClientCheck"
-                displayName="Low level ServiceBusReceiverAsyncClient check"
-                groupName="Azure SDK Rules"
-                enabledByDefault="true"
-                level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
-
-            <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
             </class>
         </localInspection>
 
@@ -138,6 +133,44 @@
 
         <localInspection
                 language="JAVA"
+                shortName="SingleOperationInLoopCheck"
+                displayName="Single Operation In Loop Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ReportTelemetry"
+                displayName="Report Telemetry"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider</class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DetectDiscouragedClientCheck"
+                displayName="Detect discouraged client check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
                 shortName="UpdateCheckpointAsyncSubscribeChecker"
                 displayName="Update Checkpoint Async Subscribe Checker"
                 groupName="Azure SDK Rules"
@@ -163,7 +196,6 @@
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncBlockChecker
             </class>
         </localInspection>
-
 
     </extensions>
 </idea-plugin>

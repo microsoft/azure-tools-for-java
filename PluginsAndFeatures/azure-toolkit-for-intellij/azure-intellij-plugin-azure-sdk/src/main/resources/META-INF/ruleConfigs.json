@@ -68,6 +68,27 @@
       "antiPatternMessage": "getCompletions API detected. Use the getChatCompletions API instead."
     }
   },
+  "DetectDiscouragedClientCheck": {
+    "ServiceBusReceiverAsyncClientCheck": {
+      "clientsToCheck": "ServiceBusReceiverAsyncClient",
+      "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    },
+    "EventHubConsumerAsyncClientCheck": {
+      "clientsToCheck": "EventHubConsumerAsyncClient",
+      "antiPatternMessage": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
+    }
+  },
+  "SingleOperationInLoopCheck": {
+    "methodsToCheck": [
+      "detectLanguageBatch",
+      "recognizeEntitiesBatch",
+      "recognizePiiEntitiesBatch",
+      "recognizeLinkedEntitiesBatch",
+      "extractKeyPhrasesBatch",
+      "analyzeSentimentBatch"
+    ],
+    "antiPatternMessage": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
+  },
   "AbstractUpdateCheckpointAsyncChecker": {
     "methodsToCheck": "updateCheckpointAsync"
   },

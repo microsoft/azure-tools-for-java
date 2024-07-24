@@ -221,6 +221,7 @@ class RuleConfigLoader {
             String fieldName = reader.getFieldName();
             switch (fieldName) {
                 case "methodsToCheck":
+                case "clientsToCheck":
                     identifiersToCheck = getListFromJsonArray(reader).get(0);
                     break;
                 case "antiPatternMessage":
@@ -236,7 +237,6 @@ class RuleConfigLoader {
                 // This map is for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages
                 if (identifiersToCheck != null) {
                     antiPatternMessageMap.put(identifiersToCheck, antiPatternMessage);
-                    System.out.println(antiPatternMessageMap);
                 } else {
                     // This map is for single anti-pattern messages of a particular rule
                     antiPatternMessageMap.put(fieldName, antiPatternMessage);

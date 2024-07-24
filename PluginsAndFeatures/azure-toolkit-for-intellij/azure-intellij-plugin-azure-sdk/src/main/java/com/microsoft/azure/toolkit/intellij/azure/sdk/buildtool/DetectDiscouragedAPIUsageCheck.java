@@ -98,7 +98,13 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
                     PsiClass containingClass = method.getContainingClass();
 
                     // compare the package name of the containing class to the azure package name from the configuration file
-                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith("com.azure.ai.openai")) {
+                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith("com.azure")) {
+
+                        if (method.getName().equals("getCompletions")) {
+                            if (containingClass != null && containingClass.getQualifiedName() != null && !containingClass.getQualifiedName().startsWith("com.azure.ai.openai")) {
+                                return; // Exit if the method is getCompletions but the class's qualified name does not start with com.azure.ai.openai
+                            }
+                        }
 
                         PsiElement problemElement = methodExpression.getReferenceNameElement();
 
