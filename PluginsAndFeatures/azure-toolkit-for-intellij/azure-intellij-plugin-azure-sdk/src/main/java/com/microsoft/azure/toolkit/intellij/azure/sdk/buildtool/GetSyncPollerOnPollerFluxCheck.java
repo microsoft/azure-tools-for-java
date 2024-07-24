@@ -47,21 +47,16 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
 
         // Define constants for string literals
-        private static final RuleConfig ruleConfig;
-        private static final String ANTI_PATTERN_MESSAGE;
-        private static final String METHOD_TO_CHECK;
-        private static boolean SKIP_WHOLE_RULE;
+        private static final RuleConfig RULE_CONFIG;
+        private static final boolean SKIP_WHOLE_RULE;
 
         static {
             final String ruleName = "GetSyncPollerOnPollerFluxCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-
-            METHOD_TO_CHECK = ruleConfig.getMethodsToCheck().get(0);
-            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE;
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE;
         }
 
         /**
@@ -96,11 +91,11 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
             PsiMethodCallExpression methodCall = expression;
 
             // Check if the method call is getSyncPoller
-            if (methodCall.getMethodExpression().getReferenceName().startsWith(METHOD_TO_CHECK)) {
+            if (methodCall.getMethodExpression().getReferenceName().startsWith(RULE_CONFIG.getMethodsToCheck().get(0))) {
                 boolean isAsyncContext = checkIfAsyncContext(methodCall);
 
                 if (isAsyncContext && isAzureClient(methodCall)) {
-                    holder.registerProblem(expression, ANTI_PATTERN_MESSAGE);
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
             }
         }
@@ -154,7 +149,7 @@ public class GetSyncPollerOnPollerFluxCheck extends LocalInspectionTool {
             String className = containingClass.getQualifiedName();
 
             // Check if the class is part of the Azure SDK
-            if (className != null && className.startsWith(ruleConfig.AZURE_PACKAGE_NAME)) {
+            if (className != null && className.startsWith(RuleConfig.AZURE_PACKAGE_NAME)) {
                 return true;
             }
             return false;

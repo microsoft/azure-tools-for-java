@@ -168,5 +168,34 @@
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
             </class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="UpdateCheckpointAsyncSubscribeChecker"
+                displayName="Update Checkpoint Async Subscribe Checker"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncSubscribeChecker">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncSubscribeChecker
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="UpdateCheckpointAsyncBlockChecker"
+                displayName="Update Checkpoint Async Block Checker"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncBlockChecker">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpdateCheckpointAsyncBlockChecker
+            </class>
+        </localInspection>
+
     </extensions>
 </idea-plugin>

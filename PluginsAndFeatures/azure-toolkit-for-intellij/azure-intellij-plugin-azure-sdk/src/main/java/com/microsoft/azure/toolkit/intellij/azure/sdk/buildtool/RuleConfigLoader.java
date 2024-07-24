@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * The map contains the key-value pairs where the key is the rule name and the value is the RuleConfig object.
  * The RuleConfig object for a given key can be retrieved using the getRuleConfig method.
  */
-public class RuleConfigLoader {
+class RuleConfigLoader {
 
     private static final RuleConfigLoader instance;
     private final Map<String, RuleConfig> ruleConfigs;
@@ -59,7 +59,7 @@ public class RuleConfigLoader {
      *
      * @return CentralRuleConfigLoader instance
      */
-    public static RuleConfigLoader getInstance() {
+    static RuleConfigLoader getInstance() {
         return instance;
     }
 
@@ -119,6 +119,8 @@ public class RuleConfigLoader {
 
     /**
      * This method parses the RuleConfig object from the JSON file
+     * The RuleConfig object either contains the methods to check, clients to check or services to check,
+     * and the anti-pattern messages
      *
      * @param reader - the JsonReader object to read the JSON file
      * @return RuleConfig object parsed from the JSON file
@@ -128,8 +130,7 @@ public class RuleConfigLoader {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
-        Map<String, String> discouragedIdentifiersToCheck = new HashMap<>();
-        String antiPatternMessage = null;
+        Map<String, String> antiPatternMessageMap = new HashMap<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
@@ -143,28 +144,30 @@ public class RuleConfigLoader {
             String fieldName = reader.getFieldName();
             // Check the field name and set the corresponding field in the RuleConfig object
             switch (fieldName) {
-                case "methods_to_check":
+                case "methodsToCheck":
                     methodsToCheck = getListFromJsonArray(reader);
                     break;
-                case "anti_pattern_message":
-                    antiPatternMessage = reader.getString();
+                case "antiPatternMessage":
+                    antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
                     break;
-                case "clients_to_check":
+                case "clientsToCheck":
                     clientsToCheck = getListFromJsonArray(reader);
                     break;
-                case "services_to_check":
+                case "servicesToCheck":
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
                 default:
                     if (fieldName.endsWith("Check")) {
-                        discouragedIdentifiersToCheck = getMapOfDiscouragedIdentifiers(reader, discouragedIdentifiersToCheck);
+                        // Move to the next token to process the nested object
+                        reader.nextToken();
+                        antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
                     } else {
                         reader.skipChildren();
                     }
                     break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, discouragedIdentifiersToCheck, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessageMap);
     }
 
     /**
@@ -197,14 +200,16 @@ public class RuleConfigLoader {
     }
 
     /**
-     * This method parses the map of discouraged identifiers from the JSON file
-     * This is used for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages.
+     * This method is used to parse the anti-pattern messages from a JSON file
+     * The anti-pattern messages can be for a set of methods, clients, or services
+     * The anti-pattern messages can also be for specific rules like "no_block" and "with_subscribe"
      *
-     * @param reader - the JsonReader object to read the JSON file
-     * @return Map of discouraged identifiers parsed from the JSON file
+     * @param reader                - the JsonReader object to read the JSON file
+     * @param antiPatternMessageMap - the map to store the anti-pattern messages
+     * @return Map of strings parsed from the JSON object
      * @throws IOException - if there is an error reading the file
      */
-    private Map<String, String> getMapOfDiscouragedIdentifiers(JsonReader reader, Map<String, String> discouragedIdentifiersToCheckMap) throws IOException {
+    private Map<String, String> getMapFromJsonObject(JsonReader reader, Map<String, String> antiPatternMessageMap) throws IOException {
 
         String identifiersToCheck = null;
         String antiPatternMessage = null;
@@ -214,20 +219,32 @@ public class RuleConfigLoader {
 
             // Get the field name
             String fieldName = reader.getFieldName();
-
             switch (fieldName) {
-                case "methods_to_check":
-                case "clients_to_check":
+                case "methodsToCheck":
+                case "clientsToCheck":
                     identifiersToCheck = getListFromJsonArray(reader).get(0);
                     break;
-                case "anti_pattern_message":
+                case "antiPatternMessage":
                     antiPatternMessage = reader.getString();
                     break;
+                default:
+                    reader.skipChildren();
+                    break;
             }
-            if (identifiersToCheck != null && antiPatternMessage != null) {
-                discouragedIdentifiersToCheckMap.put(identifiersToCheck, antiPatternMessage);
+            // Add to map based on conditions
+            if (antiPatternMessage != null) {
+
+                // This map is for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages
+                if (identifiersToCheck != null) {
+                    antiPatternMessageMap.put(identifiersToCheck, antiPatternMessage);
+                } else {
+                    // This map is for single anti-pattern messages of a particular rule
+                    antiPatternMessageMap.put(fieldName, antiPatternMessage);
+                    return antiPatternMessageMap;
+                }
             }
         }
-        return discouragedIdentifiersToCheckMap;
+        // This map is to return mapped anti-pattern messages that have a set of discouraged identifiers and a corresponding set of antipattern messages
+        return antiPatternMessageMap;
     }
 }

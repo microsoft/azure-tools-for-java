@@ -8,9 +8,6 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiNewExpression;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-
 /**
  * This class is a custom inspection tool that checks for hardcoded API keys and tokens in the code.
  * It extends the LocalInspectionTool class and overrides the buildVisitor method to create a visitor for the inspection.
@@ -41,21 +38,16 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
 
         // // Define constants for string literals
-        private static final RuleConfig ruleConfig;
-        private static final String ANTI_PATTERN_MESSAGE;
-        private static final List<String> SERVICES_TO_CHECK;
-        private static boolean SKIP_WHOLE_RULE;
+        private static final RuleConfig RULE_CONFIG;
+        private static final boolean SKIP_WHOLE_RULE;
 
         static {
             final String ruleName = "HardcodedAPIKeysAndTokensCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-
-            SERVICES_TO_CHECK = ruleConfig.getServicesToCheck();
-            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || SERVICES_TO_CHECK.isEmpty();
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || RULE_CONFIG.getServicesToCheck().isEmpty();
         }
 
 
@@ -83,8 +75,8 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
 
                 // Check if the class reference is not null, the qualifier name starts with "com.azure" and
                 // the class reference is in the list of clients to check
-                if (newExpression.getClassReference() != null && newExpression.getClassReference().getQualifiedName().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && SERVICES_TO_CHECK.contains(classReference)) {
-                    this.holder.registerProblem(newExpression, ANTI_PATTERN_MESSAGE);
+                if (newExpression.getClassReference() != null && newExpression.getClassReference().getQualifiedName().startsWith(RuleConfig.AZURE_PACKAGE_NAME) && RULE_CONFIG.getServicesToCheck().contains(classReference)) {
+                    this.holder.registerProblem(newExpression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
             }
         }
