@@ -102,5 +102,16 @@
       "block_with_timeout"
     ],
     "antiPatternMessage": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
+  },
+  "KustoQueriesWithTimeIntervalInQueryStringCheck": {
+    "regexPatterns": {
+      "KQL_ANTI_PATTERN_AGO": ".*ago\\(",
+      "KQL_ANTI_PATTERN_DATETIME": ".*datetime\\s*\\(",
+      "KQL_ANTI_PATTERN_NOW": ".*now\\(",
+      "KQL_ANTI_PATTERN_START_OF_PERIOD": ".*startofday\\(\\)|.*startofmonth\\(\\)|.*startofyear\\(\\)",
+      "KQL_ANTI_PATTERN_BETWEEN": ".*between\\(datetime\\("
+    },
+    "antiPatternMessage": "KQL queries with time intervals in the query string detected.",
+    "solution": "Use the QueryTimeInterval parameter in the client method parameters to specify the time interval for the query"
   }
 }

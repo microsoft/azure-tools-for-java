@@ -13,10 +13,11 @@ class RuleConfig {
     private final List<String> clientsToCheck;
     private final List<String> servicesToCheck;
     private final Map<String, String> antiPatternMessageMap;
+    private final List<String> listedItemsToCheck;
 
     static final String AZURE_PACKAGE_NAME = "com.azure";
 
-    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap());
+    static final RuleConfig EMPTY_RULE = new RuleConfig(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
 
     /**
      * Constructor for RuleConfig.
@@ -25,12 +26,14 @@ class RuleConfig {
      * @param clientsToCheck            List of clients to check.
      * @param servicesToCheck           List of services to check.
      * @param antiPatternMessageMap     Map of antipattern messages to display.
+     * @param listedItemsToCheck List of items to check for.
      */
-    RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> antiPatternMessageMap) {
+    RuleConfig(List<String> methodsToCheck, List<String> clientsToCheck, List<String> servicesToCheck, Map<String, String> antiPatternMessageMap, List<String> listedItemsToCheck) {
         this.methodsToCheck = methodsToCheck;
         this.clientsToCheck = clientsToCheck;
         this.servicesToCheck = servicesToCheck;
         this.antiPatternMessageMap = antiPatternMessageMap;
+        this.listedItemsToCheck = listedItemsToCheck;
     }
 
     /**
@@ -80,5 +83,16 @@ class RuleConfig {
      */
     Map<String, String> getAntiPatternMessageMap() {
         return antiPatternMessageMap;
+    }
+
+    /**
+     * This method returns the list of items to check
+     * The items to check are any types that are not an Azure service, client or method
+     * This includes regex patterns, object types etc
+     *
+     * @return List of items to check
+     */
+    List<String> getListedItemsToCheck() {
+        return listedItemsToCheck;
     }
 }

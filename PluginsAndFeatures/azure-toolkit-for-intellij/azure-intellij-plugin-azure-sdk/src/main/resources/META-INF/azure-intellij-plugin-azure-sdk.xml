@@ -197,5 +197,15 @@
             </class>
         </localInspection>
 
+        <localInspection
+                language="JAVA"
+                shortName="KustoQueriesWithTimeIntervalInQueryStringCheck"
+                displayName="Kusto Queries With Time Interval In Query String Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck</class>
+        </localInspection>
     </extensions>
 </idea-plugin>

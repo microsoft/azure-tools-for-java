@@ -100,7 +100,7 @@ class RuleConfigLoader {
             // If not, throw an exception
             // This is to ensure that the JSON file is in the correct format
             if (reader.nextToken() != JsonToken.START_OBJECT) {
-                throw new IOException("Expected start of object");
+                throw new IllegalArgumentException("Expected start of object");
             }
 
             // Read the JSON file and parse the RuleConfig objects
@@ -131,10 +131,11 @@ class RuleConfigLoader {
         List<String> clientsToCheck = new ArrayList<>();
         List<String> servicesToCheck = new ArrayList<>();
         Map<String, String> antiPatternMessageMap = new HashMap<>();
+        List<String> listedItemsToCheck = new ArrayList<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
-            throw new IOException("Expected start of object");
+            throw new IllegalArgumentException("Expected start of object");
         }
 
         // Read the JSON file and parse the RuleConfig object
@@ -156,6 +157,9 @@ class RuleConfigLoader {
                 case "servicesToCheck":
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
+                case "regexPatterns":
+                    listedItemsToCheck = getValuesFromJsonReader(reader);
+                    break;
                 default:
                     if (fieldName.endsWith("Check")) {
                         // Move to the next token to process the nested object
@@ -167,7 +171,7 @@ class RuleConfigLoader {
                     break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessageMap);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessageMap, listedItemsToCheck);
     }
 
     /**
@@ -188,7 +192,7 @@ class RuleConfigLoader {
                 list.add(reader.getString());
                 return list;
             } else {
-                throw new IOException("Expected start of array");
+                throw new IllegalArgumentException("Expected start of array");
             }
         }
 
@@ -246,5 +250,33 @@ class RuleConfigLoader {
         }
         // This map is to return mapped anti-pattern messages that have a set of discouraged identifiers and a corresponding set of antipattern messages
         return antiPatternMessageMap;
+    }
+
+    /**
+     * This method parses the values from the JSON object
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return List of strings parsed from the JSON object
+     * @throws IOException - if there is an error reading the file
+     */
+    private List<String> getValuesFromJsonReader(JsonReader reader) throws IOException {
+
+        List<String> values = new ArrayList<>();
+
+        // Check if the JSON file starts with an object
+        if (reader.nextToken() != JsonToken.START_OBJECT) {
+            throw new IOException("Expected start of object");
+        }
+
+        // Read the JSON file and parse the values
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Skip the field name and read only the value
+            reader.getFieldName(); // Move to the field name
+            reader.nextToken(); // Move to the value
+            String value = reader.getString(); // Read the value
+            values.add(value);
+        }
+        return values;
     }
 }
