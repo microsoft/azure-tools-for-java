@@ -21,7 +21,6 @@ import com.intellij.psi.PsiWhileStatement;
 import com.intellij.psi.util.PsiTreeUtil;
 
 import org.jetbrains.annotations.NotNull;
-import java.util.List;
 
 /**
  * Inspection to check if there is a Text Analytics client operation inside a loop.
@@ -36,11 +35,11 @@ import java.util.List;
  * System.out.println("Text: " + text + " | Detected Language: " + detectedLanguage.getName() + " | Confidence Score: " + detectedLanguage.getConfidenceScore());
  * }
  * <p>
- *     // Traditional for-loop to recognize entities for each text
+ * // Traditional for-loop to recognize entities for each text
  * for (int i = 0; i < texts.size(); i++) {
- *     String text = texts.get(i);
- *     textAnalyticsClient.recognizeEntities(text);
- *     // Process recognized entities if needed
+ * String text = texts.get(i);
+ * textAnalyticsClient.recognizeEntities(text);
+ * // Process recognized entities if needed
  * }
  */
 public class SingleOperationInLoopCheck extends LocalInspectionTool {
@@ -70,8 +69,6 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
         // // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final String SUGGESTION;
-        private static final List<String> AVAILABLE_BATCH_METHODS;
         private static final boolean SKIP_WHOLE_RULE;
 
         static {
@@ -80,10 +77,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
             // Get the RuleConfig object for the rule
             RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
-
-            AVAILABLE_BATCH_METHODS = RULE_CONFIG.getMethodsToCheck();
-            SUGGESTION = RULE_CONFIG.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || AVAILABLE_BATCH_METHODS.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || RULE_CONFIG.getAntiPatternMessageMap().isEmpty();
         }
 
         /**
@@ -195,7 +189,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
          * @param loopStatement The loop statement to get the body from
          * @return The body of the loop statement
          */
-        public static PsiStatement getLoopBody(PsiStatement loopStatement) {
+        private static PsiStatement getLoopBody(PsiStatement loopStatement) {
 
             // Check the type of the loop statement and return the body of the loop statement
             if (loopStatement instanceof PsiForStatement) return ((PsiForStatement) loopStatement).getBody();
@@ -221,7 +215,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
 
                     // get the method name
                     String methodName = ((PsiMethodCallExpression) expression).getMethodExpression().getReferenceName();
-                    holder.registerProblem(expression, (SUGGESTION + methodName + "Batch"));
+                    holder.registerProblem(expression, (RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage") + methodName + "Batch"));
                 }
             }
         }
@@ -249,7 +243,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 if (isAzureTextAnalyticsClientOperation((PsiMethodCallExpression) initializer)) {
                     // get the method name
                     String methodName = ((PsiMethodCallExpression) initializer).getMethodExpression().getReferenceName();
-                    holder.registerProblem(initializer, (SUGGESTION + methodName + "Batch"));
+                    holder.registerProblem(initializer, (RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage") + methodName + "Batch"));
                 }
             }
         }
@@ -276,7 +270,7 @@ public class SingleOperationInLoopCheck extends LocalInspectionTool {
                 // Check if the class is part of the Azure SDK
                 if (className != null && className.startsWith(packageName)) {
 
-                    if (AVAILABLE_BATCH_METHODS.contains((methodCall.getMethodExpression().getReferenceName()) + "Batch")) {
+                    if (RULE_CONFIG.getMethodsToCheck().contains((methodCall.getMethodExpression().getReferenceName()) + "Batch")) {
                         return true;
                     }
                 }

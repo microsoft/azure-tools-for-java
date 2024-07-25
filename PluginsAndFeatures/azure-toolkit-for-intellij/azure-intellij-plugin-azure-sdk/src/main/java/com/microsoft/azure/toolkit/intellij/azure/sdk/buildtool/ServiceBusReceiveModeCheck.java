@@ -174,7 +174,7 @@ public class ServiceBusReceiveModeCheck extends LocalInspectionTool {
 
                 // If the receive mode is set to PEEK_LOCK and the prefetch count is set to a value greater than 1, register a problem
                 if (prefetchCountValue.isPresent() && prefetchCountValue.getAsInt() > 1 && isReceiveModePeekLock && prefetchCountMethod != null) {
-                    holder.registerProblem(prefetchCountMethod, RULE_CONFIG.getAntiPatternMessage());
+                    holder.registerProblem(prefetchCountMethod, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                     return;
                 }
             }
