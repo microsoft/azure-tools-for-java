@@ -210,15 +210,53 @@ integration, telemetry connectivity, and Azure Toolkit integration.
     - Multiple requests also consume more resources (e.g., network bandwidth, server processing) compared to a single
       batch request.
 - **Severity: WARNING**
-- **Recommendation**: Instead of using the low-level `ServiceBusReceiverAsyncClient`, it's recommended to use the `ServiceBusProcessorClient`. The `ServiceBusProcessorClient` is a higher-level abstraction that simplifies message consumption. It's designed for most common use cases and should be the primary choice for consuming messages. This makes it a more suitable option for most developers and scenarios. 
-Please refer to the [Azure SDK for Java documentation](https://github.com/Azure/azure-sdk-for-java/blob/main/sdk/servicebus/azure-messaging-servicebus/README.md#when-to-use-servicebusprocessorclient) for additional information.
+- **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple
+  actions in a single request.
 
-11. #### Use sync client operation if usage of block() on an async client.
-- **Anti-Pattern**: Using `block()` on an async client. This practice turns an asynchronous operation into a synchronous one.
-- **Issue**: The use of `block()` goes against the non-blocking nature of reactive streams. 
-It can lead to performance issues because it blocks one of the few available threads.
-In reactive applications, avoiding blocking operations is crucial for scalability and responsiveness.
-- **Severity Level: WARNING**
-- **Recommendation**: If you find yourself frequently using `block()` in your code, consider switching to the sync client. 
-The sync client performs operations synchronously without requiring `block()`. 
-Using the sync client can make your code more straightforward and easier to understand.
+11. #### EventProcessorClient: Using `updateCheckpointAsync()` API of EventBatchContext object:
+    #### Anti-pattern a. Without `block()` or `block(timeout)`
+    
+    - **Issue**: Calling `updateCheckpointAsync()` without `block()` will not do anything.
+    - **Severity: WARNING**
+    - **Recommendation**: Use `block()` operator with a timeout or consider using the synchronous
+      version `updateCheckpoint()`.
+    
+    #### Anti-pattern b. With `subscribe()`
+    
+    - **Issue**: If you call `subscribe()` with `updateCheckpointAsync()`, you might get the next batch of events before
+      you
+      finish checkpointing the previous batch, or you might have checkpointing of several batches happening out of order
+    - **Severity: WARNING**
+    - **Recommendation**: Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous
+      version
+      `updateCheckpoint()`.
+
+     Please refer to
+     the [updateCheckpointAsync documentation](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.models.eventbatchcontext?view=azure-java-stable#com-azure-messaging-eventhubs-models-eventbatchcontext-updatecheckpointasync())
+     for additional information.
+
+
+12. #### Kusto Queries Having a Time Interval in the Query String
+
+- **Anti-pattern**: Writing KQL queries with hard-coded time intervals directly in the query string.
+- **Issue**: This approach makes queries less flexible and harder to troubleshoot.
+- **Recommendation**: Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the
+  time interval for the query.
+  By passing the time range as an argument in the method call, you make it easier to troubleshoot and understand the
+  context of an API call.
+  Please refer to
+  the [QueryTimeInterval Class documentation](https://learn.microsoft.com/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable)
+  for additional information.
+
+13. #### Authenticating a Non-Azure OpenAI Client with KeyCredential
+
+- **Anti-pattern**: Assigning the endpoint value when creating a Non-Azure OpenAI client using the KeyCredential in
+  .credential(KeyCredential).
+- **Issue**: KeyCredential is the only required parameter in `.credential(KeyCredential)` for authenticating requests to
+  non-Azure OpenAI APIs.
+- **Severity: WARNING**
+- **Recommendation**: Omit Endpoint: Only specify the endpoint parameter if you are working with Azure OpenAI services
+  that require it. Otherwise, it is not necessary to authenticate non-Azure Open-AI clients.
+  Please refer to
+  the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
+  for more information.
