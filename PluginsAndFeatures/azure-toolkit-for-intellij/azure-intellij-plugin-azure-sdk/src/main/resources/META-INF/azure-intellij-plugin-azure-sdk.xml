@@ -4,12 +4,21 @@
     <depends>com.intellij.modules.java</depends>
 
     <actions>
-            <action
-                    class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
-                    id="AzSdkHelpAction"
-                    text="Ask Azure SDK Help">
-                <add-to-group group-id="ToolsMenu" anchor="last" />
-            </action>
+        <action
+                class="com.microsoft.azure.toolkit.intellij.azure.sdk.experiment.ExperimentalFeature"
+                id="AzSdkHelpAction"
+                text="Ask Azure SDK Help">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+
+        <action class="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryToggleAction"
+                id="TelemetryToggleAction"
+                text="Enable Telemetry"
+                description="Toggle Telemetry">
+            <add-to-group group-id="ProblemsView.ToolWindow.Toolbar" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift T"/>
+        </action>
+
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -25,6 +34,7 @@
         </localInspection>
 
         <localInspection
+                language="JAVA"
                 shortName="StorageUploadWithoutLengthCheck"
                 displayName="Storage Upload Without Length Check"
                 groupName="Azure SDK Rules"
@@ -39,15 +49,123 @@
 
         <localInspection
                 language="JAVA"
-                shortName="ServiceBusReceiverAsyncClientCheck"
-                displayName="Low level ServiceBusReceiverAsyncClient check"
+                shortName="DisableAutoCompleteCheck"
+                displayName="Disable Auto-Complete Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DisableAutoCompleteCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DisableAutoCompleteCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DynamicClientCreationCheck"
+                displayName="Dynamic Client Creation Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DynamicClientCreationCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+            language="JAVA"
+            shortName="HardcodedAPIKeysAndTokensCheck"
+            displayName="Hardcoded API Keys And Tokens Check"
+            groupName="Azure SDK Rules"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck">
+
+            <class>
+            com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.HardcodedAPIKeysAndTokensCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DetectDiscouragedAPIUsageCheck"
+                displayName="Detect Discouraged API UsageCheck"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedAPIUsageCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="GetSyncPollerOnPollerFluxCheck"
+                displayName="GetSyncPoller On Poller Flux Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.GetSyncPollerOnPollerFluxCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ServiceBusReceiveModeCheck"
+                displayName="ServiceBus ReceiveMode Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiveModeCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="SingleOperationInLoopCheck"
+                displayName="Single Operation In Loop Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.SingleOperationInLoopCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="ReportTelemetry"
+                displayName="Report Telemetry"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider">
+            <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.TelemetryClientProvider</class>
+        </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="DetectDiscouragedClientCheck"
+                displayName="Detect discouraged client check"
                 groupName="Azure SDK"
                 enabledByDefault="true"
                 level="WARNING"
-                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck">
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck">
 
             <class>
-                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.ServiceBusReceiverAsyncClientCheck
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.DetectDiscouragedClientCheck
             </class>
         </localInspection>
 

@@ -40,27 +40,18 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
         private final boolean isOnTheFly;
 
-        private static final String RULE_NAME = "UseOfBlockOnAsyncClientsCheck";
-        private static final Map<String, Object> RULE_CONFIGS_MAP;
 
-        private static final String ANTI_PATTERN_MESSAGE_KEY = "antipattern_message";
-        private static final String ASYNC_RETURN_TYPES_KEY = "async_return_types_to_check";
-        private static final List<String> ASYNC_RETURN_TYPES;
-        static final String ANTI_PATTERN_MESSAGE;
+        // Define constants for string literals
+        private static final RuleConfig RULE_CONFIG;
+        private static final boolean SKIP_WHOLE_RULE;
 
-        // Load the config file
         static {
-            try {
-                RULE_CONFIGS_MAP = getAsyncReturnTypesToCheck();
+            final String ruleName = "UseOfBlockOnAsyncClientsCheck";
+            RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
-                // extract the async return types to check
-                ASYNC_RETURN_TYPES = (List<String>) RULE_CONFIGS_MAP.get(ASYNC_RETURN_TYPES_KEY);
-
-                ANTI_PATTERN_MESSAGE = (String) RULE_CONFIGS_MAP.get(ANTI_PATTERN_MESSAGE_KEY);
-
-            } catch (IOException e) {
-                throw new RuntimeException("Error loading config file", e);
-            }
+            // Get the RuleConfig object for the rule
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || RULE_CONFIG.getListedItemsToCheck().isEmpty();
         }
 
         /**
@@ -69,7 +60,7 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
          * @param holder     ProblemsHolder
          * @param isOnTheFly boolean
          */
-        public UseOfBlockOnAsyncClientsVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        UseOfBlockOnAsyncClientsVisitor(ProblemsHolder holder, boolean isOnTheFly) {
             this.holder = holder;
             this.isOnTheFly = isOnTheFly;
         }
@@ -94,7 +85,7 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
                     System.out.println("isAsyncContext: " + isAsyncContext);
                     if (isAsyncContext) {
                         // Report the problem
-                        holder.registerProblem(expression, ANTI_PATTERN_MESSAGE);
+                        holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                     }
                 }
             }
@@ -171,27 +162,6 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
             System.out.println("psiClass: " + psiClass);
             return InheritanceUtil.isInheritor(psiClass, "reactor.core.publisher.Mono") ||
                     InheritanceUtil.isInheritor(psiClass, "reactor.core.publisher.Flux");
-        }
-
-
-        /**
-         * helper method to load config from json
-         *
-         * @return Map<String, Object>
-         * @throws IOException
-         */
-        private static Map<String, Object> getAsyncReturnTypesToCheck() throws IOException {
-
-            //load json object
-            JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-
-            //get the async return types to check
-            JSONArray asyncReturnTypes = jsonObject.getJSONObject(RULE_NAME).getJSONArray(ASYNC_RETURN_TYPES_KEY);
-
-            // extract string from json object
-            String antiPatternMessage = jsonObject.getJSONObject(RULE_NAME).getString(ANTI_PATTERN_MESSAGE_KEY);
-
-            return Map.of(ASYNC_RETURN_TYPES_KEY, asyncReturnTypes.toList(), ANTI_PATTERN_MESSAGE_KEY, antiPatternMessage.toString());
         }
     }
 }

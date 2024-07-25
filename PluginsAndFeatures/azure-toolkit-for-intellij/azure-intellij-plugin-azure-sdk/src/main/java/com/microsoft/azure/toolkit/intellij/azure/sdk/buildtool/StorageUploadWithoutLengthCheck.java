@@ -8,17 +8,8 @@ import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
 
 /**
  * This class extends the LocalInspectionTool and is used to inspect the usage of Azure Storage upload APIs in the code.
@@ -35,36 +26,26 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
         return "Ensure Storage APIs use Length Parameter";
     }
 
-    private static List<String> METHODS_TO_CHECK_LIST;
-    private static final String RULE_NAME = "StorageUploadWithoutLengthCheck";
-    private static final String METHODS_TO_CHECK_KEY = "methods_to_check";
+    private static final RuleConfig RULE_CONFIG;
     private static final String LENGTH_TYPE = "long";
-    private static final Logger LOGGER = Logger.getLogger(StorageUploadWithoutLengthCheck.class.getName());
-
+    private static final boolean SKIP_WHOLE_RULE;
 
 
     static {
-        try {
-            METHODS_TO_CHECK_LIST = getMethodsToCheck();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error loading methods to check", e);
-        }
-    }
+        final String ruleName = "StorageUploadWithoutLengthCheck";
+        RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
-    // Get the list of methods to check from the configuration file
-    private static List<String> getMethodsToCheck() throws IOException {
-
-        JSONObject jsonObject = LoadJsonConfigFile.getInstance().getJsonObject();
-        JSONArray methods = jsonObject.getJSONObject(RULE_NAME).getJSONArray(METHODS_TO_CHECK_KEY);
-        return methods.toList().stream().map(Object::toString).collect(Collectors.toList());
+        // Get the RuleConfig object for the rule
+        RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+        SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || RULE_CONFIG.getMethodsToCheck().isEmpty();
     }
 
     /**
      * This method is used to build a PsiElementVisitor that will be used to visit the method calls in the code.
      *
-     * @param holder
-     * @param isOnTheFly
-     * @return
+     * @param holder     ProblemsHolder object to register the problem
+     * @param isOnTheFly boolean to check if the inspection is on the fly -- Not in use
+     * @return PsiElementVisitor object to visit the elements in the code
      */
     @NotNull
     @Override
@@ -76,7 +57,11 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                 super.visitMethodCallExpression(expression);
                 String methodName = expression.getMethodExpression().getReferenceName();
 
-                if (!METHODS_TO_CHECK_LIST.contains(methodName)) {
+                if (!RULE_CONFIG.getMethodsToCheck().contains(methodName)) {
+                    return;
+                }
+
+                if (SKIP_WHOLE_RULE) {
                     return;
                 }
 
@@ -100,9 +85,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
                     }
                 }
                 if (!hasLengthArg) {
-                    holder.registerProblem(expression, "Azure Storage upload API without length parameter detected");
+                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
-
             }
         };
     }
@@ -113,8 +97,8 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
      * The iteration starts from the end of the chain and goes up the chain.
      * The qualifier of the method call is checked for a constructor with 'long' type arguments.
      *
-     * @param expression
-     * @return boolean
+     * @param expression - The method call expression
+     * @return boolean - true if the constructor has 'long' type arguments
      */
     public boolean checkMethodCallChain(PsiMethodCallExpression expression) {
 
@@ -128,7 +112,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
 
             // Checking for constructor with 'long' type arguments
             if (qualifier instanceof PsiNewExpression) {
-                return isLengthArgumentInCall (qualifier);
+                return isLengthArgumentInCall(qualifier);
             }
         }
         return false;
@@ -140,7 +124,7 @@ public class StorageUploadWithoutLengthCheck extends LocalInspectionTool {
      * @param qualifier - The qualifier of the method call
      * @return boolean
      */
-    private boolean isLengthArgumentInCall (PsiExpression qualifier) {
+    private boolean isLengthArgumentInCall(PsiExpression qualifier) {
         PsiNewExpression newExpression = (PsiNewExpression) qualifier;
 
         // Getting the arguments of the constructor
