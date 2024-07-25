@@ -60,10 +60,10 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         int numOfInvocation = 1;
         String endpoint = "endpoint";
         String credential = "credential";
-        String KeyCredentialPackageName = "KeyCredential";
+        String keyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
-        verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
+        verifyRegisterProblem(numOfInvocation, endpoint, credential, keyCredentialPackageName, azurePackageName);
     }
 
     /**
@@ -76,10 +76,10 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         int numOfInvocation = 0;
         String endpoint = "notEndpoint";
         String credential = "credential";
-        String KeyCredentialPackageName = "KeyCredential";
+        String keyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
-        verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
+        verifyRegisterProblem(numOfInvocation, endpoint, credential, keyCredentialPackageName, azurePackageName);
     }
 
     /**
@@ -92,10 +92,10 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         int numOfInvocation = 0;
         String endpoint = "endpoint";
         String credential = "notCredential";
-        String KeyCredentialPackageName = "KeyCredential";
+        String keyCredentialPackageName = "KeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
-        verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
+        verifyRegisterProblem(numOfInvocation, endpoint, credential, keyCredentialPackageName, azurePackageName);
     }
 
     /**
@@ -108,10 +108,10 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         int numOfInvocation = 0;
         String endpoint = "endpoint";
         String credential = "notCredential";
-        String KeyCredentialPackageName = "com.azure.core.credential.AzureKeyCredential";
+        String keyCredentialPackageName = "com.azure.core.credential.AzureKeyCredential";
         String azurePackageName = "com.azure.ai.openai";
 
-        verifyRegisterProblem(numOfInvocation, endpoint, credential, KeyCredentialPackageName, azurePackageName);
+        verifyRegisterProblem(numOfInvocation, endpoint, credential, keyCredentialPackageName, azurePackageName);
     }
 
     /**
@@ -124,7 +124,7 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
     /**
      * This method verifies if the registerProblem method is called with the correct parameters
      */
-    private void verifyRegisterProblem(int numOfInvocation, String endpoint, String credential, String KeyCredentialPackageName, String azurePackageName) {
+    private void verifyRegisterProblem(int numOfInvocation, String endpoint, String credential, String keyCredentialPackageName, String azurePackageName) {
 
         PsiReferenceExpression methodExpression = mock(PsiReferenceExpression.class);
 
@@ -155,7 +155,7 @@ public class EndpointOnNonAzureOpenAIAuthCheckTest {
         // isKeyCredential
 
         when(newExpression.getClassReference()).thenReturn(classReference);
-        when(classReference.getReferenceName()).thenReturn(KeyCredentialPackageName);
+        when(classReference.getReferenceName()).thenReturn(keyCredentialPackageName);
 
         // isNonAzureOpenAIClient
         when(qualifierOne.getParent()).thenReturn(parent);

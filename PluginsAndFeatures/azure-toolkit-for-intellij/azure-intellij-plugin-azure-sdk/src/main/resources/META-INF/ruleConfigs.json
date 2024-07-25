@@ -111,11 +111,11 @@
     "solution": "Use the QueryTimeInterval parameter in the client method parameters to specify the time interval for the query"
   },
   "EndpointOnNonAzureOpenAIAuthCheck": {
-    "methods_to_check": [
+    "methodsToCheck": [
       "endpoint",
       "credential"
     ],
-    "services_to_check": "KeyCredential",
-    "anti_pattern_message": "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients"
+    "servicesToCheck": "KeyCredential",
+    "antiPatternMessage": "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients"
   }
 }
