@@ -207,5 +207,19 @@
                 implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck">
             <class>com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.KustoQueriesWithTimeIntervalInQueryStringCheck</class>
         </localInspection>
+
+        <localInspection
+                language="JAVA"
+                shortName="EndpointOnNonAzureOpenAIAuthCheck"
+                displayName="Endpoint On Non-Azure OpenAI Authentication Check"
+                groupName="Azure SDK"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.EndpointOnNonAzureOpenAIAuthCheck">
+
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.EndpointOnNonAzureOpenAIAuthCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>

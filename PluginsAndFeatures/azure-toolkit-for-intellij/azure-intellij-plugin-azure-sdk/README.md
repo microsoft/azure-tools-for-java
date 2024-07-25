@@ -247,3 +247,16 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   Please refer to
   the [QueryTimeInterval Class documentation](https://learn.microsoft.com/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable)
   for additional information.
+
+13. #### Authenticating a Non-Azure OpenAI Client with KeyCredential
+
+- **Anti-pattern**: Assigning the endpoint value when creating a Non-Azure OpenAI client using the KeyCredential in
+  .credential(KeyCredential).
+- **Issue**: KeyCredential is the only required parameter in `.credential(KeyCredential)` for authenticating requests to
+  non-Azure OpenAI APIs.
+- **Severity: WARNING**
+- **Recommendation**: Omit Endpoint: Only specify the endpoint parameter if you are working with Azure OpenAI services
+  that require it. Otherwise, it is not necessary to authenticate non-Azure Open-AI clients.
+  Please refer to
+  the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
+  for more information.
