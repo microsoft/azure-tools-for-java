@@ -255,8 +255,8 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Issue**: KeyCredential is the only required parameter in `.credential(KeyCredential)` for authenticating requests to
   non-Azure OpenAI APIs.
 - **Severity: WARNING**
-- **Recommendation**: Omit Endpoint: Do not specify the endpoint parameter unless you are working with Azure-specific
-  OpenAI services that require it.
+- **Recommendation**: Omit Endpoint: Only specify the endpoint parameter if you are working with Azure OpenAI services
+  that require it. Otherwise, it is not necessary to authenticate non-Azure Open-AI clients.
   Please refer to
   the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
   for more information.
