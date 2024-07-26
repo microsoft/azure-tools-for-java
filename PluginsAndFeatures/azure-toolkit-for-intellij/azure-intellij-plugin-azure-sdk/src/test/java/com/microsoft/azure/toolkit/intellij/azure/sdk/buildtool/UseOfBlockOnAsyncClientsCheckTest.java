@@ -1,21 +1,19 @@
 package com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool;
+
+import com.intellij.psi.PsiClassType;
 import com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UseOfBlockOnAsyncClientsCheck.UseOfBlockOnAsyncClientsVisitor;
 
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.util.PsiTreeUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,20 +23,25 @@ import static org.mockito.Mockito.when;
  * This class is used to test the UseOfBlockOnAsyncClientsCheck class.
  * The UseOfBlockOnAsyncClientsCheck class is an inspection tool that checks for the use of block() method on async clients in Azure SDK.
  * This inspection will check for the use of block() method on reactive types like Mono, Flux, etc.
- * 1. Flux<ByteBuffer> downloadFlux = blobAsyncClient.download()
- *                 .doOnComplete(() -> System.out.println("Download complete"))
- *                 .doOnError(error -> System.err.println("Error downloading file: " + error.getMessage()));
+ *  This is an example of what should be flagged:
  *
- *             // This call should be flagged
- *             downloadFlux.blockFirst();
+ *  private ServiceBusReceiverAsyncClient receiver;
+ *  receiver.complete(received).block(Duration.ofSeconds(15));
  *
- * 2. // Download a file from Azure Blob Storage using the async client
- *             Mono<Void> downloadMono = blobAsyncClient.downloadToFile("downloadedFilePath")
- *                 .doOnSuccess(response -> System.out.println("File downloaded successfully"))
- *                 .doOnError(error -> System.err.println("Error downloading file: " + error.getMessage()));
+ *  private final ServiceBusReceiverAsyncClient client;
+ *  try {
+ *                 if (isComplete) {
+ *                     client.complete(message)
+ *                         .doOnSuccess(success -> System.out.println("Message completed successfully"))
+ *                         .doOnError(error -> System.err.println("Error completing message: " + error.getMessage()))
+ *                         .log()
+ *                         .timeout(Duration.ofSeconds(30))
+ *                         .retry(3)
+ *                         .block();
  *
- *             // This call should also be flagged by the inspection tool
- *             downloadMono.blockOptional();
+ *                 } else {
+ *                     client.abandon(message).block();
+ *                 }
  */
 public class UseOfBlockOnAsyncClientsCheckTest {
 
@@ -60,56 +63,51 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     }
 
     /**
-     * This is the main test method that tests the KustoQueriesWithTimeIntervalInQueryStringCheck class.
+     * This is the main test method that tests the use of block() method on async clients.
+     * This method should be flagged by the inspection tool as it is a block() method call on an async client.
      */
     @Test
-    public void testUseOfBlockOnAsyncClientsVisitor() {
-
-        // assert visitor
-        assertVisitor();
+    public void testUseOfBlockOnAsyncClient() {
 
         int numberOfInvocations = 1;
         String methodName = "block";
-        String packageName = "com.azure.";
+        String clientPackageName = "com.azure.messaging.servicebus.ServiceBusReceiverAsyncClient";
+        String reactivePackageName = "reactor.core.publisher.Flux";
 
         // verify register problem
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, clientPackageName, numberOfInvocations, reactivePackageName);
     }
 
     /**
      * This test method tests the use of blockOptional() method on async clients.
-     * This method should be flagged by the inspection tool.
+     * This method should be flagged by the inspection tool as it is a blockOptional() method call on an async client.
      */
     @Test
-    public void testUseOfDifferentBlockOnAsyncClientsVisitor() {
-
-        // assert visitor
-        assertVisitor();
+    public void testUseOfDifferentBlockOnAsyncClient() {
 
         int numberOfInvocations = 1;
         String methodName = "blockOptional";
-        String packageName = "com.azure.";
+        String clientPackageName = "com.azure.messaging.servicebus.ServiceBusReceiverAsyncClient";
+        String reactivePackageName = "reactor.core.publisher.Mono";
 
         // verify register problem
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, clientPackageName, numberOfInvocations, reactivePackageName);
     }
 
     /**
      * This test method tests the use of blockFirst() method on non-azure async clients.
-     * This method should not be flagged by the inspection tool.
+     * This method should not be flagged by the inspection tool
      */
     @Test
-    public void testUseOfBlockOnAsyncClientsVisitorWithNonAzureClient() {
-
-        // assert visitor
-        assertVisitor();
+    public void testBlockOnAsyncClientsWithNonAzureClient() {
 
         int numberOfInvocations = 0;
         String methodName = "blockFirst";
-        String packageName = "com.notAzure.";
+        String clientPackageName = "com.notAzure.";
+        String reactivePackageName = "reactor.core.publisher.Flux";
 
         // verify register problem
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, clientPackageName, numberOfInvocations, reactivePackageName);
     }
 
     /**
@@ -119,57 +117,93 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     @Test
     public void testVisitOnDifferentMethodCall() {
 
-        // assert visitor
-        assertVisitor();
-
         int numberOfInvocations = 0;
         String methodName = "nonBlockingMethod";
-        String packageName = "com.azure.";
+        String clientPackageName = "com.azure.messaging.servicebus.ServiceBusReceiverAsyncClient";
+        String reactivePackageName = "reactor.core.publisher.Flux";
 
         // verify register problem
-        verifyRegisterProblem(methodName, packageName, numberOfInvocations);
+        verifyRegisterProblem(methodName, clientPackageName, numberOfInvocations, reactivePackageName);
     }
 
-    /** Create a visitor object for the test
+    /**
+     * This test method tests the use of block() method on a non-reactive type.
+     * This method should not be flagged by the inspection tool.
+     */
+    @Test
+    public void testBlockOnNonReactiveType() {
+        int numberOfInvocations = 0;
+        String methodName = "block";
+        String clientPackageName = "com.azure.messaging.servicebus.ServiceBusReceiverAsyncClient";
+        String nonReactivePackageName = "java.util.List";
+
+        // verify register problem
+        verifyRegisterProblem(methodName, clientPackageName, numberOfInvocations, nonReactivePackageName);
+    }
+
+    /**
+     * This test method tests the use of block() method on a non-async client.
+     * This method should not be flagged by the inspection tool.
+     */
+    @Test
+    public void testBlockOnAzureNonAsyncClient() {
+        int numberOfInvocations = 0;
+        String methodName = "block";
+        String nonAsyncClientPackageName = "com.azure.messaging.servicebus.ServiceBusReceiverClient";
+        String reactivePackageName = "reactor.core.publisher.Mono";
+
+        // verify register problem
+        verifyRegisterProblem(methodName, nonAsyncClientPackageName, numberOfInvocations, reactivePackageName);
+    }
+
+    /**
+     * Create a visitor object for the test
+     *
      * @return JavaElementVisitor
      */
     private JavaElementVisitor createVisitor() {
-        boolean isOnTheFly = true;
-        UseOfBlockOnAsyncClientsVisitor visitor = new UseOfBlockOnAsyncClientsCheck.UseOfBlockOnAsyncClientsVisitor(mockHolder, isOnTheFly);
-        return visitor;
+        return new UseOfBlockOnAsyncClientsVisitor(mockHolder);
     }
 
-    /** Assert that the visitor object is not null and is an instance of JavaElementVisitor
-     * @return void
+    /**
+     * This method is used to verify the registerProblem method is called when the method call is a block() method call on an async client.
+     *
+     * @param methodName          String - the name of the method called
+     * @param clientPackageName   String - the package name of the async client
+     * @param numberOfInvocations int - the number of times registerProblem should be called
+     * @param reactivePackageName String - the package name of the reactive type
      */
-    private void assertVisitor() {
-        assertNotNull(mockVisitor);
-        assertTrue(mockVisitor instanceof JavaElementVisitor);
-    }
-
-    /** Verify that the registerProblem method is called the expected number of times
-     * @param methodName The name of the method call -- used to determine if the method call is a block method
-     * @param packageName The package name of the class containing the method call -- used to determine if the client is an Azure SDK client
-     * @param numberOfInvocations Number of times registerProblem should be called
-     */
-    private void verifyRegisterProblem(String methodName, String packageName, int numberOfInvocations) {
+    private void verifyRegisterProblem(String methodName, String clientPackageName, int numberOfInvocations, String reactivePackageName) {
 
         // Arrange
         PsiReferenceExpression referenceExpression = mock(PsiReferenceExpression.class);
-        PsiExpression expression = mock(PsiExpression.class);
-        PsiType type = mock(PsiType.class);
-        PsiClass containingClass = mock(PsiClass.class);
-        PsiTreeUtil mockTreeUtil = mock(PsiTreeUtil.class);
+        PsiMethodCallExpression expression = mock(PsiMethodCallExpression.class);
+        PsiClassType type = mock(PsiClassType.class);
+        PsiClass qualifierReturnTypeClass = mock(PsiClass.class);
 
+        PsiReferenceExpression clientReferenceExpression = mock(PsiReferenceExpression.class);
+        PsiReferenceExpression clientQualifierExpression = mock(PsiReferenceExpression.class);
+        PsiClassType clientType = mock(PsiClassType.class);
+        PsiClass clientReturnTypeClass = mock(PsiClass.class);
+
+        // visitMethodCallExpression method
         when(mockElement.getMethodExpression()).thenReturn(referenceExpression);
         when(referenceExpression.getReferenceName()).thenReturn(methodName);
 
+        // checkIfAsyncContext method
         when(referenceExpression.getQualifierExpression()).thenReturn(expression);
         when(expression.getType()).thenReturn(type);
-        when(type.getCanonicalText()).thenReturn("reactor.core.publisher.Flux");
+        when(type.resolve()).thenReturn(qualifierReturnTypeClass);
 
-        when(mockTreeUtil.getParentOfType(mockElement, PsiClass.class)).thenReturn(containingClass);
-        when(containingClass.getQualifiedName()).thenReturn(packageName);
+        // isReactiveType method
+        when(qualifierReturnTypeClass.getQualifiedName()).thenReturn(reactivePackageName);
+
+        // isAzureAsyncClient method
+        when(expression.getMethodExpression()).thenReturn(clientReferenceExpression);
+        when(clientReferenceExpression.getQualifierExpression()).thenReturn(clientQualifierExpression);
+        when(clientQualifierExpression.getType()).thenReturn(clientType);
+        when(clientType.resolve()).thenReturn(clientReturnTypeClass);
+        when(clientReturnTypeClass.getQualifiedName()).thenReturn(clientPackageName);
 
         // Act
         mockVisitor.visitMethodCallExpression(mockElement);
@@ -178,4 +212,3 @@ public class UseOfBlockOnAsyncClientsCheckTest {
         verify(mockHolder, times(numberOfInvocations)).registerProblem(Mockito.eq(mockElement), Mockito.contains("Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."));
     }
 }
-

@@ -123,10 +123,11 @@
     "antiPatternMessage": "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients"
   },
   "UseOfBlockOnAsyncClientsCheck": {
-    "async_return_types_to_check": [
-      "Flux",
-      "Mono"
+    "methodsToCheck": "block",
+    "typesToCheck": [
+      "reactor.core.publisher.Flux",
+      "reactor.core.publisher.Mono"
     ],
-    "antipattern_message": "Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."
+    "antiPatternMessage": "Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."
   }
 }

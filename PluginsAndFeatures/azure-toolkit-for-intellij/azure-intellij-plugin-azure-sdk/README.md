@@ -260,3 +260,16 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   Please refer to
   the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
   for more information.
+
+14. #### Use sync client operation if calling block methods on an async client.
+
+- **Anti-Pattern**: Using `block()` on an async client. This practice turns an asynchronous operation into a synchronous
+  one.
+- **Issue**: The use of `block()` goes against the non-blocking nature of reactive streams.
+  It can lead to performance issues because it blocks one of the few available threads.
+  In reactive applications, avoiding blocking operations is crucial for scalability and responsiveness.
+- **Severity Level: WARNING**
+- **Recommendation**: If you find yourself frequently using `block()` in your code, consider switching to the sync
+  client.
+  The sync client performs operations synchronously without requiring `block()`.
+  Using the sync client can make your code more straightforward and easier to understand.
