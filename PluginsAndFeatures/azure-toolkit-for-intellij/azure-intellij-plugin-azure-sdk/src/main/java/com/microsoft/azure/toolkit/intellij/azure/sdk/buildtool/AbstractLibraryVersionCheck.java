@@ -5,7 +5,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.StdLanguages;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -20,15 +19,6 @@ import java.io.IOException;
  * The IncompatibleDependencyCheck class checks the version of the libraries in the pom.xml file against compatible versions.
  */
 public abstract class AbstractLibraryVersionCheck extends LocalInspectionTool {
-
-    /**
-     * Creates the specific visitor for the inspection for subclasses to implement.
-     *
-     * @param holder     The holder for the problems found
-     * @param isOnTheFly boolean to check if the inspection is on the fly - not used in this implementation but is part of the method signature
-     * @return The specific visitor for the inspection
-     */
-    protected abstract PsiElementVisitor createVisitor(ProblemsHolder holder, boolean isOnTheFly);
 
     /**
      * Method to check the pom.xml file for the libraries and their versions.

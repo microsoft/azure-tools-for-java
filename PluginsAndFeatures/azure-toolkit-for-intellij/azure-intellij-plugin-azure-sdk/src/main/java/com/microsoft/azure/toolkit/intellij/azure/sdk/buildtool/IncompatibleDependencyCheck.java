@@ -32,9 +32,10 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
      * @param isOnTheFly boolean to check if the inspection is on the fly - not used in this implementation but is part of the method signature
      * @return The visitor for the inspection
      */
+    @NotNull
     @Override
-    protected PsiElementVisitor createVisitor(ProblemsHolder holder, boolean isOnTheFly) {
-        return new IncompatibleDependencyVisitor(holder, isOnTheFly);
+    public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        return new IncompatibleDependencyVisitor(holder);
     }
 
     /**
@@ -100,9 +101,8 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
          * Constructs a new instance of the IncompatibleDependencyVisitor.
          *
          * @param holder     The holder for the problems found
-         * @param isOnTheFly boolean to check if the inspection is on the fly
          */
-        IncompatibleDependencyVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        IncompatibleDependencyVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 

@@ -20,15 +20,17 @@ import java.util.Map;
 public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
 
     /**
-     * Abstract method to build the specific visitor for the inspection.
+     * Build the specific visitor for the inspection.
      *
      * @param holder     The holder for the problems found
      * @param isOnTheFly boolean to check if the inspection is on the fly - not used in this implementation but is part of the method signature
      * @return The visitor for the inspection
      */
+
+    @NotNull
     @Override
-    protected PsiElementVisitor createVisitor(ProblemsHolder holder, boolean isOnTheFly) {
-        return new UpgradeLibraryVersionVisitor(holder, isOnTheFly);
+    public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        return new UpgradeLibraryVersionVisitor(holder);
     }
 
     /**
@@ -79,10 +81,9 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
         /**
          * Constructs a new instance of the visitor.
          *
-         * @param holder     The holder for the problems found
-         * @param isOnTheFly boolean to check if the inspection is on the fly
+         * @param holder The holder for the problems found
          */
-        UpgradeLibraryVersionVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        UpgradeLibraryVersionVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 

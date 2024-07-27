@@ -54,10 +54,10 @@ class AbstractLibraryVersionCheckTest {
         IncompatibleDependencyCheck.encounteredVersionGroups = new HashSet<>(Arrays.asList("jackson_2.10", "gson_2.10"));
 
         UpgradeLibraryVersionCheck mockCheck = new UpgradeLibraryVersionCheck();
-        mockUpgradeLibraryVersionVisitor = mockCheck.new UpgradeLibraryVersionVisitor(mockHolder, true);
+        mockUpgradeLibraryVersionVisitor = mockCheck.new UpgradeLibraryVersionVisitor(mockHolder);
 
         IncompatibleDependencyCheck mockIncompatibleDependencyCheck = new IncompatibleDependencyCheck();
-        mockIncompatibleDependencyVisitor = mockIncompatibleDependencyCheck.new IncompatibleDependencyVisitor(mockHolder, true);
+        mockIncompatibleDependencyVisitor = mockIncompatibleDependencyCheck.new IncompatibleDependencyVisitor(mockHolder);
     }
 
     /**
