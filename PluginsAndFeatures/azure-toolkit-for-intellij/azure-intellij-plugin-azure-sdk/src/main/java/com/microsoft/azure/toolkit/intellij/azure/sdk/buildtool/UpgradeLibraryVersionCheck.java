@@ -145,9 +145,15 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
                 synchronized (IncompatibleDependencyCheck.IncompatibleDependencyVisitor.class) {
                     fileContent = LIBRARY_RECOMMENDED_VERSION_MAP_REF == null ? null : LIBRARY_RECOMMENDED_VERSION_MAP_REF.get();
                     if (fileContent == null) {
-                        String fileUrl = "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/eng/versioning/version_client.txt";
-                        fileContent = GitHubFileFetcher.fetchTxtFileFromGitHub(fileUrl);
-                        LIBRARY_RECOMMENDED_VERSION_MAP_REF = new WeakReference<>(fileContent);
+
+                        String metadataUrl = "https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/maven-metadata.xml";
+                        String latestVersion = GitHubFileFetcher.getLatestVersion(metadataUrl);
+
+                        if (latestVersion != null) {
+                            String pomUrl = String.format("https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/%s/azure-sdk-bom-%s.pom", latestVersion, latestVersion);
+                            fileContent = GitHubFileFetcher.parsePomFile(pomUrl);
+                            LIBRARY_RECOMMENDED_VERSION_MAP_REF = new WeakReference<>(fileContent);
+                        }
                     }
                 }
             }
