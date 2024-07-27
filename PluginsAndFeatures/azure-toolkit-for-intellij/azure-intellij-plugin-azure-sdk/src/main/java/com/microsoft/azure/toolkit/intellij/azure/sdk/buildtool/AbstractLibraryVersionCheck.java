@@ -85,7 +85,7 @@ public abstract class AbstractLibraryVersionCheck extends LocalInspectionTool {
      * @return The formatted message for the anti-pattern with the full name and recommended version
      */
     protected static String getFormattedMessage(String fullName, String recommendedVersion, RuleConfig RULE_CONFIG) {
-        return RULE_CONFIG.getAntiPatternMessage().replace("{{fullName}}", fullName).replace("{{recommendedVersion}}", recommendedVersion);
+        return RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage").replace("{{fullName}}", fullName).replace("{{recommendedVersion}}", recommendedVersion);
     }
 
     /**

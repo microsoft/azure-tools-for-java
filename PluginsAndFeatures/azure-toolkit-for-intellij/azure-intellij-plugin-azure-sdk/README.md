@@ -213,7 +213,55 @@ integration, telemetry connectivity, and Azure Toolkit integration.
 - **Recommendation**: Use Batch Operations: If the SDK provides a batch operation API, use it to perform multiple
   actions in a single request.
 
-11. #### Upgrading library versions if versions in use known to have performance or reliability issues
+11. #### EventProcessorClient: Using `updateCheckpointAsync()` API of EventBatchContext object:
+    #### Anti-pattern a. Without `block()` or `block(timeout)`
+    
+    - **Issue**: Calling `updateCheckpointAsync()` without `block()` will not do anything.
+    - **Severity: WARNING**
+    - **Recommendation**: Use `block()` operator with a timeout or consider using the synchronous
+      version `updateCheckpoint()`.
+    
+    #### Anti-pattern b. With `subscribe()`
+    
+    - **Issue**: If you call `subscribe()` with `updateCheckpointAsync()`, you might get the next batch of events before
+      you
+      finish checkpointing the previous batch, or you might have checkpointing of several batches happening out of order
+    - **Severity: WARNING**
+    - **Recommendation**: Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous
+      version
+      `updateCheckpoint()`.
+
+     Please refer to
+     the [updateCheckpointAsync documentation](https://learn.microsoft.com/en-us/java/api/com.azure.messaging.eventhubs.models.eventbatchcontext?view=azure-java-stable#com-azure-messaging-eventhubs-models-eventbatchcontext-updatecheckpointasync())
+     for additional information.
+
+
+12. #### Kusto Queries Having a Time Interval in the Query String
+
+- **Anti-pattern**: Writing KQL queries with hard-coded time intervals directly in the query string.
+- **Issue**: This approach makes queries less flexible and harder to troubleshoot.
+- **Recommendation**: Consider using the `QueryTimeInterval` parameter in the client method parameters to specify the
+  time interval for the query.
+  By passing the time range as an argument in the method call, you make it easier to troubleshoot and understand the
+  context of an API call.
+  Please refer to
+  the [QueryTimeInterval Class documentation](https://learn.microsoft.com/java/api/com.azure.monitor.query.models.querytimeinterval?view=azure-java-stable)
+  for additional information.
+
+13. #### Authenticating a Non-Azure OpenAI Client with KeyCredential
+
+- **Anti-pattern**: Assigning the endpoint value when creating a Non-Azure OpenAI client using the KeyCredential in
+  .credential(KeyCredential).
+- **Issue**: KeyCredential is the only required parameter in `.credential(KeyCredential)` for authenticating requests to
+  non-Azure OpenAI APIs.
+- **Severity: WARNING**
+- **Recommendation**: Omit Endpoint: Only specify the endpoint parameter if you are working with Azure OpenAI services
+  that require it. Otherwise, it is not necessary to authenticate non-Azure Open-AI clients.
+  Please refer to
+  the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
+  for more information.
+
+14. #### Upgrading library versions if versions in use known to have performance or reliability issues
 
 - **Anti-pattern**: Using library versions known to have performance or reliability issues.
 - **Issue**: Using outdated library versions can lead to performance bottlenecks, security vulnerabilities, and
@@ -228,7 +276,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [ServiceBus Azure SDK Java documentation](https://learn.microsoft.com/azure/developer/java/sdk/troubleshooting-messaging-service-bus-overview#upgrade-to-715x-or-latest)
   for more information on the latest version of the Service Bus SDK.
 
-12. #### Using Incompatible Versions of Dependencies
+15. #### Using Incompatible Versions of Dependencies
 
 - **Anti-pattern**: Using incompatible versions of dependencies in the project.
 - **Issue**: Incompatible versions of dependencies can lead to runtime errors, classpath conflicts, and unexpected

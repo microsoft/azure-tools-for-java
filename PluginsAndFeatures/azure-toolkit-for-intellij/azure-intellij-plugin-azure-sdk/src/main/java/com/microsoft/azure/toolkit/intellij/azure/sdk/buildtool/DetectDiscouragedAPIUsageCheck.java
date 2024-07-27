@@ -12,8 +12,6 @@ import com.intellij.psi.PsiReferenceExpression;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 /**
  * This class extends the LocalInspectionTool to check for the use of discouraged APIs in the code.
  * If the method is called from an Azure client class, a problem is registered with the suggestion message.
@@ -45,7 +43,6 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
 
         // Define constants for string literals
         private static final RuleConfig RULE_CONFIG;
-        private static final Map<String, String> METHODS_TO_CHECK;
         private static final boolean SKIP_WHOLE_RULE;
 
         static {
@@ -54,8 +51,7 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
 
             // Get the RuleConfig object for the rule
             RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
-            METHODS_TO_CHECK = RULE_CONFIG.getDiscouragedIdentifiersMap();
-            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || RULE_CONFIG.getAntiPatternMessageMap().isEmpty();
         }
 
         /**
@@ -94,7 +90,7 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
                 PsiElement resolvedMethod = methodExpression.resolve();
 
                 // check if the method is a discouraged API call by accessing the keys of the map stored in the configuration file
-                if (resolvedMethod != null && resolvedMethod instanceof PsiMethod && METHODS_TO_CHECK.containsKey(((PsiMethod) resolvedMethod).getName())) {
+                if (resolvedMethod != null && resolvedMethod instanceof PsiMethod && RULE_CONFIG.getAntiPatternMessageMap().containsKey(((PsiMethod) resolvedMethod).getName())) {
 
                     PsiMethod method = (PsiMethod) resolvedMethod;
 
@@ -102,7 +98,13 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
                     PsiClass containingClass = method.getContainingClass();
 
                     // compare the package name of the containing class to the azure package name from the configuration file
-                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith("com.azure.ai.openai")) {
+                    if (containingClass != null && containingClass.getQualifiedName() != null && containingClass.getQualifiedName().startsWith("com.azure")) {
+
+                        if (method.getName().equals("getCompletions")) {
+                            if (containingClass != null && containingClass.getQualifiedName() != null && !containingClass.getQualifiedName().startsWith("com.azure.ai.openai")) {
+                                return; // Exit if the method is getCompletions but the class's qualified name does not start with com.azure.ai.openai
+                            }
+                        }
 
                         PsiElement problemElement = methodExpression.getReferenceNameElement();
 
@@ -110,7 +112,7 @@ public class DetectDiscouragedAPIUsageCheck extends LocalInspectionTool {
                             return;
                         }
                         // give the suggestion of the discouraged method
-                        holder.registerProblem(problemElement, METHODS_TO_CHECK.get(method.getName()));
+                        holder.registerProblem(problemElement, RULE_CONFIG.getAntiPatternMessageMap().get(method.getName()));
                     }
                 }
             }
