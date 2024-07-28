@@ -10,10 +10,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -23,16 +21,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class to fetch files from GitHub.
- * The class fetches .txt and .json files from GitHub and parses them to get the data.
+ * Class to fetch files from their corresponding data sources
+ * The class fetches these sources and parses them to get the data.
  * The data is used to check the version of the libraries in the pom.xml file against the recommended version.
  */
-class GitHubFileFetcher {
+class DependencyVersionFileFetcher {
 
-    private static final Logger LOGGER = Logger.getLogger(GitHubFileFetcher.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DependencyVersionFileFetcher.class.getName());
+
+    private static final DependencyVersionsDataCache<Map<String, String>> pomCache = new DependencyVersionsDataCache<>("pomCache.ser");
+    private static final DependencyVersionsDataCache<String> versionCache = new DependencyVersionsDataCache<>("versionCache.ser");
+    private static final DependencyVersionsDataCache<Map<String, Set<String>>> incompatibleVersionsCache = new DependencyVersionsDataCache<>("incompatibleVersionsCache.ser");
 
     /**
      * The parsePomFile method fetches the pom.xml file from the URL and parses it to get the dependencies.
@@ -41,12 +44,14 @@ class GitHubFileFetcher {
      *
      * @param pomUrl The URL of the pom.xml file to fetch
      * @return A map of the dependencies in the pom.xml file
-     * @throws IOException                  If an error occurs while reading the file
-     * @throws ParserConfigurationException If an error occurs while configuring the parser
-     * @throws SAXException                 If an error occurs while parsing the file
      */
     static Map<String, String> parsePomFile(String pomUrl) {
 
+        // Check the cache first
+        Map<String, String> artifactVersionMap = pomCache.get(pomUrl);
+        if (artifactVersionMap != null) {
+            return artifactVersionMap;
+        }
         // Fetch the pom.xml file from the URL and parse it to get the dependencies
         Document pomDoc = fetchXmlDocument(pomUrl);
 
@@ -54,7 +59,7 @@ class GitHubFileFetcher {
         NodeList dependencies = pomDoc.getElementsByTagName("dependency");
 
         // Parse the dependencies and get the groupId, artifactId, and version
-        Map<String, String> artifactVersionMap = new HashMap<>();
+        artifactVersionMap = new HashMap<>();
 
         for (int i = 0; i < dependencies.getLength(); i++) {
             NodeList dependency = dependencies.item(i).getChildNodes();
@@ -82,6 +87,8 @@ class GitHubFileFetcher {
             }
         }
 
+        // Update the cache
+        pomCache.put(pomUrl, artifactVersionMap);
         return artifactVersionMap;
     }
 
@@ -92,20 +99,25 @@ class GitHubFileFetcher {
      *
      * @param metadataUrl The URL of the metadata file to fetch
      * @return The latest version of the library
-     * @throws IOException                  If an error occurs while reading the file
-     * @throws ParserConfigurationException If an error occurs while configuring the parser
-     * @throws SAXException                 If an error occurs while parsing the file
      */
     static String getLatestVersion(String metadataUrl) {
 
+        // Check the cache first
+        String cachedVersion = versionCache.get(metadataUrl);
+        if (cachedVersion != null) {
+            return cachedVersion;
+        }
         // Fetch the metadata file from the URL and parse it
         Document metadataDoc = fetchXmlDocument(metadataUrl);
 
         // Get the list of versions from the metadata file
         NodeList versions = metadataDoc.getElementsByTagName("version");
 
-        // Return the latest version from the list of versions
-        return versions.item(versions.getLength() - 1).getTextContent();
+        String latestVersion = versions.item(versions.getLength() - 1).getTextContent();
+
+        // Update the cache
+        versionCache.put(metadataUrl, latestVersion);
+        return latestVersion;
     }
 
     /**
@@ -115,9 +127,6 @@ class GitHubFileFetcher {
      *
      * @param urlString The URL of the XML document to fetch
      * @return The parsed XML document
-     * @throws IOException                  If an error occurs while reading the document
-     * @throws ParserConfigurationException If an error occurs while configuring the parser
-     * @throws SAXException                 If an error occurs while parsing the document
      */
     private static Document fetchXmlDocument(String urlString) {
 
@@ -126,131 +135,42 @@ class GitHubFileFetcher {
         InputStream inputStream = null;
 
         try {
-            URL url = null;
-            try {
-                url = new URL(urlString);
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-
-            // Open connection to the URL
-            try {
-                conn = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                conn.setRequestMethod("GET");
-            } catch (ProtocolException e) {
-                throw new RuntimeException(e);
-            }
-
-            // Get the input stream from the connection
-            try {
-                inputStream = conn.getInputStream();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            URL url = new URL(urlString);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            inputStream = conn.getInputStream();
 
             // Create a document builder to parse the XML document
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
             // Parse the document from the connection input stream
-            DocumentBuilder builder = null;
-            try {
-                builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw new RuntimeException(e);
-            }
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            return builder.parse(inputStream);
 
-            try {
-                return builder.parse(inputStream);
-            } catch (SAXException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.SEVERE, "Invalid URL: " + urlString, e);
+            throw new RuntimeException(e);
+        } catch (ProtocolException e) {
+            LOGGER.log(Level.SEVERE, "Protocol error while fetching URL: " + urlString, e);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "I/O error while fetching URL: " + urlString, e);
+            throw new RuntimeException(e);
+        } catch (ParserConfigurationException | SAXException e) {
+            LOGGER.log(Level.SEVERE, "Error parsing XML from URL: " + urlString, e);
+            throw new RuntimeException(e);
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    LOGGER.log(Level.SEVERE, "Failed to close input stream", e);
                 }
             }
             if (conn != null) {
                 conn.disconnect();
             }
         }
-    }
-
-
-    /**
-     * The fetchTxtFileFromGitHub method fetches a .txt file from GitHub and parses it to get the recommended version for each library.
-     * This method is used to fetch the recommended version for the libraries in the pom.xml file. It is used by the UpgradeLibraryVersionCheck inspection.
-     *
-     * @param fileUrl The URL of the .txt file to fetch
-     * @return A map of the recommended version for each library
-     * @throws IOException If an error occurs while reading the file
-     */
-    static Map<String, String> fetchTxtFileFromGitHub(String fileUrl) throws IOException {
-        StringBuilder content = new StringBuilder();
-
-        URL url = new URL(fileUrl);
-
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        // Read the file from the URL
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                if (inputLine.startsWith("#")) {
-                    continue; // Ignore comment lines
-                }
-                content.append(inputLine).append("\n");
-            }
-        } catch (IOException e) {
-            LOGGER.severe("Error reading file from GitHub: " + e);
-        } catch (SecurityException e) {
-            LOGGER.severe("Security exception accessing URL: " + e);
-        } catch (IllegalArgumentException e) {
-            LOGGER.severe("Illegal argument: " + e);
-        } catch (IllegalStateException e) {
-            LOGGER.severe("Illegal state: " + e);
-        } catch (Exception e) {
-            LOGGER.severe("Unexpected error: " + e);
-        } finally {
-            connection.disconnect();
-        }
-        return parseTxtFile(content.toString());
-    }
-
-    /**
-     * The parseTxtFile method parses the content of the .txt file to get the recommended version for each library.
-     * The content of the file is in the format "artifactId: minor version".
-     * The method returns a map where the key is the artifactId and the value is the recommended version.
-     *
-     * @param content The content of the .txt file
-     * @return A map of the recommended version for each library
-     */
-    private static Map<String, String> parseTxtFile(String content) {
-
-        Map<String, String> fileContent = new ConcurrentHashMap<>();
-
-        if (content != null) {
-            String[] lines = content.toString().split("\n");
-
-            for (String line : lines) {
-                String[] parts = line.split(";");
-                if (parts.length > 1) {
-                    String artifactId = parts[0];
-                    String[] versionParts = parts[1].split("\\.");
-                    fileContent.put(artifactId, versionParts[0] + "." + versionParts[1]); // key is artifactId, value is recommended version
-                }
-            }
-        }
-        return fileContent;
     }
 
     /**
@@ -262,6 +182,11 @@ class GitHubFileFetcher {
      */
     static Map<String, Set<String>> loadJsonDataFromUrl(String jsonUrl) {
 
+        Map<String, Set<String>> jsonData = incompatibleVersionsCache.get(jsonUrl);
+
+        if (jsonData != null) {
+            return jsonData;
+        }
         HttpURLConnection connection;
         try {
             URL url = new URL(jsonUrl);
@@ -269,7 +194,9 @@ class GitHubFileFetcher {
             connection.setRequestMethod("GET");
 
             try (InputStream inputStream = connection.getInputStream(); JsonReader jsonReader = JsonProviders.createReader(inputStream)) {
-                return parseJson(jsonReader);
+                jsonData = parseJson(jsonReader);
+                incompatibleVersionsCache.put(jsonUrl, jsonData);
+                return jsonData;
             }
         } catch (IOException e) {
             LOGGER.severe("Error reading file from GitHub: " + e);

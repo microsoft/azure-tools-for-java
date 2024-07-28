@@ -100,7 +100,7 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
         /**
          * Constructs a new instance of the IncompatibleDependencyVisitor.
          *
-         * @param holder     The holder for the problems found
+         * @param holder The holder for the problems found
          */
         IncompatibleDependencyVisitor(ProblemsHolder holder) {
             this.holder = holder;
@@ -175,11 +175,7 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
                     break;
                 }
             }
-            if (versionGroup != null) {
-                return versionGroup;
-            } else {
-                return null;
-            }
+            return versionGroup;
         }
 
         /**
@@ -199,8 +195,8 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
                 synchronized (IncompatibleDependencyVisitor.class) {
                     fileContent = FILE_CONTENT_REF == null ? null : FILE_CONTENT_REF.get();
                     if (fileContent == null) {
-                        String fileUrl = "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/eng/versioning/supported_external_dependency_versions.json";
-                        fileContent = GitHubFileFetcher.loadJsonDataFromUrl(fileUrl);
+                        String fileUrl = RULE_CONFIG.getListedItemsToCheck().get(0);
+                        fileContent = DependencyVersionFileFetcher.loadJsonDataFromUrl(fileUrl);
                         FILE_CONTENT_REF = new WeakReference<>(fileContent);
                     }
                 }

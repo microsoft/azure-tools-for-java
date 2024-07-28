@@ -42,7 +42,7 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
      * @param versionTag     The version tag in the pom.xml file for the library version
      */
     @Override
-    protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionTag) throws IOException {
+    protected void checkAndFlagVersion(String fullName, String currentVersion, ProblemsHolder holder, PsiElement versionTag) {
 
         // Check if the recommended version is available for the library
         if (!(UpgradeLibraryVersionVisitor.getLibraryRecommendedVersionMap().containsKey(fullName))) {
@@ -135,9 +135,8 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
          * If the content is not available in the WeakReference, the file is fetched again.
          *
          * @return The map of the recommended version for each library
-         * @throws IOException If there is an error in fetching the file from the URL
          */
-        private static Map<String, String> getLibraryRecommendedVersionMap() throws IOException {
+        private static Map<String, String> getLibraryRecommendedVersionMap() {
 
             // Load the file content from the URL if it is not already loaded
             Map<String, String> fileContent = LIBRARY_RECOMMENDED_VERSION_MAP_REF == null ? null : LIBRARY_RECOMMENDED_VERSION_MAP_REF.get();
@@ -147,12 +146,12 @@ public class UpgradeLibraryVersionCheck extends AbstractLibraryVersionCheck {
                     fileContent = LIBRARY_RECOMMENDED_VERSION_MAP_REF == null ? null : LIBRARY_RECOMMENDED_VERSION_MAP_REF.get();
                     if (fileContent == null) {
 
-                        String metadataUrl = "https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/maven-metadata.xml";
-                        String latestVersion = GitHubFileFetcher.getLatestVersion(metadataUrl);
+                        String metadataUrl = RULE_CONFIG.getListedItemsToCheck().get(0);
+                        String latestVersion = DependencyVersionFileFetcher.getLatestVersion(metadataUrl);
 
                         if (latestVersion != null) {
                             String pomUrl = String.format("https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/%s/azure-sdk-bom-%s.pom", latestVersion, latestVersion);
-                            fileContent = GitHubFileFetcher.parsePomFile(pomUrl);
+                            fileContent = DependencyVersionFileFetcher.parsePomFile(pomUrl);
                             LIBRARY_RECOMMENDED_VERSION_MAP_REF = new WeakReference<>(fileContent);
                         }
                     }
