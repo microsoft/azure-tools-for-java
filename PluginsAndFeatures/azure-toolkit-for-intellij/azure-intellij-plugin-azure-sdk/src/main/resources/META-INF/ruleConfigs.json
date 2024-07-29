@@ -6,10 +6,6 @@
     ],
     "antiPatternMessage": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
   },
-  "ServiceBusReceiverAsyncClientCheck": {
-    "clientsToCheck": "ServiceBusReceiverAsyncClient",
-    "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
-  },
   "DisableAutoCompleteCheck": {
     "methodsToCheck": "disableAutoComplete",
     "clientsToCheck": [
