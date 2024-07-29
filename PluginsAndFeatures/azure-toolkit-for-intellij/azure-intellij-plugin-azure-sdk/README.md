@@ -261,9 +261,10 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
   for more information.
 
-14. #### Use sync client operation if calling blocking calls on an async client.
+14. #### Use sync client operation if calling blocking calls on asynchronous operations of an Azure asynchronous client.
 
-- **Anti-Pattern**: Calling blocking calls on an async client. This practice turns an asynchronous operation into a synchronous
+- **Anti-Pattern**: Calling blocking calls on asynchronous operations of an Azure asynchronous client. This practice
+  turns an asynchronous operation into a synchronous
   one.
 - **Issue**: Blocking calls go against the non-blocking nature of reactive streams.
   It can lead to performance issues because it blocks one of the few available threads.
