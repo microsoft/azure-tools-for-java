@@ -19,10 +19,13 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
     /**
      * This method is used to get the visitor for the inspection tool.
-     * The visitor is used to check for the use of block() method on async clients in Azure SDK.
-     * The visitor checks if the method call is a block() method call on a reactive type
+     * The visitor is used to check for the use of blocking calls on async clients in Azure SDK.
+     * The visitor checks if the method call is a blocking method call on a reactive type
      * and if the reactive type is an async client in Azure SDK.
-     * If the method call is a block() method call on an async client, it reports a problem.
+     * If the method call is a blocking call on an async Azure client, it reports a problem.
+     *
+     * @param holder ProblemsHolder - the holder to report the problems
+     *               isOnTheFly boolean - whether the inspection is on the fly - not used in this implementation but required by the interface
      */
     @NotNull
     @Override
@@ -31,25 +34,25 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
     }
 
     /**
-     * Visitor to check for the use of block() method on async clients in Azure SDK.
-     * The visitor checks if the method call is a block() method call on a reactive type
+     * Visitor to check for the use of blocking methods on async clients in Azure SDK.
+     * The visitor checks if the method call is a blocking method call on a reactive type
      * and if the reactive type is an async client in Azure SDK.
-     * If the method call is a block() method call on an async client, it reports a problem.
+     * If the method call is a blocking method call on an async client, it reports a problem.
      */
     static class UseOfBlockOnAsyncClientsVisitor extends JavaElementVisitor {
 
         private final ProblemsHolder holder;
 
         // Define constants for string literals
+        private static final String RULE_NAME = "UseOfBlockOnAsyncClientsCheck";
         private static final RuleConfig RULE_CONFIG;
         private static final boolean SKIP_WHOLE_RULE;
 
         static {
-            final String ruleName = "UseOfBlockOnAsyncClientsCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(RULE_NAME);
             SKIP_WHOLE_RULE = RULE_CONFIG.skipRuleCheck() || RULE_CONFIG.getListedItemsToCheck().isEmpty();
         }
 
@@ -77,14 +80,16 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
                 return;
             }
 
-            // Check if the method call is block() or a variant of block() method
-            if (expression.getMethodExpression().getReferenceName().startsWith(RULE_CONFIG.getMethodsToCheck().get(0))) {
+            // Check if the method call is a blocking method call on a reactive type
+            for (String methodToCheck : RULE_CONFIG.getMethodsToCheck()) {
+                if (expression.getMethodExpression().getReferenceName().equals(methodToCheck)) {
 
-                // Check if the method call is on a reactive type
-                boolean isAsyncContext = checkIfAsyncContext(expression);
+                    // Check if the method call is on a reactive type
+                    boolean isAsyncContext = checkIfAsyncContext(expression);
 
-                if (isAsyncContext) {
-                    holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
+                    if (isAsyncContext) {
+                        holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
+                    }
                 }
             }
         }
