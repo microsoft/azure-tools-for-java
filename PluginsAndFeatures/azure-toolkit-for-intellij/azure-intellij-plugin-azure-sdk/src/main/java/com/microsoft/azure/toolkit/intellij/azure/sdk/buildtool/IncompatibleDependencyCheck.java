@@ -62,7 +62,7 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
             encounteredVersionGroups.add(versionGroup);
         }
 
-        // check if the encountered version group is not already in the encountered version groups
+        // check if the versionGroup found is not already in the encounteredVersionGroups set
         for (String encounteredVersionGroup : encounteredVersionGroups) {
 
             // check if the encountered version group is not the same as the current version group
@@ -77,8 +77,10 @@ public class IncompatibleDependencyCheck extends AbstractLibraryVersionCheck {
                 // Flag the version if the minor version is different from the recommended version
                 String message = getFormattedMessage(fullName, recommendedVersion, IncompatibleDependencyVisitor.RULE_CONFIG);
                 holder.registerProblem(versionElement, message);
+                return;
             }
         }
+        encounteredVersionGroups.add(versionGroup);
     }
 
     /**

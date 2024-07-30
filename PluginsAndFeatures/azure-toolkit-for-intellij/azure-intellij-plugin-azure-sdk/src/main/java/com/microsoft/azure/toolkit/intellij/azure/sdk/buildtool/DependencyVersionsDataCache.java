@@ -31,11 +31,17 @@ class DependencyVersionsDataCache<T> implements Serializable {
     // The cache is stored in a ConcurrentHashMap to ensure thread safety.
     private final ConcurrentHashMap<String, T> cache = new ConcurrentHashMap<>();
 
-    // The interval at which the cache is cleared. The cache is cleared every 30 days.
-    private static final long CLEANUP_INTERVAL = TimeUnit.DAYS.toMillis(30); // 1 day
+    // The interval at which the cache is cleared. The cache is cleared every 5 days.
+    private static final long CLEANUP_INTERVAL = TimeUnit.DAYS.toMillis(5);
 
     // The file where the cache is saved.
     private final File cacheFile;
+
+    // The timestamp when the cache was last updated.
+    private long lastUpdated;
+
+    // The timestamp when the cache will be refreshed.
+    private long nextRefresh;
 
     /**
      * Creates a new instance of the DependencyVersionsDataCache class.
@@ -45,6 +51,9 @@ class DependencyVersionsDataCache<T> implements Serializable {
     DependencyVersionsDataCache(String cacheFileName) {
         this.cacheFile = new File(cacheFileName);
         loadCacheFromFile();
+
+        // Check if the cache needs to be cleared immediately
+        checkAndClearOnStartup();
 
         // Schedule the cache cleanup task to run at regular intervals
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -59,6 +68,7 @@ class DependencyVersionsDataCache<T> implements Serializable {
      */
     void put(String key, T value) {
         cache.put(key, value);
+        updateTimestamps();
         saveCacheToFile();
     }
 
@@ -78,6 +88,7 @@ class DependencyVersionsDataCache<T> implements Serializable {
      */
     void clear() {
         cache.clear();
+        updateTimestamps();
         saveCacheToFile();
     }
 
@@ -95,13 +106,15 @@ class DependencyVersionsDataCache<T> implements Serializable {
                 Object loadedObject = ois.readObject();
 
                 // Check if the deserialized object is an instance of ConcurrentHashMap
-                if (loadedObject instanceof ConcurrentHashMap) {
+                if (loadedObject instanceof CacheData) {
 
-                    // Cast the object to ConcurrentHashMap<String, T>
-                    ConcurrentHashMap<String, T> loadedCache = (ConcurrentHashMap<String, T>) loadedObject;
+                    CacheData<T> loadedCacheData = (CacheData<T>) loadedObject;
 
                     // Put all the entries from the loaded cache into the current cache
-                    cache.putAll(loadedCache);
+                    // Update the lastUpdated and nextRefresh timestamps
+                    cache.putAll(loadedCacheData.cache);
+                    lastUpdated = loadedCacheData.lastUpdated;
+                    nextRefresh = loadedCacheData.nextRefresh;
                 } else {
                     LOGGER.severe("Failed to load cache from file: Invalid cache format");
                 }
@@ -119,9 +132,56 @@ class DependencyVersionsDataCache<T> implements Serializable {
 
         // Save the cache to the file using the ObjectOutputStream class.
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(cacheFile))) {
-            oos.writeObject(cache);
+            CacheData<T> cacheData = new CacheData<>(cache, lastUpdated, nextRefresh);
+            oos.writeObject(cacheData);
         } catch (IOException e) {
             LOGGER.severe("Failed to save cache to file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Updates the timestamps for the cache.
+     * The lastUpdated timestamp is updated to the current time.
+     * The nextRefresh timestamp is updated to the current time plus the cleanup interval.
+     */
+    private void updateTimestamps() {
+        lastUpdated = System.currentTimeMillis();
+        nextRefresh = lastUpdated + CLEANUP_INTERVAL;
+    }
+
+    /**
+     * Checks if the cache needs to be cleared on startup.
+     * The cache is cleared if the lastUpdated timestamp is older than the cleanup interval.
+     */
+    private void checkAndClearOnStartup() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastUpdated >= CLEANUP_INTERVAL) {
+            clear();
+        }
+    }
+
+    /**
+     * The CacheData class is a static inner class used to store the cache data in a serializable format.
+     * The class contains the cache, lastUpdated, and nextRefresh timestamps.
+     */
+    private static class CacheData<T> implements Serializable {
+        @Serial
+        private static final long serialVersionUID = 1L;
+        private final ConcurrentHashMap<String, T> cache;
+        private final long lastUpdated;
+        private final long nextRefresh;
+
+        /**
+         * Creates a new instance of the CacheData class.
+         *
+         * @param cache       The cache to store in the object.
+         * @param lastUpdated The timestamp when the cache was last updated.
+         * @param nextRefresh The timestamp when the cache will be refreshed.
+         */
+        CacheData(ConcurrentHashMap<String, T> cache, long lastUpdated, long nextRefresh) {
+            this.cache = cache;
+            this.lastUpdated = lastUpdated;
+            this.nextRefresh = nextRefresh;
         }
     }
 }
