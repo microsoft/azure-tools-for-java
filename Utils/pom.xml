@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.91.0-SNAPSHOT</version>
+    <version>3.91.0</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azure.toolkit-lib.version>0.47.0-SNAPSHOT</azure.toolkit-lib.version>
-        <azure.toolkit-ide-lib.version>0.47.0-SNAPSHOT</azure.toolkit-ide-lib.version>
+        <azure.toolkit-lib.version>0.47.0</azure.toolkit-lib.version>
+        <azure.toolkit-ide-lib.version>0.47.0</azure.toolkit-ide-lib.version>
         <hdinsight.toolkit-ide-lib.version>0.1.1</hdinsight.toolkit-ide-lib.version>
     </properties>
     <modules>

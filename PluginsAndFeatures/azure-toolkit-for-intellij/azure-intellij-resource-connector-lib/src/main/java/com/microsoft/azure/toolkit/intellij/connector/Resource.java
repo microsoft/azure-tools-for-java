@@ -43,6 +43,10 @@ public interface Resource<T> {
     default void navigate(AnActionEvent event) {
     }
 
+    default Map<String, String> initEnv(Project project, Connection<?,?> connection) {
+        return Collections.emptyMap();
+    }
+
     default Map<String, String> initEnv(Project project) {
         return Collections.emptyMap();
     }

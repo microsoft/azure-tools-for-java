@@ -1,6 +1,5 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.redis.connection.RedisResourceDefinition"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.redis.RedisNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.redis.RedisActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.redis.IntellijRedisActionsContributor"/>

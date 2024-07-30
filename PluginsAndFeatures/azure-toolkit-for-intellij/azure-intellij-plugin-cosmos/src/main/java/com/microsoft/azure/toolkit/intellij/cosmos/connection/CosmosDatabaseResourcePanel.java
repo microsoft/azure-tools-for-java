@@ -41,6 +41,9 @@ public class CosmosDatabaseResourcePanel<T extends ICosmosDatabase, E extends Co
         this.cbDatabase.setRequired(true);
         this.cbSubscription.addItemListener(this::onSubscriptionChanged);
         this.cbAccount.addItemListener(this::onAccountChanged);
+
+        this.cbDatabase.addValueChangedListener(ignore -> Optional.ofNullable(getValue()).ifPresent(this::fireValueChangedEvent));
+
     }
 
     private void onSubscriptionChanged(ItemEvent e) {

@@ -17,8 +17,11 @@ import java.util.stream.Collectors;
 public interface SpringSupported<T> extends ResourceDefinition<T> {
     static List<Pair<String, String>> getProperties(Connection<?, ?> c, final String propKey) {
         final ResourceDefinition<?> rd = c.getResource().getDefinition();
-        if (rd instanceof SpringSupported) {
-            return ((SpringSupported<?>) rd).getSpringProperties(propKey).stream()
+        if (rd instanceof SpringSupported<?> springSupported) {
+            final List<Pair<String, String>> springProperties =
+                    c.isManagedIdentityConnection() && rd instanceof SpringManagedIdentitySupported<?> si ?
+                    si.getSpringPropertiesForManagedIdentity(propKey, c) : springSupported.getSpringProperties(propKey);
+            return springProperties.stream()
                 .map(p -> Pair.of(p.getKey(), p.getValue().replaceAll(Connection.ENV_PREFIX, c.getEnvPrefix())))
                 .collect(Collectors.toList());
         }

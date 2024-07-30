@@ -18,7 +18,7 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectionTopics;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.ConnectionManager;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import lombok.SneakyThrows;
@@ -104,7 +104,7 @@ public class AzuriteTaskAdder implements RunManagerListener, ConnectionTopics.Co
     }
 
     public static boolean isAzuriteResourceConnection(@Nonnull final Connection<?, ?> connection) {
-        return connection.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition &&
+        return connection.getDefinition().getResourceDefinition() instanceof BaseStorageAccountResourceDefinition &&
             StringUtils.equalsIgnoreCase(connection.getResource().getDataId(), AzuriteStorageAccount.AZURITE_RESOURCE_ID);
     }
 

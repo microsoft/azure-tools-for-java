@@ -8,7 +8,7 @@ import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.code.function.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
-import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +25,7 @@ class Utils {
         return Optional.of(module).map(AzureModule::from)
             .map(AzureModule::getDefaultProfile).map(Profile::getConnectionManager).stream()
             .flatMap(m -> m.getConnections().stream())
-            .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
+            .filter(c -> c.getDefinition().getResourceDefinition() instanceof BaseStorageAccountResourceDefinition)
             .filter(c -> Objects.equals(c.getResource().getData(), account))
             .toList();
     }

@@ -66,15 +66,15 @@ allprojects {
             // jetbrainsRuntime()
         }
 
-        implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.47.0-SNAPSHOT"))
-        implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.47.0-SNAPSHOT"))
+        implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.47.0"))
+        implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.47.0"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
 
         compileOnly("org.projectlombok:lombok:1.18.24")
         compileOnly("org.jetbrains:annotations:24.0.0")
         annotationProcessor("org.projectlombok:lombok:1.18.24")
-        implementation("com.microsoft.azure:azure-toolkit-common-lib:0.47.0-SNAPSHOT")
-        aspect("com.microsoft.azure:azure-toolkit-common-lib:0.47.0-SNAPSHOT")
+        implementation("com.microsoft.azure:azure-toolkit-common-lib:0.47.0")
+        aspect("com.microsoft.azure:azure-toolkit-common-lib:0.47.0")
     }
 
     configurations {
@@ -176,6 +176,7 @@ dependencies {
     implementation(project(":azure-sdk-reference-book"))
     implementation(project(":azure-intellij-plugin-springcloud"))
     implementation(project(":azure-intellij-plugin-storage"))
+    implementation(project(":azure-intellij-plugin-storage-java"))
     implementation(project(":azure-intellij-plugin-appservice"))
     implementation(project(":azure-intellij-plugin-appservice-java"))
     implementation(project(":azure-intellij-plugin-arm"))
@@ -190,11 +191,13 @@ dependencies {
     implementation(project(":azure-intellij-plugin-database-java"))
     implementation(project(":azure-intellij-plugin-vm"))
     implementation(project(":azure-intellij-plugin-redis"))
+    implementation(project(":azure-intellij-plugin-redis-java"))
     implementation(project(":azure-intellij-plugin-samples"))
     implementation(project(":azure-intellij-plugin-bicep"))
     implementation(project(":azure-intellij-plugin-eventhubs"))
     implementation(project(":azure-intellij-plugin-servicebus"))
     implementation(project(":azure-intellij-plugin-keyvault"))
+    implementation(project(":azure-intellij-plugin-keyvault-java"))
     implementation(project(":azure-intellij-resource-connector-aad"))
     implementation(project(":azure-intellij-plugin-hdinsight-lib"))
     implementation(project(":azure-intellij-plugin-sqlserverbigdata"))

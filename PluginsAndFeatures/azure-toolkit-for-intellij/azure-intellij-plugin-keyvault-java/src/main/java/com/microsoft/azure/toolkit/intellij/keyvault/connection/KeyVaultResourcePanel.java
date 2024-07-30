@@ -48,6 +48,7 @@ public class KeyVaultResourcePanel implements AzureFormJPanel<Resource<KeyVault>
                 this.vaultComboBox.clear();
             }
         });
+        this.vaultComboBox.addValueChangedListener(ignore -> Optional.ofNullable(getValue()).ifPresent(this::fireValueChangedEvent));
     }
 
     @Override
@@ -64,7 +65,7 @@ public class KeyVaultResourcePanel implements AzureFormJPanel<Resource<KeyVault>
     public Resource<KeyVault> getValue() {
         final KeyVault cache = this.vaultComboBox.getValue();
         final AzureValidationInfo info = this.getValidationInfo(true);
-        if (!info.isValid()) {
+        if (info.getType() == AzureValidationInfo.Type.ERROR) {
             return null;
         }
         return KeyVaultResourceDefinition.INSTANCE.define(cache);

@@ -53,7 +53,7 @@ public class KeyValueResource implements Resource<KeyValueData> {
     }
 
     @Override
-    public Map<String, String> initEnv(Project project) {
+    public Map<String, String> initEnv(Project project, Connection<?,?> ignore) {
         final KeyValueData connection = getData();
         return Collections.singletonMap(connection.getKey(), connection.getValue());
     }

@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
+import com.microsoft.azure.toolkit.lib.identities.Identity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -75,13 +76,19 @@ public class ConnectionDefinition<R, C> {
     @SuppressWarnings("unchecked")
     public Connection<R, C> read(@Nonnull final com.microsoft.azure.toolkit.intellij.connector.dotazure.ResourceManager manager, Element connectionEle) {
         final String id = connectionEle.getAttributeValue(FIELD_ID);
-        final String envPrefix = connectionEle.getAttributeValue(ENV_PREFIX);
         final Resource<R> resource = Optional.ofNullable(readResourceFromElement(connectionEle, manager))
                 .orElseGet(() -> new InvalidResource<>(this.getResourceDefinition()));
         final Resource<C> consumer = Optional.ofNullable(readConsumerFromElement(connectionEle, manager))
                 .orElseGet(() -> new InvalidResource<>(this.getConsumerDefinition()));
         final Connection<R, C> connection = this.define(id, resource, consumer);
-        connection.setEnvPrefix(envPrefix);
+        Optional.ofNullable(connectionEle.getChild("identity"))
+                .map(ele -> (Resource<Identity>) manager.getResourceById(ele.getTextTrim()))
+                .ifPresent(connection::setUserAssignedManagedIdentity);
+        connection.setEnvPrefix(connectionEle.getAttributeValue(ENV_PREFIX));
+
+        final AuthenticationType authentication = Optional.ofNullable(connectionEle.getAttributeValue("authentication"))
+                .filter(StringUtils::isNotBlank).map(AuthenticationType::valueOf).orElse(AuthenticationType.CONNECTION_STRING);
+        connection.setAuthenticationType(authentication);
         return connection;
     }
 
@@ -129,7 +136,14 @@ public class ConnectionDefinition<R, C> {
         connectionEle.addContent(new Element("consumer")
                 .setAttribute("type", consumer.getDefinition().getName())
                 .setText(consumer.getId()));
+        final Resource<Identity> userAssignedManagedIdentity = connection.getUserAssignedManagedIdentity();
+        if (Objects.nonNull(userAssignedManagedIdentity)) {
+            connectionEle.addContent(new Element("identity")
+                    .setAttribute("type", userAssignedManagedIdentity.getDefinition().getName())
+                    .setText(userAssignedManagedIdentity.getId()));
+        }
         connectionEle.setAttribute("envPrefix", connection.getEnvPrefix());
+        connectionEle.setAttribute("authentication", String.valueOf(connection.getAuthenticationType()));
         return true;
     }
 

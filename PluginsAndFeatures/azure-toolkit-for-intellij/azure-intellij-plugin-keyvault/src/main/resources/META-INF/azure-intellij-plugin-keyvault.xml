@@ -1,6 +1,5 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
-        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.keyvault.connection.KeyVaultResourceDefinition"/>
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.keyvault.KeyVaultNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.keyvault.KeyVaultActionsContributor"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.keyvault.IntelliJKeyVaultActionsContributor"/>
@@ -12,26 +11,5 @@
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.keyvault.property.certificate.CertificateVersionPropertiesEditorProvider"/>
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.keyvault.property.key.KeyPropertiesEditorProvider"/>
         <fileEditorProvider implementation="com.microsoft.azure.toolkit.intellij.keyvault.property.key.KeyVersionPropertiesEditorProvider"/>
-    </extensions>
-    <extensions defaultExtensionNs="com.intellij">
-        <completion.confidence id="azKeyVaultValueAnnotation" language="JAVA"
-                               implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarConfidence"
-                               order="before javaSkipAutopopupInStrings"/>
-        <completion.contributor language="JAVA" id="azKeyVaultAnnotationCompletion" order="before azStorageStringLiteral, first"
-                                implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor"/>
-        <completion.contributor language="Properties" id="azKeyVaultPropertiesCompletion" order="before azPropertiesCompletion, first"
-                                implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor"/>
-        <completion.contributor language="yaml" id="azKeyVaultYamlCompletion" order="first, before azYamlCompletion"
-                                implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCompletionContributor"/>
-        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarReferenceContributor" order="first"/>
-        <psi.referenceContributor language="Properties" implementation="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarReferenceContributor" order="first"/>
-        <psi.referenceContributor language="yaml" implementation="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarReferenceContributor" order="first"/>
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="yaml" implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarLineMarkerProvider"/>
-        <annotator language="Properties" implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.PlainTextSecretAnnotator"/>
-        <annotator language="yaml" implementationClass="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.PlainTextSecretAnnotator"/>
-        <typedHandler implementation="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarTypeHandler"/>
-        <lookup.charFilter order="first, before azProperties" implementation="com.microsoft.azure.toolkit.intellij.keyvault.code.spring.EnvVarCharFilter"/>
     </extensions>
 </idea-plugin>

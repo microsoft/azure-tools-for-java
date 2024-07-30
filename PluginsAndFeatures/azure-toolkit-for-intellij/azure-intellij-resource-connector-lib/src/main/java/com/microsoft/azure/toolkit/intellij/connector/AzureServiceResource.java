@@ -81,12 +81,14 @@ public class AzureServiceResource<T extends AzResource> implements Resource<T> {
     }
 
     @Override
-    public Map<String, String> initEnv(Project project) {
+    public Map<String, String> initEnv(Project project, Connection<?,?> connection) {
         final T resource = this.getData();
         if (resource == null || !resource.exists()) {
             throw new AzureToolkitRuntimeException(String.format("%s '%s' does not exist.", this.getResourceType(), this.getName()));
         }
-        final Map<String, String> result = new HashMap<>(this.definition.initEnv(this, project));
+        final Map<String, String> properties = connection.isManagedIdentityConnection() && definition instanceof IManagedIdentitySupported identitySupported ?
+                identitySupported.initIdentityEnv(connection, project) : this.definition.initEnv(this, project);
+        final Map<String, String> result = new HashMap<>(properties);
         if (!(resource instanceof AbstractConnectionStringAzResource<?>)) {
             result.put(SUBSCRIPTION_ID_KEY, resource.getSubscriptionId());
             result.put(RESOURCE_GROUP_KEY, resource.getResourceGroupName());

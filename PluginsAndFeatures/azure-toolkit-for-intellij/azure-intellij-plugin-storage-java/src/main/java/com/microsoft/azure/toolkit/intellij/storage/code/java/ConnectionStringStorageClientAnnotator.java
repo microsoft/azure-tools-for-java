@@ -25,11 +25,11 @@ import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.connector.ModuleResource;
 import com.microsoft.azure.toolkit.intellij.connector.code.AnnotationFixes;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition.TempData;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.storage.ConnectionStringStorageAccount;
-import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -64,7 +64,7 @@ public class ConnectionStringStorageClientAnnotator implements Annotator {
                 .anyMatch(s -> s instanceof ConnectionStringStorageAccount);
             if (!hasConnectionStringConnection) {
                 final PsiElement parent = element.getParent();
-                final TempData tempData = new TempData(StorageAccountResourceDefinition.METHOD_STRING, null);
+                final TempData tempData = new TempData(BaseStorageAccountResourceDefinition.METHOD_STRING, null);
                 if (parent instanceof PsiLiteralExpression) {
                     final PsiLiteralExpression literal = ((PsiLiteralExpression) parent);
                     final String connectionString = literal.getValue() instanceof String ? (String) literal.getValue() : element.getText();

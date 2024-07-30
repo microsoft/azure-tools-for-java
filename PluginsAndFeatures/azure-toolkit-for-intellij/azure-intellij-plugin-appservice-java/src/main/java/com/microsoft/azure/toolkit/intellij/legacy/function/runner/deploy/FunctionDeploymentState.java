@@ -16,7 +16,7 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
-import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.appservice.config.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionApp;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
@@ -99,7 +99,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
             final Map<String, String> appSettings = functionDeployConfiguration.getConfig().appSettings();
             loadDotEnvBeforeRunTask.loadEnv().stream()
                                    .filter(pair -> !(StringUtils.equalsIgnoreCase(pair.getKey(), "AzureWebJobsStorage") &&
-                                       StringUtils.equalsIgnoreCase(pair.getValue(), StorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING))) // workaround to remove local connections
+                                       StringUtils.equalsIgnoreCase(pair.getValue(), BaseStorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING))) // workaround to remove local connections
                                    .forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
     }

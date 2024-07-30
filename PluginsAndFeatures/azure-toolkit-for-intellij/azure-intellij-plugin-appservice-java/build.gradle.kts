@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-containerapps"))
     // runtimeOnly project(path: ":azure-intellij-plugin-containerapps", configuration: "instrumentedJar")
     implementation("com.github.docker-java:docker-java:3.3.0")
+    implementation("com.microsoft.azure:azure-toolkit-identity-lib")
     implementation("com.microsoft.azure:azure-toolkit-appservice-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-appservice-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-containerapps-lib")

@@ -12,12 +12,14 @@ import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azure.toolkit.lib.identities.Identity;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jdom.Element;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,15 @@ public class Connection<R, C> {
     @Setter
     protected ConnectionDefinition<R, C> definition;
 
+    @Nullable
+    @Setter
+    protected AuthenticationType authenticationType;
+
+    // todo: change authentication properties to different child class, rather than put them all in connection
+    @Nullable
+    @Setter
+    protected Resource<Identity> userAssignedManagedIdentity;
+
     @Setter
     @Getter(AccessLevel.NONE)
     private String envPrefix;
@@ -77,7 +88,7 @@ public class Connection<R, C> {
     }
 
     public Map<String, String> getEnvironmentVariables(final Project project) {
-        final Map<String, String> result = this.resource.initEnv(project).entrySet().stream()
+        final Map<String, String> result = this.resource.initEnv(project, this).entrySet().stream()
             .collect(Collectors.toMap(e -> e.getKey().replaceAll(Connection.ENV_PREFIX, this.getEnvPrefix()), Map.Entry::getValue));
         if (this.getResource().getDefinition() instanceof FunctionSupported<R>) {
             result.putAll(((FunctionSupported<R>) this.getResource().getDefinition()).getPropertiesForFunction(this.getResource().getData(), this));
@@ -133,5 +144,10 @@ public class Connection<R, C> {
 
     public List<Pair<String, String>> getGeneratedEnvironmentVariables() {
         return Optional.ofNullable(this.profile).map(p -> p.getGeneratedEnvironmentVariables(this)).orElse(Collections.emptyList());
+    }
+
+    public boolean isManagedIdentityConnection() {
+        return this.authenticationType == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY ||
+                this.authenticationType == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY;
     }
 }

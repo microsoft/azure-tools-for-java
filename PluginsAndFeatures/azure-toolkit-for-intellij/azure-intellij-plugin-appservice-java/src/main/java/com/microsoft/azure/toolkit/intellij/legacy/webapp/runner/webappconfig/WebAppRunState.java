@@ -12,8 +12,10 @@ import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContri
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifact;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactManager;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
+import com.microsoft.azure.toolkit.intellij.connector.*;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.appservice.config.AppServiceConfig;
@@ -24,6 +26,7 @@ import com.microsoft.azure.toolkit.lib.appservice.model.DeployType;
 import com.microsoft.azure.toolkit.lib.appservice.model.WebAppArtifact;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateWebAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployWebAppTask;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -36,10 +39,14 @@ import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
+import com.microsoft.azure.toolkit.lib.identities.Identity;
+import com.microsoft.azure.toolkit.lib.identities.ManagedIdentitySupport;
+import com.microsoft.azure.toolkit.lib.identities.model.IdentityConfiguration;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -54,8 +61,10 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
+import static com.microsoft.azure.toolkit.intellij.connector.IManagedIdentitySupported.*;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     private static final String LIBS_ROOT = "/home/site/wwwroot/libs/";
@@ -90,27 +99,79 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
         if (!artifact.exists()) {
             throw new FileNotFoundException(message("webapp.deploy.error.noTargetFile", artifact.getAbsolutePath()));
         }
-        final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTarget();
+        final AzureModule module = Optional.ofNullable(this.webAppConfiguration.getModule()).map(AzureModule::from)
+                .or(() -> Optional.ofNullable(getTargetPath())
+                        .map(f -> VfsUtil.findFile(Path.of(f), true))
+                        .map(f -> AzureModule.from(f, this.project))).orElse(null);
+        final WebAppBase<?, ?, ?> deployTarget = getOrCreateDeployTarget(module);
         // todo: remove workaround after fix reset issue in toolkit lib
         if (deployTarget instanceof AzResource.Draft<?, ?> draft) {
             draft.reset();
+        }
+        if (deployTarget instanceof WebApp app) {
+            Optional.ofNullable(module).map(AzureModule::getDefaultProfile).ifPresent(p -> updateResourceConnectionWithIdentity(app, p));
+            Optional.ofNullable(module).map(AzureModule::getDefaultProfile).ifPresent(p -> validatePermissionForIdentityConnections(app, p));
         }
         webAppConfiguration.setWebApp(deployTarget);
         deployArtifactsToWebApp(deployTarget, artifact, webAppSettingModel.isDeployToRoot());
         return deployTarget;
     }
 
+    public static <T extends ManagedIdentitySupport> void validatePermissionForIdentityConnections(T target, Profile profile) {
+        final IdentityConfiguration configuration = target.getIdentityConfiguration();
+        final List<Connection<?, ?>> list = profile.getConnections().stream().filter(Connection::isManagedIdentityConnection).toList();
+        list.forEach(con -> {
+            final Resource<?> resource = con.getResource();
+            final IManagedIdentitySupported<?> definition = (IManagedIdentitySupported<?>) resource.getDefinition();
+            // todo: replace with real permission check
+            if (MapUtils.isEmpty(definition.getBuiltInRoles())) {
+                return;
+            }
+            final AbstractAzResource<?,?,?> data = (AbstractAzResource<?,?,?>) resource.getData();
+            final String identity = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
+                    configuration.getPrincipalId() : Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getPrincipalId();
+            final String identityName = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
+                    target instanceof AzResource ? ((AzResource)target).getName() : target.toString() :
+                    Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getName();
+            if (resource instanceof AzureServiceResource<?> serviceResource && !checkPermission(serviceResource, identity)) {
+                if (!IManagedIdentitySupported.grantPermission(serviceResource, identity)) {
+                    final String message = String.format("The managed identity %s (%s) doesn't have enough permission to access resource %s.", identity, identityName, resource.getName());
+                    final Action<?> openIdentityConfigurationAction = getOpenIdentityConfigurationAction(serviceResource);
+                    final Action<?> grantPermissionAction = getGrantPermissionAction(serviceResource, identity);
+                    AzureMessager.getMessager().warning(message, openIdentityConfigurationAction, grantPermissionAction);
+                }
+            }
+        });
+    }
+
+    public static <T extends ManagedIdentitySupport> void updateResourceConnectionWithIdentity(T target, Profile profile) {
+        final IdentityConfiguration current = target.getIdentityConfiguration();
+        final boolean currentSystemIdentityEnabled = Optional.ofNullable(current).map(IdentityConfiguration::isEnableSystemAssignedManagedIdentity).orElse(false);
+        final List<Identity> currentIdentities = Optional.ofNullable(current).map(IdentityConfiguration::getUserAssignedManagedIdentities).orElse(Collections.emptyList());
+        final List<Connection<?, ?>> list = profile.getConnections().stream().filter(Connection::isManagedIdentityConnection).toList();
+        final boolean shouldEnableSystemManagedIdentity = list.stream().anyMatch(c -> c.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY);
+        final List<Identity> connectionIdentities = list.stream()
+                .map(Connection::getUserAssignedManagedIdentity).filter(Objects::nonNull).map(Resource::getData).filter(Objects::nonNull).toList();
+        if (shouldEnableSystemManagedIdentity == currentSystemIdentityEnabled && CollectionUtils.containsAll(currentIdentities, connectionIdentities)) {
+            return;
+        }
+        final List<Identity> identities = Stream.concat(currentIdentities.stream(), connectionIdentities.stream()).toList();
+        final IdentityConfiguration updatedConfiguration = IdentityConfiguration.builder()
+                .enableSystemAssignedManagedIdentity(shouldEnableSystemManagedIdentity || currentSystemIdentityEnabled)
+                .userAssignedManagedIdentities(identities)
+                .build();
+        if (!Objects.equals(updatedConfiguration, current)) {
+            target.updateIdentityConfiguration(updatedConfiguration);
+        }
+    }
+
     @NotNull
-    private WebAppBase<?, ?, ?> getOrCreateDeployTarget() {
+    private WebAppBase<?, ?, ?> getOrCreateDeployTarget(@Nullable final AzureModule module) {
         final AppServiceConfig appServiceConfig = webAppConfiguration.getAppServiceConfig();
         applyResourceConnections(webAppConfiguration, appServiceConfig);
         cleanupRemovedAppSettings(appServiceConfig);
         final WebAppBase<?, ?, ?> result = new CreateOrUpdateWebAppTask(appServiceConfig).execute();
         final AzureTaskManager tm = AzureTaskManager.getInstance();
-        final AzureModule module = Optional.ofNullable(this.webAppConfiguration.getModule()).map(AzureModule::from)
-                                           .or(() -> Optional.ofNullable(getTargetPath())
-                                                             .map(f -> VfsUtil.findFile(Path.of(f), true))
-                                                             .map(f -> AzureModule.from(f, this.project))).orElse(null);
         if (Objects.nonNull(module)) {
             final AbstractAzResource<?, ?, ?> target = result instanceof WebAppDeploymentSlot ? result.getParent() : result;
             tm.runOnPooledThread(() -> tm.runLater(() -> tm.write(() -> module.initializeWithDefaultProfileIfNot().addApp(target).save())));

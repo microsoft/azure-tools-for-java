@@ -13,14 +13,10 @@ import com.microsoft.azure.toolkit.ide.redis.RedisActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager;
 import com.microsoft.azure.toolkit.intellij.common.properties.AzureResourceEditorViewManager.AzureResourceFileType;
-import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
-import com.microsoft.azure.toolkit.intellij.redis.connection.RedisResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.redis.creation.CreateRedisCacheAction;
 import com.microsoft.azure.toolkit.intellij.redis.explorer.RedisCacheExplorerProvider;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 import com.microsoft.azure.toolkit.redis.AzureRedis;
 import com.microsoft.azure.toolkit.redis.RedisCache;
@@ -38,12 +34,6 @@ public class IntellijRedisActionsContributor implements IActionsContributor {
         final BiConsumer<Object, AnActionEvent> handler = (c, e) -> CreateRedisCacheAction.create(e.getProject(), null);
         am.registerHandler(ResourceCommonActionsContributor.CREATE, condition, handler);
 
-        am.<AzResource, AnActionEvent>registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof RedisCache,
-            (r, e) -> AzureTaskManager.getInstance().runLater(() -> {
-                final ConnectorDialog dialog = new ConnectorDialog(e.getProject());
-                dialog.setResource(new AzureServiceResource<>(((RedisCache) r), RedisResourceDefinition.INSTANCE));
-                dialog.show();
-            }));
         final Icon icon = IntelliJAzureIcons.getIcon(AzureIcons.RedisCache.MODULE);
         final String name = RedisCacheExplorerProvider.TYPE;
         final AzureResourceFileType type = new AzureResourceFileType(name, icon);

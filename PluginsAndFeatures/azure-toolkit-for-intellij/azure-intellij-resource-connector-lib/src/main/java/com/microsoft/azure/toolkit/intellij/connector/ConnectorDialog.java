@@ -25,8 +25,10 @@ import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,6 +63,11 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private JTextPane descriptionPane;
     private JPanel pnlEnvPrefix;
     private JLabel lblEnvPrefix;
+    private TitledSeparator titleAuthentication;
+    private JPanel pnlAuthentication;
+    private JPanel pnlUserAssignedManagedIdentity;
+    private AzureComboBox<AuthenticationType> cbAuthenticationType;
+    private UserAssignedManagedIdentityComboBox cbIdentity;
     private SignInHyperLinkLabel signInHyperLinkLabel1;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
@@ -99,6 +106,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             }));
         this.consumerTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.resourceTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
+        this.cbAuthenticationType.addItemListener(this::onAuthenticationTypeChanged);
         final Font font = UIManager.getFont("Label.font");
         final Color foregroundColor = UIManager.getColor("Label.foreground");
         final Color backgroundColor = UIManager.getColor("Label.backgroundColor");
@@ -116,6 +124,26 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         }
         if (consumerDefinitions.size() == 1) {
             this.fixConsumerType(consumerDefinitions.get(0));
+        }
+    }
+
+    private void onSelectResource(Object o) {
+        final AzureServiceResource<?> value = o instanceof AzureServiceResource ? (AzureServiceResource<?>) this.resourcePanel.getValue() : null;
+        if (Objects.nonNull(value)) {
+            cbIdentity.setResource(value);
+        }
+    }
+
+    private void onAuthenticationTypeChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED) {
+            final AuthenticationType authenticationType = this.cbAuthenticationType.getValue();
+            this.pnlUserAssignedManagedIdentity.setVisible(authenticationType == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY);
+            if (authenticationType == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
+                final Resource<?> value = (Resource<?>) this.resourcePanel.getValue();
+                if (value instanceof AzResource azResource) {
+                    cbIdentity.setSubscription(azResource.getSubscription());
+                }
+            }
         }
     }
 
@@ -197,6 +225,10 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (resource.getDefinition().isEnvPrefixSupported()) {
             connection.setEnvPrefix(this.envPrefixTextField.getText().trim());
         }
+        connection.setAuthenticationType(cbAuthenticationType.getValue());
+        if (cbAuthenticationType.getValue() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
+            Optional.ofNullable(cbIdentity.getValue()).map(IdentityResource.Definition.INSTANCE::define).ifPresent(connection::setUserAssignedManagedIdentity);
+        }
         return connection;
     }
 
@@ -206,6 +238,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.setResource(connection.getResource());
         this.envPrefixTextField.setText(connection.getEnvPrefix());
         this.connection = connection;
+        // authentication
+        this.cbAuthenticationType.setValue(ObjectUtils.firstNonNull(connection.getAuthenticationType(), AuthenticationType.CONNECTION_STRING));
+        Optional.ofNullable(connection.getUserAssignedManagedIdentity()).map(Resource::getData).ifPresent(cbIdentity::setValue);
     }
 
     @Override
@@ -246,8 +281,16 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             this.envPrefixTextField.setText(definition.getDefaultEnvPrefix());
             this.resourceTypeSelector.setValue(new ItemReference<>(definition.getName(), ResourceDefinition::getName));
             this.resourcePanel = this.updatePanel(definition, this.resourcePanelContainer);
+            Optional.ofNullable(this.resourcePanel).ifPresent(panel -> panel.addValueChangedListener(this::onSelectResource));
+
             this.lblEnvPrefix.setVisible(resourceDefinition.isEnvPrefixSupported());
             this.envPrefixTextField.setVisible(resourceDefinition.isEnvPrefixSupported());
+
+            final List<AuthenticationType> supportedAuthenticationTypes = definition.getSupportedAuthenticationTypes();
+            this.pnlAuthentication.setVisible(supportedAuthenticationTypes.size() > 1);
+            this.cbAuthenticationType.clear();
+            this.cbAuthenticationType.setItemsLoader(() -> supportedAuthenticationTypes);
+            this.cbAuthenticationType.reloadItems();
         }
     }
 
@@ -295,6 +338,25 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             @Override
             protected List<ExtendableTextComponent.Extension> getExtensions() {
                 return Collections.emptyList();
+            }
+        };
+        this.cbIdentity = new UserAssignedManagedIdentityComboBox();
+        this.cbAuthenticationType = new AzureComboBox<>() {
+            @Nullable
+            @Override
+            protected AuthenticationType doGetDefaultValue() {
+                return AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY;
+            }
+
+            @Nonnull
+            @Override
+            protected List<ExtendableTextComponent.Extension> getExtensions() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            protected String getItemText(Object item) {
+                return item instanceof AuthenticationType type ? type.getDisplayName() : super.getItemText(item);
             }
         };
     }

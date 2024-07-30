@@ -16,6 +16,8 @@ dependencies {
     implementation("com.microsoft.azure:azure-toolkit-cosmos-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-cosmos-lib")
+    implementation("com.microsoft.azure:azure-toolkit-identity-lib")
+
     intellijPlatform {
         intellijIdeaUltimate(properties("platformVersion").get())
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.

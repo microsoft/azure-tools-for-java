@@ -1,0 +1,20 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition"/>
+        <actions implementation="com.microsoft.azure.toolkit.intellij.storage.IntellijJavaStorageActionsContributor"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.java.ConnectionStringStorageClientAnnotator"/>
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathAnnotator"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathReferenceContributor" order="first"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionStorageAccountResourceReferenceContributor"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathLineMarkerProvider"/>
+        <completion.confidence id="azStorageStringLiteral" language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionConfidence" order="before javaSkipAutopopupInStrings"/>
+        <completion.contributor id="azStorageFunctionAnnotation" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionAnnotationCompletionContributor"/>
+        <completion.contributor id="azStorageStringLiteralQuick" language="JAVA" order="first, before azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathPreCompletionContributor"/>
+        <completion.contributor id="azStorageStringLiteral" language="JAVA" order="first" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCompletionContributor"/>
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.storage.code.function.FunctionAnnotationResourcePathAnnotator"/>
+        <typedHandler id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathTypeHandler"/>
+        <lookup.charFilter id="azStorageSpringValueAnnotation" implementation="com.microsoft.azure.toolkit.intellij.storage.code.spring.StoragePathCharFilter"/>
+    </extensions>
+</idea-plugin>

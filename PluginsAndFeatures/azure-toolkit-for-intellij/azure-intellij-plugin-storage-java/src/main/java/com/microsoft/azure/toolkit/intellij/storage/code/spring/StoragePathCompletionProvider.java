@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.intellij.connector.code.Utils;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile;
 import com.microsoft.azure.toolkit.intellij.connector.projectexplorer.AbstractAzureFacetNode;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.storage.connection.StorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
@@ -131,7 +132,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
         return Optional.of(module).map(AzureModule::from)
             .map(AzureModule::getDefaultProfile).map(Profile::getConnectionManager).stream()
             .flatMap(m -> m.getConnections().stream())
-            .filter(c -> c.getDefinition().getResourceDefinition() instanceof StorageAccountResourceDefinition)
+            .filter(c -> c.getDefinition().getResourceDefinition() instanceof BaseStorageAccountResourceDefinition)
             .filter(c -> c.getResource().isValidResource())
             .toList();
     }
