@@ -157,6 +157,9 @@ class RuleConfigLoader {
                 case "servicesToCheck":
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
+                case "typesToCheck":
+                    listedItemsToCheck = getListFromJsonArray(reader);
+                    break;
                 case "regexPatterns":
                     listedItemsToCheck = getValuesFromJsonReader(reader);
                     break;
