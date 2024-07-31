@@ -21,8 +21,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * This class is used to test the UseOfBlockOnAsyncClientsCheck class.
- * The UseOfBlockOnAsyncClientsCheck class is an inspection tool that checks for the use of block() method on async clients in Azure SDK.
- * This inspection will check for the use of block() method on reactive types like Mono, Flux, etc.
+ * The UseOfBlockOnAsyncClientsCheck class is an inspection tool that checks for the use of blocking method on async clients in Azure SDK.
+ * This inspection will check for the use of blocking method on reactive types like Mono, Flux, etc.
  *  This is an example of what should be flagged:
  *
  *  private ServiceBusReceiverAsyncClient receiver;
@@ -63,8 +63,8 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     }
 
     /**
-     * This is the main test method that tests the use of block() method on async clients.
-     * This method should be flagged by the inspection tool as it is a block() method call on an async client.
+     * This is the main test method that tests the use of blocking method on async clients.
+     * This method should be flagged by the inspection tool as it is a blocking method calls on an async client.
      */
     @Test
     public void testUseOfBlockOnAsyncClient() {
@@ -127,7 +127,7 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     }
 
     /**
-     * This test method tests the use of block() method on a non-reactive type.
+     * This test method tests the use of blocking method on a non-reactive type.
      * This method should not be flagged by the inspection tool.
      */
     @Test
@@ -142,7 +142,7 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     }
 
     /**
-     * This test method tests the use of block() method on a non-async client.
+     * This test method tests the use of blocking method on a non-async client.
      * This method should not be flagged by the inspection tool.
      */
     @Test
@@ -166,7 +166,7 @@ public class UseOfBlockOnAsyncClientsCheckTest {
     }
 
     /**
-     * This method is used to verify the registerProblem method is called when the method call is a block() method call on an async client.
+     * This method is used to verify the registerProblem method is called when the method call is a blocking method call on an async client.
      *
      * @param methodName          String - the name of the method called
      * @param clientPackageName   String - the package name of the async client

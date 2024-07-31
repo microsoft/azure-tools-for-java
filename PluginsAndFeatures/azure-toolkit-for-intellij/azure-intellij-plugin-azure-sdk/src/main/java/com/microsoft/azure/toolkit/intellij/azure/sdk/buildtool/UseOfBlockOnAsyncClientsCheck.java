@@ -13,7 +13,7 @@ import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Inspection tool to check for the use of block() method on async clients in Azure SDK.
+ * Inspection tool to check for the use of blocking method calls on async clients in Azure SDK.
  */
 public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
@@ -67,8 +67,8 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
         /**
          * This method is used to visit the method call expression.
-         * The method call expression is checked to see if it is a block() method call on an async client.
-         * If the method call is a block() method call on an async client, it reports a problem.
+         * The method call expression is checked to see if it is a blocking method call on an async client.
+         * If the method call is a blocking method call on an async client, it reports a problem.
          *
          * @param expression PsiMethodCallExpression - the method call expression to visit
          */
@@ -89,18 +89,19 @@ public class UseOfBlockOnAsyncClientsCheck extends LocalInspectionTool {
 
                     if (isAsyncContext) {
                         holder.registerProblem(expression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
+                        return;
                     }
                 }
             }
         }
 
         /**
-         * This method is used to check if the method call is a block() method call on a reactive type.
-         * The method call is checked to see if it is a block() method call on a reactive type
+         * This method is used to check if the method call is a blocking method calls on a reactive type.
+         * The method call is checked to see if it is a blocking method call on a reactive type
          * and if the reactive type is an async client in Azure SDK.
          *
          * @param methodCall PsiMethodCallExpression - the method call expression to check
-         * @return true if the method call is a block() method call on an async client, false otherwise
+         * @return true if the method call is a blocking method calls on an async client, false otherwise
          */
         private boolean checkIfAsyncContext(@NotNull PsiMethodCallExpression methodCall) {
 
