@@ -135,5 +135,13 @@
       "reactor.core.publisher.Mono"
     ],
     "antiPatternMessage": "Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."
+  },
+  "UpgradeLibraryVersionCheck": {
+    "url": "https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/maven-metadata.xml",
+    "antiPatternMessage": "A newer stable minor version of {{fullName}} is available. We recommend you update to version {{recommendedVersion}}.x"
+  },
+  "IncompatibleDependencyCheck": {
+    "url": "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/eng/versioning/supported_external_dependency_versions.json",
+    "antiPatternMessage": "The version of {{fullName}} is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group {{recommendedVersion}}.x to ensure proper functionality."
   }
 }

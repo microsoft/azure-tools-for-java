@@ -235,5 +235,31 @@
                 com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.EndpointOnNonAzureOpenAIAuthCheck
             </class>
         </localInspection>
+
+        <localInspection
+                language="XML"
+                shortName="UpgradeLibraryVersionCheck"
+                displayName="Upgrade Library Version Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpgradeLibraryVersionCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.UpgradeLibraryVersionCheck
+            </class>
+        </localInspection>
+
+        <localInspection
+                language="XML"
+                shortName="IncompatibleDependencyCheck"
+                displayName="Incompatible Dependency Check"
+                groupName="Azure SDK Rules"
+                enabledByDefault="true"
+                level="WARNING"
+                implementationClass="com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.IncompatibleDependencyCheck">
+            <class>
+                com.microsoft.azure.toolkit.intellij.azure.sdk.buildtool.IncompatibleDependencyCheck
+            </class>
+        </localInspection>
     </extensions>
 </idea-plugin>
