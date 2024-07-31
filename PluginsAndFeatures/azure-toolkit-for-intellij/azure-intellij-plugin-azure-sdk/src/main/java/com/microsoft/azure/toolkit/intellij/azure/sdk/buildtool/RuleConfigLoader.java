@@ -157,12 +157,17 @@ class RuleConfigLoader {
                 case "servicesToCheck":
                     servicesToCheck = getListFromJsonArray(reader);
                     break;
+                case "typesToCheck":
+                    listedItemsToCheck = getListFromJsonArray(reader);
+                    break;
+                case "regexPatterns":
+                    listedItemsToCheck = getValuesFromJsonReader(reader);
+                    break;
+                case "url":
+                    listedItemsToCheck = getListFromJsonArray(reader);
+                    break;
                 default:
-                    if (fieldName == "url") {
-                        listedItemsToCheck = getListFromJsonArray(reader);
-                    } else if (fieldName == "regexPatterns") {
-                        listedItemsToCheck = getValuesFromJsonReader(reader);
-                    } else if (fieldName.endsWith("Check")) {
+                    if (fieldName.endsWith("Check")) {
                         // Move to the next token to process the nested object
                         reader.nextToken();
                         antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);

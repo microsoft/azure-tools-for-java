@@ -261,7 +261,21 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [KeyCredential Class documentation](https://learn.microsoft.com/java/api/com.azure.core.credential.keycredential?view=azure-java-stable)
   for more information.
 
-14. #### Upgrading library versions if versions in use known to have performance or reliability issues
+14. #### Use sync client operation if calling blocking calls on asynchronous operations of an Azure asynchronous client.
+
+- **Anti-Pattern**: Calling blocking calls on asynchronous operations of an Azure asynchronous client. This practice
+  turns an asynchronous operation into a synchronous
+  one.
+- **Issue**: Blocking calls go against the non-blocking nature of reactive streams.
+  It can lead to performance issues because it blocks one of the few available threads.
+  In reactive applications, avoiding blocking operations is crucial for scalability and responsiveness.
+- **Severity Level: WARNING**
+- **Recommendation**: If you find yourself frequently using blocking calls in your code, consider switching to the sync
+  client.
+  The sync client performs operations synchronously without requiring locking calls.
+  Using the sync client can make your code more straightforward and easier to understand.
+
+15. #### Upgrading library versions if versions in use known to have performance or reliability issues
 
 - **Anti-pattern**: Using library versions known to have performance or reliability issues.
 - **Issue**: Using outdated library versions can lead to performance bottlenecks, security vulnerabilities, and
@@ -276,7 +290,7 @@ integration, telemetry connectivity, and Azure Toolkit integration.
   the [ServiceBus Azure SDK Java documentation](https://learn.microsoft.com/azure/developer/java/sdk/troubleshooting-messaging-service-bus-overview#upgrade-to-715x-or-latest)
   for more information on the latest version of the Service Bus SDK.
 
-15. #### Using Incompatible Versions of Dependencies
+16. #### Using Incompatible Versions of Dependencies
 
 - **Anti-pattern**: Using incompatible versions of dependencies in the project.
 - **Issue**: Incompatible versions of dependencies can lead to runtime errors, classpath conflicts, and unexpected
