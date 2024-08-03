@@ -18,11 +18,14 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
     /**
      * This method builds a visitor to check for the discouraged client name in the code.
      * If the client name matches the discouraged client, a problem is registered with the suggestion message.
+     *
+     * @param holder     - the ProblemsHolder object to register the problem
+     * @param isOnTheFly - whether the inspection is on the fly - not used in this implementation but required by the parent class
      */
     @NotNull
     @Override
     public JavaElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        return new DetectDiscouragedClientVisitor(holder, isOnTheFly);
+        return new DetectDiscouragedClientVisitor(holder);
     }
 
     /**
@@ -37,10 +40,9 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
         /**
          * Constructor for the visitor
          *
-         * @param holder     - the ProblemsHolder object to register the problem
-         * @param isOnTheFly - whether the inspection is on the fly - not used in this implementation but required by the parent class
+         * @param holder - the ProblemsHolder object to register the problem
          */
-        DetectDiscouragedClientVisitor(ProblemsHolder holder, boolean isOnTheFly) {
+        DetectDiscouragedClientVisitor(ProblemsHolder holder) {
             this.holder = holder;
         }
 
@@ -73,6 +75,10 @@ public class DetectDiscouragedClientCheck extends LocalInspectionTool {
             if (element instanceof PsiTypeElement && element.getType() != null) {
 
                 String elementType = element.getType().getPresentableText();
+
+                if (!RULE_CONFIG.getAntiPatternMessageMap().containsKey(elementType)) {
+                    return;
+                }
 
                 // Register a problem if the client used matches a discouraged client
                 holder.registerProblem(element, RULE_CONFIG.getAntiPatternMessageMap().get(elementType));

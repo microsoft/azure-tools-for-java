@@ -133,8 +133,7 @@ public class DetectDiscouragedClientCheckTest {
      */
     private PsiElementVisitor createVisitor() {
 
-        boolean isOnTheFly = true;
-        DetectDiscouragedClientVisitor mockVisitor = new DetectDiscouragedClientVisitor(mockHolder, isOnTheFly);
+        DetectDiscouragedClientVisitor mockVisitor = new DetectDiscouragedClientVisitor(mockHolder);
         return mockVisitor;
     }
 
