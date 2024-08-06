@@ -89,4 +89,9 @@ public interface ResourceDefinition<T> {
         }
         return result;
     }
+
+    // as for some resource (storage account), supported authentication types may be different for different resource instance
+    default List<AuthenticationType> getSupportedAuthenticationTypes(@Nonnull Resource<?> resource) {
+        return getSupportedAuthenticationTypes();
+    }
 }

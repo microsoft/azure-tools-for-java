@@ -16,6 +16,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
 import com.microsoft.azure.toolkit.lib.identities.Identity;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
+import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.ConnectionStringStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.IStorageAccount;
 import lombok.AllArgsConstructor;
@@ -148,6 +149,14 @@ public class StorageAccountResourceDefinition extends BaseStorageAccountResource
             properties.add(Pair.of("spring.cloud.azure.storage.blob.credential.client-id", String.format("${%s_CLIENT_ID}", Connection.ENV_PREFIX)));
         }
         return properties;
+    }
+
+    @Override
+    public List<AuthenticationType> getSupportedAuthenticationTypes(Resource<?> resource) {
+        final Object data = resource.getData();
+        return data instanceof ConnectionStringStorageAccount || data instanceof AzuriteStorageAccount ?
+                Collections.singletonList(AuthenticationType.CONNECTION_STRING) :
+                super.getSupportedAuthenticationTypes(resource);
     }
 
     @Data
