@@ -28,6 +28,7 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import lombok.Getter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 
 import javax.annotation.Nonnull;
@@ -107,6 +108,10 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         this.consumerTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.resourceTypeSelector.addItemListener(this::onResourceOrConsumerTypeChanged);
         this.cbAuthenticationType.addItemListener(this::onAuthenticationTypeChanged);
+        this.cbAuthenticationType.addItemListener(ignore -> {
+            this.cbIdentity.setRequired(cbAuthenticationType.getValue() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY);
+            this.cbIdentity.validateValueAsync();
+        });
         final Font font = UIManager.getFont("Label.font");
         final Color foregroundColor = UIManager.getColor("Label.foreground");
         final Color backgroundColor = UIManager.getColor("Label.backgroundColor");
@@ -129,9 +134,23 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
     private void onSelectResource(Object o) {
         final AzureServiceResource<?> value = o instanceof AzureServiceResource ? (AzureServiceResource<?>) this.resourcePanel.getValue() : null;
-        if (Objects.nonNull(value)) {
+        final List<AuthenticationType> types = Optional.ofNullable(value).map(resourceDefinition::getSupportedAuthenticationTypes).orElse(Collections.emptyList());
+        final List<AuthenticationType> current = cbAuthenticationType.getItems();
+        if (!CollectionUtils.isEqualCollection(types, current)) {
+            updateAuthenticationTypes(types);
+        }
+        if (Objects.nonNull(value) && types.contains(AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY)) {
             cbIdentity.setResource(value);
         }
+    }
+
+    private void updateAuthenticationTypes(@Nonnull final List<AuthenticationType> types) {
+        final AuthenticationType current = cbAuthenticationType.getValue();
+        if (!types.contains(current)) {
+            this.cbAuthenticationType.clear();
+        }
+        this.cbAuthenticationType.setItemsLoader(() -> types);
+        this.cbAuthenticationType.reloadItems();
     }
 
     private void onAuthenticationTypeChanged(ItemEvent e) {
@@ -228,6 +247,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         connection.setAuthenticationType(cbAuthenticationType.getValue());
         if (cbAuthenticationType.getValue() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
             Optional.ofNullable(cbIdentity.getValue()).map(IdentityResource.Definition.INSTANCE::define).ifPresent(connection::setUserAssignedManagedIdentity);
+        } else {
+            connection.setUserAssignedManagedIdentity(null);
         }
         return connection;
     }
@@ -288,9 +309,7 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
 
             final List<AuthenticationType> supportedAuthenticationTypes = definition.getSupportedAuthenticationTypes();
             this.pnlAuthentication.setVisible(supportedAuthenticationTypes.size() > 1);
-            this.cbAuthenticationType.clear();
-            this.cbAuthenticationType.setItemsLoader(() -> supportedAuthenticationTypes);
-            this.cbAuthenticationType.reloadItems();
+            this.updateAuthenticationTypes(supportedAuthenticationTypes);
         }
     }
 

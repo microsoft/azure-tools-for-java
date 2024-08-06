@@ -267,8 +267,8 @@ public class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputCompo
     protected void setLoading(final boolean loading) {
         this.loading = loading;
         SwingUtilities.invokeLater(() -> {
-            this.myEditor.rerender();
-            Optional.ofNullable(this.myEditor.getEditorComponent()).ifPresent(c -> c.setEnabled(AzureComboBox.this.isEnabled()));
+            Optional.ofNullable(this.myEditor).ifPresent(AzureComboBoxEditor::rerender);
+            Optional.ofNullable(this.myEditor).map(BasicComboBoxEditor::getEditorComponent).ifPresent(c -> c.setEnabled(AzureComboBox.this.isEnabled()));
             this.repaint();
         });
     }

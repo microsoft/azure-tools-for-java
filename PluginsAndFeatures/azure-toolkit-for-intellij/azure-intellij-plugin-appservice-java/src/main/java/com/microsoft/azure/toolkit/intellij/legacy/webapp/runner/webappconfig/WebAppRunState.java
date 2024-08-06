@@ -35,6 +35,7 @@ import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
+import com.microsoft.azure.toolkit.lib.common.model.AbstractAzServiceSubscription;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
@@ -65,6 +66,7 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.intellij.connector.IManagedIdentitySupported.*;
+import static com.microsoft.azure.toolkit.intellij.connector.dotazure.Profile.IDENTITY_PERMISSION_MESSAGE;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
     private static final String LIBS_ROOT = "/home/site/wwwroot/libs/";
@@ -128,16 +130,21 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
                 return;
             }
             final AbstractAzResource<?,?,?> data = (AbstractAzResource<?,?,?>) resource.getData();
-            final String identity = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
-                    configuration.getPrincipalId() : Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getPrincipalId();
             final String identityName = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
                     target instanceof AzResource ? ((AzResource)target).getName() : target.toString() :
                     Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getName();
-            if (resource instanceof AzureServiceResource<?> serviceResource && !checkPermission(serviceResource, identity)) {
-                if (!IManagedIdentitySupported.grantPermission(serviceResource, identity)) {
-                    final String message = String.format("The managed identity %s (%s) doesn't have enough permission to access resource %s.", identity, identityName, resource.getName());
+            final String identityPrincipal = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
+                    configuration.getPrincipalId() : Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getPrincipalId();
+            final String identityUrl = con.getAuthenticationType() == AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY ?
+                    target instanceof AzResource ? ((AzResource)target).getPortalUrl() : StringUtils.EMPTY :
+                    Objects.requireNonNull(con.getUserAssignedManagedIdentity()).getData().getPortalUrl();
+            final String resourceUrl = Optional.ofNullable(resource.getData()).filter(r -> r instanceof AbstractAzServiceSubscription)
+                    .map(r -> ((AbstractAzResource<?, ?, ?>) r).getPortalUrl()).orElse(StringUtils.EMPTY);
+            if (resource instanceof AzureServiceResource<?> serviceResource && !checkPermission(serviceResource, Objects.requireNonNull(identityPrincipal))) {
+                if (!IManagedIdentitySupported.grantPermission(serviceResource, identityPrincipal)) {
+                    final String message = String.format(IDENTITY_PERMISSION_MESSAGE, identityUrl, identityName, identityPrincipal, resourceUrl, resource.getName());
                     final Action<?> openIdentityConfigurationAction = getOpenIdentityConfigurationAction(serviceResource);
-                    final Action<?> grantPermissionAction = getGrantPermissionAction(serviceResource, identity);
+                    final Action<?> grantPermissionAction = getGrantPermissionAction(serviceResource, identityPrincipal);
                     AzureMessager.getMessager().warning(message, openIdentityConfigurationAction, grantPermissionAction);
                 }
             }
