@@ -31,7 +31,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
     /**
      * This method builds the visitor that checks for the dynamic creation of clients in the code.
      *
-     * @param holder     The holder for the problems found
+     * @param holder The holder for the problems found
      * @return PsiElementVisitor
      */
     @NotNull
@@ -49,21 +49,16 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
         private final ProblemsHolder holder;
 
         // Define constants for string literals
-        private static final RuleConfig ruleConfig;
-        private static final String ANTI_PATTERN_MESSAGE;
-        private static final List<String> METHODS_TO_CHECK;
-        private static final boolean SKIP_WHOLE_RULE;
+        private static final RuleConfig RULE_CONFIG;
+        private static boolean SKIP_WHOLE_RULE;
 
         static {
             final String ruleName = "DynamicClientCreationCheck";
             RuleConfigLoader centralRuleConfigLoader = RuleConfigLoader.getInstance();
 
             // Get the RuleConfig object for the rule
-            ruleConfig = centralRuleConfigLoader.getRuleConfig(ruleName);
-
-            METHODS_TO_CHECK = ruleConfig.getMethodsToCheck();
-            ANTI_PATTERN_MESSAGE = ruleConfig.getAntiPatternMessage();
-            SKIP_WHOLE_RULE = ruleConfig == RuleConfig.EMPTY_RULE || METHODS_TO_CHECK.isEmpty();
+            RULE_CONFIG = centralRuleConfigLoader.getRuleConfig(ruleName);
+            SKIP_WHOLE_RULE = RULE_CONFIG == RuleConfig.EMPTY_RULE || RULE_CONFIG.getMethodsToCheck().isEmpty();
         }
 
         /**
@@ -131,7 +126,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
 
                 // Check if the right-hand side is a method call expression
                 if (rhs instanceof PsiMethodCallExpression && isClientCreationMethod((PsiMethodCallExpression) rhs)) {
-                    holder.registerProblem(rhs, ANTI_PATTERN_MESSAGE);
+                    holder.registerProblem(rhs, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                 }
             } else if (blockChild instanceof PsiDeclarationStatement) {    // This is a check for the declaration statement
 
@@ -156,7 +151,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
                     // Check if the initializer is a method call expression
                     PsiMethodCallExpression methodCallExpression = (PsiMethodCallExpression) initializer;
                     if (isClientCreationMethod(methodCallExpression)) {
-                        holder.registerProblem(methodCallExpression, ANTI_PATTERN_MESSAGE);
+                        holder.registerProblem(methodCallExpression, RULE_CONFIG.getAntiPatternMessageMap().get("antiPatternMessage"));
                     }
                 }
             }
@@ -180,7 +175,7 @@ public class DynamicClientCreationCheck extends LocalInspectionTool {
             String methodName = methodExpression.getReferenceName();
 
             // Check if the method name is buildClient or AsyncBuildClient
-            if (methodName != null && METHODS_TO_CHECK.contains(methodName)) {
+            if (methodName != null && RULE_CONFIG.getMethodsToCheck().contains(methodName)) {
 
                 // Extract the qualifier expression
                 PsiExpression qualifierExpression = methodExpression.getQualifierExpression();

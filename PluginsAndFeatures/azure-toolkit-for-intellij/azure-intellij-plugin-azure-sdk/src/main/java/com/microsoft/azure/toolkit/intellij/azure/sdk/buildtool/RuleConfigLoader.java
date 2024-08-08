@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * The map contains the key-value pairs where the key is the rule name and the value is the RuleConfig object.
  * The RuleConfig object for a given key can be retrieved using the getRuleConfig method.
  */
-public class RuleConfigLoader {
+class RuleConfigLoader {
 
     private static final RuleConfigLoader instance;
     private final Map<String, RuleConfig> ruleConfigs;
@@ -59,7 +59,7 @@ public class RuleConfigLoader {
      *
      * @return CentralRuleConfigLoader instance
      */
-    public static RuleConfigLoader getInstance() {
+    static RuleConfigLoader getInstance() {
         return instance;
     }
 
@@ -100,7 +100,7 @@ public class RuleConfigLoader {
             // If not, throw an exception
             // This is to ensure that the JSON file is in the correct format
             if (reader.nextToken() != JsonToken.START_OBJECT) {
-                throw new IOException("Expected start of object");
+                throw new IllegalArgumentException("Expected start of object");
             }
 
             // Read the JSON file and parse the RuleConfig objects
@@ -119,6 +119,8 @@ public class RuleConfigLoader {
 
     /**
      * This method parses the RuleConfig object from the JSON file
+     * The RuleConfig object either contains the methods to check, clients to check or services to check,
+     * and the anti-pattern messages
      *
      * @param reader - the JsonReader object to read the JSON file
      * @return RuleConfig object parsed from the JSON file
@@ -127,11 +129,13 @@ public class RuleConfigLoader {
     private RuleConfig getRuleConfig(JsonReader reader) throws IOException {
         List<String> methodsToCheck = new ArrayList<>();
         List<String> clientsToCheck = new ArrayList<>();
-        String antiPatternMessage = null;
+        List<String> servicesToCheck = new ArrayList<>();
+        Map<String, String> antiPatternMessageMap = new HashMap<>();
+        List<String> listedItemsToCheck = new ArrayList<>();
 
         // Check if the JSON file starts with an object
         if (reader.nextToken() != JsonToken.START_OBJECT) {
-            throw new IOException("Expected start of object");
+            throw new IllegalArgumentException("Expected start of object");
         }
 
         // Read the JSON file and parse the RuleConfig object
@@ -141,20 +145,39 @@ public class RuleConfigLoader {
             String fieldName = reader.getFieldName();
             // Check the field name and set the corresponding field in the RuleConfig object
             switch (fieldName) {
-                case "methods_to_check":
+                case "methodsToCheck":
                     methodsToCheck = getListFromJsonArray(reader);
                     break;
-                case "anti_pattern_message":
-                    antiPatternMessage = reader.getString();
+                case "antiPatternMessage":
+                    antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
                     break;
-                case "clients_to_check":
+                case "clientsToCheck":
                     clientsToCheck = getListFromJsonArray(reader);
                     break;
+                case "servicesToCheck":
+                    servicesToCheck = getListFromJsonArray(reader);
+                    break;
+                case "typesToCheck":
+                    listedItemsToCheck = getListFromJsonArray(reader);
+                    break;
+                case "regexPatterns":
+                    listedItemsToCheck = getValuesFromJsonReader(reader);
+                    break;
+                case "url":
+                    listedItemsToCheck = getListFromJsonArray(reader);
+                    break;
                 default:
-                    reader.skipChildren();
+                    if (fieldName.endsWith("Check")) {
+                        // Move to the next token to process the nested object
+                        reader.nextToken();
+                        antiPatternMessageMap = getMapFromJsonObject(reader, antiPatternMessageMap);
+                    } else {
+                        reader.skipChildren();
+                    }
+                    break;
             }
         }
-        return new RuleConfig(methodsToCheck, clientsToCheck, antiPatternMessage);
+        return new RuleConfig(methodsToCheck, clientsToCheck, servicesToCheck, antiPatternMessageMap, listedItemsToCheck);
     }
 
     /**
@@ -175,7 +198,7 @@ public class RuleConfigLoader {
                 list.add(reader.getString());
                 return list;
             } else {
-                throw new IOException("Expected start of array");
+                throw new IllegalArgumentException("Expected start of array");
             }
         }
 
@@ -184,5 +207,82 @@ public class RuleConfigLoader {
             list.add(reader.getString());
         }
         return list;
+    }
+
+    /**
+     * This method is used to parse the anti-pattern messages from a JSON file
+     * The anti-pattern messages can be for a set of methods, clients, or services
+     * The anti-pattern messages can also be for specific rules like "no_block" and "with_subscribe"
+     *
+     * @param reader                - the JsonReader object to read the JSON file
+     * @param antiPatternMessageMap - the map to store the anti-pattern messages
+     * @return Map of strings parsed from the JSON object
+     * @throws IOException - if there is an error reading the file
+     */
+    private Map<String, String> getMapFromJsonObject(JsonReader reader, Map<String, String> antiPatternMessageMap) throws IOException {
+
+        String identifiersToCheck = null;
+        String antiPatternMessage = null;
+
+        // Read the JSON file and parse the RuleConfig object
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Get the field name
+            String fieldName = reader.getFieldName();
+            switch (fieldName) {
+                case "methodsToCheck":
+                case "clientsToCheck":
+                    identifiersToCheck = getListFromJsonArray(reader).get(0);
+                    break;
+                case "antiPatternMessage":
+                    antiPatternMessage = reader.getString();
+                    break;
+                default:
+                    reader.skipChildren();
+                    break;
+            }
+            // Add to map based on conditions
+            if (antiPatternMessage != null) {
+
+                // This map is for base classes that have a set of discouraged identifiers and a corresponding set of antipattern messages
+                if (identifiersToCheck != null) {
+                    antiPatternMessageMap.put(identifiersToCheck, antiPatternMessage);
+                } else {
+                    // This map is for single anti-pattern messages of a particular rule
+                    antiPatternMessageMap.put(fieldName, antiPatternMessage);
+                    return antiPatternMessageMap;
+                }
+            }
+        }
+        // This map is to return mapped anti-pattern messages that have a set of discouraged identifiers and a corresponding set of antipattern messages
+        return antiPatternMessageMap;
+    }
+
+    /**
+     * This method parses the values from the JSON object
+     *
+     * @param reader - the JsonReader object to read the JSON file
+     * @return List of strings parsed from the JSON object
+     * @throws IOException - if there is an error reading the file
+     */
+    private List<String> getValuesFromJsonReader(JsonReader reader) throws IOException {
+
+        List<String> values = new ArrayList<>();
+
+        // Check if the JSON file starts with an object
+        if (reader.nextToken() != JsonToken.START_OBJECT) {
+            throw new IOException("Expected start of object");
+        }
+
+        // Read the JSON file and parse the values
+        while (reader.nextToken() != JsonToken.END_OBJECT) {
+
+            // Skip the field name and read only the value
+            reader.getFieldName(); // Move to the field name
+            reader.nextToken(); // Move to the value
+            String value = reader.getString(); // Read the value
+            values.add(value);
+        }
+        return values;
     }
 }
