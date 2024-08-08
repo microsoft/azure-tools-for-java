@@ -32,6 +32,8 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
+import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
@@ -59,6 +61,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -154,9 +157,20 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
 
     private void applyResourceConnection(Map<String, String> appSettings) {
         if (functionRunConfiguration.isConnectionEnabled()) {
+            final Set<Connection<?, ?>> identityConnection = functionRunConfiguration.getConnections().stream()
+                    .filter(Connection::isManagedIdentityConnection)
+                    .collect(Collectors.toSet());
+            if (CollectionUtils.isNotEmpty(identityConnection)) {
+                final String resources = identityConnection.stream().map(Connection::getResource).map(Resource::getName).collect(Collectors.joining(", "));
+                AzureMessager.getMessager().warning(String.format("Managed Identity connection is not supported for function app, your connections connected to %s may not work as expected.", resources));
+            }
             final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionRunConfiguration.getLoadDotEnvBeforeRunTask();
             loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettings.put(env.getKey(), env.getValue()));
         }
+    }
+
+    private List<Connection<?, ?>> getConnections() {
+        return Optional.ofNullable(functionRunConfiguration).map(FunctionRunConfiguration::getConnections).orElse(Collections.emptyList());
     }
 
     @AzureOperation(name = "internal/function.validate_runtime")

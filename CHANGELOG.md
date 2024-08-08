@@ -112,6 +112,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.91.0
+- Added support for Managed Identity Authentication in Web App Resource Connections.
+  - Support update the identity configuration of Web App to connect Azure resources (Azure Storage Account/Azure Key Vault/Azure Cosmos DB for NoSQL)
+  - Support grant permission to managed identity to connected resource (Azure Storage Account/Azure Key Vault)
+
 ## 3.90.0
 ### Added
 - Support IntelliJ 2024.2 EAP

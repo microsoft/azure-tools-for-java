@@ -27,13 +27,13 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2 id="3-90-0">3.90.0</h2>
-      <h3 id="added">Added</h3>
+      <h2 id="3-91-0">3.91.0</h2>
       <ul>
-      <li>Support IntelliJ 2024.2 EAP</li>
-      <li>Support workload profiles environment type in Azure Container Apps<ul>
-      <li>Support create workload profiles during the creation of an Azure Container Apps environment.</li>
-      <li>Enable setting of workload profiles during the creation of container apps and function apps.</li>
+      <li>Added support for Managed Identity Authentication in Web App Resource Connections.<ul>
+      <li>Support update the identity configuration of Web App to connect Azure resources (Azure Storage Account/Azure Key Vault/Azure Cosmos DB for NoSQL)</li>
+      <li>Support grant permission to managed identity to connected resource (Azure Storage Account/Azure Key Vault)</li>
+      </ul>
+      </li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

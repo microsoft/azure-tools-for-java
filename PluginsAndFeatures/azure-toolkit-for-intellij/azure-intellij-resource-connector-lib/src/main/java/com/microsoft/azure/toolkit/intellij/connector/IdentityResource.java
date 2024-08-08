@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class IdentityResource extends AzureServiceResource<Identity> {
     public IdentityResource(@Nonnull Identity data, @Nonnull AzureServiceResource.Definition<Identity> definition) {
         super(data, definition);

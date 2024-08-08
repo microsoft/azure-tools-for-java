@@ -105,8 +105,10 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
         env.put(String.format("%s_ENDPOINT", Connection.ENV_PREFIX), account.getDocumentEndpoint());
         env.put(String.format("%s_DATABASE", Connection.ENV_PREFIX), database.getName());
         if (data.getAuthenticationType() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
-            Optional.ofNullable(data.getUserAssignedManagedIdentity()).map(Resource::getData)
-                    .ifPresent(identity -> env.put(String.format("%s_CLIENT_ID", Connection.ENV_PREFIX), identity.getClientId()));
+            Optional.ofNullable(data.getUserAssignedManagedIdentity()).map(Resource::getData).ifPresent(identity -> {
+                env.put(String.format("%s_CLIENT_ID", Connection.ENV_PREFIX), identity.getClientId());
+                env.put("AZURE_CLIENT_ID", identity.getClientId());
+            });
         }
         return env;
     }
