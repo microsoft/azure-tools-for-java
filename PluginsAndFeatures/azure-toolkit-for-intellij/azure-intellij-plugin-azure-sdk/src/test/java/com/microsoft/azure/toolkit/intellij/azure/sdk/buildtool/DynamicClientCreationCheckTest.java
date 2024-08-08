@@ -69,8 +69,9 @@ public class DynamicClientCreationCheckTest {
      * it encounters a code block that does not match the criteria for dynamic client creation.
      * This involves a method call on an object that is not part of the com.azure package
      */
-    @Test // unhappy path
-     void testDynamicClientCreationWithNonAzurePackage() {
+    @Test
+    // unhappy path
+    void testDynamicClientCreationWithNonAzurePackage() {
 
         int numOfInvocations = 0;
         String methodName = "buildClient";
@@ -106,8 +107,7 @@ public class DynamicClientCreationCheckTest {
      * This helper method creates a new instance of the DynamicClientCreationVisitor class.
      */
     private JavaElementVisitor createVisitor() {
-        boolean isOnTheFly = true;
-        DynamicClientCreationVisitor mockVisitor = new DynamicClientCreationVisitor(mockHolder, isOnTheFly);
+        DynamicClientCreationVisitor mockVisitor = new DynamicClientCreationVisitor(mockHolder);
         return mockVisitor;
     }
 
@@ -115,8 +115,8 @@ public class DynamicClientCreationCheckTest {
      * This method verifies that a problem is registered when a client creation method is found
      * building a client from the com.azure package in an assignment expression.
      *
-     * @param methodName this is the method name that is being checked for
-     * @param packageName this is the package name that is being checked for
+     * @param methodName       this is the method name that is being checked for
+     * @param packageName      this is the package name that is being checked for
      * @param numOfInvocations this is the number of times the registerProblem method should be called
      */
     private void verifyRegisterProblemWithAssignmentExpression(String methodName, String packageName, int numOfInvocations) {
@@ -126,7 +126,7 @@ public class DynamicClientCreationCheckTest {
         PsiBlockStatement body = mock(PsiBlockStatement.class);
         PsiCodeBlock codeBlock = mock(PsiCodeBlock.class);
         PsiExpressionStatement blockChild = mock(PsiExpressionStatement.class);
-        PsiStatement[] blockStatements = new PsiStatement[] { blockChild };
+        PsiStatement[] blockStatements = new PsiStatement[]{blockChild};
 
         // checkClientCreation method
         PsiAssignmentExpression expression = mock(PsiAssignmentExpression.class);
@@ -164,8 +164,9 @@ public class DynamicClientCreationCheckTest {
     /**
      * This method verifies that a problem is registered when a client creation method is found
      * building a client from the com.azure package in a declaration statement.
-     * @param methodName this is the method name that is being checked for
-     * @param packageName this is the package name that is being checked for
+     *
+     * @param methodName       this is the method name that is being checked for
+     * @param packageName      this is the package name that is being checked for
      * @param numOfInvocations this is the number of times the registerProblem method should be called
      */
     private void verifyRegisterProblemWithDeclarationStatement(String methodName, String packageName, int numOfInvocations) {
@@ -175,11 +176,11 @@ public class DynamicClientCreationCheckTest {
         PsiBlockStatement body = mock(PsiBlockStatement.class);
         PsiCodeBlock codeBlock = mock(PsiCodeBlock.class);
         PsiDeclarationStatement blockChild = mock(PsiDeclarationStatement.class);
-        PsiStatement[] blockStatements = new PsiStatement[] { blockChild };
+        PsiStatement[] blockStatements = new PsiStatement[]{blockChild};
 
         // checkClientCreation method
         PsiLocalVariable declaredElement = mock(PsiLocalVariable.class);
-        PsiElement[] declaredElements = new PsiElement[] { declaredElement };
+        PsiElement[] declaredElements = new PsiElement[]{declaredElement};
         PsiMethodCallExpression initializer = mock(PsiMethodCallExpression.class);
 
         // isClientCreationMethod
