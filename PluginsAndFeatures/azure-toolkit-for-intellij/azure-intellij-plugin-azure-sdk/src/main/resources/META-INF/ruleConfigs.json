@@ -1,0 +1,147 @@
+{
+  "StorageUploadWithoutLengthCheck": {
+    "methodsToCheck": [
+      "upload",
+      "uploadWithResponse"
+    ],
+    "antiPatternMessage": "Azure Storage upload API without length parameter detected. Use upload API with length parameter instead."
+  },
+  "DisableAutoCompleteCheck": {
+    "methodsToCheck": "disableAutoComplete",
+    "clientsToCheck": [
+      "ServiceBusReceiverClient",
+      "ServiceBusReceiverAsyncClient",
+      "ServiceBusProcessorClient"
+    ],
+    "antiPatternMessage": "Auto-complete enabled by default. Use the disableAutoComplete() API call to prevent automatic message completion."
+  },
+  "DynamicClientCreationCheck": {
+    "methodsToCheck": [
+      "buildClient",
+      "buildAsyncClient"
+    ],
+    "antiPatternMessage": "Dynamic client creation detected. Create a single client instance and reuse it instead."
+  },
+  "HardcodedAPIKeysAndTokensCheck": {
+    "servicesToCheck": [
+      "AzureKeyCredential",
+      "AccessToken",
+      "KeyCredential",
+      "AzureNamedKeyCredential",
+      "AzureSasCredential",
+      "AzureNamedKey",
+      "ClientSecretCredentialBuilder",
+      "UsernamePasswordCredentialBuilder",
+      "BasicAuthenticationCredential"
+    ],
+    "antiPatternMessage": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication.",
+    "solution": "DefaultAzureCredential is recommended for authentication if the service client supports Token Credential (Entra ID Authentication). If not, then use Azure Key Credential for API key based authentication."
+  },
+  "GetSyncPollerOnPollerFluxCheck": {
+    "methodsToCheck": "getSyncPoller",
+    "antiPatternMessage": "Use of getSyncPoller() on a PollerFlux detected. Directly use SyncPoller to handle synchronous polling tasks"
+  },
+  "ServiceBusReceiveModeCheck": {
+    "clientsToCheck": [
+      "ServiceBusReceiverClient",
+      "ServiceBusReceiverAsyncClient",
+      "ServiceBusProcessorClient"
+    ],
+    "methodsToCheck": [
+      "receiveMode",
+      "prefetchCount"
+    ],
+    "antiPatternMessage": "A high prefetch value in PEEK_LOCK detected. We recommend a prefetch value of 0 or 1 for efficient message retrieval."
+  },
+  "DetectDiscouragedAPIUsageCheck": {
+    "ConnectionStringCheck": {
+      "methodsToCheck": "connectionString",
+      "antiPatternMessage": "Connection String detected. Use DefaultAzureCredential for Azure service client authentication instead if the service client supports Token Credential (Entra ID Authentication).",
+      "solution": "DefaultAzureCredential is recommended if the service client supports Token Credential (Entra ID Authentication). if not, then use Azure Key Credential / Connection Strings based authentication"
+    },
+    "GetCompletionsInChatApplicationsCheck": {
+      "methodsToCheck": "getCompletions",
+      "antiPatternMessage": "getCompletions API detected. Use the getChatCompletions API instead."
+    }
+  },
+  "DetectDiscouragedClientCheck": {
+    "ServiceBusReceiverAsyncClientCheck": {
+      "clientsToCheck": "ServiceBusReceiverAsyncClient",
+      "antiPatternMessage": "Use of ServiceBusReceiverAsyncClient detected. Use ServiceBusProcessorClient instead."
+    },
+    "EventHubConsumerAsyncClientCheck": {
+      "clientsToCheck": "EventHubConsumerAsyncClient",
+      "antiPatternMessage": "Use of EventHubConsumerAsyncClient detected. Use EventProcessorClient instead which provides a higher-level abstraction that simplifies event processing, making it the preferred choice for most developers."
+    }
+  },
+  "SingleOperationInLoopCheck": {
+    "methodsToCheck": [
+      "detectLanguageBatch",
+      "recognizeEntitiesBatch",
+      "recognizePiiEntitiesBatch",
+      "recognizeLinkedEntitiesBatch",
+      "extractKeyPhrasesBatch",
+      "analyzeSentimentBatch"
+    ],
+    "antiPatternMessage": "Single operation found in loop. This SDK provides a batch operation API, use it to perform multiple actions in a single request: "
+  },
+  "AbstractUpdateCheckpointAsyncChecker": {
+    "methodsToCheck": "updateCheckpointAsync"
+  },
+  "UpdateCheckpointAsyncSubscribeChecker": {
+    "methodsToCheck": "subscribe",
+    "antiPatternMessage": "Instead of `subscribe()`, call `block()` or `block()` with timeout, or use the synchronous version `updateCheckpoint()`"
+  },
+  "UpdateCheckpointAsyncBlockChecker": {
+    "methodsToCheck": [
+      "block",
+      "block_with_timeout"
+    ],
+    "antiPatternMessage": "Calling updateCheckpointAsync() without block() will not do anything, use `block()` or `block` operator with a timeout, or consider using the synchronous version `updateCheckpoint()."
+  },
+  "KustoQueriesWithTimeIntervalInQueryStringCheck": {
+    "regexPatterns": {
+      "KQL_ANTI_PATTERN_AGO": ".*ago\\(",
+      "KQL_ANTI_PATTERN_DATETIME": ".*datetime\\s*\\(",
+      "KQL_ANTI_PATTERN_NOW": ".*now\\(",
+      "KQL_ANTI_PATTERN_START_OF_PERIOD": ".*startofday\\(\\)|.*startofmonth\\(\\)|.*startofyear\\(\\)",
+      "KQL_ANTI_PATTERN_BETWEEN": ".*between\\(datetime\\("
+    },
+    "antiPatternMessage": "KQL queries with time intervals in the query string detected.",
+    "solution": "Use the QueryTimeInterval parameter in the client method parameters to specify the time interval for the query"
+  },
+  "EndpointOnNonAzureOpenAIAuthCheck": {
+    "methodsToCheck": [
+      "endpoint",
+      "credential"
+    ],
+    "servicesToCheck": "KeyCredential",
+    "antiPatternMessage": "Endpoint should not be used with KeyCredential for non-Azure OpenAI clients"
+  },
+  "UseOfBlockOnAsyncClientsCheck": {
+    "methodsToCheck": [
+      "block",
+      "blockOptional",
+      "blockFirst",
+      "blockLast",
+      "toIterable",
+      "toStream",
+      "toFuture",
+      "blockFirstOptional",
+      "blockLastOptional"
+    ],
+    "typesToCheck": [
+      "reactor.core.publisher.Flux",
+      "reactor.core.publisher.Mono"
+    ],
+    "antiPatternMessage": "Use of block methods on asynchronous clients detected. Switch to synchronous APIs instead."
+  },
+  "UpgradeLibraryVersionCheck": {
+    "url": "https://repo1.maven.org/maven2/com/azure/azure-sdk-bom/maven-metadata.xml",
+    "antiPatternMessage": "A newer stable minor version of {{fullName}} is available. We recommend you update to version {{recommendedVersion}}.x"
+  },
+  "IncompatibleDependencyCheck": {
+    "url": "https://raw.githubusercontent.com/Azure/azure-sdk-for-java/main/eng/versioning/supported_external_dependency_versions.json",
+    "antiPatternMessage": "The version of {{fullName}} is not compatible with other dependencies of the same library defined in the pom.xml. Please use versions of the same library release group {{recommendedVersion}}.x to ensure proper functionality."
+  }
+}
