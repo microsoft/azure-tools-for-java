@@ -69,6 +69,9 @@ public class HardcodedAPIKeysAndTokensCheck extends LocalInspectionTool {
 
                 // Cast the element to a new expression
                 PsiNewExpression newExpression = (PsiNewExpression) element;
+                if (newExpression.getClassReference() == null) {
+                    return;
+                }
 
                 // Get the class reference name from the new expression
                 String classReference = newExpression.getClassReference().getReferenceName();
