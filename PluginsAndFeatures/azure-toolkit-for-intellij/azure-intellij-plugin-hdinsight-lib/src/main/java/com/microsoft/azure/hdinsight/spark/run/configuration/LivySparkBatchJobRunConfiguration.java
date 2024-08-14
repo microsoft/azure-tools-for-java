@@ -246,8 +246,8 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             submissionRunner.buildSparkBatchJob(getSubmitModel())
                     .doOnNext(batch -> sparkRemoteBatch = batch)
                     .subscribe(
-                            batch -> System.out.println("Job successfully created and ready to run"),
-                            throwable -> System.err.println("Error occurred: " + throwable.getMessage())
+                            batch -> log().info("Job successfully created and ready to run"),
+                            throwable -> log().error("Error occurred: " + throwable.getMessage())
                     );
         } else {
             // Focus on the local run tab
