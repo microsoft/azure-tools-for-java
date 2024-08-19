@@ -1,5 +1,9 @@
-package com.microsoft.azure.toolkit.intellij.redis.dbtools;
+/*
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
 
+package com.microsoft.azure.toolkit.intellij.redis.dbtools;
 
 import com.microsoft.azure.toolkit.redis.RedisCache;
 
