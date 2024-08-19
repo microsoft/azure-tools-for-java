@@ -1,4 +1,5 @@
 <idea-plugin>
+    <depends optional="true" config-file="azure-intellij-plugin-redis-dbtools.xml">com.intellij.database</depends>
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <explorerNodeProvider implementation="com.microsoft.azure.toolkit.ide.redis.RedisNodeProvider"/>
         <actions implementation="com.microsoft.azure.toolkit.ide.redis.RedisActionsContributor"/>
