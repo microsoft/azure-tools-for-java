@@ -13,6 +13,7 @@ import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AzResource;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
@@ -67,6 +68,7 @@ public interface IManagedIdentitySupported<T extends AzResource> {
         return AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_URL).bind(url).withLabel("Open IAM Configuration");
     }
 
+    @AzureOperation(name = "user/common.assign_role.identity", params = {"identity"})
     public static boolean grantPermission(@Nonnull AzureServiceResource<?> data, @Nonnull String identity) {
         final AzureServiceResource.Definition<?> d = data.getDefinition();
         final AzResource r = data.getData();
@@ -83,7 +85,7 @@ public interface IManagedIdentitySupported<T extends AzResource> {
                             resource.grantPermissionToIdentity(identity, role);
                         }
                     });
-                    AzureMessager.getMessager().info(String.format("Roles (%s) have been assigned to identity (%s)?", rolesStr, identity));
+                    AzureMessager.getMessager().info(String.format("Roles (%s) have been assigned to identity (%s).", rolesStr, identity));
                     return true;
                 } catch (final RuntimeException e) {
                     final String errorMessage = String.format(FAILED_TO_ASSIGN_MESSAGE, resource.getPortalUrl(), identity, e.getMessage());

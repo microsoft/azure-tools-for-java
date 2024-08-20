@@ -69,6 +69,8 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
     private JPanel pnlUserAssignedManagedIdentity;
     private AzureComboBox<AuthenticationType> cbAuthenticationType;
     private UserAssignedManagedIdentityComboBox cbIdentity;
+    private JBLabel lblIdentity;
+    private JBLabel lblAuthType;
     private SignInHyperLinkLabel signInHyperLinkLabel1;
     private ResourceDefinition<?> resourceDefinition;
     private ResourceDefinition<?> consumerDefinition;
@@ -130,6 +132,9 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
         if (consumerDefinitions.size() == 1) {
             this.fixConsumerType(consumerDefinitions.get(0));
         }
+
+        this.lblIdentity.setLabelFor(cbIdentity);
+        this.lblAuthType.setLabelFor(cbAuthenticationType);
     }
 
     private void onSelectResource(Object o) {
@@ -365,6 +370,18 @@ public class ConnectorDialog extends AzureDialog<Connection<?, ?>> implements Az
             @Override
             protected AuthenticationType doGetDefaultValue() {
                 return AuthenticationType.SYSTEM_ASSIGNED_MANAGED_IDENTITY;
+            }
+
+            @Override
+            protected synchronized void setItems(List<? extends AuthenticationType> items) {
+                final ComboBoxModel<AuthenticationType> model = getModel();
+                final AuthenticationType value = (AuthenticationType) model.getSelectedItem();
+                this.removeAllItems();
+                items.forEach(this::addItem);
+                if (CollectionUtils.isNotEmpty(items)) {
+                    model.setSelectedItem(items.contains(value) ? value : items.get(0));
+                }
+                this.refreshValue();
             }
 
             @Nonnull
