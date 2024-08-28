@@ -14,7 +14,6 @@ import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringManagedIdentitySupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
-import com.microsoft.azure.toolkit.lib.identities.Identity;
 import com.microsoft.azure.toolkit.lib.storage.AzureStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.AzuriteStorageAccount;
 import com.microsoft.azure.toolkit.lib.storage.ConnectionStringStorageAccount;
@@ -101,7 +100,10 @@ public class StorageAccountResourceDefinition extends BaseStorageAccountResource
             env.put(ACCOUNT_NAME_KEY, account.getName());
         }
         if (connection.getAuthenticationType() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
-            env.put(CLIENT_ID_KEY, Objects.requireNonNull(connection.getUserAssignedManagedIdentity()).getDataId());
+            Optional.ofNullable(connection.getUserAssignedManagedIdentity()).map(Resource::getData).ifPresent(identity -> {
+                env.put(String.format("%s_CLIENT_ID", Connection.ENV_PREFIX), identity.getClientId());
+                env.put("AZURE_CLIENT_ID", identity.getClientId());
+            });
         }
         return env;
     }
