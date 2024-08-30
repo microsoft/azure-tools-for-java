@@ -33,14 +33,15 @@ import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.common.help.AzureWebHelpProvider;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.function.ManagedIdentityFunctionSupported;
 import com.microsoft.azure.toolkit.intellij.function.components.connection.FunctionConnectionCreationDialog;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.component.table.FunctionAppSettingsTableUtils;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteService;
 import com.microsoft.azure.toolkit.intellij.storage.azurite.AzuriteTaskProvider;
+import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureExecutionException;
@@ -136,7 +137,7 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             final RunnerAndConfigurationSettings configuration = new RunnerAndConfigurationSettingsImpl(manager, remoteConfig, false);
             manager.setTemporaryConfiguration(configuration);
             Optional.ofNullable(ExecutorRegistry.getInstance().getExecutorById(ToolWindowId.DEBUG))
-                            .ifPresent(executor -> ExecutionUtil.runConfiguration(configuration, executor));
+                    .ifPresent(executor -> ExecutionUtil.runConfiguration(configuration, executor));
         };
         AzureTaskManager.getInstance().runAndWait(runnable, AzureTask.Modality.ANY);
     }
@@ -160,12 +161,21 @@ public class FunctionRunState extends AzureRunProfileState<Boolean> {
             final Set<Connection<?, ?>> identityConnection = functionRunConfiguration.getConnections().stream()
                     .filter(Connection::isManagedIdentityConnection)
                     .collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(identityConnection)) {
-                final String resources = identityConnection.stream().map(Connection::getResource).map(Resource::getName).collect(Collectors.joining(", "));
-                AzureMessager.getMessager().warning(String.format("Managed Identity connection is not supported for function app, your connections connected to %s may not work as expected.", resources));
-            }
-            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionRunConfiguration.getLoadDotEnvBeforeRunTask();
-            loadDotEnvBeforeRunTask.loadEnv().forEach(env -> appSettings.put(env.getKey(), env.getValue()));
+//            if (CollectionUtils.isNotEmpty(identityConnection)) {
+//                final String resources = identityConnection.stream().map(Connection::getResource).map(Resource::getName).collect(Collectors.joining(", "));
+//                AzureMessager.getMessager().warning(String.format("Managed Identity connection is not supported for function app, your connections connected to %s may not work as expected.", resources));
+//            }
+            functionRunConfiguration.getConnections().stream()
+                    .filter(c -> c.getResource().getDefinition() instanceof FunctionSupported<?>)
+                    .flatMap(c -> {
+                        final FunctionSupported<?> definition = (FunctionSupported<?>) c.getResource().getDefinition();
+                        return c.isManagedIdentityConnection() && definition instanceof ManagedIdentityFunctionSupported<?> managedIdentityDefinition ?
+                                // filter out *__credential properties for identity based connections during local run
+                                // https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference?tabs=blob&pivots=programming-language-java#common-properties-for-identity-based-connections
+                                managedIdentityDefinition.getPropertiesForIdentityFunction(c).entrySet().stream().filter(entry -> !StringUtils.containsIgnoreCase(entry.getKey(), "__credential")) :
+                                definition.getPropertiesForFunction(c).entrySet().stream();
+                    })
+                    .forEach(entry -> appSettings.put(entry.getKey(), entry.getValue()));
         }
     }
 

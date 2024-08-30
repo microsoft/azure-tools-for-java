@@ -13,9 +13,9 @@ import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
-import com.microsoft.azure.toolkit.intellij.connector.Resource;
 import com.microsoft.azure.toolkit.intellij.connector.dotazure.AzureModule;
-import com.microsoft.azure.toolkit.intellij.connector.dotazure.DotEnvBeforeRunTaskProvider;
+import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.function.ManagedIdentityFunctionSupported;
 import com.microsoft.azure.toolkit.intellij.legacy.common.AzureRunProfileState;
 import com.microsoft.azure.toolkit.intellij.legacy.function.runner.core.FunctionUtils;
 import com.microsoft.azure.toolkit.intellij.storage.connection.BaseStorageAccountResourceDefinition;
@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.function.FunctionAppDeploymentSlot;
 import com.microsoft.azure.toolkit.lib.appservice.task.CreateOrUpdateFunctionAppTask;
 import com.microsoft.azure.toolkit.lib.appservice.task.DeployFunctionAppTask;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
@@ -38,7 +39,6 @@ import com.microsoft.azure.toolkit.lib.legacy.function.configurations.FunctionCo
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,11 +46,13 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import static com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunState.updateResourceConnectionWithIdentity;
+import static com.microsoft.azure.toolkit.intellij.legacy.webapp.runner.webappconfig.WebAppRunState.validatePermissionForIdentityConnections;
 
 public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBase<?, ?, ?>> {
 
@@ -89,6 +91,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
         if (target instanceof AzResource.Draft<?, ?> draft) {
             draft.reset();
         }
+        final AzureModule module = Optional.ofNullable(this.functionDeployConfiguration.getModule()).map(AzureModule::from).orElse(null);
+        if (target instanceof FunctionApp app) {
+            Optional.ofNullable(module).map(AzureModule::getDefaultProfile).ifPresent(p -> updateResourceConnectionWithIdentity(app, p));
+            Optional.ofNullable(module).map(AzureModule::getDefaultProfile).ifPresent(p -> validatePermissionForIdentityConnections(app, p));
+        }
         functionDeployConfiguration.setAppSettings(target.getAppSettings()); // save app settings
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, operation);
@@ -100,18 +107,19 @@ public class FunctionDeploymentState extends AzureRunProfileState<FunctionAppBas
 
     private void applyResourceConnection() {
         if (functionDeployConfiguration.isConnectionEnabled()) {
-            final Set<Connection<?, ?>> identityConnection = functionDeployConfiguration.getConnections().stream().filter(Connection::isManagedIdentityConnection)
-                    .collect(Collectors.toSet());
-            if (CollectionUtils.isNotEmpty(identityConnection)) {
-                final String resources = identityConnection.stream().map(Connection::getResource).map(Resource::getName).collect(Collectors.joining(", "));
-                AzureMessager.getMessager().warning(String.format("Managed Identity connection is not supported for function app, your connections connected to %s may not work as expected.", resources));
-            }
-            final DotEnvBeforeRunTaskProvider.LoadDotEnvBeforeRunTask loadDotEnvBeforeRunTask = functionDeployConfiguration.getLoadDotEnvBeforeRunTask();
+            final List<Connection<?, ?>> connections = functionDeployConfiguration.getConnections();
             final Map<String, String> appSettings = functionDeployConfiguration.getConfig().appSettings();
-            loadDotEnvBeforeRunTask.loadEnv().stream()
-                                   .filter(pair -> !(StringUtils.equalsIgnoreCase(pair.getKey(), "AzureWebJobsStorage") &&
-                                       StringUtils.equalsIgnoreCase(pair.getValue(), BaseStorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING))) // workaround to remove local connections
-                                   .forEach(env -> appSettings.put(env.getKey(), env.getValue()));
+            connections.stream()
+                    .filter(c -> c.getResource().getDefinition() instanceof FunctionSupported<?>)
+                    .flatMap(c -> {
+                        final FunctionSupported<?> definition = (FunctionSupported<?>) c.getResource().getDefinition();
+                        return c.isManagedIdentityConnection() && definition instanceof ManagedIdentityFunctionSupported<?> managedIdentityDefinition ?
+                                managedIdentityDefinition.getPropertiesForIdentityFunction(c).entrySet().stream() :
+                                definition.getPropertiesForFunction(c).entrySet().stream();
+                    })
+                    .filter(pair -> !(StringUtils.equalsIgnoreCase(pair.getKey(), "AzureWebJobsStorage") &&
+                            StringUtils.equalsIgnoreCase(pair.getValue(), BaseStorageAccountResourceDefinition.LOCAL_STORAGE_CONNECTION_STRING))) // workaround to remove local connections
+                    .forEach(entry -> appSettings.put(entry.getKey(), entry.getValue()));
         }
     }
 
