@@ -8,7 +8,7 @@ import com.microsoft.azure.toolkit.intellij.connector.AuthenticationType;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.function.FunctionSupported;
+import com.microsoft.azure.toolkit.intellij.connector.function.ManagedIdentityFunctionSupported;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringManagedIdentitySupported;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<SqlDatabase>
-        implements SpringSupported<SqlDatabase>, FunctionSupported<SqlDatabase>, SpringManagedIdentitySupported<SqlDatabase> {
+        implements SpringSupported<SqlDatabase>, ManagedIdentityFunctionSupported<SqlDatabase>, SpringManagedIdentitySupported<SqlDatabase> {
     public static final SqlCosmosDBAccountResourceDefinition INSTANCE = new SqlCosmosDBAccountResourceDefinition();
 
     public SqlCosmosDBAccountResourceDefinition() {
@@ -136,5 +136,20 @@ public class SqlCosmosDBAccountResourceDefinition extends AzureServiceResource.D
             properties.add(Pair.of("spring.cloud.azure.cosmos.credential.client-id", String.format("${%s_CLIENT_ID}", Connection.ENV_PREFIX)));
         }
         return properties;
+    }
+
+    @Override
+    public Map<String, String> getPropertiesForIdentityFunction(@Nonnull Connection<?, ?> connection) {
+        final Map<String, String> result = new HashMap<>();
+        final SqlDatabase data = (SqlDatabase)connection.getResource().getData();
+        // result.put(String.format("%s__accountName", connection.getEnvPrefix()), data.getName());
+        result.put(String.format("%s__accountEndpoint", connection.getEnvPrefix()), data.getParent().getDocumentEndpoint());
+        result.put(String.format("%s__credential", connection.getEnvPrefix()), "managedidentity");
+        if (connection.getAuthenticationType() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
+            Optional.ofNullable(connection.getUserAssignedManagedIdentity()).map(Resource::getData).ifPresent(identity -> {
+                result.put(String.format("%s__clientId", connection.getEnvPrefix()), identity.getClientId());
+            });
+        }
+        return result;
     }
 }

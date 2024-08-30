@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.webapp;
 
+import com.azure.resourcemanager.appservice.models.DeploymentSlot;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
@@ -127,6 +128,16 @@ public class WebAppActionsContributor implements IActionsContributor {
             StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
         final BiConsumer<AzResource, Object> restartHandler = (c, e) -> ((AppServiceAppBase<?, ?, ?>) c).restart();
         am.registerHandler(ResourceCommonActionsContributor.RESTART, restartCondition, restartHandler);
+
+        final BiPredicate<WebAppDeploymentSlot, Object> swapDeploymentSlotCondition = (r, e) -> r != null &&
+                StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
+        final BiConsumer<WebAppDeploymentSlot, Object> swapDeploymentSlotHandler = (c, e) -> {
+            final DeploymentSlot deploymentSLot = c.getRemote();
+            if (deploymentSLot != null) {
+                deploymentSLot.swap("production");
+            }
+        };
+        am.registerHandler(SWAP_DEPLOYMENT_SLOT, swapDeploymentSlotCondition, swapDeploymentSlotHandler);
     }
 
     @Override

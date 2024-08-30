@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AuthenticationType;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
+import com.microsoft.azure.toolkit.intellij.connector.function.ManagedIdentityFunctionSupported;
 import com.microsoft.azure.toolkit.intellij.connector.spring.SpringManagedIdentitySupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.auth.AzureCloud;
@@ -25,15 +26,15 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
 
 @Getter
 public class StorageAccountResourceDefinition extends BaseStorageAccountResourceDefinition
-    implements SpringManagedIdentitySupported<IStorageAccount> {
+    implements SpringManagedIdentitySupported<IStorageAccount>, ManagedIdentityFunctionSupported<IStorageAccount> {
     public static final String CLIENT_ID_KEY = String.format("%s_CLIENT_ID", Connection.ENV_PREFIX);
-
     public static final StorageAccountResourceDefinition INSTANCE = new StorageAccountResourceDefinition();
 
     @Setter
@@ -159,6 +160,23 @@ public class StorageAccountResourceDefinition extends BaseStorageAccountResource
         return data instanceof ConnectionStringStorageAccount || data instanceof AzuriteStorageAccount ?
                 Collections.singletonList(AuthenticationType.CONNECTION_STRING) :
                 super.getSupportedAuthenticationTypes(resource);
+    }
+
+    @Override
+    public Map<String, String> getPropertiesForIdentityFunction(@Nonnull Connection<?, ?> connection) {
+        final Map<String, String> result = new HashMap<>();
+        final IStorageAccount data = (IStorageAccount)connection.getResource().getData();
+        // result.put(String.format("%s__accountName", connection.getEnvPrefix()), data.getName());
+        result.put(String.format("%s__blobServiceUri", connection.getEnvPrefix()), String.format("https://%s.blob.core.windows.net", data.getName()));
+        result.put(String.format("%s__queueServiceUri", connection.getEnvPrefix()), String.format("https://%s.queue.core.windows.net", data.getName()));
+        result.put(String.format("%s__tableServiceUri", connection.getEnvPrefix()), String.format("https://%s.table.core.windows.net", data.getName()));
+        result.put(String.format("%s__credential", connection.getEnvPrefix()), "managedidentity");
+        if (connection.getAuthenticationType() == AuthenticationType.USER_ASSIGNED_MANAGED_IDENTITY) {
+            Optional.ofNullable(connection.getUserAssignedManagedIdentity()).map(Resource::getData).ifPresent(identity -> {
+                result.put(String.format("%s__clientId", connection.getEnvPrefix()), identity.getClientId());
+            });
+        }
+        return result;
     }
 
     @Data
