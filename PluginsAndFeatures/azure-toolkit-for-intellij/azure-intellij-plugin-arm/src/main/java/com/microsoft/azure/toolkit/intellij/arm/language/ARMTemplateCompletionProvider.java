@@ -5,16 +5,19 @@
 
 package com.microsoft.azure.toolkit.intellij.arm.language;
 
+import com.intellij.json.psi.JsonProperty;
 import com.google.common.collect.Sets;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.json.psi.impl.JsonPropertyImpl;
+import com.intellij.json.psi.JsonValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,12 +60,10 @@ public class ARMTemplateCompletionProvider extends CompletionProvider<Completion
     }
 
     private boolean isProperty(PsiElement position) {
-        PsiElement parentElement = position.getParent().getParent().getOriginalElement();
-        if (parentElement instanceof JsonPropertyImpl) {
-            if (((JsonPropertyImpl) parentElement).getValue() == null) {
-                return true;
-            }
-            return !position.getText().equals(((JsonPropertyImpl) parentElement).getValue().getText());
+        final PsiElement parentElement = position.getParent().getParent().getOriginalElement();
+        if (parentElement instanceof JsonProperty) {
+            final String value = Optional.ofNullable(((JsonProperty) parentElement).getValue()).map(JsonValue::getText).orElse(null);
+            return Objects.isNull(value) || !position.getText().equals(value);
         }
         return false;
     }
@@ -75,8 +76,10 @@ public class ARMTemplateCompletionProvider extends CompletionProvider<Completion
             while (position.getParent().getParent().getParent() != null) {
                 position = position.getParent();
             }
-            String positionName = ((JsonPropertyImpl) position).getName();
-            return Scope.valueOf(positionName);
+
+//            String positionName = ((JsonProperty) position).namespace();
+//            return Scope.valueOf(positionName);
+            return Scope.root;
         } catch (Exception ignore) {
             return Scope.root;
         }

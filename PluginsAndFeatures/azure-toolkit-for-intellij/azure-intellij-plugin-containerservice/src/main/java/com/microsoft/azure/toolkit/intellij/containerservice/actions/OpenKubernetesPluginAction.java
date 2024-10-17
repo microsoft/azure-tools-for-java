@@ -135,7 +135,7 @@ public class OpenKubernetesPluginAction {
             public void resumeWith(@Nonnull Object o) {
                 if (o instanceof com.intellij.kubernetes.api.ContextsConfiguration configuration) {
                     final Context context = configuration.getContexts().entrySet().stream()
-                            .filter(c -> StringUtils.equals(c.getKey(), cluster.getName()))
+                            .filter(c -> StringUtils.equals(c.getKey().getName(), cluster.getName()))
                             .findFirst()
                             .map(Map.Entry::getValue)
                             .orElse(null);
