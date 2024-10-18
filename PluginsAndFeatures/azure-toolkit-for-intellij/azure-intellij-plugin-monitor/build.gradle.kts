@@ -6,4 +6,8 @@ dependencies {
     implementation("com.azure:azure-monitor-query:1.0.10")
     implementation("org.apache.commons:commons-csv:1.9.0")
     implementation("com.michaelbaranov:microba:0.4.4.3")
+    intellijPlatform {
+        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
+        bundledPlugin("com.intellij.modules.json")
+    }
 }
