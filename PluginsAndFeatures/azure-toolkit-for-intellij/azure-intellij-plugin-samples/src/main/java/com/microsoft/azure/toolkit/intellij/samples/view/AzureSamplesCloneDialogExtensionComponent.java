@@ -80,7 +80,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
     private boolean first = false;
 
     private final List<GithubRepositoryPanel> repositoryPanels = new ArrayList<>();
-    //    private final FilePathDocumentChildPathHandle cloneDirectoryChildHandle;
     private GithubRepositoryPanel selectedPanel;
 
     public AzureSamplesCloneDialogExtensionComponent(@Nonnull Project project) {
@@ -89,8 +88,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         this.organization = new GithubOrganization("Azure-Samples");
         $$$setupUI$$$();
         init();
-//        this.cloneDirectoryChildHandle = FilePathDocumentChildPathHandle.Companion
-//            .install(this.directoryField.getTextField().getDocument(), ClonePathProvider.defaultParentDirectoryPath(this.project, GitRememberedInputs.getInstance()));
     }
 
     private void init() {
@@ -223,8 +220,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         }
         this.directoryField.setEnabled(true);
         this.selectedPanel.toggleSelectedStatus(true);
-//        final String path = StringUtil.trimEnd(ClonePathProvider.relativeDirectoryPathForVcsUrl(project, this.selectedPanel.getRepo().getCloneUrl()), GitUtil.DOT_GIT);
-//        cloneDirectoryChildHandle.trySetChildPath(path);
         this.getDialogStateListener().onOkActionEnabled(true);
     }
 
