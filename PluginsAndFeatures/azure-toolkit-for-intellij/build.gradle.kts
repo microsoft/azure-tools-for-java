@@ -1,6 +1,7 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.net.URL
@@ -145,9 +146,9 @@ intellijPlatform {
         }
     }
 
-    verifyPlugin {
+    pluginVerification {
         ides {
-            recommended()
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
         }
     }
 }
