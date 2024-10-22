@@ -5,16 +5,12 @@
 
 package com.microsoft.azure.toolkit.intellij.samples.view;
 
-import com.intellij.dvcs.repo.ClonePathProvider;
-import com.intellij.dvcs.ui.CloneDvcsValidationUtils;
-import com.intellij.dvcs.ui.FilePathDocumentChildPathHandle;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.CheckoutProvider;
 import com.intellij.openapi.vcs.ui.cloneDialog.VcsCloneDialogExtensionComponent;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -35,16 +31,15 @@ import com.microsoft.azure.toolkit.intellij.common.TextDocumentListenerAdapter;
 import com.microsoft.azure.toolkit.intellij.samples.model.GithubOrganization;
 import com.microsoft.azure.toolkit.intellij.samples.model.GithubRepository;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
 import com.microsoft.azure.toolkit.lib.common.messager.ExceptionNotification;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
-import git4idea.GitUtil;
 import git4idea.checkout.GitCheckoutProvider;
 import git4idea.commands.Git;
-import git4idea.remote.GitRememberedInputs;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -56,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -84,7 +80,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
     private boolean first = false;
 
     private final List<GithubRepositoryPanel> repositoryPanels = new ArrayList<>();
-    private final FilePathDocumentChildPathHandle cloneDirectoryChildHandle;
     private GithubRepositoryPanel selectedPanel;
 
     public AzureSamplesCloneDialogExtensionComponent(@Nonnull Project project) {
@@ -93,8 +88,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         this.organization = new GithubOrganization("Azure-Samples");
         $$$setupUI$$$();
         init();
-        this.cloneDirectoryChildHandle = FilePathDocumentChildPathHandle.Companion
-            .install(this.directoryField.getTextField().getDocument(), ClonePathProvider.defaultParentDirectoryPath(this.project, GitRememberedInputs.getInstance()));
     }
 
     private void init() {
@@ -111,8 +104,8 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         searchField.setBackground(JBUI.CurrentTheme.EditorTabs.background());
         this.searchBoxPanel.setBackground(JBUI.CurrentTheme.EditorTabs.background());
         this.searchBoxPanel.setBorder(BorderFactory.createCompoundBorder(
-            new SideBorder(JBColor.border(), SideBorder.ALL),
-            BorderFactory.createEmptyBorder(4, 4, 4, 4)
+                new SideBorder(JBColor.border(), SideBorder.ALL),
+                BorderFactory.createEmptyBorder(4, 4, 4, 4)
         ));
 
         this.scrollPane.setBorder(new SideBorder(JBColor.border(), SideBorder.LEFT | SideBorder.RIGHT));
@@ -214,7 +207,7 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         component.addMouseListener(mouseListener);
         component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         Arrays.stream(component.getComponents()).filter(c -> c instanceof JComponent && !(c instanceof HyperlinkLabel))
-            .forEach(child -> addSelectionListener((JComponent) child, mouseListener));
+                .forEach(child -> addSelectionListener((JComponent) child, mouseListener));
     }
 
     private void select(@Nullable final GithubRepositoryPanel panel) {
@@ -227,8 +220,6 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         }
         this.directoryField.setEnabled(true);
         this.selectedPanel.toggleSelectedStatus(true);
-        final String path = StringUtil.trimEnd(ClonePathProvider.relativeDirectoryPathForVcsUrl(project, this.selectedPanel.getRepo().getCloneUrl()), GitUtil.DOT_GIT);
-        cloneDirectoryChildHandle.trySetChildPath(path);
         this.getDialogStateListener().onOkActionEnabled(true);
     }
 
@@ -254,15 +245,20 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
     @AzureOperation(value = "user/samples.clone_repository.repo", params = "this.selectedPanel.getRepo().getFullName()")
     public void doClone(@Nonnull final CheckoutProvider.Listener checkoutListener) {
         final Path parent = Paths.get(directoryField.getText()).toAbsolutePath().getParent();
-        final ValidationInfo destinationValidation = CloneDvcsValidationUtils.createDestination(parent.toString());
-        if (destinationValidation != null) {
-            AzureMessager.getMessager().error("Unable to find destination directory");
+        try {
+            if (!parent.toFile().exists()) {
+                Files.createDirectories(parent);
+            } else if (!parent.toFile().isDirectory()) {
+                throw new AzureToolkitRuntimeException(String.format("'%s' is not valid, parent path is a file", directoryField.getText()));
+            }
+        } catch (final Exception e) {
+            AzureMessager.getMessager().error("Unable to find destination directory", e);
             return;
         }
         final LocalFileSystem lfs = LocalFileSystem.getInstance();
         final VirtualFile destinationParent = Optional.ofNullable(lfs.findFileByIoFile(parent.toFile()))
-            .or(() -> Optional.ofNullable(lfs.refreshAndFindFileByIoFile(parent.toFile())))
-            .orElse(null);
+                .or(() -> Optional.ofNullable(lfs.refreshAndFindFileByIoFile(parent.toFile())))
+                .orElse(null);
         if (destinationParent == null) {
             AzureMessager.getMessager().error("Unable to find destination directory");
             return;
