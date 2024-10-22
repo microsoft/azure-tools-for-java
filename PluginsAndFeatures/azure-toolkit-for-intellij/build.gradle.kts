@@ -1,5 +1,7 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.net.URL
@@ -144,9 +146,9 @@ intellijPlatform {
         }
     }
 
-    verifyPlugin {
+    pluginVerification {
         ides {
-            recommended()
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
         }
     }
 }
@@ -281,9 +283,12 @@ tasks {
         jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
     }
 
-//    val runLocalIde by registering(CustomRunIdeTask::class) {
-//        localPath = file("C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2024.1")
-//    }
+    // refers https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-testing-extension.html#intellijPlatformTesting
+    val testIde by intellijPlatformTesting.runIde.registering {
+        type = IntelliJPlatformType.IntellijIdeaCommunity
+        version = properties("platformVersion").get()
+    }
+
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     //    testIdeUi {
