@@ -286,7 +286,7 @@ tasks {
     // refers https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-testing-extension.html#intellijPlatformTesting
     val testIde by intellijPlatformTesting.runIde.registering {
         type = IntelliJPlatformType.IntellijIdeaCommunity
-        version = "2024.2"
+        version = properties("platformVersion").get()
     }
 
     // Configure UI tests plugin
