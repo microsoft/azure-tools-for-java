@@ -33,6 +33,8 @@ import javax.annotation.Nonnull;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
+import static com.microsoft.azure.toolkit.intellij.database.dbtools.OpenWithDatabaseToolsAction.openDatabaseTool;
+
 public class IntellijMySqlActionsContributor implements IActionsContributor {
     private static final String NAME_PREFIX = "MySQL - %s";
     private static final String DEFAULT_DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
@@ -63,17 +65,6 @@ public class IntellijMySqlActionsContributor implements IActionsContributor {
 
         final BiConsumer<AzResource, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), (MySqlServer) c);
         am.registerHandler(MySqlActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> true, openDatabaseHandler);
-    }
-
-    private void openDatabaseTool(Project project, @Nonnull MySqlServer server) {
-        final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-        final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database tools and SQL\" plugin is not installed.";
-        final String NOT_SUPPORT_ERROR_ACTION = "\"Database tools and SQL\" plugin is only provided in IntelliJ Ultimate edition.";
-        if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
-            final Action<Object> tryUltimate = AzureActionManager.getInstance().getAction(IntellijActionsContributor.TRY_ULTIMATE).bind(server);
-            throw new AzureToolkitRuntimeException(DATABASE_PLUGIN_NOT_INSTALLED, NOT_SUPPORT_ERROR_ACTION, tryUltimate);
-        }
-        AzureTaskManager.getInstance().runLater(() -> OpenWithDatabaseToolsAction.openDataSourceManagerDialog(server, project));
     }
 
     @Override

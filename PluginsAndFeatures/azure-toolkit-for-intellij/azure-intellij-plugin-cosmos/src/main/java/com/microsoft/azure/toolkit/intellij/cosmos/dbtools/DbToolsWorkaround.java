@@ -16,6 +16,7 @@ import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.util.registry.Registry;
 import com.microsoft.azure.toolkit.intellij.common.IntelliJAzureIcons;
+import com.microsoft.azure.toolkit.intellij.dbtools.DbToolsWorkarounds;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import kotlin.Unit;
@@ -102,19 +103,7 @@ public class DbToolsWorkaround implements ProjectActivity, DumbAware {
         driver.setIcon(IntelliJAzureIcons.getIcon(icon));
     }
 
-    @SuppressWarnings("unchecked")
     private static void makeAccountShowAtTop() {
-        try {
-            final Field HEADS = FieldUtils.getField(ParametersLayoutUtils.class, "HEADS", true);
-            final List<String> heads = (List<String>) FieldUtils.readStaticField(HEADS, true);
-            if (!heads.contains(PARAM_NAME)) {
-                final Object[] old = heads.toArray();
-                heads.set(0, PARAM_NAME);
-                for (int i = 0; i < old.length - 1; i++) {
-                    heads.set(i + 1, (String) old[i]);
-                }
-            }
-        } catch (final Throwable ignored) {
-        }
+        DbToolsWorkarounds.makeParameterShowAtTop(PARAM_NAME);
     }
 }

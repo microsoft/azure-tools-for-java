@@ -25,6 +25,7 @@ import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccount
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosContainerAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDatabaseAction;
+import com.microsoft.azure.toolkit.intellij.dbtools.DatabasePlugin;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
@@ -125,20 +126,11 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
         am.registerHandler(ResourceCommonActionsContributor.CREATE, (r, e) -> r instanceof CassandraKeyspace && ((CassandraKeyspace) r).getFormalStatus().isRunning(), (Object r, AnActionEvent e) ->
             CreateCosmosContainerAction.createCassandraTable(e.getProject(), (CassandraKeyspace) r, CassandraTableDraft.CassandraTableConfig.getDefaultConfig()));
 
-        final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-        if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
-            final BiConsumer<CosmosDBAccount, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), c);
+        if (!DatabasePlugin.isInstalled()) {
+            final BiConsumer<CosmosDBAccount, AnActionEvent> openDatabaseHandler = (c, e) -> DatabasePlugin.throwTryUltimateIfNotInstalled(c);
             final boolean cassandraOn = Registry.is("azure.toolkit.cosmos_cassandra.dbtools.enabled");
             am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || (r instanceof CassandraCosmosDBAccount && cassandraOn), openDatabaseHandler);
         }
-    }
-
-    private void openDatabaseTool(Project project, CosmosDBAccount account) {
-        final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-        final String DATABASE_PLUGIN_NOT_INSTALLED = "\"Database tools and SQL\" plugin is not installed.";
-        final String NOT_SUPPORT_ERROR_ACTION = "\"Database tools and SQL\" plugin is only provided in IntelliJ Ultimate edition.";
-        final Action<Object> tryUltimate = AzureActionManager.getInstance().getAction(IntellijActionsContributor.TRY_ULTIMATE).bind(account);
-        throw new AzureToolkitRuntimeException(DATABASE_PLUGIN_NOT_INSTALLED, NOT_SUPPORT_ERROR_ACTION, tryUltimate);
     }
 
     private <T extends AzResource> void openResourceConnector(@Nonnull final T resource, @Nonnull final AzureServiceResource.Definition<T> definition, Project project) {

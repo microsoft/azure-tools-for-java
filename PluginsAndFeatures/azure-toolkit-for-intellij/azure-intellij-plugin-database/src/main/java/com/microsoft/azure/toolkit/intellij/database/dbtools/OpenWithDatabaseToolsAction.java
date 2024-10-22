@@ -11,16 +11,25 @@ import com.intellij.database.autoconfig.DataSourceRegistry;
 import com.intellij.database.psi.DbPsiFacade;
 import com.intellij.database.view.ui.DataSourceManagerDialog;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.intellij.dbtools.DatabasePlugin;
+import com.microsoft.azure.toolkit.intellij.dbtools.DatabaseTools;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.database.entity.IDatabaseServer;
 import com.microsoft.azure.toolkit.lib.mysql.MySqlServer;
 import com.microsoft.azure.toolkit.lib.postgre.PostgreSqlServer;
 import com.microsoft.azure.toolkit.lib.sqlserver.MicrosoftSqlServer;
 
+import javax.annotation.Nonnull;
+
 public class OpenWithDatabaseToolsAction {
+    public static void openDatabaseTool(Project project, @Nonnull IDatabaseServer<?> server) {
+        DatabaseTools.openDatabaseTool(project, server, OpenWithDatabaseToolsAction::openDataSourceManagerDialog);
+    }
+
     @AzureOperation(name = "boundary/$database.open_database_tools.server", params = {"server.getName()"}, source = "server")
-    public static void openDataSourceManagerDialog(IDatabaseServer<?> server, Project project) {
+    private static void openDataSourceManagerDialog(IDatabaseServer<?> server, Project project) {
         final DataSourceRegistry registry = new DataSourceRegistry(project);
         final DbPsiFacade dbPsiFacade = DbPsiFacade.getInstance(project);
         final DataSourceDetector.Builder builder = registry.getBuilder()
