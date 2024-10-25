@@ -208,6 +208,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-sparkoncosmos"))
     implementation(project(":azure-intellij-plugin-hdinsight-base"))
     implementation(project(":azure-intellij-plugin-integration-services"))
+    implementation(project(":azure-intellij-plugin-cloud-shell"))
     implementation("commons-io:commons-io")
     implementation("org.apache.commons:commons-lang3")
     implementation("com.microsoft.azure:azure-toolkit-common-lib")
