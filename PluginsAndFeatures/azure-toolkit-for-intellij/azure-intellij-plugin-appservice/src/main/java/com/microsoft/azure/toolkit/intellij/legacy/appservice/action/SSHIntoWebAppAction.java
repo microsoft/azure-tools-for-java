@@ -11,6 +11,7 @@ import com.jediterm.terminal.TtyConnector;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.TerminalUtils;
 import com.microsoft.azure.toolkit.lib.appservice.model.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.appservice.model.Runtime;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebApp;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
+import java.util.Optional;
 
 import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 import static com.microsoft.azure.toolkit.lib.common.operation.OperationBundle.description;
@@ -47,7 +49,7 @@ public class SSHIntoWebAppAction {
     private static final String WEB_APP_DOCKER_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
             "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" %s@127.0.0.1 -p %d";
-
+    private static final Integer TERMINAL_MAX_SIZE = 1024 * 8;
     private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
     private static final String RESOURCE_GROUP_PATH_PREFIX = "resourceGroups/";
     private static final String RESOURCE_ELEMENT_PATTERN = "[^/]+";
@@ -70,7 +72,7 @@ public class SSHIntoWebAppAction {
         final AzureString title = description("user/webapp.connect_ssh.app", webAppName);
         AzureTaskManager.getInstance().runInBackground(new AzureTask<>(project, title, false,
                 () -> {
-                    if (webApp.getRuntime().getOperatingSystem() == OperatingSystem.WINDOWS) {
+                    if (Optional.ofNullable(webApp.getRuntime()).map(Runtime::getOperatingSystem).orElse(null) == OperatingSystem.WINDOWS) {
                         AzureMessager.getMessager().warning(message("webapp.ssh.windowsNotSupport"));
                         return;
                     }
@@ -131,12 +133,14 @@ public class SSHIntoWebAppAction {
         final int interval = 500;
         final int times = 30000 / interval;
         while (count++ < times) {
-            final AbstractList<Byte> outputCache = (AbstractList<Byte>) FieldUtils.readField(connector, "outputCache", true);
-            Byte[] bytes = new Byte[outputCache.size()];
-            bytes = outputCache.toArray(bytes);
-            final byte[] myBuf = ArrayUtils.toPrimitive(bytes);
-            if (myBuf != null && new String(myBuf, StandardCharsets.UTF_8).contains("password:")) {
-                return true;
+            try {
+                final char[] result = new char[TERMINAL_MAX_SIZE];
+                connector.read(result, 0, TERMINAL_MAX_SIZE -1 );
+                if (new String(result).contains("password:")) {
+                    return true;
+                }
+            } catch (final IOException ignore) {
+                continue;
             }
             Thread.sleep(interval);
         }

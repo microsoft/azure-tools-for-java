@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-bicep" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-cloud-shell" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cognitiveservices" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerapps" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerregistry" />

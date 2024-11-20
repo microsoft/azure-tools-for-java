@@ -1,6 +1,20 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.93.0
+- Support IntelliJ 2024.3 Beta
+- Support Azure Cloud Shell (Thanks for @rafaelldi)
+
+## 3.92.0
+- Added Managed identity support for Azure Functions.
+- Fixed [#8473](https://github.com/microsoft/azure-tools-for-java/issues/8473): Class initialization must not depend on services. Consider using instance of the service on-demand instead.
+- Fixed [#8497](https://github.com/microsoft/azure-tools-for-java/issues/8497): fix support for swap
+
+## 3.91.0
+- Added support for Managed Identity Authentication in Web App Resource Connections.
+  - Support update the identity configuration of Web App to connect Azure resources (Azure Storage Account/Azure Key Vault/Azure Cosmos DB for NoSQL)
+  - Support grant permission to managed identity to connected resource (Azure Storage Account/Azure Key Vault)
+
 ## 3.90.0
 ### Added
 - Support IntelliJ 2024.2 EAP

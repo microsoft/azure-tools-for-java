@@ -10,22 +10,20 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetryClient;
 import org.apache.commons.lang3.StringUtils;
 
 public final class TelemetryClientSingleton {
-    private final AzureTelemetryClient telemetry;
-    private AppInsightsConfiguration configuration = null;
+    private static AzureTelemetryClient telemetry;
+    private static AppInsightsConfiguration configuration = null;
 
-    private static final class SingletonHolder {
-        private static final TelemetryClientSingleton INSTANCE = new TelemetryClientSingleton();
-    }
-
-    public static AzureTelemetryClient getTelemetry() {
-        return SingletonHolder.INSTANCE.telemetry;
+    public static synchronized AzureTelemetryClient getTelemetry() {
+        if(TelemetryClientSingleton.telemetry==null){
+            TelemetryClientSingleton.telemetry = AzureTelemeter.getClient();
+        }
+        return TelemetryClientSingleton.telemetry;
     }
 
     public static void setConfiguration(final AppInsightsConfiguration configuration) {
-        SingletonHolder.INSTANCE.configuration = configuration;
+        TelemetryClientSingleton.configuration = configuration;
     }
 
     private TelemetryClientSingleton() {
-        telemetry = AzureTelemeter.getClient();
     }
 }

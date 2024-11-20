@@ -202,9 +202,10 @@ public class AzureExplorer extends Tree {
             };
             final AnAction feedbackAction = ActionManager.getInstance().getAction("Actions.ProvideFeedback");
             final AnAction getStartAction = ActionManager.getInstance().getAction("Actions.GettingStart");
+            final AnAction startCloudShellAction = ActionManager.getInstance().getAction("AzureToolkit.CloudShell.Start");
             final AnAction signInAction = ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn");
             final AnAction selectSubscriptionsAction = ActionManager.getInstance().getAction("AzureToolkit.SelectSubscriptions");
-            toolWindow.setTitleActions(Arrays.asList(getStartAction, refreshAction, selectSubscriptionsAction, signInAction, Separator.create(), feedbackAction));
+            toolWindow.setTitleActions(Arrays.asList(getStartAction, refreshAction, selectSubscriptionsAction, startCloudShellAction, signInAction, Separator.create(), feedbackAction));
             if (toolWindow instanceof ToolWindowEx) {
                 final AnAction devBlogsAction = ActionManager.getInstance().getAction("AzureToolkit.ViewDevBlogs");
                 final AnAction documentAction = ActionManager.getInstance().getAction("AzureToolkit.ViewToolingDocument");

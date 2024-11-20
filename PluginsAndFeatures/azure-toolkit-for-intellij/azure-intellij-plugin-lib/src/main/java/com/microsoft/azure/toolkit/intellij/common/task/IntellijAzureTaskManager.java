@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common.task;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.Service;
@@ -22,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nonnull;
 import javax.swing.*;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class IntellijAzureTaskManager extends AzureTaskManager {
@@ -118,7 +120,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     public boolean isUIThread() {
-        return ApplicationManager.getApplication().isDispatchThread() || SwingUtilities.isEventDispatchThread();
+        return Optional.ofNullable(ApplicationManager.getApplication()).map(Application::isDispatchThread).orElse(false) || SwingUtilities.isEventDispatchThread();
     }
 
     @RequiredArgsConstructor

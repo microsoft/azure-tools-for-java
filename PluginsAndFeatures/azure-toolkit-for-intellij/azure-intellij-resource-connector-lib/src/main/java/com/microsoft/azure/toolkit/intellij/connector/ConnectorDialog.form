@@ -161,7 +161,7 @@
               <titleFont style="1"/>
             </properties>
           </component>
-          <component id="ed670" class="com.intellij.ui.components.JBLabel">
+          <component id="ed670" class="com.intellij.ui.components.JBLabel" binding="lblAuthType">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
                 <minimum-size width="100" height="24"/>
@@ -191,7 +191,7 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="7799a" class="com.intellij.ui.components.JBLabel">
+              <component id="7799a" class="com.intellij.ui.components.JBLabel" binding="lblIdentity">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
                     <minimum-size width="100" height="24"/>

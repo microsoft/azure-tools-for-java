@@ -16,12 +16,13 @@ import javax.annotation.Nullable;
 import static com.intellij.credentialStore.CredentialAttributesKt.generateServiceName;
 
 public class IntelliJSecureStore implements ISecureStore {
-    private static class LazyHolder {
-        static final IntelliJSecureStore INSTANCE = new IntelliJSecureStore();
-    }
+    static IntelliJSecureStore INSTANCE = null;
 
-    public static IntelliJSecureStore getInstance() {
-        return LazyHolder.INSTANCE;
+    public static synchronized IntelliJSecureStore getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new IntelliJSecureStore();
+        }
+        return INSTANCE;
     }
 
     private IntelliJSecureStore() {
@@ -61,7 +62,7 @@ public class IntelliJSecureStore implements ISecureStore {
     @Override
     public void forgetPassword(@Nonnull String serviceName, @Nullable String key, @Nullable String userName) {
         CredentialAttributes oldKey = StringUtils.isNotBlank(userName) ? new CredentialAttributes(key, userName) :
-            new CredentialAttributes(key);
+                new CredentialAttributes(key);
         passwordSafe.setPassword(oldKey, null);
         passwordSafe.setPassword(makeKey(serviceName, key, userName), null);
     }
@@ -70,7 +71,7 @@ public class IntelliJSecureStore implements ISecureStore {
     public void migratePassword(@Nonnull String oldKeyOrServiceName, @Nullable String oldUsername,
                                 @Nonnull String serviceName, @Nullable String key, @Nullable String userName) {
         CredentialAttributes oldKey = StringUtils.isNotBlank(oldUsername) ? new CredentialAttributes(oldKeyOrServiceName, userName) :
-            new CredentialAttributes(oldKeyOrServiceName);
+                new CredentialAttributes(oldKeyOrServiceName);
         CredentialAttributes newKey = makeKey(serviceName, key, userName);
         if (StringUtils.isBlank(passwordSafe.getPassword(newKey))) {
             passwordSafe.setPassword(newKey, passwordSafe.getPassword(oldKey));

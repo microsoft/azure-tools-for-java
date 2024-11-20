@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.ajoberstar.grgit.*
 
 plugins {
-  id "org.ajoberstar.grgit" version "4.1.0"
+  id "org.ajoberstar.grgit" version "4.1.1"
 }
 
 def gradleExec = file(OperatingSystem.current().isWindows() ? "gradlew.bat" : "gradlew")
@@ -167,7 +167,7 @@ task buildAll {
 }
 
 wrapper() {
-    gradleVersion = '6.9'
+    gradleVersion = '8.8'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 

@@ -3,6 +3,9 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.93.0](#3930)
+  - [3.92.0](#3920)
+  - [3.91.0](#3910)
   - [3.90.0](#3900)
   - [3.89.0](#3890)
   - [3.88.0](#3880)
@@ -111,6 +114,21 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.93.0
+- Support IntelliJ 2024.3 Beta
+- Support Azure Cloud Shell (Thanks for @rafaelldi)
+
+## 3.92.0
+- Added Managed identity support for Azure Functions.
+- Fixed [#8473](https://github.com/microsoft/azure-tools-for-java/issues/8473): Class initialization must not depend on services. Consider using instance of the service on-demand instead.
+- Fixed [#8497](https://github.com/microsoft/azure-tools-for-java/issues/8497): fix support for swap
+
+
+## 3.91.0
+- Added support for Managed Identity Authentication in Web App Resource Connections.
+  - Support update the identity configuration of Web App to connect Azure resources (Azure Storage Account/Azure Key Vault/Azure Cosmos DB for NoSQL)
+  - Support grant permission to managed identity to connected resource (Azure Storage Account/Azure Key Vault)
 
 ## 3.90.0
 ### Added

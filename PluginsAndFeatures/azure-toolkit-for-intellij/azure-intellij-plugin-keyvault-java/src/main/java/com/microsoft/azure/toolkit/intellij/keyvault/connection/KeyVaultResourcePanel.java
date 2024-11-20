@@ -68,7 +68,7 @@ public class KeyVaultResourcePanel implements AzureFormJPanel<Resource<KeyVault>
         if (info.getType() == AzureValidationInfo.Type.ERROR) {
             return null;
         }
-        return KeyVaultResourceDefinition.INSTANCE.define(cache);
+        return Optional.ofNullable(cache).map(KeyVaultResourceDefinition.INSTANCE::define).orElse(null);
     }
 
     @Override

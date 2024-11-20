@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.ide.appservice.function;
 
+import com.azure.resourcemanager.appservice.models.FunctionDeploymentSlot;
 import com.azure.resourcemanager.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.ide.appservice.AppServiceActionsContributor;
 import com.microsoft.azure.toolkit.ide.appservice.function.node.TriggerFunctionInBrowserAction;
@@ -34,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 import static com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS;
 
@@ -237,6 +240,19 @@ public class FunctionAppActionsContributor implements IActionsContributor {
             .visibleWhen(s -> s instanceof FunctionAppBase<?, ?, ?> && !(s instanceof FunctionApp functionApp && (StringUtils.isNotBlank(functionApp.getEnvironmentId()))))
             .enableWhen(s -> s.getFormalStatus().isRunning())
             .register(am);
+    }
+
+    @Override
+    public void registerHandlers(AzureActionManager am) {
+        final BiPredicate<FunctionAppDeploymentSlot, Object> swapDeploymentSlotCondition = (r, e) -> r != null &&
+                StringUtils.equals(r.getStatus(), AzResource.Status.RUNNING);
+        final BiConsumer<FunctionAppDeploymentSlot, Object> swapDeploymentSlotHandler = (c, e) -> {
+            final FunctionDeploymentSlot deploymentSLot = c.getRemote();
+            if (deploymentSLot != null) {
+                deploymentSLot.swap("production");
+            }
+        };
+        am.registerHandler(SWAP_DEPLOYMENT_SLOT, swapDeploymentSlotCondition, swapDeploymentSlotHandler);
     }
 
     @Override

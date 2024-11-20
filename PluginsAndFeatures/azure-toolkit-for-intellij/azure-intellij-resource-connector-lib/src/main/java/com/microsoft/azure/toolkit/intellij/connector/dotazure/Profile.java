@@ -19,6 +19,7 @@ import com.microsoft.azure.toolkit.lib.common.model.AbstractAzResource;
 import com.microsoft.azure.toolkit.lib.common.model.AbstractAzServiceSubscription;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.operation.OperationBundle;
+import com.microsoft.azure.toolkit.lib.common.operation.OperationContext;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.identities.Identity;
 import io.github.cdimascio.dotenv.internal.DotenvParser;
@@ -96,6 +97,7 @@ public class Profile {
     }
 
     public synchronized Future<?> addConnection(@Nonnull Connection<?, ?> connection) {
+        OperationContext.action().setTelemetryProperty("authenticationType", Optional.ofNullable(connection.getAuthenticationType()).map(AuthenticationType::toString).orElse(StringUtils.EMPTY));
         AzureFacet.addTo(this.module.getModule());
         final Resource<?> resource = connection.getResource();
         this.resourceManager.addResource(resource);

@@ -7,6 +7,7 @@
     <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.connector.ModuleResource$Definition"/>
         <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.connector.keyvalue.KeyValueResource$Definition"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.connector.IdentityResource$Definition"/>
         <actions implementation="com.microsoft.azure.toolkit.intellij.connector.ResourceConnectionActionsContributor"/>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">

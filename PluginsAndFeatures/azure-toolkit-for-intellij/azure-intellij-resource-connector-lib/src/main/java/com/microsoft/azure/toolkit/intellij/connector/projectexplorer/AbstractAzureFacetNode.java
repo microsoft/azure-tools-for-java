@@ -53,6 +53,8 @@ import java.util.function.Predicate;
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public abstract class AbstractAzureFacetNode<T> extends AbstractTreeNode<T> implements IAzureFacetNode {
+    public static final Integer DEFAULT_WEIGHT = 30;
+
     private final long createdTime;
     private long disposedTime;
     @Getter

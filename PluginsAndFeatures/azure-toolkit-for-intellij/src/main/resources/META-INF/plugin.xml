@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.92.0-SNAPSHOT</version>
+  <version>3.94.0-SNAPSHOT</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -27,13 +27,10 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2 id="3-90-0">3.90.0</h2>
-      <h3 id="added">Added</h3>
+      <h2 id="3-93-0">3.93.0</h2>
       <ul>
-      <li>Support IntelliJ 2024.2 EAP</li>
-      <li>Support workload profiles environment type in Azure Container Apps<ul>
-      <li>Support create workload profiles during the creation of an Azure Container Apps environment.</li>
-      <li>Enable setting of workload profiles during the creation of container apps and function apps.</li>
+      <li>Support IntelliJ 2024.3 Beta</li>
+      <li>Support Azure Cloud Shell (Thanks for @rafaelldi)</li>
       </ul>
       <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
@@ -83,6 +80,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-synapse.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-hdinsight-base.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-integration-services.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-cloud-shell.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -156,6 +154,8 @@
       <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
       <reference ref="user/sdk.OpenSdkReferenceBook"/>
+      <separator/>
+      <reference ref="AzureToolkit.CloudShell.Group"/>
       <separator/>
       <reference ref="AzureToolkit.ViewDevBlogs"/>
       <reference ref="AzureToolkit.ViewToolingDocument"/>

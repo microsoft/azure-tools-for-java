@@ -145,7 +145,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase<?, ?, ?>> {
                     final String message = String.format(IDENTITY_PERMISSION_MESSAGE, identityUrl, identityName, identityPrincipal, resourceUrl, resource.getName());
                     final Action<?> openIdentityConfigurationAction = getOpenIdentityConfigurationAction(serviceResource);
                     final Action<?> grantPermissionAction = getGrantPermissionAction(serviceResource, identityPrincipal);
-                    AzureMessager.getMessager().warning(message, openIdentityConfigurationAction, grantPermissionAction);
+                    AzureMessager.getMessager().warning(message, grantPermissionAction, openIdentityConfigurationAction);
                 }
             }
         });

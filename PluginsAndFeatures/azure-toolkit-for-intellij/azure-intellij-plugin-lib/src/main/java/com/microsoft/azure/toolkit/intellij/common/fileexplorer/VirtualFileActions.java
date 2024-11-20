@@ -131,14 +131,14 @@ public class VirtualFileActions {
 
     public static VirtualFile getVirtualFile(String fileId, FileEditorManager manager) {
         return Arrays.stream(manager.getOpenFiles())
-            .filter(f -> StringUtils.equals(f.getUserData(FILE_ID), fileId))
-            .findAny().orElse(null);
+                .filter(f -> StringUtils.equals(f.getUserData(FILE_ID), fileId))
+                .findAny().orElse(null);
     }
 
     public static VirtualFile createVirtualFile(String fileId, String fileName, File file, FileEditorManager manager) {
         return Arrays.stream(manager.getOpenFiles())
-            .filter(f -> StringUtils.equals(f.getUserData(FILE_ID), fileId))
-            .findAny().orElse(createTempVirtualFile(fileId, fileName, file, manager));
+                .filter(f -> StringUtils.equals(f.getUserData(FILE_ID), fileId))
+                .findAny().orElse(createTempVirtualFile(fileId, fileName, file, manager));
     }
 
     @SneakyThrows
@@ -147,7 +147,13 @@ public class VirtualFileActions {
         final VirtualFile virtualFile = new RemoteVirtualFile(origin, fileName);
         virtualFile.setCharset(StandardCharsets.UTF_8);
         virtualFile.putUserData(FILE_ID, fileId);
-        virtualFile.setWritable(true);
+        AzureTaskManager.getInstance().runLater(() -> {
+            try {
+                WriteAction.run(() -> virtualFile.setWritable(true));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return virtualFile;
     }
 

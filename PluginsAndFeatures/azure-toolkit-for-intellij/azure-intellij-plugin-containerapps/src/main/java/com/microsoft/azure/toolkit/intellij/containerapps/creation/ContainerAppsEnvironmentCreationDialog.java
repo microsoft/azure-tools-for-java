@@ -110,15 +110,16 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
             result.setWorkloadProfiles(workloadProfilesTable.getValue());
         }
         final LogAnalyticsWorkspaceModule workspaceModule = Azure.az(AzureLogAnalyticsWorkspace.class).logAnalyticsWorkspaces(result.getSubscription().getId());
-        final LogAnalyticsWorkspaceConfig workspaceConfig = cbWorkspace.getValue();
-        final LogAnalyticsWorkspace workspace;
-        if (workspaceConfig.isNewCreate()) {
-            workspace = workspaceModule.create(workspaceConfig.getName(), result.getResourceGroup().getResourceGroupName());
-            ((LogAnalyticsWorkspaceDraft) workspace).setRegion(result.getRegion());
-        } else {
-            workspace = workspaceModule.get(workspaceConfig.getResourceId());
-        }
-        result.setLogAnalyticsWorkspace(workspace);
+        Optional.ofNullable(cbWorkspace.getValue()).ifPresent(workspaceConfig -> {
+            final LogAnalyticsWorkspace workspace;
+            if (workspaceConfig.isNewCreate()) {
+                workspace = workspaceModule.create(workspaceConfig.getName(), result.getResourceGroup().getResourceGroupName());
+                ((LogAnalyticsWorkspaceDraft) workspace).setRegion(result.getRegion());
+            } else {
+                workspace = workspaceModule.get(workspaceConfig.getResourceId());
+            }
+            result.setLogAnalyticsWorkspace(workspace);
+        });
         return result;
     }
 
@@ -196,6 +197,9 @@ public class ContainerAppsEnvironmentCreationDialog extends AzureDialog<Containe
         this.lblWorkloadProfiles.setAllowAutoWrapping(true);
         this.lblWorkloadProfiles.setCopyable(true);
         this.lblWorkloadProfiles.setText(WORKLOAD_PROFILE_DESCRIPTION);
+
+        this.cbWorkspace.setRequired(true);
+        this.lblWorkloadProfiles.setLabelFor(cbWorkspace);
     }
 
     private void toggleEnvironmentType() {

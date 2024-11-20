@@ -132,7 +132,8 @@ public class KeyValueResource implements Resource<KeyValueData> {
         }
 
         @Override
-        public Map<String, String> getPropertiesForFunction(@Nonnull KeyValueData resource, @Nonnull Connection connection) {
+        public Map<String, String> getPropertiesForFunction(@Nonnull Connection<?, ?> connection) {
+            final KeyValueData resource = (KeyValueData)connection.getResource().getData();
             return Collections.singletonMap(resource.getKey(), getResourceConnectionString(resource));
         }
 
