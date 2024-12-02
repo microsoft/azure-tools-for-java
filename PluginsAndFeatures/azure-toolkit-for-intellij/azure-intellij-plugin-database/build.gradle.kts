@@ -2,6 +2,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-lib"))
     // runtimeOnly project(path: ":azure-intellij-plugin-lib", configuration: "instrumentedJar")
     implementation(project(":azure-intellij-resource-connector-lib"))
+    implementation(project(":azure-intellij-plugin-dbtools"))
     // runtimeOnly project(path: ":azure-intellij-resource-connector-lib", configuration: "instrumentedJar")
     implementation("com.microsoft.azure:azure-toolkit-database-lib")
     implementation("com.microsoft.azure:azure-toolkit-mysql-lib")

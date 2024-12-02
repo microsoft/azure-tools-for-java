@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij.database">
+        <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.redis.dbtools.RedisConnectionInterceptor"/>
+        <connectionInterceptor implementation="com.microsoft.azure.toolkit.intellij.redis.dbtools.RedisAccessKeyAuthProvider"/>
+        <urlParamEditorProvider implementation="com.microsoft.azure.toolkit.intellij.redis.dbtools.RedisAccountTypeFactory" order="first"/>
+        <urlParamEditorUiProvider implementation="com.microsoft.azure.toolkit.intellij.redis.dbtools.RedisCacheTypeUIFactory" order="first"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.redis.dbtools.RedisDbToolsWorkaround"/>
+    </extensions>
+</idea-plugin>

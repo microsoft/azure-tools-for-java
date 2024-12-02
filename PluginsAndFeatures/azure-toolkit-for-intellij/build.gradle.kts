@@ -189,6 +189,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-containerregistry"))
     implementation(project(":azure-intellij-plugin-containerservice"))
     implementation(project(":azure-intellij-plugin-containerapps"))
+    implementation(project(":azure-intellij-plugin-dbtools"))
     implementation(project(":azure-intellij-plugin-database"))
     implementation(project(":azure-intellij-plugin-database-java"))
     implementation(project(":azure-intellij-plugin-vm"))

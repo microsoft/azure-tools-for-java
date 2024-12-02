@@ -29,17 +29,17 @@ public class DatabaseServerTypeUIFactory implements TypesRegistryUi.TypeDescript
     public void createTypeDescriptor(@NotNull Consumer<? super TypeDescriptorUi> consumer) {
         final BaseTypeDescriptor mysql = new BaseTypeDescriptor(MYSQL) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(MySqlServer.class, formatFieldCaption("Server"), interchange);
+                return new DatabaseServerParamEditor(DatabaseServerClass.MySql, formatFieldCaption("Server"), interchange);
             }
         };
         final BaseTypeDescriptor sqlserver = new BaseTypeDescriptor(SQLSERVER) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(MicrosoftSqlServer.class, formatFieldCaption("Server"), interchange);
+                return new DatabaseServerParamEditor(DatabaseServerClass.MsSql, formatFieldCaption("Server"), interchange);
             }
         };
         final BaseTypeDescriptor postgre = new BaseTypeDescriptor(POSTGRE) {
             protected ParamEditor createFieldImpl(@Nonnull String caption, @Nullable String configuration, @Nonnull DataInterchange interchange) {
-                return new DatabaseServerParamEditor(PostgreSqlServer.class, formatFieldCaption("Server"), interchange);
+                return new DatabaseServerParamEditor(DatabaseServerClass.Postgres, formatFieldCaption("Server"), interchange);
             }
         };
         consumer.consume(mysql);
