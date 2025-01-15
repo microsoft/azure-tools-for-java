@@ -1,0 +1,15 @@
+<idea-plugin>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.plugins.terminal</depends>
+
+  <actions>
+    <action id="Actions.AzdInit" class="com.microsoft.azure.toolkit.intellij.azd.RunAzdCommandAction"
+            text="Generate Azure Deployment Script (azd init)" description="azd init"
+            icon="/icons/azd-logo.svg">
+    </action>
+    <action id="Actions.AzdUp" class="com.microsoft.azure.toolkit.intellij.azd.RunAzdCommandAction"
+            text="Package, Provision, and Deploy to Azure (azd up)" description="azd up"
+            icon="/icons/azd-logo.svg">
+    </action>
+  </actions>
+</idea-plugin>
