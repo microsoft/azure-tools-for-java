@@ -166,6 +166,11 @@ public class RedisCacheMock implements RedisCache{
     }
 
     @Override
+    public PublicNetworkAccess publicNetworkAccess() {
+        return null;
+    }
+
+    @Override
     public TlsVersion minimumTlsVersion() {
         return null;
     }
