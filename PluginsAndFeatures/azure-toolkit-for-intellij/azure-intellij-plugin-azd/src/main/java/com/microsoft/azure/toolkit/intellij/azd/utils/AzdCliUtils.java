@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.TimeUnit;
 
 public class AzdCliUtils {
 
@@ -123,7 +124,7 @@ public class AzdCliUtils {
         });
 
         processHandler.startNotify();
-        processHandler.waitFor();
+        processHandler.waitFor(TimeUnit.SECONDS.toMillis(30)); // Wait up to 30 seconds
         return output;
     }
 
