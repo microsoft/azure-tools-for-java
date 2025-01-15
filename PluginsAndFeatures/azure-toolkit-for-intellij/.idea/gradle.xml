@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-azd" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-bicep" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cloud-shell" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cognitiveservices" />
@@ -30,6 +31,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-base" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-hdinsight-lib" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-integration-services" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-java-sdk" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-keyvault" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-keyvault-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-lib" />

@@ -82,6 +82,7 @@
   <xi:include href="/META-INF/azure-intellij-plugin-integration-services.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-java-sdk.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <xi:include href="/META-INF/azure-intellij-plugin-cloud-shell.xml" xpointer="xpointer(/idea-plugin/*)"/>
+  <xi:include href="/META-INF/azure-intellij-plugin-azd.xml" xpointer="xpointer(/idea-plugin/*)"/>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -120,6 +121,9 @@
       <reference ref="Actions.RunOnDockerHost"/>
       <reference ref="Actions.PushImage"/>
       <reference ref="Actions.WebAppOnLinux"/>
+      <separator/>
+      <reference ref="Actions.AzdInit"/>
+      <reference ref="Actions.AzdUp"/>
     </group>
 
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
