@@ -1,5 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.azd.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -63,6 +64,15 @@ public abstract class AzdCommandAction extends AnAction {
         // Only enable the action for specific files
         boolean enabled = file != null && getSupportedFiles().contains(file.getName());
         event.getPresentation().setEnabledAndVisible(enabled);
+    }
+
+    /**
+     * `ActionUpdateThread.OLD_EDT` is deprecated and going to be removed soon.
+     * override `getActionUpdateThread()` and chose EDT or BGT
+     */
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 
     public abstract Set<String> getSupportedFiles();
