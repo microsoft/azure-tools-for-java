@@ -70,6 +70,32 @@ public class AzdCliUtils {
         return null;
     }
 
+
+    private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws ExecutionException {
+        final OSProcessHandler processHandler = new OSProcessHandler(commandLine);
+        final ProcessOutput output = new ProcessOutput();
+
+        processHandler.addProcessListener(new ProcessListener() {
+            @Override
+            public void onTextAvailable(ProcessEvent event, Key outputType) {
+                if (ProcessOutputTypes.STDOUT.equals(outputType)) {
+                    output.appendStdout(event.getText());
+                } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
+                    output.appendStderr(event.getText());
+                }
+            }
+
+            @Override
+            public void processTerminated(ProcessEvent event) {
+                output.setExitCode(event.getExitCode());
+            }
+        });
+
+        processHandler.startNotify();
+        processHandler.waitFor(TimeUnit.SECONDS.toMillis(30)); // Wait up to 30 seconds
+        return output;
+    }
+
     private static class AzdVersion {
 
         private AzdVersionInfo azd;
@@ -98,6 +124,28 @@ public class AzdCliUtils {
         setupAzdEnvs(terminal);
     }
 
+    private static String getInstallationCommandLine() {
+        // See https://aka.ms/azd-install
+        final String commandLine;
+        if (SystemInfo.isWindows) {
+            commandLine = "powershell -ex AllSigned -c \"Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression\"";
+        } else if (SystemInfo.isLinux || SystemInfo.isMac) {
+            commandLine = "curl -fsSL https://aka.ms/install-azd.sh | bash";
+        } else {
+            final String osName = System.getProperty("os.name");
+            logger.error("Unsupported platform: " + osName);
+            throw new UnsupportedOperationException("Unsupported platform: " + osName);
+        }
+        return commandLine;
+    }
+
+    /**
+     * On Unix, the CLI is installed to /usr/local/bin, which is always going to be in the PATH.
+     * On Windows, the install location is at %LOCALAPPDATA%\Programs\Azure Dev CLI when installed by default.
+     * To avoid needing to restart IDE to get the updated PATH, we'll temporarily add the default install location,
+     * as long as it's Windows, AZURE_DEV_CLI_PATH is unset, "Azure Dev CLI" isn't already in the PATH, and the user
+     * did try to install within this session.
+     */
     public static void setupAzdEnvs(@NotNull TerminalWidget terminal) {
         if (SystemInfo.isWindows && System.getenv("AZURE_DEV_CLI_PATH") == null && !getPathEnv().contains("/Azure Dev CLI/")) {
             terminal.sendCommandToExecute(String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation()));
@@ -127,43 +175,4 @@ public class AzdCliUtils {
         }
     }
 
-    private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws ExecutionException {
-        final OSProcessHandler processHandler = new OSProcessHandler(commandLine);
-        final ProcessOutput output = new ProcessOutput();
-
-        processHandler.addProcessListener(new ProcessListener() {
-            @Override
-            public void onTextAvailable(ProcessEvent event, Key outputType) {
-                if (ProcessOutputTypes.STDOUT.equals(outputType)) {
-                    output.appendStdout(event.getText());
-                } else if (ProcessOutputTypes.STDERR.equals(outputType)) {
-                    output.appendStderr(event.getText());
-                }
-            }
-
-            @Override
-            public void processTerminated(ProcessEvent event) {
-                output.setExitCode(event.getExitCode());
-            }
-        });
-
-        processHandler.startNotify();
-        processHandler.waitFor(TimeUnit.SECONDS.toMillis(30)); // Wait up to 30 seconds
-        return output;
-    }
-
-    private static String getInstallationCommandLine() {
-        // See https://aka.ms/azd-install
-        final String commandLine;
-        if (SystemInfo.isWindows) {
-            commandLine = "powershell -ex AllSigned -c \"Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression\"";
-        } else if (SystemInfo.isLinux || SystemInfo.isMac) {
-            commandLine = "curl -fsSL https://aka.ms/install-azd.sh | bash";
-        } else {
-            final String osName = System.getProperty("os.name");
-            logger.error("Unsupported platform: " + osName);
-            throw new UnsupportedOperationException("Unsupported platform: " + osName);
-        }
-        return commandLine;
-    }
 }
