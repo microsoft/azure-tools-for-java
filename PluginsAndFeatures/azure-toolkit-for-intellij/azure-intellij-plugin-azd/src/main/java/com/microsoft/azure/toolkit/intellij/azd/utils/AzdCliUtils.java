@@ -9,13 +9,13 @@ import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.terminal.ui.TerminalWidget;
 import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.project.Project;
 
 import javax.annotation.Nullable;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 public class AzdCliUtils {
@@ -28,41 +28,49 @@ public class AzdCliUtils {
 
     private static AzdVersion cachedAzdVersion = null;
 
+    public static boolean azdCliInstallAttempted = false;
+
+    public static boolean checkAzdCliInstalled(TerminalWidget terminal) {
+        if (azdCliInstallAttempted) {
+            return true;
+        } else {
+            return getAzdCliVersion(terminal) != null;
+        }
+    }
+
     @Nullable
-    public static AzdVersion getAzdVersion() {
+    private static AzdVersion getAzdCliVersion(TerminalWidget terminal) {
         // Check if the cached result is still valid
-        long currentTime = System.currentTimeMillis();
+        final long currentTime = System.currentTimeMillis();
         if (cachedAzdVersion != null && (currentTime - lastCheckTime) < CACHE_LIFETIME) {
             return cachedAzdVersion;
         }
 
-        GeneralCommandLine commandLine = new GeneralCommandLine()
-                .withExePath("azd")
-                .withParameters("version", "--output", "json");
-
         try {
-            ProcessOutput output = runCommand(commandLine);
+            final GeneralCommandLine commandLine = new GeneralCommandLine()
+                    .withExePath("azd")
+                    .withParameters("version", "--output", "json");
 
+            final ProcessOutput output = runCommand(commandLine);
             if (output.getExitCode() == 0) {
-                String stdout = output.getStdout();
-                Gson gson = new Gson();
-                AzdVersion azdVersion = gson.fromJson(stdout, AzdVersion.class);
+                final String stdout = output.getStdout();
+                final Gson gson = new Gson();
+                final AzdVersion azdVersion = gson.fromJson(stdout, AzdVersion.class);
                 // Cache the result
                 cachedAzdVersion = azdVersion;
                 lastCheckTime = currentTime;
-
                 return azdVersion;
             } else {
-                logger.warn("Failed to check azd login status. Exit code: " + output.getExitCode());
+                logger.warn("Failed to check azd version. Exit code: " + output.getExitCode());
             }
-        } catch (Exception e) {
-            logger.warn("Unexpected error while checking azd login status", e);
+        } catch (Exception ex) {
+            logger.warn("Unexpected error while checking azd version", ex);
         }
 
         return null;
     }
 
-    public static class AzdVersion {
+    private static class AzdVersion {
 
         private AzdVersionInfo azd;
 
@@ -84,28 +92,44 @@ public class AzdCliUtils {
         }
     }
 
-    public static boolean installAzdCli(@NotNull Project project) {
-        try {
-            GeneralCommandLine commandLine = getInstallationCommandLine();
+    public static void installAzdCli(@NotNull TerminalWidget terminal) {
+        final String installCommand = getInstallationCommandLine();
+        terminal.sendCommandToExecute(installCommand);
+        setupAzdEnvs(terminal);
+    }
 
-            ProcessOutput output = runCommand(commandLine);
-
-            if (output.getExitCode() == 0) {
-                Messages.showInfoMessage(project, "Azure Developer CLI (azd) installed successfully!", "Installation Complete");
-                return true;
-            } else {
-                Messages.showErrorDialog(project, "Failed to install Azure Developer CLI (azd). Error: " + output.getStderr(), "Installation Failed");
-                return false;
-            }
-        } catch (Exception e) {
-            Messages.showErrorDialog(project, "An error occurred while installing Azure Developer CLI (azd): " + e.getMessage(), "Installation Error");
+    public static void setupAzdEnvs(@NotNull TerminalWidget terminal) {
+        if (SystemInfo.isWindows && System.getenv("AZURE_DEV_CLI_PATH") == null && !getPathEnv().contains("/Azure Dev CLI/")) {
+            terminal.sendCommandToExecute(String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation()));
+            azdCliInstallAttempted = true;
         }
-        return false;
+    }
+
+    private static String getPathEnv() {
+        String pathEnv = System.getenv("PATH");
+        if (pathEnv == null) {
+            pathEnv = "";
+        }
+        return pathEnv;
+    }
+
+    private static String getDefaultAzdInstallLocation() {
+        final String localAppData = System.getenv("LOCALAPPDATA");
+        return Paths.get(localAppData, "Programs", "Azure Dev CLI").toString();
+    }
+
+    public static String getAzdInvocation(String command) {
+        final String azureDevCliPath = System.getenv("AZURE_DEV_CLI_PATH");
+        if (azureDevCliPath == null) {
+            return command;
+        } else {
+            return azureDevCliPath + command.substring(3);
+        }
     }
 
     private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws ExecutionException {
-        OSProcessHandler processHandler = new OSProcessHandler(commandLine);
-        ProcessOutput output = new ProcessOutput();
+        final OSProcessHandler processHandler = new OSProcessHandler(commandLine);
+        final ProcessOutput output = new ProcessOutput();
 
         processHandler.addProcessListener(new ProcessListener() {
             @Override
@@ -128,24 +152,18 @@ public class AzdCliUtils {
         return output;
     }
 
-    private static GeneralCommandLine getInstallationCommandLine() {
-        GeneralCommandLine commandLine = new GeneralCommandLine();
-
+    private static String getInstallationCommandLine() {
         // See https://aka.ms/azd-install
+        final String commandLine;
         if (SystemInfo.isWindows) {
-            commandLine.withExePath("powershell")
-                    .withParameters("-ex", "AllSigned")
-                    .withParameters("-c", "Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression");
+            commandLine = "powershell -ex AllSigned -c \"Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression\"";
         } else if (SystemInfo.isLinux || SystemInfo.isMac) {
-            commandLine.withExePath("curl")
-                    .withParameters("-fsSL", "https://aka.ms/install-azd.sh")
-                    .withParameters("|", "bash");
+            commandLine = "curl -fsSL https://aka.ms/install-azd.sh | bash";
         } else {
-            String osName = System.getProperty("os.name");
+            final String osName = System.getProperty("os.name");
             logger.error("Unsupported platform: " + osName);
             throw new UnsupportedOperationException("Unsupported platform: " + osName);
         }
-
         return commandLine;
     }
 }
