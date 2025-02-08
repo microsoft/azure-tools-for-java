@@ -30,10 +30,9 @@ public abstract class AzdCommandAction extends AnAction {
         final String command = event.getPresentation().getDescription();
         if (command == null || command.isEmpty()) return;
 
-        // Get or create terminal tab under the `directory`
-        final TerminalUtils.TerminalWidgetInfo terminalWidget = TerminalUtils.getOrCreateTerminalWidget(project, directory);
-        final TerminalWidget terminal = terminalWidget.terminalWidget;
-        if (AzdCliUtils.azdCliInstallAttempted && terminalWidget.isNewTerminal) {
+        // Create terminal tab under the `directory`
+        final TerminalWidget terminal = TerminalUtils.createTerminalWidget(project, directory, command);
+        if (AzdCliUtils.azdCliInstallAttempted) {
             AzdCliUtils.setupAzdEnvs(terminal);
         }
 
