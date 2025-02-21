@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-public abstract class AzdCommandAction extends AnAction {
+public abstract class AbstractAzdCommandAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {

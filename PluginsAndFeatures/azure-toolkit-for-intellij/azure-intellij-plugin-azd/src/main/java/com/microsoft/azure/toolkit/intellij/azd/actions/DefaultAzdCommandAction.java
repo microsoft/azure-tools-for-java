@@ -2,7 +2,7 @@ package com.microsoft.azure.toolkit.intellij.azd.actions;
 
 import java.util.Set;
 
-public class AzdUpCommandAction extends AzdCommandAction {
+public class DefaultAzdCommandAction extends AbstractAzdCommandAction {
 
     @Override
     public Set<String> getSupportedFiles() {

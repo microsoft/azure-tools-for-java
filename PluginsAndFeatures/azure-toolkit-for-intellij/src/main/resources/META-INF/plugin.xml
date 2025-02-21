@@ -123,6 +123,7 @@
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
       <reference ref="Actions.AzdInit"/>
+      <reference ref="Actions.AzdAdd"/>
       <reference ref="Actions.AzdUp"/>
     </group>
 
