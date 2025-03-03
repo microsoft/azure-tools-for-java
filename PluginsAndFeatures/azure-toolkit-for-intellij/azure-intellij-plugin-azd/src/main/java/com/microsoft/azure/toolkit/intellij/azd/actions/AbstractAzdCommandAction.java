@@ -1,6 +1,8 @@
 package com.microsoft.azure.toolkit.intellij.azd.actions;
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -32,12 +34,9 @@ public abstract class AbstractAzdCommandAction extends AnAction {
 
         // Create terminal tab under the `directory`
         final TerminalWidget terminal = TerminalUtils.createTerminalWidget(project, directory, command);
-        if (AzdCliUtils.azdCliInstallAttempted) {
-            AzdCliUtils.setupAzdEnvs(terminal);
-        }
 
         // Check if azd installed, if not, prompt to install
-        if (!AzdCliUtils.checkAzdCliInstalled(terminal)) {
+        if (!AzdCliUtils.azdCliInstalled(terminal)) {
             final int result = Messages.showYesNoDialog(
                     project,
                     "Azure Developer CLI is not installed. Would you like to install it?",
@@ -49,8 +48,16 @@ public abstract class AbstractAzdCommandAction extends AnAction {
             if (result == Messages.YES) {
                 AzdCliUtils.installAzdCli(terminal);
             } else {
+                Notifications.Bus.notify(new Notification(
+                        "AzureDeveloperCLI",
+                        "Azure Developer CLI is not installed",
+                        "Please install the Azure Developer CLI to use this functionality.",
+                        NotificationType.INFORMATION
+                ), project);
                 return;
             }
+        } else {
+            AzdCliUtils.setupAzdEnvsIfNecessary(terminal);
         }
 
         terminal.sendCommandToExecute(AzdCliUtils.getAzdInvocation(command));
@@ -66,12 +73,4 @@ public abstract class AbstractAzdCommandAction extends AnAction {
 
     public abstract Set<String> getSupportedFiles();
 
-    /**
-     * `ActionUpdateThread.OLD_EDT` is deprecated and going to be removed soon.
-     * Recommend to override `getActionUpdateThread()`
-     */
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
 }

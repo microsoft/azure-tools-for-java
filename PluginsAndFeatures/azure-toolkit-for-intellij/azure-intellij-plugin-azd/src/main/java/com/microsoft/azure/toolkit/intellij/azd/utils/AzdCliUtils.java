@@ -30,7 +30,7 @@ public class AzdCliUtils {
 
     public static boolean azdCliInstallAttempted = false;
 
-    public static boolean checkAzdCliInstalled(TerminalWidget terminal) {
+    public static boolean azdCliInstalled(TerminalWidget terminal) {
         if (azdCliInstallAttempted) {
             return true;
         } else {
@@ -150,6 +150,12 @@ public class AzdCliUtils {
         if (SystemInfo.isWindows && System.getenv("AZURE_DEV_CLI_PATH") == null && !getPathEnv().contains("/Azure Dev CLI/")) {
             terminal.sendCommandToExecute(String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation()));
             azdCliInstallAttempted = true;
+        }
+    }
+
+    public static void setupAzdEnvsIfNecessary(@NotNull TerminalWidget terminal) {
+        if (azdCliInstallAttempted) {
+            setupAzdEnvs(terminal);
         }
     }
 

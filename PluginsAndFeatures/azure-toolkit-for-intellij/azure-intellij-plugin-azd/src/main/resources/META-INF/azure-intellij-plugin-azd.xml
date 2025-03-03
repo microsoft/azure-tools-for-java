@@ -4,7 +4,7 @@
 
   <actions>
     <action id="Actions.AzdInit" class="com.microsoft.azure.toolkit.intellij.azd.actions.AzdInitCommandAction"
-            text="Generate Azure Deployment Script (azd init)" description="azd init"
+            text="Generate Azure Deployment Script (azd init)" description="azd init --from-code"
             icon="/icons/azd-logo.svg">
     </action>
     <action id="Actions.AzdAdd" class="com.microsoft.azure.toolkit.intellij.azd.actions.DefaultAzdCommandAction"
