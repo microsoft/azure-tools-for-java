@@ -11,8 +11,10 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.terminal.ui.TerminalWidget;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.terminal.TerminalOptionsProvider;
 
 import javax.annotation.Nullable;
 import java.nio.file.Paths;
@@ -29,6 +31,8 @@ public class AzdCliUtils {
     private static AzdVersion cachedAzdVersion = null;
 
     public static boolean azdCliInstallAttempted = false;
+
+    private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
     public static boolean azdCliInstalled(TerminalWidget terminal) {
         if (azdCliInstallAttempted) {
@@ -128,7 +132,12 @@ public class AzdCliUtils {
         // See https://aka.ms/azd-install
         final String commandLine;
         if (SystemInfo.isWindows) {
-            commandLine = "powershell -ex AllSigned -c \"Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression\"";
+            if (TerminalInfo.isWindows()) {
+                commandLine = "powershell -ex AllSigned -c \"Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression\"";
+            } else {
+                // wsl or other bash like ones
+                commandLine = "curl -fsSL https://aka.ms/install-azd.sh | bash";
+            }
         } else if (SystemInfo.isLinux || SystemInfo.isMac) {
             commandLine = "curl -fsSL https://aka.ms/install-azd.sh | bash";
         } else {
@@ -147,8 +156,14 @@ public class AzdCliUtils {
      * did try to install within this session.
      */
     public static void setupAzdEnvs(@NotNull TerminalWidget terminal) {
-        if (SystemInfo.isWindows && System.getenv("AZURE_DEV_CLI_PATH") == null && !getPathEnv().contains("/Azure Dev CLI/")) {
-            terminal.sendCommandToExecute(String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation()));
+        if (SystemInfo.isWindows
+                && TerminalInfo.isWindows()
+                && System.getenv(AZURE_DEV_CLI_PATH) == null
+                && !getPathEnv().contains("/Azure Dev CLI/")) {
+            final String envCommand = TerminalInfo.isCmd()
+                    ? String.format("set Path=%s;%%Path%%", getDefaultAzdInstallLocation())
+                    : String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation());
+            terminal.sendCommandToExecute(envCommand);
             azdCliInstallAttempted = true;
         }
     }
@@ -173,10 +188,11 @@ public class AzdCliUtils {
     }
 
     public static String getAzdInvocation(String command) {
-        final String azureDevCliPath = System.getenv("AZURE_DEV_CLI_PATH");
+        final String azureDevCliPath = System.getenv(AZURE_DEV_CLI_PATH);
         if (azureDevCliPath == null) {
             return command;
         } else {
+            // Extract arguments after "azd" and concat with azd cli path
             return azureDevCliPath + command.substring(3);
         }
     }
