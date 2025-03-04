@@ -28,7 +28,13 @@ public class AzdCliUtils {
 
     private static AzdVersion cachedAzdVersion = null;
 
+    // Indicate if installed azd cli in this session.
+    // If yes, consider azd already installed in current session.
     public static boolean azdCliInstallAttempted = false;
+
+    // Indicate if set up azd env in this session.
+    // If yes, always setup in current session.
+    public static boolean azdEnvSetupAttempted = false;
 
     private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
@@ -130,6 +136,7 @@ public class AzdCliUtils {
     public static void installAzdCli(@NotNull TerminalWidget terminal) {
         final String installCommand = getInstallationCommandLine();
         terminal.sendCommandToExecute(installCommand);
+        azdCliInstallAttempted = true;
         setupAzdEnvs(terminal);
     }
 
@@ -169,12 +176,12 @@ public class AzdCliUtils {
                     ? String.format("set Path=%s;%%Path%%", getDefaultAzdInstallLocation())
                     : String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation());
             terminal.sendCommandToExecute(envCommand);
-            azdCliInstallAttempted = true;
+            azdEnvSetupAttempted = true;
         }
     }
 
     public static void setupAzdEnvsIfNecessary(@NotNull TerminalWidget terminal) {
-        if (azdCliInstallAttempted) {
+        if (azdEnvSetupAttempted) {
             setupAzdEnvs(terminal);
         }
     }
