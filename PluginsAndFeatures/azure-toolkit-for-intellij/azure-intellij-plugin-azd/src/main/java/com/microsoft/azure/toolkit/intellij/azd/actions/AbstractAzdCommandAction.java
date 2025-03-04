@@ -32,11 +32,10 @@ public abstract class AbstractAzdCommandAction extends AnAction {
         final String command = event.getPresentation().getDescription();
         if (command == null || command.isEmpty()) return;
 
-        // Create terminal tab under the `directory`
-        final TerminalWidget terminal = TerminalUtils.createTerminalWidget(project, directory, command);
+        final TerminalWidget terminal;
 
         // Check if azd installed, if not, prompt to install
-        if (!AzdCliUtils.azdCliInstalled(terminal)) {
+        if (!AzdCliUtils.azdCliInstalled()) {
             final int result = Messages.showYesNoDialog(
                     project,
                     "Azure Developer CLI is not installed. Would you like to install it?",
@@ -46,6 +45,7 @@ public abstract class AbstractAzdCommandAction extends AnAction {
                     Messages.getQuestionIcon()
             );
             if (result == Messages.YES) {
+                terminal = TerminalUtils.createTerminalWidget(project, directory, command);
                 AzdCliUtils.installAzdCli(terminal);
             } else {
                 Notifications.Bus.notify(new Notification(
@@ -57,6 +57,7 @@ public abstract class AbstractAzdCommandAction extends AnAction {
                 return;
             }
         } else {
+            terminal = TerminalUtils.createTerminalWidget(project, directory, command);
             AzdCliUtils.setupAzdEnvsIfNecessary(terminal);
         }
 

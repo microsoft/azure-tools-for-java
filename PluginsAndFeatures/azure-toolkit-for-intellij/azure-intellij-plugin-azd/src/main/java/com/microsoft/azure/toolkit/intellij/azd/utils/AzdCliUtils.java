@@ -11,10 +11,8 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.terminal.ui.TerminalWidget;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.plugins.terminal.TerminalOptionsProvider;
 
 import javax.annotation.Nullable;
 import java.nio.file.Paths;
@@ -34,16 +32,16 @@ public class AzdCliUtils {
 
     private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
-    public static boolean azdCliInstalled(TerminalWidget terminal) {
+    public static boolean azdCliInstalled() {
         if (azdCliInstallAttempted) {
             return true;
         } else {
-            return getAzdCliVersion(terminal) != null;
+            return getAzdCliVersion() != null;
         }
     }
 
     @Nullable
-    private static AzdVersion getAzdCliVersion(TerminalWidget terminal) {
+    private static AzdVersion getAzdCliVersion() {
         // Check if the cached result is still valid
         final long currentTime = System.currentTimeMillis();
         if (cachedAzdVersion != null && (currentTime - lastCheckTime) < CACHE_LIFETIME) {
@@ -96,7 +94,7 @@ public class AzdCliUtils {
         });
 
         processHandler.startNotify();
-        processHandler.waitFor(TimeUnit.SECONDS.toMillis(30)); // Wait up to 30 seconds
+        processHandler.waitFor(TimeUnit.SECONDS.toMillis(3));
         return output;
     }
 
