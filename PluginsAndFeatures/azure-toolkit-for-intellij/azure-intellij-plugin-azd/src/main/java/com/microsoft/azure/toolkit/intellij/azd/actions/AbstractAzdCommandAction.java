@@ -3,8 +3,6 @@ package com.microsoft.azure.toolkit.intellij.azd.actions;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.ActionUpdateThread;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -14,25 +12,28 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.terminal.ui.TerminalWidget;
 import com.microsoft.azure.toolkit.intellij.azd.utils.AzdCliUtils;
 import com.microsoft.azure.toolkit.intellij.azd.utils.TerminalUtils;
+import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-public abstract class AbstractAzdCommandAction extends AnAction {
+public abstract class AbstractAzdCommandAction extends AzureAnAction {
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent event) {
-        final Project project = event.getProject();
-        if (project == null) return;
+    public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
+        final Project project = anActionEvent.getProject();
+        if (project == null) return true;
 
-        final VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
-        if (file == null) return;
+        final VirtualFile file = anActionEvent.getData(CommonDataKeys.VIRTUAL_FILE);
+        if (file == null) return true;
 
         final String directory = file.getParent() != null ? file.getParent().getPath() : null;
-        if (directory == null) return;
+        if (directory == null) return true;
 
-        final String command = event.getPresentation().getDescription();
-        if (command == null || command.isEmpty()) return;
+        final String command = anActionEvent.getPresentation().getDescription();
+        if (command == null || command.isEmpty()) return true;
 
         // Check if azd installed, if not, prompt to install
         AzdCliUtils.azdCliInstalledAsync().thenAccept(installed -> {
@@ -66,6 +67,8 @@ public abstract class AbstractAzdCommandAction extends AnAction {
                 }
             });
         });
+
+        return false;
     }
 
     @Override
@@ -77,9 +80,4 @@ public abstract class AbstractAzdCommandAction extends AnAction {
     }
 
     public abstract Set<String> getSupportedFiles();
-
-    @Override
-    public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
-    }
 }
