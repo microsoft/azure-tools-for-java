@@ -14,8 +14,8 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.terminal.ui.TerminalWidget;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class AzdCliUtils {
@@ -32,46 +32,53 @@ public class AzdCliUtils {
 
     private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
-    public static boolean azdCliInstalled() {
+    public static CompletableFuture<Boolean> azdCliInstalledAsync() {
         if (azdCliInstallAttempted) {
-            return true;
-        } else {
-            return getAzdCliVersion() != null;
+            return CompletableFuture.completedFuture(true);
         }
+        return getAzdCliVersionAsync().thenApply(azdVersion -> azdVersion != null);
     }
 
-    @Nullable
-    private static AzdVersion getAzdCliVersion() {
+    private static CompletableFuture<AzdVersion> getAzdCliVersionAsync() {
         // Check if the cached result is still valid
         final long currentTime = System.currentTimeMillis();
         if (cachedAzdVersion != null && (currentTime - lastCheckTime) < CACHE_LIFETIME) {
-            return cachedAzdVersion;
+            return CompletableFuture.completedFuture(cachedAzdVersion);
         }
 
-        try {
-            final GeneralCommandLine commandLine = new GeneralCommandLine()
-                    .withExePath("azd")
-                    .withParameters("version", "--output", "json");
+        final GeneralCommandLine commandLine = new GeneralCommandLine()
+                .withExePath("azd")
+                .withParameters("version", "--output", "json");
 
-            final ProcessOutput output = runCommand(commandLine);
-            if (output.getExitCode() == 0) {
-                final String stdout = output.getStdout();
-                final Gson gson = new Gson();
-                final AzdVersion azdVersion = gson.fromJson(stdout, AzdVersion.class);
-                // Cache the result
-                cachedAzdVersion = azdVersion;
-                lastCheckTime = currentTime;
-                return azdVersion;
-            } else {
-                logger.warn("Failed to check azd version. Exit code: " + output.getExitCode());
-            }
-        } catch (Exception ex) {
-            logger.warn("Unexpected error while checking azd version", ex);
-        }
-
-        return null;
+        return runCommandAsync(commandLine)
+                .thenApply(output -> {
+                    if (output.getExitCode() == 0) {
+                        final String stdout = output.getStdout();
+                        final Gson gson = new Gson();
+                        final AzdVersion azdVersion = gson.fromJson(stdout, AzdVersion.class);
+                        // Cache the result
+                        cachedAzdVersion = azdVersion;
+                        lastCheckTime = currentTime;
+                        return azdVersion;
+                    } else {
+                        logger.warn("Failed to check azd version. Exit code: " + output.getExitCode());
+                        return null;
+                    }
+                }).exceptionally(ex -> {
+                    logger.warn("Unexpected error while checking azd version", ex);
+                    return null;
+                });
     }
 
+    public static CompletableFuture<ProcessOutput> runCommandAsync(GeneralCommandLine commandLine) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return runCommand(commandLine);
+            } catch (ExecutionException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+    }
 
     private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws ExecutionException {
         final OSProcessHandler processHandler = new OSProcessHandler(commandLine);
