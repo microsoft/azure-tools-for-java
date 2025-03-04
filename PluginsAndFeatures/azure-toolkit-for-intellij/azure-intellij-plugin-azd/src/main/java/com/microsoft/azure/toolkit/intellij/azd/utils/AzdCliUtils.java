@@ -74,13 +74,13 @@ public class AzdCliUtils {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return runCommand(commandLine);
-            } catch (ExecutionException ex) {
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         });
     }
 
-    private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws ExecutionException {
+    private static ProcessOutput runCommand(GeneralCommandLine commandLine) throws Exception {
         final OSProcessHandler processHandler = new OSProcessHandler(commandLine);
         final ProcessOutput output = new ProcessOutput();
 
