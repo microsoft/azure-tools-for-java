@@ -1,7 +1,6 @@
 package com.microsoft.azure.toolkit.intellij.azd.utils;
 
 import com.google.gson.Gson;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessEvent;
@@ -34,7 +33,11 @@ public class AzdCliUtils {
 
     // Indicate if set up azd env in this session.
     // If yes, always setup in current session.
-    public static boolean azdEnvSetupAttempted = false;
+    public static boolean azdEnvSetupNeeded = false;
+
+    // Indicate if enable azd compose.
+    // Ensure it executes only once in current session.
+    public static boolean azdComposeEnabled = false;
 
     private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
@@ -133,11 +136,24 @@ public class AzdCliUtils {
         }
     }
 
-    public static void installAzdCli(@NotNull TerminalWidget terminal) {
+    public static void installAndSetupAzdCli(@NotNull TerminalWidget terminal) {
+        // Install or update
         final String installCommand = getInstallationCommandLine();
         terminal.sendCommandToExecute(installCommand);
         azdCliInstallAttempted = true;
+        // Set up azd cli path env
         setupAzdEnvs(terminal);
+        // enable azd compose
+        enableAzdCompose(terminal);
+    }
+
+    public static void setupAzdCli(@NotNull TerminalWidget terminal) {
+        // Set up azd cli path env if necessary
+        if (azdEnvSetupNeeded) {
+            setupAzdEnvs(terminal);
+        }
+        // Enable azd compose
+        enableAzdCompose(terminal);
     }
 
     private static String getInstallationCommandLine() {
@@ -167,7 +183,7 @@ public class AzdCliUtils {
      * as long as it's Windows, AZURE_DEV_CLI_PATH is unset, "Azure Dev CLI" isn't already in the PATH, and the user
      * did try to install within this session.
      */
-    public static void setupAzdEnvs(@NotNull TerminalWidget terminal) {
+    private static void setupAzdEnvs(@NotNull TerminalWidget terminal) {
         if (SystemInfo.isWindows
                 && TerminalInfo.isWindows()
                 && System.getenv(AZURE_DEV_CLI_PATH) == null
@@ -176,13 +192,15 @@ public class AzdCliUtils {
                     ? String.format("set Path=%s;%%Path%%", getDefaultAzdInstallLocation())
                     : String.format("$env:Path = '%s;' + $env:Path", getDefaultAzdInstallLocation());
             terminal.sendCommandToExecute(envCommand);
-            azdEnvSetupAttempted = true;
+            azdEnvSetupNeeded = true;
         }
     }
 
-    public static void setupAzdEnvsIfNecessary(@NotNull TerminalWidget terminal) {
-        if (azdEnvSetupAttempted) {
-            setupAzdEnvs(terminal);
+    public static void enableAzdCompose(@NotNull TerminalWidget terminal) {
+        if (!azdComposeEnabled) {
+            final String command = "azd config set alpha.compose on";
+            terminal.sendCommandToExecute(command);
+            azdComposeEnabled = true;
         }
     }
 

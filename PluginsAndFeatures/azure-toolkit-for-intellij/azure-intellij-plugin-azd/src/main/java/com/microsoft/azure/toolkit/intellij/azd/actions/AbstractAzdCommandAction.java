@@ -50,7 +50,7 @@ public abstract class AbstractAzdCommandAction extends AzureAnAction {
                     );
                     if (result == Messages.YES) {
                         final TerminalWidget terminal = TerminalUtils.createTerminalWidget(project, directory, command);
-                        AzdCliUtils.installAzdCli(terminal);
+                        AzdCliUtils.installAndSetupAzdCli(terminal);
                         terminal.sendCommandToExecute(AzdCliUtils.getAzdInvocation(command));
                     } else {
                         Notifications.Bus.notify(new Notification(
@@ -62,7 +62,7 @@ public abstract class AbstractAzdCommandAction extends AzureAnAction {
                     }
                 } else {
                     final TerminalWidget terminal = TerminalUtils.createTerminalWidget(project, directory, command);
-                    AzdCliUtils.setupAzdEnvsIfNecessary(terminal);
+                    AzdCliUtils.setupAzdCli(terminal);
                     terminal.sendCommandToExecute(AzdCliUtils.getAzdInvocation(command));
                 }
             });
