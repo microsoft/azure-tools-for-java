@@ -3,15 +3,15 @@
   <depends>org.jetbrains.plugins.terminal</depends>
 
   <actions>
-    <action id="Actions.AzdInit" class="com.microsoft.azure.toolkit.intellij.azd.actions.AzdInitCommandAction"
+    <action id="Actions.AzdInit" class="com.microsoft.azure.toolkit.intellij.sjad.actions.AzdInitCommandAction"
             text="Generate Azure Deployment Script (azd init)" description="azd init --from-code"
             icon="/icons/azd-logo.svg">
     </action>
-    <action id="Actions.AzdAdd" class="com.microsoft.azure.toolkit.intellij.azd.actions.DefaultAzdCommandAction"
+    <action id="Actions.AzdAdd" class="com.microsoft.azure.toolkit.intellij.sjad.actions.DefaultAzdCommandAction"
             text="Add a component to your project (azd add)" description="azd add"
             icon="/icons/azd-logo.svg">
     </action>
-    <action id="Actions.AzdUp" class="com.microsoft.azure.toolkit.intellij.azd.actions.DefaultAzdCommandAction"
+    <action id="Actions.AzdUp" class="com.microsoft.azure.toolkit.intellij.sjad.actions.DefaultAzdCommandAction"
             text="Package, Provision, and Deploy to Azure (azd up)" description="azd up"
             icon="/icons/azd-logo.svg">
     </action>

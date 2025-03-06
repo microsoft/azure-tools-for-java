@@ -14,7 +14,6 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-appservice-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-arm" />
-            <option value="$PROJECT_DIR$/azure-intellij-plugin-azd" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-bicep" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cloud-shell" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cognitiveservices" />
@@ -42,6 +41,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-samples" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-service-explorer" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-servicebus" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-sjad" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-sparkoncosmos" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-springcloud" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-sqlserverbigdata" />

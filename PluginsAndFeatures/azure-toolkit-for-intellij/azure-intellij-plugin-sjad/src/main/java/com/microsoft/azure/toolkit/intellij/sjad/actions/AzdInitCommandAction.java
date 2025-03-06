@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.azd.actions;
+package com.microsoft.azure.toolkit.intellij.sjad.actions;
 
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.azd.utils;
+package com.microsoft.azure.toolkit.intellij.sjad.utils;
 
 import com.google.gson.Gson;
 import com.intellij.execution.configurations.GeneralCommandLine;

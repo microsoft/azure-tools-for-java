@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.azd.actions;
+package com.microsoft.azure.toolkit.intellij.sjad.actions;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -10,8 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.terminal.ui.TerminalWidget;
-import com.microsoft.azure.toolkit.intellij.azd.utils.AzdCliUtils;
-import com.microsoft.azure.toolkit.intellij.azd.utils.TerminalUtils;
+import com.microsoft.azure.toolkit.intellij.sjad.utils.AzdCliUtils;
+import com.microsoft.azure.toolkit.intellij.sjad.utils.TerminalUtils;
 import com.microsoft.azure.toolkit.intellij.common.action.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.NotNull;

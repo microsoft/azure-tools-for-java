@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.azd.utils;
+package com.microsoft.azure.toolkit.intellij.sjad.utils;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.terminal.ui.TerminalWidget;

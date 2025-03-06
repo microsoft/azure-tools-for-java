@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.azd.utils;
+package com.microsoft.azure.toolkit.intellij.sjad.utils;
 
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.plugins.terminal.TerminalOptionsProvider;

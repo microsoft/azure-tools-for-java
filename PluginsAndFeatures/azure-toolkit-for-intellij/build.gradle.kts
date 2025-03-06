@@ -210,7 +210,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-integration-services"))
     implementation(project(":azure-intellij-plugin-cloud-shell"))
     implementation(project(":azure-intellij-plugin-java-sdk"))
-    implementation(project(":azure-intellij-plugin-azd"))
+    implementation(project(":azure-intellij-plugin-sjad"))
     implementation("commons-io:commons-io")
     implementation("org.apache.commons:commons-lang3")
     implementation("com.microsoft.azure:azure-toolkit-common-lib")
