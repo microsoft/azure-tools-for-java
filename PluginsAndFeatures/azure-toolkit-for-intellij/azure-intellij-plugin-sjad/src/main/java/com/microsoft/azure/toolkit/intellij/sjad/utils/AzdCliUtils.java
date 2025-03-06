@@ -29,15 +29,15 @@ public class AzdCliUtils {
 
     // Indicate if installed azd cli in this session.
     // If yes, consider azd already installed in current session.
-    public static boolean azdCliInstallAttempted = false;
+    private static boolean azdCliInstallAttempted = false;
 
     // Indicate if set up azd env in this session.
     // If yes, always setup in current session.
-    public static boolean azdEnvSetupNeeded = false;
+    private static boolean azdEnvSetupNeeded = false;
 
     // Indicate if enable azd compose.
     // Ensure it executes only once in current session.
-    public static boolean azdComposeEnabled = false;
+    private static boolean azdComposeEnabled = false;
 
     private static final String AZURE_DEV_CLI_PATH = "AZURE_DEV_CLI_PATH";
 
@@ -79,7 +79,7 @@ public class AzdCliUtils {
                 });
     }
 
-    public static CompletableFuture<ProcessOutput> runCommandAsync(GeneralCommandLine commandLine) {
+    private static CompletableFuture<ProcessOutput> runCommandAsync(GeneralCommandLine commandLine) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return runCommand(commandLine);
@@ -196,7 +196,7 @@ public class AzdCliUtils {
         }
     }
 
-    public static void enableAzdCompose(@NotNull TerminalWidget terminal) {
+    private static void enableAzdCompose(@NotNull TerminalWidget terminal) {
         if (!azdComposeEnabled) {
             final String command = "azd config set alpha.compose on";
             terminal.sendCommandToExecute(command);
