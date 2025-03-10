@@ -1,0 +1,6 @@
+{
+  "azd": {
+    "version": "1.12.0",
+    "commit": "dc37b930ef8b80340a510c09a6e657ef5bda4f55"
+  }
+}

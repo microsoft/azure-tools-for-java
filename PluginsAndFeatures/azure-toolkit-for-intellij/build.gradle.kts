@@ -273,6 +273,7 @@ tasks {
         from("$projectDir/NOTICE")
         from("$projectDir/azure-intellij-plugin-hdinsight/hdinsight_jobview_html")
         from("$projectDir/azure-intellij-plugin-bicep/binaries")
+        from("$projectDir/azure-intellij-plugin-sjad/binaries")
     }
 
     prepareSandbox {
@@ -280,6 +281,7 @@ tasks {
         from("$projectDir/NOTICE")
         from("$projectDir/azure-intellij-plugin-hdinsight/hdinsight_jobview_html")
         from("$projectDir/azure-intellij-plugin-bicep/binaries")
+        from("$projectDir/azure-intellij-plugin-sjad/binaries")
     }
 
     runIde {
