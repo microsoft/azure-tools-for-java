@@ -11,6 +11,7 @@ import com.microsoft.azure.toolkit.intellij.sjad.terminals.BashTerminal;
 import com.microsoft.azure.toolkit.intellij.sjad.terminals.CmdTerminal;
 import com.microsoft.azure.toolkit.intellij.sjad.terminals.PowershellTerminal;
 import com.microsoft.azure.toolkit.intellij.sjad.terminals.TerminalInfo;
+import com.microsoft.azure.toolkit.intellij.sjad.terminals.UnixTerminal;
 import com.microsoft.azure.toolkit.intellij.sjad.terminals.WslTerminal;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +54,7 @@ public class AzdCliUtils {
                 return new PowershellTerminal(pluginPath);
             }
         } else if (SystemInfo.isLinux || SystemInfo.isMac) {
-            return new BashTerminal(pluginPath);
+            return new UnixTerminal(pluginPath);
         } else {
             final String osName = System.getProperty("os.name");
             logger.error("Unsupported OS platform: " + osName);
