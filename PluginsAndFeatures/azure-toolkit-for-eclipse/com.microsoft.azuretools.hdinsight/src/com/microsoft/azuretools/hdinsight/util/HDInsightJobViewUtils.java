@@ -73,21 +73,39 @@ public class HDInsightJobViewUtils {
      public static void unzip(String zipFilePath, String destDirectory) throws IOException {
             File destDir = new File(destDirectory);
             if (!destDir.exists()) {
-                destDir.mkdir();
+                destDir.mkdirs();
             }
-            ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
-            ZipEntry entry = zipIn.getNextEntry();
-            while (entry != null) {
-                String filePath = destDirectory + File.separator + entry.getName();
-                if (!entry.isDirectory()) {
-                    extractFile(zipIn, filePath);
-                } else {
-                    File dir = new File(filePath);
-                    dir.mkdir();
+            try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+                ZipEntry entry = zipIn.getNextEntry();
+                while (entry != null) {
+                    // Validate entry name to prevent zip slip attacks
+                    String entryName = entry.getName();
+                    if (entryName.contains("..") || entryName.startsWith("/") || entryName.startsWith("\\")) {
+                        throw new IOException("Entry with an illegal path: " + entryName);
+                    }
+                    
+                    File destFile = new File(destDir, entryName);
+                    
+                    // Ensure the file is within the destination directory
+                    String destDirPath = destDir.getCanonicalPath();
+                    String destFilePath = destFile.getCanonicalPath();
+                    if (!destFilePath.startsWith(destDirPath + File.separator)) {
+                        throw new IOException("Entry is outside of the target dir: " + entryName);
+                    }
+                    
+                    if (!entry.isDirectory()) {
+                        // Ensure parent directories exist
+                        File parent = destFile.getParentFile();
+                        if (parent != null && !parent.exists()) {
+                            parent.mkdirs();
+                        }
+                        extractFile(zipIn, destFile.getPath());
+                    } else {
+                        destFile.mkdirs();
+                    }
+                    zipIn.closeEntry();
+                    entry = zipIn.getNextEntry();
                 }
-                zipIn.closeEntry();
-                entry = zipIn.getNextEntry();
             }
-            zipIn.close();
         }
 }
