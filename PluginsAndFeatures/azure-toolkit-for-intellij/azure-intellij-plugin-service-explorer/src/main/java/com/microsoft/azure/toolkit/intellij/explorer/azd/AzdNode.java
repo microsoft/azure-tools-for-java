@@ -3,8 +3,12 @@ package com.microsoft.azure.toolkit.intellij.explorer.azd;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.ide.BrowserUtil;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -12,9 +16,12 @@ import com.microsoft.azure.toolkit.ide.common.component.Node;
 import com.microsoft.azure.toolkit.ide.common.icon.AzureIcons;
 import com.microsoft.azure.toolkit.lib.common.event.AzureEventBus;
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.toolkit.intellij.explorer.azd.AzdUtils.executeInTerminal;
@@ -28,8 +35,9 @@ public final class AzdNode extends Node<String> {
     private static final String MAC_REFRESH_PATH_COMMAND = "source ~/.zshrc";
 
     private static final String WIN_AZD_INSTALL_COMMAND = "winget install microsoft.azd";
-    private static final String LINUX_AZD_INSTALL_COMMAND = "curl -fsSL https://aka.ms/install-azd.sh | bash";
-    private static final String MAC_AZD_INSTALL_COMMAND = "brew tap azure/azd && brew install azd";
+    private static final String LINUX_AZD_INSTALL_COMMAND = "set -o pipefail && curl -fsSL https://aka.ms/install-azd.sh | bash";
+    private static final String BREW_PATH = getBrewPath();
+    private static final String MAC_AZD_INSTALL_COMMAND = "source ~/.zshrc && " + BREW_PATH + " tap azure/azd && " + BREW_PATH + " install azd";
 
     private final Project project;
 
@@ -79,8 +87,22 @@ public final class AzdNode extends Node<String> {
             public void run(com.intellij.openapi.progress.ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
                 indicator.setText(getTitle() + "...");
-                final int exitCode = runAsBackgroundTask(command);
-                if (exitCode == 0) {
+                final String output = runAsBackgroundTask(command, error -> {
+                    indicator.setText("Installation of azd failed.");
+                    NotificationGroupManager.getInstance()
+                            .getNotificationGroup("Azure Developer")
+                            .createNotification("Installation of azd failed", "Install azd manually and <b>restart IDE</b>.<br>" + error, NotificationType.ERROR)
+                            .addAction(new NotificationAction("Install azd manually") {
+                                @Override
+                                public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+                                    BrowserUtil.browse("https://aka.ms/azd/install");
+                                }
+                            })
+                            .notify(project);
+                    indicator.stop();
+                });
+
+                if (output != null) {
                     AzureEventBus.emit("azd.installed");
                     NotificationGroupManager.getInstance()
                             .getNotificationGroup("Azure Developer")
@@ -95,20 +117,13 @@ public final class AzdNode extends Node<String> {
                         executeInTerminal(project, MAC_REFRESH_PATH_COMMAND);
                     }
                     indicator.stop();
-                } else {
-                    indicator.setText("Installation of azd failed.");
-                    NotificationGroupManager.getInstance()
-                            .getNotificationGroup("Azure Developer")
-                            .createNotification("Installation of azd failed.", NotificationType.ERROR)
-                            .notify(project);
-                    indicator.stop();
                 }
             }
         });
     }
 
     public void showAzdActions() {
-        AzdUtils.logTelemetryEvent("azd-signed-in");
+        AzdUtils.logTelemetryEvent("azd-show-actions");
         addChild(getCreateFromTemplatesNode());
         addChild(getInitializeFromSourceNode());
         addChild(getProvisionResourcesNode());
@@ -119,7 +134,7 @@ public final class AzdNode extends Node<String> {
     @Override
     public synchronized void refreshView() {
         super.refreshView();
-        refreshChildrenLater(true);
+        refreshChildrenLater(false);
     }
 
     private Node<String> getProvisionAndDeployToAzureNode() {
@@ -174,30 +189,58 @@ public final class AzdNode extends Node<String> {
     }
 
     public static boolean isAzdInstalled() {
-        return runAsBackgroundTask("azd version -o json") == 0;
+        return runAsBackgroundTask("azd version -o json", null) != null;
     }
 
-    private static int runAsBackgroundTask(String command) {
+    private static String runAsBackgroundTask(String command, Consumer<String> onError) {
         try {
             final ProcessBuilder processBuilder = new ProcessBuilder();
             // Detect OS and set the appropriate command
             final String os = System.getProperty("os.name").toLowerCase();
             if (SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/c", command); // Windows
+            } else if (SystemUtils.IS_OS_MAC) {
+                processBuilder.command("zsh", "-c", command); // Mac
             } else {
-                processBuilder.command("bash", "-c", command); // Linux/Unix
+                processBuilder.command("bash", "-c", command); // Linux
             }
 
-            Process process = processBuilder.start();
+            final Process process = processBuilder.start();
 
             // Read the command output
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String output = reader.lines().collect(Collectors.joining("\n"));
-                int exitCode = process.waitFor();
-                return exitCode;
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                final String output = reader.lines().collect(Collectors.joining("<br>"));
+                final int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    try (final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                        final String error = errorReader.lines().collect(Collectors.joining("<br>"));
+                        if (onError != null) {
+                            onError.accept(error);
+                        }
+                    }
+                    return null;
+                }
+                return output;
             }
-        } catch (Exception e) {
-            return 1; // Handle error appropriately
+        } catch (final Exception e) {
+            return null;
         }
+    }
+
+    private static String getBrewPath() {
+        // Try common brew locations
+        final String[] possiblePaths = {
+                "/opt/homebrew/bin/brew",  // Apple Silicon
+                "/usr/local/bin/brew"      // Intel Mac
+        };
+
+        for (final String path : possiblePaths) {
+            if (new File(path).exists()) {
+                return path;
+            }
+        }
+
+        // Fallback to PATH lookup
+        return "brew";
     }
 }
