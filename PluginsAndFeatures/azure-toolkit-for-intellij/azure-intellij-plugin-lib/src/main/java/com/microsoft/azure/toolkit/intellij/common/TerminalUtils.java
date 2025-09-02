@@ -79,9 +79,12 @@ public class TerminalUtils {
     }
 
     @Nonnull
-    public static TerminalWidget getTerminalWidget(@Nonnull Project project, @Nullable Path workingDir, String terminalTabTitle) {
+    public static synchronized TerminalWidget getTerminalWidget(@Nonnull Project project, @Nullable Path workingDir, String terminalTabTitle) {
         final TerminalToolWindowManager manager = TerminalToolWindowManager.getInstance(project);
         final String workingDirectory = Optional.ofNullable(workingDir).map(Path::toString).orElse(null);
+        if (manager.getToolWindow() != null) {
+            manager.getToolWindow().show();
+        }
         return manager.getTerminalWidgets().stream()
                 .filter(widget -> StringUtils.isBlank(terminalTabTitle) ||
                         StringUtils.equals(widget.getTerminalTitle().buildTitle(), terminalTabTitle))

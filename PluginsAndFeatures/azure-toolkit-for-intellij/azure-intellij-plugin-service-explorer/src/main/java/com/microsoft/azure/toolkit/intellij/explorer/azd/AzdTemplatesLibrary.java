@@ -113,9 +113,12 @@ public class AzdTemplatesLibrary extends JPanel {
                 .filter(template -> tags == null || tags.isEmpty() || template.getTags().containsAll(tags))
                 .toList();
 
+        tilesPanel.removeAll();
         for (final AzdTemplate item : javaTemplates) {
             createTemplateTile(item, tilesPanel);
         }
+        tilesPanel.revalidate();
+        tilesPanel.repaint();
     }
 
     private void createTemplateTile(AzdTemplate item, JPanel tilesPanel) {

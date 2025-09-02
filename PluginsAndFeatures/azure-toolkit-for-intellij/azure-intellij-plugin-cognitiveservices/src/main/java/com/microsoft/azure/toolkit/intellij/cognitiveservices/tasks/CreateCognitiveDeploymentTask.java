@@ -61,8 +61,7 @@ public class CreateCognitiveDeploymentTask implements Task {
         if (!deployment.exists()) {
             final CognitiveDeploymentDraft draft = (CognitiveDeploymentDraft) deployment;
             final CognitiveDeploymentDraft.Config config = new CognitiveDeploymentDraft.Config();
-            final AccountModel model = account.listModels().stream().filter(AccountModel::isGPTModel).findFirst()
-                    .orElseThrow(() -> new AzureToolkitRuntimeException(String.format("GPT model is not supported in service %s, please try with another one.", account.getName())));
+            final AccountModel model = findBestAvailableGPTModel(account);
             config.setSku(DeploymentSku.fromModelSku(model.getSkus().get(0)));
             config.setModel(DeploymentModel.fromAccountModel(model));
             draft.setConfig(config);
@@ -111,5 +110,61 @@ public class CreateCognitiveDeploymentTask implements Task {
         CognitiveAccountDraft draft = accounts.create(account, rgName);
         draft.setConfig(CognitiveAccountDraft.Config.builder().resourceGroup(group).sku(accountSku).region(region).build());
         return draft;
+    }
+
+    /**
+     * Find the best available GPT model, prioritizing newer models like gpt-4o-mini
+     */
+    private AccountModel findBestAvailableGPTModel(final CognitiveAccount account) {
+        final List<AccountModel> allModels = account.listModels();
+        
+        // Define preferred models in order of preference (most preferred first)
+        final String[] preferredModels = {
+            "gpt-4o-mini",     // Cost-effective, widely available
+            "gpt-4o",          // Latest capabilities  
+            "gpt-35-turbo",    // Widely available fallback
+            "gpt-4-turbo",     // Alternative advanced model
+            "gpt-4"            // Fallback GPT-4
+        };
+        
+        // First, try to find models by exact name match
+        for (String preferredModelName : preferredModels) {
+            for (AccountModel model : allModels) {
+                if (model.getName().toLowerCase().contains(preferredModelName.toLowerCase()) && 
+                    hasValidSkus(model)) {
+                    AzureMessager.getMessager().info(String.format("Using preferred model: %s (version: %s)", 
+                        model.getName(), model.getVersion()));
+                    return model;
+                }
+            }
+        }
+        
+        // Fallback: use the original GPT filter
+        final AccountModel fallbackModel = allModels.stream()
+            .filter(AccountModel::isGPTModel)
+            .filter(this::hasValidSkus)
+            .findFirst()
+            .orElse(null);
+            
+        if (fallbackModel != null) {
+            AzureMessager.getMessager().warning(String.format("Using fallback GPT model: %s (version: %s). " +
+                "Consider updating to a newer model like gpt-4o-mini for better performance and cost.", 
+                fallbackModel.getName(), fallbackModel.getVersion()));
+            return fallbackModel;
+        }
+        
+        // If no GPT models found, throw exception
+        throw new AzureToolkitRuntimeException(String.format(
+            "No suitable GPT model found in service %s. Available models: %s. " +
+            "Please ensure your Azure OpenAI service has access to GPT models like gpt-4o-mini.", 
+            account.getName(), 
+            allModels.stream().map(AccountModel::getName).reduce((a, b) -> a + ", " + b).orElse("none")));
+    }
+
+    /**
+     * Check if the model has valid SKUs for deployment
+     */
+    private boolean hasValidSkus(AccountModel model) {
+        return model.getSkus() != null && !model.getSkus().isEmpty();
     }
 }

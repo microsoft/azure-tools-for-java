@@ -44,6 +44,36 @@ public class ModelComboBox extends AzureComboBox<AccountModel> {
     @Override
     protected AccountModel doGetDefaultValue() {
         return Optional.ofNullable(super.doGetDefaultValue()).orElseGet(() ->
-                this.getItems().stream().filter(AccountModel::isGPTModel).findFirst().orElse(null));
+                findBestAvailableGPTModel(this.getItems()));
+    }
+
+    /**
+     * Find the best available GPT model from the list, prioritizing newer models like gpt-4o-mini
+     */
+    private AccountModel findBestAvailableGPTModel(List<AccountModel> models) {
+        if (models == null || models.isEmpty()) {
+            return null;
+        }
+        
+        // Define preferred models in order of preference
+        final String[] preferredModels = {
+            "gpt-4o-mini",     // Cost-effective, widely available
+            "gpt-4o",          // Latest capabilities  
+            "gpt-35-turbo",    // Widely available fallback
+            "gpt-4-turbo",     // Alternative advanced model
+            "gpt-4"            // Fallback GPT-4
+        };
+        
+        // First, try to find models by exact name match
+        for (String preferredModelName : preferredModels) {
+            for (AccountModel model : models) {
+                if (model.getName().toLowerCase().contains(preferredModelName.toLowerCase())) {
+                    return model;
+                }
+            }
+        }
+        
+        // Fallback to original GPT filter
+        return models.stream().filter(AccountModel::isGPTModel).findFirst().orElse(null);
     }
 }
