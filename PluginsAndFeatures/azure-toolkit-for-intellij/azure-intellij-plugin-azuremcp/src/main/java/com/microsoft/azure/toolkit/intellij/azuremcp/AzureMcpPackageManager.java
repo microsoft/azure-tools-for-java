@@ -77,7 +77,8 @@ public class AzureMcpPackageManager {
                 }
             }
         } catch (final IOException e) {
-            System.err.println("Error reading Azure MCP Server version: " + e.getMessage());
+            log.error("Error getting Azure MCP executable: " + e.getMessage());
+            AzureMcpUtils.logErrorTelemetryEvent("azmcp-get-executable", e);
         }
         return null;
     }

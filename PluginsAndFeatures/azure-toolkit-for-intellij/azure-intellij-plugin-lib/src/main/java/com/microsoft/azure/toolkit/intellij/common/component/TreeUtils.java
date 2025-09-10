@@ -126,14 +126,17 @@ public class TreeUtils {
         final MouseAdapter popupHandler = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                final Object n = tree.getLastSelectedPathComponent();
-                if (n instanceof Tree.TreeNode) {
-                    final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
-                    clickNode(e, node);
-                } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-                    ((Tree.LoadMoreNode) n).load();
+                final TreePath pathForLocation = tree.getPathForLocation(e.getX(), e.getY());
+                if (pathForLocation != null) {
+                    final Object n = pathForLocation.getLastPathComponent();
+                    if (n instanceof Tree.TreeNode) {
+                        final Tree.TreeNode<?> node = (Tree.TreeNode<?>) n;
+                        clickNode(e, node);
+                    } else if (n instanceof Tree.LoadMoreNode && SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+                        ((Tree.LoadMoreNode) n).load();
+                    }
+                    super.mouseClicked(e);
                 }
-                super.mouseClicked(e);
             }
 
             @AzureOperation(name = "user/$resource.click_node.resource", params = {"node.inner.getValue()"}, source = "node.inner.getValue()")

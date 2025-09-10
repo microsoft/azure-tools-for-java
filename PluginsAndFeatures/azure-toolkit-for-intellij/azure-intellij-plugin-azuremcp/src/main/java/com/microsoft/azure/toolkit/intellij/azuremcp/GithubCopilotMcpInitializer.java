@@ -13,13 +13,9 @@ import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.registry.Registry;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +26,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.azure.toolkit.intellij.azuremcp.AzureMcpUtils.logErrorTelemetryEvent;
+import static com.microsoft.azure.toolkit.intellij.azuremcp.AzureMcpUtils.logTelemetryEvent;
+
 @Slf4j
 public class GithubCopilotMcpInitializer implements ProjectActivity, DumbAware, ProjectManagerListener {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
@@ -39,7 +38,6 @@ public class GithubCopilotMcpInitializer implements ProjectActivity, DumbAware, 
             .enable(SerializationFeature.INDENT_OUTPUT);
 
     private static final ComparableVersion LOWEST_SUPPORTED_COPILOT_VERSION = new ComparableVersion("1.5.50");
-    private static final String GHCP_MCP_INITIALIZER = "GitHubCopilotMcpInitializer";
     private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
     private final AzureMcpPackageManager azureMcpPackageManager;
 
@@ -71,7 +69,7 @@ public class GithubCopilotMcpInitializer implements ProjectActivity, DumbAware, 
     private boolean isCopilotMcpSupported() {
         // Get all installed plugins
         final IdeaPluginDescriptor[] installedPlugins = PluginManagerCore.getPlugins();
-        boolean copilotMcpSupported = Arrays.stream(installedPlugins)
+        final boolean copilotMcpSupported = Arrays.stream(installedPlugins)
                 .anyMatch(plugin -> {
                     final boolean copilotPluginInstalled = COPILOT_PLUGIN_ID.equals(plugin.getPluginId().getIdString());
                     return copilotPluginInstalled && isMcpSupported(plugin.getVersion());
@@ -115,7 +113,10 @@ public class GithubCopilotMcpInitializer implements ProjectActivity, DumbAware, 
         final McpServer azureMcpServer = new McpServer();
         azureMcpServer.setCommand(azMcpExe.getAbsolutePath());
         azureMcpServer.setArgs(Arrays.asList("server", "start"));
-        servers.put("Azure MCP Server", azureMcpServer);
+        if (servers.containsKey("Azure MCP Server")) {
+            servers.remove("Azure MCP Server");
+        }
+        servers.put("Azure MCP Server IntelliJ", azureMcpServer);
         Files.writeString(mcpConfigPath, OBJECT_MAPPER.writeValueAsString(mcpConfig));
         logTelemetryEvent("azmcp-copilot-initialization-success");
     }
@@ -155,30 +156,5 @@ public class GithubCopilotMcpInitializer implements ProjectActivity, DumbAware, 
             configPath = new File(userHome, ".config/github-copilot/intellij");
         }
         return configPath;
-    }
-
-    public static void logTelemetryEvent(String eventName) {
-        Map<String, String> properties = Map.of(
-                AzureTelemeter.OP_NAME, eventName,
-                AzureTelemeter.OP_PARENT_ID, GHCP_MCP_INITIALIZER,
-                AzureTelemeter.OPERATION_NAME, eventName, // what's the difference between OP_NAME and OPERATION_NAME?
-                AzureTelemeter.SERVICE_NAME, GHCP_MCP_INITIALIZER
-        );
-        AzureTaskManager.getInstance().runLater(() -> {
-            AzureTelemeter.log(AzureTelemetry.Type.INFO, properties);
-        });
-    }
-
-    public static void logErrorTelemetryEvent(String eventName, Exception ex) {
-        Map<String, String> properties = Map.of(
-                AzureTelemeter.OP_NAME, eventName,
-                AzureTelemeter.OP_PARENT_ID, GHCP_MCP_INITIALIZER,
-                AzureTelemeter.OPERATION_NAME, eventName, // what's the difference between OP_NAME and OPERATION_NAME?
-                AzureTelemeter.SERVICE_NAME, GHCP_MCP_INITIALIZER,
-                AzureTelemeter.ERROR_STACKTRACE, ExceptionUtils.getStackTrace(ex)
-        );
-        AzureTaskManager.getInstance().runLater(() -> {
-            AzureTelemeter.log(AzureTelemetry.Type.ERROR, properties);
-        });
     }
 }

@@ -43,7 +43,7 @@ extends:
                 targetPath: '$(Build.SourcesDirectory)'
             steps:
               - task: Bash@3
-                displayName: Build Toolkit Libs@$(TOOLKIT_BRANCH)
+                displayName: release to stable channel
                 inputs:
                   targetType: inline
                   script: |-
