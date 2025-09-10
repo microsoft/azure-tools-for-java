@@ -83,7 +83,8 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
     @Nullable
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
-        scheduledExecutor.schedule(() -> generateReport(project), INITIAL_DELAY_IN_MINUTES, TimeUnit.MINUTES);
+        scheduledExecutor.schedule(() -> ApplicationManager.getApplication().runReadAction(() -> generateReport(project)),
+                INITIAL_DELAY_IN_MINUTES, TimeUnit.MINUTES);
         return null;
     }
 
