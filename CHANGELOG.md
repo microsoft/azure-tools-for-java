@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.96.2](#3962)
   - [3.96.1](#3961)
   - [3.95.0](#3950)
   - [3.94.0](#3940)
@@ -117,6 +118,9 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.96.2
+- Configure GitHub Copilot with trimmed Azure MCP server for faster startup and a smaller footprint.
 
 ## 3.96.1
 - Configure Azure MCP server for GitHub Copilot
