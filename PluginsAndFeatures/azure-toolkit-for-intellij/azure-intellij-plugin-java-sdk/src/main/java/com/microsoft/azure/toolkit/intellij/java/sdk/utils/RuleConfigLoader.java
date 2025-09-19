@@ -16,18 +16,29 @@ import java.util.*;
 @Slf4j
 public class RuleConfigLoader {
     private static final String CONFIG_FILE_PATH = "./ruleConfigs.json";
-    private static RuleConfigLoader INSTANCE;
+    private static volatile RuleConfigLoader INSTANCE = new RuleConfigLoader();
     private Map<String, RuleConfig> ruleConfigs;
+    private volatile boolean initialized = false;
 
     private RuleConfigLoader() {
         this.ruleConfigs = new HashMap<>();
         this.initialize();
     }
 
+    static {
+        try {
+            // Eagerly load configuration at class load time
+            INSTANCE.initialize();
+        } catch (Exception e) {
+            // Never fail class loading; keep instance alive with empty configs
+            log.warn("Failed to eagerly initialize RuleConfigLoader: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * Gets the singleton instance of RuleConfigLoader.
      *
-     * @return The singleton instance of RuleConfigLoader.
+     * @return The singleton instance of RuleConfigLoader (never null).
      */
     @Nonnull
     public static RuleConfigLoader getInstance() {
@@ -43,12 +54,19 @@ public class RuleConfigLoader {
         return Collections.unmodifiableMap(ruleConfigs);
     }
 
-    private void initialize(){
+    private synchronized void initialize() {
+        if (initialized) {
+            return;
+        }
         try {
+            this.ruleConfigs.clear();
             this.ruleConfigs.putAll(this.loadRuleConfigurations());
-            INSTANCE = this;
+            // INSTANCE is already assigned in the static initializer; avoid reassigning it here
+            initialized = true;
         } catch (IOException e) {
+            // Keep INSTANCE non-null, but proceed with empty configs
             log.warn("Failed to initialize RuleConfigLoader: " + e.getMessage(), e);
+            initialized = true;
         }
     }
 
