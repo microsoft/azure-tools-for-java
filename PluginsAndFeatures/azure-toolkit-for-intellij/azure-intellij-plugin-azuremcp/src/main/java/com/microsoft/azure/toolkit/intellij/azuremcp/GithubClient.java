@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -18,13 +19,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class GithubClient implements Closeable {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .enable(SerializationFeature.INDENT_OUTPUT);
-    private static final String AZURE_MCP_RELEASE_URL = "https://aka.ms/azmcp/releases";
+    private static final String AZURE_MCP_RELEASE_URL = "https://api.github.com/repos/microsoft/mcp/releases";
     private static final TypeReference<List<GithubRelease>> GITHUB_RELEASE_LIST_TYPE = new TypeReference<>() {
     };
 
@@ -36,6 +38,8 @@ public class GithubClient implements Closeable {
             final List<GithubRelease> releases = OBJECT_MAPPER.readValue(response.getEntity().getContent(), GITHUB_RELEASE_LIST_TYPE);
             return releases.stream().findFirst().orElse(null);
         } catch (final IOException exception) {
+            log.error("Error getting latest Azure MCP release details: " + exception.getMessage());
+            AzureMcpUtils.logErrorTelemetryEvent("azmcp-get-latest-release-failed", exception);
             return null;
         }
     }
@@ -47,6 +51,8 @@ public class GithubClient implements Closeable {
             downloadResponse.getEntity().getContent().transferTo(fos);
             return true;
         } catch (final IOException exception) {
+            log.error("Error downloading Azure MCP: " + exception.getMessage());
+            AzureMcpUtils.logErrorTelemetryEvent("azmcp-download-executable-failed", exception);
             return false;
         }
     }

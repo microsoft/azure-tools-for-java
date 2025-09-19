@@ -40,7 +40,7 @@ public class AzureMcpPackageManager {
 
                 final Optional<GithubAsset> githubAsset = latestRelease.getAssets()
                         .stream()
-                        .filter(asset -> asset.getName().contains(platform))
+                        .filter(asset -> asset.getName().startsWith("azure-mcp-" + platform))
                         .findFirst();
 
                 if (githubAsset.isPresent()) {
@@ -188,6 +188,5 @@ public class AzureMcpPackageManager {
         }
         throw new RuntimeException("Unsupported architecture: " + arch);
     }
-
 
 }
