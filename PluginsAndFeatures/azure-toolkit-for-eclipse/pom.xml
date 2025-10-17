@@ -28,6 +28,8 @@
     <module>com.microsoft.azuretools.container.feature</module>
     <module>com.microsoft.azuretools.springcloud</module>
     <module>com.microsoft.azuretools.springcloud.feature</module>
+    <module>com.microsoft.azuretools.azuremcp</module>
+    <module>com.microsoft.azuretools.azuremcp.feature</module>
     <module>WindowsAzurePlugin4EJ</module>
   </modules>
   <properties>
