@@ -34,7 +34,7 @@
   </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho-version>2.5.0</tycho-version>
+    <tycho-version>4.0.7</tycho-version>
     <azuretool.eclipse.version>3.32.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
@@ -48,6 +48,21 @@
       <id>scala</id>
       <layout>p2</layout>
       <url>https://azuredownloads.blob.core.windows.net/scalaidesdk/lithium/e44/scala211/stable</url>
+    </repository>
+    <repository>
+      <id>copilot</id>
+      <layout>p2</layout>
+      <url>https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/</url>
+    </repository>    
+    <repository>
+      <id>lsp4e</id>
+      <layout>p2</layout>
+      <url>https://download.eclipse.org/lsp4e/snapshots/</url>
+    </repository>
+    <repository>
+      <id>releases</id>
+      <layout>p2</layout>
+      <url>https://download.eclipse.org/releases/latest/</url>
     </repository>
   </repositories>
 
