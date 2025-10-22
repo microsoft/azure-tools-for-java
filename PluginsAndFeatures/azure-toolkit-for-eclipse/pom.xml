@@ -117,6 +117,8 @@
         <version>${tycho-version}</version>
         <configuration>
           <compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
+          <source>11</source>
+          <target>11</target>
         </configuration>
       </plugin>
     </plugins>

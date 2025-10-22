@@ -8,6 +8,7 @@ import com.microsoft.copilot.eclipse.ui.extensions.IMcpRegistrationProvider;
 public class GithubCopilotAzureMcpInitializer implements IMcpRegistrationProvider {
 	
 	private AzureMcpPackageManager azureMcpPackageManager;
+	private static final String MCP_CONFIG_TEMPLATE = "{ \"servers\": { \"azuremcp\": { \"command\": \"%s\", \"args\": [server, start], \"description\": \"Azure MCP Server\" } } }";
 
 	public GithubCopilotAzureMcpInitializer() {
 		this.azureMcpPackageManager = new AzureMcpPackageManager();
@@ -22,7 +23,8 @@ public class GithubCopilotAzureMcpInitializer implements IMcpRegistrationProvide
 		File azureMcpExe = azureMcpPackageManager.getAzureMcpExecutable();
 		
 		if(azureMcpExe != null) {
-			String mcpConfig = "{ \"servers\": { \"azuremcp\": { \"command\": \"" + azureMcpExe.getAbsolutePath().replace("\\", "\\\\") + "\", \"args\": [server, start], \"description\": \"Azure MCP Server\" } } }";
+			String mcpConfig = String.format(MCP_CONFIG_TEMPLATE, azureMcpExe.getAbsolutePath().replace("\\", "\\\\"));
+			azureMcpPackageManager.cleanup();
 			return mcpConfig;
 		} else {
 			return null;
