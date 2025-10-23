@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Azure Explorer Plugin for Eclipse
+Bundle-Name: Azure MCP Server for Eclipse
 Bundle-SymbolicName: com.microsoft.azuretools.azuremcp;singleton:=true
 Bundle-Version: 3.32.0.qualifier
 Bundle-Activator: com.microsoft.azuretools.azuremcp.Activator
