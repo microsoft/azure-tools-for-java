@@ -28,7 +28,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.m2e.launching,
  org.eclipse.equinox.registry,
  org.eclipse.equinox.security,
- org.apache.commons.collections,
  org.eclipse.jface.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -66,6 +65,7 @@ Export-Package: com.microsoft.azure.toolkit.eclipse.common.artifact,
 Import-Package: javax.annotation,
  org.apache.commons.compress,
  org.apache.commons.io,
+ org.apache.commons.collections4,
  org.eclipse.core.databinding,
  org.eclipse.core.expressions,
  org.eclipse.core.resources,
