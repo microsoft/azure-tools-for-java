@@ -50,6 +50,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <lombok.version>1.18.36</lombok.version>
         <azure.toolkit-lib.version>0.21.0</azure.toolkit-lib.version>
     </properties>
     <dependencyManagement>
@@ -60,6 +61,11 @@
                 <version>${azure.toolkit-lib.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>

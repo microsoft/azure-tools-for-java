@@ -33,7 +33,7 @@
     <properties>
         <azuretool.version>3.65.0</azuretool.version>
         <azure.version>1.41.2</azure.version>
-        <kotlin.version>1.4.20</kotlin.version>
+        <kotlin.version>1.8.22</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
         <findsecbugs.version>1.11.0</findsecbugs.version>
         <rx.version>1.3.8</rx.version>
@@ -41,6 +41,7 @@
         <azure.toolkit-ide-lib.version>0.21.0</azure.toolkit-ide-lib.version>
         <powermock.version>2.0.9</powermock.version>
         <jetty.version>9.4.41.v20210516</jetty.version>
+        <lombok.version>1.18.36</lombok.version>
     </properties>
     <modules>
         <module>azure-toolkit-ide-libs</module>
@@ -194,7 +195,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.1.4</version>
+                <version>4.9.8.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -239,6 +240,11 @@
                 <version>${azure.toolkit-ide-lib.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.reactivex</groupId>
