@@ -1,0 +1,221 @@
+name: $(Date:yyyyMMdd).$(Rev:r)
+variables:
+  - name: Codeql.Enabled
+    value: true
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: refs/heads/main
+    - repository: MicroBuildTemplate
+      type: git
+      name: 1ESPipelineTemplates/MicroBuildTemplate
+trigger:
+  branches:
+    include:
+      - hanli/fix-eclipse
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  parameters:
+    pool:
+      name: VSEngSS-MicroBuild2022-1ES
+      os: windows # allowed values: windows, linux, or macOS. The default value is windows.
+    featureFlags:
+      disableNetworkIsolation: true
+    stages:
+      - stage: Stage
+        jobs:
+          - job: Build_and_Sign
+            displayName: Build and Sign Plugin
+            timeoutInMinutes: 360
+            templateContext:
+              mb:
+                signing:
+                  enabled: true
+                  signType: real
+                  signWithProd: true
+                  zipSources: false
+                  useEsrpCli: true
+                  feedSource: 'https://mseng.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json'
+              outputs:
+                - output: pipelineArtifact
+                  artifactName: drop
+                  targetPath: $(build.artifactstagingdirectory)/drop
+                  displayName: "Publish Artifact: drop"
+            steps:
+              - checkout: self
+                clean: true
+                fetchTags: false
+              - task: PowerShell@2
+                displayName: Install JDK 21
+                inputs:
+                  targetType: inline
+                  script: |
+                    # Download Adoptium/Temurin JDK 21
+                    Write-Host "Downloading Java 21"
+                    $source = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.8%2B9/OpenJDK21U-jdk_x64_windows_hotspot_21.0.8_9.zip"
+                    $destination = "$(build.sourcesdirectory)\jdk21_x64_windows.zip"
+                    Invoke-WebRequest -Uri $source -OutFile $destination
+              - task: JavaToolInstaller@0
+                displayName: 'Use Java 21'
+                inputs:
+                  versionSpec: 21
+                  jdkArchitectureOption: x64
+                  jdkSourceOption: LocalDirectory
+                  jdkFile: '$(build.sourcesdirectory)\jdk21_x64_windows.zip'
+                  jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk21'
+              - task: PowerShell@2
+                displayName: Build Utils
+                inputs:
+                  targetType: inline
+                  script: |
+                    mvn -v
+                    mvn install -f ./Utils/pom.xml -DskipTests
+              - task: PowerShell@2
+                displayName: Sign jars
+                timeoutInMinutes: 240
+                inputs:
+                  targetType: inline
+                  script: |
+                    # Sign azuretools-core-*.jar
+                    $coreFiles = Get-ChildItem -Path . -Filter "azuretools-core-*.jar" -Recurse -File | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $coreFiles) {
+                      Write-Host "Signing $($file.FullName)"
+                      dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"$($file.FullName)" /certs:100010171
+                    }
+                    
+                    # Sign azure-explorer-common-*.jar
+                    $explorerFiles = Get-ChildItem -Path . -Filter "azure-explorer-common-*.jar" -Recurse -File  | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $explorerFiles) {
+                      Write-Host "Signing $($file.FullName)"
+                      dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"$($file.FullName)" /certs:100010171
+                    }
+                    
+                    # Sign hdinsight-node-common-*.jar
+                    $hdinsightFiles = Get-ChildItem -Path . -Filter "hdinsight-node-common-*.jar" -Recurse -File | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $hdinsightFiles) {
+                      Write-Host "Signing $($file.FullName)"
+                      dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"$($file.FullName)" /certs:100010171
+                    }
+                  workingDirectory: 'Utils' 
+              - task: PowerShell@2
+                displayName: Install signed Utils jars to .m2
+                inputs:
+                  targetType: inline
+                  script: |
+                    # Install signed azuretools-core jar
+                    $coreFiles = Get-ChildItem -Path . -Filter "azuretools-core-*.jar" -Recurse -File  | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $coreFiles) {
+                      $fileName = $file.Name
+                      if ($fileName -match "azuretools-core-(.+)\.jar") {
+                        $version = $matches[1]
+                        Write-Host "Installing signed azuretools-core-$version.jar to .m2"
+                        mvn install:install-file -Dfile="$($file.FullName)" -DgroupId="com.microsoft.azuretools" -DartifactId="azuretools-core" -Dversion="$version" -Dpackaging=jar
+                      }
+                    }
+                    
+                    # Install signed azure-explorer-common jar
+                    $explorerFiles = Get-ChildItem -Path . -Filter "azure-explorer-common-*.jar" -Recurse -File  | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $explorerFiles) {
+                      $fileName = $file.Name
+                      if ($fileName -match "azure-explorer-common-(.+)\.jar") {
+                        $version = $matches[1]
+                        Write-Host "Installing signed azure-explorer-common-$version.jar to .m2"
+                        mvn install:install-file -Dfile="$($file.FullName)" -DgroupId="com.microsoft.azuretools" -DartifactId="azure-explorer-common" -Dversion="$version" -Dpackaging=jar
+                      }
+                    }
+                    
+                    # Install signed hdinsight-node-common jar
+                    $hdinsightFiles = Get-ChildItem -Path . -Filter "hdinsight-node-common-*.jar" -Recurse -File  | Where-Object { $_.Name -notmatch "sources|javadoc" }
+                    foreach ($file in $hdinsightFiles) {
+                      $fileName = $file.Name
+                      if ($fileName -match "hdinsight-node-common-(.+)\.jar") {
+                        $version = $matches[1]
+                        Write-Host "Installing signed hdinsight-node-common-$version.jar to .m2"
+                        mvn install:install-file -Dfile="$($file.FullName)" -DgroupId="com.microsoft.azuretools" -DartifactId="hdinsight-node-common" -Dversion="$version" -Dpackaging=jar
+                      }
+                    }
+                  workingDirectory: 'Utils'      
+              - task: PowerShell@2
+                displayName: Install Azure Libraries
+                inputs:
+                  targetType: inline
+                  script: |
+                    mvn install -f ./PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml 
+              - task: PowerShell@2
+                displayName: Sign Azure Libraries
+                timeoutInMinutes: 240
+                inputs:
+                  targetType: inline
+                  script: |
+                    dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"azuretools-sdk-lib.jar" /certs:100010171
+                  workingDirectory: 'PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies'
+              - task: PowerShell@2
+                displayName: Build Plugin
+                inputs:
+                  targetType: inline
+                  script: |
+                    mvn clean install -f ./PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" -Dinstrkey=$(ECLIPSE_KEY)
+              - task: PowerShell@2
+                displayName: Unpackage
+                inputs:
+                  targetType: inline
+                  script: |
+                    New-Item -ItemType Directory -Path ".\artifacts\eclipse\" -Force
+                    $zipFile = Get-ChildItem -Path ./PluginsAndFeatures/azure-toolkit-for-eclipse -Filter "WindowsAzurePlugin4EJ-*.zip" -Recurse -File  | Select-Object -First 1
+                    Copy-Item $zipFile.FullName ".\artifacts\eclipse\WindowsAzurePlugin4EJ.zip"
+                    Expand-Archive -Path ".\artifacts\eclipse\WindowsAzurePlugin4EJ.zip" -DestinationPath ".\artifacts\eclipse\folder" -Force
+                    Remove-Item ".\artifacts\eclipse\WindowsAzurePlugin4EJ.zip"
+                    # Workaround: Remove MD5/SHA256 Validation in artifacts.xml
+                    Set-Location ".\artifacts\eclipse\folder"
+                    Rename-Item "artifacts.jar" "artifacts.zip"
+                    Expand-Archive -Path "artifacts.zip" -DestinationPath ".\artifacts" -Force
+                    Remove-Item "artifacts.zip"
+                    Set-Location "artifacts"
+                    (Get-Content ".\artifacts.xml") | Where-Object { $_ -notmatch "download\.md5|checksum" } | Set-Content ".\artifacts.xml"
+                    Compress-Archive -Path ".\*" -DestinationPath "..\artifacts.zip" -Force
+                    Set-Location ".."
+                    Rename-Item "artifacts.zip" "artifacts.jar"
+                    Remove-Item ".\artifacts" -Recurse -Force
+              - task: PowerShell@2
+                displayName: Sign jars
+                timeoutInMinutes: 240
+                inputs:
+                  targetType: inline
+                  script: |
+                    $ABSOLUTE_PATH = Get-Location
+                    # Generate the signing-filelist.xml file
+                    '<?xml version="1.0" encoding="utf-8" ?>' | Out-File -FilePath signing-filelist.xml -Encoding utf8
+                    '<filelist>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+                    '    <certificate certnumbers="100010171">' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+
+                    Get-ChildItem -Path . -Filter "*.jar" -Recurse -File | ForEach-Object {
+                        $abs_path = $_.FullName
+                        "        <file srcpath=`"$abs_path`" dstpath=`"$abs_path`"></file>" | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+                    }
+
+                    '    </certificate>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+                    '</filelist>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+
+                    dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /filelist:signing-filelist.xml
+                    Remove-Item signing-filelist.xml
+                  workingDirectory: 'artifacts/eclipse/folder/'
+              - task: PowerShell@2
+                displayName: Repackage
+                inputs:
+                  targetType: inline
+                  script: |
+                    Set-Location ".\artifacts\eclipse\folder"
+                    # Remove all non-Java files recursively
+                    Get-ChildItem -Path . -File -Recurse | Where-Object { $_.Extension -ne ".jar" } | Remove-Item -Force
+                    Compress-Archive -Path ".\*" -DestinationPath "..\..\WindowsAzurePlugin4EJ.zip" -Force
+              - task: CopyFiles@2
+                displayName: "Copy Files to: $(build.artifactstagingdirectory)"
+                inputs:
+                  SourceFolder: $(system.defaultworkingdirectory)/artifacts
+                  Contents: "*.zip"
+                  TargetFolder: $(build.artifactstagingdirectory)/drop
+              - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+                displayName: "Manifest Generator "
+                inputs:
+                  BuildDropPath: $(build.artifactstagingdirectory)/drop
