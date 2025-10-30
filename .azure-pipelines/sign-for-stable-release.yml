@@ -69,7 +69,9 @@ extends:
                 inputs:
                   targetType: inline
                   script: |
-                    mvn -v
+                    # Clone and install azure toolkit Libraries
+                    git clone --branch develop.eclipse https://github.com/microsoft/azure-maven-plugins.git
+                    mvn install -f ./azure-maven-plugins/azure-toolkit-libs "-Dmaven.test.skip=true"
                     mvn install -f ./Utils/pom.xml -DskipTests
               - task: PowerShell@2
                 displayName: Sign jars
