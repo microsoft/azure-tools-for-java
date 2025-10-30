@@ -1,29 +1,29 @@
 package com.microsoft.azuretools.azuremcp;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.eclipse.core.runtime.ILog;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 public class GithubClient implements Closeable {
 	
-	private static final Logger log = LoggerFactory.getLogger(GithubClient.class);
-	
+    private static final ILog log = ILog.of(GithubClient.class);
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -41,7 +41,7 @@ public class GithubClient implements Closeable {
             final List<GithubRelease> releases = OBJECT_MAPPER.readValue(response.getEntity().getContent(), GITHUB_RELEASE_LIST_TYPE);
             return releases.stream().findFirst().orElse(null);
         } catch (final IOException exception) {
-            log.error("Error getting latest Azure MCP release details: " + exception.getMessage());
+            log.info("Error getting latest Azure MCP release details: " + exception.getMessage());
             return null;
         }
     }
@@ -53,7 +53,7 @@ public class GithubClient implements Closeable {
             downloadResponse.getEntity().getContent().transferTo(fos);
             return true;
         } catch (final IOException exception) {
-            log.error("Error downloading Azure MCP: " + exception.getMessage());
+            log.info("Error downloading Azure MCP: " + exception.getMessage());
             return false;
         }
     }
