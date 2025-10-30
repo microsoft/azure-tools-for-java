@@ -72,6 +72,11 @@ public class AzureMcpPackageManager {
                                 log.info("Azure MCP Server extracted successfully to: " + extractedDir.getAbsolutePath());
                             }
                         }
+                        
+                        if (azMcpExe.exists() && (azMcpExe.canExecute() || azMcpExe.setExecutable(true))) {
+                            log.info("Azure MCP Server executable found at: " + azMcpExe.getAbsolutePath());
+                            return azMcpExe;
+                        }
                     }
                 }
             }
