@@ -17,14 +17,14 @@ import javax.annotation.Nullable;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.service.datalocation.Location;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AzureMcpPackageManager {
 	
-	private static final Logger log = LoggerFactory.getLogger(AzureMcpPackageManager.class);
+    private static final ILog log = ILog.of(AzureMcpPackageManager.class);
+
     private final GithubClient gitHubClient;
     private final String platform;
 
@@ -60,7 +60,7 @@ public class AzureMcpPackageManager {
                         final String executablePath = extractedDir.getAbsolutePath() + getExecutableRelativePath();
                         final File azMcpExe = new File(executablePath);
                         if (!azMcpExe.exists()) {
-                            Files.writeString(versionFile, tagName, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                            
                             final File azMcpZip = new File(azMcpDirFile.getAbsolutePath(), "azmcp_" + tagName + ".zip");
                             log.info("Downloading Azure MCP Server to: " + azMcpZip.getAbsolutePath());
                             final boolean downloaded = gitHubClient.downloadToFile(asset.getBrowserDownloadUrl(), azMcpZip);
@@ -68,15 +68,11 @@ public class AzureMcpPackageManager {
                                 log.info("Downloaded Azure MCP Server successfully in " + (System.currentTimeMillis() - startTime) + " ms");
                                 log.info("Extracting Azure MCP Server to: " + extractedDir.getAbsolutePath());
                                 extractZip(azMcpZip, extractedDir);
+                                Files.writeString(versionFile, tagName, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                                 log.info("Azure MCP Server extracted successfully to: " + extractedDir.getAbsolutePath());
                             }
                         }
                         
-                        
-                        boolean exists = azMcpExe.exists();
-                        boolean canExecute = azMcpExe.canExecute();
-                                             
-
                         if (azMcpExe.exists() && (azMcpExe.canExecute() || azMcpExe.setExecutable(true))) {
                             log.info("Azure MCP Server executable found at: " + azMcpExe.getAbsolutePath());
                             return azMcpExe;
@@ -84,8 +80,8 @@ public class AzureMcpPackageManager {
                     }
                 }
             }
-        } catch (final IOException e) {
-            log.error("Error getting Azure MCP executable: " + e.getMessage());
+        } catch (final Exception e) {
+            log.info("Error getting Azure MCP executable: " + e.getMessage());
         }
         return null;
     }
@@ -107,7 +103,7 @@ public class AzureMcpPackageManager {
             final String downloadFileDigest = DigestUtils.sha256Hex(new FileInputStream(azMcpZip));
             return StringUtils.equalsIgnoreCase("sha256:" + downloadFileDigest, expectedDigest);
         } catch (final Exception e) {
-            log.error("Failed to calculate file digest", e);
+            log.info("Failed to calculate file digest", e);
             return false;
         }
     }
@@ -135,7 +131,7 @@ public class AzureMcpPackageManager {
                     });
 
         } catch (final Exception exception) {
-            System.err.println("Error cleaning up Azure MCP Server: " + exception.getMessage());
+            log.info("Error cleaning up Azure MCP Server: " + exception.getMessage());
         }
     }
 
@@ -145,8 +141,8 @@ public class AzureMcpPackageManager {
                 Files.list(path).forEach(AzureMcpPackageManager::delete);
             }
             Files.delete(path);
-        } catch (final IOException e) {
-            System.err.println("Error deleting file: " + path.toString());
+        } catch (final Exception e) {
+        	log.info("Error deleting file: " + path.toString());
         }
     }
 
