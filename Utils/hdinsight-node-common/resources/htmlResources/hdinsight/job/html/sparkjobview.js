@@ -57,6 +57,7 @@ function isEnterKeyPressedEvent(event) {
 function onApplicationListRowSelected(event) {
     if (event.type === "click" || isEnterKeyPressedEvent(event)) {
         // clean all generated values
+        $("#openSparkUIButton").css("visibility","visible");
         spark.isJobGraphGenerated = false;
         spark.currentSelectedJobs = null;
         spark.currentSelectedStages = null;

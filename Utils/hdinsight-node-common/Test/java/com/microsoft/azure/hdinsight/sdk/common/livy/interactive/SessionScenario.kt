@@ -26,12 +26,11 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.BadRequestHttpErrorStatus
 import com.microsoft.azure.hdinsight.spark.common.MockHttpService
-import cucumber.api.java.Before
-import cucumber.api.java.en.And
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.Before
+import io.cucumber.java.en.And
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.assertj.core.api.Assertions.assertThat
-import rx.subjects.PublishSubject
 import java.net.URI
 import kotlin.test.fail
 

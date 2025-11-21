@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.common
 
-import cucumber.api.java.en.Then
+import io.cucumber.java.en.Then
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

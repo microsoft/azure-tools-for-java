@@ -24,10 +24,10 @@ package com.microsoft.azure.hdinsight.spark.mock
 
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalJvmProcess
 import com.microsoft.azure.hdinsight.spark.mock.jobapp.CatCmd
-import cucumber.api.java.en.And
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
-import cucumber.api.DataTable
+import io.cucumber.datatable.DataTable
+import io.cucumber.java.en.And
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.assertj.core.api.Assertions.*
 
 class SparkLocalRunnerITScenario {
@@ -80,7 +80,7 @@ class SparkLocalRunnerITScenario {
                 }
                 .filter { it.isNotEmpty() }
 
-        assertThat(outputTable).isEqualTo(expectOutputs.raw())
+        assertThat(outputTable).isEqualTo(expectOutputs.cells())
     }
 
     @Then("^locally cat '(.*)' should be")

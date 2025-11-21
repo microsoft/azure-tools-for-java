@@ -9,10 +9,10 @@
     <artifactId>hdinsight-node-common</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
-        <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
+        <hdinsight.htmlcopy.enabled>true</hdinsight.htmlcopy.enabled>
         <project.build.encoding>UTF-8</project.build.encoding>
-        <scala.version>2.11.12</scala.version>
-        <spark.version>2.1.0</spark.version>
+        <scala.version>2.12.18</scala.version>
+        <spark.version>3.4.0</spark.version>
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
 
@@ -24,7 +24,7 @@
                 <activeByDefault>false</activeByDefault>
                 <property>
                     <name>hdinsight.htmlcopy.enabled</name>
-                    <value>true</value>
+                    <value>${hdinsight.htmlcopy.enabled}</value>
                 </property>
             </activation>
             <build>
@@ -215,7 +215,33 @@
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-server</artifactId>
                 </exclusion>
+                <exclusion><!--CVE-2022-40150-->
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+                <exclusion><!--CVE-2022-42889-->
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.xerial.snappy</groupId>
+                    <artifactId>snappy-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency><!-- hadoop-common 3.3.3 CVE-2023-34455 -->
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+        </dependency>
+        <dependency><!-- hadoop-common 3.3.3 CVE-2023-44981 -->
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <scope>provided</scope>
+            <version>3.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
@@ -264,6 +290,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.15.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -336,8 +363,14 @@
             <artifactId>azure-data-lake-store-sdk</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
+            <groupId>org.htmlunit</groupId>
             <artifactId>htmlunit</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+                </exclusion>
+            </exclusions>
          </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
@@ -369,7 +402,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.11</artifactId>
+            <artifactId>spark-core_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -379,7 +412,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                 <exclusion><!--CVE-2017-15288-->
                     <groupId>org.scala-lang</groupId>
@@ -397,11 +430,15 @@
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.ivy</groupId>
+                    <artifactId>ivy</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.11</artifactId>
+            <artifactId>spark-sql_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -411,7 +448,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
@@ -421,7 +458,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.11</artifactId>
+            <artifactId>spark-streaming_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -431,13 +468,13 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.11</artifactId>
+            <artifactId>spark-mllib_2.12</artifactId>
             <version>${spark.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -447,11 +484,15 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-module-scala_2.11</artifactId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
                 </exclusion>
                 <exclusion><!--WS-2019-0065-->
                     <groupId>org.jpmml</groupId>
                     <artifactId>pmml-model</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

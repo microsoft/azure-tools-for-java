@@ -23,9 +23,9 @@
 package com.microsoft.azure.hdinsight.spark.common
 
 import com.github.tomakehurst.wiremock.http.RequestMethod
-import cucumber.api.java.Before
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.Before
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
 import org.mockito.Mockito.CALLS_REAL_METHODS

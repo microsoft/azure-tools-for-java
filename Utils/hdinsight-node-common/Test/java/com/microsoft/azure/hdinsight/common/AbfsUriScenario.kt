@@ -22,9 +22,9 @@
 
 package com.microsoft.azure.hdinsight.common
 
-import cucumber.api.DataTable
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.datatable.DataTable
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.test.assertEquals

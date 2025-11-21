@@ -30,10 +30,10 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
-import cucumber.api.java.After
-import cucumber.api.java.Before
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.After
+import io.cucumber.java.Before
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.apache.http.entity.StringEntity
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.*

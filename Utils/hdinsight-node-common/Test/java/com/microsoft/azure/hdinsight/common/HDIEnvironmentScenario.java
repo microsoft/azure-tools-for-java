@@ -8,8 +8,8 @@ package com.microsoft.azure.hdinsight.common;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;

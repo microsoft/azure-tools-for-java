@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.hdinsight.common.task;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlPage;
 import com.google.common.util.concurrent.FutureCallback;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -48,7 +48,7 @@ public class YarnHistoryTask extends Task<String> {
         if (preTagElements.size() == 0) {
             throw new HDIException("No logs here or logs not available");
         } else {
-            return preTagElements.get(0).asText();
+            return preTagElements.get(0).asNormalizedText();
         }
     }
 }

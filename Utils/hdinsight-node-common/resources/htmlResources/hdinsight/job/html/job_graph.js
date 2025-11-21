@@ -78,7 +78,7 @@ function renderJobGraphOnApplicationLevel(jobs) {
             "scale(" + d3.event.scale + ")");
     });
     svg.call(zoom);
-
+    svg.attr("style", "width:100%");
     // Simple function to style the tooltip for the given node.
     inner.selectAll("g.node")
         .attr('tabindex', "-1")

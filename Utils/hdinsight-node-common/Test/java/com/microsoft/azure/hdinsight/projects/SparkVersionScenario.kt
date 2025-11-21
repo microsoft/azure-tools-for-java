@@ -22,8 +22,7 @@
 
 package com.microsoft.azure.hdinsight.projects
 
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.en.Then
 import org.assertj.core.api.Assertions.assertThat
 
 class SparkVersionScenario {

@@ -2,6 +2,7 @@
 :root.dark-theme-mode {
     --text-color: white;
     --bg-color: #2b2b2b;
+    --caret-color:white;
     --selection-bg-color: #4B77AF;
     --selection-text-color: white;
     --edge-color: #828384;
@@ -12,6 +13,7 @@
 :root.light-theme-mode {
     --text-color: black;
     --bg-color: white;
+    --caret-color:black;
     --selection-bg-color: #2675BF;
     --selection-text-color: white;
     --edge-color: #828384;
@@ -22,6 +24,7 @@
 :root.highcontrast-theme-mode {
     --text-color: white;
     --bg-color: black;
+    --caret-color:white;
     --selection-bg-color: #3333FF;
     --selection-text-color: white;
     --edge-color: #828384;
@@ -298,7 +301,9 @@ input[type=text] {
     border-radius: 4px;
     font-size: 12px;
     background-color: var(--bg-color);
-    background-image: url('resources/icons/searchicon.png');
+    color: var(--caret-color);
+    caret-color: var(--caret-color);
+    background-image: url('resources/icons/searchicon.svg');
     background-position: 3px 3px;
     background-repeat: no-repeat;
     padding: 12px 20px 12px 40px;
@@ -311,26 +316,26 @@ input[type=text]:focus {
 }
 
 [role="tablist"] {
-  overflow: visible;
-  margin:5px;
+    overflow: visible;
+    margin:5px;
 }
 
 [role="tab"] {
-  position: relative;
-  margin: 0;
-  padding: 0.3em 0.5em 0.4em;
-  border: 1px solid hsl(219, 1%, 72%);
-  border-radius: 0.2em 0.2em 0 0;
-  overflow: visible;
-  font-family: inherit;
-  font-size: inherit;
-  background-color: inherit;
-  color: inherit;
+    position: relative;
+    margin: 0;
+    padding: 0.3em 0.5em 0.4em;
+    border: 1px solid hsl(219, 1%, 72%);
+    border-radius: 0.2em 0.2em 0 0;
+    overflow: visible;
+    font-family: inherit;
+    font-size: inherit;
+    background-color: inherit;
+    color: inherit;
 }
 
 [role="tab"][aria-selected="true"] {
-  background: var(--selection-bg-color);
-  color: var(--selection-text-color);
+    background: var(--selection-bg-color);
+    color: var(--selection-text-color);
 }
 
 th, td {

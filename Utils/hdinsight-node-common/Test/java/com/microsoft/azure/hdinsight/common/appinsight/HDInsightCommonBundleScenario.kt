@@ -22,8 +22,8 @@
 
 package com.microsoft.azure.hdinsight.common.appinsight
 
-import cucumber.api.DataTable
-import cucumber.api.java.en.Then
+import io.cucumber.datatable.DataTable
+import io.cucumber.java.en.Then
 import org.assertj.core.api.Assertions.assertThat
 
 class HDInsightCommonBundleScenario {

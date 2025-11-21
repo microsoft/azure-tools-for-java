@@ -24,10 +24,10 @@ package com.microsoft.azure.hdinsight.sdk.io.spark
 
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
-import cucumber.api.java.Before
-import cucumber.api.java.en.And
-import cucumber.api.java.en.Given
-import cucumber.api.java.en.Then
+import io.cucumber.java.Before
+import io.cucumber.java.en.And
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
 import org.apache.commons.io.IOUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentCaptor

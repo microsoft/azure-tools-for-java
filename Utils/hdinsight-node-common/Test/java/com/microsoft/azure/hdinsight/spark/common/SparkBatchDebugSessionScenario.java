@@ -6,8 +6,8 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.jcraft.jsch.Session;
-import cucumber.api.java.Before;
-import cucumber.api.java.en.Then;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Then;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Answers.CALLS_REAL_METHODS;

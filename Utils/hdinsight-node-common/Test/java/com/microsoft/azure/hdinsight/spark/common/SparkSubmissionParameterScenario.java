@@ -7,9 +7,9 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.azuretools.utils.Pair;
-import cucumber.api.java.en.And;
-import cucumber.api.java.en.Given;
-import cucumber.api.java.en.Then;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 
 import java.util.*;
 
