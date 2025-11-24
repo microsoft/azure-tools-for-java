@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Microsoft JDBC Driver 9.4 for SQL Server Library
+Bundle-Name: Microsoft JDBC Driver 10.2 for SQL Server Library
 Bundle-SymbolicName: com.microsoft.sqljdbc4
-Bundle-Version: 9.4.0.jre8
-Bundle-ClassPath: target/lib/mssql-jdbc-9.4.0.jre8.jar
+Bundle-Version: 10.2.4.jre11
+Bundle-ClassPath: target/lib/mssql-jdbc-10.2.4.jre11.jar
 Bundle-Vendor: Microsoft Corp.
 Export-Package: com.microsoft.sqlserver.jdbc,
  microsoft.sql

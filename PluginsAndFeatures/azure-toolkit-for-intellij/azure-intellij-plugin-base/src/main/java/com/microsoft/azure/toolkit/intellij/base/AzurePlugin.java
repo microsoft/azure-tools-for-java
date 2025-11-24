@@ -36,7 +36,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     public static final String PLUGIN_NAME = "azure-toolkit-for-intellij";
     public static final String PLUGIN_VERSION = Objects.requireNonNull(PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))).getVersion();
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
-    public static final String JDBC_LIBRARIES_VERSION = "9.4.0.jre8";
+    public static final String JDBC_LIBRARIES_VERSION = "10.2.4.jre11";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
     private static final PluginStateListener pluginStateListener = null;
     private static final int POP_UP_DELAY = 30;

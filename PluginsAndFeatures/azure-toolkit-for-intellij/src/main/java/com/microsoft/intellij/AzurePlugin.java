@@ -82,7 +82,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERSION;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
-    public static final String JDBC_LIBRARIES_VERSION = "9.4.0.jre8";
+    public static final String JDBC_LIBRARIES_VERSION = "10.2.4.jre11";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
     private static PluginStateListener pluginStateListener = null;
     private static final int POP_UP_DELAY = 30;

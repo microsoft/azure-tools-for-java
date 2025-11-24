@@ -6,7 +6,7 @@
 package com.microsoft.intellij.ui.libraries;
 
 public class AzureLibrary {
-    public static AzureLibrary SQL_JDBC = new AzureLibrary("Microsoft JDBC Driver 9.4 for SQL Server UI",
+    public static AzureLibrary SQL_JDBC = new AzureLibrary("Microsoft JDBC Driver 10.2 for SQL Server UI",
             null, new String[]{"mssql-jdbc"});
     public static AzureLibrary AZURE_LIBRARIES = new AzureLibrary("Package for Microsoft Azure Libraries for Java (by Microsoft)",
             null,

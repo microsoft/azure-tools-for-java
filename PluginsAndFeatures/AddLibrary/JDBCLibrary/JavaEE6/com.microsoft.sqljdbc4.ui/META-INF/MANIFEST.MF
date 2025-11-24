@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Microsoft JDBC Driver 9.4 for SQL Server UI
+Bundle-Name: Microsoft JDBC Driver 10.2 for SQL Server UI
 Bundle-SymbolicName: com.microsoft.sqljdbc4.ui;singleton:=true
-Bundle-Version: 9.4.0.jre8
+Bundle-Version: 10.2.4.jre11
 Bundle-Activator: com.microsoft.sqljdbc4.ui.activator.Activator
 Bundle-Vendor: Microsoft Corp.
 Require-Bundle: org.eclipse.ui,
