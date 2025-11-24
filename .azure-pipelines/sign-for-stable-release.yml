@@ -217,6 +217,18 @@ extends:
                   SourceFolder: $(system.defaultworkingdirectory)/artifacts
                   Contents: "*.zip"
                   TargetFolder: $(build.artifactstagingdirectory)/drop
+              - task: PowerShell@2
+                displayName: Clean up azure-maven-plugins folder
+                inputs:
+                  targetType: inline
+                  script: |
+                    $path = "$(Build.SourcesDirectory)\azure-maven-plugins"
+                    if (Test-Path $path) {
+                      Write-Host "Removing $path"
+                      Remove-Item -Path $path -Recurse -Force
+                    } else {
+                      Write-Host "Folder $path does not exist, nothing to clean."
+                    }
               - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
                 displayName: "Manifest Generator "
                 inputs:
