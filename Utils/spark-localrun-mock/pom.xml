@@ -244,7 +244,16 @@
                     <groupId>dnsjava</groupId>
                     <artifactId>dnsjava</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency><!-- hadoop-common 3.3.3 CVE-2023-39410 -->
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.11.4</version>
         </dependency>
         <dependency><!-- hadoop-common 3.3.3 CVE-2024-25638 -->
             <groupId>dnsjava</groupId>

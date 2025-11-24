@@ -51,6 +51,12 @@
         <version>${azure.toolkit-lib.version}</version>
         <type>pom</type>
         <scope>import</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
