@@ -25,6 +25,7 @@
         <hadoop.version>3.4.0</hadoop.version>
         <snappyjava.version>1.1.10.4</snappyjava.version>
         <lombok.version>1.18.36</lombok.version>
+        <dnsjava.version>3.6.0</dnsjava.version>
     </properties>
     <modules>
         <module>azuretools-core</module>
@@ -41,6 +42,24 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-common-lib</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-handler</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-http2</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
         </dependency>
     </dependencies>
 
@@ -64,6 +83,16 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId> <!-- CVE-2025-24970 -->
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.118.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId> <!-- CVE-2025-55163 -->
+                <artifactId>netty-codec-http2</artifactId>
+                <version>4.1.124.Final</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.hdinsight</groupId>
@@ -126,7 +155,16 @@
                         <groupId>org.apache.avro</groupId>
                         <artifactId>avro</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>dnsjava</groupId>
+                        <artifactId>dnsjava</artifactId>
+                    </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency><!-- hadoop-common 3.3.3 CVE-2024-25638 -->
+                <groupId>dnsjava</groupId>
+                <artifactId>dnsjava</artifactId>
+                <version>${dnsjava.version}</version>
             </dependency>
             <dependency><!-- hadoop-common 3.3.3 CVE-2023-34455 -->
                 <groupId>org.xerial.snappy</groupId>

@@ -64,6 +64,24 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-toolkit-common-lib</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-handler</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec-http2</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
         </dependency>
     </dependencies>
 
@@ -75,6 +93,17 @@
                 <version>${azure.toolkit-lib.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            
+            <dependency> <!-- CVE-2025-24970 -->
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.118.Final</version>
+            </dependency>
+            <dependency> <!-- CVE-2025-55163 -->
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http2</artifactId>
+                <version>4.1.124.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
