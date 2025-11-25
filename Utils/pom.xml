@@ -43,6 +43,7 @@
         <lombok.version>1.18.36</lombok.version>
         <snappyjava.version>1.1.10.4</snappyjava.version>
         <dnsjava.version>3.6.0</dnsjava.version>
+        <jackson.version>2.17.0</jackson.version>
     </properties>
     <modules>
         <module>azure-toolkit-ide-libs</module>
@@ -282,20 +283,27 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>2.0</version>
             </dependency>
-            <dependency> <!-- CVE-2023-34054 -->
+            <!-- <dependency>
                 <groupId>io.projectreactor.netty</groupId>
                 <artifactId>reactor-netty-core</artifactId>
                 <version>1.0.39</version>
             </dependency>
-            <dependency> <!-- CVE-2023-34062 -->
+            <dependency> 
                 <groupId>io.projectreactor.netty</groupId>
                 <artifactId>reactor-netty-http</artifactId>
                 <version>1.0.39</version>
-            </dependency>
+            </dependency> -->
             <dependency> <!-- CVE-2021-0341 -->
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -315,11 +323,6 @@
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>9.37.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>2.15.0</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -367,11 +370,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency> <!-- CVE-2022-42003 -->
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.12.7.1</version>
-            </dependency>
             <dependency><!-- CVE-2022-33980 -->
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-configuration2</artifactId>
@@ -382,16 +380,16 @@
                 <artifactId>dnsjava</artifactId>
                 <version>${dnsjava.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.netty</groupId> <!-- CVE-2025-24970 -->
+            <!-- <dependency>
+                <groupId>io.netty</groupId>
                 <artifactId>netty-handler</artifactId>
                 <version>4.1.118.Final</version>
             </dependency>
             <dependency>
-                <groupId>io.netty</groupId> <!-- CVE-2025-55163 -->
+                <groupId>io.netty</groupId>
                 <artifactId>netty-codec-http2</artifactId>
                 <version>4.1.124.Final</version>
-            </dependency>
+            </dependency> -->
             <dependency><!-- hadoop-common 3.3.3 CVE-2023-34455 -->
                 <groupId>org.xerial.snappy</groupId>
                 <artifactId>snappy-java</artifactId>
