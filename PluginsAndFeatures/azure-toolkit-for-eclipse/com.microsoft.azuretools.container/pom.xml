@@ -17,6 +17,12 @@
       <artifactId>docker-client</artifactId>
       <version>8.16.0</version>
       <classifier>shaded</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>

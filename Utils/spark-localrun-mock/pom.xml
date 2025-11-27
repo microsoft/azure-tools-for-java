@@ -267,7 +267,7 @@
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <scope>provided</scope>
-            <version>3.7.2</version>
+            <version>3.9.4</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>

@@ -61,6 +61,44 @@
                 <version>${azure.toolkit-lib.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-handler</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-codec-http2</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- CVE-2021-26291 -->
+                        <groupId>org.apache.maven</groupId>
+                        <artifactId>maven-core</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- CVE-2025-52999 -->
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                    <exclusion> <!-- CVE-2023-52428 -->
+                        <groupId>com.nimbusds</groupId>
+                        <artifactId>nimbus-jose-jwt</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.projectreactor.netty</groupId>
+                        <artifactId>reactor-netty-http</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.projectreactor.netty</groupId>
+                        <artifactId>reactor-netty-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.yaml</groupId>
+                        <artifactId>snakeyaml</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>net.minidev</groupId>
+                        <artifactId>json-smart</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -126,6 +164,26 @@
                 <groupId>com.microsoft.azure.functions</groupId>
                 <artifactId>azure-functions-java-library</artifactId>
                 <version>1.4.2</version>
+            </dependency>
+            <dependency> <!--CVE-2021-27568--> <!-- CVE-2023-1370 -->
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.4.9</version>
+            </dependency>
+            <dependency> <!-- CVE-2021-0341 -->
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.14.0</version>
+            </dependency>
+            <dependency> <!-- CVE-2021-0341 -->
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>4.9.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>9.37.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
