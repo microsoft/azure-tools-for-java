@@ -2,43 +2,85 @@ name: $(Date:yyyyMMdd).$(Rev:r)
 variables:
   - name: Codeql.Enabled
     value: true
+  - name: IsStableBuild
+    value: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-')) }}
+  - name: IsNightlyBuild
+    value: ${{ and(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')) }}
+  - name: DoRealSign
+    value: ${{ or(eq(parameters.ForceRealSign, true), eq(variables['IsStableBuild'], true), eq(variables['IsNightlyBuild'], true)) }}
+  - name: DoProceedToRelease
+    value: ${{ or(eq(variables['DoRealSign'], true), eq(parameters.ForceTestSignRelease, true)) }}
+  - name: RELEASE_CHANNEL
+    ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-')) }}:
+      value: stable
+    ${{ else }}:
+      value: nightly
+  - name: SIGNTYPE
+    ${{ if eq(variables['DoRealSign'], true) }}:
+      value: real
+    ${{ else }}:
+      value: test
+
+parameters:
+  - name: ForceRealSign
+    displayName: "Force usage of real sign (PME PoP needed)"
+    type: boolean
+    default: false
+  - name: ForceTestSignRelease
+    displayName: "Force release on test sign (for test ONLY)"
+    type: boolean
+    default: false
+
 resources:
   repositories:
     - repository: self
       type: git
       ref: refs/heads/main
-    - repository: MicroBuildTemplate
+    - repository: 1esPipelines
       type: git
-      name: 1ESPipelineTemplates/MicroBuildTemplate
-trigger: none
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - release-*
+
+pr:
+  - main
+  - develop
+  - release-*
+
+schedules:
+  - cron: "0 22 * * 0-4" # 6:00 Mon-Fri UTC+8
+    displayName: "Nightly build"
+    branches:
+      include:
+        - develop
+    always: true
+
 extends:
-  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
-      os: windows # allowed values: windows, linux, or macOS. The default value is windows.
     featureFlags:
       disableNetworkIsolation: true
+    pool:
+      name: VSEngSS-MicroBuild2022-1ES
     stages:
-      - stage: Stage
+      - stage: Build_Plugin
+        displayName: "Build Plugin"
         jobs:
           - job: Build_and_Sign
             displayName: Build and Sign Plugin
             timeoutInMinutes: 360
             templateContext:
-              mb:
-                signing:
-                  enabled: true
-                  signType: real
-                  signWithProd: true
-                  zipSources: false
-                  useEsrpCli: true
-                  feedSource: 'https://mseng.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json'
               outputs:
                 - output: pipelineArtifact
-                  artifactName: drop
-                  targetPath: $(build.artifactstagingdirectory)/drop
-                  displayName: "Publish Artifact: drop"
+                  artifactName: plugin
+                  targetPath: $(build.artifactstagingdirectory)/plugin
+                  displayName: "Publish Artifact: plugin"
             steps:
               - checkout: self
                 clean: true
@@ -61,6 +103,22 @@ extends:
                   jdkSourceOption: LocalDirectory
                   jdkFile: '$(build.sourcesdirectory)\jdk17_x64_windows.zip'
                   jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk17'
+              - task: UseNode@1
+                inputs:
+                  version: "22.x"
+              - task: NuGetAuthenticate@1
+                displayName: "🔩 NuGet Authenticate"
+              - task: MicroBuildSigningPlugin@4
+                displayName: "Add MicroBuild Signing Plugin"
+                inputs:
+                  ${{if eq(variables.DoRealSign, true) }}:
+                    signType: "real"
+                    ConnectedPMEServiceName: "40012d40-9ded-4f75-8476-d60758200346"
+                  ${{ else }}:
+                    signType: "test"
+                  feedSource: "https://mseng.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json"
+                env:
+                  MicroBuildOutputFolderOverride: "$(Agent.TempDirectory)"
               - task: PowerShell@2
                 displayName: Build Plugin
                 inputs:
@@ -72,65 +130,83 @@ extends:
                     mvn clean -f ./Utils/pom.xml
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
                     ./gradlew clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
+                env:
+                  USE_STABLE_VERSION: $(IsStableBuild)
               - task: PowerShell@2
                 displayName: Unpackage
                 inputs:
                   targetType: inline
                   script: |
+                    Write-Host "Creating artifacts directory..."
                     New-Item -ItemType Directory -Path ".\artifacts\intellij\" -Force
+                    Write-Host "Finding plugin zip file..."
                     $zipFile = Get-ChildItem ".\PluginsAndFeatures\azure-toolkit-for-intellij\build\distributions\*.zip" | Select-Object -First 1
-                    Copy-Item $zipFile.FullName ".\artifacts\intellij\azure-toolkit-for-intellij.zip"
-                    Expand-Archive -Path ".\artifacts\intellij\azure-toolkit-for-intellij.zip" -DestinationPath ".\artifacts\intellij\folder" -Force
-                    Remove-Item ".\artifacts\intellij\azure-toolkit-for-intellij.zip"
+                    Write-Host "Found: $($zipFile.FullName)"
+                    Write-Host "Copying to artifacts..."
+                    Copy-Item $zipFile.FullName ".\artifacts\intellij\azure-intellij.zip"
+                    Write-Host "Extracting archive..."
+                    Expand-Archive -Path ".\artifacts\intellij\azure-intellij.zip" -DestinationPath ".\artifacts\intellij\folder" -Force
+                    Write-Host "Cleaning up temporary zip file..."
+                    Remove-Item ".\artifacts\intellij\azure-intellij.zip"
+                    Write-Host "Unpackaging completed successfully"
               - task: PowerShell@2
                 displayName: Sign jars
                 timeoutInMinutes: 240
                 inputs:
                   targetType: inline
                   script: |
-                    $ABSOLUTE_PATH = Get-Location
-                    # Generate the signing-filelist.xml file
-                    '<?xml version="1.0" encoding="utf-8" ?>' | Out-File -FilePath signing-filelist.xml -Encoding utf8
-                    '<filelist>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
-                    '    <certificate certnumbers="100010171">' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
-                    
-                    Get-ChildItem -Path . -Recurse -File | Where-Object { 
-                        $_.Name -like "azure-intellij-*.jar" -or 
-                        $_.Name -like "azure-toolkit-for-intellij*.jar" -or 
-                        $_.Name -like "azure-toolkit-ide-*.jar" -or 
-                        $_.Name -like "azuretools-core-*.jar" -or 
-                        $_.Name -like "azure-explorer-common-*.jar" -or 
-                        $_.Name -like "hdinsight-node-common-*.jar" -or 
-                        $_.Name -eq "azure-sdk-reference-book.jar" 
-                    } | ForEach-Object {
-                        $abs_path = $_.FullName
-                        "        <file srcpath=`"$abs_path`" dstpath=`"$abs_path`"></file>" | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
+                    Write-Host "Searching for JAR files to sign..."
+                    $files = Get-ChildItem -Path . -Include "azure-intellij-*.jar", "azure-toolkit-for-intellij*.jar", "azure-toolkit-ide-*.jar", "azuretools-core.jar", "azure-explorer-common.jar", "hdinsight-node-common.jar" -Recurse -File
+                    Write-Host "Found $($files.Count) JAR file(s) to sign"
+                    $counter = 0
+                    foreach ($file in $files) {
+                      $counter++
+                      Write-Host "[$counter/$($files.Count)] Signing: $($file.Name) with sign type: $(SIGNTYPE)"
+                      dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"$($file.FullName)" /certs:100010171 /signType:$(SIGNTYPE)
+                      Write-Host "  ✓ Signed successfully"
                     }
-                    
-                    '    </certificate>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
-                    '</filelist>' | Out-File -FilePath signing-filelist.xml -Append -Encoding utf8
-                    
-                    dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /filelist:signing-filelist.xml
-                    Remove-Item signing-filelist.xml                    
-                  workingDirectory: 'artifacts/intellij/folder'
+                    Write-Host "All JAR files signed successfully"
+                  workingDirectory: 'artifacts/intellij/folder/azure-toolkit-for-intellij/lib'
               - task: CmdLine@2
                 displayName: Repackage
                 inputs:
                   script: |
                     echo Starting repackaging...
                     cd artifacts\intellij\folder
-                    echo Removing log files...
-                    del /s /q *.log
-                    echo Creating final zip archive: azure-toolkit-for-intellij-$(Build.BuildNumber).zip
-                    tar -a -c -f ..\..\azure-toolkit-for-intellij-$(Build.BuildNumber).zip *
+                    echo Creating final zip archive: azure-intellij-$(Build.BuildNumber).zip
+                    tar -a -c -f ..\..\azure-intellij-$(Build.BuildNumber).zip *
                     echo Repackaging completed successfully
               - task: CopyFiles@2
                 displayName: "Copy Files to: $(build.artifactstagingdirectory)"
                 inputs:
                   SourceFolder: $(system.defaultworkingdirectory)/artifacts
                   Contents: "*.zip"
-                  TargetFolder: $(build.artifactstagingdirectory)/drop
+                  TargetFolder: $(build.artifactstagingdirectory)/plugin
               - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
                 displayName: "Manifest Generator "
                 inputs:
-                  BuildDropPath: $(build.artifactstagingdirectory)/drop
+                  BuildDropPath: $(build.artifactstagingdirectory)/plugin
+      - stage: Release_Plugin
+        condition: ${{ variables.DoProceedToRelease }}
+        displayName: Release Plugin to Marketplace
+        dependsOn: Build_Plugin
+        jobs:
+          - deployment: releasePlugin
+            templateContext:
+              type: releaseJob
+              isProduction: true
+              inputs:
+                - input: pipelineArtifact
+                  artifactName: "plugin"
+                  targetPath: "$(Pipeline.Workspace)/plugin"
+            environment: azure-intellij-plugin-release
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - task: PowerShell@2
+                      displayName: Release
+                      inputs:
+                        targetType: inline
+                        script: |
+                          curl.exe -i --header "Authorization: Bearer $(RELEASE_TOKEN)" -F pluginId=8053 -F "file=@$(Pipeline.Workspace)/plugin/azure-intellij-$(Build.BuildNumber).zip" -F channel=$(RELEASE_CHANNEL) https://plugins.jetbrains.com/plugin/uploadPlugin
