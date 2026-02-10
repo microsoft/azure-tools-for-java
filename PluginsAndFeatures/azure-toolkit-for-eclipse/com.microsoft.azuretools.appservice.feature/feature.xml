@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.appservice.feature"
       label="App Service Plugin for Eclipse"
-      version="3.33.0.qualifier"
+      version="3.34.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>
