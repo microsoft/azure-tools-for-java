@@ -10,10 +10,15 @@ resources:
     - repository: MicroBuildTemplate
       type: git
       name: 1ESPipelineTemplates/MicroBuildTemplate
+
 trigger:
   branches:
     include:
-      - hanli/fix-eclipse
+      - main
+      - develop
+      - release-*
+      - develop.eclipse
+
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
