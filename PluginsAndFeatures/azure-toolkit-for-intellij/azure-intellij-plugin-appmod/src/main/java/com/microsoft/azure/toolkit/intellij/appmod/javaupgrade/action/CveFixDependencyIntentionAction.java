@@ -19,11 +19,14 @@ import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaUpgra
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaVersionNotificationService;
 
 import com.microsoft.azure.toolkit.intellij.appmod.utils.AppModUtils;
+import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.GradleBuildFileUtils;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.PomXmlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.*;
+import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants;
+
+import java.util.Map;
 
 /**
  * Intention action to fix CVE vulnerabilities in dependencies using GitHub Copilot.
@@ -41,9 +44,9 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
     @Override
     public @IntentionName @NotNull String getText() {
         if (!AppModPluginInstaller.isAppModPluginInstalled()) {
-            return  FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN;
+            return  Constants.FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN;
         }
-        return FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME;
+        return Constants.FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME;
     }
 
     @Override
@@ -61,36 +64,60 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
                 return false;
             }
 
-            // Only available for pom.xml files
+            // Only available for pom.xml or Gradle build files
             final String fileName = file.getName();
-            if (!fileName.equals("pom.xml")) {
+            final boolean isPomFile = fileName.equals("pom.xml");
+            final boolean isGradleFile = fileName.endsWith(".gradle") || fileName.endsWith(".gradle.kts");
+            if (!isPomFile && !isGradleFile) {
                 return false;
             }
             final int offset = editor.getCaretModel().getOffset();
             final String documentText = editor.getDocument().getText();
-            
-            // Try to extract dependency info - only show if cursor is within a <dependency> block
-            final int dependencyStart = PomXmlUtils.findDependencyStart(documentText, offset);
-            final int dependencyEnd = PomXmlUtils.findDependencyEnd(documentText, offset);
-            
-            if (dependencyStart >= 0 && dependencyEnd > dependencyStart) {
-                final String dependencyBlock = documentText.substring(dependencyStart, dependencyEnd);
-                String cachedGroupId = PomXmlUtils.extractXmlValue(dependencyBlock, "groupId");
-                String cachedArtifactId = PomXmlUtils.extractXmlValue(dependencyBlock, "artifactId");
-                String cachedVersion = PomXmlUtils.extractXmlValue(dependencyBlock, "version");
-                vulnerabilityInfo = VulnerabilityInfo.builder().groupId(cachedGroupId).artifactId(cachedArtifactId).version(cachedVersion).build();
-                // Only show if we have valid dependency info (not for parent/plugin sections)
-                if(cachedGroupId != null && cachedArtifactId != null) {
-                    //if the artifact is in the cached cve issues, show the intention
-                    final var issue = JavaUpgradeIssuesCache.getInstance(project).findCveIssue(cachedGroupId + ":" + cachedArtifactId);
-                    return issue != null;
+
+            if (isPomFile) {
+                // Try to extract dependency info - only show if cursor is within a <dependency> block
+                final int dependencyStart = PomXmlUtils.findDependencyStart(documentText, offset);
+                final int dependencyEnd = PomXmlUtils.findDependencyEnd(documentText, offset);
+
+                if (dependencyStart >= 0 && dependencyEnd > dependencyStart) {
+                    final String dependencyBlock = documentText.substring(dependencyStart, dependencyEnd);
+                    String cachedGroupId = PomXmlUtils.extractXmlValue(dependencyBlock, "groupId");
+                    String cachedArtifactId = PomXmlUtils.extractXmlValue(dependencyBlock, "artifactId");
+                    String cachedVersion = PomXmlUtils.extractXmlValue(dependencyBlock, "version");
+                    vulnerabilityInfo = VulnerabilityInfo.builder().groupId(cachedGroupId).artifactId(cachedArtifactId).version(cachedVersion).build();
+                    // Only show if we have valid dependency info (not for parent/plugin sections)
+                    if (cachedGroupId != null && cachedArtifactId != null) {
+                        //if the artifact is in the cached cve issues, show the intention
+                        final var issue = JavaUpgradeIssuesCache.getInstance(project).findCveIssue(cachedGroupId + ":" + cachedArtifactId);
+                        if (issue != null) {
+                         //   AppModUtils.logTelemetryEvent("cveFixDependencyIntentionActionIsAvailable", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            } else if (isGradleFile) {
+                final GradleBuildFileUtils.DependencyCoordinate coordinate =
+                    GradleBuildFileUtils.findDependencyAtOffset(documentText, offset);
+                if (coordinate.isValid()) {
+                    vulnerabilityInfo = VulnerabilityInfo.builder()
+                        .groupId(coordinate.groupId())
+                        .artifactId(coordinate.artifactId())
+                        .version(coordinate.version())
+                        .build();
+                    final var issue = JavaUpgradeIssuesCache.getInstance(project)
+                        .findCveIssue(coordinate.getPackageId());
+                    if (issue != null) {
+                        AppModUtils.logTelemetryEvent("cveFixDependencyIntentionActionIsAvailable", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
+                        return true;
+                    }
+                    return false;
                 }
             }
         } catch (Throwable e) {
             // Ignore and return false
             log.error("Error checking availability of CveFixDependencyIntentionAction", e);
         }
-        
         return false;
     }
 
@@ -102,9 +129,9 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
             }
 
             // Try to extract dependency information from the current context
-            final String prompt = buildPromptFromContext(editor, file);
+            final String prompt = buildPromptFromContext();
             JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt);
-            AppModUtils.logTelemetryEvent("openCveFixDependencyCopilotChatFromIntentionAction");
+            AppModUtils.logTelemetryEvent("openCveFixDependencyCopilotChatFromIntentionAction", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
         } catch (Throwable e) {
             log.error("Failed to invoke CveFixDependencyIntentionAction: ", e);
         }
@@ -113,12 +140,12 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
     /**
      * Builds a prompt based on the current editor context.
      */
-    private String buildPromptFromContext(@NotNull Editor editor, @NotNull PsiFile file) {
+    private String buildPromptFromContext() {
         if (vulnerabilityInfo == null) {
             log.error("Vulnerability info is null in buildPromptFromContext");
-            return SCAN_AND_RESOLVE_CVES_PROMPT;
+            return Constants.SCAN_AND_RESOLVE_CVES_PROMPT;
         }
-        return String.format(FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT,
+        return String.format(Constants.FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT,
                 vulnerabilityInfo.getDependencyCoordinate());
     }
 

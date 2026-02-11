@@ -92,7 +92,8 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
                 return;
             }
             e.getPresentation().setEnabledAndVisible(true);
-            //  e.getPresentation().setText(SCAN_AND_RESOLVE_CVES_WITH_COPILOT_DISPLAY_NAME);
+            e.getPresentation().setText(SCAN_AND_RESOLVE_CVES_WITH_COPILOT_DISPLAY_NAME);
+            AppModUtils.logTelemetryEvent("showCveFixDependencyInProblemsViewAction", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
             if (!AppModPluginInstaller.isAppModPluginInstalled()) {
                 e.getPresentation().setText(e.getPresentation().getText() + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
             }

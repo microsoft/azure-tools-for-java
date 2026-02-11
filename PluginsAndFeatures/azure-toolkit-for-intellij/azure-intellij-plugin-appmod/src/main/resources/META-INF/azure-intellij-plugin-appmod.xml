@@ -1,4 +1,6 @@
 <idea-plugin>
+    <depends optional="true">org.intellij.groovy</depends>
+    <depends optional="true">org.jetbrains.kotlin</depends>
     <extensionPoints>
         <extensionPoint qualifiedName="com.microsoft.tooling.msservices.intellij.azure.migrateOptionProvider" 
                         interface="com.microsoft.azure.toolkit.intellij.appmod.javamigration.IMigrateOptionProvider"/>
@@ -9,7 +11,6 @@
         <postStartupActivity implementation="com.microsoft.azure.toolkit.intellij.appmod.javamigration.MigrationStatePreloader"/>
         <notificationGroup id="Azure Toolkit - Java Version Check" displayType="BALLOON" isLogByDefault="true"/>
         <intentionAction>
-            <language>XML</language>
             <className>com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.action.CveFixDependencyIntentionAction</className>
             <category>Azure Toolkit</category>
         </intentionAction>
@@ -20,7 +21,6 @@
         </intentionAction>        
         <!-- Inspections for Java version and framework versions -->
         <localInspection
-            language="XML"
             groupName="Azure Toolkit - Java Upgrade"
             displayName="Java upgrade issues"
             shortName="JavaUpgradeIssues"

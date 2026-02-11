@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.dao.JavaUpgradeIssue;
+import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.GradleBuildFileUtils;
 import com.microsoft.azure.toolkit.intellij.appmod.utils.AppModUtils;
 import com.microsoft.azure.toolkit.intellij.common.utils.JdkUtils;
 import com.microsoft.intellij.util.GradleUtils;
@@ -18,13 +19,14 @@ import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.model.MavenArtifactNode;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
-import org.jetbrains.plugins.gradle.model.ExternalDependency;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
-import org.jetbrains.plugins.gradle.model.ExternalSourceSet;
-import org.jetbrains.plugins.gradle.model.UnresolvedExternalDependency;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -363,15 +365,7 @@ public class JavaUpgradeIssuesDetectionService {
                 log.info("Checking Gradle project dependencies for CVE issues");
                 final List<ExternalProject> gradleProjects = GradleUtils.listGradleProjects(project);
                 for (ExternalProject gradleProject : gradleProjects) {
-                    final ExternalSourceSet main = gradleProject.getSourceSets().get("main");
-                    if (main != null) {
-                        main.getDependencies().stream()
-                            .filter(dep -> !(dep instanceof UnresolvedExternalDependency))
-                            .filter(dep -> StringUtils.isNotBlank(dep.getVersion()))
-                            .forEach(dep -> coordinateSet.add(
-                                dep.getGroup() + ":" + dep.getName() + ":" + dep.getVersion()
-                            ));
-                    }
+                    collectDirectGradleDependencies(gradleProject, coordinateSet);
                 }
             }
 
@@ -627,24 +621,7 @@ public class JavaUpgradeIssuesDetectionService {
     private JavaUpgradeIssue checkGradleDependency(@Nonnull ExternalProject gradleProject,
                                               @Nonnull DependencyCheckItem checkItem,
                                               @Nonnull Set<String> checkedPackages) {
-        final ExternalSourceSet main = gradleProject.getSourceSets().get("main");
-        if (main == null) {
-            return null;
-        }
-        
-        // Find direct dependency
-        final ExternalDependency dependency = main.getDependencies().stream()
-            .filter(dep -> StringUtils.equalsIgnoreCase(checkItem.groupId, dep.getGroup()) &&
-                           ("*".equals(checkItem.artifactId) || StringUtils.equalsIgnoreCase(checkItem.artifactId, dep.getName())))
-            .filter(dep -> !(dep instanceof UnresolvedExternalDependency))
-            .findFirst()
-            .orElse(null);
-
-        if (dependency == null) {
-             return null;
-        }
-
-        final String version = dependency.getVersion();
+        final String version = findDirectGradleDependencyVersion(gradleProject, checkItem);
 
         if (version == null || StringUtils.isBlank(version)) {
             return null;
@@ -669,5 +646,129 @@ public class JavaUpgradeIssuesDetectionService {
         }
         
         return null;
+    }
+
+    /**
+     * Gets all direct Gradle dependency locations from the build files of a Gradle project.
+     * This is the shared logic used by both dependency issue checking and CVE checking.
+     *
+     * @param gradleProject The Gradle project to scan
+     * @return List of dependency locations found in the build files
+     */
+    @Nonnull
+    private List<GradleBuildFileUtils.GradleDependencyLocation> getDirectGradleDependencyLocations(
+            @Nonnull ExternalProject gradleProject) {
+        final List<GradleBuildFileUtils.GradleDependencyLocation> allLocations = new ArrayList<>();
+        final Path projectDir = gradleProject.getProjectDir().toPath();
+        final List<Path> buildFiles = List.of(
+            projectDir.resolve("build.gradle"),
+            projectDir.resolve("build.gradle.kts")
+        );
+
+        for (Path buildFile : buildFiles) {
+            if (!Files.exists(buildFile)) {
+                continue;
+            }
+
+            final String text;
+            try {
+                text = Files.readString(buildFile, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                log.warn("Failed to read Gradle build file: {}", buildFile, e);
+                continue;
+            }
+
+            allLocations.addAll(GradleBuildFileUtils.findDependencyLocations(text));
+        }
+
+        return allLocations;
+    }
+
+    /**
+     * Gets the Spring Boot plugin version from a Gradle project's build files.
+     * Checks multiple sources:
+     * 1. Build files (build.gradle, build.gradle.kts)
+     * 2. Version catalog (gradle/libs.versions.toml)
+     *
+     * @param gradleProject The Gradle project to scan
+     * @return The Spring Boot plugin version, or null if not found
+     */
+    @Nullable
+    private String getSpringBootPluginVersion(@Nonnull ExternalProject gradleProject) {
+        final Path projectDir = gradleProject.getProjectDir().toPath();
+        
+        // Check build files first
+        final List<Path> buildFiles = List.of(
+            projectDir.resolve("build.gradle"),
+            projectDir.resolve("build.gradle.kts")
+        );
+
+        for (Path buildFile : buildFiles) {
+            if (!Files.exists(buildFile)) {
+                continue;
+            }
+
+            final String text;
+            try {
+                text = Files.readString(buildFile, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                log.warn("Failed to read Gradle build file: {}", buildFile, e);
+                continue;
+            }
+
+            final List<GradleBuildFileUtils.GradleVersionLocation> pluginVersions =
+                GradleBuildFileUtils.findSpringBootPluginVersions(text);
+            if (!pluginVersions.isEmpty()) {
+                return pluginVersions.get(0).version();
+            }
+        }
+        
+        // Check version catalog (gradle/libs.versions.toml)
+        final Path versionCatalog = projectDir.resolve("gradle").resolve("libs.versions.toml");
+        if (Files.exists(versionCatalog)) {
+            try {
+                final String tomlContent = Files.readString(versionCatalog, StandardCharsets.UTF_8);
+                final List<GradleBuildFileUtils.GradleVersionLocation> catalogVersions =
+                    GradleBuildFileUtils.findSpringBootVersionsInCatalog(tomlContent);
+                if (!catalogVersions.isEmpty()) {
+                    return catalogVersions.get(0).version();
+                }
+            } catch (IOException e) {
+                log.warn("Failed to read version catalog: {}", versionCatalog, e);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private String findDirectGradleDependencyVersion(@Nonnull ExternalProject gradleProject,
+                                                     @Nonnull DependencyCheckItem checkItem) {
+        final List<GradleBuildFileUtils.GradleDependencyLocation> locations = 
+            getDirectGradleDependencyLocations(gradleProject);
+
+        for (GradleBuildFileUtils.GradleDependencyLocation location : locations) {
+            final boolean groupMatches = StringUtils.equalsIgnoreCase(checkItem.groupId, location.groupId());
+            final boolean artifactMatches = "*".equals(checkItem.artifactId) ||
+                StringUtils.equalsIgnoreCase(checkItem.artifactId, location.artifactId());
+            if (groupMatches && artifactMatches) {
+                return location.version();
+            }
+        }
+
+        // Check for Spring Boot plugin version
+        if (GROUP_ID_SPRING_BOOT.equals(checkItem.groupId)) {
+            return getSpringBootPluginVersion(gradleProject);
+        }
+
+        return null;
+    }
+
+    private void collectDirectGradleDependencies(@Nonnull ExternalProject gradleProject, @Nonnull Set<String> coordinateSet) {
+        getDirectGradleDependencyLocations(gradleProject).stream()
+            .filter(location -> StringUtils.isNotBlank(location.version()))
+            .forEach(location -> coordinateSet.add(
+                location.groupId() + ":" + location.artifactId() + ":" + location.version()
+            ));
     }
 }
