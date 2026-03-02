@@ -90,7 +90,6 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
                         //if the artifact is in the cached cve issues, show the intention
                         final var issue = JavaUpgradeIssuesCache.getInstance(project).findCveIssue(cachedGroupId + ":" + cachedArtifactId);
                         if (issue != null) {
-                         //   AppModUtils.logTelemetryEvent("cveFixDependencyIntentionActionIsAvailable", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
                             return true;
                         }
                         return false;
@@ -108,7 +107,6 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
                     final var issue = JavaUpgradeIssuesCache.getInstance(project)
                         .findCveIssue(coordinate.getPackageId());
                     if (issue != null) {
-                        AppModUtils.logTelemetryEvent("cveFixDependencyIntentionActionIsAvailable", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
                         return true;
                     }
                     return false;

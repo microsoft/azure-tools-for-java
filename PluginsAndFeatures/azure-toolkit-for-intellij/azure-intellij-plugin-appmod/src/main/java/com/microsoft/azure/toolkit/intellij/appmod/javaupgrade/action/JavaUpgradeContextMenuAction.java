@@ -59,9 +59,6 @@ public class JavaUpgradeContextMenuAction extends AnAction {
             if (!isAppModPluginInstalled()) {
                 e.getPresentation().setText(e.getPresentation().getText() + TO_INSTALL_APP_MODE_PLUGIN);
             }
-            if (visible){
-                AppModUtils.logTelemetryEvent("showJavaUpgradeContextMenuAction", Map.of("appmodPluginInstalled", String.valueOf(isAppModPluginInstalled())));
-            }
             e.getPresentation().setEnabledAndVisible(visible);
         } catch (Throwable ex) {
             // In case of any error, hide the action

@@ -93,7 +93,7 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
             }
             e.getPresentation().setEnabledAndVisible(true);
             e.getPresentation().setText(FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME);
-            AppModUtils.logTelemetryEvent("showCveFixDependencyInProblemsViewAction", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
+
             if (!AppModPluginInstaller.isAppModPluginInstalled()) {
                 e.getPresentation().setText(e.getPresentation().getText() + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
             }
