@@ -4,7 +4,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.net.URL
+import java.net.URI
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -60,7 +60,9 @@ allprojects {
 
     dependencies {
         intellijPlatform {
-            intellijIdeaUltimate(properties("platformVersion").get(), useInstaller = false)
+            intellijIdeaUltimate(properties("platformVersion").get()) {
+                useInstaller = false
+            }
         }
 
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.52.2"))
@@ -146,7 +148,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
+            create(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
         }
     }
 }
@@ -256,7 +258,7 @@ tasks {
         if (!langServerDir.exists()) {
             logger.info("Downloading bicep language server ...")
             val zipFile = file("azure-intellij-plugin-bicep/downloaded.zip")
-            URL("https://aka.ms/java-toolkit-bicep-ls").openStream().use { input ->
+            URI("https://aka.ms/java-toolkit-bicep-ls").toURL().openStream().use { input ->
                 zipFile.outputStream().use { it.write(input.readBytes()) }
             }
             logger.info("Unzipping bicep language server ...")
