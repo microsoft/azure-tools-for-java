@@ -8,6 +8,8 @@ dependencies {
     implementation("com.vladsch.flexmark:flexmark:0.64.0")
     implementation("com.vladsch.flexmark:flexmark-util:0.64.0")
     implementation("org.apache.commons:commons-lang3:3.12.0")
+    // ComparableVersion is no longer on the platform classpath in 261
+    implementation("org.apache.maven:maven-artifact:3.9.11")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.9.0")
     testImplementation("org.powermock:powermock-api-mockito2:2.0.9")

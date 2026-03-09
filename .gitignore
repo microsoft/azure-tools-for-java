@@ -111,3 +111,5 @@ pom.xml.versionsBackup
 # Bicep Language Server
 **/bicep-langserver/**
 **/azure-intellij-plugin-bicep/downloaded.zip
+*.log
+deps.txt

@@ -63,6 +63,13 @@ allprojects {
             intellijIdeaUltimate(properties("platformVersion").get()) {
                 useInstaller = false
             }
+            // JBR 25 required to run IntelliJ 2026.1 (PathClassLoader is JBR-only)
+            jetbrainsRuntimeLocal("C:/Users/wangmi/.jdks/jbr-25/jbr_jcef-25.0.2-windows-x64-b329.72")
+            // MavenId/MavenCoordinate classes moved from maven plugin to repository-search plugin in 261
+            bundledPlugin("org.jetbrains.idea.reposearch")
+            // Test framework classes moved to separate modules in 261
+            testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
+            testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Plugin.Java)
         }
 
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.52.2"))
@@ -74,6 +81,8 @@ allprojects {
         annotationProcessor("org.projectlombok:lombok:1.18.32")
         implementation("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
         aspect("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
+        // junit was removed from IntelliJ platform bundled libs in 261
+        testImplementation("junit:junit:4.13.2")
     }
 
     configurations {
@@ -116,6 +125,17 @@ allprojects {
             duplicatesStrategy = DuplicatesStrategy.WARN
         }
 
+        // Gradle 9 requires explicit dependency declaration for shared sandbox outputs
+        withType<Test> {
+            dependsOn(rootProject.tasks.named("prepareTestSandbox"))
+            // Each subproject's test sandbox may be produced by other subproject tasks
+            rootProject.subprojects.forEach { sub ->
+                sub.tasks.matching { it.name == "prepareTestSandbox" }.configureEach {
+                    this@withType.dependsOn(this)
+                }
+            }
+        }
+
         sourceSets {
             main {
                 java.srcDirs("src/main/java")
@@ -127,6 +147,10 @@ allprojects {
                 java.srcDir("src/test/java")
                 kotlin.srcDirs("src/test/kotlin")
                 resources.srcDir("src/test/resources")
+                // Exclude legacy duplicate hdinsight test files from root module;
+                // they are properly maintained in azure-intellij-plugin-hdinsight-base
+                java.exclude("com/microsoft/azure/hdinsight/**")
+                kotlin.exclude("com/microsoft/azure/hdinsight/**")
             }
         }
     }
@@ -216,6 +240,11 @@ dependencies {
     implementation("com.microsoft.azure:azure-toolkit-auth-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-appservice-lib")
+
+    // Test dependencies for root module tests (cucumber, assertj)
+    testImplementation("io.cucumber:cucumber-java:7.0.0")
+    testImplementation("io.cucumber:cucumber-junit:7.0.0")
+    testImplementation("org.assertj:assertj-core:3.19.0")
 }
 
 tasks {
