@@ -1,12 +1,12 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
-import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
+import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.net.URI
 
 fun properties(key: String) = providers.gradleProperty(key)
+
 fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
