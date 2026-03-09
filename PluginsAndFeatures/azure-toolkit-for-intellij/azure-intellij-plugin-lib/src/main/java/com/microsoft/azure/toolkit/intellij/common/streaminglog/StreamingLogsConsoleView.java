@@ -14,12 +14,10 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class StreamingLogsConsoleView extends ConsoleViewImpl {
     private static final String SEPARATOR = System.getProperty("line.separator");
-    private boolean isDisposed;
     private Disposable subscription;
 
     public StreamingLogsConsoleView(@NotNull Project project) {
         super(project, true);
-        this.isDisposed = false;
         this.setUpdateFoldingsEnabled(false);
     }
 
@@ -43,10 +41,6 @@ public class StreamingLogsConsoleView extends ConsoleViewImpl {
         return subscription != null && !subscription.isDisposed();
     }
 
-    public boolean isDisposed() {
-        return this.isDisposed;
-    }
-
     private void printlnToConsole(String message, ConsoleViewContentType consoleViewContentType) {
         this.print(message + SEPARATOR, consoleViewContentType);
     }
@@ -54,7 +48,6 @@ public class StreamingLogsConsoleView extends ConsoleViewImpl {
     @Override
     public void dispose() {
         super.dispose();
-        this.isDisposed = true;
         closeStreamingLog();
     }
 }
