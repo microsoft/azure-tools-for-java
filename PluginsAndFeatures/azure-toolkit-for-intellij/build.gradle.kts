@@ -172,8 +172,14 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            create(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
+            // IC (Community) no longer published since 253; use IU (Ultimate) for verification
+            create(IntelliJPlatformType.IntellijIdeaUltimate, properties("platformVersion").get())
         }
+        // Suppress known structural warnings — plugin ID/name historically contain "intellij"
+        freeArgs = listOf(
+            "-mute", "TemplateWordInPluginId",
+            "-mute", "TemplateWordInPluginName"
+        )
     }
 }
 
