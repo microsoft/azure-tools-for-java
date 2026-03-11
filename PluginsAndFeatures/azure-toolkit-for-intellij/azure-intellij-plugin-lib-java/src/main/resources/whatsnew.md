@@ -1,6 +1,11 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.98.0
+### Added
+- Support IntelliJ IDEA 2026.1 EAP
+- Upgrade Gradle to 9.0 and IntelliJ Platform Plugin to 2.12.0
+
 ## 3.97.3
 - Rename GitHub Copilot app modernization to GitHub Copilot modernization.
 
