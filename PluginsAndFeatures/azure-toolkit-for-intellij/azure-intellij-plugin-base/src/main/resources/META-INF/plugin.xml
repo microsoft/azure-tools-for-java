@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit</name>
-  <version>3.98.0</version>
+  <version>3.97.3</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description>
@@ -18,7 +18,7 @@
     <![CDATA[
     <html>
         <h3>Azure</h3>
-        <h4>3.98.0</h4>
+        <h4>3.97.3</h4>
         <ul>
           <li>Support IntelliJ IDEA 2026.1 EAP</li>
         </ul>

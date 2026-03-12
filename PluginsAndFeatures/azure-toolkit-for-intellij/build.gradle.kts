@@ -64,7 +64,7 @@ allprojects {
                 useInstaller = false
             }
             // JBR 25 required to run IntelliJ 2026.1 (PathClassLoader is JBR-only)
-            jetbrainsRuntimeLocal("C:/Users/wangmi/.jdks/jbr-25/jbr_jcef-25.0.2-windows-x64-b329.72")
+            jetbrainsRuntime()
             // MavenId/MavenCoordinate classes moved from maven plugin to repository-search plugin in 261
             bundledPlugin("org.jetbrains.idea.reposearch")
             // Test framework classes moved to separate modules in 261
