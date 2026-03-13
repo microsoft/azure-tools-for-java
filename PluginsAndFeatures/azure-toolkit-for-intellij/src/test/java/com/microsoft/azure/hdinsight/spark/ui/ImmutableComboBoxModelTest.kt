@@ -25,10 +25,10 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.microsoft.intellij.ui.util.findFirst
 import com.microsoft.intellij.ui.util.iterator
 import junit.framework.TestCase
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-class ImmutableComboBoxModelTest: TestCase() {
+class ImmutableComboBoxModelTest : TestCase() {
     @Test
     fun testIterator() {
         val data = listOf(3, 5, 4, 2)

@@ -209,7 +209,9 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     @SneakyThrows
     private void setUseSsl(boolean useSsl) {
         final DataSourceConfigurable configurable = this.getDataSourceConfigurable();
-        final JBCheckBox useSSLCheckBox = (JBCheckBox) FieldUtils.readField(configurable.getSshSslPanel(), "myUseSSLJBCheckBox", true);
+        // getSshSslPanel() was removed in IntelliJ 261; use reflection to access the panel field directly
+        final Object sshSslPanel = FieldUtils.readField(configurable, "mySshSslPanel", true);
+        final JBCheckBox useSSLCheckBox = (JBCheckBox) FieldUtils.readField(sshSslPanel, "myUseSSLJBCheckBox", true);
         useSSLCheckBox.setSelected(useSsl);
     }
 

@@ -18,6 +18,10 @@
     <![CDATA[
     <html>
         <h3>Azure</h3>
+        <h4>3.97.3</h4>
+        <ul>
+          <li>Support IntelliJ IDEA 2026.1 EAP</li>
+        </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
