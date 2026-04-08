@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.97.3</version>
+  <version>3.97.4</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -28,10 +28,11 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h2 id="3-97-3">3.97.3</h2>
+      <h2 id="3-97-4">3.97.4</h2>
       <ul>
       <li>Support IntelliJ IDEA 2026.1 EAP</li>
       <li>Rename GitHub Copilot app modernization to GitHub Copilot modernization.</li>
+      <li>Update prompts and tool references of GitHub Copilot modernization.</li>
       </ul>
       <h2 id="3-97-2">3.97.2</h2>
       <h3 id="fixed">Fixed</h3>
