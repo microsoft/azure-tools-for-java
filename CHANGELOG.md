@@ -3,7 +3,6 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
-  - [3.97.4](#3974)
   - [3.97.3](#3973)
   - [3.97.2](#3972)
   - [3.97.1](#3971)
@@ -123,9 +122,6 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
-
-## 3.97.4
-- Update prompts and tool references of GitHub Copilot modernization.
 
 ## 3.97.3
 - Support IntelliJ IDEA 2026.1 EAP
