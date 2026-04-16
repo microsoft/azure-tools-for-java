@@ -218,6 +218,19 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
                 final boolean selected = (boolean) model.getValueAt(row, CHECKBOX_COLUMN);
                 model.setValueAt(!selected, row, CHECKBOX_COLUMN);
             }
+            if (rows.length > 0) {
+                final int lastRow = rows[rows.length - 1];
+
+                final boolean newState = (boolean) model.getValueAt(lastRow, CHECKBOX_COLUMN);
+                final String subName = (String) model.getValueAt(lastRow, 1);
+                final String announcement = String.format("%s %s", subName, newState ? "selected" : "deselected");
+                table.getAccessibleContext().setAccessibleDescription(announcement);
+                final Container parent = table.getParent();
+                if (parent != null) {
+                    parent.requestFocusInWindow();
+                    SwingUtilities.invokeLater(table::requestFocusInWindow);
+                }
+            }
         };
         table.registerKeyboardAction(actionListener, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         final AnActionButton refreshAction = new AnActionButton("Refresh", AllIcons.Actions.Refresh) {

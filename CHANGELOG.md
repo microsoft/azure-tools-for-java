@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.97.5](#3975)
   - [3.97.4](#3974)
   - [3.97.3](#3973)
   - [3.97.2](#3972)
@@ -124,11 +125,18 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.97.5
+### Added
+- Enable Azure Skills for GitHub Copilot.
+
+### Fixed
+- Fixed zip entry path check.
+- Fixed screen reader not reading the new status after selecting subscription with keyboard.
+
 ## 3.97.4
 - Update prompts and tool references of GitHub Copilot modernization.
 
 ## 3.97.3
-- Support IntelliJ IDEA 2026.1 EAP
 - Rename GitHub Copilot app modernization to GitHub Copilot modernization.
 
 ## 3.97.2

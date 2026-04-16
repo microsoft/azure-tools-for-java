@@ -1,11 +1,18 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.97.5
+### Added
+- Enable Azure Skills for GitHub Copilot.
+
+### Fixed
+- Fixed zip entry path check.
+- Fixed screen reader not reading the new status after selecting subscription with keyboard.
+
 ## 3.97.4
 - Update prompts and tool references of GitHub Copilot modernization.
 
 ## 3.97.3
-- Support IntelliJ IDEA 2026.1 EAP
 - Rename GitHub Copilot app modernization to GitHub Copilot modernization.
 
 ## 3.97.2
