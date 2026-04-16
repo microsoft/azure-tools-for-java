@@ -5,7 +5,7 @@ variables:
   - name: IsStableBuild
     value: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-')) }}
   - name: IsNightlyBuild
-    value: ${{ and(eq(variables['Build.Reason'], 'Schedule'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')) }}
+    value: ${{ and(eq(variables['Build.Reason'], 'Schedule'), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), eq(variables['Build.SourceBranch'], 'refs/heads/develop.next'))) }}
   - name: DoRealSign
     value: ${{ or(eq(parameters.ForceRealSign, true), eq(variables['IsStableBuild'], true), eq(variables['IsNightlyBuild'], true)) }}
   - name: DoProceedToRelease
@@ -45,14 +45,16 @@ trigger:
   branches:
     include:
       - main
-      - develop
       - release-*
+      - develop
+      - develop.next
       - develop.eclipse
 
 pr:
   - main
-  - develop
   - release-*
+  - develop
+  - develop.next
 
 schedules:
   - cron: "0 22 * * 0-4" # 6:00 Mon-Fri UTC+8
@@ -60,6 +62,7 @@ schedules:
     branches:
       include:
         - develop
+        - develop.next
     always: true
 
 extends:

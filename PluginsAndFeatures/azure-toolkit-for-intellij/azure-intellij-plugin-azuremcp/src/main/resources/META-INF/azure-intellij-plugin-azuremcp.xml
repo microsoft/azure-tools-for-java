@@ -6,6 +6,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity
                 implementation="com.microsoft.azure.toolkit.intellij.azuremcp.GithubCopilotMcpInitializer"/>
+        <postStartupActivity
+                implementation="com.microsoft.azure.toolkit.intellij.azuremcp.AzureSkillsInitializer"/>
         <registryKey key="azure.mcp.ghcp.autoconfigure.disabled" description="Azure MCP: Disable auto configure GitHub Copilot" restartRequired="true" defaultValue="false"/>
+        <registryKey key="azure.skills.autoconfigure.disabled" description="Azure Skills: Disable auto install Azure Skills" restartRequired="true" defaultValue="false"/>
     </extensions>
 </idea-plugin>
