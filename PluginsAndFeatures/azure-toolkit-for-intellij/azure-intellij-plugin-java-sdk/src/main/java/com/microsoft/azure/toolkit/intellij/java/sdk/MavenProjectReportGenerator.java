@@ -9,6 +9,8 @@ import com.intellij.lang.StdLanguages;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -89,6 +91,7 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
             generateReport(project);
             return Unit.INSTANCE;
         }).inSmartMode(project)
+          .coalesceBy(project, MavenProjectReportGenerator.class)
           .expireWhen(project::isDisposed)
           .submit(scheduledExecutor);
 
@@ -119,6 +122,8 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
                     log.debug("Report for " + key + ": " + OBJECT_MAPPER.writeValueAsString(value));
                     sendReportToAppInsights(value);
                 }
+            } catch (final ProcessCanceledException e) {
+                throw e;
             } catch (final Exception e) {
                 log.error("Unable to send the Azure SDK report ", e);
             }
@@ -198,9 +203,6 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
     }
 
     private void analyzeCode(MavenProjectsManager mavenProjectsManager, MavenProject mavenProject, MavenProjectReport report) {
-        final Map<String, Integer> methodCallFrequency = new HashMap<>();
-        final Map<String, Integer> betaMethodCallFrequency = new HashMap<>();
-
         final Module module = ApplicationManager.getApplication()
                 .runReadAction((Computable<Module>) () -> mavenProjectsManager.findModule(mavenProject));
         if (module == null) {
@@ -209,35 +211,46 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
         final Project project = mavenProjectsManager.getProject();
         // Search for all methods in the library with the target annotation
         final AzureSearchScope azureSearchScope = new AzureSearchScope(project);
-        final Collection<PsiClass> classes = AllClassesSearch.search(azureSearchScope, project).findAll();
-        for (final PsiClass psiClass : classes) {
+        AllClassesSearch.search(azureSearchScope, project).forEach(psiClass -> {
+            ProgressManager.checkCanceled();
             for (final PsiMethod method : psiClass.getMethods()) {
-                final MethodCallDetails serviceMethodCall = findAnnotatedMethodCalls(mavenProject, report, method, project, SERVICE_METHOD_ANNOTATION);
+                ProgressManager.checkCanceled();
+                final MethodCallDetails serviceMethodCall = findAnnotatedMethodCalls(mavenProject, method, project, SERVICE_METHOD_ANNOTATION);
                 if (serviceMethodCall != null) {
                     report.addServiceMethodCall(serviceMethodCall);
                 }
-                final MethodCallDetails betaMethodCall = findAnnotatedMethodCalls(mavenProject, report, method, project, BETA_METHOD_ANNOTATION);
+                final MethodCallDetails betaMethodCall = findAnnotatedMethodCalls(mavenProject, method, project, BETA_METHOD_ANNOTATION);
                 if (betaMethodCall != null) {
                     report.addBetaMethodCall(betaMethodCall);
                 }
             }
-        }
+            return true;
+        });
     }
 
     @Nullable
-    private MethodCallDetails findAnnotatedMethodCalls(MavenProject mavenProject, MavenProjectReport report,
+    private MethodCallDetails findAnnotatedMethodCalls(MavenProject mavenProject,
                                                        PsiMethod method, Project project, String annotation) {
         final PsiAnnotation psiAnnotation = method.getAnnotation(annotation);
         if (psiAnnotation != null) {
+            ProgressManager.checkCanceled();
             // Annotated method found; search for references
             final Collection<PsiReference> references = ReferencesSearch.search(method, new MavenRootProjectScope(project, mavenProject)).findAll();
             if (!references.isEmpty()) {
-                final String methodName = method.getContainingClass().getQualifiedName() + "." + method.getName();
-                final String returnType = method.getReturnType().getCanonicalText();
+                final PsiClass containingClass = method.getContainingClass();
+                final PsiType returnType = method.getReturnType();
+                if (containingClass == null || returnType == null) {
+                    return null;
+                }
+                final String className = containingClass.getQualifiedName();
+                if (className == null) {
+                    return null;
+                }
+                final String methodName = className + "." + method.getName();
                 final String params = Arrays.stream(method.getParameterList().getParameters())
                         .map(parameter -> parameter.getType().getCanonicalText())
                         .collect(Collectors.joining(","));
-                final String methodSignature = returnType + " " + methodName + "(" + params + ")";
+                final String methodSignature = returnType.getCanonicalText() + " " + methodName + "(" + params + ")";
                 return new MethodCallDetails().setCallFrequency(references.size()).setMethodName(methodSignature);
             }
         }
