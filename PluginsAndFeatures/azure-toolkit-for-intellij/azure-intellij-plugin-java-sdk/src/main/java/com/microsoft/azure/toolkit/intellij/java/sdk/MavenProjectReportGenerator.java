@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.intellij.lang.StdLanguages;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -80,11 +81,17 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
         telemetryClient = new TelemetryClient(configuration);
     }
 
+    //@TODO recheck if generated report is idempotent (still the same)
     @Nullable
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
-        scheduledExecutor.schedule(() -> ApplicationManager.getApplication().runReadAction(() -> generateReport(project)),
-                INITIAL_DELAY_IN_MINUTES, TimeUnit.MINUTES);
+        ReadAction.nonBlocking(() -> {
+            generateReport(project);
+            return Unit.INSTANCE;
+        }).inSmartMode(project)
+          .expireWhen(project::isDisposed)
+          .submit(scheduledExecutor);
+
         return null;
     }
 
