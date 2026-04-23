@@ -8,6 +8,7 @@ package com.microsoft.azure.toolkit.intellij.common.task;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -30,7 +31,12 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
     protected void doRead(Runnable runnable, final AzureTask<?> task) {
-        ApplicationManager.getApplication().runReadAction(runnable);
+        final Project project = (Project) task.getProject();
+        final var builder = ReadAction.nonBlocking(runnable);
+        if (project != null) {
+            builder.expireWhen(project::isDisposed);
+        }
+        builder.executeSynchronously();
     }
 
     @Override
