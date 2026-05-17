@@ -18,7 +18,7 @@
     ```
 * Use Gradle to build the plugin
     ```
-    $ ./gradlew -b PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle buildPlugin
+    $ ./gradlew -b PluginsAndFeatures/azure-toolkit-for-intellij/build.gradle.kts buildPlugin
     ```
     You can find the outputs under ```PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions```
     

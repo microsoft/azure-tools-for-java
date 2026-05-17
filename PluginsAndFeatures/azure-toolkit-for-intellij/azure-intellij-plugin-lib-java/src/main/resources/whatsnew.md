@@ -1,6 +1,10 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.97.6
+### Fixed
+- Fixed several UI freeze issues caused by non-cancellable read actions in Azure task manager, Azure artifact resolution, Maven report generation, and background JDK version checks.
+
 ## 3.97.5
 ### Added
 - Enable Azure Skills for GitHub Copilot.

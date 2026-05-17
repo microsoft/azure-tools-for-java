@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.intellij.lang.StdLanguages;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.startup.ProjectActivity;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.AllClassesSearch;
@@ -83,8 +83,13 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
     @Nullable
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
-        scheduledExecutor.schedule(() -> ApplicationManager.getApplication().runReadAction(() -> generateReport(project)),
-                INITIAL_DELAY_IN_MINUTES, TimeUnit.MINUTES);
+        scheduledExecutor.schedule(() ->
+                ReadAction.nonBlocking(() -> {
+                            generateReport(project);
+                            return Unit.INSTANCE;
+                        }).inSmartMode(project)
+                        .expireWhen(project::isDisposed)
+                        .executeSynchronously(), INITIAL_DELAY_IN_MINUTES, TimeUnit.MINUTES);
         return null;
     }
 
@@ -113,7 +118,7 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
                     sendReportToAppInsights(value);
                 }
             } catch (final Exception e) {
-                log.error("Unable to send the Azure SDK report ", e);
+                log.info("Unable to send the Azure SDK report ", e);
             }
         } else {
             log.debug("Azure telemetry is disabled");
@@ -194,8 +199,9 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
         final Map<String, Integer> methodCallFrequency = new HashMap<>();
         final Map<String, Integer> betaMethodCallFrequency = new HashMap<>();
 
-        final Module module = ApplicationManager.getApplication()
-                .runReadAction((Computable<Module>) () -> mavenProjectsManager.findModule(mavenProject));
+        final Module module = ReadAction.nonBlocking(() -> mavenProjectsManager.findModule(mavenProject))
+                .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                .executeSynchronously();
         if (module == null) {
             return;
         }
@@ -245,7 +251,7 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
             telemetryClient.flush();
             log.info("Successfully sent the report to Application Insights");
         } catch (final Exception ex) {
-            log.error("Unable to send report to Application Insights. " + ex.getMessage());
+            log.info("Unable to send report to Application Insights. " + ex.getMessage());
         }
     }
 
@@ -266,24 +272,29 @@ public final class MavenProjectReportGenerator implements ProjectActivity, DumbA
 
     private void checkDependencyManagement(MavenProjectsManager mavenProjectsManager, MavenProject mavenProject, MavenProjectReport report) {
         final VirtualFile pomFile = mavenProject.getFile();
-        final PsiFile psiFile = ApplicationManager.getApplication()
-                .runReadAction((Computable<PsiFile>) () -> PsiManager.getInstance(mavenProjectsManager.getProject()).findFile(pomFile));
+        final PsiFile psiFile = ReadAction.nonBlocking(() -> PsiManager.getInstance(mavenProjectsManager.getProject()).findFile(pomFile))
+                .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                .executeSynchronously();
         if (psiFile == null) {
             return;
         }
         final FileViewProvider viewProvider = psiFile.getViewProvider();
         final XmlFile xmlFile = (XmlFile) viewProvider.getPsi(StdLanguages.XML);
-        final XmlTag rootTag = ApplicationManager.getApplication()
-                .runReadAction((Computable<XmlTag>) xmlFile::getRootTag);
+        final XmlTag rootTag = ReadAction.nonBlocking(() -> xmlFile.getRootTag())
+                .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                .executeSynchronously();
         if (rootTag != null && "project".equals(rootTag.getName())) {
-            final XmlTag dependencyManagement = ApplicationManager.getApplication()
-                    .runReadAction((Computable<XmlTag>) () -> rootTag.findFirstSubTag("dependencyManagement"));
+            final XmlTag dependencyManagement = ReadAction.nonBlocking(() -> rootTag.findFirstSubTag("dependencyManagement"))
+                    .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                    .executeSynchronously();
             if (dependencyManagement != null) {
-                final XmlTag dependenciesTag = ApplicationManager.getApplication()
-                        .runReadAction((Computable<XmlTag>) () -> dependencyManagement.findFirstSubTag("dependencies"));
+                final XmlTag dependenciesTag = ReadAction.nonBlocking(() -> dependencyManagement.findFirstSubTag("dependencies"))
+                        .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                        .executeSynchronously();
                 if (dependenciesTag != null) {
-                    final XmlTag[] dependencyTags = ApplicationManager.getApplication()
-                            .runReadAction((Computable<XmlTag[]>) () -> dependenciesTag.findSubTags("dependency"));
+                    final XmlTag[] dependencyTags = ReadAction.nonBlocking(() -> dependenciesTag.findSubTags("dependency"))
+                            .expireWhen(mavenProjectsManager.getProject()::isDisposed)
+                            .executeSynchronously();
 
                     for (final XmlTag dependencyTag : dependencyTags) {
                         final String groupId = getTextValue(dependencyTag, "groupId");
