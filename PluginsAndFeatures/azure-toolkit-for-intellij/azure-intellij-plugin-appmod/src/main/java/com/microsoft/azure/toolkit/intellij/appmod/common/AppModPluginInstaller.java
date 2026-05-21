@@ -107,8 +107,8 @@ public class AppModPluginInstaller {
                     : "Install this plugin to automate migrating your apps to Azure with Copilot.";
         } else {
             message = forUpgrade
-                    ? "To upgrade your apps, you'll need two plugins: GitHub Copilot and app modernization."
-                    : "To migrate to Azure, you'll need two plugins: GitHub Copilot and app modernization.";
+                    ? "To upgrade your apps, you'll need two plugins: GitHub Copilot and GitHub Copilot modernization."
+                    : "To migrate to Azure, you'll need two plugins: GitHub Copilot and GitHub Copilot modernization.";
         }
         AppModUtils.logTelemetryEvent("plugin." + action + ".install-prompt-shown", Map.of("copilotInstalled", String.valueOf(copilotInstalled)));
         if (Messages.showOkCancelDialog(project, message, title, "Install", "Cancel", Messages.getQuestionIcon()) == Messages.OK) {
