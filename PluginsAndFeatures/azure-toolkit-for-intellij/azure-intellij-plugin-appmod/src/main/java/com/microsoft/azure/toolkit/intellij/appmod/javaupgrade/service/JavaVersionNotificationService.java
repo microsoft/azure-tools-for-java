@@ -48,7 +48,7 @@ public class JavaVersionNotificationService {
     private static final String NOTIFICATIONS_ENABLED_KEY = "azure.toolkit.java.version.notifications.enabled";
     private static final String DEFERRED_UNTIL_KEY = "azure.toolkit.java.version.deferred_until";
     private static final long DEFER_INTERVAL_MS = 10 * 24 * 60 * 60 * 1000L; // 10 days in milliseconds
-    private static final String DEFAULT_MODEL_NAME = "Claude Sonnet 4.5";
+    private static final String DEFAULT_MODEL_NAME = "Claude Sonnet 4.6";
 
     // GitHub Copilot plugin ID
     private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
