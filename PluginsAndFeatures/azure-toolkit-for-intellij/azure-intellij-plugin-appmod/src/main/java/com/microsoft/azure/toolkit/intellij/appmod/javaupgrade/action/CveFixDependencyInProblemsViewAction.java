@@ -93,8 +93,11 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
             }
             e.getPresentation().setEnabledAndVisible(true);
             //  e.getPresentation().setText(SCAN_AND_RESOLVE_CVES_WITH_COPILOT_DISPLAY_NAME);
+            final String baseText = getTemplatePresentation().getText();
             if (!AppModPluginInstaller.isAppModPluginInstalled()) {
-                e.getPresentation().setText(e.getPresentation().getText() + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
+                e.getPresentation().setText(baseText + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
+            } else {
+                e.getPresentation().setText(baseText);
             }
         } catch (Throwable ex) {
             // In case of any error, hide the action
