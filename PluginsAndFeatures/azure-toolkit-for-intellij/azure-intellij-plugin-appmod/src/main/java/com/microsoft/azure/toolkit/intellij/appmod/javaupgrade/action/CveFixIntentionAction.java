@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.APPMOD_CVE_AGENT_NAME;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.SCAN_AND_RESOLVE_CVES_PROMPT;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.SCAN_AND_RESOLVE_CVES_WITH_COPILOT_DISPLAY_NAME;
 
@@ -107,7 +108,7 @@ public class CveFixIntentionAction implements IntentionAction, HighPriorityActio
 
             // Try to extract dependency information from the current context
             final String prompt = buildPromptFromContext();
-            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt);
+            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, APPMOD_CVE_AGENT_NAME);
             AppModUtils.logTelemetryEvent("openCveFixCopilotChatFromIntentionAction", Map.of("AppModPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
         } catch (Throwable e) {
             log.error("Failed to invoke CveFixIntentionAction: ", e);

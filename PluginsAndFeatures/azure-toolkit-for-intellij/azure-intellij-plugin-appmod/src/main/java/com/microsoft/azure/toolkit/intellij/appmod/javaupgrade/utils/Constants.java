@@ -13,4 +13,6 @@ public class Constants {
     public static final String FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT = "Fix the vulnerable dependency %s by using #appmod-validate-cves-for-java";
     public static final String FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_DISPLAY_NAME = "Fix the vulnerable dependency with Copilot";
     public static final String ISSUE_DISPLAY_NAME = "Your project uses %s %s. Consider upgrading to %s to the latest LTS version for better performance and support";
+    public static final String APPMOD_CVE_AGENT_NAME = "modernize-java-security";
+    public static final String APPMOD_UPGRADE_AGENT_NAME = "modernize-java-upgrade";
 }
