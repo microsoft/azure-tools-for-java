@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Service to display notifications about outdated Java project versions.
@@ -67,6 +68,13 @@ public class JavaVersionNotificationService {
     // the first action can miss the agent for quite a while, so retry off-EDT for up to ~20 s.
     private static final int AGENT_RESOLVE_RETRY_ATTEMPTS = 100;
     private static final long AGENT_RESOLVE_RETRY_DELAY_MS = 200L;
+
+    // Successfully resolved agent URIs, keyed by "<project location hash>|<agent name>". Once an agent
+    // is resolved we never need to pay the retry cost again for that project, so repeated clicks are instant.
+    private static final Map<String, Object> RESOLVED_AGENT_URIS = new ConcurrentHashMap<>();
+    // Keys with an in-flight resolution (same key format). Lets rapid repeat clicks share/skip a single
+    // ~20 s retry loop instead of each spawning its own sleeping thread.
+    private static final Set<String> IN_FLIGHT_AGENT_RESOLUTIONS = ConcurrentHashMap.newKeySet();
     
     private static JavaVersionNotificationService instance;
     
@@ -363,13 +371,24 @@ public class JavaVersionNotificationService {
         // Capture this once so users without the appmod plugin don't pay the retry cost — we'll just
         // prompt to install on the EDT below.
         final boolean appmodInstalled = isAppModPluginInstalled();
+        // De-dup in-flight resolution: while one pooled thread is already resolving this agent, drop
+        // rapid repeat clicks instead of each spawning its own ~20 s sleeping thread.
+        final String cacheKey = project.getLocationHash() + "|" + customAgentName;
+        if (appmodInstalled && RESOLVED_AGENT_URIS.get(cacheKey) == null && !IN_FLIGHT_AGENT_RESOLUTIONS.add(cacheKey)) {
+            return;
+        }
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            Object uri = null;
-            if (appmodInstalled) {
+            Object uri = appmodInstalled ? RESOLVED_AGENT_URIS.get(cacheKey) : null;
+            if (appmodInstalled && uri == null) {
                 final IdeaPluginDescriptor copilot = PluginManagerCore.getPlugin(PluginId.getId(COPILOT_PLUGIN_ID));
                 if (copilot != null && copilot.isEnabled()) {
                     final ClassLoader cl = copilot.getPluginClassLoader();
                     if (cl != null) {
+                        // Copilot populates its chat-mode registry lazily (otherwise only after the chat
+                        // panel is first opened). Without this active trigger the very first click finds an
+                        // empty registry, the agent URI isn't honored, and the chat opens in default Agent
+                        // Mode — so kick a refresh, then poll until the agent shows up.
+                        triggerChatModesRefresh(project, cl);
                         for (int i = 0; i < AGENT_RESOLVE_RETRY_ATTEMPTS && !project.isDisposed(); i++) {
                             uri = resolveCustomAgentUri(project, cl, customAgentName);
                             if (uri != null) {
@@ -398,6 +417,13 @@ public class JavaVersionNotificationService {
                         log.info("openCopilotChatWithPrompt: ChatModeService didn't expose '{}'; using file-based fallback uri={}", customAgentName, uri);
                     }
                 }
+                if (uri != null) {
+                    // Cache so subsequent clicks open instantly without re-running the retry loop.
+                    RESOLVED_AGENT_URIS.put(cacheKey, uri);
+                }
+            }
+            if (appmodInstalled) {
+                IN_FLIGHT_AGENT_RESOLUTIONS.remove(cacheKey);
             }
             final Object preResolvedAgentUri = uri;
             AzureTaskManager.getInstance().runLater(() -> {
@@ -540,9 +566,17 @@ public class JavaVersionNotificationService {
                     log.warn("Resolved Copilot agent '{}' but withAgentMode(uri) is not exposed by this Copilot version; using default Agent Mode.",
                             customAgentName);
                 }
-            } else if (customAgentName != null && !customAgentName.isBlank()) {
-                log.info("applyAgentMode: Copilot custom agent '{}' was not resolvable (not in chatModes and no on-disk file found); falling back to default Agent Mode.",
-                        customAgentName);
+            } else {
+                // agentUri == null: fallback to default Agent Mode
+                if (customAgentName != null && !customAgentName.isBlank()) {
+                    log.info("applyAgentMode: Copilot custom agent '{}' was not resolvable (not in chatModes and no on-disk file found); falling back to default Agent Mode.",
+                            customAgentName);
+                }
+                final Method withAgentMode = findAccessibleMethod(builder.getClass(), "withAgentMode", 0);
+                if (withAgentMode != null) {
+                    withAgentMode.invoke(builder);
+                    log.info("applyAgentMode: activated default Agent Mode");
+                }
             }
         } catch (Exception ex) {
             log.warn("Failed to apply Agent Mode via reflection: " + ex.getMessage(), ex);
@@ -591,6 +625,13 @@ public class JavaVersionNotificationService {
      * registry (VS Code convention: lowercase drive letter, percent-encoded colon on Windows). Copilot
      * does string-equality matching against this registry; a Java-standard {@code file:///C:/...} URI
      * is silently ignored even when it points to the same file. Non-Windows paths are returned as-is.
+     *
+     * <p>Limitation: only local drive-letter paths ({@code C:\...}) are rewritten. A Windows UNC path
+     * ({@code \\server\share\...}) maps to {@code file://server/share/...} (no drive letter), doesn't
+     * match the rewrite shape, and is returned as the Java-standard URI. If Copilot stored that agent
+     * under a different UNC spelling, the string-equality match would miss and we'd fall back to plain
+     * Agent Mode. This only affects projects/plugins hosted on a network share and is left unhandled
+     * because Copilot's canonical UNC form isn't verifiable here; the file-based fallback simply no-ops.
      */
     @Nonnull
     private static java.net.URI toCopilotUri(@Nonnull java.nio.file.Path path) throws java.net.URISyntaxException {
@@ -600,6 +641,7 @@ public class JavaVersionNotificationService {
         if (s.length() >= 11 && s.startsWith("file:///") && s.charAt(9) == ':' && Character.isLetter(s.charAt(8))) {
             return new java.net.URI("file:///" + Character.toLowerCase(s.charAt(8)) + "%3A" + s.substring(10));
         }
+        // Non-Windows paths and Windows UNC paths (file://server/share/...) fall through unchanged; see Javadoc.
         return standard;
     }
 
@@ -629,6 +671,35 @@ public class JavaVersionNotificationService {
         return null;
     }
 
+
+    /**
+     * Reflectively calls {@code ChatModeService.refreshChatModes()} to make Copilot (re)scan custom
+     * agents from {@code .github/agents/} and plugin-provided locations. Copilot populates its chat-mode
+     * registry lazily — otherwise only after the chat panel is first opened — so without this trigger the
+     * very first fix-action click finds an empty registry, the resolved agent URI isn't honored, and the
+     * chat falls back to default Agent Mode. The refresh is asynchronous; callers poll {@code getChatModes}
+     * afterward. Best-effort: older Copilot builds may not expose the method, in which case this no-ops.
+     */
+    public static void triggerChatModesRefresh(@Nonnull Project project, @Nonnull ClassLoader copilotClassLoader) {
+        try {
+            final Class<?> chatModeServiceClass = copilotClassLoader.loadClass(COPILOT_CHAT_MODE_SERVICE_CLASS);
+            final Object chatModeService = project.getService(chatModeServiceClass);
+            if (chatModeService == null) {
+                return;
+            }
+            final Method refresh = findAccessibleMethod(chatModeService.getClass(), "refreshChatModes", 0);
+            if (refresh != null) {
+                refresh.invoke(chatModeService);
+            } else {
+                log.info("triggerChatModesRefresh: refreshChatModes() not exposed by this Copilot version.");
+            }
+        } catch (ClassNotFoundException ex) {
+            // Older Copilot without ChatModeService; nothing to refresh.
+            log.info("Older Copilot without ChatModeService");
+        } catch (Exception ex) {
+            log.info("triggerChatModesRefresh failed: " + ex.getMessage());
+        }
+    }
 
     /**
      * Reflectively resolves {@code chatModes.value.firstOrNull { it.name == name }?.uri} on
@@ -685,7 +756,7 @@ public class JavaVersionNotificationService {
      * whose declaring class is non-public throws {@link IllegalAccessException}.
      */
     @Nullable
-    private static Method findAccessibleMethod(@Nonnull Class<?> clazz, @Nonnull String name, int parameterCount) {
+    public static Method findAccessibleMethod(@Nonnull Class<?> clazz, @Nonnull String name, int parameterCount) {
         final Deque<Class<?>> queue = new ArrayDeque<>();
         final Set<Class<?>> seen = new HashSet<>();
         queue.add(clazz);

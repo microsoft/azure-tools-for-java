@@ -36,7 +36,6 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     // Additional delay after smart mode to ensure Maven/Gradle sync is complete
     private static final long POST_INDEXING_DELAY_SECONDS = 3;
     private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
-    private static final String COPILOT_CHAT_MODE_SERVICE_CLASS = "com.github.copilot.agent.chatMode.ChatModeService";
     
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
@@ -73,9 +72,10 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                     return;
                 }
 
-                // Warm up Copilot's lazy chat-mode indexing once per project open. The first explicit
-                // access to ChatModeService.chatModes.value is what causes Copilot to discover custom
-                // agents from .github/agents/, so we trigger that before the user clicks the fix action.
+                // Warm up Copilot's lazy chat-mode indexing once per project open. Copilot only scans
+                // custom agents from .github/agents/ when its chat-mode registry is explicitly refreshed
+                // (otherwise not until the chat panel is first opened), so we trigger that refresh now —
+                // before the user clicks a fix action — so the agent is resolvable on the very first click.
                 warmUpCopilotChatModes(project);
                 
                 // Refresh the cache (this populates JDK and dependency issues for use by inspections)
@@ -118,15 +118,10 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
             if (copilot == null || !copilot.isEnabled() || copilot.getPluginClassLoader() == null) {
                 return;
             }
-            final Class<?> chatModeServiceClass = copilot.getPluginClassLoader().loadClass(COPILOT_CHAT_MODE_SERVICE_CLASS);
-            final Object service = project.getService(chatModeServiceClass);
-            if (service == null) {
-                return;
-            }
-            final var method = service.getClass().getMethod("getChatModes");
-            final Object flow = method.invoke(service);
-            final var getValue = flow.getClass().getMethod("getValue");
-            getValue.invoke(flow);
+            // Actively trigger Copilot to (re)scan custom agents so its chat-mode registry is populated
+            // before the first fix-action click. Merely reading the chatModes StateFlow does NOT populate
+            // it — only refreshChatModes() does — which is why a cold first click previously missed the agent.
+            JavaVersionNotificationService.triggerChatModesRefresh(project, copilot.getPluginClassLoader());
         } catch (Throwable e) {
             // Best effort only; the fix action still falls back to its own URI path.
             log.warn("Failed to warm up Copilot Chat modes: {}", project.getName(), e);
