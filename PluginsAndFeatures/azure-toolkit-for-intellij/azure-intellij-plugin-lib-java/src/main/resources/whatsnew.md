@@ -1,5 +1,11 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.97.7
+- Migrate 97 scheduled-for-removal APIs to new IntelliJ Platform APIs
+- Replace deprecated AnActionEvent, ComponentManager, LafManager, Notification APIs
+- Replace deprecated TerminalView, HttpConfigurable, BrowseFolderActionListener APIs
+- Fix registry key conflict for Cosmos DB dbtools module
+- Reduce reflection usage in Scala plugin and Database plugin integration
 
 ## 3.97.6
 ### Added

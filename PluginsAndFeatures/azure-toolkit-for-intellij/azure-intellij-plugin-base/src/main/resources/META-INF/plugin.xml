@@ -2,7 +2,7 @@
              xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit</name>
-  <version>3.97.6</version>
+  <version>3.97.7</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description>
@@ -18,6 +18,14 @@
     <![CDATA[
     <html>
         <h3>Azure</h3>
+        <h4>3.97.7</h4>
+        <ul>
+          <li>Migrate 97 scheduled-for-removal APIs to new IntelliJ Platform APIs</li>
+          <li>Replace deprecated AnActionEvent, ComponentManager, LafManager, Notification APIs</li>
+          <li>Replace deprecated TerminalView, HttpConfigurable, BrowseFolderActionListener APIs</li>
+          <li>Fix registry key conflict for Cosmos DB dbtools module</li>
+          <li>Reduce reflection usage in Scala plugin and Database plugin integration</li>
+        </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
