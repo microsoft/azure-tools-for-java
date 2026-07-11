@@ -105,7 +105,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     }
 
     private void createUIComponents() {
-        noteComponent = ComponentsKt.noteComponent(MessageBundle.message("dialog.identity.ad.register_app.description"));
+        noteComponent = ComponentsKt.noteComponent(MessageBundle.message("dialog.identity.ad.register_app.description"), null);
         noteComponent.setBorder(JBUI.Borders.emptyBottom(5));
 
         subscriptionBox = new SubscriptionComboBox();
