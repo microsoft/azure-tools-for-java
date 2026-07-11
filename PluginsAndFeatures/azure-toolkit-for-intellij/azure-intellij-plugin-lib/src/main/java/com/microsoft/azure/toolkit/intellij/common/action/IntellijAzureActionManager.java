@@ -152,7 +152,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Nullable
         @SuppressWarnings("unchecked")
         private T getSource(@Nonnull AnActionEvent e) {
-            return Optional.ofNullable((T) e.getDataContext().getData(Action.SOURCE))
+            return Optional.ofNullable((T) e.getDataContext().getData(ACTION_SOURCE))
                 .or(() -> Optional.ofNullable(e.getData(CommonDataKeys.NAVIGATABLE_ARRAY))
                     .filter(d -> d.length == 1 && d[0] instanceof DataProvider)
                     .map(d -> (DataProvider) d[0])
