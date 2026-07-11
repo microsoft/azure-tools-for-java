@@ -13,19 +13,20 @@ import com.microsoft.azure.toolkit.lib.common.operation.Operation;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 
 import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @SuppressWarnings("UnstableApiUsage")
 public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnectionInterceptor {
     @Nullable
-    public CompletionStage<ProtoConnection> intercept(@NotNull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
+    @Override
+    public Object interceptConnection(@NotNull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent, @NotNull Continuation<? super Boolean> $completion) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
         final String accountId = point.getAdditionalProperty(AzureCosmosDbAccountParamEditor.KEY_COSMOS_ACCOUNT_ID);
         if (StringUtils.isNotBlank(accountId) && !StringUtils.equalsIgnoreCase(accountId, AzureCosmosDbAccountParamEditor.NONE)) {
@@ -38,6 +39,6 @@ public class AzureCosmosDbAccountConnectionInterceptor implements DatabaseConnec
             properties.put(OP_TYPE, Operation.Type.USER);
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, properties);
         }
-        return null;
+        return Boolean.TRUE;
     }
 }
