@@ -8,6 +8,7 @@ package com.microsoft.azure.hdinsight.common;
 import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
@@ -54,6 +55,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
     private PropertyChangeSupport changeSupport;
     private final ToolWindow toolWindow;
+    private MessageBusConnection messageBusConnection;
 
     private IClusterDetail clusterDetail;
     private int batchId;
@@ -65,8 +67,9 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
     public void initialize() {
         ApplicationManager.getApplication().assertIsDispatchThread();
 
-        // TODO: Fix deprecated API "addUISettingsListener"
-        UISettings.getInstance().addUISettingsListener(new UISettingsListener() {
+        // Use message bus for UI settings listener instead of deprecated addUISettingsListener
+        messageBusConnection = ApplicationManager.getApplication().getMessageBus().connect();
+        messageBusConnection.subscribe(UISettingsListener.TOPIC, new UISettingsListener() {
             @Override
             public void uiSettingsChanged(final UISettings uiSettings) {
                 synchronized (this) {
@@ -78,7 +81,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                 }
 
             }
-        }, ApplicationManager.getApplication());
+        });
 
         fontFace = jEditorPanel.getFont().getFamily();
 
@@ -353,6 +356,13 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         }
 
         return builder.toString();
+    }
+
+    public void dispose() {
+        if (messageBusConnection != null) {
+            messageBusConnection.disconnect();
+            messageBusConnection = null;
+        }
     }
 
     interface IHtmlElement {
