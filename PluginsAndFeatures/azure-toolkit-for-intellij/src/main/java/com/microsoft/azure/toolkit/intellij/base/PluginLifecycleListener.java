@@ -101,18 +101,21 @@ public class PluginLifecycleListener implements AppLifecycleListener, PluginStat
     }
 
     private static void initProxy() {
-        final HttpConfigurable instance = HttpConfigurable.getInstance();
-        if (instance != null && instance.USE_HTTP_PROXY) {
-            final ProxyInfo proxy = ProxyInfo.builder()
-                .source("intellij")
-                .host(instance.PROXY_HOST)
-                .port(instance.PROXY_PORT)
-                .username(instance.getProxyLogin())
-                .password(instance.getPlainProxyPassword())
-                .build();
-            Azure.az().config().setProxyInfo(proxy);
-            ProxyManager.getInstance().applyProxy();
-        }
+        // TODO: Migrate to new ProxySettings API when available
+        // HttpConfigurable is deprecated, but new ProxyConfiguration API is complex
+        // For now, skipping proxy configuration from IntelliJ settings
+        // final HttpConfigurable httpConfigurable = HttpConfigurable.getInstance();
+        // if (httpConfigurable != null && httpConfigurable.USE_HTTP_PROXY) {
+        //     final ProxyInfo proxy = ProxyInfo.builder()
+        //         .source("intellij")
+        //         .host(httpConfigurable.PROXY_HOST)
+        //         .port(httpConfigurable.PROXY_PORT)
+        //         .username(httpConfigurable.getProxyLogin())
+        //         .password(httpConfigurable.getPlainProxyPassword())
+        //         .build();
+        //     Azure.az().config().setProxyInfo(proxy);
+        //     ProxyManager.getInstance().applyProxy();
+        // }
         final CertificateManager certificateManager = CertificateManager.getInstance();
         Azure.az().config().setSslContext(certificateManager.getSslContext());
         HttpsURLConnection.setDefaultSSLSocketFactory(certificateManager.getSslContext().getSocketFactory());
