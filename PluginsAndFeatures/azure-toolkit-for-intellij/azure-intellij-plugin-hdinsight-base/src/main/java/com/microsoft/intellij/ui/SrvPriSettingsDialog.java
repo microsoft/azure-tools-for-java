@@ -89,8 +89,8 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         table.setCellSelectionEnabled(false);
 
         destinationFolderTextField.setText(System.getProperty("user.home"));
-        destinationFolderTextField.addBrowseFolderListener("Choose Destination Folder", "", null,
-                                                           FileChooserDescriptorFactory.createSingleFolderDescriptor());
+        destinationFolderTextField.addBrowseFolderListener(null,
+                                                           FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle("Choose Destination Folder"));
 
         final Font labelFont = UIManager.getFont("Label.font");
         selectSubscriptionCommentTextPane.setFont(labelFont);

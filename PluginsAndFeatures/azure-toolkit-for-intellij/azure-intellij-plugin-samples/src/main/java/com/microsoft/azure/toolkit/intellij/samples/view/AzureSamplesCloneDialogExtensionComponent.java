@@ -237,7 +237,7 @@ public class AzureSamplesCloneDialogExtensionComponent extends VcsCloneDialogExt
         final FileChooserDescriptor fcd = FileChooserDescriptorFactory.createSingleFolderDescriptor();
         fcd.setShowFileSystemRoots(true);
         fcd.setHideIgnored(false);
-        this.directoryField.addBrowseFolderListener("Destination Directory", "Select a parent directory for the clone", project, fcd);
+        this.directoryField.addBrowseFolderListener(project, fcd.withTitle("Destination Directory"));
     }
 
     @Override
