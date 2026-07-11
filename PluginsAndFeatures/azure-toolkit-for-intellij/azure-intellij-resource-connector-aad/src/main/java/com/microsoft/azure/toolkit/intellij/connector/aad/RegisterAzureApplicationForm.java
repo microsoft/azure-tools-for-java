@@ -7,6 +7,7 @@ package com.microsoft.azure.toolkit.intellij.connector.aad;
 
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.ContextHelpLabel;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.components.ComponentsKt;
 import com.intellij.ui.components.JBCheckBox;
@@ -105,7 +106,7 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     }
 
     private void createUIComponents() {
-        noteComponent = ComponentsKt.noteComponent(MessageBundle.message("dialog.identity.ad.register_app.description"), null);
+        noteComponent = ContextHelpLabel.create(MessageBundle.message("dialog.identity.ad.register_app.description"));
         noteComponent.setBorder(JBUI.Borders.emptyBottom(5));
 
         subscriptionBox = new SubscriptionComboBox();
