@@ -14,10 +14,11 @@ import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -147,7 +148,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         window.dispose();
         final ToolWindow explorer = ToolWindowManager.getInstance(Objects.requireNonNull(project)).getToolWindow("Azure Explorer");
         Objects.requireNonNull(explorer).activate(() -> {
-            final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "cosmos.dbtools", context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "cosmos.dbtools", ActionUiKind.NONE, e);
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureCosmosService.class), event);
             CreateCosmosDBAccountAction.create(null, null);
         });

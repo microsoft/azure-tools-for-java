@@ -123,7 +123,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             final AbstractTreeNode<?> currentTreeNode = getCurrentTreeNode(e);
             if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode node) {
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.PROJECT_VIEW_POPUP + ".click", context);
+                final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), ActionPlaces.PROJECT_VIEW_POPUP + ".click", ActionUiKind.NONE, e);
                 if (e.getClickCount() == 1) {
                     node.onClicked(event);
                 } else if (e.getClickCount() == 2) {

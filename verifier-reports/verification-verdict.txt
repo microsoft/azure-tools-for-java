@@ -1,0 +1,1 @@
+4 compatibility problems. 108 usages of scheduled for removal API and 350 usages of deprecated API. 82 usages of experimental API. 141 usages of internal API. 2 non-extendable API usage violations. 9 override-only API usage violations. 7 plugin configuration defects

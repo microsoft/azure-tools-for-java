@@ -9,7 +9,9 @@ import com.intellij.docker.registry.DockerRegistryConfiguration;
 import com.intellij.docker.view.registry.DockerRegistryProvider;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.ui.AnimatedIcon;
 import com.intellij.ui.HyperlinkAdapter;
@@ -115,7 +117,7 @@ public class AzureContainerRegistryConfigurator implements DockerRegistryProvide
             final Action<ContainerRegistry> enableAdminUser = AzureActionManager.getInstance().getAction(ContainerRegistryActionsContributor.ENABLE_ADMIN_USER).bind(data);
             final AzureString message = AzureString.format(ERROR_MESSAGE_PATTERN_ADMIN_DISABLED, data.getName());
             final ConfigurationException exception = new ConfigurationException(message.toString());
-            exception.setQuickFix(dataContext -> enableAdminUser.handle(null, AnActionEvent.createFromDataContext("", null, dataContext)));
+            exception.setQuickFix(dataContext -> enableAdminUser.handle(null, AnActionEvent.createEvent(dataContext, new Presentation(), "", ActionUiKind.NONE, null)));
             throw exception;
         }
         AzureTelemeter.log(AzureTelemetry.Type.OP_END, "user/acr.add_docker_registry_with_acr_instance_in_services_view");

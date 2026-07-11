@@ -6,10 +6,11 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKey;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.UserDataHolder;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
@@ -98,7 +99,7 @@ public class AzureActionButton<T> extends JButton {
         final DataContext context = (String key) -> StringUtils.equals(key, ACTION_EVENT_KEY.getName()) ?
                 actionEvent : dataContext.getData(key);
         // todo: use panel name as the action place
-        final AnActionEvent event = AnActionEvent.createFromDataContext("actionButton", null, context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "actionButton", ActionUiKind.NONE, null);
         Optional.ofNullable(action).ifPresent(a -> a.handle(null, event));
     }
 }
