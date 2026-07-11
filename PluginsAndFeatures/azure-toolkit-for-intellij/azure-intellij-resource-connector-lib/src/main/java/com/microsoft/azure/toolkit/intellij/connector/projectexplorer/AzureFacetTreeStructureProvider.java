@@ -202,13 +202,6 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         }
     }
 
-    @Override
-    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
-        final IAzureFacetNode azureFacetNode = selected.stream()
-            .filter(node -> node instanceof IAzureFacetNode)
-            .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
-        return Objects.nonNull(azureFacetNode) ? azureFacetNode.getData(dataId) : TreeStructureProvider.super.getData(selected, dataId);
-    }
 }
 
 
