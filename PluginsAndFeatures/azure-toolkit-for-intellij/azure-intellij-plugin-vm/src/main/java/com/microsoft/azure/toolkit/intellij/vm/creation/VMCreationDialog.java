@@ -9,8 +9,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -208,8 +206,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         cbImage.addItemListener(this::onImageChanged);
         // initialize cert file select
         final FileChooserDescriptor pub = FileChooserDescriptorFactory.createSingleFileDescriptor("pub");
-        txtCertificate.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_CERT_TITLE, SSH_PUBLIC_KEY_DESCRIPTION, txtCertificate,
-            project, pub, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtCertificate.addBrowseFolderListener(project, pub.withTitle(SELECT_CERT_TITLE));
         lblSubscription.setIcon(AllIcons.General.ContextHelp);
         lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
         lblAuthenticationType.setIcon(AllIcons.General.ContextHelp);

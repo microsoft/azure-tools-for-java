@@ -1,8 +1,6 @@
 package com.microsoft.azure.toolkit.ide.guidance.input;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.common.component.AzureFileInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
@@ -25,8 +23,7 @@ public class FileChooserInputPanel implements AzureFormJPanel<String> {
     }
 
     private void init() {
-        fileInput.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>(SELECT_PATH_TO_SAVE_THE_PROJECT, PATH_TO_SAVE_THE_DEMO_PROJECT, fileInput,
-                null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        fileInput.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle(SELECT_PATH_TO_SAVE_THE_PROJECT));
         fileInput.setRequired(true);
     }
 

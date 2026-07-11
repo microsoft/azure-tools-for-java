@@ -8,9 +8,7 @@ package com.microsoft.azure.toolkit.intellij.settings;
 import com.azure.core.management.AzureEnvironment;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.JBIntSpinner;
@@ -325,21 +323,17 @@ public class AzureSettingsPanel {
         this.funcCoreToolsPath = new FunctionCoreToolsCombobox(null, false);
         this.funcCoreToolsPath.setPrototypeDisplayValue(StringUtils.EMPTY);
         this.txtStorageExplorer = new AzureFileInput();
-        this.txtStorageExplorer.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Storage Explorer", null, txtStorageExplorer,
-            null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.txtStorageExplorer.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor().withTitle("Select Path of Azure Storage Explorer"));
         this.txtStorageExplorer.addValidator(this::validateStorageExplorerPath);
         this.txtAzureCli = new AzureFileInput();
-        this.txtAzureCli.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azure Command-Line Interface (CLI)", null, txtAzureCli,
-                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.txtAzureCli.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor().withTitle("Select Path of Azure Command-Line Interface (CLI)"));
         this.txtAzureCli.addValidator(this::validateAzureCliPath);
         this.txtAzurite = new AzureFileInput();
-        this.txtAzurite.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Azurite", null, txtAzurite,
-                null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.txtAzurite.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleLocalFileDescriptor().withTitle("Select Path of Azurite"));
         this.txtAzuriteWorkspace = new AzuriteWorkspaceComboBox();
         this.dotnetRuntimePath = new AzureFileInput();
         // noinspection DialogTitleCapitalization
-        this.dotnetRuntimePath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of .NET Runtime", null, dotnetRuntimePath,
-            null, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.dotnetRuntimePath.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle("Select Path of .NET Runtime"));
         this.dotnetRuntimePath.addValidator(this::validateDotnetRuntime);
         this.installFuncCoreToolsAction = new ActionLink("Install the latest version", e -> {
             FocusManager.getCurrentManager().getActiveWindow().dispose();
