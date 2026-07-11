@@ -41,7 +41,7 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
     public HDInsightProjectTypeStep(HDInsightModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
-        this.scalaPluginInstalled = PluginManagerCore.getPlugin(PluginId.findId(SCALA_PLUGIN_ID)) != null;
+        this.scalaPluginInstalled = PluginManagerCore.getPlugin(PluginId.getId(SCALA_PLUGIN_ID)) != null;
 
         this.templateList.addListSelectionListener(e -> onTemplateSelected());
         this.templateList.setTemplates(moduleBuilder.getTemplates(), false);
