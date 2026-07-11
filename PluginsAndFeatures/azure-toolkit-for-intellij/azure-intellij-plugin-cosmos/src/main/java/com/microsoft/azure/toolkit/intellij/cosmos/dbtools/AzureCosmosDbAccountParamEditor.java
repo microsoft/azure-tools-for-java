@@ -24,7 +24,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.HyperlinkLabel;
-import com.intellij.ui.components.JBCheckBox;
+import com.intellij.database.dataSource.DataSourceSslConfiguration;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
@@ -195,29 +195,31 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                     consumer.consume("user", user);
                     consumer.consume("port", port);
                 });
-                this.setUsername(user);
+                // this.setUsername(user); // setUsername is not needed as putProperties should update the model
                 this.updating = false;
             }, AzureTask.Modality.ANY);
         });
     }
 
     private void setUsername(String user) {
-        final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
-        model.setParameter("user", user);
-        model.commit(true);
+        // No longer needed, interchange.putProperties handles this
     }
 
     @SneakyThrows
     private void setUseSsl(boolean useSsl) {
-        final DataSourceConfigurable configurable = this.getDataSourceConfigurable();
-        // getSshSslPanel() was removed in IntelliJ 261; use reflection to access the panel field directly
-        final Object sshSslPanel = FieldUtils.readField(configurable, "mySshSslPanel", true);
-        final JBCheckBox useSSLCheckBox = (JBCheckBox) FieldUtils.readField(sshSslPanel, "myUseSSLJBCheckBox", true);
-        useSSLCheckBox.setSelected(useSsl);
+        final DataInterchange interchange = this.getInterchange();
+        final LocalDataSource dataSource = interchange.getDataSource();
+        DataSourceSslConfiguration sslCfg = dataSource.getSslCfg();
+        if (sslCfg == null) {
+            sslCfg = new DataSourceSslConfiguration(false, null);
+        }
+        sslCfg.myEnabled = useSsl;
+        dataSource.setSslCfg(sslCfg);
     }
 
     @SneakyThrows
     private DataSourceConfigurable getDataSourceConfigurable() {
+        // This is the only way to get the configurable from the interchange as of 2026.1
         return (DataSourceConfigurable) FieldUtils.readField(this.getInterchange(), "myConfigurable", true);
     }
 

@@ -5,15 +5,16 @@
 
 package com.microsoft.azure.hdinsight.projects;
 
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import org.jetbrains.plugins.scala.project.Versions$;
+import org.jetbrains.sbt.SbtVersion;
 import scala.collection.immutable.Seq;
-import scala.reflect.ClassTag;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Method;
 
 public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     private ComboBox sbtVersionComboBox;
@@ -38,36 +39,21 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
         final String[][] versions = new String[1][1];
         ProgressManager.getInstance().runProcess(() -> {
             try {
-                // In newer Scala plugin versions, the API changed. Use reflection for cross-version compatibility.
-                // Old: Versions.SBT$.MODULE$.loadVersionsWithProgress(null).versions() -> Seq<String>
-                // New: Versions.loadSbtVersions(false, null) -> Seq<SbtVersion>
-                final Class<?> versionsClass = Class.forName("org.jetbrains.plugins.scala.project.Versions");
-                try {
-                    // Try new API first
-                    final Method loadSbtVersionsMethod = versionsClass.getMethod("loadSbtVersions", boolean.class, com.intellij.openapi.progress.ProgressIndicator.class);
-                    final Seq<?> sbtVersions = (Seq<?>) loadSbtVersionsMethod.invoke(null, false, null);
-                    final int size = sbtVersions.size();
-                    final String[] result = new String[size];
-                    for (int i = 0; i < size; i++) {
-                        result[i] = sbtVersions.apply(i).toString();
-                    }
-                    versions[0] = result;
-                } catch (final NoSuchMethodException e) {
-                    // Fallback to old API
-                    final Class<?> versionsSbtClass = Class.forName("org.jetbrains.plugins.scala.project.Versions$SBT$");
-                    final Object module = versionsSbtClass.getField("MODULE$").get(null);
-                    final Method loadMethod = module.getClass().getMethod("loadVersionsWithProgress", com.intellij.openapi.progress.ProgressIndicator.class);
-                    final Object loadedVersions = loadMethod.invoke(module, (Object) null);
-                    final Method versionsMethod = loadedVersions.getClass().getMethod("versions");
-                    final Seq<String> versionSeq = (Seq<String>) versionsMethod.invoke(loadedVersions);
-                    versions[0] = (String[]) versionSeq.toArray(ClassTag.apply(String.class));
+                // Access Scala companion object directly: Versions$.MODULE$.loadSbtVersions()
+                final Seq<SbtVersion> sbtVersions = Versions$.MODULE$.loadSbtVersions(false, (ProgressIndicator) null);
+                final int size = sbtVersions.size();
+                final String[] result = new String[size];
+                for (int i = 0; i < size; i++) {
+                    result[i] = sbtVersions.apply(i).toString();
                 }
+                versions[0] = result;
             } catch (final Exception e) {
                 log().warn("Failed to get SBT versions from scala plugin.", e);
                 versions[0] = new String[0];
             }
         }, null);
 
+        this.sbtVersionComboBox.removeAllItems();
         for (String version : versions[0]) {
             this.sbtVersionComboBox.addItem(version);
         }
