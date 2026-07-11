@@ -157,7 +157,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
     }
     private val sshKeyFileTextField = TextFieldWithBrowseButton().apply {
         textField.name = "sshKeyFileTextFieldText"
-        button.name = "sshKeyFileTextFieldButton"
+        // button.name = "sshKeyFileTextFieldButton"  // getButton() is deprecated, skipping name assignment
         toolTipText = useKeyFileToolTip
     }
 
