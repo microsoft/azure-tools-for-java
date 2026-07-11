@@ -1,6 +1,7 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -23,6 +24,10 @@ plugins {
 
 group = properties("pluginGroup").get()
 
+changelog {
+    path.set(rootProject.file("../../CHANGELOG.md").canonicalPath)
+}
+
 allprojects {
     apply {
         plugin("java")
@@ -33,12 +38,15 @@ allprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(properties("javaToolchainVersion").get().toInt())
         }
     }
 
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(properties("javaToolchainVersion").get().toInt())
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(properties("javaVersion").get()))
+        }
     }
 
     repositories {
@@ -63,8 +71,9 @@ allprojects {
             intellijIdeaUltimate(properties("platformVersion").get()) {
                 useInstaller = false
             }
-            // JBR 25 required to run IntelliJ 2026.1 (PathClassLoader is JBR-only)
+            // JBR 25 required to run IntelliJ 2026.2 (PathClassLoader is JBR-only)
             jetbrainsRuntime()
+            bundledPlugin("com.intellij.modules.jcef")
             // MavenId/MavenCoordinate classes moved from maven plugin to repository-search plugin in 261
             bundledPlugin("org.jetbrains.idea.reposearch")
             // Test framework classes moved to separate modules in 261
@@ -75,12 +84,16 @@ allprojects {
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.52.2"))
         implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.52.2"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
+        implementation("commons-collections:commons-collections:3.2.2")
 
-        compileOnly("org.projectlombok:lombok:1.18.32")
+        compileOnly("org.projectlombok:lombok:1.18.46")
         compileOnly("org.jetbrains:annotations:24.0.0")
-        annotationProcessor("org.projectlombok:lombok:1.18.32")
+        annotationProcessor("org.projectlombok:lombok:1.18.46")
         implementation("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
+        implementation("org.aspectj:aspectjrt:1.9.25")
+        implementation("org.aspectj:aspectjweaver:1.9.25")
         aspect("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
+        aspect("org.aspectj:aspectjweaver:1.9.25")
         // junit was removed from IntelliJ platform bundled libs in 261
         testImplementation("junit:junit:4.13.2")
     }
@@ -90,7 +103,6 @@ allprojects {
         implementation { exclude(module = "log4j") }
         implementation { exclude(module = "stax-api") }
         implementation { exclude(module = "groovy-xml") }
-        implementation { exclude(module = "groovy-templates") }
         implementation { exclude(module = "jna") }
         implementation { exclude(module = "xpp3") }
         implementation { exclude(module = "pull-parser") }
@@ -106,8 +118,8 @@ allprojects {
     tasks {
 
         compileJava {
-            sourceCompatibility = "21"
-            targetCompatibility = "21"
+            sourceCompatibility = properties("javaVersion").get()
+            targetCompatibility = properties("javaVersion").get()
         }
 
         compileKotlin {
@@ -194,52 +206,53 @@ dependencies {
         bundledPlugin("com.intellij.properties")
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("org.intellij.plugins.markdown")
+        bundledPlugin("com.intellij.modules.jcef")
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-lib")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-lib-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-resource-connector-lib")))
+        pluginComposedModule(implementation(project(":azure-intellij-resource-connector-lib-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-service-explorer")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-guidance")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-guidance-java")))
+        pluginComposedModule(implementation(project(":azure-sdk-reference-book")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-springcloud")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-storage")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-storage-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-appservice")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-appservice-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-arm")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-applicationinsights")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-cosmos")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-cognitiveservices")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-monitor")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-containerregistry")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-containerservice")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-containerapps")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-database")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-database-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-vm")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-redis")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-redis-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-samples")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-bicep")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-eventhubs")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-servicebus")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-keyvault")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-keyvault-java")))
+        pluginComposedModule(implementation(project(":azure-intellij-resource-connector-aad")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-hdinsight-lib")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-sqlserverbigdata")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-hdinsight")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-synapse")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-sparkoncosmos")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-hdinsight-base")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-integration-services")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-cloud-shell")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-java-sdk")))
+        pluginComposedModule(implementation(project(":azure-intellij-plugin-azuremcp")))
     }
-    implementation(project(":azure-intellij-plugin-lib"))
-    implementation(project(":azure-intellij-plugin-lib-java"))
-    implementation(project(":azure-intellij-resource-connector-lib"))
-    implementation(project(":azure-intellij-resource-connector-lib-java"))
-    implementation(project(":azure-intellij-plugin-service-explorer"))
-    implementation(project(":azure-intellij-plugin-guidance"))
-    implementation(project(":azure-intellij-plugin-guidance-java"))
-    implementation(project(":azure-sdk-reference-book"))
-    implementation(project(":azure-intellij-plugin-springcloud"))
-    implementation(project(":azure-intellij-plugin-storage"))
-    implementation(project(":azure-intellij-plugin-storage-java"))
-    implementation(project(":azure-intellij-plugin-appservice"))
-    implementation(project(":azure-intellij-plugin-appservice-java"))
-    implementation(project(":azure-intellij-plugin-arm"))
-    implementation(project(":azure-intellij-plugin-applicationinsights"))
-    implementation(project(":azure-intellij-plugin-cosmos"))
-    implementation(project(":azure-intellij-plugin-cognitiveservices"))
-    implementation(project(":azure-intellij-plugin-monitor"))
-    implementation(project(":azure-intellij-plugin-containerregistry"))
-    implementation(project(":azure-intellij-plugin-containerservice"))
-    implementation(project(":azure-intellij-plugin-containerapps"))
-    implementation(project(":azure-intellij-plugin-database"))
-    implementation(project(":azure-intellij-plugin-database-java"))
-    implementation(project(":azure-intellij-plugin-vm"))
-    implementation(project(":azure-intellij-plugin-redis"))
-    implementation(project(":azure-intellij-plugin-redis-java"))
-    implementation(project(":azure-intellij-plugin-samples"))
-    implementation(project(":azure-intellij-plugin-bicep"))
-    implementation(project(":azure-intellij-plugin-eventhubs"))
-    implementation(project(":azure-intellij-plugin-servicebus"))
-    implementation(project(":azure-intellij-plugin-keyvault"))
-    implementation(project(":azure-intellij-plugin-keyvault-java"))
-    implementation(project(":azure-intellij-resource-connector-aad"))
-    implementation(project(":azure-intellij-plugin-hdinsight-lib"))
-    implementation(project(":azure-intellij-plugin-sqlserverbigdata"))
-    implementation(project(":azure-intellij-plugin-hdinsight"))
-    implementation(project(":azure-intellij-plugin-synapse"))
-    implementation(project(":azure-intellij-plugin-sparkoncosmos"))
-    implementation(project(":azure-intellij-plugin-hdinsight-base"))
-    implementation(project(":azure-intellij-plugin-integration-services"))
-    implementation(project(":azure-intellij-plugin-cloud-shell"))
-    implementation(project(":azure-intellij-plugin-java-sdk"))
-    implementation(project(":azure-intellij-plugin-azuremcp"))
     implementation("commons-io:commons-io")
     implementation("org.apache.commons:commons-lang3")
     implementation("com.microsoft.azure:azure-toolkit-common-lib")
@@ -322,7 +335,7 @@ tasks {
 
     // refers https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-testing-extension.html#intellijPlatformTesting
     val testIde by intellijPlatformTesting.runIde.registering {
-        type = IntelliJPlatformType.IntellijIdeaCommunity
+        type = IntelliJPlatformType.IntellijIdeaUltimate
         version = properties("platformVersion").get()
     }
 

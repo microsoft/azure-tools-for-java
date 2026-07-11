@@ -39,6 +39,7 @@
   </change-notes>
 
   <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.jcef</depends>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="232.7754.73" until-build="232.*"/>

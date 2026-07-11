@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [Unreleased](#unreleased)
   - [3.97.6](#3976)
   - [3.97.5](#3975)
   - [3.97.4](#3974)
@@ -125,6 +126,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## [Unreleased]
+### Added
+- Added support for IntelliJ IDEA 2026.2.
 
 ## 3.97.6
 ### Fixed

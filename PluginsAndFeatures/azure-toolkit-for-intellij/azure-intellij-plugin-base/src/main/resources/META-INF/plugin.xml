@@ -27,6 +27,7 @@
   <idea-version since-build="222.2270.31" until-build="222.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.jcef</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.gradle</depends>
   <xi:include href="/META-INF/azure-intellij-plugin-lib-java.xml" xpointer="xpointer(/idea-plugin/*)"/>
