@@ -49,7 +49,7 @@ fun Container.addTelemetryListener(serviceName: String) {
                 createLogEvent(serviceName, "click-hyperlink", component.name)
             }
             is JsonEnvPropertiesField -> component.apply {
-                button.addActionListener {
+                addActionListener {
                     createLogEvent(serviceName, "click-button", name)
                 }
                 textField.addFocusListener(object: FocusAdapter() {

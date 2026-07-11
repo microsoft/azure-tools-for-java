@@ -60,7 +60,7 @@ inline fun <T> swingPropertyDelegated(crossinline getter: (property: KProperty<*
 class ComponentWithBrowseButtonEnabledDelegated(private val componentWithBrowseButton: ComponentWithBrowseButton<*>)
     : SwingComponentPropertyDelegated<Boolean>() {
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
-        return componentWithBrowseButton.button.isEnabled
+        return componentWithBrowseButton.isEnabled
     }
 
     override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: Boolean) {

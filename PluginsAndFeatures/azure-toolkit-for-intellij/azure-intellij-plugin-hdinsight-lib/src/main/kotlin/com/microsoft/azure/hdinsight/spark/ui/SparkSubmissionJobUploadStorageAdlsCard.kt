@@ -81,15 +81,13 @@ class SparkSubmissionJobUploadStorageAdlsCard
     private val subscriptionsLabel = JLabel("Subscription List")
     private val subscriptionsComboBox  = ComboboxWithBrowseButton(JComboBox(ImmutableComboBoxModel.empty<String>())).apply {
         comboBox.name = "adlsCardSubscriptionsComboBoxCombo"
-        button.name = "adlsCardSubscriptionsComboBoxButton"
-        button.toolTipText = "Refresh"
-        button.icon = AllIcons.Actions.Refresh
-        button.addActionListener {
+        setButtonIcon(AllIcons.Actions.Refresh)
+        addActionListener {
             //refresh subscriptions after refresh button is clicked
-            if (button.isEnabled) {
-                button.isEnabled = false
+            if (isEnabled) {
+                setButtonEnabled(false)
                 (viewModel as ViewModel).refreshSubscriptions()
-                        .doOnEach { button.isEnabled = true }
+                        .doOnEach { setButtonEnabled(true) }
                         .subscribe(
                                 { },
                                 { err -> log().warn(ExceptionUtils.getStackTrace(err)) })

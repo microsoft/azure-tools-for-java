@@ -96,9 +96,7 @@ public class SparkLocalRunParamsPanel {
 
         // Set name for telemetry listener purpose
         myWinutilsPathTextFieldWithBrowserButton.getTextField().setName("winUtilsText");
-        myWinutilsPathTextFieldWithBrowserButton.getButton().setName("winUtilsButton");
         myDataRootDirectoryFieldWithBrowseButton.getTextField().setName("dataRootPathText");
-        myDataRootDirectoryFieldWithBrowseButton.getButton().setName("dataRootPathButton");
     }
 
     public SparkLocalRunParamsPanel withInitialize() {

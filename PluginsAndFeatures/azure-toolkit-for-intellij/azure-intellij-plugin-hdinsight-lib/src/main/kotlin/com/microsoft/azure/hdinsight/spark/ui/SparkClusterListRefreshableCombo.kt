@@ -61,7 +61,6 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
     private val clustersSelection  = ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
-        button.name = getComboBoxNamePrefix() + "Button"
 
         setButtonIcon(AllIcons.Actions.Refresh)
 
@@ -95,11 +94,8 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
             }
         }
 
-        button.apply {
-            toolTipText = "Refresh"
-            addActionListener {
-                viewModel.doRefreshSubject.onNext(true)
-            }
+        addActionListener {
+            viewModel.doRefreshSubject.onNext(true)
         }
     }
 

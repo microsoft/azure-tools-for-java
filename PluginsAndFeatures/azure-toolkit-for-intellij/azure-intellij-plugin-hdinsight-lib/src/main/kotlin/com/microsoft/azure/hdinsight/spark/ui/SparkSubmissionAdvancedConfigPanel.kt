@@ -282,7 +282,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         sshUseKeyFileRadioButton.addItemListener { setSshPasswordInputEnabled(it.stateChange == DESELECTED) }
 
         // To popup the key file chooser dialog
-        sshKeyFileTextField.button.addActionListener { showSshKeyFileChooser() }
+        sshKeyFileTextField.addActionListener { showSshKeyFileChooser() }
     }
 
     private fun setSshPasswordInputEnabled(isEnabled: Boolean) {

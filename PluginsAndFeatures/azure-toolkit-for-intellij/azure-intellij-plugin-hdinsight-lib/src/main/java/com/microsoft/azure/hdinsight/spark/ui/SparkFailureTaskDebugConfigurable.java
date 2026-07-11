@@ -31,7 +31,6 @@ public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkF
                 new MacroAwareTextBrowseFolderListener(dataRootDirectoryChooser, myProject));
 
         myFailureJobContextPathField.getTextField().setName("failureJobContextPathFieldText");
-        myFailureJobContextPathField.getButton().setName("failureJobContextPathFieldButton");
     }
 
     // Data --> Component

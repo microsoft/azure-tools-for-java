@@ -133,18 +133,16 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
             }
         }
 
-        button.name = "blobCardStorageContainerComboBoxButton"
-        button.toolTipText = "Refresh"
-        button.icon = AllIcons.Actions.Refresh
-        button.addActionListener { doRefresh() }
+        setButtonIcon(AllIcons.Actions.Refresh)
+        addActionListener { doRefresh() }
     }
 
     @Synchronized
     private fun doRefresh() {
-        if (storageContainerUI.button.isEnabled) {
-            storageContainerUI.button.isEnabled = false
+        if (storageContainerUI.isEnabled) {
+            storageContainerUI.setButtonEnabled(false)
             (viewModel as ViewModel).refreshContainers()
-                    .doOnEach { storageContainerUI.button.isEnabled = true }
+                    .doOnEach { storageContainerUI.setButtonEnabled(true) }
                     .subscribe(
                             { },
                             { err -> log().warn(ExceptionUtils.getStackTrace(err)) })

@@ -219,12 +219,11 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         textField.name = "localArtifactTextFieldText"
-        button.name = "localArtifactTextFieldButton"
         toolTipText = "Artifact from local disk"
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
 
-        button.addActionListener {
+        addActionListener {
             val chooserDescriptor = FileChooserDescriptor(false, false, true, false, true, false).apply {
                 title = "Select Local Artifact File"
             }
