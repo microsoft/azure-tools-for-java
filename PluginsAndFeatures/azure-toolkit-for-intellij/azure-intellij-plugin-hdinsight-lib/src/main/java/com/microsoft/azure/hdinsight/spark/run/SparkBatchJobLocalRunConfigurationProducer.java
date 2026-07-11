@@ -33,7 +33,7 @@ public class SparkBatchJobLocalRunConfigurationProducer
 
     public SparkBatchJobLocalRunConfigurationProducer(final ConfigurationFactory configFactory,
                                                       final SparkApplicationType applicationType) {
-        super(configFactory);
+        super();
         this.applicationType = applicationType;
     }
 
