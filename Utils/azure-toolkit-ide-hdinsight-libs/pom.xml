@@ -24,7 +24,7 @@
         <woodstox.version>6.4.0</woodstox.version>
         <hadoop.version>3.4.0</hadoop.version>
         <snappyjava.version>1.1.10.4</snappyjava.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.46</lombok.version>
         <dnsjava.version>3.6.0</dnsjava.version>
     </properties>
     <modules>
@@ -318,6 +318,20 @@
     </dependencyManagement>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/aspectj-maven-plugin -->
                 <!-- http://www.quabr.com/62976155/aspectj-maven-plugin-1-11-missing-tools-jar-issue-with-jdk-11 -->
