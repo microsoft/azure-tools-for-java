@@ -131,8 +131,6 @@ extends:
                     # ./gradlew buildUtils || exit -1
                     mvn clean install -f ./Utils/pom.xml -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
                     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-                    mvn clean -f ./Utils/pom.xml
-                    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
                     ./gradlew clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
                 env:
