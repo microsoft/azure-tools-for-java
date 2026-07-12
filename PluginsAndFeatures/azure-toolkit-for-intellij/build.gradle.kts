@@ -3,6 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -45,9 +46,6 @@ allprojects {
 
     kotlin {
         jvmToolchain(properties("javaToolchainVersion").get().toInt())
-        compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(properties("javaVersion").get()))
-        }
     }
 
     repositories {
@@ -117,10 +115,16 @@ allprojects {
     }
 
     tasks {
+        withType<KotlinJvmCompile>().configureEach {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.fromTarget(properties("javaVersion").get()))
+            }
+        }
 
         compileJava {
             sourceCompatibility = properties("javaVersion").get()
             targetCompatibility = properties("javaVersion").get()
+            options.release.set(properties("javaVersion").map(String::toInt))
         }
 
         compileKotlin {
