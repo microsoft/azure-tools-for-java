@@ -1,5 +1,6 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
@@ -299,6 +300,9 @@ tasks {
 
     patchPluginXml {
         version = getPatchedVersion
+        changeNotes.set(provider {
+            changelog.renderItem(changelog.get(pluginVersion), Changelog.OutputType.HTML)
+        })
     }
 
     register<Copy>("downloadBicepLanguageServer") {

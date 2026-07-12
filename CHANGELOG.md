@@ -128,10 +128,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.6](#306)
 
 ## [Unreleased]
+
+## 3.97.6
 ### Added
 - Added support for IntelliJ IDEA 2026.2.
 
-## 3.97.6
 ### Fixed
 - Fixed several UI freeze issues caused by non-cancellable read actions in Azure task manager, Azure artifact resolution, Maven report generation, and background JDK version checks.
 
