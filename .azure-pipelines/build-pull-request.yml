@@ -109,6 +109,12 @@ extends:
                 inputs:
                   type: InlineScript
                   script: ./gradlew buildUtils -x buildToolkitsLib || exit -1
+              - task: JavaToolInstaller@0
+                displayName: Use Java 25 for IntelliJ
+                inputs:
+                  versionSpec: "25"
+                  jdkArchitectureOption: x64
+                  jdkSourceOption: PreInstalled
               - task: ms-devlabs.utilitytasks.task-Shellpp.Shellpp@0
                 displayName: Build IntelliJ
                 inputs:

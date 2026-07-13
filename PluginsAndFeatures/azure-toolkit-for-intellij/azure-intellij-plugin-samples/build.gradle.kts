@@ -9,5 +9,6 @@ dependencies {
     intellijPlatform {
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("Git4Idea")
+        bundledModule("intellij.platform.vcs.impl")
     }
 }

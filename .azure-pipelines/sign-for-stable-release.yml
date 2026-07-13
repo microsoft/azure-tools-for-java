@@ -90,23 +90,22 @@ extends:
                 clean: true
                 fetchTags: false
               - task: PowerShell@2
-                displayName: Install JDK 21
+                displayName: Install JDK 25
                 inputs:
                   targetType: inline
                   script: |
-                    # Download Adoptium/Temurin JDK 21.0.8
-                    Write-Host "Downloading Java 21.0.8..."
-                    $source = "https://download.oracle.com/java/21/archive/jdk-21.0.2_windows-x64_bin.zip"
-                    $destination = "$(build.sourcesdirectory)\jdk21_x64_windows.zip"
+                    Write-Host "Downloading Java 25.0.2..."
+                    $source = "https://download.oracle.com/java/25/archive/jdk-25.0.2_windows-x64_bin.zip"
+                    $destination = "$(build.sourcesdirectory)\jdk25_x64_windows.zip"
                     Invoke-WebRequest -Uri $source -OutFile $destination
               - task: JavaToolInstaller@0
-                displayName: 'Use Java 21'
+                displayName: 'Use Java 25'
                 inputs:
-                  versionSpec: 21
+                  versionSpec: 25
                   jdkArchitectureOption: x64
                   jdkSourceOption: LocalDirectory
-                  jdkFile: '$(build.sourcesdirectory)\jdk21_x64_windows.zip'
-                  jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk21'
+                  jdkFile: '$(build.sourcesdirectory)\jdk25_x64_windows.zip'
+                  jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk25'
               - task: UseNode@1
                 inputs:
                   version: "22.x"
@@ -131,7 +130,7 @@ extends:
                     mvn -v
                     # ./gradlew buildUtils || exit -1
                     mvn clean install -f ./Utils/pom.xml -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
-                    mvn clean -f ./Utils/pom.xml
+                    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
                     ./gradlew clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
                 env:

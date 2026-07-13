@@ -14,12 +14,11 @@ import static com.microsoft.azure.toolkit.intellij.common.AzureBundle.message;
 
 public class StreamingLogsConsoleView extends ConsoleViewImpl {
     private static final String SEPARATOR = System.getProperty("line.separator");
-    private boolean isDisposed;
+    private boolean disposed;
     private Disposable subscription;
 
     public StreamingLogsConsoleView(@NotNull Project project) {
         super(project, true);
-        this.isDisposed = false;
         this.setUpdateFoldingsEnabled(false);
     }
 
@@ -43,13 +42,8 @@ public class StreamingLogsConsoleView extends ConsoleViewImpl {
         return subscription != null && !subscription.isDisposed();
     }
 
-    /**
-     * Returns whether this console view has been disposed.
-     * Note: In IntelliJ 261+, ConsoleViewImpl.isDisposed() is private final,
-     * so this is NOT an override but a new public method for callers.
-     */
-    public boolean isDisposed() {
-        return this.isDisposed;
+    public boolean isConsoleDisposed() {
+        return this.disposed;
     }
 
     private void printlnToConsole(String message, ConsoleViewContentType consoleViewContentType) {
@@ -59,7 +53,7 @@ public class StreamingLogsConsoleView extends ConsoleViewImpl {
     @Override
     public void dispose() {
         super.dispose();
-        this.isDisposed = true;
+        this.disposed = true;
         closeStreamingLog();
     }
 }

@@ -12,7 +12,7 @@ dependencies {
         // intellijIdeaUltimate(properties("platformVersion").get())
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("com.intellij.java")
-        plugin("org.intellij.scala:2024.2.5")
+        plugin("org.intellij.scala:2026.2.5")
     }
 
 }
