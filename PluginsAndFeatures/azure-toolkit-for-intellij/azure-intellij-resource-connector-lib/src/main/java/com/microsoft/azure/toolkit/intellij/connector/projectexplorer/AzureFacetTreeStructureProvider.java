@@ -202,6 +202,12 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
         }
     }
 
+    @Override
+    public void uiDataSnapshot(@Nonnull DataSink sink, @Nonnull Collection<? extends AbstractTreeNode<?>> selected) {
+        selected.stream()
+            .filter(IAzureFacetNode.class::isInstance)
+            .map(IAzureFacetNode.class::cast)
+            .findFirst()
+            .ifPresent(node -> DataSink.uiDataSnapshot(sink, (Object) node));
+    }
 }
-
-

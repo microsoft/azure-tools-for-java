@@ -71,8 +71,9 @@ public class RunFunctionAction extends AnAction {
         }
         if (RunDialog.editConfiguration(project, settings, message("function.run.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
-            manager.addConfiguration(settings);
+            settings.storeInLocalWorkspace();
             manager.setBeforeRunTasks(settings.getConfiguration(), tasks);
+            manager.addConfiguration(settings);
             manager.setSelectedConfiguration(settings);
             ProgramRunnerUtil.executeConfiguration(project, settings, DefaultRunExecutor.getRunExecutorInstance());
         }

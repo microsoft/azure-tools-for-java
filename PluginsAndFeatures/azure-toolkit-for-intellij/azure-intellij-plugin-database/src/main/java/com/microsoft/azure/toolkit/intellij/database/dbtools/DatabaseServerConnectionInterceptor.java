@@ -40,6 +40,6 @@ public class DatabaseServerConnectionInterceptor implements DatabaseConnectionIn
             properties.put(OP_TYPE, Operation.Type.USER);
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, properties);
         }
-        return Boolean.TRUE;
+        return Boolean.FALSE;
     }
 }

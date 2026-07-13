@@ -23,6 +23,7 @@
 package com.microsoft.intellij.telemetry
 
 import com.intellij.ui.InplaceButton
+import com.intellij.openapi.ui.ComponentWithBrowseButton
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.telemetrywrapper.EventType
@@ -63,6 +64,9 @@ fun Container.addTelemetryListener(serviceName: String) {
                         super.focusLost(e)
                     }
                 })
+            }
+            is ComponentWithBrowseButton<*> -> component.addActionListener {
+                createLogEvent(serviceName, "click-button", component.name)
             }
             is JComboBox<*> -> component.addItemListener { itemEvent ->
                 if (itemEvent?.stateChange == ItemEvent.SELECTED) {

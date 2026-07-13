@@ -87,22 +87,10 @@ public class BicepStartupActivity implements ProjectActivity, PluginStateListene
 
     @AzureOperation("boundary/bicep.unregister_textmate_bundles")
     public static synchronized void unregisterBicepTextMateBundle() {
-        // TODO: Migrate to new TextMate API when available in IntelliJ 261
-        // TextMateSettings is deprecated - temporarily disable TextMate bundle unregistration
-        // The bundles will remain until new API is available
-        log.warn("TextMate bundle unregistration skipped due to deprecated API");
-
-        // Original deprecated code:
-        // final TextMateSettingsState state = TextMateSettings.getInstance().getState();
-        // if (Objects.nonNull(state)) {
-        //     final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
-        //     final Collection<BundleConfigBean> bundles = state.getBundles();
-        //     if (bundles.stream().anyMatch(b -> "bicep".equals(b.getName()))) {
-        //         final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
-        //         newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-        //         state.setBundles(newBundles);
-        //     }
-        // }
+        final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
+        final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
+        TextMateUserBundlesSettings.getInstance().removeBundle(bicepTextmatePath.toString());
+        TextMateUserBundlesSettings.getInstance().removeBundle(bicepParamTextmatePath.toString());
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.intellij.database.dataSource.DataSourceConfigurable;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.url.DataInterchange;
 import com.intellij.database.dataSource.url.FieldSize;
-import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
@@ -24,7 +23,6 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.HyperlinkLabel;
-import com.intellij.database.dataSource.DataSourceSslConfiguration;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
@@ -78,7 +76,6 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
         this.kind = kind;
-        final LocalDataSource dataSource = getDataSourceConfigurable().getDataSource();
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setAccount);
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
@@ -201,20 +198,11 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         });
     }
 
-    private void setUsername(String user) {
-        // No longer needed, interchange.putProperties handles this
-    }
-
     @SneakyThrows
     private void setUseSsl(boolean useSsl) {
-        final DataInterchange interchange = this.getInterchange();
-        final LocalDataSource dataSource = interchange.getDataSource();
-        DataSourceSslConfiguration sslCfg = dataSource.getSslCfg();
-        if (sslCfg == null) {
-            sslCfg = new DataSourceSslConfiguration(false, null);
-        }
-        sslCfg.myEnabled = useSsl;
-        dataSource.setSslCfg(sslCfg);
+        final Object sshSslPanel = FieldUtils.readField(this.getDataSourceConfigurable(), "mySshSslPanel", true);
+        final AbstractButton useSslCheckBox = (AbstractButton) FieldUtils.readField(sshSslPanel, "myUseSSLJBCheckBox", true);
+        useSslCheckBox.setSelected(useSsl);
     }
 
     @SneakyThrows

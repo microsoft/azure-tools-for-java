@@ -23,7 +23,9 @@ public class FileChooserInputPanel implements AzureFormJPanel<String> {
     }
 
     private void init() {
-        fileInput.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle(SELECT_PATH_TO_SAVE_THE_PROJECT));
+        fileInput.addBrowseFolderListener(null, FileChooserDescriptorFactory.createSingleFolderDescriptor()
+            .withTitle(SELECT_PATH_TO_SAVE_THE_PROJECT)
+            .withDescription(PATH_TO_SAVE_THE_DEMO_PROJECT));
         fileInput.setRequired(true);
     }
 

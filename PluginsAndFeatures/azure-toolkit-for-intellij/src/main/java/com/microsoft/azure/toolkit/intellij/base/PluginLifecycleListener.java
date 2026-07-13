@@ -8,7 +8,11 @@ package com.microsoft.azure.toolkit.intellij.base;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginStateListener;
-import com.intellij.util.net.HttpConfigurable;
+import com.intellij.credentialStore.Credentials;
+import com.intellij.util.net.JdkProxyProvider;
+import com.intellij.util.net.ProxyConfiguration;
+import com.intellij.util.net.ProxyCredentialStore;
+import com.intellij.util.net.ProxySettings;
 import com.intellij.util.net.ssl.CertificateManager;
 import com.microsoft.azure.toolkit.ide.common.auth.IdeAzureAccount;
 import com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer;
@@ -38,6 +42,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.FileHandler;
 
 import static com.microsoft.azure.toolkit.ide.common.store.AzureConfigInitializer.TELEMETRY;
@@ -101,21 +106,24 @@ public class PluginLifecycleListener implements AppLifecycleListener, PluginStat
     }
 
     private static void initProxy() {
-        // TODO: Migrate to new ProxySettings API when available
-        // HttpConfigurable is deprecated, but new ProxyConfiguration API is complex
-        // For now, skipping proxy configuration from IntelliJ settings
-        // final HttpConfigurable httpConfigurable = HttpConfigurable.getInstance();
-        // if (httpConfigurable != null && httpConfigurable.USE_HTTP_PROXY) {
-        //     final ProxyInfo proxy = ProxyInfo.builder()
-        //         .source("intellij")
-        //         .host(httpConfigurable.PROXY_HOST)
-        //         .port(httpConfigurable.PROXY_PORT)
-        //         .username(httpConfigurable.getProxyLogin())
-        //         .password(httpConfigurable.getPlainProxyPassword())
-        //         .build();
-        //     Azure.az().config().setProxyInfo(proxy);
-        //     ProxyManager.getInstance().applyProxy();
-        // }
+        JdkProxyProvider.ensureDefault();
+        final ProxyConfiguration configuration = ProxySettings.getInstance().getProxyConfiguration();
+        if (configuration instanceof ProxyConfiguration.StaticProxyConfiguration proxy &&
+            proxy.getProtocol() == ProxyConfiguration.ProxyProtocol.HTTP) {
+            final Credentials credentials = ProxyCredentialStore.getInstance().getCredentials(proxy.getHost(), proxy.getPort());
+            final ProxyInfo proxyInfo = ProxyInfo.builder()
+                .source("intellij")
+                .host(proxy.getHost())
+                .port(proxy.getPort())
+                .username(Optional.ofNullable(credentials).map(Credentials::getUserName).orElse(null))
+                .password(Optional.ofNullable(credentials).map(Credentials::getPasswordAsString).orElse(null))
+                .nonProxyHosts(proxy.getExceptions())
+                .build();
+            Azure.az().config().setProxyInfo(proxyInfo);
+            ProxyManager.getInstance().applyProxy();
+        } else {
+            Azure.az().config().setProxyInfo(ProxyInfo.builder().build());
+        }
         final CertificateManager certificateManager = CertificateManager.getInstance();
         Azure.az().config().setSslContext(certificateManager.getSslContext());
         HttpsURLConnection.setDefaultSSLSocketFactory(certificateManager.getSslContext().getSocketFactory());

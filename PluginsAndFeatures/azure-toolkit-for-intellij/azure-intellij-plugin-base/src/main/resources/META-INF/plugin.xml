@@ -20,11 +20,10 @@
         <h3>Azure</h3>
         <h4>3.97.7</h4>
         <ul>
-          <li>Migrate 97 scheduled-for-removal APIs to new IntelliJ Platform APIs</li>
-          <li>Replace deprecated AnActionEvent, ComponentManager, LafManager, Notification APIs</li>
-          <li>Replace deprecated TerminalView, HttpConfigurable, BrowseFolderActionListener APIs</li>
+          <li>Migrate IntelliJ Platform integrations to APIs supported by IntelliJ IDEA 2026.2</li>
+          <li>Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration</li>
+          <li>Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup</li>
           <li>Fix registry key conflict for Cosmos DB dbtools module</li>
-          <li>Reduce reflection usage in Scala plugin and Database plugin integration</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>

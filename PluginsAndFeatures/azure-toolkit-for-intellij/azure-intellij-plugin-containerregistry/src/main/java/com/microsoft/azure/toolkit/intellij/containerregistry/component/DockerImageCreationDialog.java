@@ -54,10 +54,12 @@ public class DockerImageCreationDialog extends AzureDialog<DockerImage>
         });
 
         final FileChooserDescriptor dockerDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-        txtDockerFile.addBrowseFolderListener(project, dockerDescriptor.withTitle("Select Docker File"));
+        txtDockerFile.addBrowseFolderListener(project, dockerDescriptor.withTitle("Select Docker File")
+            .withDescription("Select Docker File"));
 
         final FileChooserDescriptor baseDirectory = FileChooserDescriptorFactory.createSingleFolderDescriptor();
-        txtBaseDirectory.addBrowseFolderListener(project, baseDirectory.withTitle("Select Base Directory"));
+        txtBaseDirectory.addBrowseFolderListener(project, baseDirectory.withTitle("Select Base Directory")
+            .withDescription("Select base directory for docker build"));
     }
 
     @Override

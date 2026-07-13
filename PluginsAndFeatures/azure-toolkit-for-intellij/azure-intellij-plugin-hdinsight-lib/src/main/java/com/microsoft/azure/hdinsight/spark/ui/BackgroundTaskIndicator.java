@@ -5,11 +5,9 @@
 
 package com.microsoft.azure.hdinsight.spark.ui;
 
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.AsyncProcessIcon;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class BackgroundTaskIndicator extends JPanel{
     private AsyncProcessIcon inProcessIcon;
@@ -24,11 +22,6 @@ public class BackgroundTaskIndicator extends JPanel{
         this.textField.setBorder(BorderFactory.createEmptyBorder());
         this.inProcessIcon = new AsyncProcessIcon(runningText + "-icon");
         this.inProcessIcon.setVisible(false);
-
-        if (JBColor.isBright()) {
-            textField.setBackground(new Color(242,242,242));
-            textField.setDisabledTextColor(new Color(140,140,140));
-        }
 
         add(inProcessIcon);
         add(textField);

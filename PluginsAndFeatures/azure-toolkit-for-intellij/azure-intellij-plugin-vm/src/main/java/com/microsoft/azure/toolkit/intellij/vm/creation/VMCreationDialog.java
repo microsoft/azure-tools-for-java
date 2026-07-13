@@ -206,7 +206,7 @@ public class VMCreationDialog extends AzureDialog<VirtualMachineDraft> implement
         cbImage.addItemListener(this::onImageChanged);
         // initialize cert file select
         final FileChooserDescriptor pub = FileChooserDescriptorFactory.createSingleFileDescriptor("pub");
-        txtCertificate.addBrowseFolderListener(project, pub.withTitle(SELECT_CERT_TITLE));
+        txtCertificate.addBrowseFolderListener(project, pub.withTitle(SELECT_CERT_TITLE).withDescription(SSH_PUBLIC_KEY_DESCRIPTION));
         lblSubscription.setIcon(AllIcons.General.ContextHelp);
         lblResourceGroup.setIcon(AllIcons.General.ContextHelp);
         lblAuthenticationType.setIcon(AllIcons.General.ContextHelp);

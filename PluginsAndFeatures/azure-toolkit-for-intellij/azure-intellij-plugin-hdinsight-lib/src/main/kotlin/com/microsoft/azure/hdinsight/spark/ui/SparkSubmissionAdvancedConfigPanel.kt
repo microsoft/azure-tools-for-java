@@ -55,6 +55,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.Dimension
@@ -157,7 +158,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
     }
     private val sshKeyFileTextField = TextFieldWithBrowseButton().apply {
         textField.name = "sshKeyFileTextFieldText"
-        // button.name = "sshKeyFileTextFieldButton"  // getButton() is deprecated, skipping name assignment
+        configureBrowseButton("sshKeyFileTextFieldButton")
         toolTipText = useKeyFileToolTip
     }
 

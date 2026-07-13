@@ -29,18 +29,26 @@ import static com.intellij.openapi.roots.TestSourcesFilter.isTestSources;
 
 public class SparkBatchJobLocalRunConfigurationProducer
         extends JavaRunConfigurationProducerBase<LivySparkBatchJobRunConfiguration> {
+    private final ConfigurationFactory configurationFactory;
     private final SparkApplicationType applicationType;
 
     public SparkBatchJobLocalRunConfigurationProducer(final ConfigurationFactory configFactory,
                                                       final SparkApplicationType applicationType) {
         super();
+        this.configurationFactory = configFactory;
         this.applicationType = applicationType;
     }
 
     public SparkBatchJobLocalRunConfigurationProducer(final ConfigurationType configType,
                                                       final SparkApplicationType applicationType) {
         super(configType);
+        this.configurationFactory = configType.getConfigurationFactories()[0];
         this.applicationType = applicationType;
+    }
+
+    @Override
+    public ConfigurationFactory getConfigurationFactory() {
+        return this.configurationFactory;
     }
 
     @Override

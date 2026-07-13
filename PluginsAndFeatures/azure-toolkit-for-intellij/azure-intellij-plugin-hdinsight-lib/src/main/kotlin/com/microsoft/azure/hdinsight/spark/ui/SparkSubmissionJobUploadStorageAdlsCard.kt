@@ -44,6 +44,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.HintTextField
 import com.microsoft.azure.toolkit.intellij.common.component.UIUtils
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -79,20 +80,12 @@ class SparkSubmissionJobUploadStorageAdlsCard
     private val authMethodLabel = JLabel("Authentication Method")
     private val authMethodComboBox = ComboBox<String>(arrayOf("Azure Account")).apply { name = "adlsCardAuthMethodComboBox" }
     private val subscriptionsLabel = JLabel("Subscription List")
+    private var refreshInProgress = false
     private val subscriptionsComboBox  = ComboboxWithBrowseButton(JComboBox(ImmutableComboBoxModel.empty<String>())).apply {
         comboBox.name = "adlsCardSubscriptionsComboBoxCombo"
         setButtonIcon(AllIcons.Actions.Refresh)
-        addActionListener {
-            //refresh subscriptions after refresh button is clicked
-            if (isEnabled) {
-                setButtonEnabled(false)
-                (viewModel as ViewModel).refreshSubscriptions()
-                        .doOnEach { setButtonEnabled(true) }
-                        .subscribe(
-                                { },
-                                { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
-            }
-        }
+        configureBrowseButton("adlsCardSubscriptionsComboBoxButton", "Refresh")
+        addActionListener { doRefreshSubscriptions() }
 
         // after container is selected or new model is set, update upload path
         comboBox.addPropertyChangeListener("model") {
@@ -121,6 +114,22 @@ class SparkSubmissionJobUploadStorageAdlsCard
                 }
             }
         }
+    }
+
+    private fun doRefreshSubscriptions() {
+        if (refreshInProgress) {
+            return
+        }
+        refreshInProgress = true
+        subscriptionsComboBox.setButtonEnabled(false)
+        (viewModel as ViewModel).refreshSubscriptions()
+                .doOnTerminate {
+                    refreshInProgress = false
+                    subscriptionsComboBox.setButtonEnabled(true)
+                }
+                .subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
     }
 
     private val signInCard = SparkSubmissionJobUploadStorageAdlsSignInCard().apply {

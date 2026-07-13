@@ -47,7 +47,7 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
                     result[i] = sbtVersions.apply(i).toString();
                 }
                 versions[0] = result;
-            } catch (final Exception e) {
+            } catch (final Exception | LinkageError e) {
                 log().warn("Failed to get SBT versions from scala plugin.", e);
                 versions[0] = new String[0];
             }

@@ -59,7 +59,8 @@ public class CertificateCreationDialog extends AzureDialog<CertificateDraft.Conf
         txtPassword.setRequired(false);
         final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
                 .withFileFilter(file -> StringUtils.equalsAnyIgnoreCase(file.getExtension(), "pem", "pfx"));
-        txtCertificate.addBrowseFolderListener(null, descriptor.withTitle("Select Certificate File"));
+        txtCertificate.addBrowseFolderListener(null, descriptor.withTitle("Select Certificate File")
+                .withDescription("Select Certificate File"));
         this.lblCertificateFile.setLabelFor(txtCertificate);
         this.lblName.setLabelFor(txtName);
         this.lblPassword.setLabelFor(passwordField);

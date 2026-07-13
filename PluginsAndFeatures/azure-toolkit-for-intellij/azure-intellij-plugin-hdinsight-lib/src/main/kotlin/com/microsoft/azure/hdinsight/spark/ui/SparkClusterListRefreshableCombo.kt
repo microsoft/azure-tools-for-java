@@ -43,6 +43,7 @@ import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetai
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import com.microsoft.intellij.ui.util.findFirst
 import rx.Observable
 import rx.Observable.*
@@ -63,6 +64,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
 
         setButtonIcon(AllIcons.Actions.Refresh)
+        configureBrowseButton(getComboBoxNamePrefix() + "Button")
 
         comboBox.apply {
             setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
