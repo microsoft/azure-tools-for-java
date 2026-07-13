@@ -5,10 +5,10 @@
 
 package com.microsoft.azure.toolkit.intellij.connector.aad;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
-import com.intellij.ui.components.ComponentsKt;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
@@ -24,6 +24,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,7 +106,16 @@ class RegisterAzureApplicationForm implements AzureFormJPanel<ApplicationRegistr
     }
 
     private void createUIComponents() {
-        noteComponent = ComponentsKt.noteComponent(MessageBundle.message("dialog.identity.ad.register_app.description"));
+        final JEditorPane note = new JEditorPane("text/html", MessageBundle.message("dialog.identity.ad.register_app.description"));
+        note.setEditable(false);
+        note.setOpaque(false);
+        note.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        note.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                BrowserUtil.browse(e.getDescription());
+            }
+        });
+        noteComponent = note;
         noteComponent.setBorder(JBUI.Borders.emptyBottom(5));
 
         subscriptionBox = new SubscriptionComboBox();

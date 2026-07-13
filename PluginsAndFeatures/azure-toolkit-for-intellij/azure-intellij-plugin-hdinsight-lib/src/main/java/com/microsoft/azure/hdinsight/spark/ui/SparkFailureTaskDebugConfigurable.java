@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.util.SwingExtsKt.configureBrowseButton;
+
 public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkFailureTaskDebugSettingsModel> {
     private TextFieldWithBrowseButton myFailureJobContextPathField;
     private JPanel myWholePanel;
@@ -31,7 +33,7 @@ public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkF
                 new MacroAwareTextBrowseFolderListener(dataRootDirectoryChooser, myProject));
 
         myFailureJobContextPathField.getTextField().setName("failureJobContextPathFieldText");
-        myFailureJobContextPathField.getButton().setName("failureJobContextPathFieldButton");
+        configureBrowseButton(myFailureJobContextPathField, "failureJobContextPathFieldButton");
     }
 
     // Data --> Component
@@ -55,4 +57,3 @@ public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkF
         return myWholePanel;
     }
 }
-

@@ -10,9 +10,11 @@ import com.intellij.ide.DataManager;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.actionSystem.ActionGroup;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataProvider;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleTextAttributes;
 import com.microsoft.azure.toolkit.ide.common.component.ActionNode;
@@ -88,7 +90,7 @@ public class NodeViewDescriptor implements ServiceViewDescriptor {
     @Override
     public boolean handleDoubleClick(@Nonnull final MouseEvent e) {
         final DataContext context = DataManager.getInstance().getDataContext(e.getComponent());
-        final AnActionEvent event = AnActionEvent.createFromInputEvent(e, "ServicesNode.click", null, context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "ServicesNode.click", ActionUiKind.NONE, e);
         if (node instanceof ActionNode<?>) {
             this.node.click(event);
         } else {

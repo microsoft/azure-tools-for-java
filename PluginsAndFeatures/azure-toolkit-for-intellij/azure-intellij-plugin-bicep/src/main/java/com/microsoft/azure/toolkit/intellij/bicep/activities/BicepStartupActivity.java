@@ -23,9 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.jetbrains.plugins.textmate.configuration.BundleConfigBean;
-import org.jetbrains.plugins.textmate.configuration.TextMateSettings;
-import org.jetbrains.plugins.textmate.configuration.TextMateSettings.TextMateSettingsState;
 import org.jetbrains.plugins.textmate.configuration.TextMateUserBundlesSettings;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
 import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuilderServerDefinition;
@@ -33,9 +30,6 @@ import org.wso2.lsp4intellij.client.languageserver.serverdefinition.ProcessBuild
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -93,16 +87,10 @@ public class BicepStartupActivity implements ProjectActivity, PluginStateListene
 
     @AzureOperation("boundary/bicep.unregister_textmate_bundles")
     public static synchronized void unregisterBicepTextMateBundle() {
-        final TextMateSettingsState state = TextMateSettings.getInstance().getState();
-        if (Objects.nonNull(state)) {
-            final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
-            final Collection<BundleConfigBean> bundles = state.getBundles();
-            if (bundles.stream().anyMatch(b -> "bicep".equals(b.getName()))) {
-                final ArrayList<BundleConfigBean> newBundles = new ArrayList<>(bundles);
-                newBundles.removeIf(bundle -> StringUtils.equalsAnyIgnoreCase(bundle.getName(), "bicep", "bicepparam"));
-                state.setBundles(newBundles);
-            }
-        }
+        final Path bicepTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicep");
+        final Path bicepParamTextmatePath = Path.of(CommonConst.PLUGIN_PATH, "bicep", "textmate", "bicepparam");
+        TextMateUserBundlesSettings.getInstance().removeBundle(bicepTextmatePath.toString());
+        TextMateUserBundlesSettings.getInstance().removeBundle(bicepParamTextmatePath.toString());
     }
 
     @Override

@@ -2,8 +2,10 @@ package com.microsoft.azure.toolkit.ide.guidance.view;
 
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.GotItTooltip;
 import com.intellij.ui.HyperlinkLabel;
@@ -70,7 +72,7 @@ public class CoursesView {
             final Action<String> enable = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.ENABLE_PLUGIN_AND_RESTART).bind("Git4Idea").withLabel("Enable and Restart");
             Optional.ofNullable(AzureActionManager.getInstance())
                 .map(m -> m.getAction(ResourceCommonActionsContributor.BROWSE_AZURE_SAMPLES))
-                .ifPresentOrElse(a -> a.handle(null, AnActionEvent.createFromInputEvent(event, "azure.guidance", null, context)),
+                .ifPresentOrElse(a -> a.handle(null, AnActionEvent.createEvent(context, new Presentation(), "azure.guidance", ActionUiKind.NONE, event)),
                     () -> AzureMessager.getMessager().warning("Browsing Azure sample projects requires \"Git\" plugin to be enabled first.", enable));
         });
         AzureTaskManager.getInstance().runInBackground("load courses", () -> GuidanceConfigManager.getInstance().loadCourses())

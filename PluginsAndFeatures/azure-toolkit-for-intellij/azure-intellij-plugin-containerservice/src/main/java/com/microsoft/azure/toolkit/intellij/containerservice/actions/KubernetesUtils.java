@@ -19,7 +19,7 @@ public class KubernetesUtils {
     public static final String REDHAT_KUBERNETES_PLUGIN_ID = "com.redhat.devtools.intellij.kubernetes";
 
     public static boolean isKubernetesPluginEnabled() {
-        return Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.findId(KUBERNETES_PLUGIN_ID)))
+        return Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.getId(KUBERNETES_PLUGIN_ID)))
                 .map(plugin -> plugin.isEnabled()).orElse(false);
     }
 

@@ -5,9 +5,10 @@
 package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -66,7 +67,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
             if (Objects.nonNull(this.okAction)) {
                 final T data = this.getForm().getValue();
                 final DataContext context = DataManager.getInstance().getDataContext(this.getContentPanel());
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, getName(), context);
+                final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), getName(), ActionUiKind.NONE, null);
                 this.okAction.handle(data, event);
                 super.doOKAction();
             } else if (Objects.nonNull(this.okActionListener)) {
@@ -89,7 +90,7 @@ public abstract class AzureDialog<T> extends DialogWrapper {
         try {
             if (Objects.nonNull(this.closeAction)) {
                 final DataContext context = DataManager.getInstance().getDataContext(this.getContentPanel());
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, getName(), context);
+                final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), getName(), ActionUiKind.NONE, null);
                 this.closeAction.handle(null, event);
                 super.doCancelAction();
             } else {

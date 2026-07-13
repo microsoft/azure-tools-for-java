@@ -1,5 +1,10 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
+## 3.97.7
+- Migrate IntelliJ Platform integrations to APIs supported by IntelliJ IDEA 2026.2
+- Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration
+- Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup
+- Fix registry key conflict for Cosmos DB dbtools module
 
 ## 3.97.6
 ### Added

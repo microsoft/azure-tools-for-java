@@ -59,11 +59,14 @@ inline fun <T> swingPropertyDelegated(crossinline getter: (property: KProperty<*
 
 class ComponentWithBrowseButtonEnabledDelegated(private val componentWithBrowseButton: ComponentWithBrowseButton<*>)
     : SwingComponentPropertyDelegated<Boolean>() {
+    private var buttonEnabled = true
+
     override operator fun getValue(thisRef: Any?, property: KProperty<*>): Boolean {
-        return componentWithBrowseButton.button.isEnabled
+        return buttonEnabled
     }
 
     override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: Boolean) {
+        buttonEnabled = v
         componentWithBrowseButton.setButtonEnabled(v)
     }
 }
@@ -90,4 +93,3 @@ class ImmutableComboBoxModelDelegated<T>(private val comboBox: JComboBox<T>) {
         }
     }
 }
-

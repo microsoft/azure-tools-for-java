@@ -10,20 +10,19 @@ import com.intellij.database.dataSource.DataSourceConfigurable;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.url.DataInterchange;
 import com.intellij.database.dataSource.url.FieldSize;
-import com.intellij.database.dataSource.url.template.UrlEditorModel;
 import com.intellij.database.dataSource.url.ui.ParamEditorBase;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ComponentUtil;
 import com.intellij.ui.HyperlinkLabel;
-import com.intellij.ui.components.JBCheckBox;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
@@ -77,7 +76,6 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
     public AzureCosmosDbAccountParamEditor(@Nonnull DatabaseAccountKind kind, @Nonnull String label, @Nonnull DataInterchange interchange) {
         super(new CosmosDbAccountComboBox(kind), interchange, FieldSize.LARGE, label);
         this.kind = kind;
-        final LocalDataSource dataSource = getDataSourceConfigurable().getDataSource();
         final CosmosDbAccountComboBox combox = this.getEditorComponent();
         combox.addValueChangedListener(this::setAccount);
         interchange.addPersistentProperty(KEY_COSMOS_ACCOUNT_ID);
@@ -147,7 +145,7 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
         window.dispose();
         final ToolWindow explorer = ToolWindowManager.getInstance(Objects.requireNonNull(project)).getToolWindow("Azure Explorer");
         Objects.requireNonNull(explorer).activate(() -> {
-            final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, "cosmos.dbtools", context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "cosmos.dbtools", ActionUiKind.NONE, e);
             AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(Azure.az(AzureCosmosService.class), event);
             CreateCosmosDBAccountAction.create(null, null);
         });
@@ -194,29 +192,22 @@ public class AzureCosmosDbAccountParamEditor extends ParamEditorBase<AzureCosmos
                     consumer.consume("user", user);
                     consumer.consume("port", port);
                 });
-                this.setUsername(user);
+                // this.setUsername(user); // setUsername is not needed as putProperties should update the model
                 this.updating = false;
             }, AzureTask.Modality.ANY);
         });
     }
 
-    private void setUsername(String user) {
-        final UrlEditorModel model = this.getDataSourceConfigurable().getUrlEditor().getEditorModel();
-        model.setParameter("user", user);
-        model.commit(true);
-    }
-
     @SneakyThrows
     private void setUseSsl(boolean useSsl) {
-        final DataSourceConfigurable configurable = this.getDataSourceConfigurable();
-        // getSshSslPanel() was removed in IntelliJ 261; use reflection to access the panel field directly
-        final Object sshSslPanel = FieldUtils.readField(configurable, "mySshSslPanel", true);
-        final JBCheckBox useSSLCheckBox = (JBCheckBox) FieldUtils.readField(sshSslPanel, "myUseSSLJBCheckBox", true);
-        useSSLCheckBox.setSelected(useSsl);
+        final Object sshSslPanel = FieldUtils.readField(this.getDataSourceConfigurable(), "mySshSslPanel", true);
+        final AbstractButton useSslCheckBox = (AbstractButton) FieldUtils.readField(sshSslPanel, "myUseSSLJBCheckBox", true);
+        useSslCheckBox.setSelected(useSsl);
     }
 
     @SneakyThrows
     private DataSourceConfigurable getDataSourceConfigurable() {
+        // This is the only way to get the configurable from the interchange as of 2026.1
         return (DataSourceConfigurable) FieldUtils.readField(this.getInterchange(), "myConfigurable", true);
     }
 

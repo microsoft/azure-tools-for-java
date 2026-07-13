@@ -55,6 +55,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.Dimension
@@ -157,7 +158,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
     }
     private val sshKeyFileTextField = TextFieldWithBrowseButton().apply {
         textField.name = "sshKeyFileTextFieldText"
-        button.name = "sshKeyFileTextFieldButton"
+        configureBrowseButton("sshKeyFileTextFieldButton")
         toolTipText = useKeyFileToolTip
     }
 
@@ -282,7 +283,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         sshUseKeyFileRadioButton.addItemListener { setSshPasswordInputEnabled(it.stateChange == DESELECTED) }
 
         // To popup the key file chooser dialog
-        sshKeyFileTextField.button.addActionListener { showSshKeyFileChooser() }
+        sshKeyFileTextField.addActionListener { showSshKeyFileChooser() }
     }
 
     private fun setSshPasswordInputEnabled(isEnabled: Boolean) {

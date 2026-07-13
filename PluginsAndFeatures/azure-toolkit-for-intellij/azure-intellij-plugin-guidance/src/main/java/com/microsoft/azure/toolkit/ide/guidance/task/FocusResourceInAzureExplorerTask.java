@@ -1,9 +1,10 @@
 package com.microsoft.azure.toolkit.ide.guidance.task;
 
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.guidance.ComponentContext;
 import com.microsoft.azure.toolkit.ide.guidance.Task;
@@ -34,7 +35,7 @@ public class FocusResourceInAzureExplorerTask implements Task {
                 (AbstractAzResource<?, ?, ?>) context.getParameter(RESOURCE) : Azure.az().getById(resourceId);
         assert Objects.nonNull(resource) : String.format("failed to get resource with id (%s) in Azure", resourceId);
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? this.context.getProject() : null;
-        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.guidance.summary", ActionUiKind.NONE, null);
         AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.SELECT_RESOURCE_IN_EXPLORER).handle(resource, event);
     }
 

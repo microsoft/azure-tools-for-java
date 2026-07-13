@@ -1,9 +1,10 @@
 package com.microsoft.azure.toolkit.intellij.appservice.task;
 
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PlatformUtils;
 import com.microsoft.azure.toolkit.ide.appservice.function.FunctionAppActionsContributor;
@@ -49,7 +50,7 @@ public class TriggerFunctionTask implements Task {
         final Action.Id<FunctionEntity> action = PlatformUtils.isIdeaUltimate() ?
             FunctionAppActionsContributor.TRIGGER_FUNCTION_WITH_HTTP_CLIENT : FunctionAppActionsContributor.TRIGGER_FUNCTION_IN_BROWSER;
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.guidance.summary", ActionUiKind.NONE, null);
         IntellijAzureActionManager.getInstance().getAction(action).handle(target, event);
     }
 
