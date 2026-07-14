@@ -15,6 +15,7 @@ import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.account.IAccount;
 import com.microsoft.azure.toolkit.lib.auth.AzureAccount;
 import com.microsoft.azure.toolkit.lib.auth.IAccountActions;
+import com.microsoft.azure.toolkit.lib.auth.ReauthenticationRequest;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
@@ -81,6 +82,14 @@ public class IntellijAccountActionsContributor implements IActionsContributor, I
             .withLabel("Select Subscriptions...")
             .withIcon(AzureIcons.Action.SELECT_SUBSCRIPTION.getIconPath())
             .withHandler((Object v, AnActionEvent e) -> SelectSubscriptionsAction.selectSubscriptions(e.getProject()))
+            .withAuthRequired(false)
+            .register(am);
+
+        new Action<>(IAccountActions.REAUTHENTICATE)
+            .withLabel("Reauthenticate")
+            .withIcon(AzureIcons.Common.SIGN_IN.getIconPath())
+            .withHandler((ReauthenticationRequest request, AnActionEvent e) ->
+                AzureTaskManager.getInstance().runInBackground("Reauthenticate Azure account", request::authenticate))
             .withAuthRequired(false)
             .register(am);
     }
