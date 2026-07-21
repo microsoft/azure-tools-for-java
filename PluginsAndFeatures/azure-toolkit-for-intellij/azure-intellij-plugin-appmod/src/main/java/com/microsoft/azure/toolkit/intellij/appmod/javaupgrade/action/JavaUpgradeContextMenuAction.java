@@ -21,6 +21,7 @@ import java.util.Map;
 
 import static com.microsoft.azure.toolkit.intellij.appmod.common.AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN;
 import static com.microsoft.azure.toolkit.intellij.appmod.common.AppModPluginInstaller.isAppModPluginInstalled;
+import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.APPMOD_UPGRADE_AGENT_NAME;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.UPGRADE_JAVA_AND_FRAMEWORK_PROMPT;
 
 /**
@@ -56,8 +57,11 @@ public class JavaUpgradeContextMenuAction extends AnAction {
                         isMavenBuildFile(file) ||
                         isGradleBuildFile(file);
             }
+            final String baseText = getTemplatePresentation().getText();
             if (!isAppModPluginInstalled()) {
-                e.getPresentation().setText(e.getPresentation().getText() + TO_INSTALL_APP_MODE_PLUGIN);
+                e.getPresentation().setText(baseText + TO_INSTALL_APP_MODE_PLUGIN);
+            } else {
+                e.getPresentation().setText(baseText);
             }
             if (visible){
                 AppModUtils.logTelemetryEvent("showJavaUpgradeContextMenuAction", Map.of("appmodPluginInstalled", String.valueOf(isAppModPluginInstalled())));
@@ -81,7 +85,7 @@ public class JavaUpgradeContextMenuAction extends AnAction {
             String prompt = buildUpgradePrompt();
 
             // Open Copilot chat with the upgrade prompt
-            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt);
+            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, APPMOD_UPGRADE_AGENT_NAME);
             AppModUtils.logTelemetryEvent("openJavaUpgradeCopilotChatFromContextMenu", Map.of("appmodPluginInstalled", String.valueOf(isAppModPluginInstalled())));
         } catch (Throwable ex) {
             // Log error but do not crash
