@@ -24,6 +24,9 @@
           <li>Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration</li>
           <li>Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup</li>
           <li>Fix registry key conflict for Cosmos DB dbtools module</li>
+          <li>Fixed Copilot Modernization branding: install prompts now say "GitHub Copilot Modernization" instead of "App Modernization".</li>
+          <li>Fixed CVE fix actions not using the designated custom agent and restored the missing "Fix the vulnerable with GitHub Copilot" action in Problems view context menu.</li>
+          <li>Fixed "Install GitHub Copilot Modernization" suffix being repeatedly appended on menu hover.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
