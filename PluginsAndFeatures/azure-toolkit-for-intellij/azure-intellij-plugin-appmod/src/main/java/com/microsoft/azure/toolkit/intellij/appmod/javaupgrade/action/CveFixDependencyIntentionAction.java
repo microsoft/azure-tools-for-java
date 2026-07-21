@@ -103,7 +103,7 @@ public class CveFixDependencyIntentionAction implements IntentionAction, HighPri
 
             // Try to extract dependency information from the current context
             final String prompt = buildPromptFromContext(editor, file);
-            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt);
+            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, APPMOD_CVE_AGENT_NAME);
             AppModUtils.logTelemetryEvent("openCveFixDependencyCopilotChatFromIntentionAction");
         } catch (Throwable e) {
             log.error("Failed to invoke CveFixDependencyIntentionAction: ", e);

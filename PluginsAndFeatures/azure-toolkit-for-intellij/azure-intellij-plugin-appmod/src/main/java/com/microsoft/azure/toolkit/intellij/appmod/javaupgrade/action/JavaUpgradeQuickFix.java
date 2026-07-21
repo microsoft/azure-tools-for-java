@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.APPMOD_UPGRADE_AGENT_NAME;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.UPGRADE_JAVA_FRAMEWORK_PROMPT;
 
 /**
@@ -55,7 +56,7 @@ public class JavaUpgradeQuickFix implements LocalQuickFix {
     public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
         try {
             String prompt = buildPromptForIssue(issue);
-            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt);
+            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, APPMOD_UPGRADE_AGENT_NAME);
             AppModUtils.logTelemetryEvent("openCopilotChatForJavaUpgradeQuickFix", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
         } catch (Throwable ex) {
             log.error("Failed to apply Java upgrade quick fix", ex);

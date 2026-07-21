@@ -46,7 +46,8 @@ public class CveFixInProblemsViewAction extends AnAction implements DumbAware {
 
             JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(
                     project,
-                    SCAN_AND_RESOLVE_CVES_PROMPT
+                    SCAN_AND_RESOLVE_CVES_PROMPT,
+                    APPMOD_CVE_AGENT_NAME
             );
             AppModUtils.logTelemetryEvent("openCopilotChatForCveFixInProblemsViewAction", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
         } catch (Throwable ex) {
