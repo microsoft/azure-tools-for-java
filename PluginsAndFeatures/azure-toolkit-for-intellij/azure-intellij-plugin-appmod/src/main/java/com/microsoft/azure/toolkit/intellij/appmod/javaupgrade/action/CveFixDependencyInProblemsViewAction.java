@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.toolkit.intellij.appmod.common.AppModPluginInstaller;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.dao.VulnerabilityInfo;
-import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaUpgradeIssuesCache;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaVersionNotificationService;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.ProblemsViewUtils;
 import com.microsoft.azure.toolkit.intellij.appmod.utils.AppModUtils;
@@ -47,13 +46,15 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
             if (vulnerabilityInfo == null) {
                 JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(
                         project,
-                        SCAN_AND_RESOLVE_CVES_PROMPT
+                        SCAN_AND_RESOLVE_CVES_PROMPT,
+                        APPMOD_CVE_AGENT_NAME
                 );
             } else {
                 JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(
                         project,
                         String.format(FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT,
-                                vulnerabilityInfo.getDependencyCoordinate())
+                                vulnerabilityInfo.getDependencyCoordinate()),
+                        APPMOD_CVE_AGENT_NAME
                 );
             }
             AppModUtils.logTelemetryEvent("openCopilotChatForCveFixDependencyInProblemsViewAction", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
@@ -82,19 +83,17 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
             final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
             final boolean isBuildFile = isBuildFile(file);
 
-            if (!isBuildFile || !isCVEIssue(description)) {
-                e.getPresentation().setEnabledAndVisible(false);
-                return;
-            }
-            final var issue = JavaUpgradeIssuesCache.getInstance(project).findCveIssue(vulnerabilityInfo.getGroupId() + ":" + vulnerabilityInfo.getArtifactId());
-            if (issue == null) {
+            if (!isBuildFile || !isCVEIssue(description) || vulnerabilityInfo == null) {
                 e.getPresentation().setEnabledAndVisible(false);
                 return;
             }
             e.getPresentation().setEnabledAndVisible(true);
             //  e.getPresentation().setText(SCAN_AND_RESOLVE_CVES_WITH_COPILOT_DISPLAY_NAME);
+            final String baseText = getTemplatePresentation().getText();
             if (!AppModPluginInstaller.isAppModPluginInstalled()) {
-                e.getPresentation().setText(e.getPresentation().getText() + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
+                e.getPresentation().setText(baseText + AppModPluginInstaller.TO_INSTALL_APP_MODE_PLUGIN);
+            } else {
+                e.getPresentation().setText(baseText);
             }
         } catch (Throwable ex) {
             // In case of any error, hide the action

@@ -10,6 +10,9 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.extensions.PluginId;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.dao.JavaUpgradeIssue;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaUpgradeIssuesCache;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaVersionNotificationService;
@@ -32,6 +35,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     
     // Additional delay after smart mode to ensure Maven/Gradle sync is complete
     private static final long POST_INDEXING_DELAY_SECONDS = 3;
+    private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
     
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
@@ -67,6 +71,12 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                 if (project.isDisposed()) {
                     return;
                 }
+
+                // Warm up Copilot's lazy chat-mode indexing once per project open. Copilot only scans
+                // custom agents from .github/agents/ when its chat-mode registry is explicitly refreshed
+                // (otherwise not until the chat panel is first opened), so we trigger that refresh now —
+                // before the user clicks a fix action — so the agent is resolvable on the very first click.
+                warmUpCopilotChatModes(project);
                 
                 // Refresh the cache (this populates JDK and dependency issues for use by inspections)
                 final JavaUpgradeIssuesCache cache = JavaUpgradeIssuesCache.getInstance(project);
@@ -99,6 +109,22 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
         } catch (Throwable e) {
             // Error performing Java version check
             log.error("Error performing Java upgrade check for project: {}", project.getName(), e);
+        }
+    }
+
+    private void warmUpCopilotChatModes(@Nonnull Project project) {
+        try {
+            final IdeaPluginDescriptor copilot = PluginManagerCore.getPlugin(PluginId.getId(COPILOT_PLUGIN_ID));
+            if (copilot == null || !copilot.isEnabled() || copilot.getPluginClassLoader() == null) {
+                return;
+            }
+            // Actively trigger Copilot to (re)scan custom agents so its chat-mode registry is populated
+            // before the first fix-action click. Merely reading the chatModes StateFlow does NOT populate
+            // it — only refreshChatModes() does — which is why a cold first click previously missed the agent.
+            JavaVersionNotificationService.triggerChatModesRefresh(project, copilot.getPluginClassLoader());
+        } catch (Throwable e) {
+            // Best effort only; the fix action still falls back to its own URI path.
+            log.warn("Failed to warm up Copilot Chat modes: {}", project.getName(), e);
         }
     }
 }
