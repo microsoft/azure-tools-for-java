@@ -10,6 +10,9 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration
 - Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup
 - Fix registry key conflict for Cosmos DB dbtools module
+- Fixed Copilot Modernization branding: install prompts now say "GitHub Copilot Modernization" instead of "App Modernization".
+- Fixed CVE fix actions not using the designated custom agent and restored the missing "Fix the vulnerable with GitHub Copilot" action in Problems view context menu.
+- Fixed "Install GitHub Copilot Modernization" suffix being repeatedly appended on menu hover.
 
 ## 3.97.6
 ### Added
