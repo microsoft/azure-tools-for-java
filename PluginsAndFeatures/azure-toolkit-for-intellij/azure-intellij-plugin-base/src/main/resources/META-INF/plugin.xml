@@ -24,6 +24,7 @@
           <li>Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration</li>
           <li>Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup</li>
           <li>Fix registry key conflict for Cosmos DB dbtools module</li>
+          <li>Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.</li>
         </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
