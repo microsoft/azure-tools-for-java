@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.97.7](#3977)
   - [3.97.6](#3976)
   - [3.97.5](#3975)
   - [3.97.4](#3974)
@@ -125,6 +126,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.97.7
+### Fixed
+- Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.
 
 ## 3.97.6
 ### Fixed

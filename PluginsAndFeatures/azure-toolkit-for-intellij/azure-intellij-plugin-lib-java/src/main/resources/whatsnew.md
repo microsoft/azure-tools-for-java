@@ -1,6 +1,10 @@
 <!-- Version: 3.88.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.97.7
+### Fixed
+- Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.
+
 ## 3.97.6
 ### Fixed
 - Fixed several UI freeze issues caused by non-cancellable read actions in Azure task manager, Azure artifact resolution, Maven report generation, and background JDK version checks.
