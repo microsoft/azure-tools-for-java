@@ -10,6 +10,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration
 - Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup
 - Fix registry key conflict for Cosmos DB dbtools module
+- Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.
 
 ## 3.97.6
 ### Added
