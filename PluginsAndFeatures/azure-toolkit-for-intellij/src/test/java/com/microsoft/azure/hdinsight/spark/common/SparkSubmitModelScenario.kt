@@ -40,15 +40,17 @@ class SparkSubmitModelScenario {
 
     @Given("^set SparkSubmitModel properties as following$")
     fun initSparkSubmitModel(properties: Map<String, String>) {
-        properties.forEach { key, value -> when (key) {
-            "cluster_name" -> submitModel.clusterName = value
-            "is_local_artifact" -> submitModel.isLocalArtifact = value.toBoolean()
-            "local_artifact_path" -> submitModel.localArtifactPath = value
-            "classname" -> submitModel.mainClassName = value
-            "cmd_line_args" -> submitModel.commandLineArgs = value.split(" ")
-            "ref_jars" -> submitModel.referenceJars = value.split(";")
-            "ref_files" -> submitModel.referenceFiles = value.split(";")
-        } }
+        properties.forEach { key, value ->
+            when (key) {
+                "cluster_name" -> submitModel.clusterName = value
+                "is_local_artifact" -> submitModel.isLocalArtifact = value.toBoolean()
+                "local_artifact_path" -> submitModel.localArtifactPath = value
+                "classname" -> submitModel.mainClassName = value
+                "cmd_line_args" -> submitModel.commandLineArgs = value.split(" ")
+                "ref_jars" -> submitModel.referenceJars = value.split(";")
+                "ref_files" -> submitModel.referenceFiles = value.split(";")
+            }
+        }
     }
 
     @Then("^checking XML serialized should to be '(.*)'$")
@@ -57,7 +59,6 @@ class SparkSubmitModelScenario {
         val actual = XMLOutputter().outputString(element)
 
         assertEquals(expect, actual)
-
     }
 
     @Given("^the SparkSubmitModel XML input '(.*)' to deserialize$")
@@ -69,14 +70,16 @@ class SparkSubmitModelScenario {
 
     @Then("^check SparkSubmitModel properties as following$")
     fun checkSparkSubmitMode(expect: Map<String, String>) {
-        expect.forEach { key, value -> when (key) {
-            "cluster_name" -> assertEquals(value, submitModel.clusterName)
-            "is_local_artifact" -> assertEquals(value.toBoolean(), submitModel.isLocalArtifact)
-            "local_artifact_path" -> assertEquals(value, submitModel.localArtifactPath)
-            "classname" -> assertEquals(value, submitModel.mainClassName)
-            "cmd_line_args" -> assertEquals(value, submitModel.commandLineArgs.joinToString(" "))
-            "ref_jars" -> assertEquals(value, submitModel.referenceJars.joinToString(";"))
-            "ref_files" -> assertEquals(value, submitModel.referenceFiles.joinToString(";"))
-        } }
+        expect.forEach { key, value ->
+            when (key) {
+                "cluster_name" -> assertEquals(value, submitModel.clusterName)
+                "is_local_artifact" -> assertEquals(value.toBoolean(), submitModel.isLocalArtifact)
+                "local_artifact_path" -> assertEquals(value, submitModel.localArtifactPath)
+                "classname" -> assertEquals(value, submitModel.mainClassName)
+                "cmd_line_args" -> assertEquals(value, submitModel.commandLineArgs.joinToString(" "))
+                "ref_jars" -> assertEquals(value, submitModel.referenceJars.joinToString(";"))
+                "ref_files" -> assertEquals(value, submitModel.referenceFiles.joinToString(";"))
+            }
+        }
     }
 }

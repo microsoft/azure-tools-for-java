@@ -1,12 +1,12 @@
 import io.freefair.gradle.plugins.aspectj.AjcAction
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
-import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
+import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.net.URL
 
 fun properties(key: String) = providers.gradleProperty(key)
+
 fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
@@ -60,7 +60,16 @@ allprojects {
 
     dependencies {
         intellijPlatform {
-            intellijIdeaUltimate(properties("platformVersion").get(), useInstaller = false)
+            intellijIdeaUltimate(properties("platformVersion").get()) {
+                useInstaller = false
+            }
+            // JBR 25 required to run IntelliJ 2026.1 (PathClassLoader is JBR-only)
+            jetbrainsRuntime()
+            // MavenId/MavenCoordinate classes moved from maven plugin to repository-search plugin in 261
+            bundledPlugin("org.jetbrains.idea.reposearch")
+            // Test framework classes moved to separate modules in 261
+            testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
+            testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Plugin.Java)
         }
 
         implementation(platform("com.microsoft.azure:azure-toolkit-libs:0.52.2"))
@@ -72,6 +81,8 @@ allprojects {
         annotationProcessor("org.projectlombok:lombok:1.18.32")
         implementation("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
         aspect("com.microsoft.azure:azure-toolkit-common-lib:0.52.2")
+        // junit was removed from IntelliJ platform bundled libs in 261
+        testImplementation("junit:junit:4.13.2")
     }
 
     configurations {
@@ -114,6 +125,17 @@ allprojects {
             duplicatesStrategy = DuplicatesStrategy.WARN
         }
 
+        // Gradle 9 requires explicit dependency declaration for shared sandbox outputs
+        withType<Test> {
+            dependsOn(rootProject.tasks.named("prepareTestSandbox"))
+            // Each subproject's test sandbox may be produced by other subproject tasks
+            rootProject.subprojects.forEach { sub ->
+                sub.tasks.matching { it.name == "prepareTestSandbox" }.configureEach {
+                    this@withType.dependsOn(this)
+                }
+            }
+        }
+
         sourceSets {
             main {
                 java.srcDirs("src/main/java")
@@ -125,6 +147,10 @@ allprojects {
                 java.srcDir("src/test/java")
                 kotlin.srcDirs("src/test/kotlin")
                 resources.srcDir("src/test/resources")
+                // Exclude legacy duplicate hdinsight test files from root module;
+                // they are properly maintained in azure-intellij-plugin-hdinsight-base
+                java.exclude("com/microsoft/azure/hdinsight/**")
+                kotlin.exclude("com/microsoft/azure/hdinsight/**")
             }
         }
     }
@@ -146,8 +172,14 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion").get())
+            // IC (Community) no longer published since 253; use IU (Ultimate) for verification
+            create(IntelliJPlatformType.IntellijIdeaUltimate, properties("platformVersion").get())
         }
+        // Suppress known structural warnings — plugin ID/name historically contain "intellij"
+        freeArgs = listOf(
+            "-mute", "TemplateWordInPluginId",
+            "-mute", "TemplateWordInPluginName"
+        )
     }
 }
 
@@ -214,6 +246,11 @@ dependencies {
     implementation("com.microsoft.azure:azure-toolkit-auth-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-appservice-lib")
+
+    // Test dependencies for root module tests (cucumber, assertj)
+    testImplementation("io.cucumber:cucumber-java:7.0.0")
+    testImplementation("io.cucumber:cucumber-junit:7.0.0")
+    testImplementation("org.assertj:assertj-core:3.19.0")
 }
 
 tasks {
@@ -256,7 +293,7 @@ tasks {
         if (!langServerDir.exists()) {
             logger.info("Downloading bicep language server ...")
             val zipFile = file("azure-intellij-plugin-bicep/downloaded.zip")
-            URL("https://aka.ms/java-toolkit-bicep-ls").openStream().use { input ->
+            URI("https://aka.ms/java-toolkit-bicep-ls").toURL().openStream().use { input ->
                 zipFile.outputStream().use { it.write(input.readBytes()) }
             }
             logger.info("Unzipping bicep language server ...")
