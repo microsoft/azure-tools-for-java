@@ -498,11 +498,20 @@ public class JavaVersionNotificationService {
                     return false;
                 }
 
+                // Prepare a fresh LOCAL session to avoid routing to non-Local providers (CLI/Cloud/Claude).
+                final String localSessionId = CopilotLocalSessionHelper.prepareLocalFallbackSession(project);
+
                 // Use Kotlin Function1 since the Copilot API is written in Kotlin
                 Function1<Object, Unit> queryBuilder = builder -> {
                     try {
                         builder.getClass().getMethod("withInput", String.class).invoke(builder, prompt);
-                        builder.getClass().getMethod("withNewSession").invoke(builder);
+                        // Use the pre-created LOCAL session when available (1.11+); otherwise withNewSession.
+                        if (localSessionId != null) {
+                            builder.getClass().getMethod("withExistingSession", String.class).invoke(builder, localSessionId);
+                        } else {
+                            builder.getClass().getMethod("withNewSession").invoke(builder);
+                        }
+                        //withAgentProviderLocal(builder, copilotClassLoader);
                         withModelCompatibility(builder, DEFAULT_MODEL_NAME);
                         Method withSessionIdReceiverMethod = findMethodByName(builder.getClass(), "withSessionIdReceiver");
                         if (withSessionIdReceiverMethod != null) {
@@ -798,6 +807,45 @@ public class JavaVersionNotificationService {
         Notifications.Bus.notify(guidanceNotification, project);
     }
     
+    /**
+     * Pins the query to the LOCAL agent provider via reflection.
+     * This ensures the Java Upgrade prompt runs on the local (CLS) agent which hosts the
+     * modernize-java-upgrade custom agent, instead of inheriting the home session's provider.
+     * Requires Copilot plugin version that includes QueryOptionBuilder.withAgentProvider().
+     * Silently no-ops on older versions.
+     *
+     * @param builder            the query option builder
+     * @param copilotClassLoader the Copilot plugin's classloader
+     */
+    private static void withAgentProviderLocal(@Nonnull Object builder, @Nonnull ClassLoader copilotClassLoader) {
+        try {
+            final Class<?> agentProviderClass = copilotClassLoader.loadClass("com.github.copilot.agent.agentProvider.AgentProvider");
+            Object localProvider = null;
+            for (Object enumConstant : agentProviderClass.getEnumConstants()) {
+                if ("LOCAL".equals(((Enum<?>) enumConstant).name())) {
+                    localProvider = enumConstant;
+                    break;
+                }
+            }
+            if (localProvider == null) {
+                log.info("withAgentProviderLocal: AgentProvider.LOCAL not found; skipping.");
+                return;
+            }
+            final Method withAgentProvider = findAccessibleMethod(builder.getClass(), "withAgentProvider", 1);
+            if (withAgentProvider != null) {
+                withAgentProvider.invoke(builder, localProvider);
+                log.info("withAgentProviderLocal: pinned query to AgentProvider.LOCAL");
+            } else {
+                log.info("withAgentProviderLocal: withAgentProvider() not exposed by this Copilot version; skipping.");
+            }
+        } catch (ClassNotFoundException ex) {
+            // Older Copilot without AgentProvider enum; silently skip.
+            log.info("withAgentProviderLocal: AgentProvider class not found; skipping.");
+        } catch (Exception ex) {
+            log.warn("withAgentProviderLocal failed: " + ex.getMessage());
+        }
+    }
+
     /**
      * Sets the model for the query builder using reflection for compatibility with older versions of GitHub Copilot.
      * Note: The API 'withModel' is supported starting from Copilot version '1.5.63'.
