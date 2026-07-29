@@ -32,7 +32,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import lombok.extern.slf4j.Slf4j;
@@ -498,20 +497,12 @@ public class JavaVersionNotificationService {
                     return false;
                 }
 
-                // Prepare a fresh LOCAL session to avoid routing to non-Local providers (CLI/Cloud/Claude).
-                final String localSessionId = CopilotLocalSessionHelper.prepareLocalFallbackSession(project);
-
                 // Use Kotlin Function1 since the Copilot API is written in Kotlin
                 Function1<Object, Unit> queryBuilder = builder -> {
                     try {
                         builder.getClass().getMethod("withInput", String.class).invoke(builder, prompt);
-                        // Use the pre-created LOCAL session when available (1.11+); otherwise withNewSession.
-                        if (localSessionId != null) {
-                            builder.getClass().getMethod("withExistingSession", String.class).invoke(builder, localSessionId);
-                        } else {
-                            builder.getClass().getMethod("withNewSession").invoke(builder);
-                        }
-                        //withAgentProviderLocal(builder, copilotClassLoader);
+                        builder.getClass().getMethod("withNewSession").invoke(builder);
+                        withLocalAgentProvider(builder, copilotClassLoader);
                         withModelCompatibility(builder, DEFAULT_MODEL_NAME);
                         Method withSessionIdReceiverMethod = findMethodByName(builder.getClass(), "withSessionIdReceiver");
                         if (withSessionIdReceiverMethod != null) {
@@ -817,32 +808,24 @@ public class JavaVersionNotificationService {
      * @param builder            the query option builder
      * @param copilotClassLoader the Copilot plugin's classloader
      */
-    private static void withAgentProviderLocal(@Nonnull Object builder, @Nonnull ClassLoader copilotClassLoader) {
+    private static void withLocalAgentProvider(@Nonnull Object builder, @Nonnull ClassLoader copilotClassLoader) {
         try {
-            final Class<?> agentProviderClass = copilotClassLoader.loadClass("com.github.copilot.agent.agentProvider.AgentProvider");
-            Object localProvider = null;
-            for (Object enumConstant : agentProviderClass.getEnumConstants()) {
-                if ("LOCAL".equals(((Enum<?>) enumConstant).name())) {
-                    localProvider = enumConstant;
-                    break;
-                }
-            }
-            if (localProvider == null) {
-                log.info("withAgentProviderLocal: AgentProvider.LOCAL not found; skipping.");
-                return;
-            }
+            final Class<?> typeClass = copilotClassLoader.loadClass("com.github.copilot.session.ChatTarget$Type");
+            final Object localProvider = typeClass.getField("LOCAL").get(null);
             final Method withAgentProvider = findAccessibleMethod(builder.getClass(), "withAgentProvider", 1);
             if (withAgentProvider != null) {
                 withAgentProvider.invoke(builder, localProvider);
-                log.info("withAgentProviderLocal: pinned query to AgentProvider.LOCAL");
+                log.info("withLocalAgentProvider: pinned query to ChatTarget.Type.LOCAL");
             } else {
-                log.info("withAgentProviderLocal: withAgentProvider() not exposed by this Copilot version; skipping.");
+                log.info("withLocalAgentProvider: withAgentProvider() not exposed by this Copilot version; skipping.");
             }
         } catch (ClassNotFoundException ex) {
-            // Older Copilot without AgentProvider enum; silently skip.
-            log.info("withAgentProviderLocal: AgentProvider class not found; skipping.");
+            // Older Copilot without ChatTarget.Type; silently skip.
+            log.info("withLocalAgentProvider: ChatTarget.Type class not found; skipping.");
+        } catch (NoSuchFieldException ex) {
+            log.info("withLocalAgentProvider: ChatTarget.Type.LOCAL field not found; skipping.");
         } catch (Exception ex) {
-            log.warn("withAgentProviderLocal failed: " + ex.getMessage());
+            log.warn("withLocalAgentProvider failed: " + ex.getMessage());
         }
     }
 
