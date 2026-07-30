@@ -32,7 +32,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import lombok.extern.slf4j.Slf4j;
@@ -503,6 +502,7 @@ public class JavaVersionNotificationService {
                     try {
                         builder.getClass().getMethod("withInput", String.class).invoke(builder, prompt);
                         builder.getClass().getMethod("withNewSession").invoke(builder);
+                        withLocalAgentProvider(builder, copilotClassLoader);
                         withModelCompatibility(builder, DEFAULT_MODEL_NAME);
                         Method withSessionIdReceiverMethod = findMethodByName(builder.getClass(), "withSessionIdReceiver");
                         if (withSessionIdReceiverMethod != null) {
@@ -798,6 +798,37 @@ public class JavaVersionNotificationService {
         Notifications.Bus.notify(guidanceNotification, project);
     }
     
+    /**
+     * Pins the query to the LOCAL agent provider via reflection.
+     * This ensures the Java Upgrade prompt runs on the local (CLS) agent which hosts the
+     * modernize-java-upgrade custom agent, instead of inheriting the home session's provider.
+     * Requires Copilot plugin version that includes QueryOptionBuilder.withAgentProvider().
+     * Silently no-ops on older versions.
+     *
+     * @param builder            the query option builder
+     * @param copilotClassLoader the Copilot plugin's classloader
+     */
+    private static void withLocalAgentProvider(@Nonnull Object builder, @Nonnull ClassLoader copilotClassLoader) {
+        try {
+            final Class<?> typeClass = copilotClassLoader.loadClass("com.github.copilot.session.ChatTarget$Type");
+            final Object localProvider = typeClass.getField("LOCAL").get(null);
+            final Method withAgentProvider = findAccessibleMethod(builder.getClass(), "withAgentProvider", 1);
+            if (withAgentProvider != null) {
+                withAgentProvider.invoke(builder, localProvider);
+                log.info("withLocalAgentProvider: pinned query to ChatTarget.Type.LOCAL");
+            } else {
+                log.info("withLocalAgentProvider: withAgentProvider() not exposed by this Copilot version; skipping.");
+            }
+        } catch (ClassNotFoundException ex) {
+            // Older Copilot without ChatTarget.Type; silently skip.
+            log.info("withLocalAgentProvider: ChatTarget.Type class not found; skipping.");
+        } catch (NoSuchFieldException ex) {
+            log.info("withLocalAgentProvider: ChatTarget.Type.LOCAL field not found; skipping.");
+        } catch (Exception ex) {
+            log.warn("withLocalAgentProvider failed: " + ex.getMessage());
+        }
+    }
+
     /**
      * Sets the model for the query builder using reflection for compatibility with older versions of GitHub Copilot.
      * Note: The API 'withModel' is supported starting from Copilot version '1.5.63'.
