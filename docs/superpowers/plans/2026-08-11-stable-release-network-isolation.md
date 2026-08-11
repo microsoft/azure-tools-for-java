@@ -691,9 +691,9 @@ Expected: one commit containing the Gradle init script.
 ### Task 3: Wire CFS into the Stable Release Pipeline
 
 **Files:**
-- Modify: `.azure-pipelines/sign-for-stable-release.yml:2-4`
-- Modify: `.azure-pipelines/sign-for-stable-release.yml:68-75`
-- Modify: `.azure-pipelines/sign-for-stable-release.yml:125-137`
+- Modify: `.azure-pipelines/sign-for-stable-release.yml` variables section (template import at line 5, after `Codeql.Enabled`)
+- Modify: `.azure-pipelines/sign-for-stable-release.yml` `extends.parameters` section (remove the network-isolation opt-out)
+- Modify: `.azure-pipelines/sign-for-stable-release.yml` Build Plugin block (lines 124-139)
 
 - [ ] **Step 1: Verify the pipeline is not isolated yet**
 
@@ -827,15 +827,15 @@ Expected:
 - `git status --short` is empty, confirming tracked/untracked source cleanliness.
 - `git status --short --ignored` is reported separately and may still list ignored
   build/cache outputs; those do not count as source changes.
-- The log includes these milestones in order: design `d116c373b`, plan
-  `afcae1c19`, Maven primary `849056f7f`, Gradle primary `fcc8d0cc9`, Gradle
-  reviewer cache fix `fc6f8293f`, pipeline primary `946b7378f`, Atlassian
-  reviewer fix `04c5fbedb`, verification-plan correction `75fc90433`,
-  verification-range correction `96300b929`, scoped local handoff `2464ba5ef`,
-  and exclusive handoff `73c9f421c3`.
-- Later documentation commits, including `98d5c48ea0` and the current docs
-  sync commit, may follow after those implementation milestones. Do not rely on
-  the total number of log entries.
+- The log includes these milestones in order: design `d116c373bf`, plan
+  `afcae1c195`, Maven primary `849056f7f0`, Gradle primary `fcc8d0cc9c`,
+  Gradle reviewer cache fix `fc6f8293f5`, pipeline primary `946b7378fa`,
+  Atlassian reviewer fix `04c5fbedb5`, verification-plan correction
+  `75fc904339`, verification-range correction `96300b929e`, docs correction
+  `98d5c48ea0`, scoped local handoff `2464ba5ef2`, exclusive handoff
+  `73c9f421c3`, and docs handoff document `38345b10cd`.
+- A later documentation correction commit follows these milestones; do not
+  rely on the total number of log entries.
 
 - [ ] **Step 2: Verify local Gradle configuration is unaffected**
 
