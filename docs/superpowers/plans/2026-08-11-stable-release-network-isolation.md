@@ -4,7 +4,7 @@
 
 **Goal:** Enable 1ES Network Isolation for the stable release pipeline and force ordinary Maven and Gradle package restores through the `vscjava` Central Feed Service.
 
-**Architecture:** Add pipeline-only Maven and Gradle policy files under `.azure-pipelines`. The Build Plugin step sets one pipeline-scoped Maven local repository under `$(Agent.TempDirectory)\azure-tools-maven-repository`, passes that path via `maven.repo.local` to both Maven and Gradle, and uses the Gradle init script to make the exact 28 Utils reactor coordinates exclusive to that local handoff. All ordinary packages still route through CFS, while the Atlassian Microba exception and purpose-specific vendor repositories remain narrowly scoped direct endpoints.
+**Architecture:** Add pipeline-only Maven and Gradle policy files under `.azure-pipelines`. The Build Plugin step sets one pipeline-scoped Maven local repository under `$(Agent.TempDirectory)\azure-tools-maven-repository`, passes that path via `maven.repo.local` to both Maven and Gradle, and uses the Gradle init script to make the current Utils reactor coordinates exclusive to that local handoff. All ordinary packages still route through CFS, while the Atlassian Microba exception and purpose-specific vendor repositories remain narrowly scoped direct endpoints.
 
 **Tech Stack:** Azure Pipelines YAML, Maven settings XML, Gradle 9.1 Groovy init scripts, PowerShell, 1ES Pipeline Templates
 
@@ -486,16 +486,22 @@ allowlist = re.findall(r"\['([^']+)', '([^']+)'\]", (root / '.azure-pipelines' /
 missing = sorted(set(reactor) - set(allowlist))
 extra = sorted(set(allowlist) - set(reactor))
 
-if len(reactor) != 28:
-    raise SystemExit(f'Expected 28 Utils reactor coordinates, found {len(reactor)}: {reactor}')
+required = {
+    ('com.microsoft.azuretools', 'utils'),
+    ('com.microsoft.azure', 'azure-toolkit-ide-libs'),
+    ('com.microsoft.hdinsight', 'azure-toolkit-ide-hdinsight-libs'),
+}
+
+if not required.issubset(set(reactor)):
+    raise SystemExit(f'Reactor probe missed required parent/aggregator coordinates: {sorted(required - set(reactor))}')
 if missing or extra:
     raise SystemExit(f'Allowlist drift detected. Missing={missing} Extra={extra}')
 
-print('PASS: Gradle allowlist exactly matches all 28 Utils reactor coordinates')
+print('PASS: Gradle allowlist matches the current Utils reactor coordinates, including the parent and aggregator POMs')
 '@ | python -
 ```
 
-Expected: `PASS: Gradle allowlist exactly matches all 28 Utils reactor coordinates`.
+Expected: `PASS: Gradle allowlist matches the current Utils reactor coordinates, including the parent and aggregator POMs`.
 
 - [ ] **Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback**
 
@@ -677,7 +683,150 @@ Write-Host 'PASS: Gradle keeps the scoped local handoff exclusive to allowlisted
 
 Expected: `PASS: Gradle keeps the scoped local handoff exclusive to allowlisted Utils modules`.
 
-- [ ] **Step 6: Commit the Gradle policy**
+- [ ] **Step 6: Run a focused Gradle 9.1 negative test for unreachable CFS**
+
+Run:
+
+```powershell
+$testRoot = Join-Path (Get-Location) '.scratch\cfs-init-unreachable-cfs'
+$projectDir = Join-Path $testRoot 'project'
+$scopedRepo = Join-Path $testRoot 'scoped-m2'
+$gradleUserHome = Join-Path $testRoot 'gradle-user-home'
+$sourceGradleUserHome = Join-Path $HOME '.gradle'
+$wrapperDistRoot = Join-Path $sourceGradleUserHome 'wrapper\dists\gradle-9.1.0-bin'
+Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path $projectDir, $scopedRepo, $gradleUserHome -Force | Out-Null
+
+function New-MavenStubArtifact {
+    param(
+        [string]$RepoRoot,
+        [string]$GroupId,
+        [string]$ArtifactId,
+        [string]$Version
+    )
+
+    $groupPath = $GroupId -replace '\.', '\\'
+    $artifactDir = Join-Path $RepoRoot "$groupPath\$ArtifactId\$Version"
+    New-Item -ItemType Directory -Path $artifactDir -Force | Out-Null
+    @"
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>$GroupId</groupId>
+  <artifactId>$ArtifactId</artifactId>
+  <version>$Version</version>
+</project>
+"@ | Set-Content -Path (Join-Path $artifactDir "$ArtifactId-$Version.pom")
+    [System.IO.File]::WriteAllBytes((Join-Path $artifactDir "$ArtifactId-$Version.jar"), [byte[]]@())
+}
+
+New-MavenStubArtifact $scopedRepo 'junit' 'junit' '4.13.2'
+
+Set-Content -Path (Join-Path $projectDir 'settings.gradle') -Value "rootProject.name = 'cfs-init-unreachable-cfs'"
+@'
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        name = 'pluginPortalMirror'
+        url = uri('https://plugins.gradle.org/m2')
+    }
+    maven {
+        name = 'sonatypeSnapshots'
+        url = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
+    }
+}
+
+configurations {
+    blockedLocalProbe
+}
+
+dependencies {
+    blockedLocalProbe 'junit:junit:4.13.2'
+}
+
+tasks.register('printRepositories') {
+    doLast {
+        repositories.each { repository ->
+            def location = repository.hasProperty('url') ? repository.url : repository.name
+            println("REPOSITORY=${repository.name}|${location}")
+        }
+    }
+}
+
+tasks.register('resolveBlockedLocal') {
+    doLast {
+        configurations.blockedLocalProbe.resolve().each { file ->
+            println("RESOLVED=${file}")
+        }
+    }
+}
+'@ | Set-Content -Path (Join-Path $projectDir 'build.gradle')
+
+$wrapperDist = Get-ChildItem $wrapperDistRoot -Directory -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+if ($null -eq $wrapperDist) {
+    throw "Expected the Gradle 9.1 wrapper distribution under $wrapperDistRoot. Run one of the earlier Gradle validation steps first so the wrapper is already cached."
+}
+New-Item -ItemType Directory -Path (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Force | Out-Null
+Copy-Item $wrapperDist.FullName -Destination (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Recurse -Force
+
+Push-Location 'PluginsAndFeatures\azure-toolkit-for-intellij'
+try {
+    $env:CFS_MAVEN_URL = 'https://127.0.0.1:1/repository'
+    $env:SYSTEM_ACCESSTOKEN = 'test-token'
+
+    $repoOutput = .\gradlew.bat -p $projectDir printRepositories `
+        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
+        --no-daemon --no-configuration-cache `
+        --gradle-user-home $gradleUserHome `
+        "--Dmaven.repo.local=$scopedRepo" 2>&1
+    $repoExitCode = $LASTEXITCODE
+
+    $failureOutput = .\gradlew.bat -p $projectDir resolveBlockedLocal `
+        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
+        --no-daemon --no-configuration-cache `
+        --gradle-user-home $gradleUserHome `
+        "--Dmaven.repo.local=$scopedRepo" 2>&1
+    $failureExitCode = $LASTEXITCODE
+} finally {
+    Pop-Location
+    Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
+    Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
+    Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+if ($repoExitCode -ne 0) {
+    throw "Gradle 9.1 repository rewrite probe failed:`n$($repoOutput -join "`n")"
+}
+$repoText = $repoOutput -join "`n"
+$failureText = $failureOutput -join "`n"
+$combinedText = $repoText + "`n" + $failureText
+$localJunitJar = Join-Path $scopedRepo 'junit\junit\4.13.2\junit-4.13.2.jar'
+
+if (($repoText | Select-String -Pattern [regex]::Escape('https://127.0.0.1:1/repository') -AllMatches).Matches.Count -lt 3) {
+    throw "Expected Maven Central, Plugin Portal, and Sonatype repositories to be rewritten to the loopback CFS endpoint:`n$repoText"
+}
+if ($failureExitCode -eq 0) {
+    throw "Expected ordinary coordinate resolution to fail when CFS is unreachable, but Gradle 9.1 succeeded:`n$failureText"
+}
+if ($failureText -notmatch '127\.0\.0\.1:1/repository' -or
+    $failureText -notmatch 'junit:junit:4\.13\.2' -or
+    $failureText -notmatch 'Connection refused|ConnectException|actively refused|Failed to connect') {
+    throw "Expected the failing resolution to target the unreachable loopback CFS endpoint for junit:junit:4.13.2:`n$failureText"
+}
+if ($combinedText -match 'repo\.maven\.apache\.org|repo1\.maven\.org|plugins\.gradle\.org|plugins-artifacts\.gradle\.org|oss\.sonatype\.org|s01\.oss\.sonatype\.org') {
+    throw "A public package source URL leaked through the Gradle CFS policy:`n$combinedText"
+}
+if ($combinedText -match [regex]::Escape($localJunitJar) -or $combinedText -match 'RESOLVED=') {
+    throw "Ordinary coordinate unexpectedly resolved from the scoped local repository instead of failing closed at CFS:`n$combinedText"
+}
+Write-Host 'PASS: Gradle 9.1 fails closed against unreachable CFS and does not fall back to public or local ordinary coordinates'
+```
+
+Expected: `PASS: Gradle 9.1 fails closed against unreachable CFS and does not fall back to public or local ordinary coordinates`.
+
+- [ ] **Step 7: Commit the Gradle policy**
 
 Run:
 
@@ -691,9 +840,9 @@ Expected: one commit containing the Gradle init script.
 ### Task 3: Wire CFS into the Stable Release Pipeline
 
 **Files:**
-- Modify: `.azure-pipelines/sign-for-stable-release.yml` variables section (template import at line 5, after `Codeql.Enabled`)
+- Modify: `.azure-pipelines/sign-for-stable-release.yml` variables section (add the shared CFS template after `Codeql.Enabled`)
 - Modify: `.azure-pipelines/sign-for-stable-release.yml` `extends.parameters` section (remove the network-isolation opt-out)
-- Modify: `.azure-pipelines/sign-for-stable-release.yml` Build Plugin block (lines 124-139)
+- Modify: `.azure-pipelines/sign-for-stable-release.yml` `Build Plugin` step script and env block
 
 - [ ] **Step 1: Verify the pipeline is not isolated yet**
 
@@ -815,10 +964,33 @@ Expected: one commit containing only the stable release pipeline update.
 Run:
 
 ```powershell
-git --no-pager diff --check d116c373b^..HEAD
-git --no-pager status --short
-git --no-pager status --short --ignored
-git --no-pager log --oneline --decorate --reverse d116c373b^..HEAD
+$relevantFiles = @(
+    '.azure-pipelines/cfs-variables.yml',
+    '.azure-pipelines/cfs-settings.xml',
+    '.azure-pipelines/cfs-init.gradle',
+    '.azure-pipelines/sign-for-stable-release.yml'
+)
+
+git --no-pager diff --check
+$statusOutput = git --no-pager status --short
+$ignoredOutput = git --no-pager status --short --ignored
+$logOutput = git --no-pager log --oneline -- $relevantFiles
+
+$statusOutput
+$ignoredOutput
+$logOutput
+
+$logText = $logOutput -join "`n"
+foreach ($subject in @(
+    'build: add Maven CFS configuration',
+    'build: route Gradle packages through CFS',
+    'build: enable stable release network isolation'
+)) {
+    if ($logText -notmatch [regex]::Escape($subject)) {
+        throw "Missing expected commit subject in the relevant file history: $subject"
+    }
+}
+Write-Host 'PASS: final change set is clean and the relevant commit subjects are present'
 ```
 
 Expected:
@@ -827,15 +999,11 @@ Expected:
 - `git status --short` is empty, confirming tracked/untracked source cleanliness.
 - `git status --short --ignored` is reported separately and may still list ignored
   build/cache outputs; those do not count as source changes.
-- The log includes these milestones in order: design `d116c373bf`, plan
-  `afcae1c195`, Maven primary `849056f7f0`, Gradle primary `fcc8d0cc9c`,
-  Gradle reviewer cache fix `fc6f8293f5`, pipeline primary `946b7378fa`,
-  Atlassian reviewer fix `04c5fbedb5`, verification-plan correction
-  `75fc904339`, verification-range correction `96300b929e`, docs correction
-  `98d5c48ea0`, scoped local handoff `2464ba5ef2`, exclusive handoff
-  `73c9f421c3`, and docs handoff document `38345b10cd`.
-- A later documentation correction commit follows these milestones; do not
-  rely on the total number of log entries.
+- `git log --oneline -- <relevant files>` includes the required build subjects
+  for Maven CFS configuration, Gradle CFS routing, and stable release network
+  isolation. Do not rely on commit hashes, exact counts, or a fixed order.
+- The script prints `PASS: final change set is clean and the relevant commit
+  subjects are present`.
 
 - [ ] **Step 2: Verify local Gradle configuration is unaffected**
 
@@ -858,13 +1026,15 @@ does not require `CFS_MAVEN_URL` or `SYSTEM_ACCESSTOKEN`.
 
 - [ ] **Step 3: Re-run the policy tests**
 
-Repeat Task 2 Steps 3 through 5.
+Repeat Task 2's fail-fast validation, allowlist-sync check, scoped-local
+provenance/no-fallback coverage, and the focused Gradle 9.1 unreachable-CFS
+negative test.
 
 Expected:
 
 - Missing `maven.repo.local` and missing CFS credentials both fail fast with the
   explicit configuration errors.
-- The extracted allowlist exactly matches all 28 Utils reactor coordinates,
+- The extracted allowlist matches the current Utils reactor coordinates,
   including the parent/aggregator POMs.
 - Allowlisted Utils modules resolve from the scoped
   `$(Agent.TempDirectory)\azure-tools-maven-repository` handoff.
@@ -872,6 +1042,10 @@ Expected:
   when matching artifacts exist in the scoped local repository.
 - An allowlisted module that is absent locally fails rather than falling back to
   CFS.
+- In a minimal Gradle 9.1 project, an ordinary coordinate warmed into the
+  scoped Maven local repository still fails against the unreachable loopback CFS
+  endpoint, emits no Maven Central/Plugin Portal/Sonatype public URL, and never
+  falls back to the scoped local repository.
 - JetBrains vendor repositories and the Atlassian Microba exception remain
   scoped direct exceptions.
 
