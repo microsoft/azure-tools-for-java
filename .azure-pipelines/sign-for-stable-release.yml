@@ -2,6 +2,7 @@ name: $(Date:yyyyMMdd).$(Rev:r)
 variables:
   - name: Codeql.Enabled
     value: true
+  - template: /.azure-pipelines/cfs-variables.yml@self
   - name: IsStableBuild
     value: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release-')) }}
   - name: IsNightlyBuild
@@ -68,8 +69,6 @@ schedules:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
-    featureFlags:
-      disableNetworkIsolation: true
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     stages:
@@ -130,12 +129,14 @@ extends:
                   script: |
                     mvn -v
                     # ./gradlew buildUtils || exit -1
-                    mvn clean install -f ./Utils/pom.xml -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
+                    mvn -s "$(Build.SourcesDirectory)/.azure-pipelines/cfs-settings.xml" clean install -f ./Utils/pom.xml -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
                     mvn clean -f ./Utils/pom.xml
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
-                    ./gradlew clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
+                    ./gradlew -I "$(Build.SourcesDirectory)/.azure-pipelines/cfs-init.gradle" clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
                 env:
                   USE_STABLE_VERSION: $(IsStableBuild)
+                  CFS_MAVEN_URL: $(CFS_MAVEN_URL)
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               - task: PowerShell@2
                 displayName: Unpackage
                 inputs:
