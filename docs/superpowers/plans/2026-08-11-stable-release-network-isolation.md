@@ -497,22 +497,25 @@ Expected: one commit containing only the stable release pipeline update.
 - Verify: `.azure-pipelines/cfs-init.gradle`
 - Verify: `.azure-pipelines/sign-for-stable-release.yml`
 
-- [ ] **Step 1: Check formatting and the final change set**
+- [ ] **Step 1: Check formatting, source cleanliness, and the final change set**
 
 Run:
 
 ```powershell
-git --no-pager diff --check HEAD~3..HEAD
+git --no-pager diff --check d116c373d..HEAD
 git --no-pager status --short
-git --no-pager log -5 --oneline
+git --no-pager status --short --ignored
+git --no-pager log --oneline --decorate --reverse d116c373d..HEAD
 ```
 
 Expected:
 
 - `git diff --check` prints no errors.
-- `git status --short` is empty.
-- The log shows the design and plan commits followed by the three implementation
-  commits.
+- `git status --short` is empty, confirming tracked/untracked source cleanliness.
+- `git status --short --ignored` is reported separately and may still list ignored
+  build/cache outputs; those do not count as source changes.
+- The log shows the design commit, plan commit, three primary implementation
+  commits, and two reviewer-requested Gradle policy correction commits.
 
 - [ ] **Step 2: Verify local Gradle configuration is unaffected**
 
