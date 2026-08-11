@@ -1,0 +1,128 @@
+import org.gradle.api.GradleException
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+
+import java.util.Locale
+
+def cfsUrl = System.getenv('CFS_MAVEN_URL')
+def cfsToken = System.getenv('SYSTEM_ACCESSTOKEN')
+
+if (!cfsUrl?.trim() || !cfsToken?.trim()) {
+    throw new GradleException(
+        'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set when cfs-init.gradle is applied. ' +
+            'Failing instead of restoring packages from a public repository.')
+}
+
+def forbiddenHosts = [
+    'repo.maven.apache.org',
+    'repo1.maven.org',
+    'plugins.gradle.org',
+    'plugins-artifacts.gradle.org',
+    'oss.sonatype.org',
+    's01.oss.sonatype.org',
+    'maven-central.storage-download.googleapis.com',
+] as Set
+
+def isForbiddenRepository = { MavenArtifactRepository repository ->
+    def repositoryUrl = repository.url
+    def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
+    def path = (repositoryUrl?.path ?: '').toLowerCase(Locale.ROOT)
+
+    if (!host) {
+        return false
+    }
+
+    if (forbiddenHosts.contains(host)) {
+        return true
+    }
+
+    // Preserve JetBrains-specialized paths such as /intellij-dependencies.
+    if (host == 'cache-redirector.jetbrains.com') {
+        return path == '/repo1.maven.org' ||
+            path.startsWith('/repo1.maven.org/') ||
+            path == '/plugins.gradle.org' ||
+            path.startsWith('/plugins.gradle.org/')
+    }
+
+    return false
+}
+
+def routeToCfs = { MavenArtifactRepository repository ->
+    if (!isForbiddenRepository(repository)) {
+        return
+    }
+
+    repository.url = uri(cfsUrl)
+    repository.credentials {
+        username = 'AzureDevOps'
+        password = cfsToken
+    }
+}
+
+def watchRepositories
+watchRepositories = { repositories ->
+    repositories.all { repository ->
+        if (repository instanceof MavenArtifactRepository) {
+            routeToCfs(repository)
+        }
+    }
+}
+
+def addCfsRepository = { repositories ->
+    repositories.maven { repository ->
+        repository.name = 'vscjava'
+        repository.url = uri(cfsUrl)
+        repository.credentials {
+            username = 'AzureDevOps'
+            password = cfsToken
+        }
+    }
+}
+
+def describeRepository = { MavenArtifactRepository repository ->
+    "${repository.name ?: repository.displayName} -> ${repository.url}"
+}
+
+def assertNoForbiddenRepositories = { String scope, repositories ->
+    def offendingRepositories = repositories.findAll { repository ->
+        repository instanceof MavenArtifactRepository &&
+            isForbiddenRepository(repository as MavenArtifactRepository)
+    } as List<MavenArtifactRepository>
+
+    if (!offendingRepositories.isEmpty()) {
+        throw new GradleException(
+            "Forbidden public Maven repository remained in ${scope}: " +
+                offendingRepositories.collect(describeRepository).join(', '))
+    }
+}
+
+beforeSettings { settings ->
+    // Pipeline-only policy: route general-purpose public Maven traffic through authenticated CFS.
+    settings.pluginManagement.repositories { repositories ->
+        repositories.clear()
+        watchRepositories(repositories)
+        addCfsRepository(repositories)
+    }
+
+    // Preserve local and vendor-specific settings repositories while rewriting forbidden Maven sources.
+    watchRepositories(settings.dependencyResolutionManagement.repositories)
+}
+
+allprojects { project ->
+    // Keep watching project and buildscript repositories because plugins can add them later.
+    watchRepositories(project.repositories)
+    watchRepositories(project.buildscript.repositories)
+}
+
+settingsEvaluated { settings ->
+    assertNoForbiddenRepositories('plugin management repositories', settings.pluginManagement.repositories)
+    assertNoForbiddenRepositories(
+        'settings dependency resolution repositories',
+        settings.dependencyResolutionManagement.repositories)
+}
+
+projectsEvaluated {
+    gradle.rootProject.allprojects { project ->
+        assertNoForbiddenRepositories("project ${project.path} repositories", project.repositories)
+        assertNoForbiddenRepositories("project ${project.path} buildscript repositories", project.buildscript.repositories)
+    }
+}
