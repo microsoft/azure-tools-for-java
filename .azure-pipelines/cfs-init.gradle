@@ -20,6 +20,7 @@ if (!mavenLocalRepositoryPath?.trim()) {
             'This pipeline-only init script requires a scoped Maven local repository.')
 }
 
+// Keep this exact allowlist in sync with the Utils reactor outputs built into the scoped Maven local handoff.
 def utilsReactorModules = [
     ['com.microsoft.azuretools', 'utils'],
     ['com.microsoft.azure', 'azure-toolkit-ide-libs'],
@@ -82,6 +83,14 @@ def normalizeRepositoryUri = { repositoryUrl ->
 
 def scopedMavenLocalRepositoryUri = normalizeRepositoryUri(new File(mavenLocalRepositoryPath).canonicalFile.toURI())
 
+def includeUtilsReactorModules = { contentFilter ->
+    utilsReactorModules.each { group, artifact ->
+        contentFilter.includeModule(group, artifact)
+    }
+}
+
+def scopedMavenLocalExclusiveRegistered = Collections.newSetFromMap(new IdentityHashMap<>())
+
 def isAtlassianPublicRepository = { MavenArtifactRepository repository ->
     def repositoryUrl = repository.url
     def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
@@ -126,14 +135,23 @@ def restrictAtlassianRepository = { MavenArtifactRepository repository ->
     }
 }
 
-def restrictScopedMavenLocalRepository = { MavenArtifactRepository repository ->
+def restrictScopedMavenLocalRepository = { repositories, MavenArtifactRepository repository ->
     if (!isScopedMavenLocalRepository(repository)) {
         return
     }
 
     repository.content {
-        utilsReactorModules.each { group, artifact ->
-            includeModule group, artifact
+        includeUtilsReactorModules(delegate)
+    }
+
+    if (!scopedMavenLocalExclusiveRegistered.add(repositories)) {
+        return
+    }
+
+    repositories.exclusiveContent { spec ->
+        spec.forRepositories(repository)
+        spec.filter { contentFilter ->
+            includeUtilsReactorModules(contentFilter)
         }
     }
 }
@@ -154,7 +172,7 @@ def watchRepositories
 watchRepositories = { repositories ->
     repositories.all { repository ->
         if (repository instanceof MavenArtifactRepository) {
-            restrictScopedMavenLocalRepository(repository)
+            restrictScopedMavenLocalRepository(repositories, repository)
             restrictAtlassianRepository(repository)
             routeToCfs(repository)
         }
@@ -198,6 +216,7 @@ beforeSettings { settings ->
     }
 
     // Preserve local and vendor-specific settings repositories while rewriting forbidden Maven sources.
+    watchRepositories(settings.buildscript.repositories)
     watchRepositories(settings.dependencyResolutionManagement.repositories)
 }
 
@@ -209,6 +228,7 @@ allprojects { project ->
 
 settingsEvaluated { settings ->
     assertNoForbiddenRepositories('plugin management repositories', settings.pluginManagement.repositories)
+    assertNoForbiddenRepositories('settings buildscript repositories', settings.buildscript.repositories)
     assertNoForbiddenRepositories(
         'settings dependency resolution repositories',
         settings.dependencyResolutionManagement.repositories)
