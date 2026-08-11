@@ -422,7 +422,15 @@ $missingLocalArgs = @(
     '--no-configuration-cache',
     'help'
 )
-$missingCredentialsArgs = @(
+$missingUrlArgs = @(
+    '-p', $projectDir,
+    '--init-script', $initScript,
+    '--no-daemon',
+    '--no-configuration-cache',
+    "-Dmaven.repo.local=$dummyRepo",
+    'help'
+)
+$missingTokenArgs = @(
     '-p', $projectDir,
     '--init-script', $initScript,
     '--no-daemon',
@@ -440,8 +448,18 @@ try {
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
 
-    $missingCredentialsOutput = & $gradleWrapper @missingCredentialsArgs 2>&1
-    $missingCredentialsExitCode = $LASTEXITCODE
+    $env:CFS_MAVEN_URL = ''
+    $env:SYSTEM_ACCESSTOKEN = 'test-token'
+    $missingUrlOutput = & $gradleWrapper @missingUrlArgs 2>&1
+    $missingUrlExitCode = $LASTEXITCODE
+
+    Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
+    Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
+
+    $env:CFS_MAVEN_URL = 'https://example.invalid/vscjava/maven/v1'
+    $env:SYSTEM_ACCESSTOKEN = ''
+    $missingTokenOutput = & $gradleWrapper @missingTokenArgs 2>&1
+    $missingTokenExitCode = $LASTEXITCODE
 } finally {
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
@@ -451,13 +469,16 @@ try {
 if ($missingLocalExitCode -eq 0 -or ($missingLocalOutput -join "`n") -notmatch 'maven\.repo\.local must be explicitly set') {
     throw "Expected the scoped local handoff validation error:`n$($missingLocalOutput -join "`n")"
 }
-if ($missingCredentialsExitCode -eq 0 -or ($missingCredentialsOutput -join "`n") -notmatch 'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set') {
-    throw "Expected the CFS credential validation error:`n$($missingCredentialsOutput -join "`n")"
+if ($missingUrlExitCode -eq 0 -or ($missingUrlOutput -join "`n") -notmatch 'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set') {
+    throw "Expected the missing CFS_MAVEN_URL validation error:`n$($missingUrlOutput -join "`n")"
 }
-Write-Host 'PASS: Gradle rejects missing scoped local handoff and missing CFS credentials'
+if ($missingTokenExitCode -eq 0 -or ($missingTokenOutput -join "`n") -notmatch 'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set') {
+    throw "Expected the missing SYSTEM_ACCESSTOKEN validation error:`n$($missingTokenOutput -join "`n")"
+}
+Write-Host 'PASS: Gradle rejects missing scoped local handoff, missing CFS_MAVEN_URL, and missing SYSTEM_ACCESSTOKEN'
 ```
 
-Expected: `PASS: Gradle rejects missing scoped local handoff and missing CFS credentials`.
+Expected: `PASS: Gradle rejects missing scoped local handoff, missing CFS_MAVEN_URL, and missing SYSTEM_ACCESSTOKEN`.
 
 - [ ] **Step 4: Verify the exact local allowlist stays synchronized with the Utils reactor**
 
@@ -1260,40 +1281,35 @@ New-Item -ItemType Directory -Path $scratchRoot -Force | Out-Null
 
 function Get-PlanStepScript {
     param(
-        [string]$Heading
+        [string]$StepTitle
     )
 
-    $pattern = [regex]::Escape($Heading) +
-        "\r?\n\r?\nRun:\r?\n\r?\n" +
-        [regex]::Escape('```powershell') +
-        "\r?\n(.*?)\r?\n" +
-        [regex]::Escape('```')
-    $match = [regex]::Match(
+    $pattern = '(?ms)^- \[(?: |x|X)\] \*\*' + [regex]::Escape($StepTitle) + '\*\*\r?\n\r?\nRun:\r?\n\r?\n```powershell\r?\n(.*?)\r?\n```'
+    $matches = [regex]::Matches(
         $planText,
-        $pattern,
-        [System.Text.RegularExpressions.RegexOptions]::Singleline
+        $pattern
     )
-    if (-not $match.Success) {
-        throw "Could not extract the command block for: $Heading"
+    if ($matches.Count -ne 1) {
+        throw "Expected exactly one command block for: $StepTitle, but found $($matches.Count)"
     }
-    $match.Groups[1].Value
+    $matches[0].Groups[1].Value
 }
 
 $stepDefinitions = @(
     @{
-        Heading = '- [ ] **Step 3: Verify fail-fast validation for both CFS credentials and the scoped local handoff**'
+        StepTitle = 'Step 3: Verify fail-fast validation for both CFS credentials and the scoped local handoff'
         ScriptName = 'task2-step3.ps1'
     },
     @{
-        Heading = '- [ ] **Step 4: Verify the exact local allowlist stays synchronized with the Utils reactor**'
+        StepTitle = 'Step 4: Verify the exact local allowlist stays synchronized with the Utils reactor'
         ScriptName = 'task2-step4.ps1'
     },
     @{
-        Heading = '- [ ] **Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback via an authenticated loopback CFS fixture**'
+        StepTitle = 'Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback via an authenticated loopback CFS fixture'
         ScriptName = 'task2-step5.ps1'
     },
     @{
-        Heading = '- [ ] **Step 6: Run a focused Gradle 9.1 negative test for unreachable CFS**'
+        StepTitle = 'Step 6: Run a focused Gradle 9.1 negative test for unreachable CFS'
         ScriptName = 'task2-step6.ps1'
     }
 )
@@ -1301,10 +1317,10 @@ $stepDefinitions = @(
 try {
     foreach ($definition in $stepDefinitions) {
         $scriptPath = Join-Path $scratchRoot $definition.ScriptName
-        Get-PlanStepScript -Heading $definition.Heading | Set-Content -Path $scriptPath
+        Get-PlanStepScript -StepTitle $definition.StepTitle | Set-Content -Path $scriptPath
         & $shellHost -NoLogo -NoProfile -ExecutionPolicy Bypass -File $scriptPath
         if ($LASTEXITCODE -ne 0) {
-            throw "Re-verification failed for $($definition.Heading)"
+            throw "Re-verification failed for $($definition.StepTitle)"
         }
     }
 } finally {
@@ -1314,8 +1330,8 @@ try {
 
 Expected:
 
-- Missing `maven.repo.local` and missing CFS credentials both fail fast with the
-  explicit configuration errors.
+- Missing `maven.repo.local`, missing `CFS_MAVEN_URL`, and missing
+  `SYSTEM_ACCESSTOKEN` each fail fast with the explicit configuration errors.
 - The extracted allowlist matches the current Utils reactor coordinates,
   including the parent/aggregator POMs.
 - Allowlisted Utils modules resolve from the scoped
