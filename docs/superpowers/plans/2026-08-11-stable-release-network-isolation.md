@@ -515,9 +515,11 @@ Expected:
 - `git status --short --ignored` is reported separately and may still list ignored
   build/cache outputs; those do not count as source changes.
 - The log includes the named milestones in order: design `d116c373b`, plan
-  `afcae1c19`, primary implementation `849056f7f`, `fcc8d0cc9`, `946b7378f`,
-  reviewer corrections `fc6f8293f`, `04c5fbedb`, and verification-plan
-  correction `75fc90433`; later review/documentation commits may follow.
+  `afcae1c19`, Maven primary `849056f7f`, Gradle primary `fcc8d0cc9`, Gradle
+  reviewer cache fix `fc6f8293f`, pipeline primary `946b7378f`, Atlassian
+  reviewer fix `04c5fbedb`, verification-plan correction `75fc90433`, and
+  verification-range correction `96300b929`; later review/documentation commits
+  may follow.
 
 - [ ] **Step 2: Verify local Gradle configuration is unaffected**
 
