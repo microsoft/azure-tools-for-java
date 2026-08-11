@@ -1,0 +1,7 @@
+# Non-secret Central Feed Service configuration shared by the Maven and Gradle
+# dependency restores in sign-for-stable-release.yml. System.AccessToken is a
+# secret and must be mapped directly on the build step instead of being declared
+# here.
+variables:
+  - name: CFS_MAVEN_URL
+    value: https://pkgs.dev.azure.com/mseng/VSJava/_packaging/vscjava/maven/v1
