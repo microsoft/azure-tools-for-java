@@ -502,10 +502,10 @@ Expected: one commit containing only the stable release pipeline update.
 Run:
 
 ```powershell
-git --no-pager diff --check d116c373d..HEAD
+git --no-pager diff --check d116c373b^..HEAD
 git --no-pager status --short
 git --no-pager status --short --ignored
-git --no-pager log --oneline --decorate --reverse d116c373d..HEAD
+git --no-pager log --oneline --decorate --reverse d116c373b^..HEAD
 ```
 
 Expected:
@@ -514,8 +514,10 @@ Expected:
 - `git status --short` is empty, confirming tracked/untracked source cleanliness.
 - `git status --short --ignored` is reported separately and may still list ignored
   build/cache outputs; those do not count as source changes.
-- The log shows the design commit, plan commit, three primary implementation
-  commits, and two reviewer-requested Gradle policy correction commits.
+- The log includes the named milestones in order: design `d116c373b`, plan
+  `afcae1c19`, primary implementation `849056f7f`, `fcc8d0cc9`, `946b7378f`,
+  reviewer corrections `fc6f8293f`, `04c5fbedb`, and verification-plan
+  correction `75fc90433`; later review/documentation commits may follow.
 
 - [ ] **Step 2: Verify local Gradle configuration is unaffected**
 
