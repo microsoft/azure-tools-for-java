@@ -1,6 +1,7 @@
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 
+import java.io.File
 import java.util.Locale
 
 def cfsUrl = System.getenv('CFS_MAVEN_URL')
@@ -11,6 +12,44 @@ if (!cfsUrl?.trim() || !cfsToken?.trim()) {
         'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set when cfs-init.gradle is applied. ' +
             'Failing instead of restoring packages from a public repository.')
 }
+
+def mavenLocalRepositoryPath = System.getProperty('maven.repo.local')
+if (!mavenLocalRepositoryPath?.trim()) {
+    throw new GradleException(
+        'maven.repo.local must be explicitly set when cfs-init.gradle is applied. ' +
+            'This pipeline-only init script requires a scoped Maven local repository.')
+}
+
+def utilsReactorModules = [
+    ['com.microsoft.azuretools', 'utils'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-libs'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-applicationinsights-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-appservice-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-arm-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-cognitiveservices-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-common-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerapps-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerregistry-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerservice-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-cosmos-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-database-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-eventhubs-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-keyvault-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-redis-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-servicebus-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-springcloud-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-storage-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-vm-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-hdinsight-libs'],
+    ['com.microsoft.hdinsight', 'azure-explorer-common'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-cosmos-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-hdinsight-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-sqlserver-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-synapse-spark-lib'],
+    ['com.microsoft.hdinsight', 'azuretools-core'],
+    ['com.microsoft.hdinsight', 'hdinsight-node-common'],
+    ['com.microsoft.azuretools', 'spark-localrun-mock'],
+] as List<List<String>>
 
 def forbiddenHosts = [
     'repo.maven.apache.org',
@@ -27,11 +66,31 @@ def normalizeRepositoryPath = { repositoryUrl ->
     path ?: '/'
 }
 
+def normalizeRepositoryUri = { repositoryUrl ->
+    def normalizedUri = (repositoryUrl instanceof URI ? repositoryUrl : uri(repositoryUrl)).normalize()
+
+    if (!normalizedUri?.scheme || normalizedUri.scheme.equalsIgnoreCase('file')) {
+        return new File(normalizedUri).canonicalFile.toURI().normalize().toString().toLowerCase(Locale.ROOT).replaceAll('/+$', '')
+    }
+
+    def scheme = normalizedUri.scheme?.toLowerCase(Locale.ROOT) ?: ''
+    def host = normalizedUri.host?.toLowerCase(Locale.ROOT) ?: ''
+    def port = normalizedUri.port >= 0 ? ":${normalizedUri.port}" : ''
+    def path = normalizeRepositoryPath(normalizedUri)
+    "${scheme}://${host}${port}${path}"
+}
+
+def scopedMavenLocalRepositoryUri = normalizeRepositoryUri(new File(mavenLocalRepositoryPath).canonicalFile.toURI())
+
 def isAtlassianPublicRepository = { MavenArtifactRepository repository ->
     def repositoryUrl = repository.url
     def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
     def path = normalizeRepositoryPath(repositoryUrl)
     host == 'maven.atlassian.com' && path == '/repository/public'
+}
+
+def isScopedMavenLocalRepository = { MavenArtifactRepository repository ->
+    normalizeRepositoryUri(repository.url) == scopedMavenLocalRepositoryUri
 }
 
 def isForbiddenRepository = { MavenArtifactRepository repository ->
@@ -67,6 +126,18 @@ def restrictAtlassianRepository = { MavenArtifactRepository repository ->
     }
 }
 
+def restrictScopedMavenLocalRepository = { MavenArtifactRepository repository ->
+    if (!isScopedMavenLocalRepository(repository)) {
+        return
+    }
+
+    repository.content {
+        utilsReactorModules.each { group, artifact ->
+            includeModule group, artifact
+        }
+    }
+}
+
 def routeToCfs = { MavenArtifactRepository repository ->
     if (!isForbiddenRepository(repository)) {
         return
@@ -83,6 +154,7 @@ def watchRepositories
 watchRepositories = { repositories ->
     repositories.all { repository ->
         if (repository instanceof MavenArtifactRepository) {
+            restrictScopedMavenLocalRepository(repository)
             restrictAtlassianRepository(repository)
             routeToCfs(repository)
         }
