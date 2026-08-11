@@ -408,28 +408,41 @@ Run:
 $testRoot = Join-Path (Get-Location) '.scratch\cfs-init-validation'
 $projectDir = Join-Path $testRoot 'project'
 $dummyRepo = Join-Path $testRoot 'scoped-m2'
+$gradleWrapper = (Resolve-Path 'PluginsAndFeatures\azure-toolkit-for-intellij\gradlew.bat').Path
+$initScript = (Resolve-Path '.azure-pipelines\cfs-init.gradle').Path
 Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $projectDir, $dummyRepo -Force | Out-Null
 Set-Content -Path (Join-Path $projectDir 'settings.gradle') -Value "rootProject.name = 'cfs-init-validation'"
 Set-Content -Path (Join-Path $projectDir 'build.gradle') -Value ''
 
-Push-Location 'PluginsAndFeatures\azure-toolkit-for-intellij'
+$missingLocalArgs = @(
+    '-p', $projectDir,
+    '--init-script', $initScript,
+    '--no-daemon',
+    '--no-configuration-cache',
+    'help'
+)
+$missingCredentialsArgs = @(
+    '-p', $projectDir,
+    '--init-script', $initScript,
+    '--no-daemon',
+    '--no-configuration-cache',
+    "-Dmaven.repo.local=$dummyRepo",
+    'help'
+)
+
 try {
     $env:CFS_MAVEN_URL = 'https://example.invalid/vscjava/maven/v1'
     $env:SYSTEM_ACCESSTOKEN = 'test-token'
-    $missingLocalOutput = .\gradlew.bat -p $projectDir help `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache 2>&1
+    $missingLocalOutput = & $gradleWrapper @missingLocalArgs 2>&1
     $missingLocalExitCode = $LASTEXITCODE
 
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
-    $missingCredentialsOutput = .\gradlew.bat -p $projectDir help `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache "-Dmaven.repo.local=$dummyRepo" 2>&1
+
+    $missingCredentialsOutput = & $gradleWrapper @missingCredentialsArgs 2>&1
     $missingCredentialsExitCode = $LASTEXITCODE
 } finally {
-    Pop-Location
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
     Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
@@ -503,7 +516,7 @@ print('PASS: Gradle allowlist matches the current Utils reactor coordinates, inc
 
 Expected: `PASS: Gradle allowlist matches the current Utils reactor coordinates, including the parent and aggregator POMs`.
 
-- [ ] **Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback**
+- [ ] **Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback via an authenticated loopback CFS fixture**
 
 Run:
 
@@ -512,15 +525,26 @@ $testRoot = Join-Path (Get-Location) '.scratch\cfs-init-provenance'
 $projectDir = Join-Path $testRoot 'project'
 $scopedRepo = Join-Path $testRoot 'scoped-m2'
 $cfsRepo = Join-Path $testRoot 'cfs-m2'
+$gradleUserHome = Join-Path $testRoot 'gradle-user-home'
+$sourceGradleUserHome = Join-Path $HOME '.gradle'
+$wrapperDistRoot = Join-Path $sourceGradleUserHome 'wrapper\dists\gradle-9.1.0-bin'
+$gradleWrapper = (Resolve-Path 'PluginsAndFeatures\azure-toolkit-for-intellij\gradlew.bat').Path
+$initScript = (Resolve-Path '.azure-pipelines\cfs-init.gradle').Path
+$serverHost = if (Get-Command powershell -ErrorAction SilentlyContinue) {
+    (Get-Command powershell).Source
+} else {
+    (Get-Command pwsh -ErrorAction Stop).Source
+}
 Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path $projectDir, $scopedRepo, $cfsRepo -Force | Out-Null
+New-Item -ItemType Directory -Path $projectDir, $scopedRepo, $cfsRepo, $gradleUserHome -Force | Out-Null
 
 function New-MavenStubArtifact {
     param(
         [string]$RepoRoot,
         [string]$GroupId,
         [string]$ArtifactId,
-        [string]$Version
+        [string]$Version,
+        [string]$Marker
     )
 
     $groupPath = $GroupId -replace '\.', '\\'
@@ -532,18 +556,29 @@ function New-MavenStubArtifact {
   <groupId>$GroupId</groupId>
   <artifactId>$ArtifactId</artifactId>
   <version>$Version</version>
+  <packaging>jar</packaging>
 </project>
 "@ | Set-Content -Path (Join-Path $artifactDir "$ArtifactId-$Version.pom")
-    [System.IO.File]::WriteAllBytes((Join-Path $artifactDir "$ArtifactId-$Version.jar"), [byte[]]@())
+    Set-Content -Path (Join-Path $artifactDir "$ArtifactId-$Version.jar") -Value $Marker -NoNewline
 }
 
-New-MavenStubArtifact $scopedRepo 'com.microsoft.azure' 'azure-toolkit-ide-common-lib' '1.0.0-test'
-New-MavenStubArtifact $scopedRepo 'org.example' 'warmed-cache-only' '1.0.0-test'
-New-MavenStubArtifact $scopedRepo 'com.microsoft.azure' 'azure-toolkit-common-lib' '1.0.0-test'
+function Get-FreeTcpPort {
+    $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse('127.0.0.1'), 0)
+    $listener.Start()
+    try {
+        return ([System.Net.IPEndPoint]$listener.LocalEndpoint).Port
+    } finally {
+        $listener.Stop()
+    }
+}
 
-New-MavenStubArtifact $cfsRepo 'org.example' 'warmed-cache-only' '1.0.0-test'
-New-MavenStubArtifact $cfsRepo 'com.microsoft.azure' 'azure-toolkit-common-lib' '1.0.0-test'
-New-MavenStubArtifact $cfsRepo 'com.microsoft.azure' 'azure-toolkit-ide-appservice-lib' '1.0.0-test'
+New-MavenStubArtifact $scopedRepo 'com.microsoft.azure' 'azure-toolkit-ide-common-lib' '1.0.0-test' 'SCOPED-LOCAL-ONLY'
+New-MavenStubArtifact $scopedRepo 'org.example' 'warmed-cache-only' '1.0.0-test' 'SCOPED-LEAK-THIRD-PARTY'
+New-MavenStubArtifact $scopedRepo 'com.microsoft.azure' 'azure-toolkit-common-lib' '1.0.0-test' 'SCOPED-LEAK-MICROSOFT'
+
+New-MavenStubArtifact $cfsRepo 'org.example' 'warmed-cache-only' '1.0.0-test' 'CFS-THIRD-PARTY'
+New-MavenStubArtifact $cfsRepo 'com.microsoft.azure' 'azure-toolkit-common-lib' '1.0.0-test' 'CFS-MICROSOFT'
+New-MavenStubArtifact $cfsRepo 'com.microsoft.azure' 'azure-toolkit-ide-appservice-lib' '1.0.0-test' 'CFS-ALLOWLISTED-BUT-SHOULD-NOT-RESOLVE'
 
 Set-Content -Path (Join-Path $projectDir 'settings.gradle') -Value "rootProject.name = 'cfs-init-provenance'"
 @'
@@ -603,7 +638,7 @@ tasks.register('printProvenance') {
             thirdPartyProbe: configurations.thirdPartyProbe.singleFile,
             microsoftProbe: configurations.microsoftProbe.singleFile,
         ].each { name, file ->
-            println("PROVENANCE=${name}|${file}")
+            println("PROVENANCE=${name}|${file}|${file.getText('UTF-8')}")
         }
     }
 }
@@ -615,38 +650,212 @@ tasks.register('resolveMissingLocal') {
 }
 '@ | Set-Content -Path (Join-Path $projectDir 'build.gradle')
 
-$cfsRepoUri = 'file:///' + ((Resolve-Path $cfsRepo).Path -replace '\\', '/')
-if (-not $cfsRepoUri.EndsWith('/')) {
-    $cfsRepoUri += '/'
-}
-$env:CFS_MAVEN_URL = $cfsRepoUri
-$env:SYSTEM_ACCESSTOKEN = 'test-token'
+$serverScript = Join-Path $testRoot 'cfs-fixture-server.ps1'
+@'
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$RepoRoot,
+    [Parameter(Mandatory = $true)]
+    [int]$Port,
+    [Parameter(Mandatory = $true)]
+    [string]$RequestLog,
+    [Parameter(Mandatory = $true)]
+    [string]$ReadyFile
+)
 
-Push-Location 'PluginsAndFeatures\azure-toolkit-for-intellij'
+$rootPath = [System.IO.Path]::GetFullPath($RepoRoot)
+$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse('127.0.0.1'), $Port)
+$listener.Start()
+Set-Content -Path $ReadyFile -Value $PID
+
+function Send-HttpResponse {
+    param(
+        [System.Net.Sockets.TcpClient]$Client,
+        [int]$StatusCode,
+        [string]$StatusText,
+        [string]$ContentType,
+        [byte[]]$Body,
+        [hashtable]$Headers,
+        [switch]$SkipBody
+    )
+
+    if ($null -eq $Body) {
+        $Body = [byte[]]@()
+    }
+    if ($null -eq $Headers) {
+        $Headers = @{}
+    }
+
+    $headerLines = [System.Collections.Generic.List[string]]::new()
+    $headerLines.Add("HTTP/1.1 $StatusCode $StatusText")
+    $headerLines.Add("Content-Length: $($Body.Length)")
+    $headerLines.Add("Content-Type: $ContentType")
+    $headerLines.Add('Connection: close')
+    foreach ($entry in $Headers.GetEnumerator()) {
+        $headerLines.Add("$($entry.Key): $($entry.Value)")
+    }
+    $headerText = ($headerLines + '', '') -join "`r`n"
+    $headerBytes = [System.Text.Encoding]::ASCII.GetBytes($headerText)
+
+    $stream = $Client.GetStream()
+    $stream.Write($headerBytes, 0, $headerBytes.Length)
+    if (-not $SkipBody -and $Body.Length -gt 0) {
+        $stream.Write($Body, 0, $Body.Length)
+    }
+    $stream.Flush()
+}
+
 try {
-    $successOutput = .\gradlew.bat -p $projectDir printRepositories printProvenance `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache "-Dmaven.repo.local=$scopedRepo" 2>&1
+    while ($true) {
+        $client = $listener.AcceptTcpClient()
+        try {
+            $stream = $client.GetStream()
+            $reader = New-Object System.IO.StreamReader($stream, [System.Text.Encoding]::ASCII, $false, 1024, $true)
+            $requestLine = $reader.ReadLine()
+            if ([string]::IsNullOrWhiteSpace($requestLine)) {
+                continue
+            }
+
+            $headers = @{}
+            while ($true) {
+                $line = $reader.ReadLine()
+                if ($null -eq $line -or $line -eq '') {
+                    break
+                }
+                $parts = $line -split ':\s*', 2
+                if ($parts.Count -eq 2) {
+                    $headers[$parts[0]] = $parts[1]
+                }
+            }
+
+            $parts = $requestLine -split ' '
+            $method = $parts[0]
+            $rawPath = if ($parts.Count -ge 2) { $parts[1] } else { '/' }
+            $pathOnly = ($rawPath -split '\?', 2)[0]
+            $authorization = if ($headers.ContainsKey('Authorization')) { $headers['Authorization'] } else { '' }
+
+            $statusCode = 500
+            if ($pathOnly -eq '/__health') {
+                $statusCode = 200
+                $body = [System.Text.Encoding]::UTF8.GetBytes('ready')
+                Send-HttpResponse -Client $client -StatusCode 200 -StatusText 'OK' -ContentType 'text/plain' -Body $body -Headers @{}
+            } elseif (-not $authorization) {
+                $statusCode = 401
+                $body = [System.Text.Encoding]::UTF8.GetBytes('auth required')
+                Send-HttpResponse -Client $client -StatusCode 401 -StatusText 'Unauthorized' -ContentType 'text/plain' -Body $body -Headers @{ 'WWW-Authenticate' = 'Basic realm="cfs"' }
+            } else {
+                $relativePath = $pathOnly -replace '^/repository/?', ''
+                $relativePath = [System.Uri]::UnescapeDataString($relativePath).Replace('/', '\')
+                $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $rootPath $relativePath))
+                if (-not $candidatePath.StartsWith($rootPath, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path $candidatePath -PathType Leaf)) {
+                    $statusCode = 404
+                    $body = [System.Text.Encoding]::UTF8.GetBytes('not found')
+                    Send-HttpResponse -Client $client -StatusCode 404 -StatusText 'Not Found' -ContentType 'text/plain' -Body $body -Headers @{}
+                } else {
+                    $statusCode = 200
+                    $body = [System.IO.File]::ReadAllBytes($candidatePath)
+                    $contentType = if ($candidatePath.EndsWith('.pom')) { 'application/xml' } else { 'application/java-archive' }
+                    Send-HttpResponse -Client $client -StatusCode 200 -StatusText 'OK' -ContentType $contentType -Body $body -Headers @{} -SkipBody:($method -eq 'HEAD')
+                }
+            }
+
+            Add-Content -Path $RequestLog -Value "$method`t$pathOnly`t$statusCode`t$authorization"
+        } finally {
+            $client.Dispose()
+        }
+    }
+} finally {
+    $listener.Stop()
+}
+'@ | Set-Content -Path $serverScript
+
+$wrapperDist = Get-ChildItem $wrapperDistRoot -Directory -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+if ($null -eq $wrapperDist) {
+    throw "Expected the Gradle 9.1 wrapper distribution under $wrapperDistRoot. Run one of the earlier Gradle validation steps first so the wrapper is already cached."
+}
+New-Item -ItemType Directory -Path (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Force | Out-Null
+Copy-Item $wrapperDist.FullName -Destination (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Recurse -Force
+
+$port = Get-FreeTcpPort
+$cfsRepoUri = "http://127.0.0.1:$port/repository"
+$requestLog = Join-Path $testRoot 'requests.log'
+$readyFile = Join-Path $testRoot 'server.ready'
+$serverStdOut = Join-Path $testRoot 'server.stdout.log'
+$serverStdErr = Join-Path $testRoot 'server.stderr.log'
+$serverProcess = $null
+$requestLogText = ''
+$serverStdOutText = ''
+$serverStdErrText = ''
+
+$commonGradleArgs = @(
+    '-p', $projectDir,
+    '--init-script', $initScript,
+    '--no-daemon',
+    '--no-configuration-cache',
+    '--gradle-user-home', $gradleUserHome,
+    "-Dmaven.repo.local=$scopedRepo"
+)
+$successArgs = $commonGradleArgs + @('printRepositories', 'printProvenance')
+$failureArgs = $commonGradleArgs + @('resolveMissingLocal')
+
+try {
+    $serverProcess = Start-Process -FilePath $serverHost -ArgumentList @(
+        '-NoLogo',
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $serverScript,
+        '-RepoRoot', $cfsRepo,
+        '-Port', $port,
+        '-RequestLog', $requestLog,
+        '-ReadyFile', $readyFile
+    ) -PassThru -RedirectStandardOutput $serverStdOut -RedirectStandardError $serverStdErr
+
+    $deadline = (Get-Date).AddSeconds(15)
+    while (-not (Test-Path $readyFile)) {
+        if ($serverProcess.HasExited) {
+            $startupErr = if (Test-Path $serverStdErr) { Get-Content $serverStdErr -Raw } else { '' }
+            $startupOut = if (Test-Path $serverStdOut) { Get-Content $serverStdOut -Raw } else { '' }
+            throw "Loopback CFS fixture exited before becoming ready.`nSTDOUT:`n$startupOut`nSTDERR:`n$startupErr"
+        }
+        if ((Get-Date) -ge $deadline) {
+            throw 'Timed out waiting for the loopback CFS fixture to start.'
+        }
+        Start-Sleep -Milliseconds 100
+    }
+
+    $env:CFS_MAVEN_URL = $cfsRepoUri
+    $env:SYSTEM_ACCESSTOKEN = 'test-token'
+
+    $successOutput = & $gradleWrapper @successArgs 2>&1
     $successExitCode = $LASTEXITCODE
 
-    $failureOutput = .\gradlew.bat -p $projectDir resolveMissingLocal `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache "-Dmaven.repo.local=$scopedRepo" 2>&1
+    $failureOutput = & $gradleWrapper @failureArgs 2>&1
     $failureExitCode = $LASTEXITCODE
+
+    $requestLogText = if (Test-Path $requestLog) { Get-Content $requestLog -Raw } else { '' }
+    $serverStdOutText = if (Test-Path $serverStdOut) { Get-Content $serverStdOut -Raw } else { '' }
+    $serverStdErrText = if (Test-Path $serverStdErr) { Get-Content $serverStdErr -Raw } else { '' }
 } finally {
-    Pop-Location
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
+    if ($serverProcess) {
+        $serverProcess.Refresh()
+        if (-not $serverProcess.HasExited) {
+            $serverProcess.Kill()
+        }
+        $serverProcess.WaitForExit()
+    }
     Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 if ($successExitCode -ne 0) {
-    throw "Gradle provenance test failed:`n$($successOutput -join "`n")"
+    throw "Gradle provenance test failed:`n$($successOutput -join "`n")`nREQUEST LOG:`n$requestLogText`nSERVER STDOUT:`n$serverStdOutText`nSERVER STDERR:`n$serverStdErrText"
 }
 $successText = $successOutput -join "`n"
+$failureText = $failureOutput -join "`n"
 $localJar = Join-Path $scopedRepo 'com\microsoft\azure\azure-toolkit-ide-common-lib\1.0.0-test\azure-toolkit-ide-common-lib-1.0.0-test.jar'
-$thirdPartyCfsJar = Join-Path $cfsRepo 'org\example\warmed-cache-only\1.0.0-test\warmed-cache-only-1.0.0-test.jar'
-$msCfsJar = Join-Path $cfsRepo 'com\microsoft\azure\azure-toolkit-common-lib\1.0.0-test\azure-toolkit-common-lib-1.0.0-test.jar'
 
 if ($successText -notmatch [regex]::Escape("REPOSITORY=lateForbidden|$cfsRepoUri")) {
     throw "Late-added forbidden repository was not rewritten to CFS:`n$successText"
@@ -657,31 +866,37 @@ if ($successText -notmatch 'REPOSITORY=atlassianPublic\|https://maven\.atlassian
 if ($successText -notmatch 'REPOSITORY=intellijVendor\|https://cache-redirector\.jetbrains\.com/intellij-dependencies') {
     throw "JetBrains vendor repository was not preserved:`n$successText"
 }
-if ($successText -notmatch [regex]::Escape("PROVENANCE=localProbe|$localJar")) {
+if ($successText -notmatch [regex]::Escape("PROVENANCE=localProbe|$localJar|SCOPED-LOCAL-ONLY")) {
     throw "Allowlisted Utils module did not resolve from the scoped local handoff:`n$successText"
 }
-if ($successText -notmatch [regex]::Escape("PROVENANCE=thirdPartyProbe|$thirdPartyCfsJar")) {
-    throw "Third-party dependency did not resolve from CFS:`n$successText"
+if ($successText -notmatch '(?m)^PROVENANCE=thirdPartyProbe\|.*\|CFS-THIRD-PARTY$') {
+    throw "Third-party dependency did not resolve from the loopback CFS fixture:`n$successText"
 }
-if ($successText -notmatch [regex]::Escape("PROVENANCE=microsoftProbe|$msCfsJar")) {
-    throw "Non-reactor Microsoft dependency did not resolve from CFS:`n$successText"
+if ($successText -notmatch '(?m)^PROVENANCE=microsoftProbe\|.*\|CFS-MICROSOFT$') {
+    throw "Non-reactor Microsoft dependency did not resolve from the loopback CFS fixture:`n$successText"
 }
-if ($successText -match [regex]::Escape((Join-Path $scopedRepo 'org\example\warmed-cache-only'))) {
-    throw "Third-party warmed-cache content leaked through the scoped local handoff:`n$successText"
+if ($successText -match 'SCOPED-LEAK-THIRD-PARTY|SCOPED-LEAK-MICROSOFT') {
+    throw "Scoped local warmed-cache content leaked through the exclusive allowlist:`n$successText"
 }
-if ($successText -match [regex]::Escape((Join-Path $scopedRepo 'com\microsoft\azure\azure-toolkit-common-lib'))) {
-    throw "Non-reactor Microsoft warmed-cache content leaked through the scoped local handoff:`n$successText"
+if ($requestLogText -notmatch '(?m)^.*org/example/warmed-cache-only/1\.0\.0-test/.*\t200\tBasic .*$') {
+    throw "Expected authenticated loopback CFS requests for the third-party dependency:`n$requestLogText"
+}
+if ($requestLogText -notmatch '(?m)^.*com/microsoft/azure/azure-toolkit-common-lib/1\.0\.0-test/.*\t200\tBasic .*$') {
+    throw "Expected authenticated loopback CFS requests for the non-reactor Microsoft dependency:`n$requestLogText"
+}
+if ($requestLogText -match 'azure-toolkit-ide-common-lib/1\.0\.0-test|azure-toolkit-ide-appservice-lib/1\.0\.0-test') {
+    throw "Allowlisted Utils coordinates unexpectedly hit the loopback CFS fixture:`n$requestLogText"
 }
 if ($failureExitCode -eq 0) {
-    throw 'Expected an allowlisted module that is absent locally to fail'
+    throw "Expected an allowlisted module that is absent locally to fail instead of falling back to CFS:`n$failureText"
 }
-if (($failureOutput -join "`n") -notmatch 'Could not find com\.microsoft\.azure:azure-toolkit-ide-appservice-lib:1\.0\.0-test') {
-    throw "Gradle failed for an unexpected reason:`n$($failureOutput -join "`n")"
+if ($failureText -notmatch 'Could not find com\.microsoft\.azure:azure-toolkit-ide-appservice-lib:1\.0\.0-test') {
+    throw "Gradle failed for an unexpected reason:`n$failureText"
 }
-Write-Host 'PASS: Gradle keeps the scoped local handoff exclusive to allowlisted Utils modules'
+Write-Host 'PASS: Gradle keeps the scoped local handoff exclusive to allowlisted Utils modules and routes ordinary dependencies through authenticated loopback CFS'
 ```
 
-Expected: `PASS: Gradle keeps the scoped local handoff exclusive to allowlisted Utils modules`.
+Expected: `PASS: Gradle keeps the scoped local handoff exclusive to allowlisted Utils modules and routes ordinary dependencies through authenticated loopback CFS`.
 
 - [ ] **Step 6: Run a focused Gradle 9.1 negative test for unreachable CFS**
 
@@ -694,6 +909,8 @@ $scopedRepo = Join-Path $testRoot 'scoped-m2'
 $gradleUserHome = Join-Path $testRoot 'gradle-user-home'
 $sourceGradleUserHome = Join-Path $HOME '.gradle'
 $wrapperDistRoot = Join-Path $sourceGradleUserHome 'wrapper\dists\gradle-9.1.0-bin'
+$gradleWrapper = (Resolve-Path 'PluginsAndFeatures\azure-toolkit-for-intellij\gradlew.bat').Path
+$initScript = (Resolve-Path '.azure-pipelines\cfs-init.gradle').Path
 Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $projectDir, $scopedRepo, $gradleUserHome -Force | Out-Null
 
@@ -771,26 +988,27 @@ if ($null -eq $wrapperDist) {
 New-Item -ItemType Directory -Path (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Force | Out-Null
 Copy-Item $wrapperDist.FullName -Destination (Join-Path $gradleUserHome 'wrapper\dists\gradle-9.1.0-bin') -Recurse -Force
 
-Push-Location 'PluginsAndFeatures\azure-toolkit-for-intellij'
+$commonGradleArgs = @(
+    '-p', $projectDir,
+    '--init-script', $initScript,
+    '--no-daemon',
+    '--no-configuration-cache',
+    '--gradle-user-home', $gradleUserHome,
+    "-Dmaven.repo.local=$scopedRepo"
+)
+$repoArgs = $commonGradleArgs + @('printRepositories')
+$failureArgs = $commonGradleArgs + @('resolveBlockedLocal')
+
 try {
     $env:CFS_MAVEN_URL = 'https://127.0.0.1:1/repository'
     $env:SYSTEM_ACCESSTOKEN = 'test-token'
 
-    $repoOutput = .\gradlew.bat -p $projectDir printRepositories `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache `
-        --gradle-user-home $gradleUserHome `
-        "--Dmaven.repo.local=$scopedRepo" 2>&1
+    $repoOutput = & $gradleWrapper @repoArgs 2>&1
     $repoExitCode = $LASTEXITCODE
 
-    $failureOutput = .\gradlew.bat -p $projectDir resolveBlockedLocal `
-        --init-script '..\..\.azure-pipelines\cfs-init.gradle' `
-        --no-daemon --no-configuration-cache `
-        --gradle-user-home $gradleUserHome `
-        "--Dmaven.repo.local=$scopedRepo" 2>&1
+    $failureOutput = & $gradleWrapper @failureArgs 2>&1
     $failureExitCode = $LASTEXITCODE
 } finally {
-    Pop-Location
     Remove-Item Env:CFS_MAVEN_URL -ErrorAction SilentlyContinue
     Remove-Item Env:SYSTEM_ACCESSTOKEN -ErrorAction SilentlyContinue
     Remove-Item $testRoot -Recurse -Force -ErrorAction SilentlyContinue
@@ -804,7 +1022,7 @@ $failureText = $failureOutput -join "`n"
 $combinedText = $repoText + "`n" + $failureText
 $localJunitJar = Join-Path $scopedRepo 'junit\junit\4.13.2\junit-4.13.2.jar'
 
-if (($repoText | Select-String -Pattern [regex]::Escape('https://127.0.0.1:1/repository') -AllMatches).Matches.Count -lt 3) {
+if ([regex]::Matches($repoText, [regex]::Escape('https://127.0.0.1:1/repository')).Count -lt 3) {
     throw "Expected Maven Central, Plugin Portal, and Sonatype repositories to be rewritten to the loopback CFS endpoint:`n$repoText"
 }
 if ($failureExitCode -eq 0) {
@@ -1026,9 +1244,73 @@ does not require `CFS_MAVEN_URL` or `SYSTEM_ACCESSTOKEN`.
 
 - [ ] **Step 3: Re-run the policy tests**
 
-Repeat Task 2's fail-fast validation, allowlist-sync check, scoped-local
-provenance/no-fallback coverage, and the focused Gradle 9.1 unreachable-CFS
-negative test.
+Run:
+
+```powershell
+$planPath = (Resolve-Path 'docs\superpowers\plans\2026-08-11-stable-release-network-isolation.md').Path
+$planText = Get-Content $planPath -Raw
+$scratchRoot = Join-Path (Get-Location) '.scratch\reverify-network-isolation-plan'
+$shellHost = if (Get-Command powershell -ErrorAction SilentlyContinue) {
+    (Get-Command powershell).Source
+} else {
+    (Get-Command pwsh -ErrorAction Stop).Source
+}
+Remove-Item $scratchRoot -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path $scratchRoot -Force | Out-Null
+
+function Get-PlanStepScript {
+    param(
+        [string]$Heading
+    )
+
+    $pattern = [regex]::Escape($Heading) +
+        "\r?\n\r?\nRun:\r?\n\r?\n" +
+        [regex]::Escape('```powershell') +
+        "\r?\n(.*?)\r?\n" +
+        [regex]::Escape('```')
+    $match = [regex]::Match(
+        $planText,
+        $pattern,
+        [System.Text.RegularExpressions.RegexOptions]::Singleline
+    )
+    if (-not $match.Success) {
+        throw "Could not extract the command block for: $Heading"
+    }
+    $match.Groups[1].Value
+}
+
+$stepDefinitions = @(
+    @{
+        Heading = '- [ ] **Step 3: Verify fail-fast validation for both CFS credentials and the scoped local handoff**'
+        ScriptName = 'task2-step3.ps1'
+    },
+    @{
+        Heading = '- [ ] **Step 4: Verify the exact local allowlist stays synchronized with the Utils reactor**'
+        ScriptName = 'task2-step4.ps1'
+    },
+    @{
+        Heading = '- [ ] **Step 5: Verify normalized scoped-local matching, future handler coverage, exclusive provenance, and no fallback via an authenticated loopback CFS fixture**'
+        ScriptName = 'task2-step5.ps1'
+    },
+    @{
+        Heading = '- [ ] **Step 6: Run a focused Gradle 9.1 negative test for unreachable CFS**'
+        ScriptName = 'task2-step6.ps1'
+    }
+)
+
+try {
+    foreach ($definition in $stepDefinitions) {
+        $scriptPath = Join-Path $scratchRoot $definition.ScriptName
+        Get-PlanStepScript -Heading $definition.Heading | Set-Content -Path $scriptPath
+        & $shellHost -NoLogo -NoProfile -ExecutionPolicy Bypass -File $scriptPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "Re-verification failed for $($definition.Heading)"
+        }
+    }
+} finally {
+    Remove-Item $scratchRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+```
 
 Expected:
 
@@ -1040,6 +1322,9 @@ Expected:
   `$(Agent.TempDirectory)\azure-tools-maven-repository` handoff.
 - Warmed third-party and non-reactor Microsoft coordinates resolve from CFS even
   when matching artifacts exist in the scoped local repository.
+- The loopback CFS fixture records authenticated requests for third-party and
+  non-reactor Microsoft coordinates and records no requests for allowlisted Utils
+  coordinates.
 - An allowlisted module that is absent locally fails rather than falling back to
   CFS.
 - In a minimal Gradle 9.1 project, an ordinary coordinate warmed into the
