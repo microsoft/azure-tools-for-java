@@ -37,10 +37,8 @@ def isForbiddenRepository = { MavenArtifactRepository repository ->
 
     // Preserve JetBrains-specialized paths such as /intellij-dependencies.
     if (host == 'cache-redirector.jetbrains.com') {
-        return path == '/repo1.maven.org' ||
-            path.startsWith('/repo1.maven.org/') ||
-            path == '/plugins.gradle.org' ||
-            path.startsWith('/plugins.gradle.org/')
+        def upstreamHost = path.tokenize('/').find()
+        return upstreamHost != null && forbiddenHosts.contains(upstreamHost)
     }
 
     return false
