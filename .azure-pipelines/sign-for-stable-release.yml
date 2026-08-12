@@ -130,10 +130,10 @@ extends:
                   script: |
                     mvn -v
                     # ./gradlew buildUtils || exit -1
-                    mvn -Dmaven.repo.local="$env:CFS_MAVEN_LOCAL_REPOSITORY" -s "$(Build.SourcesDirectory)\.azure-pipelines\cfs-settings.xml" clean install -f "$(Build.SourcesDirectory)\Utils\pom.xml" -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
+                    mvn "-Dmaven.repo.local=$env:CFS_MAVEN_LOCAL_REPOSITORY" -s "$(Build.SourcesDirectory)\.azure-pipelines\cfs-settings.xml" clean install -f "$(Build.SourcesDirectory)\Utils\pom.xml" -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
                     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                     cd PluginsAndFeatures/azure-toolkit-for-intellij
-                    ./gradlew -Dmaven.repo.local="$env:CFS_MAVEN_LOCAL_REPOSITORY" -I "$(Build.SourcesDirectory)\.azure-pipelines\cfs-init.gradle" clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
+                    ./gradlew "-Dmaven.repo.local=$env:CFS_MAVEN_LOCAL_REPOSITORY" -I "$(Build.SourcesDirectory)\.azure-pipelines\cfs-init.gradle" clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
                 env:
                   USE_STABLE_VERSION: $(IsStableBuild)
                   CFS_MAVEN_LOCAL_REPOSITORY: $(Agent.TempDirectory)\azure-tools-maven-repository
