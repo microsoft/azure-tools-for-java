@@ -62,6 +62,11 @@ def forbiddenHosts = [
     'maven-central.storage-download.googleapis.com',
 ] as Set
 
+def atlassianHosts = [
+    'maven.atlassian.com',
+    'maven.artifacts.atlassian.com',
+] as Set
+
 def normalizeRepositoryPath = { repositoryUrl ->
     def path = (repositoryUrl?.path ?: '').toLowerCase(Locale.ROOT).replaceAll('/+$', '')
     path ?: '/'
@@ -91,6 +96,13 @@ def includeUtilsReactorModules = { contentFilter ->
 
 def scopedMavenLocalExclusiveRegistered = Collections.newSetFromMap(new IdentityHashMap<>())
 
+def isAtlassianPublicRepository = { MavenArtifactRepository repository ->
+    def repositoryUrl = repository.url
+    def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
+    def path = normalizeRepositoryPath(repositoryUrl)
+    host == 'maven.atlassian.com' && path == '/repository/public'
+}
+
 def isScopedMavenLocalRepository = { MavenArtifactRepository repository ->
     normalizeRepositoryUri(repository.url) == scopedMavenLocalRepositoryUri
 }
@@ -108,10 +120,14 @@ def isForbiddenRepository = { MavenArtifactRepository repository ->
         return true
     }
 
+    if (atlassianHosts.contains(host)) {
+        return true
+    }
+
     // Preserve JetBrains-specialized paths such as /intellij-dependencies.
     if (host == 'cache-redirector.jetbrains.com') {
         def upstreamHost = path.tokenize('/').find()
-        return upstreamHost != null && forbiddenHosts.contains(upstreamHost)
+        return upstreamHost != null && (forbiddenHosts.contains(upstreamHost) || atlassianHosts.contains(upstreamHost))
     }
 
     return false
@@ -138,7 +154,19 @@ def restrictScopedMavenLocalRepository = { repositories, MavenArtifactRepository
     }
 }
 
+def restrictAtlassianPublicRepository = { MavenArtifactRepository repository ->
+    if (!isAtlassianPublicRepository(repository)) {
+        return
+    }
+
+    repository.content {
+        includeModule 'com.michaelbaranov', 'microba'
+    }
+}
+
 def routeToCfs = { MavenArtifactRepository repository ->
+    restrictAtlassianPublicRepository(repository)
+
     if (!isForbiddenRepository(repository)) {
         return
     }
