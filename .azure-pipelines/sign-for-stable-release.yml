@@ -201,6 +201,10 @@ extends:
                 displayName: "Manifest Generator "
                 inputs:
                   BuildDropPath: $(build.artifactstagingdirectory)/plugin
+                env:
+                  CFS_MAVEN_URL: $(CFS_MAVEN_URL)
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                  MAVEN_ARGS: '-s "$(Build.SourcesDirectory)\.azure-pipelines\cfs-settings.xml" "-Dmaven.repo.local=$(Agent.TempDirectory)\azure-tools-maven-repository"'
       - stage: Release_Plugin
         condition: ${{ variables.DoProceedToRelease }}
         displayName: Release Plugin to Marketplace
