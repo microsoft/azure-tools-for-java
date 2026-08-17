@@ -91,13 +91,6 @@ def includeUtilsReactorModules = { contentFilter ->
 
 def scopedMavenLocalExclusiveRegistered = Collections.newSetFromMap(new IdentityHashMap<>())
 
-def isAtlassianPublicRepository = { MavenArtifactRepository repository ->
-    def repositoryUrl = repository.url
-    def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
-    def path = normalizeRepositoryPath(repositoryUrl)
-    host == 'maven.atlassian.com' && path == '/repository/public'
-}
-
 def isScopedMavenLocalRepository = { MavenArtifactRepository repository ->
     normalizeRepositoryUri(repository.url) == scopedMavenLocalRepositoryUri
 }
@@ -122,17 +115,6 @@ def isForbiddenRepository = { MavenArtifactRepository repository ->
     }
 
     return false
-}
-
-def restrictAtlassianRepository = { MavenArtifactRepository repository ->
-    if (!isAtlassianPublicRepository(repository)) {
-        return
-    }
-
-    // Microba is only available here; keep Atlassian only for that vendor group.
-    repository.content {
-        includeGroup 'com.michaelbaranov'
-    }
 }
 
 def restrictScopedMavenLocalRepository = { repositories, MavenArtifactRepository repository ->
@@ -173,7 +155,6 @@ watchRepositories = { repositories ->
     repositories.all { repository ->
         if (repository instanceof MavenArtifactRepository) {
             restrictScopedMavenLocalRepository(repositories, repository)
-            restrictAtlassianRepository(repository)
             routeToCfs(repository)
         }
     }
