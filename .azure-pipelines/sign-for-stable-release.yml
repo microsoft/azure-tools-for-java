@@ -120,9 +120,12 @@ extends:
                     ConnectedPMEServiceName: "40012d40-9ded-4f75-8476-d60758200346"
                   ${{ else }}:
                     signType: "test"
+                  # Keep the last known-good package until the MicroBuild certificate regression is fixed.
+                  version: "1.1.1330"
                   feedSource: "https://mseng.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json"
                 env:
                   MicroBuildOutputFolderOverride: "$(Agent.TempDirectory)"
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               - task: PowerShell@2
                 displayName: Build Plugin
                 inputs:
@@ -170,10 +173,15 @@ extends:
                       $counter++
                       Write-Host "[$counter/$($files.Count)] Signing: $($file.Name) with sign type: $(SIGNTYPE)"
                       dotnet "$env:MBSIGN_APPFOLDER/DDSignFiles.dll" -- /file:"$($file.FullName)" /certs:100010171 /signType:$(SIGNTYPE)
+                      if ($LASTEXITCODE -ne 0) {
+                        throw "Failed to sign '$($file.FullName)' (exit code $LASTEXITCODE)"
+                      }
                       Write-Host "  ✓ Signed successfully"
                     }
                     Write-Host "All JAR files signed successfully"
                   workingDirectory: 'artifacts/intellij/folder/azure-toolkit-for-intellij/lib'
+                env:
+                  SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               - task: CmdLine@2
                 displayName: Repackage
                 inputs:
