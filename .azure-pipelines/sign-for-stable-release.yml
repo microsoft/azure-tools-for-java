@@ -126,17 +126,63 @@ extends:
                 env:
                   MicroBuildOutputFolderOverride: "$(Agent.TempDirectory)"
                   SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              - task: UniversalPackages@0
+                displayName: Download internal Gradle distribution
+                inputs:
+                  command: download
+                  feedsToUse: internal
+                  vstsFeed: VSJava/vscjava
+                  vstsFeedPackage: gradle-distribution
+                  vstsPackageVersion: 9.0.0
+                  downloadDirectory: $(Agent.TempDirectory)\gradle-distribution
+              - task: PowerShell@2
+                displayName: Prepare internal Gradle distribution
+                inputs:
+                  targetType: inline
+                  script: |
+                    $ErrorActionPreference = "Stop"
+                    $gradleDownloadDirectory = "$(Agent.TempDirectory)\gradle-distribution"
+                    $gradleZip = Join-Path $gradleDownloadDirectory "gradle-9.0-bin.zip"
+                    $expectedSha256 = "8fad3d78296ca518113f3d29016617c7f9367dc005f932bd9d93bf45ba46072b"
+                    $expandedGradleDirectory = Join-Path $gradleDownloadDirectory "expanded"
+                    $extractedGradleDirectory = Join-Path $expandedGradleDirectory "gradle-9.0.0"
+                    $normalizedGradleDirectory = Join-Path $expandedGradleDirectory "gradle-9.0"
+                    $gradleBat = Join-Path $normalizedGradleDirectory "bin\gradle.bat"
+
+                    if (-not (Test-Path -Path $gradleZip -PathType Leaf)) {
+                      throw "Gradle distribution zip was not downloaded to '$gradleZip'."
+                    }
+
+                    $actualSha256 = (Get-FileHash -Path $gradleZip -Algorithm SHA256).Hash.ToLowerInvariant()
+                    if ($actualSha256 -ne $expectedSha256) {
+                      throw "Gradle distribution checksum mismatch. Expected $expectedSha256 but found $actualSha256 for '$gradleZip'."
+                    }
+
+                    if (Test-Path -Path $expandedGradleDirectory) {
+                      Remove-Item -Path $expandedGradleDirectory -Recurse -Force
+                    }
+
+                    Expand-Archive -Path $gradleZip -DestinationPath $expandedGradleDirectory -Force
+
+                    if (-not (Test-Path -Path $extractedGradleDirectory -PathType Container)) {
+                      throw "Expected extracted Gradle directory '$extractedGradleDirectory' was not found after extracting '$gradleZip'."
+                    }
+
+                    Move-Item -Path $extractedGradleDirectory -Destination $normalizedGradleDirectory
+
+                    if (-not (Test-Path -Path $gradleBat -PathType Leaf)) {
+                      throw "Gradle launcher '$gradleBat' was not found after extracting '$gradleZip'."
+                    }
               - task: PowerShell@2
                 displayName: Build Plugin
                 inputs:
                   targetType: inline
                   script: |
                     mvn -v
-                    # ./gradlew buildUtils || exit -1
                     mvn "-Dmaven.repo.local=$env:CFS_MAVEN_LOCAL_REPOSITORY" -s "$(Build.SourcesDirectory)\.azure-pipelines\cfs-settings.xml" clean install -f "$(Build.SourcesDirectory)\Utils\pom.xml" -T 1C "-Dcheckstyle.skip=true" "-Dmaven.test.skip=true" "-Dmaven.javadoc.skip=true"
                     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-                    cd PluginsAndFeatures/azure-toolkit-for-intellij
-                    ./gradlew "-Dmaven.repo.local=$env:CFS_MAVEN_LOCAL_REPOSITORY" -I "$(Build.SourcesDirectory)\.azure-pipelines\cfs-init.gradle" clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
+                    cd "$(Build.SourcesDirectory)\PluginsAndFeatures\azure-toolkit-for-intellij"
+                    & "$(Agent.TempDirectory)\gradle-distribution\expanded\gradle-9\bin\gradle.bat" "-Dmaven.repo.local=$env:CFS_MAVEN_LOCAL_REPOSITORY" -I "$(Build.SourcesDirectory)\.azure-pipelines\cfs-init.gradle" clean buildPlugin -s "-Papplicationinsights.key=$(INTELLIJ_KEY)" "-PneedPatchVersion=false" "-Psources=false" "-Porg.gradle.configureondemand=false" "-Porg.gradle.daemon=false" "-Porg.gradle.unsafe.configuration-cache=false" "-Porg.gradle.caching=false"
                 env:
                   USE_STABLE_VERSION: $(IsStableBuild)
                   CFS_MAVEN_LOCAL_REPOSITORY: $(Agent.TempDirectory)\azure-tools-maven-repository
