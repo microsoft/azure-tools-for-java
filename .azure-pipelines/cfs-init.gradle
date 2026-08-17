@@ -1,0 +1,242 @@
+import org.gradle.api.GradleException
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+
+import java.io.File
+import java.util.Locale
+
+def cfsUrl = System.getenv('CFS_MAVEN_URL')
+def cfsToken = System.getenv('SYSTEM_ACCESSTOKEN')
+
+if (!cfsUrl?.trim() || !cfsToken?.trim()) {
+    throw new GradleException(
+        'CFS_MAVEN_URL and SYSTEM_ACCESSTOKEN must both be set when cfs-init.gradle is applied. ' +
+            'Failing instead of restoring packages from a public repository.')
+}
+
+def mavenLocalRepositoryPath = System.getProperty('maven.repo.local')
+if (!mavenLocalRepositoryPath?.trim()) {
+    throw new GradleException(
+        'maven.repo.local must be explicitly set when cfs-init.gradle is applied. ' +
+            'This pipeline-only init script requires a scoped Maven local repository.')
+}
+
+// Keep this exact allowlist in sync with the Utils reactor outputs built into the scoped Maven local handoff.
+def utilsReactorModules = [
+    ['com.microsoft.azuretools', 'utils'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-libs'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-applicationinsights-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-appservice-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-arm-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-cognitiveservices-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-common-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerapps-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerregistry-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-containerservice-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-cosmos-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-database-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-eventhubs-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-keyvault-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-redis-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-servicebus-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-springcloud-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-storage-lib'],
+    ['com.microsoft.azure', 'azure-toolkit-ide-vm-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-hdinsight-libs'],
+    ['com.microsoft.hdinsight', 'azure-explorer-common'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-cosmos-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-hdinsight-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-sqlserver-spark-lib'],
+    ['com.microsoft.hdinsight', 'azure-toolkit-ide-synapse-spark-lib'],
+    ['com.microsoft.hdinsight', 'azuretools-core'],
+    ['com.microsoft.hdinsight', 'hdinsight-node-common'],
+    ['com.microsoft.azuretools', 'spark-localrun-mock'],
+] as List<List<String>>
+
+def forbiddenHosts = [
+    'repo.maven.apache.org',
+    'repo1.maven.org',
+    'plugins.gradle.org',
+    'plugins-artifacts.gradle.org',
+    'oss.sonatype.org',
+    's01.oss.sonatype.org',
+    'maven-central.storage-download.googleapis.com',
+] as Set
+
+def normalizeRepositoryPath = { repositoryUrl ->
+    def path = (repositoryUrl?.path ?: '').toLowerCase(Locale.ROOT).replaceAll('/+$', '')
+    path ?: '/'
+}
+
+def normalizeRepositoryUri = { repositoryUrl ->
+    def normalizedUri = (repositoryUrl instanceof URI ? repositoryUrl : uri(repositoryUrl)).normalize()
+
+    if (!normalizedUri?.scheme || normalizedUri.scheme.equalsIgnoreCase('file')) {
+        return new File(normalizedUri).canonicalFile.toURI().normalize().toString().toLowerCase(Locale.ROOT).replaceAll('/+$', '')
+    }
+
+    def scheme = normalizedUri.scheme?.toLowerCase(Locale.ROOT) ?: ''
+    def host = normalizedUri.host?.toLowerCase(Locale.ROOT) ?: ''
+    def port = normalizedUri.port >= 0 ? ":${normalizedUri.port}" : ''
+    def path = normalizeRepositoryPath(normalizedUri)
+    "${scheme}://${host}${port}${path}"
+}
+
+def scopedMavenLocalRepositoryUri = normalizeRepositoryUri(new File(mavenLocalRepositoryPath).canonicalFile.toURI())
+
+def includeUtilsReactorModules = { contentFilter ->
+    utilsReactorModules.each { group, artifact ->
+        contentFilter.includeModule(group, artifact)
+    }
+}
+
+def scopedMavenLocalExclusiveRegistered = Collections.newSetFromMap(new IdentityHashMap<>())
+
+def isAtlassianPublicRepository = { MavenArtifactRepository repository ->
+    def repositoryUrl = repository.url
+    def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
+    def path = normalizeRepositoryPath(repositoryUrl)
+    host == 'maven.atlassian.com' && path == '/repository/public'
+}
+
+def isScopedMavenLocalRepository = { MavenArtifactRepository repository ->
+    normalizeRepositoryUri(repository.url) == scopedMavenLocalRepositoryUri
+}
+
+def isForbiddenRepository = { MavenArtifactRepository repository ->
+    def repositoryUrl = repository.url
+    def host = repositoryUrl?.host?.toLowerCase(Locale.ROOT)
+    def path = normalizeRepositoryPath(repositoryUrl)
+
+    if (!host) {
+        return false
+    }
+
+    if (forbiddenHosts.contains(host)) {
+        return true
+    }
+
+    // Preserve JetBrains-specialized paths such as /intellij-dependencies.
+    if (host == 'cache-redirector.jetbrains.com') {
+        def upstreamHost = path.tokenize('/').find()
+        return upstreamHost != null && forbiddenHosts.contains(upstreamHost)
+    }
+
+    return false
+}
+
+def restrictAtlassianRepository = { MavenArtifactRepository repository ->
+    if (!isAtlassianPublicRepository(repository)) {
+        return
+    }
+
+    // Microba is only available here; keep Atlassian only for that vendor group.
+    repository.content {
+        includeGroup 'com.michaelbaranov'
+    }
+}
+
+def restrictScopedMavenLocalRepository = { repositories, MavenArtifactRepository repository ->
+    if (!isScopedMavenLocalRepository(repository)) {
+        return
+    }
+
+    repository.content {
+        includeUtilsReactorModules(delegate)
+    }
+
+    if (!scopedMavenLocalExclusiveRegistered.add(repositories)) {
+        return
+    }
+
+    repositories.exclusiveContent { spec ->
+        spec.forRepositories(repository)
+        spec.filter { contentFilter ->
+            includeUtilsReactorModules(contentFilter)
+        }
+    }
+}
+
+def routeToCfs = { MavenArtifactRepository repository ->
+    if (!isForbiddenRepository(repository)) {
+        return
+    }
+
+    repository.url = uri(cfsUrl)
+    repository.credentials {
+        username = 'AzureDevOps'
+        password = cfsToken
+    }
+}
+
+def watchRepositories
+watchRepositories = { repositories ->
+    repositories.all { repository ->
+        if (repository instanceof MavenArtifactRepository) {
+            restrictScopedMavenLocalRepository(repositories, repository)
+            restrictAtlassianRepository(repository)
+            routeToCfs(repository)
+        }
+    }
+}
+
+def addCfsRepository = { repositories ->
+    repositories.maven { repository ->
+        repository.name = 'vscjava'
+        repository.url = uri(cfsUrl)
+        repository.credentials {
+            username = 'AzureDevOps'
+            password = cfsToken
+        }
+    }
+}
+
+def describeRepository = { MavenArtifactRepository repository ->
+    "${repository.name ?: repository.displayName} -> ${repository.url}"
+}
+
+def assertNoForbiddenRepositories = { String scope, repositories ->
+    def offendingRepositories = repositories.findAll { repository ->
+        repository instanceof MavenArtifactRepository &&
+            isForbiddenRepository(repository as MavenArtifactRepository)
+    } as List<MavenArtifactRepository>
+
+    if (!offendingRepositories.isEmpty()) {
+        throw new GradleException(
+            "Forbidden public Maven repository remained in ${scope}: " +
+                offendingRepositories.collect(describeRepository).join(', '))
+    }
+}
+
+beforeSettings { settings ->
+    // Pipeline-only policy: route general-purpose public Maven traffic through authenticated CFS.
+    settings.pluginManagement.repositories { repositories ->
+        repositories.clear()
+        watchRepositories(repositories)
+        addCfsRepository(repositories)
+    }
+
+    // Preserve local and vendor-specific settings repositories while rewriting forbidden Maven sources.
+    watchRepositories(settings.buildscript.repositories)
+    watchRepositories(settings.dependencyResolutionManagement.repositories)
+}
+
+allprojects { project ->
+    // Keep watching project and buildscript repositories because plugins can add them later.
+    watchRepositories(project.repositories)
+    watchRepositories(project.buildscript.repositories)
+}
+
+settingsEvaluated { settings ->
+    assertNoForbiddenRepositories('plugin management repositories', settings.pluginManagement.repositories)
+    assertNoForbiddenRepositories('settings buildscript repositories', settings.buildscript.repositories)
+    assertNoForbiddenRepositories(
+        'settings dependency resolution repositories',
+        settings.dependencyResolutionManagement.repositories)
+}
+
+projectsEvaluated {
+    gradle.rootProject.allprojects { project ->
+        assertNoForbiddenRepositories("project ${project.path} repositories", project.repositories)
+        assertNoForbiddenRepositories("project ${project.path} buildscript repositories", project.buildscript.repositories)
+    }
+}

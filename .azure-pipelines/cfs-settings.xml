@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Pipeline-only Maven settings for 1ES Network Isolation. Maven Central is
+  mirrored through CFS, while the URL and credential are supplied by the build
+  step environment. Local developer settings are unaffected.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>vscjava</id>
+      <name>Central Feed Service</name>
+      <url>${env.CFS_MAVEN_URL}</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+  <servers>
+    <server>
+      <id>vscjava</id>
+      <username>AzureDevOps</username>
+      <password>${env.SYSTEM_ACCESSTOKEN}</password>
+    </server>
+  </servers>
+</settings>
