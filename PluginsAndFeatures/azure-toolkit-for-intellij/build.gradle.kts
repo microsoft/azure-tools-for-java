@@ -47,7 +47,6 @@ allprojects {
         maven("https://cache-redirector.jetbrains.com/repo1.maven.org/maven2")
         maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
         maven("https://maven.atlassian.com/repository/public")
-
         intellijPlatform {
             defaultRepositories()
         }
