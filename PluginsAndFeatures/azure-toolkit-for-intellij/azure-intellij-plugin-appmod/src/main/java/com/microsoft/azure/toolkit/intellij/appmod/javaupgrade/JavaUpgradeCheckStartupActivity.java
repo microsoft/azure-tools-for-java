@@ -20,6 +20,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
@@ -39,6 +40,16 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+        MavenProjectsManager.getInstance(project).addManagerListener(
+            new MavenProjectsManager.Listener() {
+                @Override
+                public void projectImportCompleted() {
+                    performJavaUpgradeCheck(project, false);
+                }
+            },
+            project
+        );
+
         // Wait for indexing to complete before running the check
         DumbService.getInstance(project).runWhenSmart(() -> {
             // Add a small delay after smart mode to ensure Maven/Gradle sync is done
@@ -48,7 +59,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                         if (project.isDisposed()) {
                             return;
                         }
-                        performJavaUpgradeCheck(project);
+                        performJavaUpgradeCheck(project, true);
                     },
                     error -> {
                         /* Error during Java upgrade check startup */
@@ -63,7 +74,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     /**
      * Performs the jdk version, framework version and CVE issue check and shows notifications for any issues found.
      */
-    private void performJavaUpgradeCheck(@Nonnull Project project) {
+    private void performJavaUpgradeCheck(@Nonnull Project project, boolean showNotification) {
         try {
             log.info("Starting Java upgrade issues detection for project: {}", project.getName());
             // Run the analysis in a background thread
@@ -99,7 +110,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                     DaemonCodeAnalyzer.getInstance(project).restart();
                     
                     // Show notifications if there are issues
-                    if (!allIssues.isEmpty()) {
+                    if (showNotification && !allIssues.isEmpty()) {
                         final JavaVersionNotificationService notificationService = JavaVersionNotificationService.getInstance();
                         notificationService.showNotifications(project, allIssues);
                     }
