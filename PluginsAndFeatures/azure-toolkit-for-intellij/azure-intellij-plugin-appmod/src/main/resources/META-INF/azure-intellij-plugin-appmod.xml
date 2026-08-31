@@ -45,6 +45,12 @@
                 description="Fix this vulnerable dependency using GitHub Copilot">
             <add-to-group group-id="ProblemsView.ToolWindow.TreePopup" anchor="first"/>
         </action>
+        <action id="AzureToolkit.JavaUpgradeInProblemsViewAction"
+                class="com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.action.UpgradeInProblemsViewAction"
+                text="Upgrade with Copilot"
+                description="Upgrade this Java runtime or framework using GitHub Copilot">
+            <add-to-group group-id="ProblemsView.ToolWindow.TreePopup" anchor="first"/>
+        </action>
         <action id="AzureToolkit.UpgradeInProblemsViewAction"
                 class="com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.action.CveFixInProblemsViewAction"
                 text="Scan and Resolve CVEs with Copilot"
