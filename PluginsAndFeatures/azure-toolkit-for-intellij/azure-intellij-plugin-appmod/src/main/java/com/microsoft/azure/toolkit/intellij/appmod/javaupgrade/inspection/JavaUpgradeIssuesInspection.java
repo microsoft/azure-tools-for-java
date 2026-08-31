@@ -22,8 +22,11 @@ import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.Ja
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Inspection that displays Java upgrade issues detected by JavaUpgradeDetectionService.
@@ -53,19 +56,19 @@ public class JavaUpgradeIssuesInspection extends LocalInspectionTool {
             return PsiElementVisitor.EMPTY_VISITOR;
         }
 
-        // Get cached issues (computed once at project startup)
-        final JavaUpgradeIssue jdkIssue = cache.getJdkIssue();
         final List<JavaUpgradeIssue> dependencyIssues = cache.getDependencyIssues();
+        final Properties mavenProperties = getMavenProperties(project, file);
 
         return new XmlElementVisitor() {
             @Override
             public void visitXmlTag(@NotNull XmlTag tag) {
                 super.visitXmlTag(tag);
 
-                // Check for JDK version tags
-                if (jdkIssue != null) {
-                    if (isJavaVersionProperty(tag) || isCompilerPluginVersionTag(tag)) {
-                        registerProblem(holder, tag, jdkIssue);
+                if (isJavaVersionProperty(tag) || isCompilerPluginVersionTag(tag)) {
+                    final JavaUpgradeIssue javaIssue =
+                        JavaUpgradeProblemLocator.createJavaVersionIssue(tag, mavenProperties);
+                    if (javaIssue != null) {
+                        registerProblem(holder, tag, javaIssue);
                     }
                 }
 
@@ -93,6 +96,16 @@ public class JavaUpgradeIssuesInspection extends LocalInspectionTool {
         };
     }
 
+    @NotNull
+    private Properties getMavenProperties(@NotNull Project project, @NotNull PsiFile file) {
+        if (file.getVirtualFile() == null) {
+            return new Properties();
+        }
+        final MavenProjectsManager manager = MavenProjectsManager.getInstanceIfCreated(project);
+        final MavenProject mavenProject =
+            manager == null ? null : manager.findProject(file.getVirtualFile());
+        return mavenProject == null ? new Properties() : mavenProject.getProperties();
+    }
     private void registerProblem(@NotNull ProblemsHolder holder, @NotNull XmlTag tag, @NotNull JavaUpgradeIssue issue) {
         log.info("Registering Java upgrade issue in inspection: {}", issue);
         holder.registerProblem(
