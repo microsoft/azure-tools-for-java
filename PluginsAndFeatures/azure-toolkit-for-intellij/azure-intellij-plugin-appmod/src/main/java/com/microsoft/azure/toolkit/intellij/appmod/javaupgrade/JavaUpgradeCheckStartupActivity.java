@@ -6,13 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.appmod.javaupgrade;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.extensions.PluginId;
+import com.intellij.util.Alarm;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.dao.JavaUpgradeIssue;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaUpgradeIssuesCache;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaVersionNotificationService;
@@ -36,15 +37,21 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     
     // Additional delay after smart mode to ensure Maven/Gradle sync is complete
     private static final long POST_INDEXING_DELAY_SECONDS = 3;
+    private static final int MAVEN_IMPORT_DEBOUNCE_MILLIS = 1000;
     private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
     
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+        final Alarm mavenImportAlarm = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, project);
         MavenProjectsManager.getInstance(project).addManagerListener(
             new MavenProjectsManager.Listener() {
                 @Override
                 public void projectImportCompleted() {
-                    performJavaUpgradeCheck(project, false);
+                    mavenImportAlarm.cancelAllRequests();
+                    mavenImportAlarm.addRequest(
+                        () -> performJavaUpgradeCheck(project, false),
+                        MAVEN_IMPORT_DEBOUNCE_MILLIS
+                    );
                 }
             },
             project

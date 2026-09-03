@@ -28,6 +28,7 @@ import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.Ja
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,7 +89,7 @@ public class JavaVersionNotificationService {
     }
     
     /**
-     * Shows a notification for the first outdated version issue.
+     * Shows a notification for the highest-priority upgrade issue.
      * Only shows if notifications are enabled for the Java upgrade feature.
      *
      * @param project The project context
@@ -111,9 +112,22 @@ public class JavaVersionNotificationService {
             return;
         }
         
-        // Only show notification for the first issue
-        final JavaUpgradeIssue firstIssue = issues.get(0);
-        showNotification(project, firstIssue);
+        showNotification(project, selectNotificationIssue(issues));
+    }
+
+    @Nonnull
+    static JavaUpgradeIssue selectNotificationIssue(@Nonnull List<JavaUpgradeIssue> issues) {
+        return issues.stream()
+            .min(Comparator.comparingInt(JavaVersionNotificationService::getNotificationPriority))
+            .orElseThrow();
+    }
+
+    private static int getNotificationPriority(@Nonnull JavaUpgradeIssue issue) {
+        return switch (issue.getUpgradeReason()) {
+            case JRE_TOO_OLD -> 0;
+            case CVE -> 1;
+            default -> 2;
+        };
     }
     
     /**

@@ -95,7 +95,7 @@ public class UpgradeInProblemsViewAction extends AnAction implements DumbAware {
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
+        return ActionUpdateThread.EDT;
     }
 
     @Nullable

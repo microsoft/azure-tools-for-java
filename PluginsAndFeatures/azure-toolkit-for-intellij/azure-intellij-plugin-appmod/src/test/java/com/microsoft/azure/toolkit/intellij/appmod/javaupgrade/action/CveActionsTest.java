@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.action;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -39,5 +40,11 @@ public class CveActionsTest {
             "Security vulnerability CVE-2020-36518 detected in " +
                 "maven:com.fasterxml.jackson.core:jackson-databind:2.9.4 Upgrade required"
         ));
+    }
+
+    @Test
+    public void updatesProblemsViewActionsOnEdt() {
+        assertEquals(ActionUpdateThread.EDT, new UpgradeInProblemsViewAction().getActionUpdateThread());
+        assertEquals(ActionUpdateThread.EDT, new CveFixDependencyInProblemsViewAction().getActionUpdateThread());
     }
 }
