@@ -192,7 +192,7 @@ public class JavaUpgradeIssuesDetectionService {
         )
     );
     
-    private static final String JDK_LEARN_MORE_URL = 
+    public static final String JDK_LEARN_MORE_URL =
         "https://learn.microsoft.com/azure/developer/java/fundamentals/java-support-on-azure";
     
     private static JavaUpgradeIssuesDetectionService instance;

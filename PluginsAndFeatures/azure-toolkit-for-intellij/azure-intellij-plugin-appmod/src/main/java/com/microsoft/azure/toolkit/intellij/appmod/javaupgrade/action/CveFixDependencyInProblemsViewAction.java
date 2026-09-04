@@ -109,7 +109,7 @@ public class CveFixDependencyInProblemsViewAction extends AnAction implements Du
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
+        return ActionUpdateThread.EDT;
     }
 
     /**

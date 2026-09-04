@@ -122,7 +122,7 @@ public final class JavaUpgradeIssuesCache implements Disposable {
      * Refreshes the cache by re-scanning the project.
      * This should be called at project startup and when the project model changes.
      */
-    public void refresh() {
+    public synchronized void refresh() {
         try {
             if (project.isDisposed()) {
                 return;
