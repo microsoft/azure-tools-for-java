@@ -14,23 +14,15 @@ import com.microsoft.azure.toolkit.ide.common.IActionsContributor;
 import com.microsoft.azure.toolkit.ide.common.action.ResourceCommonActionsContributor;
 import com.microsoft.azure.toolkit.ide.cosmos.CosmosActionsContributor;
 import com.microsoft.azure.toolkit.intellij.common.action.IntellijActionsContributor;
-import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
-import com.microsoft.azure.toolkit.intellij.connector.ConnectorDialog;
 import com.microsoft.azure.toolkit.intellij.cosmos.actions.CreateNewDocumentAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.actions.OpenCosmosDocumentAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.actions.UploadCosmosDocumentAction;
-import com.microsoft.azure.toolkit.intellij.cosmos.connection.CassandraCosmosDBAccountResourceDefinition;
-import com.microsoft.azure.toolkit.intellij.cosmos.connection.MongoCosmosDBAccountResourceDefinition;
-import com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosContainerAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDBAccountAction;
 import com.microsoft.azure.toolkit.intellij.cosmos.creation.CreateCosmosDatabaseAction;
 import com.microsoft.azure.toolkit.lib.common.action.Action;
 import com.microsoft.azure.toolkit.lib.common.action.AzureActionManager;
-import com.microsoft.azure.toolkit.lib.common.bundle.AzureString;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
-import com.microsoft.azure.toolkit.lib.common.messager.AzureMessager;
-import com.microsoft.azure.toolkit.lib.common.model.AzResource;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
@@ -49,12 +41,9 @@ import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.sql.SqlDatabase;
 import com.microsoft.azure.toolkit.lib.resource.ResourceGroup;
 
-import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 import static com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccountDraft.Config.getDefaultConfig;
 import static com.microsoft.azure.toolkit.lib.cosmos.model.DatabaseConfig.getDefaultDatabaseConfig;
@@ -84,24 +73,6 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
         final BiConsumer<ResourceGroup, AnActionEvent> groupCreateHandler = (r, e) ->
             CreateCosmosDBAccountAction.create(e.getProject(), getDefaultConfig(r));
         am.registerHandler(CosmosActionsContributor.GROUP_CREATE_COSMOS_SERVICE, (r, e) -> true, groupCreateHandler);
-
-        final Function<MongoCosmosDBAccount, MongoDatabase> mongoFunction = account -> account.mongoDatabases().list().stream().findFirst().orElse(null);
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MongoCosmosDBAccount && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((MongoCosmosDBAccount) r, mongoFunction, MongoCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof MongoDatabase && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((MongoDatabase) r, MongoCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
-
-        final Function<SqlCosmosDBAccount, SqlDatabase> sqlFunction = account -> account.sqlDatabases().list().stream().findFirst().orElse(null);
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof SqlCosmosDBAccount && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((SqlCosmosDBAccount) r, sqlFunction, SqlCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof SqlDatabase && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((SqlDatabase) r, SqlCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
-
-        final Function<CassandraCosmosDBAccount, CassandraKeyspace> cassandraFunction = account -> account.keySpaces().list().stream().findFirst().orElse(null);
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof CassandraCosmosDBAccount && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((CassandraCosmosDBAccount) r, cassandraFunction, CassandraCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
-        am.registerHandler(ResourceCommonActionsContributor.CONNECT, (r, e) -> r instanceof CassandraKeyspace && r.getFormalStatus().isConnected(), (AzResource r, AnActionEvent e) ->
-            openResourceConnector((CassandraKeyspace) r, CassandraCosmosDBAccountResourceDefinition.INSTANCE, e.getProject()));
 
         final BiFunction<MongoCosmosDBAccount, DatabaseConfig, ICosmosDatabaseDraft<?, ?>> mongoDraftSupplier = (account, config) ->
             (ICosmosDatabaseDraft<?, ?>) account.mongoDatabases().getOrDraft(config.getName(), account.getResourceGroupName());
@@ -139,23 +110,5 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
         final String NOT_SUPPORT_ERROR_ACTION = "\"Database tools and SQL\" plugin is only provided in IntelliJ Ultimate edition.";
         final Action<Object> tryUltimate = AzureActionManager.getInstance().getAction(IntellijActionsContributor.TRY_ULTIMATE).bind(account);
         throw new AzureToolkitRuntimeException(DATABASE_PLUGIN_NOT_INSTALLED, NOT_SUPPORT_ERROR_ACTION, tryUltimate);
-    }
-
-    private <T extends AzResource> void openResourceConnector(@Nonnull final T resource, @Nonnull final AzureServiceResource.Definition<T> definition, Project project) {
-        AzureTaskManager.getInstance().runLater(() -> {
-            final ConnectorDialog dialog = new ConnectorDialog(project);
-            dialog.setResource(new AzureServiceResource<>(resource, definition));
-            dialog.show();
-        });
-    }
-
-    private <T extends AzResource, R extends CosmosDBAccount> void openResourceConnector(@Nonnull final R account, @Nonnull Function<R, T> databaseFunction,
-                                                                                         @Nonnull final AzureServiceResource.Definition<T> definition, Project project) {
-        final T database = databaseFunction.apply(account);
-        if (Objects.isNull(database)) {
-            AzureMessager.getMessager().warning(AzureString.format("Can not connect to %s as there is no database in selected account", account.getName()));
-        } else {
-            openResourceConnector(database, definition, project);
-        }
     }
 }

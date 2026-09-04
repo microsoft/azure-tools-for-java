@@ -1,0 +1,13 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <completion.contributor id="azCosmosDBCompletion" language="JAVA" order="after azStorageStringLiteral" implementationClass="com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBFunctionAnnotationCompletionContributor"/>
+        <psi.referenceContributor language="JAVA" implementation="com.microsoft.azure.toolkit.intellij.cosmos.code.function.AzureCosmosDBResourceReferenceContributor"/>
+        <annotator language="JAVA" implementationClass="com.microsoft.azure.toolkit.intellij.cosmos.code.function.CosmosDBFunctionPathAnnotator"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.microsoft.tooling.msservices.intellij.azure">
+        <actions implementation="com.microsoft.azure.toolkit.intellij.cosmos.IntellijJavaCosmosActionsContributor"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.CassandraCosmosDBAccountResourceDefinition"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.MongoCosmosDBAccountResourceDefinition"/>
+        <connectorResourceType implementation="com.microsoft.azure.toolkit.intellij.cosmos.connection.SqlCosmosDBAccountResourceDefinition"/>
+    </extensions>
+</idea-plugin>

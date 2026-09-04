@@ -212,6 +212,7 @@ dependencies {
     implementation(project(":azure-intellij-plugin-arm"))
     implementation(project(":azure-intellij-plugin-applicationinsights"))
     implementation(project(":azure-intellij-plugin-cosmos"))
+    implementation(project(":azure-intellij-plugin-cosmos-java"))
     implementation(project(":azure-intellij-plugin-cognitiveservices"))
     implementation(project(":azure-intellij-plugin-monitor"))
     implementation(project(":azure-intellij-plugin-containerregistry"))
