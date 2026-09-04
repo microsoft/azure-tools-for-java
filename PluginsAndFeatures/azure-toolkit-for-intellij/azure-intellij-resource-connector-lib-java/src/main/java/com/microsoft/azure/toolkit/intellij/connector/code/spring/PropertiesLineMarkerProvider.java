@@ -11,8 +11,10 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.ide.DataManager;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -81,7 +83,7 @@ public class PropertiesLineMarkerProvider implements LineMarkerProvider {
         @AzureOperation(name = "user/connector.navigate_from_line_marker", source = "this.resource.getData()")
         public void navigate(MouseEvent mouseEvent, PsiElement psiElement) {
             final DataContext context = DataManager.getInstance().getDataContext(mouseEvent.getComponent());
-            final AnActionEvent event = AnActionEvent.createFromInputEvent(mouseEvent, ActionPlaces.EDITOR_GUTTER, null, context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), ActionPlaces.EDITOR_GUTTER, ActionUiKind.NONE, mouseEvent);
             this.resource.navigate(event);
         }
     }

@@ -8,8 +8,6 @@ package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureTextInput;
@@ -56,12 +54,12 @@ public class DockerImageCreationDialog extends AzureDialog<DockerImage>
         });
 
         final FileChooserDescriptor dockerDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-        txtDockerFile.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Docker File", "Select Docker File",
-                txtDockerFile, project, dockerDescriptor, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtDockerFile.addBrowseFolderListener(project, dockerDescriptor.withTitle("Select Docker File")
+            .withDescription("Select Docker File"));
 
         final FileChooserDescriptor baseDirectory = FileChooserDescriptorFactory.createSingleFolderDescriptor();
-        txtBaseDirectory.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Base Directory", "Select base directory for docker build",
-                txtDockerFile, project, baseDirectory, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtBaseDirectory.addBrowseFolderListener(project, baseDirectory.withTitle("Select Base Directory")
+            .withDescription("Select base directory for docker build"));
     }
 
     @Override

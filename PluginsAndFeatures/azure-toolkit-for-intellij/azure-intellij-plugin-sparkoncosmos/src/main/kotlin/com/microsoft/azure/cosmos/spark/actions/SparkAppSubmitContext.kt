@@ -28,8 +28,14 @@ import com.intellij.openapi.actionSystem.DataKey
 class SparkAppSubmitContext : DataContext {
     private val dataStore = mutableMapOf<String, Any>()
 
-    override fun getData(key: String): Any? {
-        return dataStore[key]
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun getData(dataId: String): Any? {
+        return dataStore[dataId]
+    }
+
+    override fun <T : Any> getData(key: DataKey<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        return dataStore[key.name] as? T
     }
 
     fun <T> putData(key: DataKey<T>, value: T): SparkAppSubmitContext = apply {

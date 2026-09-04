@@ -160,7 +160,7 @@ public class PluginUtil {
     }
 
     public static String getPluginRootDirectory() {
-        final IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
+        final IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.getId(CommonConst.PLUGIN_ID));
         return pluginDescriptor.getPath().getAbsolutePath();
     }
 

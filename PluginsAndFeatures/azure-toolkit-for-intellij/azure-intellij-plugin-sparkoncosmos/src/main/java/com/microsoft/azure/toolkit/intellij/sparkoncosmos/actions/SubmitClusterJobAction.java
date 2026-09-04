@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.sparkoncosmos.actions;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
@@ -42,11 +43,13 @@ public class SubmitClusterJobAction {
             Presentation actionPresentation = new Presentation("Submit Job");
             actionPresentation.setDescription("Submit specified Spark application into the remote cluster");
 
-            AnActionEvent event = AnActionEvent.createFromDataContext(
+            AnActionEvent event = AnActionEvent.createEvent(
+                    context,
+                    actionPresentation,
                     String.format("Azure Data Lake Spark pool %s:%s context menu",
                             cluster.getAccount().getName(), cluster.getName()),
-                    actionPresentation,
-                    context);
+                    ActionUiKind.NONE,
+                    null);
 
             new CosmosSparkSelectAndSubmitAction().actionPerformed(event);
         } catch (Exception ignore) {

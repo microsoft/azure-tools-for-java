@@ -65,6 +65,7 @@ import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.AccessibleExpandableTextField
 import com.microsoft.intellij.ui.ErrorLabel
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
@@ -219,12 +220,12 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         textField.name = "localArtifactTextFieldText"
-        button.name = "localArtifactTextFieldButton"
+        configureBrowseButton("localArtifactTextFieldButton")
         toolTipText = "Artifact from local disk"
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
 
-        button.addActionListener {
+        addActionListener {
             val chooserDescriptor = FileChooserDescriptor(false, false, true, false, true, false).apply {
                 title = "Select Local Artifact File"
             }

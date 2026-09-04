@@ -44,6 +44,7 @@ import com.microsoft.azure.toolkit.ide.common.store.ISecureStore
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.azure.toolkit.intellij.common.component.UIUtils
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import com.microsoft.intellij.ui.util.findFirst
 import com.microsoft.azure.hdinsight.sdk.storage.StorageClientSDKManager
 import com.microsoft.azure.hdinsight.sdk.storage.model.ClientStorageAccount
@@ -102,6 +103,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
     }
 
     private val storageContainerLabel = JLabel("Storage Container")
+    private var refreshInProgress = false
     private val storageContainerUI = ComboboxWithBrowseButton(JComboBox(ImmutableComboBoxModel.empty<String>())).apply {
         comboBox.name = "blobCardStorageContainerComboBoxCombo"
 
@@ -133,22 +135,25 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
             }
         }
 
-        button.name = "blobCardStorageContainerComboBoxButton"
-        button.toolTipText = "Refresh"
-        button.icon = AllIcons.Actions.Refresh
-        button.addActionListener { doRefresh() }
+        setButtonIcon(AllIcons.Actions.Refresh)
+        configureBrowseButton("blobCardStorageContainerComboBoxButton", "Refresh")
+        addActionListener { doRefresh() }
     }
 
-    @Synchronized
     private fun doRefresh() {
-        if (storageContainerUI.button.isEnabled) {
-            storageContainerUI.button.isEnabled = false
-            (viewModel as ViewModel).refreshContainers()
-                    .doOnEach { storageContainerUI.button.isEnabled = true }
-                    .subscribe(
-                            { },
-                            { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+        if (refreshInProgress) {
+            return
         }
+        refreshInProgress = true
+        storageContainerUI.setButtonEnabled(false)
+        (viewModel as ViewModel).refreshContainers()
+                .doOnTerminate {
+                    refreshInProgress = false
+                    storageContainerUI.setButtonEnabled(true)
+                }
+                .subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
     }
 
     override val view: JComponent by lazy {

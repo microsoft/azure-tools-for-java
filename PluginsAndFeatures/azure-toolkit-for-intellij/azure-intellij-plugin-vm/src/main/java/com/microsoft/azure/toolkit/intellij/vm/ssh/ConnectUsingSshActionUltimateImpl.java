@@ -23,7 +23,7 @@ import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.terminal.TerminalTabState;
-import org.jetbrains.plugins.terminal.TerminalView;
+import org.jetbrains.plugins.terminal.TerminalToolWindowManager;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
@@ -57,7 +57,7 @@ public class ConnectUsingSshActionUltimateImpl implements ConnectUsingSshAction 
     private static void createSshSession(@Nonnull Project project, SshConfig ssh, SshTerminalCachingRunner runner) {
         final TerminalTabState tabState = new TerminalTabState();
         tabState.myTabName = ssh.getName();
-        TerminalView.getInstance(project).createNewSession(runner, tabState);
+        TerminalToolWindowManager.getInstance(project).createNewSession(runner, tabState);
     }
 
     private Action<?> openSshConfigurationAction(final @NotNull Project project, RemoteCredentials sshCredential) {

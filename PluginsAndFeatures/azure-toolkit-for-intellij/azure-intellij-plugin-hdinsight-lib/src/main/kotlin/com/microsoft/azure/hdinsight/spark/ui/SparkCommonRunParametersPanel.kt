@@ -31,6 +31,7 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -41,7 +42,7 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
 
     private val mainClassTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         textField.name = "mainClassTextFieldText"
-        button.name = "mainClassTextFieldButton"
+        configureBrowseButton("mainClassTextFieldButton")
         toolTipText = mainClassToolTip
 
         accessibleContext.accessibleDescription = "$mainClassToolTip required"

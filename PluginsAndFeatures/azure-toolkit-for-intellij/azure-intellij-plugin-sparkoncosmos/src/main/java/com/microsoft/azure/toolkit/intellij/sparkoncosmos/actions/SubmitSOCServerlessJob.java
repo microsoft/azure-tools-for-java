@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.sparkoncosmos.actions;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
@@ -42,11 +43,13 @@ public class SubmitSOCServerlessJob {
             Presentation actionPresentation = new Presentation("Submit Cosmos Serverless Spark Job");
             actionPresentation.setDescription("Submit specified Spark application into the remote cluster");
 
-            AnActionEvent event = AnActionEvent.createFromDataContext(
+            AnActionEvent event = AnActionEvent.createEvent(
+                    context,
+                    actionPresentation,
                     String.format("Cosmos Serverless Cluster %s:%s context menu",
                             adlAccount.getName(), adlAccount.getName()),
-                    actionPresentation,
-                    context);
+                    ActionUiKind.NONE,
+                    null);
 
             new CosmosServerlessSparkSelectAndSubmitAction().actionPerformed(event);
         } catch (Exception ignore) {

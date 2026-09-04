@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class HDInsightProjectTypeStep extends ModuleWizardStep implements Disposable {
@@ -41,7 +42,9 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
     public HDInsightProjectTypeStep(HDInsightModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
-        this.scalaPluginInstalled = PluginManagerCore.getPlugin(PluginId.findId(SCALA_PLUGIN_ID)) != null;
+        this.scalaPluginInstalled = Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.getId(SCALA_PLUGIN_ID)))
+            .map(IdeaPluginDescriptor::isEnabled)
+            .orElse(false);
 
         this.templateList.addListSelectionListener(e -> onTemplateSelected());
         this.templateList.setTemplates(moduleBuilder.getTemplates(), false);

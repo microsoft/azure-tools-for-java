@@ -57,7 +57,7 @@ dependencies {
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.idea.maven")
-        plugin("org.intellij.scala:2024.2.5")
+        plugin("org.intellij.scala:2026.2.5")
     }
 }
 
