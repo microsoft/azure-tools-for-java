@@ -6,13 +6,14 @@
 package com.microsoft.azure.toolkit.intellij.appmod.javaupgrade;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.extensions.PluginId;
+import com.intellij.util.Alarm;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.dao.JavaUpgradeIssue;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaUpgradeIssuesCache;
 import com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.service.JavaVersionNotificationService;
@@ -20,6 +21,7 @@ import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
@@ -35,10 +37,26 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     
     // Additional delay after smart mode to ensure Maven/Gradle sync is complete
     private static final long POST_INDEXING_DELAY_SECONDS = 3;
+    private static final int MAVEN_IMPORT_DEBOUNCE_MILLIS = 1000;
     private static final String COPILOT_PLUGIN_ID = "com.github.copilot";
     
     @Override
     public Object execute(@Nonnull Project project, @Nonnull Continuation<? super Unit> continuation) {
+        final Alarm mavenImportAlarm = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, project);
+        MavenProjectsManager.getInstance(project).addManagerListener(
+            new MavenProjectsManager.Listener() {
+                @Override
+                public void projectImportCompleted() {
+                    mavenImportAlarm.cancelAllRequests();
+                    mavenImportAlarm.addRequest(
+                        () -> performJavaUpgradeCheck(project, false),
+                        MAVEN_IMPORT_DEBOUNCE_MILLIS
+                    );
+                }
+            },
+            project
+        );
+
         // Wait for indexing to complete before running the check
         DumbService.getInstance(project).runWhenSmart(() -> {
             // Add a small delay after smart mode to ensure Maven/Gradle sync is done
@@ -48,7 +66,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                         if (project.isDisposed()) {
                             return;
                         }
-                        performJavaUpgradeCheck(project);
+                        performJavaUpgradeCheck(project, true);
                     },
                     error -> {
                         /* Error during Java upgrade check startup */
@@ -63,7 +81,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
     /**
      * Performs the jdk version, framework version and CVE issue check and shows notifications for any issues found.
      */
-    private void performJavaUpgradeCheck(@Nonnull Project project) {
+    private void performJavaUpgradeCheck(@Nonnull Project project, boolean showNotification) {
         try {
             log.info("Starting Java upgrade issues detection for project: {}", project.getName());
             // Run the analysis in a background thread
@@ -99,7 +117,7 @@ public class JavaUpgradeCheckStartupActivity implements ProjectActivity, DumbAwa
                     DaemonCodeAnalyzer.getInstance(project).restart();
                     
                     // Show notifications if there are issues
-                    if (!allIssues.isEmpty()) {
+                    if (showNotification && !allIssues.isEmpty()) {
                         final JavaVersionNotificationService notificationService = JavaVersionNotificationService.getInstance();
                         notificationService.showNotifications(project, allIssues);
                     }

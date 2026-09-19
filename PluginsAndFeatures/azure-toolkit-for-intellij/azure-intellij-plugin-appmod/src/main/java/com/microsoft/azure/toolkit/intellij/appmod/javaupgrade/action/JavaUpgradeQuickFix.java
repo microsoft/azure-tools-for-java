@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
+import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.APPMOD_CVE_AGENT_NAME;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.APPMOD_UPGRADE_AGENT_NAME;
+import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT;
 import static com.microsoft.azure.toolkit.intellij.appmod.javaupgrade.utils.Constants.UPGRADE_JAVA_FRAMEWORK_PROMPT;
 
 /**
@@ -56,7 +58,10 @@ public class JavaUpgradeQuickFix implements LocalQuickFix {
     public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
         try {
             String prompt = buildPromptForIssue(issue);
-            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, APPMOD_UPGRADE_AGENT_NAME);
+            final String agentName = issue.getUpgradeReason() == JavaUpgradeIssue.UpgradeReason.CVE
+                ? APPMOD_CVE_AGENT_NAME
+                : APPMOD_UPGRADE_AGENT_NAME;
+            JavaVersionNotificationService.getInstance().openCopilotChatWithPrompt(project, prompt, agentName);
             AppModUtils.logTelemetryEvent("openCopilotChatForJavaUpgradeQuickFix", Map.of("appmodPluginInstalled", String.valueOf(AppModPluginInstaller.isAppModPluginInstalled())));
         } catch (Throwable ex) {
             log.error("Failed to apply Java upgrade quick fix", ex);
@@ -64,6 +69,12 @@ public class JavaUpgradeQuickFix implements LocalQuickFix {
     }
 
     private String buildPromptForIssue(@NotNull JavaUpgradeIssue issue) {
+        if (issue.getUpgradeReason() == JavaUpgradeIssue.UpgradeReason.CVE) {
+            final String coordinate = issue.getCurrentVersion() == null
+                ? issue.getPackageId()
+                : issue.getPackageId() + ":" + issue.getCurrentVersion();
+            return String.format(FIX_VULNERABLE_DEPENDENCY_WITH_COPILOT_PROMPT, coordinate);
+        }
         return String.format(
             UPGRADE_JAVA_FRAMEWORK_PROMPT,
             issue.getPackageDisplayName(), issue.getCurrentVersion(), issue.getSuggestedVersion()
