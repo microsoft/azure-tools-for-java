@@ -6,16 +6,12 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.cassandra.CassandraKeyspace;
-import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +19,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<CassandraKeyspace> implements SpringSupported<CassandraKeyspace> {
-    public static final CassandraCosmosDBAccountResourceDefinition INSTANCE = new CassandraCosmosDBAccountResourceDefinition();
+public abstract class BaseCassandraCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<CassandraKeyspace> {
 
-    public CassandraCosmosDBAccountResourceDefinition() {
+    public BaseCassandraCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Cassandra", "Azure Cosmos DB account (Cassandra)", AzureIcons.Cosmos.MODULE.getIconPath());
     }
 
@@ -72,19 +67,5 @@ public class CassandraCosmosDBAccountResourceDefinition extends AzureServiceReso
         env.put(String.format("%s_KEYSPACE", Connection.ENV_PREFIX), keyspace.getName());
         env.put(String.format("%s_REGION", Connection.ENV_PREFIX), keyspace.getRegion().getLabel());
         return env;
-    }
-
-    @Override
-    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
-        final List<Pair<String, String>> properties = new ArrayList<>();
-        properties.add(Pair.of("spring.cassandra.contact-points", String.format("${%s_CONTACT_POINT}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.cassandra.port", String.format("${%s_PORT}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.cassandra.username", String.format("${%s_USERNAME}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.cassandra.password", String.format("${%s_PASSWORD}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.cassandra.keyspace-name", String.format("${%s_KEYSPACE}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.cassandra.schema-action", "create_if_not_exists"));
-        properties.add(Pair.of("spring.cassandra.ssl.enabled", "true"));
-        properties.add(Pair.of("spring.cassandra.local-datacenter", String.format("${%s_REGION}", Connection.ENV_PREFIX)));
-        return properties;
     }
 }

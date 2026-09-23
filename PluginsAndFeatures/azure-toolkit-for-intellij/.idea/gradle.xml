@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerregistry" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-containerservice" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-cosmos" />
+            <option value="$PROJECT_DIR$/azure-intellij-plugin-cosmos-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-database-java" />
             <option value="$PROJECT_DIR$/azure-intellij-plugin-eventhubs" />

@@ -6,17 +6,13 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormJPanel;
 import com.microsoft.azure.toolkit.intellij.connector.AzureServiceResource;
 import com.microsoft.azure.toolkit.intellij.connector.Connection;
 import com.microsoft.azure.toolkit.intellij.connector.Resource;
-import com.microsoft.azure.toolkit.intellij.connector.spring.SpringSupported;
 import com.microsoft.azure.toolkit.lib.Azure;
 import com.microsoft.azure.toolkit.lib.common.model.Subscription;
 import com.microsoft.azure.toolkit.lib.cosmos.AzureCosmosService;
 import com.microsoft.azure.toolkit.lib.cosmos.CosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoCosmosDBAccount;
 import com.microsoft.azure.toolkit.lib.cosmos.mongo.MongoDatabase;
-import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +20,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<MongoDatabase> implements SpringSupported<MongoDatabase> {
-    public static final MongoCosmosDBAccountResourceDefinition INSTANCE = new MongoCosmosDBAccountResourceDefinition();
+public abstract class BaseMongoCosmosDBAccountResourceDefinition extends AzureServiceResource.Definition<MongoDatabase> {
 
-    public MongoCosmosDBAccountResourceDefinition() {
+    public BaseMongoCosmosDBAccountResourceDefinition() {
         super("Azure.Cosmos.Mongo", "Azure Cosmos DB account (Mongo)", AzureIcons.Cosmos.MODULE.getIconPath());
     }
 
@@ -69,13 +64,5 @@ public class MongoCosmosDBAccountResourceDefinition extends AzureServiceResource
         env.put(String.format("%s_DATABASE", Connection.ENV_PREFIX), database.getName());
         env.put(String.format("%s_CONNECTION_STRING", Connection.ENV_PREFIX), account.listConnectionStrings().getPrimaryConnectionString());
         return env;
-    }
-
-    @Override
-    public List<Pair<String, String>> getSpringProperties(@Nullable final String key) {
-        final List<Pair<String, String>> properties = new ArrayList<>();
-        properties.add(Pair.of("spring.data.mongodb.database", String.format("${%s_DATABASE}", Connection.ENV_PREFIX)));
-        properties.add(Pair.of("spring.data.mongodb.uri", String.format("${%s_CONNECTION_STRING}", Connection.ENV_PREFIX)));
-        return properties;
     }
 }

@@ -11,8 +11,6 @@ dependencies {
     // runtimeOnly project(path: ":azure-intellij-plugin-lib", configuration: "instrumentedJar")
     implementation(project(":azure-intellij-resource-connector-lib"))
     // runtimeOnly project(path: ":azure-intellij-resource-connector-lib", configuration: "instrumentedJar")
-    implementation(project(":azure-intellij-resource-connector-lib-java"))
-    // runtimeOnly project(path: ":azure-intellij-resource-connector-lib-java", configuration: "instrumentedJar")
     implementation("com.microsoft.azure:azure-toolkit-cosmos-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-common-lib")
     implementation("com.microsoft.azure:azure-toolkit-ide-cosmos-lib")
@@ -21,7 +19,6 @@ dependencies {
     intellijPlatform {
         // intellijIdeaUltimate(properties("platformVersion").get())
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugin("com.intellij.java")
         bundledPlugin("com.intellij.database")
     }
 }
