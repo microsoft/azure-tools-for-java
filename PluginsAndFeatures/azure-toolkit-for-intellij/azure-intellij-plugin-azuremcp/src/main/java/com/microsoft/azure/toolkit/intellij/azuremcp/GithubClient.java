@@ -62,7 +62,7 @@ public class GithubClient implements Closeable {
         while (attempt < MAX_RETRIES) {
             try (final CloseableHttpResponse response = httpClient.execute(request)) {
                 return handler.apply(response);
-            } catch (final IOException ex) {
+            } catch (final IOException | UncheckedIOException ex) {
                 attempt++;
                 log.warn("Attempt {} failed: {}", attempt, ex.getMessage());
                 if (attempt == MAX_RETRIES) {
