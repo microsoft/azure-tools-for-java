@@ -19,7 +19,7 @@ public class CommonConst {
     public static final String PLUGIN_ID = "com.microsoft.tooling.msservices.intellij.azure";
     public static final String PLUGIN_NAME = "azure-toolkit-for-intellij";
     public static final String PLUGIN_VERSION = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion();
-    public static final String PLUGIN_PATH = Objects.requireNonNull(PluginManagerCore.getPlugin(PluginId.findId(PLUGIN_ID))).getPluginPath().toString();
+    public static final String PLUGIN_PATH = Objects.requireNonNull(PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))).getPluginPath().toString();
     public static final String SPARK_APPLICATION_TYPE = "com.microsoft.azure.hdinsight.DefaultSparkApplicationType";
 
     public static final String LOADING_TEXT = "Loading...";

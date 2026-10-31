@@ -19,7 +19,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.wso2.lsp4intellij.IntellijLanguageClient;
 import org.wso2.lsp4intellij.client.languageserver.wrapper.LanguageServerWrapper;
 import org.wso2.lsp4intellij.utils.FileUtils;
@@ -30,10 +29,7 @@ public class LSPProjectManagerListener implements ProjectManagerListener {
 
     private static final Logger LOG = Logger.getInstance(LSPProjectManagerListener.class);
 
-    @Override
-    public void projectOpened(@Nullable final Project project) {
-        // Todo
-    }
+    // Removed deprecated projectOpened method - replaced with ProjectActivity if needed
 
     @Override
     public void projectClosing(@NotNull Project project) {

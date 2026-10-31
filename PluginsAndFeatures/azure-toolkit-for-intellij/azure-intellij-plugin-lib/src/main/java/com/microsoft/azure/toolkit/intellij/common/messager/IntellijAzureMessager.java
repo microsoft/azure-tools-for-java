@@ -61,7 +61,9 @@ public class IntellijAzureMessager implements IAzureMessager {
     }
 
     private static Notification createNotification(@Nonnull String title, @Nonnull String content, NotificationType type) {
-        return new Notification(NOTIFICATION_GROUP_ID, title, content, type, new NotificationListener.UrlOpeningListener(false) {
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, content, type);
+        notification.setTitle(title);
+        notification.setListener(new NotificationListener.UrlOpeningListener(false) {
             @Override
             @SneakyThrows
             protected void hyperlinkActivated(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
@@ -85,6 +87,7 @@ public class IntellijAzureMessager implements IAzureMessager {
                 }
             }
         });
+        return notification;
     }
 
     @Override

@@ -14,18 +14,20 @@ import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter;
 import com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemetry;
 import org.apache.commons.lang3.StringUtils;
 
+import kotlin.coroutines.Continuation;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletionStage;
 
 import static com.microsoft.azure.toolkit.lib.common.telemetry.AzureTelemeter.*;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DatabaseServerConnectionInterceptor implements DatabaseConnectionInterceptor {
     @Nullable
-    public CompletionStage<ProtoConnection> intercept(@Nonnull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent) {
+    @Override
+    public Object interceptConnection(@Nonnull DatabaseConnectionInterceptor.ProtoConnection proto, boolean silent, @Nonnull Continuation<? super Boolean> $completion) {
         final DatabaseConnectionPoint point = proto.getConnectionPoint();
         final String accountId = point.getAdditionalProperty(DatabaseServerParamEditor.KEY_DB_SERVER_ID);
         if (StringUtils.isNotBlank(accountId) && !StringUtils.equalsIgnoreCase(accountId, DatabaseServerParamEditor.NONE)) {
@@ -38,6 +40,6 @@ public class DatabaseServerConnectionInterceptor implements DatabaseConnectionIn
             properties.put(OP_TYPE, Operation.Type.USER);
             AzureTelemeter.log(AzureTelemetry.Type.OP_END, properties);
         }
-        return null;
+        return Boolean.FALSE;
     }
 }

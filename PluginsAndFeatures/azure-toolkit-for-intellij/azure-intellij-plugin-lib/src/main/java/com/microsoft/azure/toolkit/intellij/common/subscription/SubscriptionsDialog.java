@@ -260,7 +260,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper implements TableMode
         refreshAction.registerCustomShortcutSet(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK, contentPane);
         final ToolbarDecorator tableToolbarDecorator = ToolbarDecorator.createDecorator(table)
             .disableUpDownActions()
-            .addExtraAction(refreshAction);
+            .addExtraAction((com.intellij.openapi.actionSystem.AnAction) refreshAction);
 
         panelTable = tableToolbarDecorator.createPanel();
     }

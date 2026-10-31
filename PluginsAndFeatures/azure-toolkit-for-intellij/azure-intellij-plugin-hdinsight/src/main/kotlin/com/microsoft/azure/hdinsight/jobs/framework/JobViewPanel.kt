@@ -72,7 +72,7 @@ class JobViewPanel(private val rootPath: String, private val clusterName: String
 
 fun CefBrowser.updateTheme() {
     val isDarkTheme = EditorColorsManager.getInstance().isDarkEditor
-    val themeName = LafManager.getInstance().currentLookAndFeel.name
+    val themeName = LafManager.getInstance().currentUIThemeLookAndFeel.name
 
     val themeMode = if (themeName.toLowerCase() == "high contrast") {
         "highcontrast"

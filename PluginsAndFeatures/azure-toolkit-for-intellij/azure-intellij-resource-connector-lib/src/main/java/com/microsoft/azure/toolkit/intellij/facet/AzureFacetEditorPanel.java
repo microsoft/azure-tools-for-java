@@ -3,8 +3,6 @@ package com.microsoft.azure.toolkit.intellij.facet;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.ProjectUtil;
-import com.intellij.openapi.ui.ComponentWithBrowseButton.BrowseFolderActionListener;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import lombok.Getter;
 
@@ -45,9 +43,7 @@ public class AzureFacetEditorPanel {
         this.dotAzureDirInput.setEnabled(false);
         // noinspection DialogTitleCapitalization
         final String title = "Select path to Azure resource connection configuration files";
-        final BrowseFolderActionListener<JTextField> listener = new BrowseFolderActionListener<>(title, null, dotAzureDirInput,
-            this.module.getProject(), descriptor, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
-        this.dotAzureDirInput.addActionListener(listener);
+        this.dotAzureDirInput.addBrowseFolderListener(this.module.getProject(), descriptor.withTitle(title));
     }
 
     // CHECKSTYLE IGNORE check FOR NEXT 1 LINES

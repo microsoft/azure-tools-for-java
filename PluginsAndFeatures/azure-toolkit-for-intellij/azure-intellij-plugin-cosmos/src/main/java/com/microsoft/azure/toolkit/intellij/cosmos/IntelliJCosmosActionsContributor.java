@@ -126,7 +126,7 @@ public class IntelliJCosmosActionsContributor implements IActionsContributor {
             CreateCosmosContainerAction.createCassandraTable(e.getProject(), (CassandraKeyspace) r, CassandraTableDraft.CassandraTableConfig.getDefaultConfig()));
 
         final String DATABASE_TOOLS_PLUGIN_ID = "com.intellij.database";
-        if (PluginManagerCore.getPlugin(PluginId.findId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
+        if (PluginManagerCore.getPlugin(PluginId.getId(DATABASE_TOOLS_PLUGIN_ID)) == null) {
             final BiConsumer<CosmosDBAccount, AnActionEvent> openDatabaseHandler = (c, e) -> openDatabaseTool(e.getProject(), c);
             final boolean cassandraOn = Registry.is("azure.toolkit.cosmos_cassandra.dbtools.enabled");
             am.registerHandler(CosmosActionsContributor.OPEN_DATABASE_TOOL, (r, e) -> r instanceof MongoCosmosDBAccount || (r instanceof CassandraCosmosDBAccount && cassandraOn), openDatabaseHandler);

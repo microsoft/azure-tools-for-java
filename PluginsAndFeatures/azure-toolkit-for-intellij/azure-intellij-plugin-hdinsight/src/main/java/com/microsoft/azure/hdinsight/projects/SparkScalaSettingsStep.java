@@ -7,7 +7,7 @@ package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
-import com.intellij.openapi.module.StdModuleTypes;
+import com.intellij.openapi.module.ModuleTypeManager;
 import com.intellij.openapi.options.ConfigurationException;
 
 import javax.swing.*;
@@ -20,7 +20,7 @@ public class SparkScalaSettingsStep extends ModuleWizardStep {
 
     public SparkScalaSettingsStep(HDInsightModuleBuilder builder, SettingsStep settingsStep) {
         this.builder = builder;
-        this.javaStep = StdModuleTypes.JAVA.modifyProjectTypeStep(settingsStep, builder);
+        this.javaStep = ModuleTypeManager.getInstance().findByID("JAVA_MODULE").modifyProjectTypeStep(settingsStep, builder);
 
         if (builder.getSelectedTemplate() != null &&
                 builder.getSelectedTemplate().getTemplateType() == HDInsightTemplatesType.ScalaFailureTaskDebugSample) {

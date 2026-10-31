@@ -200,7 +200,7 @@ public class DefaultLanguageClient implements LanguageClient {
 
         } else {
 
-            final Notification notification = STICKY_NOTIFICATION_GROUP.createNotification(title, null, message, getNotificationType(msgType));
+            final Notification notification = STICKY_NOTIFICATION_GROUP.createNotification(title, message, getNotificationType(msgType));
             final CompletableFuture<Integer> integerCompletableFuture = new CompletableFuture<>();
             for (int i = 0, optionsSize = options.length; i < optionsSize; i++) {
                 final int finalI = i;

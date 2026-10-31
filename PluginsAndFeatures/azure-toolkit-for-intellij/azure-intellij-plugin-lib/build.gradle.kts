@@ -28,4 +28,3 @@ dependencies {
         bundledPlugin("org.jetbrains.plugins.terminal")
     }
 }
-

@@ -17,8 +17,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
+import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -83,8 +82,7 @@ public class ServicePrincipalLoginDialog extends AzureDialog<AuthConfiguration> 
         // initialize cert file select
         final FileChooserDescriptor pem = FileChooserDescriptorFactory.createSingleFileDescriptor("pem");
         pem.withFileFilter(file -> StringUtils.equalsIgnoreCase(file.getExtension(), "pem"));
-        certFileTextField.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Certificate File", null, certFileTextField, null,
-            pem, TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT) {
+        certFileTextField.addBrowseFolderListener(new TextBrowseFolderListener(pem.withTitle("Select Certificate File")) {
             @Nullable
             protected VirtualFile getInitialFile() {
                 return LocalFileSystem.getInstance().findFileByPath(Paths.get(System.getProperty("user.home"), "/").toString());

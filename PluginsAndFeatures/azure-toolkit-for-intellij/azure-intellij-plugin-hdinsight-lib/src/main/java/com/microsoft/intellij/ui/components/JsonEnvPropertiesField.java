@@ -214,7 +214,6 @@ public class JsonEnvPropertiesField extends TextFieldWithBrowseButton implements
         }
 
         @NotNull
-        @Override
         protected AnActionButton[] createExtraActions() {
             return myUserList
                     ? super.createExtraActions()
