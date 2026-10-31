@@ -2,6 +2,7 @@ package com.microsoft.azure.toolkit.intellij.connector;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -29,7 +30,7 @@ public class SignInHyperLinkLabel extends HyperlinkLabel {
         AzureEventBus.on("account.logged_out.account", new AzureEventBus.EventListener((e) -> this.setVisible(!Azure.az(AzureAccount.class).isLoggedIn())));
         this.addHyperlinkListener(e -> {
             final DataContext context = DataManager.getInstance().getDataContext(this);
-            final AnActionEvent event = AnActionEvent.createFromInputEvent(e.getInputEvent(), "ConnectorDialog", new Presentation(), context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "ConnectorDialog", ActionUiKind.NONE, e.getInputEvent());
             AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH)
                 .handle((a) -> this.setVisible(!Azure.az(AzureAccount.class).isLoggedIn()), event);
         });

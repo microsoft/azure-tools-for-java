@@ -43,6 +43,7 @@ import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetai
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.ui.util.configureBrowseButton
 import com.microsoft.intellij.ui.util.findFirst
 import rx.Observable
 import rx.Observable.*
@@ -61,9 +62,9 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
     private val clustersSelection  = ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
-        button.name = getComboBoxNamePrefix() + "Button"
 
         setButtonIcon(AllIcons.Actions.Refresh)
+        configureBrowseButton(getComboBoxNamePrefix() + "Button")
 
         comboBox.apply {
             setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
@@ -95,11 +96,8 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
             }
         }
 
-        button.apply {
-            toolTipText = "Refresh"
-            addActionListener {
-                viewModel.doRefreshSubject.onNext(true)
-            }
+        addActionListener {
+            viewModel.doRefreshSubject.onNext(true)
         }
     }
 

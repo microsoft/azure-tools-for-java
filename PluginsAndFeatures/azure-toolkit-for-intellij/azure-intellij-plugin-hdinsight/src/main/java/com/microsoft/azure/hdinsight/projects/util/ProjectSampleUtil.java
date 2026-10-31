@@ -18,7 +18,7 @@ import java.io.File;
 
 public class ProjectSampleUtil {
     public static String getRootOrSourceFolder(Module module, boolean isSourceFolder) {
-        ModuleRootManager moduleRootManager = module.getComponent(ModuleRootManager.class);
+        ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
         if (module == null) {
             return null;
         }

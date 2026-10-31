@@ -11,7 +11,7 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.compute.virtualmachine.VirtualMachine;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
-import org.jetbrains.plugins.terminal.TerminalView;
+import org.jetbrains.plugins.terminal.TerminalToolWindowManager;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -29,9 +29,9 @@ public class ConnectUsingSshActionCommunityImpl implements ConnectUsingSshAction
         final String machineName = vm.getName();
         AzureTaskManager.getInstance().runLater(() -> {
             // create a new terminal tab
-            final TerminalView terminalView = TerminalView.getInstance(project);
+            final TerminalToolWindowManager terminalManager = TerminalToolWindowManager.getInstance(project);
             final String terminalTitle =  String.format(SSH_TERMINAL_TABLE_NAME, machineName);
-            final ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, terminalTitle);
+            final ShellTerminalWidget shellTerminalWidget = terminalManager.createLocalShellWidget(null, terminalTitle);
             try {
                 // create ssh connection in terminal
                 openTerminal(vm, shellTerminalWidget);

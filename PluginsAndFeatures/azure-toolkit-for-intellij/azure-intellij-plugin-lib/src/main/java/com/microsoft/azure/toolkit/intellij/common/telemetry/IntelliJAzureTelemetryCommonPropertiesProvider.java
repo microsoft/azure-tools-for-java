@@ -6,7 +6,7 @@
 package com.microsoft.azure.toolkit.intellij.common.telemetry;
 
 import com.intellij.openapi.application.ApplicationInfo;
-import com.intellij.openapi.application.PermanentInstallationID;
+import com.intellij.openapi.application.JetBrainsPermanentInstallationID;
 import com.microsoft.azure.toolkit.intellij.common.CommonConst;
 import com.microsoft.azure.toolkit.intellij.common.settings.IntellijStore;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -45,7 +45,7 @@ public class IntelliJAzureTelemetryCommonPropertiesProvider implements AzureTele
             installId = InstallationIdUtils.getHashMac();
         }
         if (StringUtils.isBlank(installId) || !InstallationIdUtils.isValidHashMac(installId)) {
-            installId = InstallationIdUtils.hash(PermanentInstallationID.get());
+            installId = InstallationIdUtils.hash(JetBrainsPermanentInstallationID.get());
         }
         return installId;
     }

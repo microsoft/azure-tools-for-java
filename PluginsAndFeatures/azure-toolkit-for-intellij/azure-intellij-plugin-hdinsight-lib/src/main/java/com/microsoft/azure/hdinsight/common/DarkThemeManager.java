@@ -8,6 +8,7 @@ package com.microsoft.azure.hdinsight.common;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
 
 import java.awt.*;
@@ -43,7 +44,7 @@ public class DarkThemeManager {
     }
 
     public String getWarningColor() {
-        if (UIUtil.isUnderDarcula()) {
+        if (!JBColor.isBright()) {
             return LightOrange;
         }
 
@@ -65,7 +66,7 @@ public class DarkThemeManager {
     }
 
     public Color getWarningMessageColor() {
-        if (UIUtil.isUnderDarcula()) {
+        if (!JBColor.isBright()) {
             return new Color(255, 198, 109);
         }
 
@@ -73,7 +74,7 @@ public class DarkThemeManager {
     }
 
     public String getErrorColor() {
-        if (UIUtil.isUnderDarcula()) {
+        if (!JBColor.isBright()) {
             return Rose;
         }
 
@@ -81,7 +82,7 @@ public class DarkThemeManager {
     }
 
     public String getInfoColor() {
-        if (UIUtil.isUnderDarcula()) {
+        if (!JBColor.isBright()) {
             return Gray;
         }
 
@@ -89,7 +90,7 @@ public class DarkThemeManager {
     }
 
     public String getHyperLinkColor() {
-        if (UIUtil.isUnderDarcula()) {
+        if (!JBColor.isBright()) {
             return LightBlue;
         }
 

@@ -17,5 +17,6 @@ dependencies {
     intellijPlatform {
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("org.jetbrains.plugins.textmate")
+        bundledModule("intellij.platform.remoteServers.impl")
     }
 }

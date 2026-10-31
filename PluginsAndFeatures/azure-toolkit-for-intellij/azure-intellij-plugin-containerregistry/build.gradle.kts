@@ -17,5 +17,10 @@ dependencies {
         bundledPlugin("com.intellij.gradle")
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Docker")
+        bundledModules(
+            "intellij.platform.remoteServers",
+            "intellij.platform.remoteServers.agent.rt",
+            "intellij.platform.remoteServers.impl",
+        )
     }
 }

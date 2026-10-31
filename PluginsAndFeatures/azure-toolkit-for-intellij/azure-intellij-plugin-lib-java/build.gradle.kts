@@ -5,8 +5,7 @@ plugins {
 sourceSets {
     main {
         resources {
-            srcDir("src/main/resources")
-            exclude("whatsnew.assets/**")
+            exclude("whatsnew.assets/**", "whatsnew-history.md")
         }
     }
     test {

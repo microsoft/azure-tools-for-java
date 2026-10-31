@@ -123,7 +123,7 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
             final AbstractTreeNode<?> currentTreeNode = getCurrentTreeNode(e);
             if (SwingUtilities.isLeftMouseButton(e) && currentTreeNode instanceof IAzureFacetNode node) {
                 final DataContext context = DataManager.getInstance().getDataContext(tree);
-                final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, ActionPlaces.PROJECT_VIEW_POPUP + ".click", context);
+                final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), ActionPlaces.PROJECT_VIEW_POPUP + ".click", ActionUiKind.NONE, e);
                 if (e.getClickCount() == 1) {
                     node.onClicked(event);
                 } else if (e.getClickCount() == 2) {
@@ -203,12 +203,11 @@ public final class AzureFacetTreeStructureProvider implements TreeStructureProvi
     }
 
     @Override
-    public @Nullable Object getData(@Nonnull Collection<? extends AbstractTreeNode<?>> selected, @Nonnull String dataId) {
-        final IAzureFacetNode azureFacetNode = selected.stream()
-            .filter(node -> node instanceof IAzureFacetNode)
-            .map(n -> (IAzureFacetNode) n).findFirst().orElse(null);
-        return Objects.nonNull(azureFacetNode) ? azureFacetNode.getData(dataId) : TreeStructureProvider.super.getData(selected, dataId);
+    public void uiDataSnapshot(@Nonnull DataSink sink, @Nonnull Collection<? extends AbstractTreeNode<?>> selected) {
+        selected.stream()
+            .filter(IAzureFacetNode.class::isInstance)
+            .map(IAzureFacetNode.class::cast)
+            .findFirst()
+            .ifPresent(node -> DataSink.uiDataSnapshot(sink, (Object) node));
     }
 }
-
-

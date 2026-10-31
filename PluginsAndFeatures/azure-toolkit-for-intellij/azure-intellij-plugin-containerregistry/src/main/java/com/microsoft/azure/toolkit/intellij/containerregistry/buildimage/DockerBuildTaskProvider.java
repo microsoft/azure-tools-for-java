@@ -135,7 +135,7 @@ public class DockerBuildTaskProvider extends BeforeRunTaskProvider<DockerBuildTa
 
         private ConsoleView createConsoleView(final Project project, final String imageName) {
             final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-            final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.guidance.summary", context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.guidance.summary", ActionUiKind.NONE, null);
             ActionManager.getInstance().getAction("ActivateRunToolWindow").actionPerformed(event);
             final ConsoleView console = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
             ((ConsoleViewImpl) console).setVisible(true);

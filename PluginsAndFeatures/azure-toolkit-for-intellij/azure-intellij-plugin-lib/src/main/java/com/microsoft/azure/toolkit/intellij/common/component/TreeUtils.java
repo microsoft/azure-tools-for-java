@@ -157,7 +157,7 @@ public class TreeUtils {
                 } else {
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
                     place += ".node";
-                    final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
+                    final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), place, ActionUiKind.NONE, e);
                     if (e.getClickCount() == 1) {
                         node.inner.click(event);
                     } else if (e.getClickCount() == 2) {
@@ -175,7 +175,7 @@ public class TreeUtils {
                 if (Objects.nonNull(node) && e.getClickCount() == 1 && inlineActionIndex > -1) {
                     final String place = TreeUtils.getPlace(tree) + "." + (TreeUtils.underAppGroups(node) ? "app" : "type") + ".inline";
                     final DataContext context = DataManager.getInstance().getDataContext(tree);
-                    final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), e, place, context);
+                    final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), place, ActionUiKind.NONE, e);
                     node.inner.triggerInlineAction(event, inlineActionIndex, TreeUtils.getPlace(tree));
                 }
             }

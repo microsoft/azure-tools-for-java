@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.ui.util
 
+import com.intellij.openapi.ui.ComponentWithBrowseButton
+import javax.swing.AbstractButton
 import javax.swing.ListModel
 
 val <T> ListModel<T>?.iterator: Iterator<T>
@@ -38,3 +40,15 @@ val <T> ListModel<T>?.iterator: Iterator<T>
 
 fun <T> ListModel<T>?.findFirst(predicate: (T) -> Boolean): T? = this?.iterator?.asSequence()?.find(predicate)
 
+@JvmOverloads
+fun ComponentWithBrowseButton<*>.configureBrowseButton(name: String, tooltip: String? = null) {
+    val button = components.filterIsInstance<AbstractButton>().singleOrNull()
+    if (button != null) {
+        button.name = name
+        tooltip?.let { button.toolTipText = it }
+    } else {
+        this.name = name
+        accessibleContext.accessibleName = name
+        tooltip?.let { toolTipText = it }
+    }
+}
