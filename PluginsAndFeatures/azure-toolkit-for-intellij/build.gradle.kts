@@ -105,7 +105,6 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.aspectj)
-    alias(libs.plugins.springDependencyManagement)
 }
 
 group = properties("pluginGroup").get()
@@ -159,10 +158,8 @@ allprojects {
     dependencies {
         intellijPlatform {
             intellijIdeaUltimate(properties("platformVersion").get()) {
-                useInstaller = false
+                useInstaller = true
             }
-            // JBR 25 required to run IntelliJ 2026.2 (PathClassLoader is JBR-only)
-            jetbrainsRuntime()
             bundledPlugin("com.intellij.modules.jcef")
             // MavenId/MavenCoordinate classes moved from maven plugin to repository-search plugin in 261
             bundledPlugin("org.jetbrains.idea.reposearch")
@@ -175,6 +172,8 @@ allprojects {
         implementation(platform("com.microsoft.azure:azure-toolkit-ide-libs:0.52.2"))
         implementation(platform("com.microsoft.hdinsight:azure-toolkit-ide-hdinsight-libs:0.1.1"))
         implementation("commons-collections:commons-collections:3.2.2")
+        // SwingX is no longer bundled with IntelliJ IDEA 2026.3.
+        implementation("org.swinglabs:swingx-core:1.6.2-2")
 
         compileOnly("org.projectlombok:lombok:1.18.46")
         compileOnly("org.jetbrains:annotations:24.0.0")

@@ -11,5 +11,6 @@ dependencies {
     intellijPlatform {
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugin("com.intellij.properties")
+        bundledPlugin("com.intellij.xml")
     }
 }

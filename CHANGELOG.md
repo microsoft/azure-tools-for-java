@@ -4,6 +4,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## [Unreleased]
 
+## 3.97.8
+
+### Added
+
+- Added support for IntelliJ IDEA 2026.3 Beta.
+
 ## 3.97.7
 ### Fixed
 - Migrate IntelliJ Platform integrations to APIs supported by IntelliJ IDEA 2026.2
