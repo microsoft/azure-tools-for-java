@@ -105,7 +105,6 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.aspectj)
-    alias(libs.plugins.springDependencyManagement)
 }
 
 group = properties("pluginGroup").get()
