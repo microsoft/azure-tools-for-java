@@ -12,7 +12,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.PsiElement;
@@ -200,7 +202,7 @@ public class StoragePathCompletionProvider extends CompletionProvider<Completion
                 AbstractAzureFacetNode.selectConnectedResource(connections.get(0), file.getId(), file.isDirectory());
                 if (!file.isDirectory()) {
                     DataManager.getInstance().getDataContextFromFocusAsync().onSuccess(context -> {
-                        final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.EDITOR_GUTTER, null, context);
+                        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), ActionPlaces.EDITOR_GUTTER, ActionUiKind.NONE, null);
                         AzureActionManager.getInstance().getAction(StorageActionsContributor.OPEN_FILE).handle(file, event);
                     });
                 }

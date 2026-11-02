@@ -29,7 +29,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.UpdateInBackground
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.roots.TestSourcesFilter.isTestSources
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -46,13 +46,15 @@ import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
 
-abstract class SparkRunConfigurationAction : AzureAnAction, ILogger, UpdateInBackground {
+abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     constructor(icon: Icon?) : super(icon)
     constructor(text: String?) : super(text)
     constructor(text: String?, description: String?, icon: Icon?) : super(text, description, icon)
     constructor() : super()
 
     abstract val runExecutor: Executor
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     open fun canRun(setting: RunnerAndConfigurationSettings): Boolean =
             setting.configuration is LivySparkBatchJobRunConfiguration &&

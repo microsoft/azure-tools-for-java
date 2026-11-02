@@ -14,9 +14,11 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandler;
 import com.microsoft.azure.toolkit.intellij.common.RunProcessHandlerMessenger;
@@ -119,7 +121,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         if (rootCause instanceof StreamingDiagnosticsException root) {
             final Action<StreamingLogSupport> action = AzureActionManager.getInstance().getAction(StreamingLogSupport.OPEN_STREAMING_LOG);
             final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-            final AnActionEvent event = AnActionEvent.createFromDataContext("azure.run_state.deploy_image", null, context);
+            final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.run_state.deploy_image", ActionUiKind.NONE, null);
             action.handle(root.getStreamingLog(), event);
         }
     }

@@ -1,0 +1,7 @@
+PluginStructureWarning(problem=There is a duplicated dependency on 'com.intellij.gradle'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'org.jetbrains.plugins.gradle'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'com.intellij.modules.xml'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'com.intellij.database'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'com.intellij.modules.java'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'org.jetbrains.idea.maven'. Remove this dependency by updating the plugin.xml file.)
+PluginStructureWarning(problem=There is a duplicated dependency on 'org.jetbrains.plugins.terminal'. Remove this dependency by updating the plugin.xml file.)

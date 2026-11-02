@@ -9,7 +9,9 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.keymap.KeymapUtil;
@@ -107,7 +109,7 @@ public class FunctionCoreToolsCombobox extends AzureComboBox<String> {
 
     private void openAzureSettingsPanel() {
         final Action<Object> openSettingsAction = AzureActionManager.getInstance().getAction(ResourceCommonActionsContributor.OPEN_AZURE_SETTINGS);
-        final AnActionEvent event = AnActionEvent.createFromInputEvent(null, ActionPlaces.UNKNOWN, null, DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this));
+        final AnActionEvent event = AnActionEvent.createEvent(DataManager.getInstance().getDataContext(FunctionCoreToolsCombobox.this), new Presentation(), ActionPlaces.UNKNOWN, ActionUiKind.NONE, null);
         final ActionInstance<Object> instance = openSettingsAction.instantiate(null, event);
         instance.perform(); // Open Azure Settings Panel sync
     }

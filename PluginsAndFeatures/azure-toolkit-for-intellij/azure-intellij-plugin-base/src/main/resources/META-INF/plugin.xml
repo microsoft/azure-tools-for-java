@@ -18,6 +18,14 @@
     <![CDATA[
     <html>
         <h3>Azure</h3>
+        <h4>3.97.7</h4>
+        <ul>
+          <li>Migrate IntelliJ Platform integrations to APIs supported by IntelliJ IDEA 2026.2</li>
+          <li>Preserve proxy, run configuration, Project Explorer, Cosmos DB SSL, and refresh behavior during the migration</li>
+          <li>Preserve file chooser guidance, button accessibility metadata, and plugin lifecycle cleanup</li>
+          <li>Fix registry key conflict for Cosmos DB dbtools module</li>
+          <li>Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.</li>
+        </ul>
         <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
@@ -27,6 +35,7 @@
   <idea-version since-build="222.2270.31" until-build="222.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.jcef</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.gradle</depends>
   <xi:include href="/META-INF/azure-intellij-plugin-lib-java.xml" xpointer="xpointer(/idea-plugin/*)"/>

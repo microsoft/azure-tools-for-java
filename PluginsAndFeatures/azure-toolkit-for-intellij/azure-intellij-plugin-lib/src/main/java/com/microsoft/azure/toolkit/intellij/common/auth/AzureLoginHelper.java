@@ -5,8 +5,10 @@
 package com.microsoft.azure.toolkit.intellij.common.auth;
 
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.Azure;
@@ -62,8 +64,8 @@ public class AzureLoginHelper {
     public static void requireSignedIn(Project project, Consumer<IAccount> consumer) {
         // Todo(andxu): legacy code shall be deleted later.
         final Action<Consumer<IAccount>> requireAuth = AzureActionManager.getInstance().getAction(Action.REQUIRE_AUTH);
-        final AnActionEvent event = AnActionEvent.createFromAnAction(ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn"),
-                null, "not_used", SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, project));
+        final AnActionEvent event = AnActionEvent.createEvent(ActionManager.getInstance().getAction("AzureToolkit.AzureSignIn"),
+                SimpleDataContext.getSimpleContext(CommonDataKeys.PROJECT, project), new Presentation(), "not_used", ActionUiKind.NONE, null);
         if (Objects.nonNull(requireAuth)) {
             requireAuth.handle(consumer, event);
         }

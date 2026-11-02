@@ -6,7 +6,7 @@ package com.microsoft.azure.toolkit.intellij.legacy.function.runner.core;
 
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter;
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener;
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.module.Module;
@@ -92,7 +92,8 @@ public class IntellijGradleFunctionProject extends FunctionProject {
         final GradleExecutionSettings settings = manager.getExecutionSettingsProvider().fun(Pair.create(workspace, externalProject.getProjectDir().toString()));
         final IAzureMessager messager = AzureMessager.getMessager();
         gradleTaskManager.executeTasks(externalSystemTaskId, List.of("jar"),
-            externalProject.getProjectDir().toString(), settings, null, new ExternalSystemTaskNotificationListenerAdapter() {
+            externalProject.getProjectDir().toString(), settings, null, new ExternalSystemTaskNotificationListener() {
+                @Override
                 public void onTaskOutput(ExternalSystemTaskId id, String text, boolean stdOut) {
                     if (StringUtils.isNotBlank(text)) {
                         for (String line : text.split("\\r?\\n")) {

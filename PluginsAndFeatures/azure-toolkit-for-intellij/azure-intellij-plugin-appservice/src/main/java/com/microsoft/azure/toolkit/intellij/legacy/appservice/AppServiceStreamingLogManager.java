@@ -118,7 +118,7 @@ public enum AppServiceStreamingLogManager {
 
     private StreamingLogsConsoleView getOrCreateConsoleView(Project project, String resourceId) {
         return consoleViewMap.compute(resourceId,
-            (id, view) -> (view == null || view.isDisposed()) ? new StreamingLogsConsoleView(project) : view);
+            (id, view) -> (view == null || view.isConsoleDisposed()) ? new StreamingLogsConsoleView(project) : view);
     }
 
     interface ILogStreaming {

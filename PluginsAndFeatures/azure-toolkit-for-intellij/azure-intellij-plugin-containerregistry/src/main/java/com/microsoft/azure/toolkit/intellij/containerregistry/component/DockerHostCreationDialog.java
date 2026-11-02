@@ -8,8 +8,6 @@ package com.microsoft.azure.toolkit.intellij.containerregistry.component;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -66,8 +64,7 @@ public class DockerHostCreationDialog extends AzureDialog<DockerHost>
         lblCertPath.setLabelFor(txtCertPath);
         txtCertPath.addValueChangedListener(ignore -> resetValidationMessage());
         txtCertPath.addValidator(this::validateCertPath);
-        txtCertPath.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Cert for Docker Host", null, txtCertPath,
-            project, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        txtCertPath.addBrowseFolderListener(project, FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle("Select Cert for Docker Host"));
     }
 
     private AzureValidationInfo validateCertPath() {

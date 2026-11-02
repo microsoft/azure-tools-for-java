@@ -10,7 +10,6 @@ import com.intellij.execution.services.ServiceEventListener;
 import com.intellij.execution.services.ServiceViewContributor;
 import com.intellij.execution.services.ServiceViewManager;
 import com.intellij.ide.projectView.PresentationData;
-import com.intellij.kubernetes.api.Context;
 import com.intellij.kubernetes.api.KubernetesApiProvider;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.project.Project;

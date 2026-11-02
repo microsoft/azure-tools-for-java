@@ -20,7 +20,7 @@ import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.ui.JBColor;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -176,7 +176,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public boolean isDarkTheme() {
-        return UIUtil.isUnderDarcula();
+        return !JBColor.isBright();
     }
 
     public void closeSpringCloudAppPropertyView(@NotNull Object projectObject, String appId) {

@@ -31,6 +31,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.microsoft.intellij.ui.util.SwingExtsKt.configureBrowseButton;
+
 public class SparkLocalRunParamsPanel {
     public static final String HADOOP_HOME_ENV = "HADOOP_HOME";
     public static final String WINUTILS_EXE_NAME = "winutils.exe";
@@ -96,9 +98,9 @@ public class SparkLocalRunParamsPanel {
 
         // Set name for telemetry listener purpose
         myWinutilsPathTextFieldWithBrowserButton.getTextField().setName("winUtilsText");
-        myWinutilsPathTextFieldWithBrowserButton.getButton().setName("winUtilsButton");
+        configureBrowseButton(myWinutilsPathTextFieldWithBrowserButton, "winUtilsButton");
         myDataRootDirectoryFieldWithBrowseButton.getTextField().setName("dataRootPathText");
-        myDataRootDirectoryFieldWithBrowseButton.getButton().setName("dataRootPathButton");
+        configureBrowseButton(myDataRootDirectoryFieldWithBrowseButton, "dataRootPathButton");
     }
 
     public SparkLocalRunParamsPanel withInitialize() {

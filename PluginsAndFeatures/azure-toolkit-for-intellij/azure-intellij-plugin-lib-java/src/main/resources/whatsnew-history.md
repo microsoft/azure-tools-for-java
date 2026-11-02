@@ -1,106 +1,8 @@
-<!-- Version: 3.88.0 -->
-# What's new in Azure Toolkit for IntelliJ
-
-## 3.97.7
-### Fixed
-- Fixed appmod plugin: Copilot modernization branding, CVE fix actions with custom agent support, and context menu hover issue.
-
-## 3.97.6
-### Fixed
-- Fixed several UI freeze issues caused by non-cancellable read actions in Azure task manager, Azure artifact resolution, Maven report generation, and background JDK version checks.
-
-## 3.97.5
-### Added
-- Enable Azure Skills for GitHub Copilot.
-
-### Fixed
-- Fixed zip entry path check.
-- Fixed screen reader not reading the new status after selecting subscription with keyboard.
-
-## 3.97.4
-- Update prompts and tool references of GitHub Copilot modernization.
-
-## 3.97.3
-- Rename GitHub Copilot app modernization to GitHub Copilot modernization.
-
-## 3.97.2
-### Fixed
-- Fixed a known issue.
-
-## 3.97.1
-### Fixed
-- Fixed [#11647](https://github.com/microsoft/azure-tools-for-java/issues/11647): Error checking JDK version: x.xx.x
-
-## 3.97.0
-### Added
-- Integrate GitHub Copilot app modernization with "Migrate to Azure" entry points
-  - New "Migrate to Azure" node under Azure root node in Service Explorer
-  - New "Migrate to Azure" action in project/module right-click context menu
-  - New "Migrate to Azure" node under Azure facet in Project Explorer
-  - Auto-detection and installation prompt for GitHub Copilot app modernization plugin
-- Detect outdated Java/framework and suggest upgrades with "GitHub Copilot app modernization"
-- Detect CVEs in Java project dependencies and suggest upgrades with "GitHub Copilot app modernization"
-
-## 3.96.3
-- Support IntelliJ 2025.3 EAP
-- Update the Azure MCP server name from releases list
-
-## 3.96.2
-- Configure GitHub Copilot with trimmed Azure MCP server for faster startup and a smaller footprint.
-
-## 3.96.1
-- Configure Azure MCP server for GitHub Copilot
-- Integrate azd to Azure Explorer 
-- Fix some known issues
-
-## 3.95.0
-- Update function cdn uri 
-- Integrate rule sets for flagging and making better Azure SDK usage.
-
-## 3.94.0
-- Fix some known issues.
-
-## 3.93.0
-- Support IntelliJ 2024.3 Beta
-- Support Azure Cloud Shell (Thanks for @rafaelldi)
-
-## 3.92.0
-- Added Managed identity support for Azure Functions.
-- Fixed [#8473](https://github.com/microsoft/azure-tools-for-java/issues/8473): Class initialization must not depend on services. Consider using instance of the service on-demand instead.
-- Fixed [#8497](https://github.com/microsoft/azure-tools-for-java/issues/8497): fix support for swap
-
-## 3.91.0
-- Added support for Managed Identity Authentication in Web App Resource Connections.
-  - Support update the identity configuration of Web App to connect Azure resources (Azure Storage Account/Azure Key Vault/Azure Cosmos DB for NoSQL)
-  - Support grant permission to managed identity to connected resource (Azure Storage Account/Azure Key Vault)
-
-## 3.90.0
-### Added
-- Support IntelliJ 2024.2 EAP
-- Support workload profiles environment type in Azure Container Apps
-  - Support create workload profiles during the creation of an Azure Container Apps environment.
-  - Enable setting of workload profiles during the creation of container apps and function apps.
-
-## 3.89.0
-### Added
-- Added a "get started with Azure Container Apps" course.
-
-### Fixed
-- Error occurs when pushing image to container registry with docker file.
-- WebApp of deploy WebApp run configuration shows incorrectly after deploying to a slot.
-- "Load .env" before run task doesn't show in cases when deploying Azure WebApp.
-- Some other know issues.
-
-## 3.88.1
-### Added
-- Support creation/deployment for flex consumption function app.
-
-### Fixed
-- Fixes duplicate before run tasks for Azure Container Apps deployment run configuration
+<!-- Historical entries from 3.88.0 onward are appended to the generated What's New document. -->
 
 ## 3.88.0
 ### Added
-- Support for deploying source code/artifacts to Azure Container Apps directly.      
+- Support for deploying source code/artifacts to Azure Container Apps directly.
   <img alt="deploy source code to Azure" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202404/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202404.aca.newdeploymenttypes.png" width="600"/>
 
 ### Fixed
@@ -108,7 +10,7 @@
 
 ## 3.87.0
 ### Added
-- Support for connecting Azure Storage account with connection string and managing them in both `Services` view and `Project Explorer`. 
+- Support for connecting Azure Storage account with connection string and managing them in both `Services` view and `Project Explorer`.
 
 ### Fixed
 - [#8205](https://github.com/microsoft/azure-tools-for-java/issues/8205): Could not emit tick xxx due to lack of requests (interval doesn't support small downstream requests that replenish slower than the ticks)
@@ -120,7 +22,7 @@
 
 ## 3.86.0
 ### Added
-- Support for managing Azure resources in integrated `Services` view.     
+- Support for managing Azure resources in integrated `Services` view.
 - Feature recommendation based on user project dependencies.
 
 ### Updated
@@ -133,9 +35,9 @@
 
 ## 3.85.0
 ### Added
-- Support for containerized FunctionApps (based on Azure Container Apps) 
+- Support for containerized FunctionApps (based on Azure Container Apps)
 - Support for creating docker WebApp/FunctionApp
-- Support for Managing Azure Container Registries (ACR) with bundled Docker plugin (2023.3) in integrated `Services` view.     
+- Support for Managing Azure Container Registries (ACR) with bundled Docker plugin (2023.3) in integrated `Services` view.
 - Warn user when creating/deploying WebApps/FunctionApps of (to-be-) deprected runtime.
 
 ### Updated
@@ -151,11 +53,11 @@
 
 ## 3.84.0
 ### Added
-- Browse Azure sample projects and create new project from them.     
+- Browse Azure sample projects and create new project from them.
   <img alt="browse azure sample projects" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202312/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202312.azure-samples.gif" width="1000"/>
 
-- More "shortcut" actions to manage Azure Kubernetes Service (AKS) resources with bundled Kubernetes plugin (2023.3).     
-  <img alt="add AKS into Kubernetes Explorer" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202312/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202312.k8s-1.png" width="600"/>     
+- More "shortcut" actions to manage Azure Kubernetes Service (AKS) resources with bundled Kubernetes plugin (2023.3).
+  <img alt="add AKS into Kubernetes Explorer" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202312/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202312.k8s-1.png" width="600"/>
   <img alt="open AKS in Kubernetes Explorer" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202312/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202312.k8s-2.png" width="600"/>
 
 ### Updated
@@ -167,8 +69,8 @@
   * Resource Management features in Azure explorer
     - Create new secret/certificate/key in toolkts
     - View/Download secret/certificate/key (need Azure CLI installed)
-  * Code assistance of Key Vault for Spring project    
-    <img alt="keyvault code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202311/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202311.keyvaultcodeassistance.gif" width="1000"/>    
+  * Code assistance of Key Vault for Spring project
+    <img alt="keyvault code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202311/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202311.keyvaultcodeassistance.gif" width="1000"/>
     <img alt="create secret from plain text" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202311/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202311.createsecretfromplaintext.gif" width="1000"/>
 
 ### Fixed
@@ -179,10 +81,10 @@
 
 ## 3.82.0
 ### Added
-- Code assistance of Azure resources for Spring and Azure Functions.       
-  <img alt="spring cloud code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.springcodeassistance.gif" width="1000"/>    
-  <img alt="function code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.functioncodeassistance.gif" width="1000"/>   
-- Azure Functions flex consumption tier support.      
+- Code assistance of Azure resources for Spring and Azure Functions.
+  <img alt="spring cloud code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.springcodeassistance.gif" width="1000"/>
+  <img alt="function code assistance" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202310/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202310.functioncodeassistance.gif" width="1000"/>
+- Azure Functions flex consumption tier support.
 
 ### Fixed
 - [#7907](https://github.com/microsoft/azure-tools-for-java/issues/7907): Uncaught Exception Operator called default onErrorDropped java.lang.InterruptedException.
@@ -208,9 +110,9 @@
 
 ## 3.80.0
 ### Added
-- Azure OpenAI (chat) playground for GTP* models.    
+- Azure OpenAI (chat) playground for GTP* models.
   <img alt="azure openai playground" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202308/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202308.openai-playground.gif" width="1000"/>
-- Guidance (Getting started course) to try Azure OpenAI and its playground (chat) in IntelliJ IDEA.    
+- Guidance (Getting started course) to try Azure OpenAI and its playground (chat) in IntelliJ IDEA.
   <img alt="getting started with azure openai" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202308/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib-java/src/main/resources/whatsnew.assets/202308.openai-getting-started.gif" width="1000"/>
 - Azure OpenAI resource management.
 
@@ -229,9 +131,9 @@
 
 ## 3.79.0
 ### Added
-- Support for creating Azure Spring apps/services of Enterprise/Standard/Basic tier in IDE.    
+- Support for creating Azure Spring apps/services of Enterprise/Standard/Basic tier in IDE.
   <img alt="create spring apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202307/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202307.create-spring-apps.png" width="500"/>
-- Support for managing deployment target services directly in Project Explorer.    
+- Support for managing deployment target services directly in Project Explorer.
   <img alt="deployment targets" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202307/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202307.deployment-targets.png" width="600"/>
 
 ### Fixed
@@ -289,14 +191,14 @@
 - Basic resource management support for service connections
 - New one click action to deploy Dockerfile (build image first) to Azure Container App
   <img alt="Azure Container Apps" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.aca.gif" width="1000"/>
-- Finer granular resource management(registry/repository/images/...) for Azure Container Registry    
+- Finer granular resource management(registry/repository/images/...) for Azure Container Registry
   <img alt="Azure Container Registry" src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202304/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202304.acr.png" width="1000"/>
 - Monitoring support for Azure Container Apps (azure monitor integration & log streaming)
 
 ### Changed
 - Docker development/container based Azure services experience enhancement
   - UX enhancement for docker host run/deploy experience
-  - Migrate docker client to docker java to unblock docker experience in MacOS 
+  - Migrate docker client to docker java to unblock docker experience in MacOS
 - UX enhancement for Azure Monitor
   - Finer time control (hour, minute, seconds...) for montior queries
   - Add customer filters persistence support
@@ -353,15 +255,15 @@
 
 ## 3.73.0
 ### Added
-- [Azure Monitor] Azure Monitor to view history logs with rich filters.    
+- [Azure Monitor] Azure Monitor to view history logs with rich filters.
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.azure-monitor.gif" alt="gif of Azure Monitor"/>
-- [Azure Container Apps] Creation of Azure Container Apps Environment.    
-- [Azure Explorer] Pagination support in Azure Explorer.    
+- [Azure Container Apps] Creation of Azure Container Apps Environment.
+- [Azure Explorer] Pagination support in Azure Explorer.
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.loadmore.png" alt="load more in azure explorer"/>
 
 ### Changed
 - Update default Java runtime to Java 11 when creating Azure Spring App.
-- Add setting item to allow users to choose whether to enable authentication cache.    
+- Add setting item to allow users to choose whether to enable authentication cache.
   <img src="https://raw.githubusercontent.com/microsoft/azure-tools-for-java/endgame-202301/PluginsAndFeatures/azure-toolkit-for-intellij/azure-intellij-plugin-lib/src/main/resources/whatsnew.assets/202301.enableauthcache.png" alt="setting item to enable auth cache"/>
 
 ### Fixed

@@ -12,8 +12,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
-import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.HyperlinkLabel;
@@ -178,8 +176,7 @@ public class CodeForm implements AzureFormJPanel<ContainerAppDraft.ImageConfig>,
 
     private void createUIComponents() {
         this.fileCode = new AzureFileInput();
-        this.fileCode.addActionListener(new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Path of Source Code", null, fileCode,
-            this.project, FileChooserDescriptorFactory.createSingleFolderDescriptor(), TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT));
+        this.fileCode.addBrowseFolderListener(this.project, FileChooserDescriptorFactory.createSingleFolderDescriptor().withTitle("Select Path of Source Code"));
         this.fileCode.addValueChangedListener(s -> onFolderChanged.accept(Path.of(s)));
         this.fileCode.addValueChangedListener(this::onSelectFilePath);
     }

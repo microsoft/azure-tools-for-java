@@ -152,7 +152,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
         @Nullable
         @SuppressWarnings("unchecked")
         private T getSource(@Nonnull AnActionEvent e) {
-            return Optional.ofNullable((T) e.getDataContext().getData(Action.SOURCE))
+            return Optional.ofNullable((T) e.getDataContext().getData(ACTION_SOURCE))
                 .or(() -> Optional.ofNullable(e.getData(CommonDataKeys.NAVIGATABLE_ARRAY))
                     .filter(d -> d.length == 1 && d[0] instanceof DataProvider)
                     .map(d -> (DataProvider) d[0])
@@ -322,7 +322,6 @@ public class IntellijAzureActionManager extends AzureActionManager {
     }
 
     @Override
-    @SuppressWarnings("UnresolvedPropertyKey")
     public Shortcuts getIDEDefaultShortcuts() {
         return new Shortcuts() {
             @Override
@@ -347,7 +346,7 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
             @Override
             public Object refresh() {
-                return Action.Id.of(IdeActions.ACTION_REFRESH);
+                return getShortcutSet(IdeActions.ACTION_REFRESH);
             }
 
             @Override
@@ -362,12 +361,12 @@ public class IntellijAzureActionManager extends AzureActionManager {
 
             @Override
             public Object stop() {
-                return Action.Id.of(IdeActions.ACTION_STOP_PROGRAM);
+                return getShortcutSet(IdeActions.ACTION_STOP_PROGRAM);
             }
 
             @Override
             public Object deploy() {
-                return Action.Id.of(IdeActions.ACTION_DEFAULT_RUNNER);
+                return getShortcutSet(IdeActions.ACTION_DEFAULT_RUNNER);
             }
 
             @Override
@@ -380,6 +379,13 @@ public class IntellijAzureActionManager extends AzureActionManager {
                 return CommonShortcuts.getPaste();
             }
         };
+    }
+
+    @Nullable
+    private static ShortcutSet getShortcutSet(@Nonnull String actionId) {
+        return Optional.ofNullable(ActionManager.getInstance().getAction(actionId))
+            .map(AnAction::getShortcutSet)
+            .orElse(null);
     }
 
     public static class Provider implements AzureActionManagerProvider {

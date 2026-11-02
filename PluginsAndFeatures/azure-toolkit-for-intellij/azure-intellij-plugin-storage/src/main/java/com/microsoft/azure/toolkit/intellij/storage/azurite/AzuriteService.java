@@ -153,7 +153,7 @@ public class AzuriteService {
 
     private ConsoleView getOrCreateConsoleView(final Project project) {
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.azurite", context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.azurite", ActionUiKind.NONE, null);
         ActionManager.getInstance().getAction("ActivateRunToolWindow").actionPerformed(event);
         final ConsoleView console = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Run");

@@ -3,10 +3,11 @@ package com.microsoft.azure.toolkit.intellij.connector.code;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInspection.util.IntentionFamilyName;
 import com.intellij.codeInspection.util.IntentionName;
+import com.intellij.openapi.actionSystem.ActionUiKind;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.EmptyAction;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -41,7 +42,7 @@ public class EditConnectionFix implements IntentionAction {
     @AzureOperation("user/connector.edit_connection_quick_fix")
     public void invoke(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
         final DataContext context = dataId -> CommonDataKeys.PROJECT.getName().equals(dataId) ? project : null;
-        final AnActionEvent event = AnActionEvent.createFromAnAction(new EmptyAction(), null, "azure.annotator.action", context);
+        final AnActionEvent event = AnActionEvent.createEvent(context, new Presentation(), "azure.annotator.action", ActionUiKind.NONE, null);
         AzureActionManager.getInstance().getAction(ResourceConnectionActionsContributor.EDIT_CONNECTION).handle(connection, event);
     }
 
